@@ -46,10 +46,6 @@
   "navbar": {
     "links": [
       {
-        "label": "Log In",
-        "href": "https://app.nango.dev/"
-      },
-      {
         "type": "github",
         "href": "https://github.com/NangoHQ/nango"
       }
