@@ -26,3 +26,62 @@
   position: relative;
   z-index: 1;
 }
+
+/* 5. Sidebar — remove blue from icons and active states, dark mode only */
+.dark #sidebar-content svg,
+.dark #sidebar-content [class*="icon"] {
+  color: rgba(255, 255, 255, 0.5) !important;
+  fill: rgba(255, 255, 255, 0.5) !important;
+}
+
+.dark #sidebar-content a[data-active="true"],
+.dark #sidebar-content [aria-current="page"],
+.dark #sidebar-content [class*="active"] {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.dark #sidebar-content a[data-active="true"] svg,
+.dark #sidebar-content [aria-current="page"] svg,
+.dark #sidebar-content [class*="active"] svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+/* 6. Sidebar — nav text colors, dark mode only */
+.dark #sidebar-content a,
+.dark #sidebar-content span,
+.dark #sidebar-content p {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.dark #sidebar-content a:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 7. Navbar — remove blue tint from any links/icons, dark mode only */
+.dark #navbar a:not([class*="primary"]):not([href*="signup"]) {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.dark #navbar a:not([class*="primary"]):not([href*="signup"]):hover {
+  color: #ffffff !important;
+}
+
+/* 8. Sign Up CTA button — white bg with dark text to match nango.dev, dark mode only */
+.dark #navbar a[href*="signup"],
+.dark #navbar [class*="primary"] a,
+.dark #navbar button[class*="primary"] {
+  background-color: #ffffff !important;
+  color: #0b0b0c !important;
+  border: none !important;
+  font-weight: 500 !important;
+}
+
+.dark #navbar a[href*="signup"]:hover,
+.dark #navbar [class*="primary"] a:hover,
+.dark #navbar button[class*="primary"]:hover {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  color: #0b0b0c !important;
+}
