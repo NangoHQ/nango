@@ -60,22 +60,23 @@
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* 7. Navbar — remove blue tint from any links/icons, dark mode only */
-.dark #navbar a:not([class*="primary"]):not([href*="signup"]) {
+/* 7. Navbar — remove blue tint from non-CTA links, dark mode only */
+.dark #navbar a:not([href*="signup"]):not([href*="app.nango.dev"]) {
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.dark #navbar a:not([class*="primary"]):not([href*="signup"]):hover {
+.dark #navbar a:not([href*="signup"]):not([href*="app.nango.dev"]):hover {
   color: #ffffff !important;
 }
 
-/* 8. Sign Up CTA button — white bg with dark text to match nango.dev, dark mode only */
+/* 8. Sign Up CTA — white bg, dark text, sharp corners, dark mode only */
 .dark #navbar a[href*="signup"],
 .dark #navbar [class*="primary"] a,
 .dark #navbar button[class*="primary"] {
   background-color: #ffffff !important;
   color: #0b0b0c !important;
   border: none !important;
+  border-radius: 4px !important;
   font-weight: 500 !important;
 }
 
@@ -84,4 +85,47 @@
 .dark #navbar button[class*="primary"]:hover {
   background-color: rgba(255, 255, 255, 0.88) !important;
   color: #0b0b0c !important;
+}
+
+/* 9. Log In button — dark bg, white text, subtle border, sharp corners, dark mode only */
+.dark #navbar a[href="https://app.nango.dev"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 6px 14px !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  text-decoration: none !important;
+  transition: background-color 0.15s ease !important;
+}
+
+.dark #navbar a[href="https://app.nango.dev"]:hover {
+  background-color: rgba(255, 255, 255, 0.13) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 10. Global border-radius clamp — all interactive elements max 4px */
+button,
+[class*="btn"],
+[class*="button"],
+input,
+select,
+textarea,
+[class*="badge"],
+[class*="tag"],
+[class*="chip"],
+[class*="card"],
+[class*="callout"],
+[class*="code"] {
+  border-radius: 4px !important;
+}
+
+/* Pill/rounded overrides — keep Mintlify from using full-radius pills */
+[style*="border-radius: 9999"],
+[style*="border-radius:9999"],
+[class*="rounded-full"] {
+  border-radius: 4px !important;
 }
