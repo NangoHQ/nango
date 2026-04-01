@@ -27,15 +27,6 @@
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
-  "contextual": {
-    "options": [
-      "copy",
-      "cursor",
-      "vscode",
-      "chatgpt",
-      "claude"
-    ]
-  },
   "seo": {
     "indexing": "all",
     "metatags": {
