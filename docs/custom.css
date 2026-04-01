@@ -48,18 +48,18 @@ a[href="https://www.nango.dev"] svg,
   width: auto !important;
 }
 
-/* 4. Content area — above the grid, with top breathing room */
+/* 4. Content area — above the grid, padded top for fixed navbar */
 #content-area {
   position: relative;
   z-index: 1;
-  padding-top: 2rem !important;
+  padding-top: 3rem !important;
 }
 
-/* Page title area — extra space above h1 */
-#content-area h1:first-of-type,
-[class*="prose"] h1:first-of-type,
-[class*="content"] h1:first-of-type {
-  padding-top: 1rem !important;
+/* Breadcrumb + title wrapper — ensure space from navbar */
+#content-area > div:first-child,
+[class*="prose"] > *:first-child,
+[class*="PageContent"] > *:first-child {
+  margin-top: 1.5rem !important;
 }
 
 /* ── Sidebar: anchors (Documentation, APIs, Reference, Updates) ── */
