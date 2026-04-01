@@ -18,9 +18,18 @@
 /* 3. Sidebar — solid dark background + right border, dark mode only */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   position: relative;
   z-index: 50;
+}
+
+/* 3b. Sidebar right border — broad selectors to catch Mintlify's wrapper */
+.dark #sidebar-content,
+.dark aside,
+.dark [class*="Sidebar"],
+.dark [class*="sidebar"],
+.dark nav[class*="sidebar"],
+.dark [data-sidebar] {
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 /* 4. Content area — always above the grid */
@@ -36,6 +45,7 @@
   fill: rgba(255, 255, 255, 0.5) !important;
 }
 
+/* Active nav item — neutral highlight, sharp 4px corners */
 .dark #sidebar-content a[data-active="true"],
 .dark #sidebar-content [aria-current="page"],
 .dark #sidebar-content [class*="active"] {
@@ -49,6 +59,24 @@
 .dark #sidebar-content [class*="active"] svg {
   color: #ffffff !important;
   fill: #ffffff !important;
+}
+
+/* Anchor icon squares (Documentation, APIs, etc.) — neutralise blue bg */
+.dark #sidebar-content [class*="anchor"] [class*="icon"],
+.dark #sidebar-content [class*="AnchorIcon"],
+.dark #sidebar-content [class*="anchor-icon"],
+.dark #sidebar-content [class*="group-icon"],
+.dark #sidebar-content [class*="GroupIcon"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  border-radius: 4px !important;
+}
+
+/* All sidebar items — force 4px, override Mintlify's pill default */
+.dark #sidebar-content a,
+.dark #sidebar-content button,
+.dark #sidebar-content [role="link"] {
+  border-radius: 4px !important;
 }
 
 /* 6. Sidebar — nav text colors, dark mode only */
