@@ -48,10 +48,18 @@ a[href="https://www.nango.dev"] svg,
   width: auto !important;
 }
 
-/* 4. Content area — above the grid */
+/* 4. Content area — above the grid, with top breathing room */
 #content-area {
   position: relative;
   z-index: 1;
+  padding-top: 2rem !important;
+}
+
+/* Page title area — extra space above h1 */
+#content-area h1:first-of-type,
+[class*="prose"] h1:first-of-type,
+[class*="content"] h1:first-of-type {
+  padding-top: 1rem !important;
 }
 
 /* ── Sidebar: anchors (Documentation, APIs, Reference, Updates) ── */
@@ -132,18 +140,18 @@ a[href="https://www.nango.dev"] svg,
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Sign Up — white bg, dark text */
+/* Sign Up — brand blue #2aabe2, white text */
 .dark #navbar a[href*="signup"],
 .dark #navbar [class*="primary"] a,
 .dark #navbar button[class*="primary"] {
-  background-color: #ffffff !important;
-  color: #0b0b0c !important;
+  background-color: #2aabe2 !important;
+  color: #ffffff !important;
   border: none !important;
   border-radius: 4px !important;
   font-weight: 500 !important;
 }
 .dark #navbar a[href*="signup"]:hover {
-  background-color: rgba(255, 255, 255, 0.88) !important;
+  background-color: #1e96cc !important;
 }
 
 /* ── Global border-radius clamp — max 4px ── */
