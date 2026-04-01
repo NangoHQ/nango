@@ -26,9 +26,12 @@
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* 3b. Remove the internal top spacer that creates the gap on scroll */
+/* 3b. Replace internal spacer with controlled top padding */
 .dark #sidebar-content .pointer-events-none.sticky {
   display: none !important;
+}
+.dark #navigation-items {
+  padding-top: 20px !important;
 }
 
 /* 3c. Logo — size */
