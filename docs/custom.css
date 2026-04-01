@@ -40,7 +40,12 @@ input, select, textarea { border-radius: 4px !important; }
 }
 
 /* ══ GITHUB STARS — hide repo name, keep icon + count ═══════════ */
-#navbar a[href="https://github.com/NangoHQ/nango"] span:first-of-type {
+/* Hide repo name (first nested span inside the wrapper span) */
+#navbar a[href="https://github.com/NangoHQ/nango"] span span:first-of-type {
+  display: none !important;
+}
+/* Fallback: hide second direct child (repo name) if structure is flat */
+#navbar a[href="https://github.com/NangoHQ/nango"] > *:nth-child(2):not(:last-child) {
   display: none !important;
 }
 
