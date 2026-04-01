@@ -46,18 +46,6 @@
   "navbar": {
     "links": [
       {
-        "label": "Integrations",
-        "href": "https://www.nango.dev/api-integrations"
-      },
-      {
-        "label": "Pricing",
-        "href": "https://www.nango.dev/pricing"
-      },
-      {
-        "label": "Customers",
-        "href": "https://www.nango.dev/customers"
-      },
-      {
         "label": "Log In",
         "href": "https://app.nango.dev/"
       },

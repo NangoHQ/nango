@@ -1,34 +1,28 @@
 /* ── Nango Docs custom styles ──────────────────────────────────── */
 
-/* 1. Grid — push behind everything and reduce opacity to 2% */
-[class*="background-decoration"] {
+/* 1. Grid — behind everything, dark mode only */
+.dark [class*="background-decoration"] {
   opacity: 0.02 !important;
   z-index: 0 !important;
   pointer-events: none;
 }
 
-/* 2. Top nav — solid background, sits above the grid */
-#navbar {
+/* 2. Top nav — solid dark background, dark mode only */
+.dark #navbar {
   background-color: #0c0c15 !important;
   position: relative;
   z-index: 50;
 }
 
-/* 3. Sidebar — solid background, sits above the grid */
-#sidebar-content {
+/* 3. Sidebar — solid dark background, dark mode only */
+.dark #sidebar-content {
   background-color: #0c0c15 !important;
   position: relative;
   z-index: 50;
 }
 
-/* 4. Content area — sits above the grid, content fully visible */
+/* 4. Content area — always above the grid */
 #content-area {
   position: relative;
   z-index: 1;
-}
-
-/* 5. Left-align nav links in top navbar */
-#navbar .navbar-links {
-  margin-left: 0 !important;
-  margin-right: auto !important;
 }
