@@ -122,36 +122,38 @@ a[href="https://www.nango.dev"] svg,
 
 /* ── Navbar buttons ── */
 
-/* Log In — dark with subtle border */
+/* Log In — solid dark bg, white text, visible border */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 6px 14px !important;
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  padding: 7px 16px !important;
+  background-color: #1c1c1e !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
+  transition: background-color 0.15s ease !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
-  background-color: rgba(255, 255, 255, 0.13) !important;
-  border-color: rgba(255, 255, 255, 0.25) !important;
+  background-color: #2a2a2e !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
 }
 
-/* Sign Up — brand blue #2aabe2, white text */
+/* Sign Up — white bg, dark text */
 .dark #navbar a[href*="signup"],
 .dark #navbar [class*="primary"] a,
 .dark #navbar button[class*="primary"] {
-  background-color: #2aabe2 !important;
-  color: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #0b0b0c !important;
   border: none !important;
-  border-radius: 4px !important;
+  border-radius: 8px !important;
   font-weight: 500 !important;
+  padding: 7px 16px !important;
 }
 .dark #navbar a[href*="signup"]:hover {
-  background-color: #1e96cc !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
 /* ── Global border-radius clamp — max 4px ── */
