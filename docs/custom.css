@@ -39,6 +39,11 @@ input, select, textarea { border-radius: 4px !important; }
   pointer-events: none;
 }
 
+/* ══ GITHUB STARS — hide repo name, keep icon + count ═══════════ */
+#navbar a[href="https://github.com/NangoHQ/nango"] span:first-of-type {
+  display: none !important;
+}
+
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 
 #navbar {
