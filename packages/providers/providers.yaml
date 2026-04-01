@@ -18467,6 +18467,28 @@ workday-refresh-token:
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
 
+workpath:
+    display_name: Workpath
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.workpath.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/kpis
+    docs: https://nango.dev/docs/api-integrations/workpath
+    docs_connect: https://nango.dev/docs/api-integrations/workpath/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Workpath API Token.
+            doc_section: '#step-1-getting-your-api-token'
+
 wrike:
     display_name: Wrike
     categories:
