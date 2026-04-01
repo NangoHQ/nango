@@ -11765,6 +11765,50 @@ oomnitza:
             description: Your Oomnitza API token
             doc_section: '#step-2-generating-your-api-token'
 
+orange-logic:
+    display_name: Orange Logic
+    categories:
+        - storage
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/webapi/security/clientcredentialsauthentication/authenticate_46H_v1
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+    docs: https://nango.dev/docs/api-integrations/orange-logic
+    docs_connect: https://nango.dev/docs/api-integrations/orange-logic/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your Orange Logic OAuth 2.0 Client Credentials.
+            doc_section: '#step-2-obtain-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your Orange Logic OAuth 2.0 Client Credentials.
+            secret: true
+            doc_section: '#step-2-obtain-client-credentials'
+    connection_config:
+        serverUrl:
+            type: string
+            title: Orange Logic Server URL
+            description: The base URL of your Orange Logic instance
+            example: mycompany.orangelogic.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-orange-logic-url'
+
 openai:
     display_name: OpenAI
     categories:
