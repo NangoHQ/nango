@@ -64,7 +64,7 @@ export const EnvironmentSettings: React.FC = () => {
 
             <div className="flex flex-col gap-2.5">
                 <h2 className="text-title-subsection text-text-primary">Environment settings</h2>
-                <div className="flex gap-2 5">
+                <div className="flex gap-2.5">
                     <span className="text-heading-sm text-text-secondary">{env}</span>
                     {isProd && (
                         <Badge variant="secondary" className="text-heading-sm text-text-secondary">
