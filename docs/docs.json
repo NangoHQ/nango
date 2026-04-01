@@ -16,14 +16,14 @@
   "background": {
     "decoration": "grid",
     "color": {
-      "dark": "#0c0c15",
+      "dark": "#0b0b0c",
       "light": "#ffffff"
     }
   },
   "css": "custom.css",
   "logo": {
-    "light": "/logo/white.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/logo/white-c4f439b3.svg",
+    "dark": "/logo/dark-165c0f97.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
