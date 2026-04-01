@@ -3460,7 +3460,7 @@ cin7-core:
             type: string
             title: Account ID
             description: Your Cin7 Core Account ID.
-            doc_section: '#step-1-find-your-account-id-and-application-key'
+            doc_section: '#step-1-find-your-account-id-and-api-application-key'
             example: a1b2c3d4-****-****-****-ef1234567890
             format: uuid
     credentials:
@@ -3469,9 +3469,9 @@ cin7-core:
             title: API Application Key
             description: Your Cin7 Core API Application Key.
             secret: true
-            format: uuid
-            doc_section: '#step-1-find-your-account-id-and-application-key'
-            example: b2c3d4e5-****-****-****-f12345678901
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-1-find-your-account-id-and-api-application-key'
+            example: 6d6f4999-****-****-****-4e4ed450df0f
 
 circle-so:
     display_name: Circle.so
