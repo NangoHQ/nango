@@ -402,24 +402,32 @@ adp:
 adp-lyric:
     alias: adp
     display_name: ADP Lyric
+    categories:
+        - hr
     docs: https://nango.dev/docs/integrations/all/adp-lyric
     docs_connect: https://nango.dev/docs/integrations/all/adp-lyric/connect
 
 adp-run:
     alias: adp
     display_name: RUN Powered by ADP
+    categories:
+        - hr
     docs: https://nango.dev/docs/integrations/all/adp-run
     docs_connect: https://nango.dev/docs/integrations/all/adp-run/connect
 
 adp-workforce-now:
     alias: adp
     display_name: ADP Workforce Now
+    categories:
+        - hr
     docs: https://nango.dev/docs/integrations/all/adp-workforce-now
     docs_connect: https://nango.dev/docs/integrations/all/adp-workforce-now/connect
 
 adp-workforce-now-next-gen:
     alias: adp
     display_name: ADP Workforce Now Next Generation
+    categories:
+        - hr
     docs: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen
     docs_connect: https://nango.dev/docs/integrations/all/adp-workforce-now-next-gen/connect
 
@@ -588,6 +596,8 @@ aircall:
 aircall-basic:
     alias: aircall
     display_name: Aircall (Basic Auth)
+    categories:
+        - support
     auth_mode: BASIC
     proxy:
         base_url: https://api.aircall.io
@@ -1170,6 +1180,8 @@ apollo-oauth:
 
 apple-app-store:
     display_name: Apple App Store
+    categories:
+        - e-commerce
     auth_mode: APP_STORE
     token_url: https://api.appstoreconnect.apple.com/v1/apps
     authorization_params:
@@ -2569,6 +2581,8 @@ braintree:
 
 braintree-sandbox:
     display_name: Braintree (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
@@ -2690,6 +2704,8 @@ brex:
 
 brex-api-key:
     display_name: Brex (API Key)
+    categories:
+        - banking
     auth_mode: API_KEY
     proxy:
         headers:
@@ -2708,6 +2724,8 @@ brex-api-key:
 
 brex-staging:
     display_name: Brex (Staging OAuth)
+    categories:
+        - banking
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
@@ -3419,6 +3437,8 @@ checkout-com-sandbox:
 
 chorus:
     display_name: Chorus
+    categories:
+        - analytics
     auth_mode: API_KEY
     proxy:
         base_url: https://chorus.ai
@@ -3745,6 +3765,8 @@ cloudentity:
 
 cloudflare:
     display_name: Cloudflare
+    categories:
+        - dev-tools
     auth_mode: API_KEY
     proxy:
         base_url: https://api.cloudflare.com/client
@@ -4339,6 +4361,8 @@ coros:
 
 coros-sandbox:
     display_name: Coros (Sandbox)
+    categories:
+        - sports
     auth_mode: OAUTH2
     authorization_url: https://opentest.coros.com/oauth2/authorize
     token_url: https://opentest.coros.com/oauth2/accesstoken
@@ -4778,6 +4802,8 @@ deel:
 
 deel-sandbox:
     display_name: Deel (Sandbox)
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://demo.deel.com/oauth2/authorize
     token_url: https://demo.deel.com/oauth2/tokens
@@ -5056,6 +5082,8 @@ docusign:
 
 docusign-sandbox:
     display_name: DocuSign (Sandbox)
+    categories:
+        - legal
     auth_mode: OAUTH2
     authorization_url: https://account-d.docusign.com/oauth/auth
     token_url: https://account-d.docusign.com/oauth/token
@@ -5480,6 +5508,8 @@ ecu360:
 
 ecu360-production:
     display_name: ECU360 (Production)
+    categories:
+        - other
     alias: ecu360
     token_url: https://apim.ecu360.com/auth/v1/authenticate
     proxy:
@@ -5612,6 +5642,8 @@ epic-games:
 
 evaluagent:
     display_name: EvaluAgent
+    categories:
+        - support
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.region}.evaluagent.com
@@ -6134,6 +6166,8 @@ fireflies:
 
 firstbase:
     display_name: Firstbase
+    categories:
+        - hr
     auth_mode: API_KEY
     proxy:
         base_url: https://apipub.firstbasehq.com
@@ -8080,6 +8114,8 @@ gusto:
 
 gusto-demo:
     display_name: Gusto (Demo)
+    categories:
+        - hr
     auth_mode: OAUTH2
     authorization_url: https://api.gusto-demo.com/oauth/authorize
     token_url: https://api.gusto-demo.com/oauth/token
@@ -8096,6 +8132,8 @@ gusto-demo:
 
 hackerrank-work:
     display_name: HackerRank Work
+    categories:
+        - ats
     auth_mode: BASIC
     proxy:
         base_url: https://www.hackerrank.com
@@ -8151,6 +8189,8 @@ harvest:
 
 health-gorilla:
     display_name: Health Gorilla
+    categories:
+        - other
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
     token_url: https://api.healthgorilla.com/oauth/token
@@ -9111,6 +9151,9 @@ jumpcloud:
 
 helpscout-docs:
     display_name: Help Scout Docs
+    categories:
+        - knowledge-base
+        - support
     auth_mode: BASIC
     proxy:
         retry:
@@ -9141,6 +9184,8 @@ helpscout-docs:
 
 helpscout-mailbox:
     display_name: Help Scout Mailbox
+    categories:
+        - support
     auth_mode: OAUTH2
     authorization_url: https://secure.helpscout.net/authentication/authorizeClientApplication
     token_url: https://api.helpscout.net/v2/oauth2/token
@@ -9633,6 +9678,8 @@ lever-basic:
 
 lever-sandbox:
     display_name: Lever (OAuth Sandbox)
+    categories:
+        - ats
     auth_mode: OAUTH2
     authorization_url: https://sandbox-lever.auth0.com/authorize
     token_url: https://sandbox-lever.auth0.com/oauth/token
@@ -9646,6 +9693,8 @@ lever-sandbox:
 
 lever-basic-sandbox:
     display_name: Lever (Basic Auth Sandbox))
+    categories:
+        - ats
     auth_mode: BASIC
     proxy:
         base_url: https://api.sandbox.lever.co
@@ -9760,6 +9809,8 @@ linkedin:
 
 linkhut:
     display_name: LinkHut
+    categories:
+        - social
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
@@ -10148,6 +10199,8 @@ manatal:
 
 marketo:
     display_name: Marketo
+    categories:
+        - marketing
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.endpointURL}
@@ -11059,6 +11112,8 @@ mural:
 
 nationbuilder:
     display_name: NationBuilder
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
     token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
@@ -11221,6 +11276,9 @@ netsuite-tba:
 
 next-cloud-ocs:
     display_name: Next Cloud OCS
+    categories:
+        - storage
+        - productivity
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.domain}/ocs/v1.php
@@ -12321,6 +12379,8 @@ paypal:
 
 paypal-sandbox:
     display_name: Paypal (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://www.sandbox.paypal.com/signin/authorize
     token_url: https://api-m.sandbox.paypal.com/v1/oauth2/token
@@ -13038,6 +13098,8 @@ prospeo:
 
 private-api-bearer:
     display_name: Private API (Bearer Auth)
+    categories:
+        - other
     auth_mode: API_KEY
     proxy:
         headers:
@@ -13053,6 +13115,8 @@ private-api-bearer:
 
 private-api-basic:
     display_name: Private API (Basic Auth)
+    categories:
+        - other
     auth_mode: BASIC
     proxy:
         base_url: https://my-private-api
@@ -13357,6 +13421,8 @@ quickbooks:
 quickbooks-sandbox:
     alias: quickbooks
     display_name: Quickbooks (Sandbox)
+    categories:
+        - accounting
     proxy:
         connection_config:
             realmId: ${connectionConfig.realmId}
@@ -13412,6 +13478,8 @@ ramp:
 
 ramp-sandbox:
     display_name: Ramp (Sandbox)
+    categories:
+        - banking
     auth_mode: OAUTH2
     authorization_url: https://demo.ramp.com/v1/authorize
     token_url: https://demo-api.ramp.com/developer/v1/token
@@ -13765,6 +13833,8 @@ refiner:
 
 replicate:
     display_name: Replicate
+    categories:
+        - dev-tools
     auth_mode: API_KEY
     proxy:
         headers:
@@ -13926,6 +13996,8 @@ ring-central:
 
 ring-central-sandbox:
     display_name: RingCentral (Sandbox)
+    categories:
+        - communication
     auth_mode: OAUTH2
     authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
     token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
@@ -14425,6 +14497,8 @@ salesforce-jwt:
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://test.salesforce.com/services/oauth2/authorize
     token_url: https://test.salesforce.com/services/oauth2/token
@@ -14447,6 +14521,8 @@ salesforce-sandbox:
 
 salesforce-experience-cloud:
     display_name: Salesforce Experience Cloud
+    categories:
+        - crm
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/authorize
     token_url: https://${connectionConfig.subdomain}.my.site.com/services/oauth2/token
@@ -15824,6 +15900,8 @@ sophos-central:
 
 smartrecruiters-api-key:
     display_name: Smartrecruiters
+    categories:
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.smartrecruiters.com
@@ -15844,6 +15922,8 @@ smartrecruiters-api-key:
 
 smartsheet:
     display_name: Smartsheet
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
@@ -15868,6 +15948,8 @@ smartsheet:
 
 smugmug:
     display_name: Smugmug
+    categories:
+        - storage
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
     authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
@@ -16246,6 +16328,8 @@ stripe-app:
 
 stripe-app-sandbox:
     display_name: Stripe App (Sandbox)
+    categories:
+        - payment
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/${connectionConfig.appDomain}/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -17258,6 +17342,8 @@ twitter-oauth2-cc:
 
 twinfield:
     display_name: Twinfield
+    categories:
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
     token_url: https://login.twinfield.com/auth/authentication/connect/token
@@ -17454,6 +17540,8 @@ typefully-v2:
 
 uber:
     display_name: Uber
+    categories:
+        - other
     auth_mode: OAUTH2
     authorization_url: https://login.uber.com/oauth/v2/authorize
     token_url: https://login.uber.com/oauth/v2/token
@@ -17679,6 +17767,8 @@ unanet:
 
 unauthenticated:
     display_name: Unauthenticated
+    categories:
+        - other
     auth_mode: NONE
     webhook_routing_script: unauthenticatedWebhookRouting
     docs: https://nango.dev/docs/integrations/all/unauthenticated
@@ -18116,6 +18206,8 @@ whoop:
 
 wildix-pbx:
     display_name: Wildix PBX
+    categories:
+        - communication
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
     token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
@@ -18692,6 +18784,8 @@ zapier:
 
 zapier-nla:
     display_name: Zapier NLA
+    categories:
+        - productivity
     auth_mode: OAUTH2
     authorization_url: https://nla.zapier.com/oauth/authorize/
     token_url: https://nla.zapier.com/oauth/token/
@@ -18836,6 +18930,8 @@ zoho:
 
 zoho-books:
     display_name: Zoho Books
+    categories:
+        - accounting
     alias: zoho
     docs: https://nango.dev/docs/integrations/all/zoho-books
     docs_connect: https://nango.dev/docs/integrations/all/zoho-books/connect
@@ -18852,6 +18948,8 @@ zoho-books:
 
 zoho-crm:
     display_name: Zoho CRM
+    categories:
+        - crm
     alias: zoho
     docs: https://nango.dev/docs/api-integrations/zoho-crm
     setup_guide_url: https://nango.dev/docs/api-integrations/zoho-crm/how-to-register-your-own-zoho-crm-api-oauth-app
@@ -18967,6 +19065,8 @@ zoho-mail:
 
 zoho-bigin:
     display_name: Zoho Bigin
+    categories:
+        - crm
     alias: zoho
     docs: https://nango.dev/docs/integrations/all/zoho-bigin
     docs_connect: https://nango.dev/docs/integrations/all/zoho-bigin/connect
