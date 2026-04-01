@@ -15,16 +15,22 @@
   z-index: 50;
 }
 
-/* 3. Sidebar — solid dark background */
+/* 3. Sidebar — solid dark background, scroll with page (not independently) */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
-  position: relative;
+  position: relative !important;
+  inset: auto !important;
+  overflow: visible !important;
+  height: auto !important;
   z-index: 50;
 }
 
-/* 3b. Sidebar right border — target the parent wrapper of #sidebar-content */
+/* 3a. Sidebar parent — allow natural height so sidebar flows with content */
 .dark :has(> #sidebar-content) {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
 }
 
 /* 3c. Logo — size */
