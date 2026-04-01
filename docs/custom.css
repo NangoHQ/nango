@@ -15,16 +15,22 @@
   z-index: 50;
 }
 
-/* 3. Sidebar — solid dark background + right border, dark mode only */
+/* 3. Sidebar — solid dark background, full stretch, dark mode only */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
   position: relative;
   z-index: 50;
+  min-height: 100vh !important;
+  align-self: stretch !important;
 }
 
-/* 3b. Sidebar right border — single outermost wrapper only */
+/* 3b. Sidebar right border — flush from top, full height */
 .dark aside {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  align-self: stretch !important;
+  min-height: 100% !important;
 }
 
 /* 4. Content area — always above the grid */
