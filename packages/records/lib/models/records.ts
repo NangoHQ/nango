@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -90,10 +90,7 @@ export async function getRecords({
         let query = dbRead
             .from<FormattedRecord>(RECORDS_TABLE)
             .timeout(60000) // timeout after 1 minute
-            .where({
-                connection_id: connectionId,
-                model
-            })
+            .where({ connection_id: connectionId, model })
             .orderBy([
                 { column: 'updated_at', order: 'asc' },
                 { column: 'id', order: 'asc' }
@@ -107,7 +104,7 @@ export async function getRecords({
             }
 
             // Tuple comparison for efficient index usage
-            query = query.whereRaw('(updated_at, id) > (?, ?)', [decodedCursor.sort, decodedCursor.id]);
+            query = query.whereRaw(`(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
         }
 
         if (externalIds) {
@@ -169,11 +166,11 @@ export async function getRecords({
             }
         }
 
-        const rawResults: FormattedRecordWithMetadata[] = await query.select(
+        const recordsMetadata: FormattedRecordWithMetadata[] = await query.select(
             // PostgreSQL stores timestamp with microseconds precision
             // however, javascript date only supports milliseconds precision
             // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
-            db.raw(`
+            dbRead.raw(`
                 tableoid::regclass as partition,
                 id,
                 external_id,
@@ -190,15 +187,24 @@ export async function getRecords({
             `)
         );
 
-        if (rawResults.length === 0) {
+        if (recordsMetadata.length === 0) {
             return Ok({ records: [], next_cursor: null });
         }
+
+        const recordIds = recordsMetadata.map((r) => r.id);
+        const recordsData = await dbRead
+            .from(RECORDS_DATA_TABLE)
+            .where({ connection_id: connectionId, model })
+            .whereIn('id', recordIds)
+            .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+        const dataById = new Map(recordsData.map((r) => [r.id, r.data]));
 
         const results: ReturnedRecord[] = [];
 
         // TODO: decrypt in batch
-        for (const item of rawResults) {
-            const decryptedData = await decryptRecordData(item);
+        for (const item of recordsMetadata) {
+            const data = dataById.get(item.id) ?? item.json ?? {};
+            const decryptedData = await decryptRecordData({ ...item, json: data });
             results.push({
                 ...decryptedData,
                 id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
@@ -214,16 +220,16 @@ export async function getRecords({
         }
 
         // all records for the same connection/model are in the same partition
-        const partition = rawResults[0]?.partition;
+        const partition = recordsMetadata[0]?.partition;
         if (span && partition) {
             span.setTag('nango.partition', partition);
         }
 
         if (results.length > Number(limit || 100)) {
             results.pop();
-            rawResults.pop();
+            recordsMetadata.pop();
 
-            const cursorRawElement = rawResults[rawResults.length - 1];
+            const cursorRawElement = recordsMetadata[recordsMetadata.length - 1];
             if (cursorRawElement) {
                 const encodedCursorValue = Cursor.new(cursorRawElement);
                 return Ok({ records: results, next_cursor: encodedCursorValue });
@@ -1262,15 +1268,18 @@ async function getRecordsToUpdate({
     const keysWithHash: [string, string][] = records.map((record: FormattedRecord) => [getUniqueId(record), record.data_hash]);
 
     return trx
-        .select<FormattedRecord[]>('*')
+        .select<FormattedRecord[]>(`${RECORDS_TABLE}.*`, trx.raw(`COALESCE(${RECORDS_DATA_TABLE}.data, ${RECORDS_TABLE}.json, '{}'::jsonb) as json`))
         .from(RECORDS_TABLE)
-        .where({
-            connection_id: connectionId,
-            model
+        .leftJoin(RECORDS_DATA_TABLE, function () {
+            this.on(`${RECORDS_DATA_TABLE}.connection_id`, '=', `${RECORDS_TABLE}.connection_id`)
+                .andOn(`${RECORDS_DATA_TABLE}.model`, '=', `${RECORDS_TABLE}.model`)
+                .andOn(`${RECORDS_DATA_TABLE}.id`, '=', `${RECORDS_TABLE}.id`);
         })
-        .whereNull('deleted_at') // only non-deleted records can be updated
-        .whereIn('external_id', keys)
-        .whereNotIn(['external_id', 'data_hash'], keysWithHash);
+        .where(`${RECORDS_TABLE}.connection_id`, connectionId)
+        .where(`${RECORDS_TABLE}.model`, model)
+        .whereNull(`${RECORDS_TABLE}.deleted_at`)
+        .whereIn(`${RECORDS_TABLE}.external_id`, keys)
+        .whereNotIn([`${RECORDS_TABLE}.external_id`, `${RECORDS_TABLE}.data_hash`], keysWithHash);
 }
 
 function newLockId(connectionId: number, model: string): bigint {

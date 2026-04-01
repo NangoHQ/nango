@@ -13,7 +13,7 @@ function getEncryption(): Encryption {
 }
 
 function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is EncryptedRecordData {
-    return 'encryptedValue' in data;
+    return !!data && 'encryptedValue' in data;
 }
 
 export async function decryptRecordData(record: FormattedRecord): Promise<UnencryptedRecordData> {
