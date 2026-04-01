@@ -22,13 +22,8 @@
   z-index: 50;
 }
 
-/* 3b. Sidebar right border — broad selectors to catch Mintlify's wrapper */
-.dark #sidebar-content,
-.dark aside,
-.dark [class*="Sidebar"],
-.dark [class*="sidebar"],
-.dark nav[class*="sidebar"],
-.dark [data-sidebar] {
+/* 3b. Sidebar right border — single outermost wrapper only */
+.dark aside {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
