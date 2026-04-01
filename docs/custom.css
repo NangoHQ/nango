@@ -174,38 +174,42 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
 
 /* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
-/* Log In — dark mode */
+/* Log In — dark mode: outline only, no bg */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
   padding: 7px 16px !important;
-  background-color: #1c1c1e !important;
+  background-color: transparent !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
+  margin-right: 4px !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
-  background-color: #2a2a2e !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
-/* Log In — light mode */
+/* Log In — light mode: outline only, no bg */
 html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
   padding: 7px 16px !important;
-  background-color: #f0f0f0 !important;
+  background-color: transparent !important;
   color: #0b0b0c !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
   border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
+  margin-right: 4px !important;
 }
 html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
-  background-color: #e4e4e4 !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.35) !important;
 }
 
 /* Sign Up — dark mode */
