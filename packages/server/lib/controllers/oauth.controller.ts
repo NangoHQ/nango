@@ -1180,10 +1180,7 @@ class OAuthController {
 
             if (req.cookies[`oauth2-${session.id}`] !== '1') {
                 metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
-                    provider: config.provider,
-                    integration: config.unique_key,
-                    account_id: account.id,
-                    auth_mode: session.authMode
+                    account_id: account.id
                 });
             }
 
