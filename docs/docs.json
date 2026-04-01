@@ -4,8 +4,8 @@
   "name": "Nango Docs",
   "colors": {
     "primary": "#29abe2",
-    "light": "#71c0e2",
-    "dark": "#217ea6"
+    "light": "#29abe2",
+    "dark": "#29abe2"
   },
   "fonts": {
     "family": "Albert Sans"
@@ -22,8 +22,8 @@
   },
   "css": "custom.css",
   "logo": {
-    "light": "/logo/nango-light.svg",
-    "dark": "/logo/nango-dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
