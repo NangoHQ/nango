@@ -920,6 +920,7 @@
               "integrations/all/workday",
               "api-integrations/workday-oauth",
               "api-integrations/workos",
+              "api-integrations/workpath",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
