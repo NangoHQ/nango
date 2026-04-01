@@ -1,14 +1,19 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { MapLocks } from './locks.js';
+import { InMemoryKVStore } from '@nangohq/kvstore';
+
+import { KVLocks, MapLocks } from './locks.js';
 
 import type { Locks } from './locks.js';
 
-describe('Locks', () => {
+describe.each([
+    { title: 'MapLocks', createLocks: (): Locks => new MapLocks(), concurrentAttempts: 100_000 },
+    { title: 'KVLocks', createLocks: (): Locks => new KVLocks(new InMemoryKVStore()), concurrentAttempts: 500 }
+])('Locks ($title)', ({ createLocks, concurrentAttempts }) => {
     let locks: Locks;
 
     beforeEach(() => {
-        locks = new MapLocks();
+        locks = createLocks();
     });
     describe('tryAcquireLock input validation', () => {
         it('should fail to acquire a lock with an empty key', async () => {
@@ -74,8 +79,7 @@ describe('Locks', () => {
         });
 
         it('should ensure only one owner acquires the lock when called concurrently', async () => {
-            const concurrency = 100_000;
-            const attempts = Array.from({ length: concurrency }, (_, i) =>
+            const attempts = Array.from({ length: concurrentAttempts }, (_, i) =>
                 locks.tryAcquireLock({ owner: `owner${i}`, key: 'concurrent-resource', ttlMs: 10000 })
             );
 

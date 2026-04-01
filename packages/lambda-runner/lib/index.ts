@@ -119,6 +119,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const request: FunctionExecutionRequest = parsedRequest;
 
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
+    const kvStore = await getKVStore('customer');
     const locking = await getLocking('customer');
     const gate = new Gate(locking);
     const pass = await gate.enter(nangoProps, { ttlMs: context.getRemainingTimeInMillis() });
@@ -126,7 +127,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
         throw new Error('Conflicting sync detected');
     }
-    const locks = new KVLocks(locking);
+    const locks = new KVLocks(kvStore);
 
     let lastSuccessHeartbeatAt: number | null = null;
     const startTime = Date.now();
@@ -134,7 +135,6 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
     const abortController = new AbortController();
     const heartbeatTimeoutMs = request.nangoProps.heartbeatTimeoutSecs ? request.nangoProps.heartbeatTimeoutSecs * 1000 : heartbeatIntervalMs * 3;
 
-    const kvStore = await getKVStore('customer');
     const abort = setInterval(async () => {
         const shouldAbort = await kvStore.exists(`function:${request.taskId}:abort`);
         if (shouldAbort) {
