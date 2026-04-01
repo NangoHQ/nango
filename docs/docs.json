@@ -1,15 +1,26 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#7dd3f0",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
-    "default": "system"
+    "default": "dark"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "dark": "#0c0c15",
+      "light": "#ffffff"
+    }
+  },
+  "css": "custom.css",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg",
@@ -35,13 +46,30 @@
   "navbar": {
     "links": [
       {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
+        "label": "Integrations",
+        "href": "https://www.nango.dev/api-integrations"
+      },
+      {
+        "label": "Pricing",
+        "href": "https://www.nango.dev/pricing"
+      },
+      {
+        "label": "Customers",
+        "href": "https://www.nango.dev/customers"
+      },
+      {
+        "label": "Log In",
+        "href": "https://app.nango.dev/"
+      },
+      {
+        "type": "github",
+        "href": "https://github.com/NangoHQ/nango"
       }
     ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
+      "type": "button",
+      "label": "Sign Up",
+      "href": "https://app.nango.dev/signup"
     }
   },
   "footer": {
@@ -89,9 +117,10 @@
     }
   ],
   "navigation": {
-    "tabs": [
+    "anchors": [
       {
-        "tab": "Documentation",
+        "anchor": "Documentation",
+        "icon": "book-open",
         "groups": [
           {
             "group": "Getting Started",
@@ -210,7 +239,8 @@
         ]
       },
       {
-        "tab": "APIs & Integrations",
+        "anchor": "APIs & Integrations",
+        "icon": "plug",
         "groups": [
           {
             "group": "700+ APIs & Integrations",
@@ -950,7 +980,8 @@
         ]
       },
       {
-        "tab": "Reference",
+        "anchor": "Reference",
+        "icon": "square-terminal",
         "groups": [
           {
             "group": "Frontend",
@@ -1076,8 +1107,7 @@
             "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
-              "reference/TODO"
+              "reference/functions"
             ]
           },
           {
@@ -1089,7 +1119,8 @@
         ]
       },
       {
-        "tab": "Updates",
+        "anchor": "Updates",
+        "icon": "clock",
         "groups": [
           {
             "group": "Updates",
