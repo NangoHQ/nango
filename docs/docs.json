@@ -22,8 +22,8 @@
   },
   "css": "custom.css",
   "logo": {
-    "light": "/images/Nango-Light-Mode.svg",
-    "dark": "/images/Nango-Dark-Mode.svg",
+    "light": "/logo/white-c4f439b3.svg",
+    "dark": "/logo/dark-165c0f97.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
@@ -45,10 +45,6 @@
   },
   "navbar": {
     "links": [
-      {
-        "type": "github",
-        "href": "https://github.com/NangoHQ/nango"
-      },
       {
         "label": "Log In",
         "href": "https://app.nango.dev"
