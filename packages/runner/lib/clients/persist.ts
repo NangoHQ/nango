@@ -282,13 +282,15 @@ export class PersistClient {
         nangoConnectionId,
         model,
         cursor,
-        externalIds
+        externalIds,
+        limit
     }: {
         environmentId: number;
         nangoConnectionId: number;
         model: string;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        limit?: number | undefined;
     }): Promise<Result<GetRecordsSuccess>> {
         const res = await this.fetch<GetRecordsSuccess>({
             method: 'GET',
@@ -296,7 +298,8 @@ export class PersistClient {
             params: {
                 model,
                 ...(cursor && { cursor }),
-                ...(externalIds && { externalIds })
+                ...(externalIds && { externalIds }),
+                ...(limit !== undefined && { limit: String(limit) })
             }
         });
         if (res.isErr()) {

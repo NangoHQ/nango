@@ -2240,6 +2240,33 @@ bettercontact:
             pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+bliro:
+    display_name: Bliro
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://accounts.bliro.io/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://api.bliro.io
+    proxy:
+        base_url: https://api.bliro.io
+    docs: https://nango.dev/docs/api-integrations/bliro
+    docs_connect: https://nango.dev/docs/api-integrations/bliro/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Bliro client application Client ID.
+            doc_section: '#step-1-creating-a-client-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Bliro client application Client Secret.
+            secret: true
+            doc_section: '#step-1-creating-a-client-application'
+
 bigcommerce:
     display_name: BigCommerce
     categories:
@@ -4143,7 +4170,7 @@ conta-azul:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    scope_separator: '+'
+    scope_separator: ' '
     proxy:
         base_url: https://api-v2.contaazul.com
     disable_pkce: true
@@ -4588,6 +4615,7 @@ dayforce:
     body_format: form
     proxy:
         base_url: https://${connectionConfig.clientHostname}/api || https://www.dayforcehcm.com/api
+        forward_headers_on_redirect: true
     token_url: https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token
     token_params:
         grant_type: password
@@ -6508,6 +6536,33 @@ front:
             link_path_in_response_body: _pagination.next
     docs: https://nango.dev/docs/integrations/all/front
 
+front-api-key:
+    display_name: Front (API Key)
+    categories:
+        - support
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api2.frontapp.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/front-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/front-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Front API token.
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.****
+            doc_section: '#step-1-finding-your-api-token'
+
 fullenrich:
     display_name: FullEnrich
     categories:
@@ -7294,6 +7349,16 @@ google-calendar:
     post_connection_script: googleCalendarPostConnection
     docs: https://nango.dev/docs/api-integrations/google-calendar
     setup_guide_url: https://nango.dev/docs/api-integrations/google-calendar/how-to-register-your-own-google-calendar-api-oauth-app
+
+google-contacts:
+    display_name: Google Contacts
+    categories:
+        - productivity
+    alias: google
+    proxy:
+        base_url: https://people.googleapis.com
+    docs: https://nango.dev/docs/api-integrations/google-contacts
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-contacts/how-to-register-your-own-google-contacts-api-oauth-app
 
 google-chat:
     display_name: Google Chat
@@ -13718,6 +13783,31 @@ replicate:
             title: API Key
             description: The API key for your Replicate account
 
+reply-io:
+    display_name: Reply.io
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.reply.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/campaigns
+    docs: https://nango.dev/docs/api-integrations/reply-io
+    docs_connect: https://nango.dev/docs/api-integrations/reply-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Reply.io account.
+            example: AKp2Bbuy****************
+            pattern: '^[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 researchdesk:
     display_name: ResearchDesk
     categories:
@@ -14237,6 +14327,35 @@ salesforce:
             prefix: https://
             optional: true
             doc_section: '#step-1-finding-your-hostname'
+
+salesforce-cc:
+    display_name: Salesforce (Client Credentials)
+    categories:
+        - crm
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/services/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://nango.dev/docs/api-integrations/salesforce-cc
+    docs_connect: https://nango.dev/docs/api-integrations/salesforce-cc/connect
+    token_expires_in_ms: 0
+    connection_config:
+        instance_url:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname to your Salesforce instance
+            format: hostname
+            example: acme.my.salesforce.com
+            prefix: https://
 
 salesforce-jwt:
     display_name: Salesforce (JWT)
@@ -15276,6 +15395,43 @@ sharepoint-online-v1:
             secret: true
             doc_section: '#step-4-generating-your-client-assertion'
 
+shipbob-pat:
+    display_name: ShipBob (Personal Access Token)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.shipbob.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /2026-01/channel
+    docs: https://nango.dev/docs/api-integrations/shipbob-pat
+    docs_connect: https://nango.dev/docs/api-integrations/shipbob-pat/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The ShipBob API subdomain of the environment you want to connect to.
+            example: api
+            pattern: '^(api|sandbox-api)$'
+            prefix: https://
+            suffix: .shipbob.com
+            doc_section: '#step-2-identify-your-api-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your ShipBob Personal Access Token
+            example: 6E4647BB**************************806E464161FBB996DD8E87EEA86DB926-1
+            pattern: '^[A-F0-9]{64}-\d+$'
+            doc_section: '#step-1-generate-your-token'
+
 shipstation:
     display_name: Shipstation (v1)
     categories:
@@ -15480,6 +15636,7 @@ shopworks:
         content-type: application/json
     token_response:
         token: id_token
+    token_expires_in_ms: 3600000
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
@@ -16950,6 +17107,35 @@ todoist:
     proxy:
         base_url: https://api.todoist.com
     docs: https://nango.dev/docs/integrations/all/todoist
+
+toggl:
+    display_name: Toggl Track
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.track.toggl.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v9/me
+        retry:
+            after:
+                - 'x-toggl-quota-resets-in'
+    docs: https://nango.dev/docs/api-integrations/toggl
+    docs_connect: https://nango.dev/docs/api-integrations/toggl/connect
+    credentials:
+        username:
+            type: string
+            title: Email or API token
+            description: Your Toggl Track account email, or your API token when using token-based Basic Auth.
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
+        password:
+            type: string
+            title: Password or api_token
+            description: Your Toggl Track account password, or the literal text api_token when authenticating with an API token.
+            secret: true
+            doc_section: '#step-1-choose-emailpassword-or-api-token'
 
 torii:
     display_name: Torii

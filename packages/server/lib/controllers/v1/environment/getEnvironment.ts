@@ -1,3 +1,4 @@
+import { permissions } from '@nangohq/authz';
 import {
     accountService,
     connectionService,
@@ -9,7 +10,6 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions } from '../../../authz/permissions.js';
 import { resolve } from '../../../authz/resolve.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';

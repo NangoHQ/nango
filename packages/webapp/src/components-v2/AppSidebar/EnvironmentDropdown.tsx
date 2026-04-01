@@ -2,15 +2,20 @@ import { Check, ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { StyledLink } from '../StyledLink.js';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
+import { ConditionalTooltip } from '../ConditionalTooltip.js';
+import { PermissionGate } from '../PermissionGate.js';
+import { Badge } from '../ui/badge.js';
 import { Button } from '../ui/button.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 
 export const EnvironmentDropdown: React.FC = () => {
@@ -22,6 +27,9 @@ export const EnvironmentDropdown: React.FC = () => {
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
     const [environmentDialogOpen, setEnvironmentDialogOpen] = useState(false);
+
+    const { can } = usePermissions();
+    const canCreateEnvironment = can(permissions.canCreateEnvironment);
 
     const navigate = useNavigate();
 
@@ -71,53 +79,67 @@ export const EnvironmentDropdown: React.FC = () => {
                     <DropdownMenuContent align="start" side="bottom" className="w-50 max-h-96 flex flex-col gap-2">
                         <div className="flex flex-col">
                             {meta?.environments.map((environment) => (
-                                <DropdownMenuItem
+                                <PermissionGate
                                     key={environment.name}
-                                    onSelect={() => onSelect(environment.name)}
-                                    data-active={env === environment.name}
-                                    className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                    condition={can(permissions.canAccessProdEnvironment) || !environment.is_production}
+                                    message="Your role does not have access to production environments."
+                                    tooltipSide="right"
                                 >
-                                    <Check
-                                        className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
-                                        data-active={env === environment.name}
-                                    />
-                                    <span>{environment.name}</span>
-                                </DropdownMenuItem>
+                                    {(allowed) => (
+                                        <DropdownMenuItem
+                                            disabled={!allowed}
+                                            onSelect={() => onSelect(environment.name)}
+                                            data-active={env === environment.name}
+                                            className="flex flex-row items-center justify-between gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                        >
+                                            <div className="flex flex-row items-center gap-2 ">
+                                                <Check
+                                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                                                    data-active={env === environment.name}
+                                                />
+                                                <span>{environment.name}</span>
+                                            </div>
+                                            {environment.is_production && <Badge className="-uppercase">Prod</Badge>}
+                                        </DropdownMenuItem>
+                                    )}
+                                </PermissionGate>
                             ))}
                         </div>
-                        <Tooltip delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <span tabIndex={0} className="w-full">
+                        <PermissionGate condition={canCreateEnvironment} tooltipSide="right">
+                            {(allowed) => (
+                                <ConditionalTooltip
+                                    condition={!!isMaxEnvironmentsReached}
+                                    content={
+                                        <>
+                                            Max number of environments reached.{' '}
+                                            {environment?.plan?.name.includes('legacy') ? (
+                                                <>Contact Nango to add more</>
+                                            ) : (
+                                                <>
+                                                    <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                        Upgrade
+                                                    </StyledLink>{' '}
+                                                    to add more
+                                                </>
+                                            )}
+                                        </>
+                                    }
+                                >
                                     <Button
+                                        disabled={!!isMaxEnvironmentsReached || !allowed}
                                         variant="primary"
                                         onClick={() => {
                                             // Managed control because Dialogs within DropdownMenus behave weirdly
                                             setEnvironmentDialogOpen(true);
                                         }}
-                                        disabled={!!isMaxEnvironmentsReached}
                                         className="w-full"
                                     >
-                                        {!!isMaxEnvironmentsReached && <Lock className="size-4" />}
+                                        {!!isMaxEnvironmentsReached && <Lock />}
                                         Create Environment
                                     </Button>
-                                </span>
-                            </TooltipTrigger>
-                            {isMaxEnvironmentsReached && (
-                                <TooltipContent side="right" align="center">
-                                    Max number of environments reached.{' '}
-                                    {environment?.plan?.name.includes('legacy') ? (
-                                        <>Contact Nango to add more</>
-                                    ) : (
-                                        <>
-                                            <StyledLink to={`/${env}/team/billing`} className="text-s">
-                                                Upgrade
-                                            </StyledLink>{' '}
-                                            to add more
-                                        </>
-                                    )}
-                                </TooltipContent>
+                                </ConditionalTooltip>
                             )}
-                        </Tooltip>
+                        </PermissionGate>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <CreateEnvironmentDialog open={environmentDialogOpen} onOpenChange={setEnvironmentDialogOpen} />

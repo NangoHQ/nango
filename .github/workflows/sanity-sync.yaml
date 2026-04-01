@@ -1,0 +1,59 @@
+name: Sanity Sync
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - packages/providers/providers.yaml
+            - docs/integrations/all/*.mdx
+            - docs/api-integrations/*.mdx
+    workflow_dispatch:
+        inputs:
+            environment:
+                type: choice
+                description: 'Docs environment to sync to, defaults to prod-docs'
+                required: true
+                default: 'prod-docs'
+                options:
+                    - prod-docs
+                    - dev-docs
+            dry_run:
+                description: 'Log changes without writing to Sanity'
+                required: false
+                default: 'false'
+                type: boolean
+            force_update:
+                description: 'Force update all providers regardless of changes'
+                required: false
+                default: 'false'
+                type: boolean
+    schedule:
+        - cron: '0 0 1 * *'
+
+concurrency:
+    group: sanity-sync
+
+jobs:
+    sanity-sync-job:
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment || 'prod-docs' }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - run: npx tsx scripts/sanity-api-sync.ts
+              env:
+                  SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+                  SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+                  SANITY_DATASET: ${{ vars.SANITY_DATASET }}
+                  FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update == 'true' }}
+                  DRYRUN: ${{ inputs.dry_run == 'true' }}

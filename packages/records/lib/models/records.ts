@@ -32,12 +32,12 @@ dayjs.extend(utc);
 const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
 interface UpsertResult {
+    partition: string;
     external_id: string;
     id: string;
     last_modified_at: string;
     previous_last_modified_at: string | null;
-    size_bytes: number;
-    previous_size_bytes: number | null;
+    delta_size_bytes: number;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -341,40 +341,56 @@ export async function upsert({
                         const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
                         const encryptedRecords = encryptRecords(chunk);
 
-                        // we need to know which records were updated, deleted, undeleted or unchanged
-                        // we achieve this by comparing the records data_hash and deleted_at fields before and after the update
-                        const externalIds = chunk.map((r) => r.external_id);
                         const res = await trx
+                            .with(
+                                'incoming',
+                                trx.raw(
+                                    `SELECT * FROM (VALUES ${chunk.map(() => '(?, ?)').join(', ')}) AS t(external_id, data_hash)`,
+                                    chunk.flatMap((r) => [r.external_id, r.data_hash])
+                                )
+                            )
                             .with('existing', (qb) => {
                                 qb.select(
-                                    'external_id',
-                                    'data_hash',
-                                    'deleted_at',
-                                    'updated_at',
-                                    trx.raw('pg_column_size(json) as size_bytes'),
-                                    trx.raw('tableoid::regclass as partition')
+                                    `${RECORDS_TABLE}.external_id`,
+                                    `${RECORDS_TABLE}.deleted_at`,
+                                    `${RECORDS_TABLE}.updated_at`,
+                                    trx.raw(`
+                                        CASE
+                                            WHEN incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash THEN pg_column_size(json)
+                                            ELSE 0
+                                        END as previous_size_bytes
+                                    `),
+                                    trx.raw(`incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash as has_changed`)
                                 )
                                     .from(RECORDS_TABLE)
                                     .where({
                                         connection_id: connectionId,
                                         model
                                     })
-                                    .whereIn('external_id', externalIds);
+                                    .join('incoming', 'incoming.external_id', `${RECORDS_TABLE}.external_id`);
                             })
                             .with('upsert', (qb) => {
                                 qb.insert(encryptedRecords)
                                     .into(RECORDS_TABLE)
+                                    .onConflict(['connection_id', 'external_id', 'model'])
+                                    .merge({
+                                        json: trx.raw(
+                                            `CASE WHEN ${RECORDS_TABLE}.data_hash IS NOT DISTINCT FROM EXCLUDED.data_hash THEN ${RECORDS_TABLE}.json ELSE EXCLUDED.json END`
+                                        ),
+                                        data_hash: trx.raw(`EXCLUDED.data_hash`),
+                                        sync_id: trx.raw(`EXCLUDED.sync_id`),
+                                        sync_job_id: trx.raw(`EXCLUDED.sync_job_id`),
+                                        deleted_at: trx.raw(`EXCLUDED.deleted_at`),
+                                        ...(softDelete ? { updated_at: trx.raw(`EXCLUDED.updated_at`) } : {})
+                                    })
                                     .returning([
                                         'id',
                                         'external_id',
-                                        'data_hash',
                                         'deleted_at',
                                         'updated_at',
                                         trx.raw('pg_column_size(json) as size_bytes'),
                                         trx.raw('tableoid::regclass as partition')
-                                    ])
-                                    .onConflict(['connection_id', 'external_id', 'model'])
-                                    .merge();
+                                    ]);
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
                                     if (cursor) {
@@ -382,14 +398,16 @@ export async function upsert({
                                     }
                                 }
                             })
-                            .select<(UpsertResult & { partition: string })[]>(
+                            .select<UpsertResult[]>(
                                 trx.raw(`
-                                    coalesce(upsert.partition, existing.partition) as partition,
+                                    upsert.partition as partition,
                                     upsert.id as id,
                                     upsert.external_id as external_id,
                                     to_json(upsert.updated_at) as last_modified_at,
-                                    upsert.size_bytes as size_bytes,
-                                    existing.size_bytes as previous_size_bytes,
+                                    CASE
+                                        WHEN NOT existing.has_changed THEN 0
+                                        ELSE upsert.size_bytes - COALESCE(existing.previous_size_bytes, 0)
+                                    END as delta_size_bytes,
                                     CASE
                                       WHEN existing.updated_at IS NULL THEN NULL
                                       ELSE to_json(existing.updated_at)
@@ -400,13 +418,13 @@ export async function upsert({
                                             CASE
                                                 WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
                                                 WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
-                                                WHEN existing.data_hash <> upsert.data_hash THEN 'changed'
+                                                WHEN existing.has_changed THEN 'changed'
                                                 ELSE 'unchanged'
                                             END
                                     END as status`)
                             )
                             .from('upsert')
-                            .leftJoin('existing', 'upsert.external_id', 'existing.external_id')
+                            .leftJoin('existing', 'existing.external_id', 'upsert.external_id')
                             .orderBy([
                                 { column: 'upsert.updated_at', order: 'asc' },
                                 { column: 'upsert.id', order: 'asc' }
@@ -456,7 +474,9 @@ export async function upsert({
                                 };
                             }
                         }
-                        deltaSizeInBytes += res.reduce((acc, r) => acc + (r.size_bytes - (r.previous_size_bytes || 0)), 0);
+                        deltaSizeInBytes += res.reduce((acc, r) => {
+                            return acc + r.delta_size_bytes;
+                        }, 0);
 
                         // all records for the same connection/model are in the same partition
                         if (!partition && res[0]?.partition) {

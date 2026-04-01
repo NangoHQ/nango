@@ -1,97 +1,77 @@
-import { IconExternalLink, IconTrash } from '@tabler/icons-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ExternalLink } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-import { EditableInput } from './components/EditableInput';
+import { permissions } from '@nangohq/authz';
+
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
-import { Input } from '../../../components/ui/input/Input';
-import SecretInput from '../../../components/ui/input/SecretInput';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { cn } from '../../../utils/utils';
-import { Button } from '@/components-v2/ui/button';
+import { EditableInput } from '@/components-v2/EditableInput';
+import { KeyValueInput } from '@/components-v2/KeyValueInput';
+import { PermissionGate } from '@/components-v2/PermissionGate';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { Label } from '@/components-v2/ui/label';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: patchEnvironmentAsync } = usePatchEnvironment(env);
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState(false);
     const [editHeaders, setEditHeaders] = useState(false);
-    const [headers, setHeaders] = useState<{ name: string; value: string }[]>(() =>
-        environmentAndAccount &&
-        environmentAndAccount.environment.otlp_settings?.headers &&
-        Object.keys(environmentAndAccount.environment.otlp_settings?.headers).length > 0
-            ? Object.entries(environmentAndAccount.environment.otlp_settings?.headers).map(([k, v]) => ({ name: k, value: v }))
-            : [{ name: '', value: '' }]
-    );
+    const [headers, setHeaders] = useState<Record<string, string>>(() => environmentAndAccount?.environment.otlp_settings?.headers ?? {});
     const [errors, setErrors] = useState<{ index: number; key: 'name' | 'value'; error: string }[]>([]);
 
-    const onEnabledEdit = () => {
-        if (headers.length === 0 || headers[headers.length - 1].name !== '') {
-            setHeaders((copy) => [...copy, { name: '', value: '' }]);
+    useEffect(() => {
+        if (!editHeaders) {
+            setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
         }
-        setEditHeaders(true);
-    };
-
-    const onUpdate = (key: 'name' | 'value', value: string, index: number) => {
-        setHeaders((copy) => {
-            copy[index][key] = value;
-            if (copy.length === index + 1 && value !== '') {
-                copy[index + 1] = { name: '', value: '' };
-            }
-            return [...copy];
-        });
-    };
+    }, [editHeaders, environmentAndAccount?.environment.otlp_settings?.headers]);
 
     const onSaveHeaders = async () => {
         setLoading(true);
         try {
-            await patchEnvironmentAsync({ otlp_headers: headers.filter((v) => v.name !== '' || v.value !== '') });
+            const otlpHeaders = Object.entries(headers).map(([name, value]) => ({ name, value }));
+            await patchEnvironmentAsync({ otlp_headers: otlpHeaders });
             setEditHeaders(false);
-            setHeaders((prev) => (prev.length > 1 ? prev.filter((v) => v.name !== '' || v.value !== '') : prev));
             setErrors([]);
         } catch (err) {
-            toast({ title: 'There was an issue updating the OTLP Headers', variant: 'error' });
-            if (err instanceof APIError && 'error' in err.json && err.json.error.code === 'invalid_body' && err.json.error.errors) {
-                setErrors(
-                    err.json.error.errors.map((e: any) => {
-                        if (e.path[0] !== 'otlp_headers') {
-                            return null as any;
-                        }
-                        return { index: e.path[1], key: e.path[2], error: e.message };
-                    })
-                );
+            let message = 'There was an issue updating the OTLP Headers';
+            if (err instanceof APIError) {
+                if (err.json.error.code === 'invalid_body' && err.json.error.errors) {
+                    setErrors(
+                        err.json.error.errors
+                            .map((e: any) => {
+                                if (e.path[0] !== 'otlp_headers') {
+                                    return null as any;
+                                }
+                                return { index: e.path[1], key: e.path[2], error: e.message };
+                            })
+                            .filter(Boolean)
+                    );
+                } else {
+                    message = err.json.error.message ?? message;
+                }
             }
+            toast({ title: message, variant: 'error' });
         } finally {
             setLoading(false);
         }
     };
 
-    const onRemove = (index: number) => {
-        if (index === 0 && headers.length === 1) {
-            setHeaders([{ name: '', value: '' }]);
-            setErrors([]);
-        } else {
-            setHeaders(headers.filter((_, i) => i !== index));
-            setErrors(errors.filter((e) => e.index !== index));
-        }
-    };
-
     const onCancelHeaders = () => {
         setErrors([]);
-        setHeaders(
-            environmentAndAccount &&
-                environmentAndAccount.environment.otlp_settings?.headers &&
-                Object.keys(environmentAndAccount.environment.otlp_settings?.headers).length > 0
-                ? Object.entries(environmentAndAccount.environment.otlp_settings?.headers).map(([k, v]) => ({ name: k, value: v }))
-                : [{ name: '', value: '' }]
-        );
+        setHeaders(environmentAndAccount?.environment.otlp_settings?.headers ?? {});
         setEditHeaders(false);
     };
 
@@ -103,86 +83,71 @@ export const Telemetry: React.FC = () => {
         <SettingsContent title="Telemetry">
             <SettingsGroup
                 label={
-                    <div className="flex gap-1.5">
+                    <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <Link
-                            className="flex gap-2 items-center"
+                        <ButtonLink
                             target="_blank"
                             to="https://nango.dev/docs/implementation-guides/platform/open-telemetry-export"
+                            variant="ghost"
+                            size="icon"
                         >
-                            <IconExternalLink stroke={1} size={18} />
-                        </Link>
+                            <ExternalLink />
+                        </ButtonLink>
                     </div>
                 }
             >
                 <div className="flex flex-col gap-7">
-                    <EditableInput
-                        name="otlp_endpoint"
-                        title="Endpoint"
-                        subTitle
-                        originalValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
-                        apiCall={async (value) => {
-                            try {
-                                const res = await patchEnvironmentAsync({ otlp_endpoint: value });
-                                return { json: res };
-                            } catch (err) {
-                                if (err instanceof APIError) return { json: err.json };
-                                throw err;
-                            }
-                        }}
-                        onSuccess={() => {}}
-                        placeholder="https://my.otlp.commector:4318"
-                    />
+                    <div className="flex flex-col gap-2">
+                        <Label htmlFor="otlp_endpoint">Endpoint</Label>
+                        <EditableInput
+                            id="otlp_endpoint"
+                            initialValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
+                            onSave={async (value) => {
+                                try {
+                                    await patchEnvironmentAsync({ otlp_endpoint: value });
+                                    toast({ title: 'Successfully updated', variant: 'success' });
+                                } catch (err) {
+                                    toast({ title: 'Failed to update', variant: 'error' });
+                                    throw err;
+                                }
+                            }}
+                            placeholder="https://my.otlp.commector:4318"
+                            canEdit={canEditEnvironment}
+                        />
+                    </div>
                     <fieldset className="flex flex-col gap-4">
                         <label htmlFor="otlp_headers" className="text-sm">
                             Headers
                         </label>
-                        <div className="flex flex-col gap-2.5">
-                            {headers.map((header, i) => {
-                                const errorName = errors.find((err) => err.index === i && err.key === 'name');
-                                const errorValue = errors.find((err) => err.index === i && err.key === 'value');
-                                return (
-                                    <div key={i} className="flex flex-col gap-0.5">
-                                        <div className="flex gap-4">
-                                            <Input
-                                                value={header.name}
-                                                onChange={(e) => onUpdate('name', e.target.value, i)}
-                                                inputSize={'lg'}
-                                                variant={'black'}
-                                                className={cn('w-[200px]', errorName && 'border-alert-400')}
-                                                placeholder="MY_HEADER"
-                                                disabled={!editHeaders || loading}
-                                            />
-                                            <SecretInput
-                                                value={header.value}
-                                                onChange={(e) => onUpdate('value', e.target.value, i)}
-                                                inputSize={'lg'}
-                                                variant={'black'}
-                                                className={cn('w-[200px] grow', errorValue && 'border-alert-400')}
-                                                placeholder="value"
-                                                disabled={!editHeaders || loading}
-                                            />
-                                            {editHeaders && (
-                                                <Button variant="destructive" size="lg" onClick={() => !loading && onRemove(i)}>
-                                                    <IconTrash stroke={1} />
-                                                </Button>
-                                            )}
+                        <div className="flex flex-col gap-5">
+                            <KeyValueInput
+                                initialValues={headers}
+                                onChange={setHeaders}
+                                placeholderKey="MY_HEADER"
+                                placeholderValue="value"
+                                disabled={!editHeaders || loading}
+                                isSecret={true}
+                                alwaysShowEmptyRow={editHeaders}
+                            />
+                            {errors.length > 0 && (
+                                <div className="flex flex-col gap-1">
+                                    {errors.map((err, i) => (
+                                        <div key={i} className="text-body-small-regular text-feedback-error-fg">
+                                            Row {err.index + 1}, {err.key}: {err.error}
                                         </div>
-                                        {(errorName || errorValue) && (
-                                            <div className="flex gap-2">
-                                                <div className="w-[225px]">{errorName && <div className="text-alert-400 text-s">{errorName.error}</div>}</div>
-                                                <div className="w-[225px]">{errorValue && <div className="text-alert-400 text-s">{errorValue.error}</div>}</div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="flex justify-start gap-3 mt-1.5">
                             {!editHeaders && (
-                                <Button variant={'secondary'} onClick={() => onEnabledEdit()}>
-                                    Edit
-                                </Button>
+                                <PermissionGate asChild condition={canEditEnvironment}>
+                                    {(allowed) => (
+                                        <Button variant={'secondary'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
+                                            Edit
+                                        </Button>
+                                    )}
+                                </PermissionGate>
                             )}
                             {editHeaders && (
                                 <>

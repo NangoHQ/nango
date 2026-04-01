@@ -1,6 +1,7 @@
-import { IconExternalLink } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
+import { permissions } from '@nangohq/authz';
 
 import SettingsContent from './components/SettingsContent';
 import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
@@ -8,7 +9,9 @@ import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { Button } from '@/components-v2/ui/button';
+import { PermissionGate } from '@/components-v2/PermissionGate';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 
@@ -17,7 +20,11 @@ export const Functions: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
     const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
     const { mutateAsync: postVariablesAsync, isPending } = usePostVariables(env);
+
+    const { can } = usePermissions();
+    const canEditEnvironmentVars = can(permissions.canWriteProdEnvironmentVariables) || !environment?.is_production;
 
     const [edit, setEdit] = useState(false);
     const [vars, setVars] = useState<Record<string, string>>(() => {
@@ -73,11 +80,11 @@ export const Functions: React.FC = () => {
     return (
         <SettingsContent title="Functions">
             <div className="flex flex-col gap-2.5">
-                <div className="flex">
+                <div className="inline-flex items-center gap-2">
                     Environment variables
-                    <Link className="flex items-center px-1.5" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
-                        <IconExternalLink stroke={1} size={18} />
-                    </Link>
+                    <ButtonLink variant="ghost" size="icon" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
+                        <ExternalLink />
+                    </ButtonLink>
                 </div>
                 <div className="flex flex-col gap-5">
                     <fieldset className="flex flex-col gap-3">
@@ -93,7 +100,7 @@ export const Functions: React.FC = () => {
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">
                                 {errors.map((err, i) => (
-                                    <div key={i} className="text-alert-400 text-s">
+                                    <div key={i} className="text-body-small-regular text-feedback-error-fg">
                                         Row {err.index + 1}, {err.key}: {err.error}
                                     </div>
                                 ))}
@@ -102,9 +109,13 @@ export const Functions: React.FC = () => {
                     </fieldset>
                     <div className="flex justify-start gap-2">
                         {!edit && (
-                            <Button variant="secondary" onClick={() => setEdit(true)}>
-                                Edit
-                            </Button>
+                            <PermissionGate asChild condition={canEditEnvironmentVars}>
+                                {(allowed) => (
+                                    <Button variant="secondary" onClick={() => setEdit(true)} disabled={!allowed}>
+                                        Edit
+                                    </Button>
+                                )}
+                            </PermissionGate>
                         )}
                         {edit && (
                             <>

@@ -1,9 +1,13 @@
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { usePatchWebhook } from '../../../../hooks/useEnvironment';
+import { permissions } from '@nangohq/authz';
+
+import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
-import Spinner from '@/components/ui/Spinner';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Switch } from '@/components-v2/ui/switch';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiWebhooks } from '@nangohq/types';
 
@@ -50,6 +54,13 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
     const { toast } = useToast();
     const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
 
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
+
     const [loading, setLoading] = useState<string | false>();
 
     const handleCheckboxChange = async (name: string, checked: boolean) => {
@@ -83,12 +94,17 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
                     </label>
 
                     <div className="flex gap-2 items-center">
-                        {loading === stateKey && <Spinner size={1} />}
-                        <Switch
-                            name="hmac_enabled"
-                            checked={checkboxState[stateKey] as boolean}
-                            onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
-                        />
+                        {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
+                        <PermissionGate condition={canEditEnvironment}>
+                            {(allowed) => (
+                                <Switch
+                                    name="hmac_enabled"
+                                    checked={checkboxState[stateKey] as boolean}
+                                    onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
+                                    disabled={!allowed}
+                                />
+                            )}
+                        </PermissionGate>
                     </div>
                 </div>
             ))}

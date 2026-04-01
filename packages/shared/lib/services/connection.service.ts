@@ -22,6 +22,7 @@ import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS,
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
@@ -1045,6 +1046,16 @@ class ConnectionService {
                     expiresAt = template.token_expires_in_ms > 0 ? new Date(Date.now() + template.token_expires_in_ms) : undefined;
                 } else {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
+                }
+
+                if (refreshToken) {
+                    const decoded = jwtClient.decode(refreshToken);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
+                            expiresAt = refreshTokenExpiresAt;
+                        }
+                    }
                 }
 
                 const twoStepCredentials: TwoStepCredentials = {

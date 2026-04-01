@@ -3,10 +3,10 @@ import cors from 'cors';
 import express from 'express';
 import passport from 'passport';
 
+import { permissions as p } from '@nangohq/authz';
 import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { can, envScope } from './authz/middleware.js';
-import { permissions as p } from './authz/permissions.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -29,7 +29,6 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
-import { getApiStatus } from './controllers/v1/apiStatus/getApiStatus.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
 import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
@@ -282,8 +281,6 @@ if (flagHasUsage) {
 }
 
 web.route('/admin/impersonate').post(webAuth, postImpersonate);
-
-web.route('/api-status/:service').get(webAuth, getApiStatus);
 
 // Hosted signin
 if (!isCloud && !isEnterprise) {

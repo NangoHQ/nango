@@ -9,6 +9,7 @@ import type {
     HTTP_METHOD,
     RunnerFlags,
     PostPublicTrigger,
+    NangoRecord,
     Checkpoint
 } from '@nangohq/types';
 import type { ZodSchema, SafeParseSuccess } from 'zod';
@@ -62,6 +63,7 @@ export interface ProxyConfiguration {
     retryHeader?: RetryHeaderConfig;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
     retryOn?: number[] | null;
+    forwardHeadersOnRedirect?: boolean;
 }
 export interface AuthModes {
     OAuth1: 'OAUTH1';
@@ -438,6 +440,12 @@ export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
     trackDeletesStart(model: string): Promise<void>;
     trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }>;
     getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>>;
+    listRecords<T extends Record<string, any> = Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>>;
     getCheckpoint(): Promise<TCheckpoint | null>;
     saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;
     clearCheckpoint(): Promise<void>;

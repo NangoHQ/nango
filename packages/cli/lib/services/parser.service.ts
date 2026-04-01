@@ -7,6 +7,9 @@ import chalk from 'chalk';
 
 import type { NodePath } from '@babel/traverse';
 
+/**
+ * @deprecated This service is only used by compile.service.ts, which is only used by the zeroYaml migration.
+ */
 class ParserService {
     public getImportedFiles(filePath: string): string[] {
         const code = fs.readFileSync(filePath, 'utf-8');
@@ -54,30 +57,30 @@ class ParserService {
             console.log(chalk.red(`nango.${call}() calls are not allowed in an action script. Please remove it at "${filePath}:${lineNumber}".`));
 
         const nangoCalls = [
-            'batchSend',
-            'batchSave',
             'batchDelete',
-            'log',
-            'getFieldMapping',
-            'setFieldMapping',
-            'getMetadata',
-            'setMetadata',
-            'proxy',
-            'get',
-            'post',
-            'put',
-            'patch',
+            'batchSave',
+            'batchSend',
             'delete',
+            'deleteRecordsFromPreviousExecutions',
+            'get',
             'getConnection',
             'getEnvironmentVariables',
-            'triggerAction',
+            'getFieldMapping',
+            'getMetadata',
+            'log',
+            'patch',
+            'post',
+            'proxy',
+            'put',
+            'setFieldMapping',
             'setMergingStrategy',
-            'deleteRecordsFromPreviousExecutions',
+            'setMetadata',
+            'trackDeletesEnd',
             'trackDeletesStart',
-            'trackDeletesEnd'
+            'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'listRecords'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
@@ -89,11 +92,12 @@ class ParserService {
         const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
         const callsReferencingModelsToCheck = callsBatchingRecords.concat(
-            'setMergingStrategy',
             'deleteRecordsFromPreviousExecutions',
-            'trackDeletesStart',
+            'getRecordsByIds',
+            'listRecords',
+            'setMergingStrategy',
             'trackDeletesEnd',
-            'getRecordsByIds'
+            'trackDeletesStart'
         );
         const proxyLines: number[] = [];
         const batchingRecordsLines: number[] = [];

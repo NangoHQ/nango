@@ -10,6 +10,7 @@ import {
     CreateAliasCommand,
     CreateFunctionCommand,
     DeleteFunctionCommand,
+    InvokeCommand,
     LambdaClient,
     PublishVersionCommand,
     PutFunctionEventInvokeConfigCommand,
@@ -24,6 +25,7 @@ import { registerWithFleet } from '../runtime/runtimes.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
+import type { LambdaReadinessCheck } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const logger = getLogger('Lambda');
@@ -156,6 +158,23 @@ class Lambda {
                         }
                     })
                 );
+                const readinessCheckRequest: LambdaReadinessCheck = {
+                    type: 'readiness_check'
+                };
+                const command = new InvokeCommand({
+                    FunctionName: aResult.AliasArn,
+                    Payload: JSON.stringify(readinessCheckRequest),
+                    InvocationType: 'RequestResponse'
+                });
+                const response = await lambdaClient.send(command);
+                if (response.FunctionError) {
+                    logger.error(`Error invoking readiness check function ${aResult.AliasArn}`, response.FunctionError);
+                    return;
+                }
+                if (response.StatusCode !== 200) {
+                    logger.error(`Readiness check function ${aResult.AliasArn} returned status code ${response.StatusCode}`, response);
+                    return;
+                }
                 const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
                 const result = await registerWithFleet(fleetId, {
                     nodeId: node.id,
