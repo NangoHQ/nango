@@ -4,8 +4,8 @@
   "name": "Nango Docs",
   "colors": {
     "primary": "#29abe2",
-    "light": "#29abe2",
-    "dark": "#29abe2"
+    "light": "#71c0e2",
+    "dark": "#217ea6"
   },
   "fonts": {
     "family": "Albert Sans"
