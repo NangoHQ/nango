@@ -3439,6 +3439,40 @@ chorus:
             description: The API key for your Chorus account
             doc_section: '#step-1-generating-your-chorus-api-key'
 
+cin7-core:
+    display_name: Cin7 Core
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://inventory.dearsystems.com/externalapi
+        headers:
+            api-auth-accountid: ${connectionConfig.accountId}
+            api-auth-applicationkey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+    docs: https://nango.dev/docs/api-integrations/cin7-core
+    docs_connect: https://nango.dev/docs/api-integrations/cin7-core/connect
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Cin7 Core Account ID.
+            doc_section: '#step-1-find-your-account-id-and-application-key'
+            example: a1b2c3d4-****-****-****-ef1234567890
+            format: uuid
+    credentials:
+        apiKey:
+            type: string
+            title: API Application Key
+            description: Your Cin7 Core API Application Key.
+            secret: true
+            format: uuid
+            doc_section: '#step-1-find-your-account-id-and-application-key'
+            example: b2c3d4e5-****-****-****-f12345678901
+
 circle-so:
     display_name: Circle.so
     categories:

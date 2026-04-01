@@ -340,6 +340,7 @@
               "integrations/all/checkr-partner",
               "integrations/all/checkr-partner-staging",
               "integrations/all/chorus",
+              "api-integrations/cin7-core",
               "integrations/all/circle-so",
               "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
