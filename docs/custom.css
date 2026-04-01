@@ -7,10 +7,10 @@
   pointer-events: none;
 }
 
-/* 2. Top nav — fixed on scroll, solid dark background + bottom border */
-.dark #navbar {
-  background-color: #0b0b0c !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+/* ══ NAVBAR ══════════════════════════════════════════════════════ */
+
+/* Fixed + bottom border — shared */
+#navbar {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -19,26 +19,47 @@
   z-index: 100 !important;
 }
 
-/* 3. Sidebar — solid dark background */
+/* Dark mode navbar */
+.dark #navbar {
+  background-color: #0b0b0c !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Light mode navbar */
+:not(.dark) #navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ══ SIDEBAR ═════════════════════════════════════════════════════ */
+
+/* Dark mode sidebar bg */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
   z-index: 50;
 }
 
-/* 3a. Sidebar right border */
+/* Sidebar right border — dark */
 .dark :has(> #sidebar-content) {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* 3b. Replace internal spacer with controlled top padding */
-.dark #sidebar-content .pointer-events-none.sticky {
+/* Sidebar right border — light */
+:not(.dark) :has(> #sidebar-content) {
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Top spacer + padding */
+.dark #sidebar-content .pointer-events-none.sticky,
+:not(.dark) #sidebar-content .pointer-events-none.sticky {
   display: none !important;
 }
-.dark #navigation-items {
+#navigation-items {
   padding-top: 20px !important;
 }
 
-/* 3c. Logo — size */
+/* ══ LOGO ════════════════════════════════════════════════════════ */
+
 #navbar img,
 a[href="https://www.nango.dev"] img,
 a[href="https://www.nango.dev"] svg,
@@ -48,81 +69,112 @@ a[href="https://www.nango.dev"] svg,
   width: auto !important;
 }
 
-/* 4. Content area — above the grid, padded top for fixed navbar */
+/* ══ CONTENT AREA ════════════════════════════════════════════════ */
+
 #content-area {
   position: relative;
   z-index: 1;
   padding-top: 3rem !important;
 }
 
-/* Breadcrumb + title wrapper — ensure space from navbar */
 #content-area > div:first-child,
 [class*="prose"] > *:first-child,
 [class*="PageContent"] > *:first-child {
   margin-top: 1.5rem !important;
 }
 
-/* ── Sidebar: anchors (Documentation, APIs, Reference, Updates) ── */
+/* ══ SIDEBAR ANCHORS (Documentation, APIs, Reference, Updates) ══ */
 
-/* Separator between anchor list and nav items below */
+/* Separator — dark */
 .dark #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   margin-bottom: 0 !important;
 }
 
-/* Anchor icon squares — neutralise blue on active, keep others neutral */
+/* Separator — light */
+:not(.dark) #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  margin-bottom: 0 !important;
+}
+
+/* Anchor icon squares — dark */
 .dark a.nav-anchor > div[style*="background"] {
   background: rgba(255, 255, 255, 0.1) !important;
   border-radius: 4px !important;
 }
 
-/* Anchor text — muted, consistent with sidebar palette */
-.dark a.nav-anchor {
-  color: rgba(255, 255, 255, 0.55) !important;
-}
-.dark a.nav-anchor.text-primary,
-.dark a.nav-anchor[class*="text-primary"] {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-.dark a.nav-anchor:hover {
-  color: #ffffff !important;
+/* Anchor icon squares — light */
+:not(.dark) a.nav-anchor > div[style*="background"] {
+  background: rgba(0, 0, 0, 0.06) !important;
+  border-radius: 4px !important;
 }
 
-/* ── Sidebar: nav items (Getting Started, Introduction, etc.) ── */
+/* Anchor text — dark */
+.dark a.nav-anchor { color: rgba(255, 255, 255, 0.55) !important; }
+.dark a.nav-anchor[class*="text-primary"] { color: rgba(255, 255, 255, 0.9) !important; }
+.dark a.nav-anchor:hover { color: #ffffff !important; }
 
-/* Active nav item — neutral highlight, 4px corners */
+/* Anchor text — light */
+:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.5) !important; }
+:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.85) !important; }
+:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
+
+/* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
+
+/* Active item — dark */
 .dark li[data-active="true"] > a {
   background-color: rgba(255, 255, 255, 0.07) !important;
   color: #ffffff !important;
   border-radius: 4px !important;
 }
 
-/* All nav item links and buttons — 4px corners */
-.dark #sidebar-group a,
-.dark #sidebar-group button {
+/* Active item — light */
+:not(.dark) li[data-active="true"] > a {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #000000 !important;
+  border-radius: 4px !important;
+}
+
+/* Nav links — dark */
+.dark #sidebar-group a, .dark #sidebar-group button {
   border-radius: 4px !important;
   color: rgba(255, 255, 255, 0.55) !important;
 }
-.dark #sidebar-group a:hover,
-.dark #sidebar-group button:hover {
+.dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
   color: rgba(255, 255, 255, 0.85) !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* Section headers (Getting Started, Connect APIs, etc.) */
-.dark .sidebar-group-header h5,
-.dark #sidebar-title {
-  color: rgba(255, 255, 255, 0.45) !important;
+/* Nav links — light */
+:not(.dark) #sidebar-group a, :not(.dark) #sidebar-group button {
+  border-radius: 4px !important;
+  color: rgba(0, 0, 0, 0.55) !important;
+}
+:not(.dark) #sidebar-group a:hover, :not(.dark) #sidebar-group button:hover {
+  color: rgba(0, 0, 0, 0.85) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Section headers — shared style */
+.sidebar-group-header h5,
+#sidebar-title {
   font-size: 0.7rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   font-weight: 600 !important;
 }
+.dark .sidebar-group-header h5, .dark #sidebar-title {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+:not(.dark) .sidebar-group-header h5, :not(.dark) #sidebar-title {
+  color: rgba(0, 0, 0, 0.35) !important;
+}
 
-/* ── Navbar buttons ── */
+/* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
-/* Log In — solid dark bg, white text, visible border */
+/* Log In — dark mode */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
@@ -134,14 +186,29 @@ a[href="https://www.nango.dev"] svg,
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
-  transition: background-color 0.15s ease !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
   background-color: #2a2a2e !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
 }
 
-/* Sign Up — white bg, dark text */
+/* Log In — light mode */
+:not(.dark) #navbar a[href="https://app.nango.dev"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 7px 16px !important;
+  background-color: #f0f0f0 !important;
+  color: #0b0b0c !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  text-decoration: none !important;
+}
+:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
+  background-color: #e4e4e4 !important;
+}
+
+/* Sign Up — dark mode */
 .dark #navbar a[href*="signup"],
 .dark #navbar [class*="primary"] a,
 .dark #navbar button[class*="primary"] {
@@ -156,9 +223,25 @@ a[href="https://www.nango.dev"] svg,
   background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
-/* ── Global border-radius clamp — max 4px ── */
-.dark #sidebar-content a,
-.dark #sidebar-content button {
+/* Sign Up — light mode */
+:not(.dark) #navbar a[href*="signup"],
+:not(.dark) #navbar [class*="primary"] a,
+:not(.dark) #navbar button[class*="primary"] {
+  background-color: #2aabe2 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  padding: 7px 16px !important;
+}
+:not(.dark) #navbar a[href*="signup"]:hover {
+  background-color: #1e96cc !important;
+}
+
+/* ══ GLOBAL RADIUS CLAMP ═════════════════════════════════════════ */
+
+#sidebar-content a,
+#sidebar-content button {
   border-radius: 4px !important;
 }
 
