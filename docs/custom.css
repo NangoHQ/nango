@@ -9,7 +9,6 @@
 
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 
-/* Fixed + bottom border — shared */
 #navbar {
   position: fixed !important;
   top: 0 !important;
@@ -19,13 +18,11 @@
   z-index: 100 !important;
 }
 
-/* Dark mode navbar */
 .dark #navbar {
   background-color: #0b0b0c !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Light mode navbar */
 html:not(.dark) #navbar {
   background-color: #ffffff !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
@@ -33,25 +30,21 @@ html:not(.dark) #navbar {
 
 /* ══ SIDEBAR ═════════════════════════════════════════════════════ */
 
-/* Dark mode sidebar bg */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
   z-index: 50;
 }
 
-/* Sidebar right border — dark */
 .dark :has(> #sidebar-content) {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Sidebar right border — light */
 html:not(.dark) :has(> #sidebar-content) {
   border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Top spacer + padding */
-.dark #sidebar-content .pointer-events-none.sticky,
-html:not(.dark) #sidebar-content .pointer-events-none.sticky {
+/* Remove internal top spacer */
+#sidebar-content .pointer-events-none.sticky {
   display: none !important;
 }
 #navigation-items {
@@ -77,69 +70,53 @@ a[href="https://www.nango.dev"] svg,
   padding-top: 3rem !important;
 }
 
-#content-area > div:first-child,
-[class*="prose"] > *:first-child,
-[class*="PageContent"] > *:first-child {
+#content-area > div:first-child {
   margin-top: 1.5rem !important;
 }
 
-/* ══ SIDEBAR ANCHORS (Documentation, APIs, Reference, Updates) ══ */
+/* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
 
-/* Separator — dark */
 .dark #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   margin-bottom: 0 !important;
 }
 
-/* Separator — light */
 html:not(.dark) #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
   margin-bottom: 0 !important;
 }
 
-/* Anchor icon squares — dark */
 .dark a.nav-anchor > div[style*="background"] {
   background: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 4px !important;
 }
 
-/* Anchor icon squares — light */
 html:not(.dark) a.nav-anchor > div[style*="background"] {
   background: rgba(0, 0, 0, 0.06) !important;
-  border-radius: 4px !important;
 }
 
-/* Anchor text — dark */
 .dark a.nav-anchor { color: rgba(255, 255, 255, 0.55) !important; }
 .dark a.nav-anchor[class*="text-primary"] { color: rgba(255, 255, 255, 0.9) !important; }
 .dark a.nav-anchor:hover { color: #ffffff !important; }
 
-/* Anchor text — light */
 html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.5) !important; }
 html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.85) !important; }
 html:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
 
 /* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
 
-/* Active item — dark */
 .dark li[data-active="true"] > a {
   background-color: rgba(255, 255, 255, 0.07) !important;
   color: #ffffff !important;
-  border-radius: 4px !important;
 }
 
-/* Active item — light */
 html:not(.dark) li[data-active="true"] > a {
   background-color: rgba(0, 0, 0, 0.06) !important;
   color: #000000 !important;
-  border-radius: 4px !important;
 }
 
-/* Nav links — dark */
 .dark #sidebar-group a, .dark #sidebar-group button {
-  border-radius: 4px !important;
   color: rgba(255, 255, 255, 0.55) !important;
 }
 .dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
@@ -147,9 +124,7 @@ html:not(.dark) li[data-active="true"] > a {
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* Nav links — light */
 html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button {
-  border-radius: 4px !important;
   color: rgba(0, 0, 0, 0.55) !important;
 }
 html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
@@ -157,9 +132,8 @@ html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:ho
   background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
-/* Section headers — shared style */
-.sidebar-group-header h5,
-#sidebar-title {
+/* Section headers */
+.sidebar-group-header h5, #sidebar-title {
   font-size: 0.7rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
@@ -174,7 +148,7 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
 
 /* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
-/* Log In — dark mode: outline only, no bg */
+/* Log In — dark */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
@@ -182,7 +156,6 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
   background-color: transparent !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
@@ -193,7 +166,7 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
   border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
-/* Log In — light mode: outline only, no bg */
+/* Log In — light */
 html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
@@ -201,7 +174,6 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   background-color: transparent !important;
   color: #0b0b0c !important;
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  border-radius: 8px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
@@ -212,67 +184,44 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
   border-color: rgba(0, 0, 0, 0.35) !important;
 }
 
-/* Sign Up — dark mode */
-.dark #navbar a[href*="signup"],
+/* Sign Up — dark: white bg, dark text */
+.dark a[href*="app.nango.dev/signup"],
+.dark [class*="NavbarCta"],
+.dark [class*="navbar-cta"],
 .dark #navbar [class*="primary"] a,
-.dark #navbar button[class*="primary"] {
+.dark #navbar [class*="primary"] button {
   background-color: #ffffff !important;
   color: #0b0b0c !important;
   border: none !important;
-  border-radius: 8px !important;
   font-weight: 500 !important;
   padding: 7px 16px !important;
 }
-.dark #navbar a[href*="signup"]:hover {
+.dark a[href*="app.nango.dev/signup"]:hover {
   background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
-/* Sign Up — light mode */
-html:not(.dark) #navbar a[href*="signup"],
+/* Sign Up — light: brand blue */
+html:not(.dark) a[href*="app.nango.dev/signup"],
+html:not(.dark) [class*="NavbarCta"],
+html:not(.dark) [class*="navbar-cta"],
 html:not(.dark) #navbar [class*="primary"] a,
-html:not(.dark) #navbar button[class*="primary"] {
+html:not(.dark) #navbar [class*="primary"] button {
   background-color: #2aabe2 !important;
   color: #ffffff !important;
   border: none !important;
-  border-radius: 8px !important;
   font-weight: 500 !important;
   padding: 7px 16px !important;
 }
-html:not(.dark) #navbar a[href*="signup"]:hover {
+html:not(.dark) a[href*="app.nango.dev/signup"]:hover {
   background-color: #1e96cc !important;
 }
 
-/* ══ RADIUS CLAMP — sidebar only, never bleed into content ══════ */
+/* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
 
-#sidebar-content a,
-#sidebar-content button,
-#sidebar-content [class*="rounded-xl"],
-#sidebar-content [class*="rounded-lg"],
-#sidebar-content [class*="rounded-2xl"],
-#sidebar-content [class*="rounded-full"] {
-  border-radius: 4px !important;
-}
-
-/* ══ CALLOUT RESET — precise data-attribute selectors ═══════════ */
-
-/* Restore callout container — rounded-2xl = 1rem */
-[data-callout-type] {
-  border-radius: 1rem !important;
-  overflow: hidden !important;
-}
-
-/* Icon wrapper — no radius, fixed width, don't shrink */
 [data-component-part="callout-icon"] {
   flex-shrink: 0 !important;
-  border-radius: 0 !important;
 }
 
-/* Icon SVG — no radius override */
-[data-component-part="callout-icon"] svg {
-  border-radius: 0 !important;
-}
-
-/* Content — inherit callout color, don't override */
 [data-component-part="callout-content"],
 [data-component-part="callout-content"] p,
 [data-component-part="callout-content"] span {
