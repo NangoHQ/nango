@@ -22,11 +22,14 @@
   },
   "css": "custom.css",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/images/white.svg",
+    "dark": "/images/dark.svg",
     "href": "https://www.nango.dev"
   },
-  "favicon": "/favicon.png",
+  "favicon": {
+    "light": "/favicon.png",
+    "dark": "/favicon.png"
+  },
   "contextual": {
     "options": [
       "copy",
