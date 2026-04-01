@@ -43,7 +43,7 @@ a[href="https://www.nango.dev"] img,
 a[href="https://www.nango.dev"] svg,
 [class*="logo"] img,
 [class*="Logo"] img {
-  height: 28px !important;
+  height: 40px !important;
   width: auto !important;
 }
 
