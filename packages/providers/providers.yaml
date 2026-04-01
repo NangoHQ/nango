@@ -11745,7 +11745,9 @@ orange-logic:
         content-type: application/json
         accept: application/json
     token_response:
-        token: Token
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
     proxy:
         base_url: https://${connectionConfig.serverUrl}
     docs: https://nango.dev/docs/api-integrations/orange-logic
