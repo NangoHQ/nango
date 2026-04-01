@@ -1,11 +1,14 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#71c0e2",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
     "default": "system"
