@@ -21,10 +21,14 @@
   z-index: 50;
 }
 
-/* 3a. Sidebar right border + flush to navbar on scroll */
+/* 3a. Sidebar right border */
 .dark :has(> #sidebar-content) {
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-  top: 0 !important;
+}
+
+/* 3b. Remove the internal top spacer that creates the gap on scroll */
+.dark #sidebar-content .pointer-events-none.sticky {
+  display: none !important;
 }
 
 /* 3c. Logo — size */
