@@ -7,16 +7,18 @@
   pointer-events: none;
 }
 
-/* 2. Top nav — solid dark background, dark mode only */
+/* 2. Top nav — solid dark background + bottom border, dark mode only */
 .dark #navbar {
   background-color: #0b0b0c !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   position: relative;
   z-index: 50;
 }
 
-/* 3. Sidebar — solid dark background, dark mode only */
+/* 3. Sidebar — solid dark background + right border, dark mode only */
 .dark #sidebar-content {
   background-color: #0b0b0c !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   position: relative;
   z-index: 50;
 }
@@ -39,6 +41,7 @@
 .dark #sidebar-content [class*="active"] {
   background-color: rgba(255, 255, 255, 0.06) !important;
   color: #ffffff !important;
+  border-radius: 4px !important;
 }
 
 .dark #sidebar-content a[data-active="true"] svg,
@@ -58,21 +61,24 @@
 .dark #sidebar-content a:hover {
   color: #ffffff !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 4px !important;
 }
 
 /* 7. Navbar — remove blue tint from non-CTA links, dark mode only */
-.dark #navbar a:not([href*="signup"]):not([href*="app.nango.dev"]) {
+.dark #navbar a:not([href*="signup"]):not([href="https://app.nango.dev"]) {
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.dark #navbar a:not([href*="signup"]):not([href*="app.nango.dev"]):hover {
+.dark #navbar a:not([href*="signup"]):not([href="https://app.nango.dev"]):hover {
   color: #ffffff !important;
 }
 
-/* 8. Sign Up CTA — white bg, dark text, sharp corners, dark mode only */
+/* 8. Sign Up CTA — white bg, dark text, 4px radius, dark mode only */
 .dark #navbar a[href*="signup"],
 .dark #navbar [class*="primary"] a,
-.dark #navbar button[class*="primary"] {
+.dark #navbar button[class*="primary"],
+.dark #navbar [class*="NavbarCta"],
+.dark #navbar [class*="navbar-primary"] {
   background-color: #ffffff !important;
   color: #0b0b0c !important;
   border: none !important;
@@ -87,7 +93,7 @@
   color: #0b0b0c !important;
 }
 
-/* 9. Log In button — dark bg, white text, subtle border, sharp corners, dark mode only */
+/* 9. Log In button — dark bg, white text, subtle border, 4px radius, dark mode only */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
@@ -107,25 +113,51 @@
   border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* 10. Global border-radius clamp — all interactive elements max 4px */
+/* 10. Global corner radius clamp — max 4px everywhere */
+* {
+  --radius: 4px !important;
+  --border-radius: 4px !important;
+}
+
 button,
-[class*="btn"],
+a[class*="btn"],
 [class*="button"],
+[class*="Button"],
+[class*="badge"],
+[class*="Badge"],
+[class*="tag"],
+[class*="Tag"],
+[class*="chip"],
+[class*="Chip"],
 input,
 select,
-textarea,
-[class*="badge"],
-[class*="tag"],
-[class*="chip"],
-[class*="card"],
-[class*="callout"],
-[class*="code"] {
+textarea {
   border-radius: 4px !important;
 }
 
-/* Pill/rounded overrides — keep Mintlify from using full-radius pills */
-[style*="border-radius: 9999"],
-[style*="border-radius:9999"],
-[class*="rounded-full"] {
+/* Cards and callouts */
+[class*="card"],
+[class*="Card"],
+[class*="callout"],
+[class*="Callout"],
+[class*="alert"],
+[class*="Alert"],
+[class*="step"],
+[class*="Step"],
+[class*="frame"],
+[class*="Frame"],
+[class*="code"],
+[class*="Code"],
+[class*="CodeBlock"],
+[class*="codeblock"] {
+  border-radius: 4px !important;
+}
+
+/* Nuke any inline rounded-full / pill shapes */
+[class*="rounded-full"],
+[class*="rounded-lg"],
+[class*="rounded-xl"],
+[class*="rounded-2xl"],
+[class*="rounded-3xl"] {
   border-radius: 4px !important;
 }
