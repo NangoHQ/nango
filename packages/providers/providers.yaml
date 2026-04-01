@@ -11734,7 +11734,7 @@ oomnitza:
 orange-logic:
     display_name: Orange Logic
     categories:
-        - media
+        - storage
     auth_mode: TWO_STEP
     body_format: json
     token_url: https://${connectionConfig.serverUrl}/webapi/security/clientcredentialsauthentication/authenticate_46H_v1
@@ -11766,7 +11766,7 @@ orange-logic:
         serverUrl:
             type: string
             title: Orange Logic Server URL
-            description: The base URL of your Orange Logic instance,
+            description: The base URL of your Orange Logic instance
             example: mycompany.orangelogic.com
             format: hostname
             prefix: https://
