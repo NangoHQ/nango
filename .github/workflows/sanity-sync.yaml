@@ -1,4 +1,4 @@
-name: Webflow Sync
+name: Sanity Sync
 
 on:
     push:
@@ -6,8 +6,8 @@ on:
             - master
         paths:
             - packages/providers/providers.yaml
-            - docs/integrations/all/*.md
-            - packages/shared/flows.yaml
+            - docs/integrations/all/*.mdx
+            - docs/api-integrations/*.mdx
     workflow_dispatch:
         inputs:
             force_update:
@@ -19,10 +19,10 @@ on:
         - cron: '0 0 1 * *'
 
 concurrency:
-    group: webflow-sync
+    group: sanity-sync
 
 jobs:
-    webflow-sync-job:
+    sanity-sync-job:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -36,7 +36,9 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - run: npx tsx scripts/webflow-api-sync.ts
+            - run: npx tsx scripts/sanity-api-sync.ts
               env:
-                  WEBFLOW_CMS_API_TOKEN: ${{ secrets.WEBFLOW_CMS_API_TOKEN }}
+                  SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
+                  SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
+                  SANITY_DATASET: ${{ vars.SANITY_DATASET }}
                   FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update == 'true' }}
