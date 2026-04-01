@@ -1,21 +1,16 @@
 /* ── Nango Docs custom styles ──────────────────────────────────── */
 
 /* ══ BORDER RADIUS — 4px everywhere ═════════════════════════════ */
-/* Buttons */
-a[href="https://app.nango.dev/signup"],
-a[href="https://app.nango.dev/signup"] span[class*="inset-0"],
-a[href="https://app.nango.dev/signup"] span[class*="bg-primary"],
-#navbar a[href="https://app.nango.dev"],
-button { border-radius: 4px !important; }
+/* Override all Tailwind rounded utilities */
+.rounded-sm, .rounded, .rounded-md, .rounded-lg,
+.rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full,
+[class~="rounded-sm"], [class~="rounded-md"], [class~="rounded-lg"],
+[class~="rounded-xl"], [class~="rounded-2xl"], [class~="rounded-3xl"] {
+  border-radius: 4px !important;
+}
 
-/* Code blocks & inline code */
-pre, code, kbd { border-radius: 4px !important; }
-
-/* Callouts */
-[data-callout-type] { border-radius: 4px !important; }
-
-/* Input fields, selects */
-input, select, textarea { border-radius: 4px !important; }
+/* Native elements */
+pre, code, kbd, input, select, textarea, button { border-radius: 4px !important; }
 
 /* 1. Grid — behind everything, dark mode only */
 .dark [class*="background-decoration"] {
