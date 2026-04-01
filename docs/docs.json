@@ -492,6 +492,7 @@
               "api-integrations/google-drive",
               "api-integrations/google-forms",
               "api-integrations/google-mail",
+              "api-integrations/google-maps",
               "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
