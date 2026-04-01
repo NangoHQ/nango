@@ -19,10 +19,10 @@ const TABLE = '_nango_environments';
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 class EnvironmentService {
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
         try {
             const result = await db.knex
-                .select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name')
+                .select<Pick<DBEnvironment, 'name' | 'id' | 'is_production'>[]>('id', 'name', 'is_production')
                 .from<DBEnvironment>(TABLE)
                 .where({ account_id, deleted: false })
                 .orderBy('name', 'asc');

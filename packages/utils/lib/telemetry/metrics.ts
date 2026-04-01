@@ -39,6 +39,7 @@ export enum Types {
     PROXY_FAILURE = 'nango.server.proxy.failure',
     PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
     PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
+    PROXY_REDIRECT = 'nango.server.proxy.redirect',
 
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
@@ -53,7 +54,6 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
-    FUNCTION_EXECUTIONS_CONCURRENCY = 'nango.jobs.function.executions.concurrency',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
@@ -70,6 +70,7 @@ export enum Types {
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
+    ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
 

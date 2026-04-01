@@ -1,12 +1,13 @@
 import type { ApiError, Endpoint } from '../api.js';
 import type { ApiInvitation, ApiTeam } from '../team/api.js';
 import type { ApiUser } from '../user/api.js';
+import type { Role } from '../user/db.js';
 
 export type PostInvite = Endpoint<{
     Method: 'POST';
     Path: '/api/v1/invite';
     Querystring: { env: string };
-    Body: { emails: string[] };
+    Body: { emails: string[]; role?: Role };
     Success: {
         data: { invited: string[] };
     };

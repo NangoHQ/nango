@@ -9,6 +9,22 @@ import { taskStates } from '../types.js';
 import type { Task, TaskState } from '../types.js';
 import type { knex } from 'knex';
 
+const props = {
+    name: 'Test Task',
+    payload: { foo: 'bar' },
+    groupKey: nanoid(),
+    groupMaxConcurrency: 0,
+    retryMax: 3,
+    retryCount: 1,
+    startsAfter: new Date(),
+    createdToStartedTimeoutSecs: 10,
+    startedToCompletedTimeoutSecs: 20,
+    heartbeatTimeoutSecs: 5,
+    scheduleId: null,
+    retryKey: '00000000-0000-0000-0000-000000000000',
+    ownerKey: 'ownerA'
+};
+
 describe('Task', () => {
     const dbClient = getTestDbClient();
     const db = dbClient.db;
@@ -21,23 +37,8 @@ describe('Task', () => {
     });
 
     it('should be successfully created', async () => {
-        const props = {
-            name: 'Test Task',
-            payload: { foo: 'bar' },
-            groupKey: nanoid(),
-            groupMaxConcurrency: 0,
-            retryMax: 3,
-            retryCount: 1,
-            startsAfter: new Date(),
-            createdToStartedTimeoutSecs: 10,
-            startedToCompletedTimeoutSecs: 20,
-            heartbeatTimeoutSecs: 5,
-            scheduleId: null,
-            retryKey: '00000000-0000-0000-0000-000000000000',
-            ownerKey: 'ownerA'
-        };
-        const task = (await tasks.create(db, props)).unwrap();
-        expect(task).toMatchObject({
+        const res = (await tasks.create(db, [props])).unwrap();
+        expect(res.tasks[0]).toMatchObject({
             id: expect.any(String),
             name: props.name,
             payload: props.payload,
@@ -58,6 +59,30 @@ describe('Task', () => {
             retryKey: props.retryKey,
             ownerKey: props.ownerKey
         });
+    });
+    it('should create multiple tasks', async () => {
+        const n = 1200;
+        const taskProps = Array.from({ length: n }, (_, i) => ({ ...props, name: `n=${i}` }));
+        const res = (await tasks.create(db, taskProps)).unwrap();
+        expect(res.tasks).toHaveLength(n);
+    });
+    it('should not create tasks exceeding the cap', async () => {
+        const groupTaskCap = 1;
+        const res = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, name: 'Not capped' },
+                    { ...props, name: 'Capped' },
+                    { ...props, groupKey: nanoid(), name: 'Also not capped' }
+                ],
+                { groupTaskCap }
+            )
+        ).unwrap();
+        expect(res.tasks).toHaveLength(2);
+        expect(res.tasks[0]?.name).toBe('Not capped');
+        expect(res.tasks[1]?.name).toBe('Also not capped');
+        expect(res.cappedGroupKeys).toEqual([props.groupKey]);
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
@@ -262,6 +287,42 @@ describe('Task', () => {
         expect(l5.length).toBe(2);
         expect(l5.map((t) => t.id)).toStrictEqual([t1.id, t2.id]);
     });
+    describe('getGroupsWithBackpressure', () => {
+        it('should return empty when no tasks exist', async () => {
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+        it('should return empty when no group exceeds its max concurrency', async () => {
+            await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+        it('should return groups exceeding their max concurrency', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 2 });
+            }
+            await createTask(db, { groupKey: 'sync:environment:2', groupMaxConcurrency: 5 });
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([{ group_key: 'sync:environment:1', queued: 3 }]);
+        });
+        it('should respect the limit', async () => {
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 1 });
+                await createTask(db, { groupKey: 'sync:environment:2', groupMaxConcurrency: 1 });
+                await createTask(db, { groupKey: 'sync:environment:3', groupMaxConcurrency: 1 });
+            }
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 2 })).unwrap();
+            expect(result).toHaveLength(2);
+        });
+        it('should ignore groups with group_max_concurrency = 0', async () => {
+            for (let i = 0; i < 5; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 0 });
+            }
+            const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
+            expect(result).toEqual([]);
+        });
+    });
     it('should be successfully saving json output', async () => {
         const outputs = [1, 'one', true, null, ['a', 'b'], { a: 1, b: 2, s: 'two', arr: ['a', 'b'] }, [{ id: 'a' }, { id: 'b' }]];
         for (const output of outputs) {
@@ -294,25 +355,31 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
 
 async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
     const now = new Date();
-    const task = await tasks.create(db, {
-        name: props?.name || nanoid(),
-        payload: props?.payload || {},
-        groupKey: props?.groupKey || nanoid(),
-        groupMaxConcurrency: props?.groupMaxConcurrency || 0,
-        retryMax: props?.retryMax || 3,
-        retryCount: props?.retryCount || 1,
-        startsAfter: props?.startsAfter || now,
-        createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
-        startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
-        heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
-        scheduleId: props?.scheduleId || null,
-        retryKey: props?.retryKey || null,
-        ownerKey: props?.ownerKey || null
-    });
-    if (task.isErr()) {
-        throw new Error(`Failed to create task: ${task.error.message}`);
+    const res = await tasks.create(db, [
+        {
+            name: props?.name || nanoid(),
+            payload: props?.payload || {},
+            groupKey: props?.groupKey || nanoid(),
+            groupMaxConcurrency: props?.groupMaxConcurrency || 0,
+            retryMax: props?.retryMax || 3,
+            retryCount: props?.retryCount || 1,
+            startsAfter: props?.startsAfter || now,
+            createdToStartedTimeoutSecs: props?.createdToStartedTimeoutSecs || 10,
+            startedToCompletedTimeoutSecs: props?.startedToCompletedTimeoutSecs || 20,
+            heartbeatTimeoutSecs: props?.heartbeatTimeoutSecs || 5,
+            scheduleId: props?.scheduleId || null,
+            retryKey: props?.retryKey || null,
+            ownerKey: props?.ownerKey || null
+        }
+    ]);
+    if (res.isErr()) {
+        throw new Error(`Failed to create task: ${res.error.message}`);
     }
-    return task.unwrap();
+    const task = res.value.tasks[0];
+    if (!task) {
+        throw new Error('No task created');
+    }
+    return task;
 }
 
 async function startTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {

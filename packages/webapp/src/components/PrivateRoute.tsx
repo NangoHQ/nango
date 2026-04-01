@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+
+import { permissions } from '@nangohq/authz';
 
 import { useEnvironment } from '../hooks/useEnvironment';
 import { useMeta } from '../hooks/useMeta';
+import { usePermissions } from '../hooks/usePermissions';
 import { useUser } from '../hooks/useUser';
+import PageEnvironmentUnauthorized from '../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../pages/PageNotFound';
 import { useStore } from '../store';
 import { useAnalyticsIdentify } from '../utils/analytics';
@@ -13,15 +17,19 @@ export const PrivateRoute: React.FC = () => {
     const { data, error: metaError, isLoading: loadingMeta } = useMeta(!!user);
     const meta = data?.data;
     const [notFoundEnv, setNotFoundEnv] = useState(false);
+    const [unauthorizedEnv, setUnauthorizedEnv] = useState(false);
     const [ready, setReady] = useState(false);
     const identify = useAnalyticsIdentify();
+    const { can } = usePermissions();
+    const location = useLocation();
 
     const env = useStore((state) => state.env);
     const setStoredEnvs = useStore((state) => state.setEnvs);
     const setBaseUrl = useStore((state) => state.setBaseUrl);
     const setDebugMode = useStore((state) => state.setDebugMode);
     const setEnv = useStore((state) => state.setEnv);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const environmentAndAccount = environmentData?.environmentAndAccount;
 
     useEffect(() => {
         if (!meta || metaError) {
@@ -66,12 +74,21 @@ export const PrivateRoute: React.FC = () => {
 
             setNotFoundEnv(true);
         } else {
-            setEnv(currentEnv);
+            const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
+            if (matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
+                // User navigated directly to a production env they don't have access to
+                const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
+                setEnv(fallback ? fallback.name : meta.environments[0].name);
+                setUnauthorizedEnv(true);
+            } else {
+                setEnv(currentEnv);
+                setUnauthorizedEnv(false);
+            }
         }
 
         // it's ready when datastore and path are finally reconciliated
         setReady(true);
-    }, [meta, loadingMeta, env, metaError, setEnv]);
+    }, [meta, loadingMeta, env, metaError, setEnv, can, location.pathname]);
 
     useEffect(() => {
         if (user && environmentAndAccount && meta && !meta.debugMode) {
@@ -88,6 +105,10 @@ export const PrivateRoute: React.FC = () => {
 
     if (notFoundEnv) {
         return <PageNotFound />;
+    }
+
+    if (unauthorizedEnv) {
+        return <PageEnvironmentUnauthorized />;
     }
 
     return <Outlet />;

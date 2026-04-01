@@ -5,9 +5,9 @@ import { ConnectUISettings } from './ConnectUISettings';
 import { DeprecatedSettings } from './Deprecated';
 import { Functions } from './Functions';
 import { General } from './General';
-import { Notifications } from './Notifications';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
+import { Webhooks } from './Webhooks';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -29,9 +29,11 @@ const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode 
 };
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { team } = useTeam(env);
+    const { data: teamData } = useTeam(env);
+    const team = teamData?.data;
 
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {
@@ -52,7 +54,7 @@ export const EnvironmentSettings: React.FC = () => {
             </DashboardLayout>
         );
     }
-    const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
+    const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
         <DashboardLayout fullWidth className="flex-col justify-center">
@@ -90,7 +92,7 @@ export const EnvironmentSettings: React.FC = () => {
                         <ConnectUISettings />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'webhooks'}>
-                        <Notifications />
+                        <Webhooks />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'slack-alerts'}>
                         <SlackAlertsSettings />

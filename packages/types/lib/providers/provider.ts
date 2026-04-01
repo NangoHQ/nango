@@ -50,6 +50,7 @@ export interface BaseProvider {
         query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
+        forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
@@ -153,6 +154,8 @@ export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
         protocol: 'RSA' | 'HMAC';
+        // For HMAC only. `hex` matches legacy providers (e.g. Ghost). `utf8` uses the signing key as a UTF-8 string (e.g. Heymarket). Defaults to `hex`
+        hmac_secret_encoding?: 'hex' | 'utf8';
     };
     token: {
         signing_key: string;

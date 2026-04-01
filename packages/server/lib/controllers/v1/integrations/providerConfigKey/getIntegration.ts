@@ -2,9 +2,11 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
+import { permissions } from '@nangohq/authz';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolve } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -61,10 +63,12 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
     }
 
+    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
+    const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({
         data: {
-            integration: integrationToApi(integration),
+            integration: apiIntegration,
             template: provider, // TODO: fix this naming
             meta: {
                 connectionsCount: count,

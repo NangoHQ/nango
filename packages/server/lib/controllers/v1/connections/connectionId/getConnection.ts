@@ -1,9 +1,11 @@
 import * as z from 'zod';
 
+import { permissions } from '@nangohq/authz';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolve } from '../../../../authz/resolve.js';
 import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -67,7 +69,11 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
         return;
     }
 
-    const connectionRes = await connectionService.getConnectionForPrivateApi({ connectionId, providerConfigKey, environmentId: environment.id });
+    const connectionRes = await connectionService.getConnectionForPrivateApi({
+        connectionId,
+        providerConfigKey,
+        environmentId: environment.id
+    });
     if (connectionRes.isErr()) {
         res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
         return;
@@ -90,12 +96,15 @@ export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
     if (credentialResponse.isOk()) {
         connection = credentialResponse.value;
     }
+
+    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
+
     const errorLog = await errorNotificationService.auth.get(connection.id);
 
     res.status(200).send({
         data: {
             provider: integration.provider,
-            connection: connectionFullToApi(connection),
+            connection: connectionFullToApi(connection, { includeCredentials }),
             endUser: endUserToApi(endUser),
             errorLog
         }

@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
-import type { NangoModelField, OnEventType } from '@nangohq/types';
+import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -86,7 +86,8 @@ export const flowConfig = z
             .object({
                 definitions: z.record(z.string(), z.looseObject({}))
             })
-            .optional()
+            .optional(),
+        features: z.array(z.enum(['checkpoints'] satisfies Feature[])).default([])
     })
     .refine(
         (data) => {

@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import type { LambdaRequestType } from '@nangohq/types';
+
 export const nangoPropsSchema = z.object({
     scriptType: z.enum(['sync', 'action', 'webhook', 'on-event']),
     host: z.string().optional(),
@@ -83,6 +85,12 @@ export const nangoPropsSchema = z.object({
             killAfterMs: z.number(),
             interruptAfterMs: z.number()
         })
+        .optional(),
+    integrationConfig: z
+        .object({
+            oauth_client_id: z.string().nullable(),
+            oauth_client_secret: z.string().nullable()
+        })
         .optional()
 });
 
@@ -104,9 +112,19 @@ const refCodeSchema = z.object({
     codeParamsRef: s3RefSchema.optional()
 });
 
-export const requestSchema = z
+export const functionExecutionSchema = z
     .object({
         taskId: z.string(),
         nangoProps: nangoPropsSchema
     })
     .and(z.union([inlineCodeSchema, refCodeSchema]));
+
+export const readinessCheckSchema = z.object({
+    type: z.literal<LambdaRequestType>('readiness_check')
+});
+
+export const lambdaInvocationSchema = z.union([functionExecutionSchema, readinessCheckSchema]);
+
+export type FunctionExecutionRequest = z.infer<typeof functionExecutionSchema>;
+export type ReadinessCheckRequest = z.infer<typeof readinessCheckSchema>;
+export type LambdaInvocation = z.infer<typeof lambdaInvocationSchema>;

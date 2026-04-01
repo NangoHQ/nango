@@ -1,3 +1,4 @@
+import { permissions } from '@nangohq/authz';
 import {
     accountService,
     connectionService,
@@ -9,6 +10,7 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolve } from '../../../authz/resolve.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
@@ -37,6 +39,12 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
             environment.public_key_rotatable = false;
         }
+    }
+
+    // Remove secret key if user doesn't have permission to read production secrets
+    if (environment.is_production && !(await resolve(res.locals, permissions.canReadProdSecretKey))) {
+        delete (environment as any).secret_key;
+        delete (environment as any).pending_secret_key;
     }
 
     environment.callback_url = await environmentService.getOauthCallbackUrl(environment.id);

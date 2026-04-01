@@ -12,7 +12,7 @@ import { getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { Fleet } from '@nangohq/fleet';
-import type { NangoProps, Result } from '@nangohq/types';
+import type { NangoProps, Result, RoutingContext } from '@nangohq/types';
 
 const logger = getLogger('LambdaRuntimeAdapter');
 
@@ -34,8 +34,8 @@ interface S3ObjectRef {
 export class LambdaRuntimeAdapter implements RuntimeAdapter {
     constructor(private readonly fleet: Fleet) {}
 
-    private async getFunction(nangoProps: NangoProps): Promise<LambdaFunction> {
-        const routingId = getRoutingId(nangoProps);
+    private async getFunction(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): Promise<LambdaFunction> {
+        const routingId = getRoutingId(params);
         const node = await this.fleet.getRunningNode(routingId);
         if (node.isErr()) {
             throw new Error(`Failed to get running node for routing id '${routingId}'`, { cause: node.error });
@@ -165,9 +165,15 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
         }
     }
 
-    async invoke(params: { taskId: string; nangoProps: NangoProps; code: string; codeParams: object }): Promise<Result<boolean>> {
+    async invoke(params: {
+        taskId: string;
+        nangoProps: NangoProps;
+        code: string;
+        codeParams: object;
+        routingContext?: RoutingContext | undefined;
+    }): Promise<Result<boolean>> {
         try {
-            const func = await this.getFunction(params.nangoProps);
+            const func = await this.getFunction({ nangoProps: params.nangoProps, routingContext: params.routingContext });
 
             const payload = await this.preparePayload(params);
             if (payload.isErr()) {

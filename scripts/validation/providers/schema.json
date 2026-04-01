@@ -217,6 +217,9 @@
                         "decompress": {
                             "type": "boolean"
                         },
+                        "forward_headers_on_redirect": {
+                            "type": "boolean"
+                        },
                         "headers": {
                             "type": "object",
                             "additionalProperties": false,
@@ -451,6 +454,10 @@
                         "protocol": {
                             "type": "string",
                             "enum": ["WSSE", "RSA", "HMAC"]
+                        },
+                        "hmac_secret_encoding": {
+                            "type": "string",
+                            "enum": ["hex", "utf8"]
                         }
                     },
                     "required": ["protocol"]

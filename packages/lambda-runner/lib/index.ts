@@ -4,14 +4,15 @@ import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client
 
 import { getKVStore, getLocking } from '@nangohq/kvstore';
 import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { requestSchema } from './schemas.js';
+import { lambdaInvocationSchema } from './schemas.js';
 
+import type { FunctionExecutionRequest, LambdaInvocation, ReadinessCheckRequest } from './schemas.js';
 import type { Lock, Locking } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 import type { Context } from 'aws-lambda';
-import type * as zod from 'zod';
 
 const logger = getLogger('lambda-function-runner');
 const s3 = new S3Client();
@@ -51,7 +52,11 @@ function getNangoHost() {
     return process.env['NANGO_HOST'] || 'http://server.internal.nango';
 }
 
-async function getCode(request: zod.infer<typeof requestSchema>): Promise<string> {
+function isReadinessCheckRequest(request: LambdaInvocation): request is ReadinessCheckRequest {
+    return 'type' in request && request.type === 'readiness_check';
+}
+
+async function getCode(request: FunctionExecutionRequest): Promise<string> {
     if ('code' in request && request.code) {
         return request.code;
     }
@@ -69,7 +74,7 @@ async function getCode(request: zod.infer<typeof requestSchema>): Promise<string
     return '';
 }
 
-async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promise<void> {
+async function deleteCodeParams(request: FunctionExecutionRequest): Promise<void> {
     try {
         if ('codeParamsRef' in request && request.codeParamsRef) {
             await s3.send(
@@ -85,7 +90,7 @@ async function deleteCodeParams(request: zod.infer<typeof requestSchema>): Promi
     }
 }
 
-async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<object> {
+async function getCodeParams(request: FunctionExecutionRequest): Promise<object> {
     if ('codeParams' in request && request.codeParams) {
         return request.codeParams;
     }
@@ -104,9 +109,15 @@ async function getCodeParams(request: zod.infer<typeof requestSchema>): Promise<
     return {};
 }
 
-export const handler = async (event: zod.infer<typeof requestSchema>, context: Context) => {
+export const handler = async (event: unknown, context: Context): Promise<{ ok: true } | void> => {
     context.callbackWaitsForEmptyEventLoop = false;
-    const request = requestSchema.parse(event);
+    const parsedRequest = lambdaInvocationSchema.parse(event);
+    if (isReadinessCheckRequest(parsedRequest)) {
+        logger.info('Readiness check invocation received');
+        return { ok: true };
+    }
+    const request: FunctionExecutionRequest = parsedRequest;
+
     const nangoProps = { ...(request.nangoProps as unknown as NangoProps) };
     const locking = await getLocking('customer');
     const gate = new Gate(locking);
@@ -153,6 +164,11 @@ export const handler = async (event: zod.infer<typeof requestSchema>, context: C
         const [code, codeParams] = await Promise.all([getCode(request), getCodeParams(request)]);
         if (code === '') {
             throw new Error('No code found');
+        }
+        try {
+            await loadProviders();
+        } catch (err) {
+            logger.error('Error loading providers', { error: err });
         }
         const payload = {
             nangoProps: { ...nangoProps, host: getNangoHost() },

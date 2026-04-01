@@ -57,7 +57,7 @@ describe(`DELETE ${route}`, () => {
         const { account, user, secret } = await seeders.seedAccountEnvAndUser();
 
         const email = 'foo@example.com';
-        await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, trx: db.knex });
+        await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, role: 'administrator', trx: db.knex });
 
         const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: secret.secret });
         isSuccess(listBefore.json);

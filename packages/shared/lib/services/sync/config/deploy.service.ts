@@ -368,6 +368,7 @@ async function compileDeployInfo({
                 model_schema: null,
                 models_json_schema,
                 sdk_version: sdkVersion || null,
+                features: flow.features || [],
                 created_at: new Date(),
                 updated_at: new Date()
             }

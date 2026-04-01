@@ -2,16 +2,20 @@ import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mutate } from 'swr';
 
+import { permissions } from '@nangohq/authz';
+
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { Dot } from '../../../../components-v2/Dot.js';
 import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
 import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
+import { PermissionGate } from '@/components-v2/PermissionGate.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
 import { useEnvironment } from '@/hooks/useEnvironment';
+import { usePermissions } from '@/hooks/usePermissions.js';
 import { apiGetCurrentPlan, apiPostPlanChange, useApiGetPlans } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
@@ -24,7 +28,8 @@ import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { plan: currentPlan } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const currentPlan = environmentData?.plan;
     const { data: plansList } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
 
@@ -116,6 +121,9 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
 }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
 
+    const { can } = usePermissions();
+    const canChangePlan = can(permissions.canChangePlan);
+
     const [paymentMethodDialogOpen, setPaymentMethodDialogOpen] = useState(false);
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
 
@@ -146,9 +154,13 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         if (isUpgrade && plan.canChange) {
             return (
                 <>
-                    <Button onClick={onUpgradeClicked} variant="primary" className="w-27">
-                        Upgrade
-                    </Button>
+                    <PermissionGate asChild condition={canChangePlan}>
+                        {(allowed) => (
+                            <Button onClick={onUpgradeClicked} variant="primary" className="w-27" disabled={!allowed}>
+                                Upgrade
+                            </Button>
+                        )}
+                    </PermissionGate>
                     <PaymentMethodDialog
                         open={paymentMethodDialogOpen}
                         onOpenChange={setPaymentMethodDialogOpen}
@@ -167,9 +179,13 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         if (isDowngrade && plan.canChange) {
             return (
                 <PlanChangeDialog selectedPlan={planDefinition} activePlan={activePlan}>
-                    <Button variant="destructive" className="w-27">
-                        Downgrade
-                    </Button>
+                    <PermissionGate asChild condition={canChangePlan}>
+                        {(allowed) => (
+                            <Button variant="destructive" className="w-27" disabled={!allowed}>
+                                Downgrade
+                            </Button>
+                        )}
+                    </PermissionGate>
                 </PlanChangeDialog>
             );
         }

@@ -98,12 +98,10 @@ class RemoteFileService {
     async copy({
         sourcePath,
         destinationPath,
-        destinationLocalPath,
-        isZeroYaml
+        destinationLocalPath
     }: {
         sourcePath: string;
         destinationPath: string;
-        isZeroYaml: boolean;
         /**
          * sic
          * Destination when not uploading to S3
@@ -112,7 +110,7 @@ class RemoteFileService {
          */
         destinationLocalPath: string;
     }): Promise<string | null> {
-        const s3FilePath = `${isZeroYaml ? this.publicZeroYamlRoute : this.publicRoute}/${sourcePath}`;
+        const s3FilePath = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
             if (isCloud) {
                 await this.client.send(
@@ -239,19 +237,9 @@ class RemoteFileService {
         await this.zipAndSend({ res, files });
     }
 
-    async zipAndSendFiles({
-        res,
-        scriptName,
-        providerConfigKey,
-        syncConfig
-    }: {
-        res: Response;
-        scriptName: string;
-        providerConfigKey: string;
-        syncConfig: DBSyncConfig;
-    }): Promise<void> {
+    async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<void> {
         if (!isCloud && !this.useS3) {
-            return localFileService.zipAndSendFiles({ res, scriptName, providerConfigKey, syncConfig });
+            return localFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
         } else {
             const files: { name: string; content: Readable }[] = [];
             if (!syncConfig.sdk_version?.includes('-zero')) {
@@ -264,8 +252,18 @@ class RemoteFileService {
                 files.push({ name: 'nango.yaml', content: resGet.response });
             }
 
-            const integrationFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
-            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${scriptName}.ts`);
+            const scriptName = syncConfig.sync_name;
+
+            const jsFileLocation = syncConfig.file_location;
+            const { success: jsSuccess, error: jsError, response: jsFile } = await this.getStream(jsFileLocation);
+            if (!jsSuccess || jsFile === null) {
+                errorManager.errResFromNangoErr(res, jsError);
+                return;
+            }
+            files.push({ name: `${scriptName}.js`, content: jsFile });
+
+            const tsFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
+            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${tsFileLocation}/${scriptName}.ts`);
             if (!tsSuccess || tsFile === null) {
                 errorManager.errResFromNangoErr(res, tsError);
                 return;

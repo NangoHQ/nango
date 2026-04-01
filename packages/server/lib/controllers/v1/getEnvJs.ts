@@ -8,6 +8,7 @@ import {
     flagHasPlan,
     flagHasScripts,
     flagHasSlack,
+    flags,
     isCloud,
     isEnterprise,
     isHosted
@@ -20,7 +21,6 @@ import type { WindowEnv } from '@nangohq/types';
 export const getEnvJs = asyncWrapper<any, any>((_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
-        apiDownWatchPublicKey: envs.API_DOWN_WATCH_PUBLIC_KEY || '',
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,
@@ -40,7 +40,8 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             managedAuth: flagHasManagedAuth,
             gettingStarted: true,
             slack: flagHasSlack,
-            plan: flagHasPlan
+            plan: flagHasPlan,
+            authRoles: flags.hasAuthRoles
         }
     };
     res.setHeader('content-type', 'text/javascript');
