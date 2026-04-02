@@ -57,7 +57,7 @@ a[href="https://www.nango.dev"] svg {
 
 /* ══ CONTENT AREA ════════════════════════════════════════════════ */
 #content-area { position: relative; z-index: 1; padding-top: 3rem !important; }
-#content-area > div:first-child { margin-top: 1.5rem !important; }
+#content-area > div:first-child { margin-top: 3rem !important; }
 
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
 .dark #navigation-items > ul {
@@ -120,8 +120,8 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color
 }
 
 /* Tighten gap between the two buttons */
-#navbar a[href="https://app.nango.dev"] { margin-right: -2px !important; }
-#navbar a[href="https://app.nango.dev/signup"] { margin-left: -2px !important; }
+#navbar a[href="https://app.nango.dev"] { margin-right: -8px !important; }
+#navbar a[href="https://app.nango.dev/signup"] { margin-left: -8px !important; }
 
 /* Log In — dark */
 .dark #navbar a[href="https://app.nango.dev"] {
