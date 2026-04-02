@@ -30,8 +30,8 @@ if (!process.env['SANITY_DATASET']) {
     throw new Error('Missing SANITY_DATASET');
 }
 
-const dryRun = !!process.env['DRYRUN'];
-const forceUpdate = !!process.env['FORCE_UPDATE'];
+const dryRun = process.env['DRYRUN'] === 'true';
+const forceUpdate = process.env['FORCE_UPDATE'] === 'true';
 const projectId = process.env['SANITY_PROJECT_ID'];
 const dataset = process.env['SANITY_DATASET'];
 const token = process.env['SANITY_TOKEN'];
