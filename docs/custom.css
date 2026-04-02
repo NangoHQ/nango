@@ -109,19 +109,28 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color
 
 /* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
+/* Shared button sizing — applies to both Log In and Sign Up */
+#navbar a[href="https://app.nango.dev"],
+#navbar a[href="https://app.nango.dev/signup"] {
+  padding: 7px 16px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  line-height: 1.25rem !important;
+}
+
+/* Tighten gap between the two buttons */
+#navbar a[href="https://app.nango.dev"] { margin-right: -2px !important; }
+#navbar a[href="https://app.nango.dev/signup"] { margin-left: -2px !important; }
+
 /* Log In — dark */
 .dark #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 7px 16px !important;
   background-color: transparent !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-  font-size: 0.875rem !important;
   text-decoration: none !important;
-  margin-right: -6px !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(255, 255, 255, 0.06) !important;
@@ -132,15 +141,10 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color
 html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   display: inline-flex !important;
   align-items: center !important;
-  padding: 7px 16px !important;
   background-color: transparent !important;
   color: #0b0b0c !important;
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  border-radius: 4px !important;
-  font-weight: 500 !important;
-  font-size: 0.875rem !important;
   text-decoration: none !important;
-  margin-right: -6px !important;
 }
 html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(0, 0, 0, 0.04) !important;
