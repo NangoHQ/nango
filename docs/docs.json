@@ -3,28 +3,30 @@
   "theme": "mint",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#71c0e2",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
     "default": "system"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "dark": "#0b0b0c",
+      "light": "#ffffff"
+    }
+  },
+  "css": "custom.css",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
-  "contextual": {
-    "options": [
-      "copy",
-      "cursor",
-      "vscode",
-      "chatgpt",
-      "claude"
-    ]
-  },
   "seo": {
     "indexing": "all",
     "metatags": {
@@ -35,13 +37,18 @@
   "navbar": {
     "links": [
       {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
+        "type": "github",
+        "href": "https://github.com/NangoHQ/nango"
+      },
+      {
+        "label": "Log In",
+        "href": "https://app.nango.dev"
       }
     ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
+      "type": "button",
+      "label": "Sign Up",
+      "href": "https://app.nango.dev/signup"
     }
   },
   "footer": {
@@ -92,6 +99,7 @@
     "tabs": [
       {
         "tab": "Documentation",
+        "icon": "book-open",
         "groups": [
           {
             "group": "Getting Started",
@@ -211,6 +219,7 @@
       },
       {
         "tab": "APIs & Integrations",
+        "icon": "plug",
         "groups": [
           {
             "group": "700+ APIs & Integrations",
@@ -340,7 +349,6 @@
               "integrations/all/checkr-partner",
               "integrations/all/checkr-partner-staging",
               "integrations/all/chorus",
-              "api-integrations/cin7-core",
               "integrations/all/circle-so",
               "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
@@ -349,7 +357,6 @@
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
-              "api-integrations/clover",
               "api-integrations/clio",
               "integrations/all/close",
               "api-integrations/cloudbeds",
@@ -494,7 +501,6 @@
               "api-integrations/google-drive",
               "api-integrations/google-forms",
               "api-integrations/google-mail",
-              "api-integrations/google-maps",
               "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
@@ -667,7 +673,6 @@
               "integrations/all/one-note",
               "integrations/all/onelogin",
               "api-integrations/oomnitza",
-              "api-integrations/orange-logic",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -921,7 +926,6 @@
               "integrations/all/workday",
               "api-integrations/workday-oauth",
               "api-integrations/workos",
-              "api-integrations/workpath",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
@@ -956,6 +960,7 @@
       },
       {
         "tab": "Reference",
+        "icon": "square-terminal",
         "groups": [
           {
             "group": "Frontend",
@@ -1094,6 +1099,7 @@
       },
       {
         "tab": "Updates",
+        "icon": "bolt",
         "groups": [
           {
             "group": "Updates",
