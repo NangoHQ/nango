@@ -232,11 +232,24 @@ export const getSyncsByIds = async ({ syncIds }: { syncIds: string[] }): Promise
     return db.knex.select('id', 'nango_connection_id').from<Sync>(TABLE).whereIn('id', syncIds).andWhere({ deleted: false });
 };
 
-export const getSyncsByConnectionIds = async ({ connectionIds }: { connectionIds: number[] }): Promise<Pick<Sync, 'id' | 'name' | 'nango_connection_id'>[]> => {
+export const getSyncsByConnectionIds = async ({
+    connectionIds
+}: {
+    connectionIds: number[];
+}): Promise<Result<Pick<Sync, 'id' | 'name' | 'nango_connection_id'>[]>> => {
     if (connectionIds.length === 0) {
-        return [];
+        return Ok([]);
     }
-    return db.knex.select('id', 'name', 'nango_connection_id').from<Sync>(TABLE).whereIn('nango_connection_id', connectionIds).andWhere({ deleted: false });
+    try {
+        const result = await db.knex
+            .select('id', 'name', 'nango_connection_id')
+            .from<Sync>(TABLE)
+            .whereIn('nango_connection_id', connectionIds)
+            .andWhere({ deleted: false });
+        return Ok(result);
+    } catch (err) {
+        return Err(new Error(`Failed to get syncs by connection ids: ${stringifyError(err)}`));
+    }
 };
 
 export const getSyncsByConnectionId = async ({

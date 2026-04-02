@@ -1,7 +1,8 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { connectionService, getSyncsByConnectionIds } from '@nangohq/shared';
-import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -11,7 +12,6 @@ import { getOrchestrator } from '../../../utils/utils.js';
 import type { GetConnections } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
-const logger = getLogger('connections.getConnections');
 
 const queryStringValidation = z
     .object({
@@ -51,16 +51,22 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
 
     const pausedSyncsByConnection = new Map<number, string[]>();
     const connectionIds = connections.map((data) => data.connection.id);
-    const syncs = await getSyncsByConnectionIds({ connectionIds });
-    if (syncs.length > 0) {
-        const scheduleResult = await orchestrator.searchSchedules(syncs.map((s) => ({ syncId: s.id, environmentId: environment.id })));
-        if (scheduleResult.isErr()) {
-            logger.error(`Failed to retrieve sync states: ${scheduleResult.error}`);
-        } else {
-            for (const sync of syncs) {
-                if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
-                    const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
-                    pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
+    const span = tracer.scope().active();
+    const syncsResult = await getSyncsByConnectionIds({ connectionIds });
+    if (syncsResult.isErr()) {
+        span?.setTag('error', syncsResult.error);
+    } else {
+        const syncs = syncsResult.value;
+        if (syncs.length > 0) {
+            const scheduleResult = await orchestrator.searchSchedules(syncs.map((s) => ({ syncId: s.id, environmentId: environment.id })));
+            if (scheduleResult.isErr()) {
+                span?.setTag('error', scheduleResult.error);
+            } else {
+                for (const sync of syncs) {
+                    if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
+                        const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
+                        pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
+                    }
                 }
             }
         }

@@ -23,7 +23,8 @@ type PostSearch = Endpoint<{
 
 const bodySchema = z
     .object({
-        names: z.array(z.string().min(1)).optional(),
+        // max = page size (20 connections) * (~25 assumed schedules per connection) * 2 as buffer
+        names: z.array(z.string().min(1)).max(1000).optional(),
         state: z.enum(['STARTED', 'PAUSED', 'DELETED'] satisfies ScheduleState[]).optional(),
         limit: z.number().int()
     })
