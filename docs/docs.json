@@ -1099,7 +1099,7 @@
       },
       {
         "tab": "Updates",
-        "icon": "clock",
+        "icon": "bolt",
         "groups": [
           {
             "group": "Updates",
