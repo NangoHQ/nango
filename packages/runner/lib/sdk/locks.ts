@@ -58,13 +58,9 @@ export class KVLocks implements Locks {
 
         const sk = this.storageKey(key);
         try {
-            const current = await this.store.get(sk);
-            if (current !== null) {
-                if (current === owner) {
-                    await this.store.set(sk, owner, { canOverride: true, ttlMs });
-                    return Ok(true);
-                }
-                return Ok(false);
+            // Same-owner TTL refresh (atomic). No leading get — avoids a stale read before refresh.
+            if (await this.store.setIfValueEquals(sk, owner, owner, ttlMs)) {
+                return Ok(true);
             }
 
             await this.store.set(sk, owner, { canOverride: false, ttlMs });
@@ -80,12 +76,8 @@ export class KVLocks implements Locks {
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
         const sk = this.storageKey(key);
         try {
-            const holder = await this.store.get(sk);
-            if (holder === owner) {
-                await this.store.delete(sk);
-                return Ok(true);
-            }
-            return Ok(false);
+            const deleted = await this.store.deleteIfValueEquals(sk, owner);
+            return Ok(deleted);
         } catch (err: any) {
             return Err(new Error(`Error releasing lock for key ${key}`, { cause: err }));
         }
@@ -94,10 +86,7 @@ export class KVLocks implements Locks {
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
         try {
             for await (const sk of this.store.scan(`${LOCK_STORAGE_PREFIX}*`)) {
-                const holder = await this.store.get(sk);
-                if (holder === owner) {
-                    await this.store.delete(sk);
-                }
+                await this.store.deleteIfValueEquals(sk, owner);
             }
             return Ok(undefined);
         } catch (err: any) {

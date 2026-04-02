@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { InMemoryKVStore } from '@nangohq/kvstore';
 
@@ -152,5 +152,51 @@ describe.each([
             const res = await locks.hasLock({ owner: 'owner1', key: 'resource1' });
             expect(res.unwrap()).toBe(false);
         });
+    });
+});
+
+describe('KVLocks race regressions', () => {
+    let store: InMemoryKVStore;
+    let locks: KVLocks;
+
+    beforeEach(() => {
+        store = new InMemoryKVStore();
+        locks = new KVLocks(store);
+    });
+
+    afterEach(async () => {
+        await store.destroy();
+    });
+
+    it('releaseLock by a former owner must not remove the lock after another owner acquired post-expiry', async () => {
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff', ttlMs: 25 })).unwrap()).toBe(true);
+        await new Promise((r) => setTimeout(r, 80));
+        expect((await locks.tryAcquireLock({ owner: 'owner2', key: 'handoff', ttlMs: 10_000 })).unwrap()).toBe(true);
+
+        expect((await locks.releaseLock({ owner: 'owner1', key: 'handoff' })).unwrap()).toBe(false);
+        expect((await locks.hasLock({ owner: 'owner2', key: 'handoff' })).unwrap()).toBe(true);
+    });
+
+    it('tryAcquireLock by a former owner must not take the lock after another owner acquired post-expiry', async () => {
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff-acq', ttlMs: 25 })).unwrap()).toBe(true);
+        await new Promise((r) => setTimeout(r, 80));
+        expect((await locks.tryAcquireLock({ owner: 'owner2', key: 'handoff-acq', ttlMs: 10_000 })).unwrap()).toBe(true);
+
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff-acq', ttlMs: 10_000 })).unwrap()).toBe(false);
+        expect((await locks.hasLock({ owner: 'owner2', key: 'handoff-acq' })).unwrap()).toBe(true);
+    });
+
+    it('releaseAllLocks must not remove a lock whose value was taken over by another owner', async () => {
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'reassigned', ttlMs: 10_000 })).unwrap()).toBe(true);
+        const keys: string[] = [];
+        for await (const k of store.scan('runner:lock:*')) {
+            keys.push(k);
+        }
+        expect(keys).toHaveLength(1);
+        await store.set(keys[0]!, 'owner2', { canOverride: true, ttlMs: 10_000 });
+
+        await locks.releaseAllLocks({ owner: 'owner1' });
+
+        expect((await locks.hasLock({ owner: 'owner2', key: 'reassigned' })).unwrap()).toBe(true);
     });
 });
