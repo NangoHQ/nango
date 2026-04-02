@@ -138,7 +138,7 @@ const router = sentryCreateBrowserRouter([
                                     {
                                         path: 'generate',
                                         element: <GenerateFunction />,
-                                        handle: { breadcrumb: 'Generate' } as BreadcrumbHandle
+                                        handle: { breadcrumb: 'Generate function' } as BreadcrumbHandle
                                     },
                                     {
                                         path: 'functions/:functionName',

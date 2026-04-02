@@ -12,7 +12,8 @@ export type AgentEvent =
     | { eventType: 'agent.question'; type: 'question'; question_id: string; message: string; options?: string[] | undefined }
     | { eventType: 'agent.permission.requested'; type: 'question'; question_id: string; permission: string; patterns: string[] }
     | { eventType: 'agent.session.idle'; type: 'done'; message: string }
-    | { eventType: 'agent.error'; type: 'error'; message: string };
+    | { eventType: 'agent.error'; type: 'error'; message: string }
+    | { eventType: 'user.message'; type: 'user'; message: string };
 
 export type ChatStatus = 'idle' | 'starting' | 'streaming' | 'awaiting_answer' | 'finished' | 'error';
 
@@ -144,7 +145,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
 
             setStatus('starting');
             setError(null);
-            setEvents([]);
+            setEvents([{ eventType: 'user.message', type: 'user', message: prompt }]);
 
             const body: Record<string, string | undefined> = { prompt, integration_id: integrationId };
             if (connectionId) {
@@ -189,6 +190,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
                 return;
             }
 
+            setEvents((prev) => [...prev, { eventType: 'user.message', type: 'user', message: response }]);
             setPendingQuestion(null);
             setStatus('streaming');
         },

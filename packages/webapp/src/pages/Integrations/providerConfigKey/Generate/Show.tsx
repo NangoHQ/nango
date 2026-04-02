@@ -1,12 +1,10 @@
-import { Sparkles } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
 import { ChatComponent } from './chatComponents/ChatComponent';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Button } from '@/components-v2/ui/button';
-import { InputGroup, InputGroupTextarea } from '@/components-v2/ui/input-group';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useChat } from '@/hooks/useChat';
 import { useGetIntegration } from '@/hooks/useIntegration';
@@ -17,6 +15,7 @@ import { useStore } from '@/store';
 import type { AgentEvent } from '@/hooks/useChat';
 
 const MOCK_EVENTS: AgentEvent[] = [
+    { eventType: 'user.message', type: 'user', message: 'Create a sync that fetches all contacts from HubSpot' },
     { eventType: 'agent.lifecycle', type: 'progress', message: 'Spinning up workspace...' },
     { eventType: 'agent.session.started', type: 'session', session_id: 'sess_abc123' },
     { eventType: 'agent.delta', type: 'progress', message: 'Reading existing syncs...' },
@@ -31,6 +30,21 @@ const MOCK_EVENTS: AgentEvent[] = [
         message: 'Should I create a new file or overwrite the existing fetch-contacts.ts?',
         options: ['Create new file', 'Overwrite existing', 'Cancel']
     },
+    { eventType: 'user.message', type: 'user', message: 'Overwrite existing' },
+    {
+        eventType: 'agent.permission.requested',
+        type: 'question',
+        question_id: 'q_2',
+        permission: 'Write files',
+        patterns: ['/home/user/nango-integrations/hubspot/fetch-contacts.ts']
+    },
+    {
+        eventType: 'agent.permission.requested',
+        type: 'question',
+        question_id: 'q_2',
+        permission: 'Write files',
+        patterns: ['/home/user/nango-integrations/hubspot/fetch-contacts.ts']
+    },
     {
         eventType: 'agent.permission.requested',
         type: 'question',
@@ -39,6 +53,7 @@ const MOCK_EVENTS: AgentEvent[] = [
         patterns: ['/home/user/nango-integrations/hubspot/fetch-contacts.ts']
     },
     { eventType: 'agent.session.idle', type: 'done', message: 'Agent finished its current run.' },
+    { eventType: 'user.message', type: 'user', message: 'Also include the contact owner field in the output' },
     { eventType: 'agent.error', type: 'error', message: 'Workspace failed to compile: unexpected token at line 12' }
 ];
 
@@ -80,51 +95,58 @@ export const GenerateFunction: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="h-full">
+        <DashboardLayout fullWidth className="relative h-full p-0">
             <Helmet>
                 <title>Generate function - Nango</title>
             </Helmet>
-            <div className="flex flex-col h-full gap-6">
-                <div className="inline-flex items-center gap-2">
-                    <IntegrationLogo provider={integrationData.integration.provider} className="size-15" />
-                    <span className="text-text-primary text-body-large-semi">
-                        {integrationData.integration.display_name ?? integrationData.template.display_name}
-                    </span>
+
+            {/* Gradient overlays */}
+            <div className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10 bg-gradient-to-b from-black to-transparent" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-36 z-10 bg-gradient-to-t from-black to-transparent" />
+
+            {/** Chat container - takes full size so scrollbar sits at the far right */}
+            <div className="w-full h-full pb-36 pt-12 flex items-start justify-center overflow-y-auto">
+                {/* Chat messages */}
+                <div className="flex-1 w-full max-w-2xl flex flex-col gap-4">
+                    {displayEvents.map((event, i) => (
+                        <ChatComponent key={i} event={event} onAnswer={(response) => void sendAnswer(response)} />
+                    ))}
                 </div>
+            </div>
 
-                <div className="flex flex-col flex-1 h-full max-h-full overflow-y-scroll">
-                    {/* Chat messages */}
-                    <div className="flex-1 flex flex-col gap-4 overflow-y-auto">
-                        {displayEvents.map((event, i) => (
-                            <ChatComponent key={i} event={event} onAnswer={(response) => void sendAnswer(response)} />
-                        ))}
-                    </div>
-
-                    {/* Prompt input */}
-                    <div className="flex justify-center">
-                        <div className="w-full flex flex-col gap-3 max-w-2xl">
-                            <InputGroup className="min-h-12">
-                                <InputGroupTextarea
-                                    placeholder="Describe the function you want to generate..."
-                                    value={prompt}
-                                    onChange={(e) => setPrompt(e.target.value)}
-                                    rows={3}
-                                />
-                            </InputGroup>
-                            <div className="flex justify-end">
-                                <Button
-                                    variant="primary"
-                                    disabled={!prompt.trim() || isSessionActive}
-                                    onClick={() => {
+            {/* Prompt input */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full flex justify-center z-20">
+                <div className="w-full flex flex-col gap-3 max-w-2xl">
+                    <InputGroup className="min-h-12">
+                        <InputGroupTextarea
+                            placeholder="Describe the function you want to generate..."
+                            value={prompt}
+                            onChange={(e) => setPrompt(e.target.value)}
+                            rows={4}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    if (prompt.trim() && !isSessionActive) {
                                         void startSession(prompt);
                                         setPrompt('');
-                                    }}
-                                >
-                                    <Sparkles /> Generate
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
+                                    }
+                                }
+                            }}
+                        />
+                        <InputGroupAddon align="inline-end" className="self-end">
+                            <InputGroupButton
+                                size="icon-sm"
+                                variant="primary"
+                                disabled={!prompt.trim() || isSessionActive}
+                                onClick={() => {
+                                    void startSession(prompt);
+                                    setPrompt('');
+                                }}
+                            >
+                                <ArrowUp />
+                            </InputGroupButton>
+                        </InputGroupAddon>
+                    </InputGroup>
                 </div>
             </div>
         </DashboardLayout>

@@ -7,6 +7,7 @@ import { QuestionChatComponent } from './QuestionChatComponent';
 import { SessionIdleChatComponent } from './SessionIdleChatComponent';
 import { SessionStartedChatComponent } from './SessionStartedChatComponent';
 import { ToolUpdatedChatComponent } from './ToolUpdatedChatComponent';
+import { UserMessageChatComponent } from './UserMessageChatComponent';
 
 import type { AgentEvent } from '@/hooks/useChat';
 
@@ -35,5 +36,7 @@ export const ChatComponent: React.FC<ChatComponentProps> = ({ event, onAnswer })
             return <SessionIdleChatComponent message={event.message} />;
         case 'agent.error':
             return <ErrorChatComponent message={event.message} />;
+        case 'user.message':
+            return <UserMessageChatComponent message={event.message} />;
     }
 };
