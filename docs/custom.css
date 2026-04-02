@@ -57,7 +57,7 @@ a[href="https://www.nango.dev"] svg {
 
 /* ══ CONTENT AREA ════════════════════════════════════════════════ */
 #content-area { position: relative; z-index: 1; padding-top: 3rem !important; }
-#content-area > div:first-child { margin-top: 3rem !important; }
+#content-area > div:first-child { margin-top: 1.5rem !important; }
 
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
 .dark #navigation-items > ul {
