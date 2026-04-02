@@ -14,7 +14,7 @@
         "@nangohq/providers": "0.69.47",
         "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
-        "lodash-es": "4.17.23",
+        "lodash-es": "4.18.1",
         "parse-link-header": "2.0.0"
     },
     "devDependencies": {
