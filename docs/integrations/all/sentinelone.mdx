@@ -1,0 +1,57 @@
+---
+title: SentinelOne
+sidebarTitle: SentinelOne
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/sentinelone/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/sentinelone/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Required | You need access to a SentinelOne tenant. |
+| Paid test account | ✅ Recommended | Use a non-production tenant and a dedicated service user. |
+| Partnership | ❓ | |
+| App review | ❓ | |
+| Security audit | ❓ | |
+
+## Setup guide
+
+To get started with the SentinelOne integration:
+
+1. Create or select a SentinelOne service user
+2. Generate an API token for that user
+3. Copy your SentinelOne tenant hostname and enter it in Nango without `https://`
+4. See the [Connect guide](/integrations/all/sentinelone/connect) for the full setup and smoke-test flow
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
+
+## Useful links
+
+- SentinelOne API docs are available from **Help** -> **API Doc** in your SentinelOne management console.
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
+
+## API gotchas
+
+- SentinelOne tenant URLs are tenant-specific. In Nango, enter only the hostname, for example `your-tenant.sentinelone.net`.
+- This provider uses `https://<hostname>/web/api/v2.1` as the API base URL.
+- This provider authenticates with `Authorization: ApiToken <token>`.
+- SentinelOne's official API documentation is tenant-specific. Use your management console's **Help** -> **API Doc** page to confirm the latest API version and endpoint paths for your environment.
+- The official docs note that, starting on 8 October 2023 in X SP4, newly generated API tokens for console users default to a 30 day expiration period instead of 6 months. Service-user token expiry can differ by tenant configuration.
+- The connection verification endpoint is `GET /sites?limit=1`. If your service user cannot read sites, grant the required scope or use a token with access to that endpoint.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to SentinelOne" icon="link" href="/integrations/all/sentinelone/connect" horizontal>
+  Guide to connect to SentinelOne using Nango Connect UI.
+</Card>
