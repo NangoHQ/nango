@@ -122,6 +122,9 @@ html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:ho
 .dark li[data-active="true"] > a { border-radius: 4px !important; }
 html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 
+.sidebar-group-header {
+  padding-left: 8px !important;
+}
 .sidebar-group-header h5, #sidebar-title {
   font-size: 0.7rem !important;
   text-transform: uppercase !important;
