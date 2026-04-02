@@ -1,0 +1,57 @@
+---
+title: 'How to register your own Clover OAuth app'
+sidebarTitle: 'Clover Setup'
+description: 'Register an OAuth app with Clover and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Clover to obtain your OAuth credentials (App ID & App Secret). These are required to let your users grant your app access to their Clover merchant account.
+
+<Steps>
+  <Step title="Create a developer account">
+    If you don't already have one, [create a Clover developer account](https://www.clover.com/developer-home/create-account). This gives you access to the Developer Dashboard where you can create and manage apps.
+  </Step>
+
+  <Step title="Create a new app">
+    1. Log in to the [Clover Developer Dashboard](https://www.clover.com/developer-home).
+    2. Click **Create App**. The Create App window appears.
+    3. In the **App Name** field, enter the name of your application.
+    4. Select the countries where you want to make your app available for Clover merchants.
+    5. Select the supported languages for your region.
+    6. Click **Create**. The App Settings page appears.
+  </Step>
+
+  <Step title="Set the app type to Web">
+    1. From the left navigation menu, click **Your Apps** > **App name** > **App Settings**.
+    2. On the App Settings page, click **App Type**. The App Type page appears.
+    3. In the REST Clients section, select **Web**.
+    4. Click **Save**. The **REST Configuration** field now appears on the App Settings page.
+  </Step>
+
+  <Step title="Configure REST and OAuth settings">
+    1. On the App Settings page, click **REST Configuration**. The Edit REST Configuration page appears.
+    2. Set the **Site URL** to `https://api.nango.dev/oauth/callback`.
+    3. Click **Save**.
+  </Step>
+
+  <Step title="Set requested permissions">
+    1. On the App Settings page, click **Requested Permissions**. The Edit Requested Permissions page appears.
+    2. Select the permissions your app requires across categories such as customers, employees, inventory, orders, and payments.
+    3. Click **Save**.
+
+    <Note>Ecommerce permissions are currently not available in Europe.</Note>
+
+    <Note>When configuring the Clover integration in Nango, you can leave the **Scopes** field empty. Permissions are controlled entirely through the Requested Permissions settings in the Clover Developer Dashboard.</Note>
+  </Step>
+
+  <Step title="Obtain your App ID and App Secret">
+    On the App Settings page, locate the **App ID** (Client ID) and **App Secret** (Client Secret). These values uniquely identify your app on the Clover platform and are required for the OAuth flow. Copy both values — you'll need them when configuring the integration in Nango.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/api-integrations/clover).
+  </Step>
+</Steps>
+
+For more details, see [Clover's OAuth documentation](https://docs.clover.com/docs/oauth-intro).
+
+---

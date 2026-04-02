@@ -98,7 +98,9 @@ export enum Types {
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
-    PUBSUB_PUBLISH = 'nango.pubsub.publish'
+    PUBSUB_PUBLISH = 'nango.pubsub.publish',
+
+    AUTH_CALLBACK_STATE_COOKIE_MISSING = 'nango.server.auth.callback.state_cookie.missing'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
