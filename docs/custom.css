@@ -22,6 +22,10 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
 #navbar a[href="https://github.com/NangoHQ/nango"] span.truncate {
   display: none !important;
 }
+/* Hide entirely on mobile */
+@media (max-width: 767px) {
+  a[href="https://github.com/NangoHQ/nango"] { display: none !important; }
+}
 
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
