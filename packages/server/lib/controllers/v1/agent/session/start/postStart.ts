@@ -17,7 +17,7 @@ const bodySchema = z
     .strict();
 
 export const postAgentSessionStart = asyncWrapper<PostAgentSessionStart>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
+    const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
         return;

@@ -13,30 +13,43 @@ import type { AgentEvent } from '@/hooks/useChat';
 
 interface ChatComponentProps {
     event: AgentEvent;
+    isLast: boolean;
     onAnswer: (response: string) => void;
 }
 
-export const ChatComponent: React.FC<ChatComponentProps> = ({ event, onAnswer }) => {
+export const ChatComponent: React.FC<ChatComponentProps> = ({ event, isLast, onAnswer }) => {
+    let inner: React.ReactNode;
     switch (event.eventType) {
         case 'agent.lifecycle':
-            return <LifecycleChatComponent message={event.message} />;
+            inner = <LifecycleChatComponent message={event.message} isDone={!isLast} />;
+            break;
         case 'agent.session.started':
-            return <SessionStartedChatComponent session_id={event.session_id} />;
+            inner = <SessionStartedChatComponent session_id={event.session_id} />;
+            break;
         case 'agent.delta':
-            return <DeltaChatComponent message={event.message} />;
+            inner = <DeltaChatComponent message={event.message} />;
+            break;
         case 'agent.tool.updated':
-            return <ToolUpdatedChatComponent message={event.message} />;
+            inner = <ToolUpdatedChatComponent message={event.message} />;
+            break;
         case 'agent.message.updated':
-            return <MessageUpdatedChatComponent message={event.message} />;
+            inner = <MessageUpdatedChatComponent message={event.message} />;
+            break;
         case 'agent.question':
-            return <QuestionChatComponent message={event.message} options={event.options} onAnswer={onAnswer} />;
+            inner = <QuestionChatComponent message={event.message} options={event.options} onAnswer={onAnswer} />;
+            break;
         case 'agent.permission.requested':
-            return <PermissionRequestedChatComponent permission={event.permission} patterns={event.patterns} onAnswer={onAnswer} />;
+            inner = <PermissionRequestedChatComponent permission={event.permission} patterns={event.patterns} onAnswer={onAnswer} />;
+            break;
         case 'agent.session.idle':
-            return <SessionIdleChatComponent message={event.message} />;
+            inner = <SessionIdleChatComponent message={event.message} />;
+            break;
         case 'agent.error':
-            return <ErrorChatComponent message={event.message} />;
+            inner = <ErrorChatComponent message={event.message} />;
+            break;
         case 'user.message':
-            return <UserMessageChatComponent message={event.message} />;
+            inner = <UserMessageChatComponent message={event.message} />;
+            break;
     }
+    return <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{inner}</div>;
 };

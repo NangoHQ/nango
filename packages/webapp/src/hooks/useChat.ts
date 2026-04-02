@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiFetch } from '@/utils/api';
 import { globalEnv } from '@/utils/env';
 
+import type { AgentEventName, PostAgentSessionStart } from '@nangohq/types';
+
 export type AgentEvent =
     | { eventType: 'agent.lifecycle'; type: 'progress'; message: string }
     | { eventType: 'agent.session.started'; type: 'session'; session_id: string }
@@ -35,9 +37,10 @@ export interface UseChatReturn {
     error: string | null;
     startSession: (prompt: string) => Promise<void>;
     sendAnswer: (response: string) => Promise<void>;
+    mockQuestion: () => void;
 }
 
-function parseEvent(eventType: string, data: Record<string, unknown>): AgentEvent | null {
+function parseEvent(eventType: AgentEventName, data: Record<string, unknown>): AgentEvent | null {
     switch (eventType) {
         case 'agent.lifecycle':
             return { eventType, type: 'progress', message: data['message'] as string };
@@ -69,8 +72,6 @@ function parseEvent(eventType: string, data: Record<string, unknown>): AgentEven
             return { eventType, type: 'done', message: data['message'] as string };
         case 'agent.error':
             return { eventType, type: 'error', message: data['message'] as string };
-        default:
-            return null;
     }
 }
 
@@ -90,11 +91,11 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
     }, []);
 
     const openEventSource = useCallback((token: string) => {
-        const url = `${globalEnv.apiUrl}/api/v1/agent/session/${token}/events`;
+        const url = `${globalEnv.apiUrl}/api/v1/agent/session/${token}/events?env=${env}`;
         const es = new EventSource(url, { withCredentials: true });
         eventSourceRef.current = es;
 
-        const makeHandler = (eventType: string) => (e: MessageEvent) => {
+        const makeHandler = (eventType: AgentEventName) => (e: MessageEvent) => {
             const data = JSON.parse(e.data as string) as Record<string, unknown>;
             const event = parseEvent(eventType, data);
             if (event) {
@@ -102,7 +103,8 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
             }
 
             if (eventType === 'agent.question' || eventType === 'agent.permission.requested') {
-                setPendingQuestion({ question_id: data['question_id'] as string, message: data['message'] as string });
+                const message = eventType === 'agent.question' ? (data['message'] as string) : (data['permission'] as string);
+                setPendingQuestion({ question_id: data['question_id'] as string, message });
                 setStatus('awaiting_answer');
             } else if (eventType === 'agent.session.idle') {
                 setStatus('finished');
@@ -114,7 +116,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
             }
         };
 
-        const sseEvents = [
+        const sseEvents: AgentEventName[] = [
             'agent.lifecycle',
             'agent.session.started',
             'agent.delta',
@@ -147,7 +149,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
             setError(null);
             setEvents([{ eventType: 'user.message', type: 'user', message: prompt }]);
 
-            const body: Record<string, string | undefined> = { prompt, integration_id: integrationId };
+            const body: PostAgentSessionStart['Body'] = { prompt, integration_id: integrationId };
             if (connectionId) {
                 body['connection_id'] = connectionId;
             }
@@ -164,7 +166,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
                 return;
             }
 
-            const json = (await res.json()) as { session_token: string; execution_timeout_at: string };
+            const json = (await res.json()) as PostAgentSessionStart['Success'];
             setSessionToken(json.session_token);
             setStatus('streaming');
             openEventSource(json.session_token);
@@ -197,5 +199,13 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
         [pendingQuestion, sessionToken]
     );
 
-    return { status, events, pendingQuestion, error, startSession, sendAnswer };
+    const mockQuestion = useCallback(() => {
+        const question_id = `debug-${Date.now()}`;
+        const message = 'Debug question: what should happen next?';
+        setEvents((prev) => [...prev, { eventType: 'agent.question', type: 'question', question_id, message, options: ['Option A', 'Option B'] }]);
+        setPendingQuestion({ question_id, message });
+        setStatus('awaiting_answer');
+    }, []);
+
+    return { status, events, pendingQuestion, error, startSession, sendAnswer, mockQuestion };
 }

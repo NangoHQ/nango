@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "dwa",
+            "problemMatcher": [],
+            "label": "npm: dwa",
+            "detail": "npm run dev:watch:apps"
+        },
+        {
+            "type": "npm",
+            "script": "dw",
+            "problemMatcher": [],
+            "label": "npm: dw",
+            "detail": "npm run dev:watch"
+        }
+    ]
+}
