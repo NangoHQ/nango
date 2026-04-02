@@ -3439,6 +3439,40 @@ chorus:
             description: The API key for your Chorus account
             doc_section: '#step-1-generating-your-chorus-api-key'
 
+cin7-core:
+    display_name: Cin7 Core
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://inventory.dearsystems.com/externalapi
+        headers:
+            api-auth-accountid: ${connectionConfig.accountId}
+            api-auth-applicationkey: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/me
+    docs: https://nango.dev/docs/api-integrations/cin7-core
+    docs_connect: https://nango.dev/docs/api-integrations/cin7-core/connect
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Cin7 Core Account ID.
+            doc_section: '#step-1-find-your-account-id-and-api-application-key'
+            example: a1b2c3d4-****-****-****-ef1234567890
+            format: uuid
+    credentials:
+        apiKey:
+            type: string
+            title: API Application Key
+            description: Your Cin7 Core API Application Key.
+            secret: true
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-1-find-your-account-id-and-api-application-key'
+            example: 6d6f4999-****-****-****-4e4ed450df0f
+
 circle-so:
     display_name: Circle.so
     categories:
@@ -4615,6 +4649,7 @@ dayforce:
     body_format: form
     proxy:
         base_url: https://${connectionConfig.clientHostname}/api || https://www.dayforcehcm.com/api
+        forward_headers_on_redirect: true
     token_url: https://${connectionConfig.identityHostname}/connect/token || https://dfid.dayforcehcm.com/connect/token
     token_params:
         grant_type: password
@@ -7390,6 +7425,26 @@ google-mail:
     post_connection_script: googleMailPostConnection
     docs: https://nango.dev/docs/api-integrations/google-mail
     setup_guide_url: https://nango.dev/docs/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app
+
+google-maps:
+    display_name: Google Maps
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://maps.googleapis.com
+        query:
+            key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/google-maps
+    docs_connect: https://nango.dev/docs/api-integrations/google-maps/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Google Maps API Key.
+            example: AIzaSyAY4P9A***************1YMSYBI
+            pattern: ^AIza[0-9A-Za-z\-_]+$
+            doc_section: '#step-3-obtain-your-google-maps-api-key'
 
 google-search-console:
     display_name: Google Search Console
@@ -11730,6 +11785,50 @@ oomnitza:
             description: Your Oomnitza API token
             doc_section: '#step-2-generating-your-api-token'
 
+orange-logic:
+    display_name: Orange Logic
+    categories:
+        - storage
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/webapi/security/clientcredentialsauthentication/authenticate_46H_v1
+    token_params:
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+    docs: https://nango.dev/docs/api-integrations/orange-logic
+    docs_connect: https://nango.dev/docs/api-integrations/orange-logic/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your Orange Logic OAuth 2.0 Client Credentials.
+            doc_section: '#step-2-obtain-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your Orange Logic OAuth 2.0 Client Credentials.
+            secret: true
+            doc_section: '#step-2-obtain-client-credentials'
+    connection_config:
+        serverUrl:
+            type: string
+            title: Orange Logic Server URL
+            description: The base URL of your Orange Logic instance
+            example: mycompany.orangelogic.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-orange-logic-url'
+
 openai:
     display_name: OpenAI
     categories:
@@ -15394,6 +15493,43 @@ sharepoint-online-v1:
             secret: true
             doc_section: '#step-4-generating-your-client-assertion'
 
+shipbob-pat:
+    display_name: ShipBob (Personal Access Token)
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiSubdomain}.shipbob.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'x-retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /2026-01/channel
+    docs: https://nango.dev/docs/api-integrations/shipbob-pat
+    docs_connect: https://nango.dev/docs/api-integrations/shipbob-pat/connect
+    connection_config:
+        apiSubdomain:
+            type: string
+            title: API Subdomain
+            description: The ShipBob API subdomain of the environment you want to connect to.
+            example: api
+            pattern: '^(api|sandbox-api)$'
+            prefix: https://
+            suffix: .shipbob.com
+            doc_section: '#step-2-identify-your-api-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: Your ShipBob Personal Access Token
+            example: 6E4647BB**************************806E464161FBB996DD8E87EEA86DB926-1
+            pattern: '^[A-F0-9]{64}-\d+$'
+            doc_section: '#step-1-generate-your-token'
+
 shipstation:
     display_name: Shipstation (v1)
     categories:
@@ -18428,6 +18564,28 @@ workday-refresh-token:
             description: Your Workday refresh token for the Integration System User
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
+
+workpath:
+    display_name: Workpath
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://connect.workpath.com/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v3/kpis
+    docs: https://nango.dev/docs/api-integrations/workpath
+    docs_connect: https://nango.dev/docs/api-integrations/workpath/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Workpath API Token.
+            doc_section: '#step-1-getting-your-api-token'
 
 wrike:
     display_name: Wrike

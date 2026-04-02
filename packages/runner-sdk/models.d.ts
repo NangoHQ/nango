@@ -63,6 +63,7 @@ export interface ProxyConfiguration {
     retryHeader?: RetryHeaderConfig;
     responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | undefined;
     retryOn?: number[] | null;
+    forwardHeadersOnRedirect?: boolean;
 }
 export interface AuthModes {
     OAuth1: 'OAUTH1';

@@ -25,6 +25,7 @@ import { registerWithFleet } from '../runtime/runtimes.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
+import type { LambdaReadinessCheck } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const logger = getLogger('Lambda');
@@ -157,11 +158,12 @@ class Lambda {
                         }
                     })
                 );
+                const readinessCheckRequest: LambdaReadinessCheck = {
+                    type: 'readiness_check'
+                };
                 const command = new InvokeCommand({
                     FunctionName: aResult.AliasArn,
-                    Payload: JSON.stringify({
-                        type: 'readiness_check'
-                    }),
+                    Payload: JSON.stringify(readinessCheckRequest),
                     InvocationType: 'RequestResponse'
                 });
                 const response = await lambdaClient.send(command);
