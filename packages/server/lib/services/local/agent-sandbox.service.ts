@@ -14,7 +14,7 @@ const execFileAsync = promisify(execFile);
 const logger = getLogger('local-agent-sandbox');
 
 const opencodePort = 4096;
-export const localAgentImageName = process.env['LOCAL_AGENT_IMAGE'] || 'nango-local-agent';
+export const localAgentImageName = process.env['LOCAL_AGENT_IMAGE'] || 'agent-sandboxes/agent-workspace:local';
 
 export async function createLocalAgentSandbox(
     sessionId: string,
@@ -35,7 +35,9 @@ export async function createLocalAgentSandbox(
         `${hostPort}:${opencodePort}`,
         '-e',
         `OPENCODE_API_KEY=${process.env['OPENCODE_API_KEY'] ?? ''}`,
-        localAgentImageName
+        localAgentImageName,
+        'sleep',
+        'infinity'
     ]);
 
     await writeFileToContainer(containerName, `${agentProjectPath}/opencode.json`, JSON.stringify(createRuntimeConfig(), null, 2));

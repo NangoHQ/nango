@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 
 import { agentProjectPath } from '../agent/agent-runtime.js';
-import { buildIndexTs, buildNangoYaml, getFilePaths } from '../remote-function/compiler-client.js';
+import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 
 import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-client.js';
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'nango-local-compiler';
+const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'agent-sandboxes/blank-workspace:local';
 const compileTimeoutMs = 3 * 60 * 1000;
 const dryrunTimeoutMs = 5 * 60 * 1000;
 
@@ -46,7 +46,6 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 
         await writeContainerFile(containerName, `${agentProjectPath}/${tsFilePath}`, request.code);
         await writeContainerFile(containerName, `${agentProjectPath}/index.ts`, buildIndexTs(request));
-        await writeContainerFile(containerName, `${agentProjectPath}/nango.yaml`, buildNangoYaml(request));
 
         // Compile first
         try {
@@ -87,7 +86,16 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 }
 
 function buildDryrunCommand(request: DryrunRequest): string {
-    const parts = ['nango', 'dryrun', request.function_name, request.connection_id, `--integration-id ${request.integration_id}`, '--auto-confirm'];
+    const parts = [
+        'nango',
+        'dryrun',
+        request.function_name,
+        request.connection_id,
+        `--environment ${request.environment_name}`,
+        `--integration-id ${request.integration_id}`,
+        '--auto-confirm',
+        '--no-interactive'
+    ];
 
     if (request.input !== undefined) {
         parts.push('--input @/tmp/nango-dryrun-input.json');

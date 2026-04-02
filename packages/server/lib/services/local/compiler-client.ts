@@ -1,15 +1,16 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { agentProjectPath } from '../agent/agent-runtime.js';
-import { CompilerError, buildFlowConfig, buildIndexTs, buildNangoYaml, getFilePaths } from '../remote-function/compiler-client.js';
+import { CompilerError, buildFlowConfig, buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 
 import type { CompileRequest, CompileResult } from '../remote-function/compiler-client.js';
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'nango-local-compiler';
+const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'agent-sandboxes/blank-workspace:local';
 const compilerTimeoutMs = 3 * 60 * 1000;
 
 export async function invokeLocalCompiler(request: CompileRequest): Promise<CompileResult> {
@@ -24,7 +25,6 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
 
         await writeContainerFile(containerName, `${agentProjectPath}/${tsFilePath}`, request.code);
         await writeContainerFile(containerName, `${agentProjectPath}/index.ts`, buildIndexTs(request));
-        await writeContainerFile(containerName, `${agentProjectPath}/nango.yaml`, buildNangoYaml(request));
 
         try {
             await execFileAsync('docker', ['exec', '-w', agentProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
@@ -34,12 +34,12 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
             throw new CompilerError(err instanceof Error ? err.message : String(err), 'compilation');
         }
 
-        const [bundledJs, yamlContent] = await Promise.all([
+        const [bundledJs, nangoJson] = await Promise.all([
             readContainerFile(containerName, `${agentProjectPath}/${cjsFilePath}`),
-            readContainerFile(containerName, `${agentProjectPath}/nango.yaml`)
+            readContainerFile(containerName, path.join(agentProjectPath, '.nango', 'nango.json'))
         ]);
 
-        const flow = await buildFlowConfig(yamlContent, request, bundledJs);
+        const flow = buildFlowConfig(nangoJson, request, bundledJs);
         return {
             bundledJs,
             bundleSizeBytes: Buffer.byteLength(bundledJs, 'utf8'),

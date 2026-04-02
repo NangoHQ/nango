@@ -14,11 +14,12 @@ const logger = getLogger('e2b-agent-sandbox');
 const opencodePort = 4096;
 export const agentSandboxTimeoutMs = 10 * 60 * 1000; // 10 minutes per spec
 const timeoutRefreshThrottleMs = 60 * 1000;
-const agentTemplate = process.env['SANDBOX_AGENT_TEMPLATE'] || 'nango-opencode-agent';
+const agentTemplate = 'agent-workspace:staging';
 
 export async function createAgentSandbox(sessionId: string, payload: AgentSessionPayload, onProgress?: (message: string) => void): Promise<AgentRuntimeHandle> {
-    if (!process.env['SANDBOX_API_KEY']) {
-        throw new Error('SANDBOX_API_KEY is required for the E2B agent runtime');
+    const apiKey = process.env['E2B_API_KEY'];
+    if (!apiKey) {
+        throw new Error('E2B_API_KEY is required for the E2B agent runtime');
     }
 
     const resolvedPayload: AgentSessionResolvedPayload = resolvePayload(payload);
@@ -28,9 +29,10 @@ export async function createAgentSandbox(sessionId: string, payload: AgentSessio
         allowInternetAccess: true,
         metadata: { purpose: 'nango-agent', sessionId, createdBy: 'nango-server' },
         network: { allowPublicTraffic: true },
-        apiKey: process.env['SANDBOX_API_KEY']
+        apiKey
     });
 
+    // This assumes the template does not auto-start OpenCode; Nango owns config injection and process startup.
     await sandbox.files.write(`${agentProjectPath}/opencode.json`, JSON.stringify(createRuntimeConfig(), null, 2));
 
     const accessToken = sandbox.trafficAccessToken;

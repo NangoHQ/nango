@@ -4,7 +4,7 @@ import { CommandExitError, Sandbox } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
-import { buildIndexTs, buildNangoYaml, getFilePaths } from './compiler-client.js';
+import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { agentProjectPath } from '../agent/agent-runtime.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
@@ -13,6 +13,7 @@ export interface DryrunRequest {
     function_name: string;
     function_type: 'action' | 'sync';
     code: string;
+    environment_name: string;
     connection_id: string;
     nango_secret_key: string;
     nango_host: string;
@@ -28,21 +29,24 @@ export interface DryrunResult {
 
 const compileTimeoutMs = 3 * 60 * 1000;
 const dryrunTimeoutMs = 5 * 60 * 1000;
+const compilerTemplate = 'blank-workspace:staging';
 
 export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult> {
     if (isLocal) {
         return invokeLocalDryrun(request);
     }
 
-    if (!process.env['SANDBOX_API_KEY']) {
-        throw new Error('SANDBOX_API_KEY is required for the E2B dryrun runtime');
+    const apiKey = process.env['E2B_API_KEY'];
+    if (!apiKey) {
+        throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
     }
 
-    const sandbox = await Sandbox.create(process.env['SANDBOX_COMPILER_TEMPLATE'] || 'nango-sf-compiler', {
+    const sandbox = await Sandbox.create(compilerTemplate, {
         timeoutMs: dryrunTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-dryrun', requestId: randomUUID() },
-        network: { allowPublicTraffic: true }
+        network: { allowPublicTraffic: true },
+        apiKey
     });
 
     try {
@@ -50,7 +54,6 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
 
         await sandbox.files.write(`${agentProjectPath}/${tsFilePath}`, request.code);
         await sandbox.files.write(`${agentProjectPath}/index.ts`, buildIndexTs(request));
-        await sandbox.files.write(`${agentProjectPath}/nango.yaml`, buildNangoYaml(request));
 
         // Compile first
         try {
@@ -107,7 +110,16 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
 }
 
 function buildDryrunCommand(request: DryrunRequest): string {
-    const parts = ['nango', 'dryrun', request.function_name, request.connection_id, `--integration-id ${request.integration_id}`, '--auto-confirm'];
+    const parts = [
+        'nango',
+        'dryrun',
+        request.function_name,
+        request.connection_id,
+        `--environment ${request.environment_name}`,
+        `--integration-id ${request.integration_id}`,
+        '--auto-confirm',
+        '--no-interactive'
+    ];
 
     if (request.input !== undefined) {
         parts.push('--input @/tmp/nango-dryrun-input.json');

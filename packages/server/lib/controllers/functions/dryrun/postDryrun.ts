@@ -64,6 +64,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         function_name: body.function_name,
         function_type: body.function_type,
         code: body.code,
+        environment_name: environment.name,
         connection_id: body.connection_id,
         nango_secret_key: defaultSecret.value.secret,
         nango_host: getApiUrl(),
