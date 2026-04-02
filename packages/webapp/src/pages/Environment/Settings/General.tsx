@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,9 +12,9 @@ import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../..
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -104,9 +104,16 @@ export const General: React.FC = () => {
 
             <SettingsGroup
                 label={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <InfoTooltip icon={<Info />}>Production environments are only accessible to administrators and support roles.</InfoTooltip>
+                        <ButtonLink
+                            to="https://docs.nango.dev/guides/platform/environments#production-environments"
+                            size="icon"
+                            variant="ghost"
+                            target="_blank"
+                        >
+                            <ExternalLink />
+                        </ButtonLink>
                     </div>
                 }
             >
@@ -128,7 +135,11 @@ export const General: React.FC = () => {
                                         });
                                     },
                                     confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                                    confirmVariant: 'destructive'
+                                    confirmVariant: 'destructive',
+                                    docs: {
+                                        title: 'Learn more',
+                                        url: 'https://docs.nango.dev/guides/platform/environments#production-environments'
+                                    }
                                 })
                             }
                         />
