@@ -46,6 +46,10 @@ html:not(.dark) #navbar {
   background-color: #ffffff !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
+/* Remove inner div border so only the full-width #navbar border shows */
+#navbar [class*="border-b"] {
+  border-bottom: none !important;
+}
 
 /* ══ SIDEBAR ═════════════════════════════════════════════════════ */
 .dark #sidebar-content { background-color: #0b0b0c !important; z-index: 50; }
