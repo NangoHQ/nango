@@ -21,9 +21,23 @@ This guide will walk you through generating an API token and finding your Sentin
 
 #### Step 1: Generate your API token
 
-1. In your SentinelOne admin console, create a dedicated service user for Nango.
-2. Grant the smallest scope and read permissions that still allow your verification request to succeed.
-3. Copy the API token shown after creating the service user and record its expiry if one is set. You won't be able to view that same token again after creation.
+1. In your SentinelOne admin console, open **Settings**.
+
+<img src="/integrations/all/sentinelone/settings-sidebar.png" style={{maxWidth: "220px" }} />
+
+2. Select **Users** -> **Service Users**, open **Actions**, and click **Create New Service User**.
+
+<img src="/integrations/all/sentinelone/service-users-action.png" />
+
+3. Enter a name and optional description for your dedicated Nango service user. Set an expiration date if your security policy requires one, or leave it unset if you want a non-expiring service-user token.
+
+<img src="/integrations/all/sentinelone/create-service-user.png" />
+
+4. Select the smallest account or site scope and role that still allow your verification request and API reads to succeed.
+
+<img src="/integrations/all/sentinelone/scope-of-access.png" />
+
+5. Copy the API token shown after creating the service user and record its expiry if one is set. You won't be able to view that same token again after creation.
 
 <Note>SentinelOne's official docs say the API docs are tenant-specific and available from **Help** -> **API Doc** inside the management console. Use that page to confirm the latest API version your tenant exposes.</Note>
 
