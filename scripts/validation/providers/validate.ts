@@ -156,6 +156,10 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
     // Check if referenced connectionConfig keys exist in the connection_config property
     if (connectionConfigReferences.length > 0) {
         for (const reference of connectionConfigReferences) {
+            // Legacy fallback for existing connectwise-psa connections; new connections only expose hostname.
+            if (providerKey === 'connectwise-psa' && reference.key === 'subdomain') {
+                continue;
+            }
             const defined = provider.connection_config && reference.key in provider.connection_config;
             const inTokenResponseMetadata = provider.token_response_metadata?.includes(reference.key);
 
