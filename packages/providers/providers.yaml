@@ -4211,20 +4211,27 @@ connectwise-psa:
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
     proxy:
-        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        base_url: https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
             accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
-    docs: https://nango.dev/docs/integrations/all/connectwise-psa
+    docs: https://nango.dev/docs/api-integrations/connectwise-psa
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-psa/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The full ConnectWise PSA hostname.
+            example: api-na.myconnectwise.net
+            format: hostname
+            prefix: https://
+            suffix: /v4_6_release/apis/3.0
         subdomain:
             type: string
-            title: ConnectWise PSA subdomain
-            description: The subdomain to connect to ConnectWise PSA
-            pattern: '^api-(au|eu|na)$'
-            example: api-au
-            suffix: .myconnectwise.net
-            prefix: https://
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
         apiVersion:
             type: string
             title: Api version
