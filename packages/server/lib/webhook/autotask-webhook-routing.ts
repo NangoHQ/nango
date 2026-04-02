@@ -5,8 +5,8 @@ import type { AutotaskWebhookPayload, WebhookHandler } from './types.js';
 /**
  * Webhook routing handler for Autotask.
  *
- * Connection routing: Routes by payload Guid to the connection whose metadata
- * contains the matching `webhookGuid` value.
+ * Connection routing: Routes by payload Guid to the connection whose
+ * connectionConfig contains the matching `webhookGuid` value.
  *
  * Signature verification: Skipped at the routing level. Autotask uses a per-webhook
  * SecretKey for HMAC-SHA1 signatures. Individual sync `onWebhook` handlers should
@@ -16,15 +16,11 @@ import type { AutotaskWebhookPayload, WebhookHandler } from './types.js';
  * is used to match against webhook subscriptions defined in sync configs.
  */
 const route: WebhookHandler<AutotaskWebhookPayload> = async (nango, _headers, body, _rawBody) => {
-    if (!body.EntityType) {
-        return Ok({ content: { status: 'error', message: 'Missing EntityType field' }, statusCode: 400, connectionIds: [], toForward: body });
-    }
-
     const response = await nango.executeScriptForWebhooks({
         body,
         webhookType: 'EntityType', // Autotask webhook entity type field
         connectionIdentifier: 'Guid',
-        propName: 'metadata.webhookGuid'
+        propName: 'connectionConfig.webhookGuid'
     });
 
     return Ok({
