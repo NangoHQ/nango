@@ -99,13 +99,24 @@ html:not(.dark) li[data-active="true"] > a { background-color: rgba(0, 0, 0, 0.0
 .dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
   color: rgba(255, 255, 255, 0.85) !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 4px !important;
 }
 /* Increased contrast for light mode */
 html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button { color: rgba(0, 0, 0, 0.7) !important; }
 html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
   color: rgba(0, 0, 0, 0.85) !important;
   background-color: rgba(0, 0, 0, 0.04) !important;
+  border-radius: 4px !important;
 }
+
+/* Consistent padding on all sidebar nav items */
+#sidebar-group a, #sidebar-group button {
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+}
+/* Active item */
+.dark li[data-active="true"] > a { border-radius: 4px !important; }
+html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 
 .sidebar-group-header h5, #sidebar-title {
   font-size: 0.7rem !important;
