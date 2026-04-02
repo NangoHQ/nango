@@ -30,11 +30,13 @@ if (!process.env['SANITY_DATASET']) {
     throw new Error('Missing SANITY_DATASET');
 }
 
-const dryRun = !!process.env['DRYRUN'];
-const forceUpdate = !!process.env['FORCE_UPDATE'];
+const dryRun = process.env['DRYRUN'] === 'true';
+const forceUpdate = process.env['FORCE_UPDATE'] === 'true';
 const projectId = process.env['SANITY_PROJECT_ID'];
 const dataset = process.env['SANITY_DATASET'];
 const token = process.env['SANITY_TOKEN'];
+
+console.log(`Config: dryRun=${dryRun}, forceUpdate=${forceUpdate}`);
 
 const sanity = createClient({ projectId, dataset, token, apiVersion, useCdn: false });
 
@@ -120,12 +122,14 @@ async function buildDocument(slug: string, provider: Provider): Promise<SanityDo
     let logoAssetRef: string | undefined;
     if (logoBuffer) {
         if (!dryRun) {
+            console.log(`Uploading logo for ${slug}...`);
             const asset = await sanity.assets.upload('image', logoBuffer, {
                 filename: `${slug}.svg`,
                 contentType: 'image/svg+xml',
                 source: { id: slug, name: slug }
             });
             logoAssetRef = asset._id;
+            console.log(`Uploaded logo for ${slug}: ${logoAssetRef}`);
         } else {
             logoAssetRef = existing?.logo?.asset?._ref;
         }
@@ -153,6 +157,7 @@ if (forceUpdate) {
     const documents: SanityDoc[] = [];
 
     for (const [slug, provider] of Object.entries(neededProviders)) {
+        console.log(`Processing ${slug}...`);
         const doc = await buildDocument(slug, provider);
         documents.push(doc);
 
@@ -187,25 +192,23 @@ if (forceUpdate) {
     }
 } else {
     for (const [slug, provider] of Object.entries(neededProviders)) {
-        const doc = await buildDocument(slug, provider);
         const existing = existingBySlug[slug];
 
-        const existingCategoryRefs = new Set((existing?.category || []).map((c: { _ref: string }) => c._ref));
-        const newCategoryRefs = new Set(doc.category.map((c) => c._ref));
-        const categoriesUnchanged = existingCategoryRefs.size === newCategoryRefs.size && [...newCategoryRefs].every((ref) => existingCategoryRefs.has(ref));
-
         if (existing) {
-            const unchanged =
-                existing.name === doc.name &&
-                existing.documentationLink === doc.documentationLink &&
-                existing.logo?.asset?._ref === doc.logo?.asset?._ref &&
-                categoriesUnchanged;
+            const newCategoryRefs = new Set((provider.categories || []).filter((cat) => categoriesBySlug[cat]).map((cat) => categoriesBySlug[cat]!));
+            const existingCategoryRefs = new Set((existing.category || []).map((c: { _ref: string }) => c._ref));
+            const categoriesUnchanged =
+                existingCategoryRefs.size === newCategoryRefs.size && [...newCategoryRefs].every((ref) => existingCategoryRefs.has(ref));
+
+            const unchanged = existing.name === provider.display_name && existing.documentationLink === provider.docs && categoriesUnchanged;
 
             if (unchanged) {
                 skipped++;
                 continue;
             }
         }
+
+        const doc = await buildDocument(slug, provider);
 
         if (!dryRun) {
             await sanity.createOrReplace(doc);
