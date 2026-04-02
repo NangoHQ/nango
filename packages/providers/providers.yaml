@@ -4075,16 +4075,6 @@ connectwise-psa:
             format: hostname
             prefix: https://
             suffix: /v4_6_release/apis/3.0
-        subdomain:
-            type: string
-            title: Cloud Subdomain
-            description: Deprecated fallback field for existing ConnectWise PSA connections that still use a cloud subdomain
-            pattern: '^api-(au|eu|na)$'
-            example: api-au
-            suffix: .myconnectwise.net
-            prefix: https://
-            optional: true
-            hidden: true
         apiVersion:
             type: string
             title: Api version
