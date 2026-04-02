@@ -4157,7 +4157,8 @@ connectwise-psa:
         headers:
             accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
-    docs: https://nango.dev/docs/integrations/all/connectwise-psa
+    docs: https://nango.dev/docs/api-integrations/connectwise-psa
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-psa/connect
     connection_config:
         hostname:
             type: string
@@ -4167,6 +4168,12 @@ connectwise-psa:
             format: hostname
             prefix: https://
             suffix: /v4_6_release/apis/3.0
+        subdomain:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
         apiVersion:
             type: string
             title: Api version
