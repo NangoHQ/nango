@@ -1190,6 +1190,64 @@ apple-app-store:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://nango.dev/docs/integrations/all/apple-app-store
 
+apple-business-manager:
+    display_name: Apple Business Manager
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://account.apple.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: business.api
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 15552000
+        header:
+            alg: ES256
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://account.apple.com/auth/oauth2/v2/token
+            jti: ${random}
+    proxy:
+        base_url: https://api-business.apple.com
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/apple-business-manager
+    docs_connect: https://nango.dev/docs/api-integrations/apple-business-manager/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID generated when you create an API account.
+            doc_section: '#step-2-note-your-credentials'
+        keyId:
+            type: string
+            title: Key ID
+            description: The Key ID generated when you create an API account.
+            doc_section: '#step-2-note-your-credentials'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC private key (PEM format) used to sign the client assertion JWT.
+            doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:
@@ -14932,6 +14990,7 @@ sap-success-factors:
         assertion: ${credentials.assertion}
         new_token: true
     assertion:
+        type: saml
         key: ${assertionOption.privateKey}
         issuer: www.successfactors.com
         lifetimeInSeconds: '315360000'
