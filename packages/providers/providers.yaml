@@ -15165,8 +15165,8 @@ sentinelone:
             method: GET
             endpoints:
                 - /web/api/v2.1/sites?limit=1
-    docs: https://nango.dev/docs/integrations/all/sentinelone
-    docs_connect: https://nango.dev/docs/integrations/all/sentinelone/connect
+    docs: https://nango.dev/docs/api-integrations/sentinelone
+    docs_connect: https://nango.dev/docs/api-integrations/sentinelone/connect
     connection_config:
         hostname:
             type: string

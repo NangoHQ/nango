@@ -13,8 +13,7 @@ This guide will walk you through generating an API token and finding your Sentin
 
 ### Prerequisites
 
-- Use a non-production SentinelOne tenant.
-- Create a dedicated service user with read access to the resources you want to query through Nango.
+- Create a dedicated service user with scoped access to the resources you want to query through Nango.
 - Record the token scope, role, and expiry if one is set when you create the token.
 
 ### Instructions
@@ -23,19 +22,19 @@ This guide will walk you through generating an API token and finding your Sentin
 
 1. In your SentinelOne admin console, open **Settings**.
 
-<img src="/integrations/all/sentinelone/settings-sidebar.png" style={{maxWidth: "220px" }} />
+<img src="/api-integrations/sentinelone/settings-sidebar.png" style={{maxWidth: "220px" }} />
 
 2. Select **Users** -> **Service Users**, open **Actions**, and click **Create New Service User**.
 
-<img src="/integrations/all/sentinelone/service-users-action.png" />
+<img src="/api-integrations/sentinelone/service-users-action.png" />
 
 3. Enter a name and optional description for your dedicated Nango service user. Set an expiration date if your security policy requires one, or leave it unset if you want a non-expiring service-user token.
 
-<img src="/integrations/all/sentinelone/create-service-user.png" />
+<img src="/api-integrations/sentinelone/create-service-user.png" />
 
 4. Select the smallest account or site scope and role that still allow your verification request and API reads to succeed.
 
-<img src="/integrations/all/sentinelone/scope-of-access.png" />
+<img src="/api-integrations/sentinelone/scope-of-access.png" />
 
 5. Copy the API token shown after creating the service user and record its expiry if one is set. You won't be able to view that same token again after creation.
 
@@ -55,5 +54,7 @@ Once you have your **Hostname** and **API Token**:
 2. Enter the **Hostname** without `https://`.
 3. Enter the **API Token**.
 4. Submit the form to create the connection.
+
+<img src="/api-integrations/sentinelone/form.png" style={{maxWidth: "450px" }} />
 
 You are now connected to SentinelOne.

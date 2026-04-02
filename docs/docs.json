@@ -786,7 +786,7 @@
               "integrations/all/segment",
               "integrations/all/semrush",
               "integrations/all/sendgrid",
-              "integrations/all/sentinelone",
+              "api-integrations/sentinelone",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
