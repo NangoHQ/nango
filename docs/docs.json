@@ -11,7 +11,7 @@
     "family": "Albert Sans"
   },
   "appearance": {
-    "default": "dark"
+    "default": "system"
   },
   "background": {
     "decoration": "grid",
@@ -96,9 +96,9 @@
     }
   ],
   "navigation": {
-    "anchors": [
+    "tabs": [
       {
-        "anchor": "Documentation",
+        "tab": "Documentation",
         "icon": "book-open",
         "groups": [
           {
@@ -218,7 +218,7 @@
         ]
       },
       {
-        "anchor": "APIs & Integrations",
+        "tab": "APIs & Integrations",
         "icon": "plug",
         "groups": [
           {
@@ -959,7 +959,7 @@
         ]
       },
       {
-        "anchor": "Reference",
+        "tab": "Reference",
         "icon": "square-terminal",
         "groups": [
           {
@@ -1098,7 +1098,7 @@
         ]
       },
       {
-        "anchor": "Updates",
+        "tab": "Updates",
         "icon": "clock",
         "groups": [
           {

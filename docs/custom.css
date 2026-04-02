@@ -8,11 +8,10 @@
 [class~="rounded-xl"], [class~="rounded-2xl"], [class~="rounded-3xl"] {
   border-radius: 4px !important;
 }
-
 /* Native elements */
 pre, code, kbd, input, select, textarea, button { border-radius: 4px !important; }
 
-/* 1. Grid — behind everything, dark mode only */
+/* ══ GRID — behind everything, dark mode only ════════════════════ */
 .dark [class*="background-decoration"] {
   opacity: 0.02 !important;
   z-index: 0 !important;
@@ -25,7 +24,6 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
 }
 
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
-
 #navbar {
   position: fixed !important;
   top: 0 !important;
@@ -34,42 +32,23 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
   width: 100% !important;
   z-index: 100 !important;
 }
-
 .dark #navbar {
   background-color: #0b0b0c !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
-
 html:not(.dark) #navbar {
   background-color: #ffffff !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 /* ══ SIDEBAR ═════════════════════════════════════════════════════ */
-
-.dark #sidebar-content {
-  background-color: #0b0b0c !important;
-  z-index: 50;
-}
-
-.dark :has(> #sidebar-content) {
-  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-}
-
-html:not(.dark) :has(> #sidebar-content) {
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Remove internal top spacer */
-#sidebar-content .pointer-events-none.sticky {
-  display: none !important;
-}
-#navigation-items {
-  padding-top: 20px !important;
-}
+.dark #sidebar-content { background-color: #0b0b0c !important; z-index: 50; }
+.dark :has(> #sidebar-content) { border-right: 1px solid rgba(255, 255, 255, 0.08) !important; }
+html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
+#sidebar-content .pointer-events-none.sticky { display: none !important; }
+#navigation-items { padding-top: 20px !important; }
 
 /* ══ LOGO ════════════════════════════════════════════════════════ */
-
 a[href="https://www.nango.dev"] img,
 a[href="https://www.nango.dev"] svg {
   height: 40px !important;
@@ -77,88 +56,56 @@ a[href="https://www.nango.dev"] svg {
 }
 
 /* ══ CONTENT AREA ════════════════════════════════════════════════ */
-
-#content-area {
-  position: relative;
-  z-index: 1;
-  padding-top: 3rem !important;
-}
-
-#content-area > div:first-child {
-  margin-top: 1.5rem !important;
-}
+#content-area { position: relative; z-index: 1; padding-top: 3rem !important; }
+#content-area > div:first-child { margin-top: 1.5rem !important; }
 
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
-
 .dark #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   margin-bottom: 0 !important;
 }
-
 html:not(.dark) #navigation-items > ul {
   padding-bottom: 20px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
   margin-bottom: 0 !important;
 }
-
-.dark a.nav-anchor > div[style*="background"] {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-html:not(.dark) a.nav-anchor > div[style*="background"] {
-  background: rgba(0, 0, 0, 0.06) !important;
-}
+.dark a.nav-anchor > div[style*="background"] { background: rgba(255, 255, 255, 0.1) !important; }
+html:not(.dark) a.nav-anchor > div[style*="background"] { background: rgba(0, 0, 0, 0.06) !important; }
 
 .dark a.nav-anchor { color: rgba(255, 255, 255, 0.55) !important; }
 .dark a.nav-anchor[class*="text-primary"] { color: rgba(255, 255, 255, 0.9) !important; }
 .dark a.nav-anchor:hover { color: #ffffff !important; }
 
-html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.5) !important; }
-html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.85) !important; }
+/* Increased contrast for light mode */
+html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.7) !important; }
+html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.9) !important; }
 html:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
 
 /* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
+.dark li[data-active="true"] > a { background-color: rgba(255, 255, 255, 0.07) !important; color: #ffffff !important; }
+html:not(.dark) li[data-active="true"] > a { background-color: rgba(0, 0, 0, 0.06) !important; color: #000000 !important; }
 
-.dark li[data-active="true"] > a {
-  background-color: rgba(255, 255, 255, 0.07) !important;
-  color: #ffffff !important;
-}
-
-html:not(.dark) li[data-active="true"] > a {
-  background-color: rgba(0, 0, 0, 0.06) !important;
-  color: #000000 !important;
-}
-
-.dark #sidebar-group a, .dark #sidebar-group button {
-  color: rgba(255, 255, 255, 0.55) !important;
-}
+.dark #sidebar-group a, .dark #sidebar-group button { color: rgba(255, 255, 255, 0.55) !important; }
 .dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
   color: rgba(255, 255, 255, 0.85) !important;
   background-color: rgba(255, 255, 255, 0.04) !important;
 }
-
-html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button {
-  color: rgba(0, 0, 0, 0.55) !important;
-}
+/* Increased contrast for light mode */
+html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button { color: rgba(0, 0, 0, 0.7) !important; }
 html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
   color: rgba(0, 0, 0, 0.85) !important;
   background-color: rgba(0, 0, 0, 0.04) !important;
 }
 
-/* Section headers */
 .sidebar-group-header h5, #sidebar-title {
   font-size: 0.7rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.07em !important;
   font-weight: 600 !important;
 }
-.dark .sidebar-group-header h5, .dark #sidebar-title {
-  color: rgba(255, 255, 255, 0.45) !important;
-}
-html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
-  color: rgba(0, 0, 0, 0.35) !important;
-}
+.dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.45) !important; }
+html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.5) !important; }
 
 /* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
@@ -170,6 +117,7 @@ html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title {
   background-color: transparent !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 4px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
@@ -188,6 +136,7 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"] {
   background-color: transparent !important;
   color: #0b0b0c !important;
   border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  border-radius: 4px !important;
   font-weight: 500 !important;
   font-size: 0.875rem !important;
   text-decoration: none !important;
@@ -203,9 +152,7 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
 .dark a[href="https://app.nango.dev/signup"] span[class*="inset-0"] {
   background-color: #ffffff !important;
 }
-.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] {
-  color: #0b0b0c !important;
-}
+.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] { color: #0b0b0c !important; }
 .dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg,
 .dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg path {
   color: #0b0b0c !important;
@@ -213,12 +160,8 @@ html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
   fill: #0b0b0c !important;
 }
 /* Chevron SVG (sibling of text span) */
-.dark a[href="https://app.nango.dev/signup"] svg {
-  color: #0b0b0c !important;
-}
-.dark a[href="https://app.nango.dev/signup"] svg path {
-  stroke: #0b0b0c !important;
-}
+.dark a[href="https://app.nango.dev/signup"] svg { color: #0b0b0c !important; }
+.dark a[href="https://app.nango.dev/signup"] svg path { stroke: #0b0b0c !important; }
 .dark a[href="https://app.nango.dev/signup"]:hover span[class*="bg-primary"],
 .dark a[href="https://app.nango.dev/signup"]:hover span[class*="inset-0"] {
   background-color: rgba(255, 255, 255, 0.88) !important;
@@ -236,6 +179,22 @@ html:not(.dark) a[href="https://app.nango.dev/signup"]:hover span[class*="inset-
   opacity: 1 !important;
 }
 
+/* ══ RIGHT TOC ("On this page") ══════════════════════════════════ */
+[class*="TableOfContents"] a,
+[class*="toc"] a,
+nav[aria-label*="page"] a,
+nav[aria-label*="Table"] a {
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  display: block !important;
+}
+.dark [class*="TableOfContents"] a:hover,
+.dark nav[aria-label*="page"] a:hover,
+.dark nav[aria-label*="Table"] a:hover { background-color: rgba(255, 255, 255, 0.06) !important; }
+html:not(.dark) [class*="TableOfContents"] a:hover,
+html:not(.dark) nav[aria-label*="page"] a:hover,
+html:not(.dark) nav[aria-label*="Table"] a:hover { background-color: rgba(0, 0, 0, 0.05) !important; }
+
 /* ══ HIDE AI CHAT ASSISTANT ══════════════════════════════════════ */
 #chat-assistant-textarea,
 .chat-assistant-input,
@@ -244,13 +203,7 @@ html:not(.dark) a[href="https://app.nango.dev/signup"]:hover span[class*="inset-
 :has(> #chat-assistant-textarea) { display: none !important; }
 
 /* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
-
-[data-component-part="callout-icon"] {
-  flex-shrink: 0 !important;
-}
-
+[data-component-part="callout-icon"] { flex-shrink: 0 !important; }
 [data-component-part="callout-content"],
 [data-component-part="callout-content"] p,
-[data-component-part="callout-content"] span {
-  color: inherit !important;
-}
+[data-component-part="callout-content"] span { color: inherit !important; }
