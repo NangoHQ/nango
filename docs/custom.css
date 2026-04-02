@@ -118,6 +118,16 @@ html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:ho
   padding: 3px 8px !important;
   border-radius: 4px !important;
 }
+
+/* Indent nested pages (children of collapsible groups) */
+#sidebar-group li li a,
+#sidebar-group li li button {
+  padding-left: 20px !important;
+}
+#sidebar-group li li li a,
+#sidebar-group li li li button {
+  padding-left: 32px !important;
+}
 /* Active item */
 .dark li[data-active="true"] > a { border-radius: 4px !important; }
 html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
@@ -125,14 +135,30 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 .sidebar-group-header {
   padding-left: 8px !important;
 }
-.sidebar-group-header h5, #sidebar-title {
-  font-size: 0.7rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.07em !important;
-  font-weight: 600 !important;
+
+/* Desktop: uppercase small section headers */
+@media (min-width: 768px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-weight: 600 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.9) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.75) !important; }
 }
-.dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.9) !important; }
-html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.75) !important; }
+
+/* Mobile: bold natural-size headers like production */
+@media (max-width: 767px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.9375rem !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 700 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.95) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.9) !important; }
+}
 
 /* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
 
