@@ -1,15 +1,15 @@
 ---
-title: SentinelOne - How do I link my account?
-sidebarTitle: SentinelOne
+title: SentinelOne (API Token) - How do I link my account?
+sidebarTitle: SentinelOne (API Token)
 ---
 
 # Overview
 
-To authenticate with SentinelOne, you need:
-1. **Hostname** - The hostname of your SentinelOne management console, for example `your-tenant.sentinelone.net`.
-2. **API Token** - An API token created for a dedicated SentinelOne service user.
+To authenticate with SentinelOne, you will need:
+1. **API Token** — An API token created for a dedicated SentinelOne service user.
+2. **Hostname** — The hostname of your SentinelOne management console, for example `your-tenant.sentinelone.net`.
 
-This guide walks through the minimum information you need before creating the Nango connection.
+This guide will walk you through generating an API token and finding your SentinelOne management console hostname.
 
 ### Prerequisites
 
@@ -19,36 +19,22 @@ This guide walks through the minimum information you need before creating the Na
 
 ### Instructions
 
-#### Step 1: Finding Your Management URL
+#### Step 1: Generate your API token
 
-1. Sign in to your SentinelOne tenant.
-2. Copy the hostname from your browser URL.
-3. Enter only the hostname in Nango, for example `your-tenant.sentinelone.net`.
-
-<Note>The exact SentinelOne admin menus can vary by tenant version and cloud region. The hostname you need is the same hostname you use to open the management console.</Note>
-
-#### Step 2: Creating a Service User and API Token
-
-1. In your SentinelOne admin console, create or select a dedicated service user for Nango.
+1. In your SentinelOne admin console, create a dedicated service user for Nango.
 2. Grant the smallest scope and read permissions that still allow your verification request to succeed.
-3. Generate the API token from the console. The official user flow is **My User** -> **Actions** -> **API Token Operations** -> **Generate API token**.
-4. Copy the token immediately and record its expiry if one is set.
+3. Copy the API token shown after creating the service user and record its expiry if one is set. You won't be able to view that same token again after creation.
 
 <Note>SentinelOne's official docs say the API docs are tenant-specific and available from **Help** -> **API Doc** inside the management console. Use that page to confirm the latest API version your tenant exposes.</Note>
 
-#### Step 3: Smoke-Test the Token Directly
+#### Step 2: Find your hostname
 
-Before using Nango, verify the token directly against your SentinelOne tenant:
+1. Sign in to your SentinelOne tenant.
+2. Copy the hostname from your browser URL.
 
-```bash
-curl -fsS "https://your-tenant.sentinelone.net/web/api/v2.1/sites?limit=1" \
-  -H "Authorization: ApiToken <your-api-token>" \
-  -H "Accept: application/json"
-```
+<Note>The exact SentinelOne admin menus can vary by tenant version and cloud region. The hostname you need is the same hostname you use to open the management console.</Note>
 
-If this returns `200`, your draft Nango configuration is probably usable. If it returns `401`, `403`, or `404`, fix the tenant URL, token, or permissions before testing through Nango.
-
-#### Step 4: Enter Credentials in the Connect UI
+#### Step 3: Enter your credentials in the Connect UI
 
 Once you have your **Hostname** and **API Token**:
 1. Open the SentinelOne connection form in Nango.
@@ -56,4 +42,4 @@ Once you have your **Hostname** and **API Token**:
 3. Enter the **API Token**.
 4. Submit the form to create the connection.
 
-You are now connected to SentinelOne and ready to verify the connection through Nango with a real read request.
+You are now connected to SentinelOne.

@@ -1,57 +1,84 @@
 ---
-title: SentinelOne
-sidebarTitle: SentinelOne
+title: 'SentinelOne (API Token)'
+sidebarTitle: 'SentinelOne (API Token)'
+description: 'Integrate your application with the SentinelOne API using an API Token'
 ---
 
-import Overview from "/snippets/overview.mdx"
-import PreBuiltTooling from "/snippets/generated/sentinelone/PreBuiltTooling.mdx"
 import PreBuiltUseCases from "/snippets/generated/sentinelone/PreBuiltUseCases.mdx"
 
-<Overview />
-<PreBuiltTooling />
+## 🚀 Quickstart
+
+Connect to SentinelOne with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _SentinelOne_.
+    </Step>
+    <Step title="Authorize SentinelOne">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Token and Hostname. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the SentinelOne API">
+    Let's make your first request to the SentinelOne API (list sites). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/web/api/v2.1/sites?limit=1" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/web/api/v2.1/sites?limit=1',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    To call a different SentinelOne endpoint, keep the same `Provider-Config-Key` and `Connection-Id` and change only the proxied API path, for example `/web/api/v2.1/agents?limit=100`.
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 SentinelOne Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your SentinelOne API Token](/integrations/all/sentinelone/connect)
+
+Generate an API Token in the SentinelOne console and connect it to Nango.
+
+Official docs: SentinelOne API docs are available from **Help** -> **API Doc** in your SentinelOne management console.
+
+## 🧩 Pre-built syncs & actions for SentinelOne
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
 <PreBuiltUseCases />
 
-## Access requirements
-| Pre-Requisites | Status | Comment|
-| - | - | - |
-| Paid dev account | ✅ Required | You need access to a SentinelOne tenant. |
-| Paid test account | ✅ Recommended | Use a non-production tenant and a dedicated service user. |
-| Partnership | ❓ | |
-| App review | ❓ | |
-| Security audit | ❓ | |
-
-## Setup guide
-
-To get started with the SentinelOne integration:
-
-1. Create or select a SentinelOne service user
-2. Generate an API token for that user
-3. Copy your SentinelOne tenant hostname and enter it in Nango without `https://`
-4. See the [Connect guide](/integrations/all/sentinelone/connect) for the full setup and smoke-test flow
-
-<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
-
-<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
-
-## Useful links
-
-- SentinelOne API docs are available from **Help** -> **API Doc** in your SentinelOne management console.
-
-<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
-
-## API gotchas
-
-- SentinelOne tenant URLs are tenant-specific. In Nango, enter only the hostname, for example `your-tenant.sentinelone.net`.
-- This provider uses `https://<hostname>/web/api/v2.1` as the API base URL.
-- This provider authenticates with `Authorization: ApiToken <token>`.
-- SentinelOne's official API documentation is tenant-specific. Use your management console's **Help** -> **API Doc** page to confirm the latest API version and endpoint paths for your environment.
-- The official docs note that, starting on 8 October 2023 in X SP4, newly generated API tokens for console users default to a 30 day expiration period instead of 6 months. Service-user token expiry can differ by tenant configuration.
-- The connection verification endpoint is `GET /sites?limit=1`. If your service user cannot read sites, grant the required scope or use a token with access to that endpoint.
-
-<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sentinelone.mdx)</Note>
-
-## Going further
-
-<Card title="Connect to SentinelOne" icon="link" href="/integrations/all/sentinelone/connect" horizontal>
-  Guide to connect to SentinelOne using Nango Connect UI.
-</Card>
+---
