@@ -39,6 +39,10 @@ services:
             - NANGO_DASHBOARD_USERNAME
             - NANGO_DASHBOARD_PASSWORD
             - LOG_LEVEL=${LOG_LEVEL:-info}
+            - AGENT_RUNTIME=${AGENT_RUNTIME:-local}
+            - E2B_API_KEY
+            - SANDBOX_AGENT_TEMPLATE
+            - SANDBOX_COMPILER_TEMPLATE
             - NANGO_SERVER_WEBSOCKETS_PATH
             - NANGO_LOGS_ENABLED=${NANGO_LOGS_ENABLED:-false}
             - NANGO_LOGS_ES_URL=${NANGO_LOGS_ES_URL:-http://nango-elasticsearch:9200}

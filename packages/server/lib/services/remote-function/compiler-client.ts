@@ -1,17 +1,14 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { CommandExitError, Sandbox } from 'e2b';
 
-import { loadNangoYaml } from '@nangohq/nango-yaml';
 import { isLocal } from '@nangohq/utils';
 
 import { agentProjectPath } from '../agent/agent-runtime.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
-import type { CLIDeployFlowConfig, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
+import type { CLIDeployFlowConfig, FlowsZeroJson, ParsedNangoAction, ParsedNangoSync } from '@nangohq/types';
 
 export interface CompileRequest {
     integration_id: string;
@@ -40,21 +37,24 @@ export class CompilerError extends Error {
 }
 
 const compilerTimeoutMs = 3 * 60 * 1000;
+const compilerTemplate = 'blank-workspace:staging';
 
 export async function invokeCompiler(request: CompileRequest): Promise<CompileResult> {
     if (isLocal) {
         return invokeLocalCompiler(request);
     }
 
-    if (!process.env['SANDBOX_API_KEY']) {
-        throw new Error('SANDBOX_API_KEY is required for the E2B compiler runtime');
+    const apiKey = process.env['E2B_API_KEY'];
+    if (!apiKey) {
+        throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
     }
 
-    const sandbox = await Sandbox.create(process.env['SANDBOX_COMPILER_TEMPLATE'] || 'nango-sf-compiler', {
+    const sandbox = await Sandbox.create(compilerTemplate, {
         timeoutMs: compilerTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-compiler', requestId: randomUUID() },
-        network: { allowPublicTraffic: true }
+        network: { allowPublicTraffic: true },
+        apiKey
     });
 
     try {
@@ -62,7 +62,6 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
 
         await sandbox.files.write(path.join(agentProjectPath, tsFilePath), request.code);
         await sandbox.files.write(path.join(agentProjectPath, 'index.ts'), buildIndexTs(request));
-        await sandbox.files.write(path.join(agentProjectPath, 'nango.yaml'), buildNangoYaml(request));
 
         try {
             await sandbox.commands.run('nango compile', {
@@ -77,13 +76,13 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
             throw err;
         }
 
-        const [bundledJs, yamlContent] = await Promise.all([
+        const [bundledJs, nangoJson] = await Promise.all([
             sandbox.files.read(path.join(agentProjectPath, cjsFilePath)),
-            sandbox.files.read(path.join(agentProjectPath, 'nango.yaml'))
+            sandbox.files.read(path.join(agentProjectPath, '.nango', 'nango.json'))
         ]);
 
         const bundledJsStr = String(bundledJs);
-        const flow = await buildFlowConfig(String(yamlContent), request, bundledJsStr);
+        const flow = buildFlowConfig(String(nangoJson), request, bundledJsStr);
         return {
             bundledJs: bundledJsStr,
             bundleSizeBytes: Buffer.byteLength(bundledJsStr, 'utf8'),
@@ -116,40 +115,17 @@ export function buildIndexTs(request: Pick<CompileRequest, 'integration_id' | 'f
 }
 
 /**
- * Minimal nango.yaml so that `nango compile` has a valid project definition.
- * The agent is expected to have written a more complete yaml; this is a fallback
- * for cases where the compile endpoint is called without one in the sandbox.
+ * Parse .nango/nango.json content (from sandbox) and build the CLIDeployFlowConfig the deploy endpoint needs.
  */
-export function buildNangoYaml(request: Pick<CompileRequest, 'integration_id' | 'function_name' | 'function_type'>): string {
-    if (request.function_type === 'action') {
-        return `integrations:\n  - providerConfigKey: ${request.integration_id}\n    actions:\n      - name: ${request.function_name}\n`;
-    }
-    return `integrations:\n  - providerConfigKey: ${request.integration_id}\n    syncs:\n      - name: ${request.function_name}\n        runs: every 30min\n`;
-}
+export function buildFlowConfig(nangoJsonContent: string, request: CompileRequest, bundledJs: string): CLIDeployFlowConfig {
+    const integrations = JSON.parse(nangoJsonContent) as FlowsZeroJson;
+    const integration = integrations.find((i) => i.providerConfigKey === request.integration_id);
+    const scriptDef =
+        request.function_type === 'action'
+            ? integration?.actions.find((a) => a.name === request.function_name)
+            : integration?.syncs.find((s) => s.name === request.function_name);
 
-/**
- * Parse nango.yaml content (from sandbox) and build the CLIDeployFlowConfig the deploy endpoint needs.
- * Writes to a temp dir so loadNangoYaml can read it from disk.
- */
-export async function buildFlowConfig(yamlContent: string, request: CompileRequest, bundledJs: string): Promise<CLIDeployFlowConfig> {
-    const tempDir = path.join(tmpdir(), `nango-compile-${randomUUID()}`);
-    try {
-        await mkdir(tempDir, { recursive: true });
-        await writeFile(path.join(tempDir, 'nango.yaml'), yamlContent, 'utf8');
-
-        const parser = loadNangoYaml({ fullPath: tempDir });
-        parser.parse();
-
-        const integration = parser.parsed?.integrations.find((i) => i.providerConfigKey === request.integration_id);
-        const scriptDef =
-            request.function_type === 'action'
-                ? integration?.actions.find((a) => a.name === request.function_name)
-                : integration?.syncs.find((s) => s.name === request.function_name);
-
-        return buildFlowFromDef(scriptDef, request, bundledJs);
-    } finally {
-        await rm(tempDir, { recursive: true, force: true });
-    }
+    return buildFlowFromDef(scriptDef, request, bundledJs);
 }
 
 export function buildFlowFromDef(scriptDef: ParsedNangoSync | ParsedNangoAction | undefined, request: CompileRequest, bundledJs: string): CLIDeployFlowConfig {

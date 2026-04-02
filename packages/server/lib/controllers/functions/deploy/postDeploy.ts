@@ -70,6 +70,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         function_name: body.function_name,
         function_type: body.function_type,
         code: body.code,
+        environment_name: environment.name,
         nango_secret_key: defaultSecret.value.secret,
         nango_host: getApiUrl()
     });

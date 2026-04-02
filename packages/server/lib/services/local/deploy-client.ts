@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { promisify } from 'node:util';
 
 import { agentProjectPath } from '../agent/agent-runtime.js';
-import { buildIndexTs, buildNangoYaml, getFilePaths } from '../remote-function/compiler-client.js';
+import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 
 import type { DeployRequest, DeployResult } from '../remote-function/deploy-client.js';
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'nango-local-compiler';
+const localCompilerImage = 'agent-sandboxes/blank-workspace:local';
 const deployTimeoutMs = 5 * 60 * 1000;
 
 export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployResult> {
@@ -46,7 +46,6 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
 
         await writeContainerFile(containerName, `${agentProjectPath}/${tsFilePath}`, request.code);
         await writeContainerFile(containerName, `${agentProjectPath}/index.ts`, buildIndexTs(request));
-        await writeContainerFile(containerName, `${agentProjectPath}/nango.yaml`, buildNangoYaml(request));
 
         const cmd = buildDeployCommand(request);
 
@@ -68,7 +67,7 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
 
 function buildDeployCommand(request: DeployRequest): string {
     const typeFlag = request.function_type === 'action' ? `--action ${request.function_name}` : `--sync ${request.function_name}`;
-    return `nango deploy ${typeFlag} --auto-confirm --allow-destructive`;
+    return `nango deploy ${request.environment_name} ${typeFlag} --auto-confirm --allow-destructive --no-interactive`;
 }
 
 async function writeContainerFile(containerName: string, filePath: string, content: string): Promise<void> {

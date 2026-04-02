@@ -19,6 +19,16 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
+    it('should default to local runtime without defaulting sandbox templates', () => {
+        const res = parseEnvs(ENVS, {});
+
+        expect(res).toMatchObject({
+            AGENT_RUNTIME: 'local'
+        });
+        expect(res.SANDBOX_AGENT_TEMPLATE).toBeUndefined();
+        expect(res.SANDBOX_COMPILER_TEMPLATE).toBeUndefined();
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });

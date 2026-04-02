@@ -4,7 +4,7 @@ import { CommandExitError, Sandbox } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
-import { buildIndexTs, buildNangoYaml, getFilePaths } from './compiler-client.js';
+import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { agentProjectPath } from '../agent/agent-runtime.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
 
@@ -13,6 +13,7 @@ export interface DeployRequest {
     function_name: string;
     function_type: 'action' | 'sync';
     code: string;
+    environment_name: string;
     nango_secret_key: string;
     nango_host: string;
 }
@@ -22,21 +23,24 @@ export interface DeployResult {
 }
 
 const deployTimeoutMs = 5 * 60 * 1000;
+const compilerTemplate = 'blank-workspace:staging';
 
 export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
     if (isLocal) {
         return invokeLocalDeploy(request);
     }
 
-    if (!process.env['SANDBOX_API_KEY']) {
-        throw new Error('SANDBOX_API_KEY is required for the E2B deploy runtime');
+    const apiKey = process.env['E2B_API_KEY'];
+    if (!apiKey) {
+        throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
     }
 
-    const sandbox = await Sandbox.create(process.env['SANDBOX_COMPILER_TEMPLATE'] || 'nango-sf-compiler', {
+    const sandbox = await Sandbox.create(compilerTemplate, {
         timeoutMs: deployTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-deploy', requestId: randomUUID() },
-        network: { allowPublicTraffic: true }
+        network: { allowPublicTraffic: true },
+        apiKey
     });
 
     try {
@@ -44,7 +48,6 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
 
         await sandbox.files.write(`${agentProjectPath}/${tsFilePath}`, request.code);
         await sandbox.files.write(`${agentProjectPath}/index.ts`, buildIndexTs(request));
-        await sandbox.files.write(`${agentProjectPath}/nango.yaml`, buildNangoYaml(request));
 
         const cmd = buildDeployCommand(request);
         const envs = {
@@ -78,5 +81,5 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
 
 function buildDeployCommand(request: DeployRequest): string {
     const typeFlag = request.function_type === 'action' ? `--action ${request.function_name}` : `--sync ${request.function_name}`;
-    return `nango deploy ${typeFlag} --auto-confirm --allow-destructive`;
+    return `nango deploy ${request.environment_name} ${typeFlag} --auto-confirm --allow-destructive --no-interactive`;
 }
