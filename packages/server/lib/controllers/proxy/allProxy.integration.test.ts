@@ -1,7 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
+import { envs } from '../../env.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/proxy/:anyPath';
@@ -101,5 +102,46 @@ describe(`GET ${route}`, () => {
         });
 
         isSuccess(res.json);
+    });
+
+    describe('base-url-override denylist', () => {
+        let previousDenylist: string[];
+
+        beforeAll(() => {
+            previousDenylist = [...envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST];
+        });
+
+        beforeEach(() => {
+            envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = ['169.254.169.254'];
+        });
+
+        afterEach(() => {
+            envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST = [...previousDenylist];
+        });
+
+        it('should reject a denied base-url-override', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const integration = await seeders.createConfigSeed(env, 'github', 'github');
+            const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+            const res = await api.fetch(route, {
+                method: 'GET',
+                token: secret.secret,
+                params: { anyPath: 'latest/meta-data/' },
+                headers: {
+                    'connection-id': connection.connection_id,
+                    'provider-config-key': integration.unique_key,
+                    'base-url-override': 'http://169.254.169.254'
+                }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json).toStrictEqual({
+                error: {
+                    code: 'base_url_override_not_allowed',
+                    message: 'This base URL override is not allowed by server configuration.'
+                }
+            });
+        });
     });
 });

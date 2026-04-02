@@ -17,6 +17,8 @@ import {
 } from '@nangohq/shared';
 import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
+import { isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
+import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { pubsub } from '../../pubsub.js';
@@ -60,17 +62,27 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
         return;
     }
+    const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
+    const baseUrlOverride = parsedHeaders['base-url-override'];
+    if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST)) {
+        res.status(400).send({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+        return;
+    }
+
     const { environment, account, plan } = res.locals;
 
     metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     let logCtx: LogContext | undefined;
-    const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
 
     const connectionId = parsedHeaders['connection-id'];
     const providerConfigKey = parsedHeaders['provider-config-key'];
     const retries = parsedHeaders['retries'];
-    const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
     const forwardHeadersOnRedirect = parsedHeaders['forward-headers-on-redirect'] === 'true';
