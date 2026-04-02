@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { StyledLink } from './StyledLink';
 import { Button } from './ui/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 
@@ -10,6 +11,10 @@ export interface ConfirmDialogOptions {
     cancelButtonText?: string;
     confirmVariant?: 'primary' | 'destructive' | 'secondary' | 'tertiary';
     icon?: React.ReactNode;
+    docs?: {
+        title: string;
+        url: string;
+    };
     onConfirm: () => void | Promise<unknown>;
 }
 
@@ -29,7 +34,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     confirmVariant = 'primary',
     icon,
     onConfirm,
-    loading = false
+    loading = false,
+    docs
 }) => {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -59,6 +65,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         <DialogTitle>{title}</DialogTitle>
                     </div>
                     <DialogDescription>{description}</DialogDescription>
+                    {docs && (
+                        <StyledLink to={docs.url} type="external" icon>
+                            {docs.title}
+                        </StyledLink>
+                    )}
                 </DialogHeader>
                 <DialogFooter>
                     <DialogClose asChild>
