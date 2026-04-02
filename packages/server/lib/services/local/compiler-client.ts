@@ -10,7 +10,7 @@ import type { CompileRequest, CompileResult } from '../remote-function/compiler-
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'agent-sandboxes/blank-workspace:local';
+const localCompilerImage = 'agent-sandboxes/blank-workspace:local';
 const compilerTimeoutMs = 3 * 60 * 1000;
 
 export async function invokeLocalCompiler(request: CompileRequest): Promise<CompileResult> {

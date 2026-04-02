@@ -40,8 +40,6 @@ services:
             - NANGO_DASHBOARD_PASSWORD
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - AGENT_RUNTIME=${AGENT_RUNTIME:-local}
-            - LOCAL_AGENT_IMAGE=${LOCAL_AGENT_IMAGE:-agent-sandboxes/agent-workspace:local}
-            - LOCAL_COMPILER_IMAGE=${LOCAL_COMPILER_IMAGE:-agent-sandboxes/blank-workspace:local}
             - E2B_API_KEY
             - SANDBOX_AGENT_TEMPLATE
             - SANDBOX_COMPILER_TEMPLATE

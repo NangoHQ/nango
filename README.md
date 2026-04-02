@@ -113,11 +113,9 @@ Embed the [Auth](https://nango.dev/docs/implementation-guides/platform/auth/impl
 
 ```bash
 export AGENT_RUNTIME=local
-export LOCAL_AGENT_IMAGE=agent-sandboxes/agent-workspace:local
-export LOCAL_COMPILER_IMAGE=agent-sandboxes/blank-workspace:local
 
-docker pull "$LOCAL_AGENT_IMAGE"
-docker pull "$LOCAL_COMPILER_IMAGE"
+docker pull agent-sandboxes/agent-workspace:local
+docker pull agent-sandboxes/blank-workspace:local
 ```
 
 Start Nango normally after that. Agent sessions, compile, and dryrun will spawn local Docker sandboxes on demand.

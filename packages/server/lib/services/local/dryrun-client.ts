@@ -9,7 +9,7 @@ import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-clie
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'agent-sandboxes/blank-workspace:local';
+const localCompilerImage = 'agent-sandboxes/blank-workspace:local';
 const compileTimeoutMs = 3 * 60 * 1000;
 const dryrunTimeoutMs = 5 * 60 * 1000;
 

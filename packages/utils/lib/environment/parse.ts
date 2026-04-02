@@ -509,8 +509,6 @@ export const ENVS = z.object({
     SANDBOX_COMPILER_TEMPLATE: z.string().optional(),
     SANDBOX_AGENT_TEMPLATE: z.string().optional(),
     AGENT_RUNTIME: z.enum(['e2b', 'local']).optional().default('local'),
-    LOCAL_AGENT_IMAGE: z.string().optional().default('agent-sandboxes/agent-workspace:local'),
-    LOCAL_COMPILER_IMAGE: z.string().optional().default('agent-sandboxes/blank-workspace:local'),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

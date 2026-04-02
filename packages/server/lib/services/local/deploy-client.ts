@@ -9,7 +9,7 @@ import type { DeployRequest, DeployResult } from '../remote-function/deploy-clie
 
 const execFileAsync = promisify(execFile);
 
-const localCompilerImage = process.env['LOCAL_COMPILER_IMAGE'] || 'agent-sandboxes/blank-workspace:local';
+const localCompilerImage = 'agent-sandboxes/blank-workspace:local';
 const deployTimeoutMs = 5 * 60 * 1000;
 
 export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployResult> {

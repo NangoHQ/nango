@@ -19,13 +19,11 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
-    it('should use the new local sandbox image defaults without defaulting E2B templates', () => {
+    it('should default to local runtime without defaulting sandbox templates', () => {
         const res = parseEnvs(ENVS, {});
 
         expect(res).toMatchObject({
-            AGENT_RUNTIME: 'local',
-            LOCAL_AGENT_IMAGE: 'agent-sandboxes/agent-workspace:local',
-            LOCAL_COMPILER_IMAGE: 'agent-sandboxes/blank-workspace:local'
+            AGENT_RUNTIME: 'local'
         });
         expect(res.SANDBOX_AGENT_TEMPLATE).toBeUndefined();
         expect(res.SANDBOX_COMPILER_TEMPLATE).toBeUndefined();
