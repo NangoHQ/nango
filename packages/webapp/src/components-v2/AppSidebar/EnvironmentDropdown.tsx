@@ -8,6 +8,7 @@ import { StyledLink } from '../StyledLink.js';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { ConditionalTooltip } from '../ConditionalTooltip.js';
 import { PermissionGate } from '../PermissionGate.js';
+import { Badge } from '../ui/badge.js';
 import { Button } from '../ui/button.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
@@ -89,13 +90,16 @@ export const EnvironmentDropdown: React.FC = () => {
                                             disabled={!allowed}
                                             onSelect={() => onSelect(environment.name)}
                                             data-active={env === environment.name}
-                                            className="flex flex-row items-center gap-2 cursor-pointer data-[active=true]:text-text-primary"
+                                            className="flex flex-row items-center justify-between gap-2 cursor-pointer data-[active=true]:text-text-primary"
                                         >
-                                            <Check
-                                                className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
-                                                data-active={env === environment.name}
-                                            />
-                                            <span>{environment.name}</span>
+                                            <div className="flex flex-row items-center gap-2 ">
+                                                <Check
+                                                    className="w-5 h-5 opacity-0 data-[active=true]:opacity-100 data-[active=true]:text-text-primary"
+                                                    data-active={env === environment.name}
+                                                />
+                                                <span>{environment.name}</span>
+                                            </div>
+                                            {environment.is_production && <Badge className="-uppercase">Prod</Badge>}
                                         </DropdownMenuItem>
                                     )}
                                 </PermissionGate>

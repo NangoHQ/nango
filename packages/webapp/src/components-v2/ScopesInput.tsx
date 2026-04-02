@@ -47,6 +47,12 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
         const newScopes = unique([...scopes, ...scopesToAdd]);
         const countDifference = newScopes.length - scopes.length;
 
+        if (countDifference === 0) {
+            setInputValue('');
+            setLoading(false);
+            return;
+        }
+
         try {
             await onChange?.(newScopes.join(','), countDifference);
             setScopes(newScopes);

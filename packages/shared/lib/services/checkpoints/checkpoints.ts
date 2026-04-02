@@ -9,13 +9,13 @@ import type { Knex } from 'knex';
 const TABLE = 'checkpoints';
 
 export const CHECKPOINT_KEY_MAX_LENGTH = 255;
-export const CHECKPOINT_STRING_VALUE_MAX_LENGTH = 255;
+export const CHECKPOINT_STRING_VALUE_MAX_LENGTH = 4000;
 export const CHECKPOINT_MAX_FIELDS = 16;
 
 /**
  * Zod schema for checkpoint validation.
  * - Keys: max 255 characters
- * - String values: max 255 characters
+ * - String values: max 4000 characters
  * - Date values: converted to ISO string
  * - Max 16 fields
  */

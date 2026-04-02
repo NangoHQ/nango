@@ -226,6 +226,61 @@ All credential access and modifications are logged:
 
 Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/implementation-guides/platform/open-telemetry-export).
 
+## Team & roles
+
+Nango supports multiple team members per account with role-based access control (RBAC). Roles determine what each member can view and modify, particularly in production environments.
+
+### Role overview
+
+There are three roles:
+
+| | **Full Access** | **Support** | **Contributor** |
+| - | - | - | - |
+| **Summary** | Unrestricted access across all environments. The only role that can manage account settings, billing, and the team. | Designed for monitoring production without being able to change it. Full access in non-production environments. | Designed for developers who work exclusively in non-production environments. No production access at all. |
+
+**Full Access is the default role** for just-in-time (JIT) provisioning when using SSO. When inviting members manually, you choose their role during the invitation flow.
+
+<Note>
+At least one Full Access member is required per account.
+</Note>
+
+### Permissions
+
+| | **Full Access** | **Support** | **Contributor** |
+| - | - | - | - |
+| Non-production: read (integrations, connections, syncs, logs) | ✓ | ✓ | ✓ |
+| Non-production: write / delete | ✓ | ✓ | ✓ |
+| Production: read (integrations, connections, syncs, logs) | ✓ | ✓ | — |
+| Production: trigger syncs | ✓ | ✓ | — |
+| Production: write / delete | ✓ | — | — |
+| Production: view secret key | ✓ | — | — |
+| Production: view integration credentials | ✓ | — | — |
+| Production: view connection credentials | ✓ | — | — |
+| Invite / update / remove team members | ✓ | — | — |
+| Manage billing & plan | ✓ | — | — |
+| Configure Connect UI | ✓ | — | — |
+| Create environments / toggle production flag | ✓ | — | — |
+
+<Note>
+All environments appear in the dashboard switcher regardless of role, but access is enforced server-side — users are blocked from entering environments their role does not permit. Permissions cannot be bypassed by manipulating URLs or API parameters.
+</Note>
+
+### Production environment flag
+
+Whether an environment is considered production is configured in **Environment Settings → General**. The production status of the current environment is also visible in the environment dropdown at the top left of the dashboard.
+
+The flag can be set on any environment regardless of its name — not just `prod`. This lets you protect environments like `prod-eu`, `production`, or `live` the same way.
+
+Only **Full Access** members can toggle this flag. Once set, Support members get read-only access (without sensitive credentials) and Contributor members lose access entirely.
+
+<Info>
+The production flag currently governs role-based access. In the future it may also control additional environment traits to differentiate production-grade environments from development or staging ones.
+</Info>
+
+<Info>
+These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid secret key retains full API access regardless of their dashboard role.
+</Info>
+
 ## IP Allowlist
 
 Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.  

@@ -107,7 +107,7 @@ export const IntegrationsList = () => {
             </Helmet>
             <header className="flex justify-between items-center">
                 <h2 className="text-text-primary text-title-subsection">Integrations</h2>
-                <PermissionGate condition={canWriteIntegration}>
+                <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                             Set up new integration
@@ -152,7 +152,7 @@ export const IntegrationsList = () => {
                 <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
                     <h3 className="text-title-body text-text-primary">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
-                    <PermissionGate condition={canWriteIntegration}>
+                    <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
                             <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
                                 Set up new integration

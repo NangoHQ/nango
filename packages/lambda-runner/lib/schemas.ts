@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import type { LambdaRequestType } from '@nangohq/types';
+
 export const nangoPropsSchema = z.object({
     scriptType: z.enum(['sync', 'action', 'webhook', 'on-event']),
     host: z.string().optional(),
@@ -83,6 +85,12 @@ export const nangoPropsSchema = z.object({
             killAfterMs: z.number(),
             interruptAfterMs: z.number()
         })
+        .optional(),
+    integrationConfig: z
+        .object({
+            oauth_client_id: z.string().nullable(),
+            oauth_client_secret: z.string().nullable()
+        })
         .optional()
 });
 
@@ -112,7 +120,7 @@ export const functionExecutionSchema = z
     .and(z.union([inlineCodeSchema, refCodeSchema]));
 
 export const readinessCheckSchema = z.object({
-    type: z.literal('readiness_check')
+    type: z.literal<LambdaRequestType>('readiness_check')
 });
 
 export const lambdaInvocationSchema = z.union([functionExecutionSchema, readinessCheckSchema]);
