@@ -1080,8 +1080,7 @@
             "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
-              "reference/TODO"
+              "reference/functions"
             ]
           },
           {
