@@ -153,7 +153,7 @@ export async function handlePlanChanged(
     const isCurrentFree = currentPlan.value.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
 
-    const isDowngrade = newPlan.prevPlan?.includes(currentPlan.value.name);
+    const isDowngrade = !!newPlan.prevPlan?.includes(currentPlan.value.name);
 
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
