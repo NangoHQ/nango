@@ -4104,7 +4104,7 @@ connectwise-psa:
         hostname:
             type: string
             title: Hostname
-            description: The full ConnectWise PSA hostname. Enter the hostname only, without protocol or path. For example, use api-na.myconnectwise.net for standard cloud tenants or your custom PSA hostname if applicable.
+            description: The full ConnectWise PSA hostname.
             example: api-na.myconnectwise.net
             format: hostname
             prefix: https://
