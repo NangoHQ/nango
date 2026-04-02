@@ -1,4 +1,4 @@
-import { Box, Code, ExternalLink, Info } from 'lucide-react';
+import { Box, Code, ExternalLink, Info, Sparkles } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,15 +76,20 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="actions">Actions</NavigationTrigger>
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
-                {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
-                        How to use Actions <ExternalLink />
+                <div className="flex items-center gap-2">
+                    {activeTab === 'actions' ? (
+                        <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
+                            How to use Actions <ExternalLink />
+                        </ButtonLink>
+                    ) : (
+                        <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
+                            How to use Syncs <ExternalLink />
+                        </ButtonLink>
+                    )}
+                    <ButtonLink variant="primary" to={`/${env}/integrations/${integration.unique_key}/generate`}>
+                        <Sparkles /> Generate function
                     </ButtonLink>
-                ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
-                        How to use Syncs <ExternalLink />
-                    </ButtonLink>
-                )}
+                </div>
             </div>
             <NavigationContent value="actions">
                 {actions.length > 0 ? (

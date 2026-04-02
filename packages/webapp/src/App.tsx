@@ -30,6 +30,7 @@ import { CreateIntegration } from './pages/Integrations/Create';
 import { CreateIntegrationList } from './pages/Integrations/CreateList';
 import { IntegrationsList } from './pages/Integrations/Show';
 import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/One';
+import { GenerateFunction } from './pages/Integrations/providerConfigKey/Generate/Show';
 import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
 import { LogsShow } from './pages/Logs/Show';
 import { NotFound } from './pages/NotFound';
@@ -133,6 +134,11 @@ const router = sentryCreateBrowserRouter([
                                     {
                                         index: true,
                                         element: <ShowIntegration />
+                                    },
+                                    {
+                                        path: 'generate',
+                                        element: <GenerateFunction />,
+                                        handle: { breadcrumb: 'Generate' } as BreadcrumbHandle
                                     },
                                     {
                                         path: 'functions/:functionName',
