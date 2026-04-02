@@ -99,7 +99,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                                 />
                                                 <span>{environment.name}</span>
                                             </div>
-                                            {environment.is_production && <Badge className="-uppercase">Prod</Badge>}
+                                            {environment.is_production && <Badge>Prod</Badge>}
                                         </DropdownMenuItem>
                                     )}
                                 </PermissionGate>
