@@ -114,8 +114,9 @@ Embed the [Auth](https://nango.dev/docs/implementation-guides/platform/auth/impl
 ```bash
 export AGENT_RUNTIME=local
 
-docker pull agent-sandboxes/agent-workspace:local
-docker pull agent-sandboxes/blank-workspace:local
+# Build the local sandbox images in https://github.com/NangoHQ/agent-sandboxes
+npm run docker:build:agent
+npm run docker:build:blank
 ```
 
 Start Nango normally after that. Agent sessions, compile, and dryrun will spawn local Docker sandboxes on demand.
