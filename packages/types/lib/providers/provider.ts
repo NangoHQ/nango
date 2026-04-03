@@ -94,6 +94,7 @@ export interface BaseProvider {
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
     token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
+    available_scopes?: string[];
 }
 
 export interface ProviderOAuth2 extends BaseProvider {

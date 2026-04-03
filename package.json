@@ -46,6 +46,8 @@
         "test:cli": "vitest --config ./vite.cli.config.ts",
         "test:cli:update-snapshots": "vitest --config ./vite.cli.config.ts --update",
         "test:openapi": "npx @apidevtools/swagger-cli validate docs/spec.yaml && npx @redocly/cli lint docs/spec.yaml",
+        "test:providers:scopes": "npx tsx scripts/validation/providers/sync-scopes.ts --from-diff --check",
+        "update:providers:scopes:all": "npx tsx scripts/validation/providers/sync-scopes.ts --all --write --agent --force --session-timeout-minutes=0",
         "run:runner": "cd ./packages/runner && npm run dev",
         "test:providers": "npx tsx scripts/validation/providers/validate.ts",
         "docs": "tsx scripts/docs-gen-snippets.ts && cd ./docs && npx mintlify dev --port 3033",

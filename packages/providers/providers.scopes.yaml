@@ -1,0 +1,5294 @@
+# source: https://api.accelo.com/docs/#scope (scope format: read(resource) and write(resource), where 'all' grants access to all resources. Available resources: activities, addresses, affiliations, assets, checklists, companies, contacts, contracts, contributors, divisions, expenses, extensions, filters, groups, holidays, invoices, issues, jobs, ledgers, milestones, object_budgets, object_schedules, payments, profiles, progressions, prospects, purchases, quotes, rates, referrals, requests, resources, segmentations, signoffs, skills, staff, statuses, tags, tasks, taxes, time_externals, timers, user, webhooks)
+accelo:
+    - read(all)
+    - write(all)
+
+# source: https://developers.acuityscheduling.com/docs/oauth2
+acuity-scheduling:
+    - api-v1
+
+# source: https://developers.addepar.com/docs/oauth
+addepar:
+    - AUDIT_TRAIL
+    - BENCHMARKS_READ
+    - BENCHMARKS_WRITE
+    - BILLING_READ
+    - BILLING_WRITE
+    - ENTITIES
+    - ENTITIES_WRITE
+    - FILES
+    - FILES_WRITE
+    - GROUPS
+    - GROUPS_WRITE
+    - PORTFOLIO
+    - POSITIONS
+    - POSITIONS_WRITE
+    - PROFILE
+    - REPORTS_WRITE
+    - TEAMS
+    - TEAMS_WRITE
+    - TRANSACTIONS
+    - TRANSACTIONS_WRITE
+    - USERS
+    - USERS_WRITE
+
+# source: https://developer.adobe.com/developer-console/docs/guides/authentication/UserAuthentication/ims
+adobe:
+    - creative_sdk
+    - email
+    - offline_access
+    - openid
+    - profile
+
+# source: https://experienceleague.adobe.com/en/docs/workfront/using/adobe-workfront-api/api-notes/oauth-app-code-token-flow (no granular scopes - permissions managed in app configuration)
+adobe-workfront: []
+
+# source: https://docs.adyen.com/development-resources/oauth/scopes/
+adyen:
+    - psp:paybylink:write
+    - psp.onlinepayment:write
+    - psp.onlinepayment.tokenization:write
+    - psp.webhook:read
+    - psp.webhook:write
+
+# source: https://id.aimfox.com/realms/aimfox-prod/.well-known/openid-configuration (standard OIDC scopes for Keycloak-based OAuth2)
+aimfox-oauth:
+    - email
+    - offline_access
+    - openid
+    - profile
+
+# source: https://developer.aircall.io/api-references/#oauth---technology-partner (single scope provides full API access)
+aircall:
+    - public_api
+
+# source: https://www.airtable.com/developers/web/api/scopes
+airtable:
+    - data.records:read
+    - data.records:write
+    - enterprise.account:read
+    - enterprise.account:write
+    - enterprise.groups:read
+    - enterprise.groups:write
+    - enterprise.user:read
+    - enterprise.user:write
+    - schema.bases:read
+    - schema.bases:write
+    - webhook:manage
+
+amazon:
+    - postal_code
+    - profile
+    - profile:user_id
+
+# source: https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api (no traditional OAuth scopes - uses roles and grantless operations)
+amazon-selling-partner: []
+
+# source: https://developer-docs.amazon.com/sp-api/docs/roles-in-the-selling-partner-api (no traditional OAuth scopes - uses roles and grantless operations)
+amazon-selling-partner-beta: []
+
+# source: https://apaleo.dev/guides/api/scopes.html
+apaleo:
+    - api
+    - availability.manage
+    - availability.read
+    - bookings.force-manage
+    - bookings.manage
+    - bookings.read
+    - companies.manage
+    - companies.read
+    - customers.manage
+    - customers.read
+    - customers.read-identity
+    - customers.read-personal-info
+    - distribution:subscriptions.manage
+    - documents.manage
+    - documents.read
+    - event-blocks.manage
+    - event-blocks.read
+    - events.manage
+    - events.read
+    - financials.read
+    - fiscalization-austria:configuration.manage
+    - fiscalization:configuration.manage
+    - fiscalization:configuration.read
+    - folios.manage
+    - folios.read
+    - house_accounts.manage
+    - house_accounts.read
+    - identity:account-users.manage
+    - identity:account-users.read
+    - integration:ui-integrations.manage
+    - invoices.manage
+    - logs.read
+    - maintenances.manage
+    - maintenances.read
+    - offer-plans.manage
+    - offer-plans.read
+    - offers.manage
+    - offers.read
+    - offline_access
+    - openid
+    - payments.manage
+    - payments.manage-refunds
+    - payments.read
+    - payments.read-restricted
+    - profile
+    - properties.manage
+    - properties.read
+    - rateplans.manage
+    - rateplans.manage-corporate
+    - rateplans.read
+    - rateplans.read-corporate
+    - rates.manage
+    - rates.read
+    - rendering:reports.read
+    - reports.read
+    - reservations.force-manage
+    - reservations.manage
+    - reservations.read
+    - subaccounts.manage
+    - subaccounts.read
+    - unit-attributes.manage
+    - unit-attributes.read
+
+# source: https://docs.apollo.io/docs/use-oauth-20-authorization-flow-to-access-apollo-user-information-partners
+apollo-oauth:
+    - account_read
+    - app_scopes
+    - contacts_search
+    - email_read
+    - opportunity_write
+    - person_read
+    - read_user_profile
+
+# source: https://developers.asana.com/docs/oauth-scopes
+asana:
+    - attachments:delete
+    - attachments:read
+    - attachments:write
+    - custom_fields:read
+    - custom_fields:write
+    - default
+    - email
+    - goals:read
+    - jobs:read
+    - portfolios:read
+    - portfolios:write
+    - project_portfolio_settings:read
+    - project_portfolio_settings:write
+    - project_templates:read
+    - projects:delete
+    - projects:read
+    - projects:write
+    - roles:delete
+    - roles:read
+    - roles:write
+    - stories:read
+    - stories:write
+    - tags:read
+    - tags:write
+    - task_templates:read
+    - tasks:delete
+    - tasks:read
+    - tasks:write
+    - team_memberships:read
+    - teams:read
+    - time_tracking_entries:read
+    - timesheet_approval_statuses:read
+    - timesheet_approval_statuses:write
+    - users:read
+    - webhooks:delete
+    - webhooks:read
+    - webhooks:write
+    - workspaces:read
+    - workspaces.typeahead:read
+
+atlassian:
+    - delete:jira-work
+    - manage:jira-configuration
+    - manage:jira-project
+    - offline_access
+    - read:account
+    - read:attachment:confluence
+    - read:blogpost:confluence
+    - read:comment:confluence
+    - read:confluence-content
+    - read:confluence-groups
+    - read:confluence-props
+    - read:confluence-space.summary
+    - read:confluence-user
+    - read:content-details:confluence
+    - read:content-restriction:confluence
+    - read:content:confluence
+    - read:content:label:confluence
+    - read:group:confluence
+    - read:jira-user
+    - read:jira-work
+    - read:label-details:confluence
+    - read:me
+    - read:page:confluence
+    - read:space-details:confluence
+    - read:task:confluence
+    - read:user
+    - write:attachment:confluence
+    - write:blogpost:confluence
+    - write:comment:confluence
+    - write:confluence-content
+    - write:confluence-file
+    - write:confluence-groups
+    - write:confluence-props
+    - write:confluence-space
+    - write:content-restriction:confluence
+    - write:content:confluence
+    - write:content:label:confluence
+    - write:group:confluence
+    - write:jira-work
+    - write:page:confluence
+    - write:space-details:confluence
+    - write:task:confluence
+
+# source: https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/ (Atlassian Government Cloud uses same scopes as standard Atlassian)
+atlassian-government-cloud:
+    - delete:jira-work
+    - manage:jira-configuration
+    - manage:jira-project
+    - offline_access
+    - read:account
+    - read:attachment:confluence
+    - read:blogpost:confluence
+    - read:comment:confluence
+    - read:confluence-content
+    - read:confluence-groups
+    - read:confluence-props
+    - read:confluence-space.summary
+    - read:confluence-user
+    - read:content-details:confluence
+    - read:content-restriction:confluence
+    - read:content:confluence
+    - read:content:label:confluence
+    - read:group:confluence
+    - read:jira-user
+    - read:jira-work
+    - read:label-details:confluence
+    - read:me
+    - read:page:confluence
+    - read:space-details:confluence
+    - read:task:confluence
+    - read:user
+    - write:attachment:confluence
+    - write:blogpost:confluence
+    - write:comment:confluence
+    - write:confluence-content
+    - write:confluence-file
+    - write:confluence-groups
+    - write:confluence-props
+    - write:confluence-space
+    - write:content-restriction:confluence
+    - write:content:confluence
+    - write:content:label:confluence
+    - write:group:confluence
+    - write:jira-work
+    - write:page:confluence
+    - write:space-details:confluence
+    - write:task:confluence
+
+# source: https://docs.attio.com/rest-api/guides/authentication (scopes configured per endpoint in developer dashboard)
+attio:
+    - object_configuration:read
+    - object_configuration:write
+    - object_records:read
+    - object_records:write
+    - tasks:read
+    - tasks:write
+    - user_management:read
+    - user_management:write
+    - webhooks:read
+    - webhooks:write
+
+# source: https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes (Auth0 uses standard OIDC scopes)
+auth0:
+    - email
+    - offline_access
+    - openid
+    - profile
+
+# source: https://aps.autodesk.com/en/docs/oauth/v2/developers_guide/scopes
+autodesk:
+    - account:read
+    - account:write
+    - bucket:create
+    - bucket:delete
+    - bucket:read
+    - code:all
+    - data:read
+    - data:write
+    - offline_access
+    - openid
+    - user-profile:read
+
+# source: https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-define-resource-servers.html
+aws:
+    - aws.cognito.signin.user.admin
+    - email
+    - offline_access
+    - openid
+    - phone
+    - profile
+
+# source: https://learn.microsoft.com/en-us/rest/api/storageservices/authorize-with-azure-active-directory
+azure-blob-storage:
+    - https://storage.azure.com/.default
+    - offline_access
+    - user_impersonation
+
+# source: https://documentation.bamboohr.com/docs/getting-started
+bamboohr:
+    - company:info
+    - employee
+    - employee.write
+    - offline_access
+    - payroll
+    - time_off
+    - time_off.write
+
+# source: https://github.com/basecamp/api/blob/master/sections/authentication.md (no granular OAuth scopes - permissions managed via app authorization)
+basecamp: []
+
+# source: https://develop.battle.net/documentation/guides/using-oauth
+battlenet:
+    - d3.profile
+    - openid
+    - sc2.profile
+    - wow.profile
+
+# source: https://developer.bigcommerce.com/docs/start/authentication/api-accounts
+bigcommerce:
+    - store_app
+    - store_cart
+    - store_cart_read_only
+    - store_channel
+    - store_channel_app
+    - store_channel_app_read_only
+    - store_channel_read_only
+    - store_channel_settings
+    - store_channel_settings_read_only
+    - store_checkout
+    - store_content
+    - store_content_read_only
+    - store_customers
+    - store_customers_read_only
+    - store_locations
+    - store_locations_read_only
+    - store_marketing
+    - store_marketing_read_only
+    - store_order_status_read_only
+    - store_orders
+    - store_orders_read_only
+    - store_payment_methods
+    - store_payment_methods_read_only
+    - store_payments_access_token_create
+    - store_products
+    - store_products_read_only
+    - store_settings
+    - store_settings_read_only
+    - store_sites
+    - store_sites_read_only
+    - store_storefront_api
+    - store_themes
+    - store_themes_read_only
+
+# source: https://developer.atlassian.com/cloud/bitbucket/oauth-2/
+bitbucket:
+    - account
+    - account:write
+    - email
+    - issue
+    - issue:write
+    - pipeline
+    - pipeline:variable
+    - pipeline:write
+    - project
+    - project:admin
+    - project:write
+    - pullrequest
+    - pullrequest:write
+    - repository
+    - repository:admin
+    - repository:delete
+    - repository:write
+    - runner
+    - runner:write
+    - snippet
+    - snippet:write
+    - webhook
+    - wiki
+
+# source: https://developer.bitly.com/v4/documentation (OAuth scopes not explicitly documented in public API docs)
+bitly:
+    - read
+    - write
+
+# source: https://developer.blackbaud.com/skyapi/docs/applications/scopes
+blackbaud:
+    - addressbook
+    - offline_access
+    - openid
+    - profile
+    - sky-api
+
+# source: https://developers.boldsign.com/authentication/oauth-2-0/
+boldsign:
+    - BoldSign.Brands.Read
+    - BoldSign.Brands.Write
+    - BoldSign.Contacts.Read
+    - BoldSign.Contacts.Write
+    - BoldSign.CustomFields.Read
+    - BoldSign.CustomFields.Write
+    - BoldSign.Documents.All
+    - BoldSign.Plans.Read
+    - BoldSign.SenderIdentities.Read
+    - BoldSign.SenderIdentities.Write
+    - BoldSign.Teams.Read
+    - BoldSign.Teams.Write
+    - BoldSign.Templates.All
+    - BoldSign.Users.All
+    - email
+    - offline_access
+    - openid
+    - profile
+
+# source: https://developer.box.com/guides/api-calls/permissions-and-errors/scopes/
+box:
+    - ai.readwrite
+    - annotation_edit
+    - annotation_view_all
+    - annotation_view_self
+    - base_explorer
+    - base_picker
+    - base_preview
+    - base_sidebar
+    - base_upload
+    - enterprise_content
+    - item_delete
+    - item_download
+    - item_preview
+    - item_rename
+    - item_share
+    - item_upload
+    - manage_app_users
+    - manage_data_retention
+    - manage_enterprise_properties
+    - manage_groups
+    - manage_legal_holds
+    - manage_managed_users
+    - manage_triggers
+    - manage_webhook
+    - root_readonly
+    - root_readwrite
+    - sign_requests.readwrite
+
+# source: https://developer.braintreepayments.com/guides/extend/oauth/access-tokens
+braintree:
+    - manage_marketplace
+    - manage_merchant
+    - read_marketplace
+    - read_merchant
+    - read_vault
+    - write_vault
+
+# source: https://developer.braintreepayments.com/guides/extend/oauth/access-tokens (same as braintree, for sandbox environment)
+braintree-sandbox:
+    - manage_marketplace
+    - manage_merchant
+    - read_marketplace
+    - read_merchant
+    - read_vault
+    - write_vault
+
+# source: https://developer.brex.com/docs/roles_permissions_scopes
+brex:
+    - accounting.integration.read
+    - accounting.integration.write
+    - accounting.record.read
+    - accounting.record.write
+    - budgets.readonly
+    - cards
+    - cards.pan
+    - cards.readonly
+    - companies.readonly
+    - expenses.card.readonly
+    - expenses.readonly
+    - expenses.receipts.readonly
+    - expenses.receipts.write
+    - expenses.write
+    - field_values.read
+    - field_values.write
+    - fields.read
+    - fields.write
+    - incoming_transfers
+    - linked_accounts.readonly
+    - offboarding.readonly
+    - offboarding.write
+    - openid
+    - organizations.read
+    - organizations.write
+    - spend.readonly
+    - spend.write
+    - teams.readonly
+    - teams.write
+    - transfers
+    - transfers.readonly
+    - users
+    - users.readonly
+    - vendors
+    - vendors.readonly
+
+# source: https://developer.brex.com/docs/roles_permissions_scopes (same scopes, for staging environment)
+brex-staging:
+    - accounting.integration.read
+    - accounting.integration.write
+    - accounting.record.read
+    - accounting.record.write
+    - budgets.readonly
+    - cards
+    - cards.pan
+    - cards.readonly
+    - companies.readonly
+    - expenses.card.readonly
+    - expenses.readonly
+    - expenses.receipts.readonly
+    - expenses.receipts.write
+    - expenses.write
+    - field_values.read
+    - field_values.write
+    - fields.read
+    - fields.write
+    - incoming_transfers
+    - linked_accounts.readonly
+    - offboarding.readonly
+    - offboarding.write
+    - openid
+    - organizations.read
+    - organizations.write
+    - spend.readonly
+    - spend.write
+    - teams.readonly
+    - teams.write
+    - transfers
+    - transfers.readonly
+    - users
+    - users.readonly
+    - vendors
+    - vendors.readonly
+
+# source: https://developer.bullhorn.com/oauth (no granular OAuth scopes documented - permissions handled via standard OAuth flow)
+bullhorn: []
+
+# source: https://cal.com/docs/api-reference/v2/oauth
+cal-com-oauth:
+    - APPS_READ
+    - APPS_WRITE
+    - BOOKING_READ
+    - BOOKING_WRITE
+    - EVENT_TYPE_READ
+    - EVENT_TYPE_WRITE
+    - ORG_BOOKING_READ
+    - ORG_BOOKING_WRITE
+    - ORG_EVENT_TYPE_READ
+    - ORG_EVENT_TYPE_WRITE
+    - ORG_PROFILE_READ
+    - ORG_PROFILE_WRITE
+    - ORG_SCHEDULE_READ
+    - ORG_SCHEDULE_WRITE
+    - PROFILE_READ
+    - PROFILE_WRITE
+    - SCHEDULE_READ
+    - SCHEDULE_WRITE
+    - TEAM_BOOKING_READ
+    - TEAM_BOOKING_WRITE
+    - TEAM_EVENT_TYPE_READ
+    - TEAM_EVENT_TYPE_WRITE
+    - TEAM_MEMBERSHIP_READ
+    - TEAM_MEMBERSHIP_WRITE
+    - TEAM_PROFILE_READ
+    - TEAM_PROFILE_WRITE
+    - TEAM_SCHEDULE_READ
+    - TEAM_SCHEDULE_WRITE
+
+# source: https://developer.calendly.com/scopes
+calendly:
+    - activity_log:read
+    - availability:read
+    - availability:write
+    - data_compliance:write
+    - event_types:read
+    - event_types:write
+    - groups:read
+    - locations:read
+    - organizations:read
+    - organizations:write
+    - outgoing_communications:read
+    - routing_forms:read
+    - scheduled_events:read
+    - scheduled_events:write
+    - scheduling_links:write
+    - shares:write
+    - users:read
+    - webhooks:read
+    - webhooks:write
+
+# source: https://candis-api.readme.io/docs/access-token-scopes
+candis:
+    - core_data
+    - email
+    - exports
+    - offline_access
+    - profile
+
+# source: https://www.canva.dev/docs/connect/appendix/scopes/
+canva:
+    - asset:read
+    - asset:write
+    - brandtemplate:content:read
+    - brandtemplate:meta:read
+    - collaboration:event
+    - comment:read
+    - comment:write
+    - design:content:read
+    - design:content:write
+    - design:meta:read
+    - email
+    - folder:permission:write
+    - folder:read
+    - folder:write
+    - openid
+    - profile
+    - profile:read
+
+# source: https://canvas.instructure.com/doc/api/file.oauth_endpoints.html (Canvas uses endpoint-based scopes in format "url:GET|/api/v1/..." - scopes are listed per API endpoint in the resources documentation)
+canvas-lms: []
+
+# source: https://docs.checkr.com/docs/authentication (Checkr Partner OAuth uses a simplified scope model)
+checkr-partner:
+    - read_write
+
+# source: https://docs.checkr.com/docs/authentication (Checkr Partner Staging uses same scopes as production)
+checkr-partner-staging:
+    - read_write
+
+# source: https://rest.cleverreach.com/explorer/v3 (CleverReach API v3 OAuth scopes)
+cleverreach:
+    - oa_basic
+    - oa_forms
+    - oa_hook
+    - oa_mailings
+    - oa_receivers
+    - oa_reports
+    - oa_ssl
+
+# source: https://clickup.com/api/developer-portal/authentication/ (ClickUp OAuth does not use granular scope parameters - permissions are managed via workspace authorization during OAuth flow)
+clickup: []
+
+# source: https://docs.developers.clio.com/api-docs/clio-platform/permissions/
+clio:
+    - grow_contact_note_read
+    - grow_contact_note_write
+    - grow_contact_read
+    - grow_custom_action_read
+    - grow_custom_action_write
+    - grow_lead_inbox_read
+    - grow_lead_inbox_write
+    - grow_matter_note_read
+    - grow_matter_note_write
+    - grow_matter_read
+    - grow_user_read
+
+# source: https://developer.close.com/topics/authentication-oauth2/
+close:
+    - all.full_access
+    - offline_access
+
+# source: https://developers.cloudbeds.com/docs/quickstart-guide-api-authentication-for-property-level-users (Cloudbeds uses API Key authentication primarily; OAuth 2.0 is available but scopes are configured per endpoint in developer dashboard)
+cloudbeds: []
+
+# source: https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/ (uses same scopes as jira)
+confluence:
+    - ACCESS_EMAIL_ADDRESSES
+    - ACT_AS_USER
+    - ADMIN
+    - DELETE
+    - NONE
+    - offline_access
+    - PROJECT_ADMIN
+    - READ
+    - WRITE
+
+# source: https://confluence.atlassian.com/doc/oauth-2-0-scopes-for-incoming-links-1115674734.html
+confluence-data-center:
+    - ADMIN
+    - JSM_KB
+    - MANAGE_SUBSCRIPTIONS
+    - READ
+    - READ_ALL
+    - SYSTEM_ADMIN
+    - WRITE
+
+# source: https://developer.constantcontact.com/api_guide/scopes.html
+constant-contact:
+    - account_read
+    - account_update
+    - campaign_data
+    - contact_data
+    - offline_access
+
+# source: https://www.contentful.com/developers/docs/extensibility/oauth/
+contentful:
+    - content_management_manage
+    - content_management_read
+
+# source: https://www.contentstack.com/docs/developers/developer-hub/oauth-scopes
+contentstack:
+    - brand-kits:read
+    - cm.asset:publish
+    - cm.asset:read
+    - cm.asset:unpublish
+    - cm.asset:write
+    - cm.assets:download
+    - cm.assets.management:read
+    - cm.assets.management:write
+    - cm.assets.rt:read
+    - cm.audit-logs:read
+    - cm.branches.management:read
+    - cm.branches.management:write
+    - cm.content-type:read
+    - cm.content-types:export
+    - cm.content-types:import
+    - cm.content-types.management:read
+    - cm.content-types.management:write
+    - cm.entries:export
+    - cm.entries:import
+    - cm.entries.management:read
+    - cm.entries.management:write
+    - cm.entry:publish
+    - cm.entry:read
+    - cm.entry:unpublish
+    - cm.entry:write
+    - cm.entry.workflow:write
+    - cm.publish-queue.management:read
+    - cm.publish-queue.management:write
+    - cm.releases.management:read
+    - cm.releases.management:write
+    - cm.stack:share
+    - cm.stack:unshare
+    - cm.stack.delivery-tokens:read
+    - cm.stack.delivery-tokens:write
+    - cm.stack.management-tokens:read
+    - cm.stack.management-tokens:write
+    - cm.stack.management:write
+    - cm.stack.settings:read
+    - cm.stack.users:read
+    - cm.stack.users:write
+    - cm.stacks.management:read
+    - cm.stacks.management:write
+    - cm.webhook:read
+    - cm.webhooks:export
+    - cm.webhooks:import
+    - cm.webhooks.management:read
+    - cm.webhooks.management:write
+    - organization:read
+    - organization.logs:read
+    - organization.ownership:write
+    - organization.roles:read
+    - organization.share:read
+    - organization.share:write
+    - organizations:read
+    - user:read
+    - user:write
+    - user.assignments:read
+
+# source: https://developer.copper.com/introduction/oauth/index.html
+copper:
+    - developer/v1/all
+
+# source: https://nango.dev/docs/integrations/all/coros (COROS does not list any OAuth scopes in their public documentation)
+coros: []
+
+# source: https://nango.dev/docs/integrations/all/coros-sandbox (COROS Sandbox uses same authentication as production; no public scopes documentation)
+coros-sandbox: []
+
+# source: https://developer.datev.de/en/guides/authentication
+datev:
+    - datev:accounting:clients
+    - openid
+    - profile
+
+# source: https://rmm.datto.com/help/en/Content/2SETUP/APIv2.htm (Datto RMM OAuth 2.0 uses API Key/Secret-based authentication without granular scopes)
+datto-rmm: []
+
+# source: https://developer.deel.com/docs/scopes-1
+deel:
+    - accounting:read
+    - candidates:read
+    - candidates:write
+    - contracts:read
+    - contracts:write
+    - invoice-adjustments:read
+    - invoice-adjustments:write
+    - milestones:read
+    - milestones:write
+    - off-cycle-payments:read
+    - organizations:read
+    - organizations:write
+    - people:read
+    - profile:write
+    - tasks:read
+    - tasks:write
+    - time-off:read
+    - time-off:write
+    - timesheets:read
+    - timesheets:write
+    - Users:read
+    - Users:write
+    - webhooks:read
+    - webhooks:write
+
+# source: https://developer.deel.com/docs/scopes-1 (same scopes as deel for sandbox environment)
+deel-sandbox:
+    - accounting:read
+    - candidates:read
+    - candidates:write
+    - contracts:read
+    - contracts:write
+    - invoice-adjustments:read
+    - invoice-adjustments:write
+    - milestones:read
+    - milestones:write
+    - off-cycle-payments:read
+    - organizations:read
+    - organizations:write
+    - people:read
+    - profile:write
+    - tasks:read
+    - tasks:write
+    - time-off:read
+    - time-off:write
+    - timesheets:read
+    - timesheets:write
+    - Users:read
+    - Users:write
+    - webhooks:read
+    - webhooks:write
+
+# source: https://developers.dialpad.com/docs/oauth
+dialpad:
+    - calls:list
+    - change_log
+    - fax_message
+    - message_content_export
+    - message_content_export:all
+    - offline_access
+    - recordings_export
+    - screen_pop
+
+# source: https://developers.dialpad.com/docs/oauth (same scopes for sandbox environment)
+dialpad-sandbox:
+    - calls:list
+    - change_log
+    - fax_message
+    - message_content_export
+    - message_content_export:all
+    - offline_access
+    - recordings_export
+    - screen_pop
+
+# source: https://docs.digitalocean.com/reference/api/scopes
+digitalocean:
+    - account:read
+    - actions:read
+    - addon:create
+    - addon:delete
+    - addon:read
+    - addon:update
+    - api:read
+    - api:write
+    - app:access_console
+    - app:create
+    - app:delete
+    - app:read
+    - app:update
+    - billing:read
+    - block_storage_action:create
+    - block_storage_action:read
+    - block_storage_snapshot:create
+    - block_storage_snapshot:delete
+    - block_storage_snapshot:read
+    - block_storage:create
+    - block_storage:delete
+    - block_storage:read
+    - cdn:create
+    - cdn:delete
+    - cdn:read
+    - cdn:update
+    - certificate:create
+    - certificate:delete
+    - certificate:read
+    - database:create
+    - database:delete
+    - database:read
+    - database:update
+    - database:view_credentials
+    - domain:create
+    - domain:delete
+    - domain:read
+    - domain:update
+    - droplet:admin
+    - droplet:create
+    - droplet:delete
+    - droplet:read
+    - droplet:update
+    - firewall:create
+    - firewall:delete
+    - firewall:read
+    - firewall:update
+    - function:admin
+    - function:create
+    - function:delete
+    - function:read
+    - function:update
+    - functions:admin
+    - genai:create
+    - genai:delete
+    - genai:read
+    - genai:update
+    - image:create
+    - image:delete
+    - image:read
+    - image:update
+    - kubernetes:access_cluster
+    - kubernetes:create
+    - kubernetes:delete
+    - kubernetes:read
+    - kubernetes:update
+    - load_balancer:create
+    - load_balancer:delete
+    - load_balancer:read
+    - load_balancer:update
+    - monitoring:create
+    - monitoring:delete
+    - monitoring:read
+    - monitoring:update
+    - partner_network_connect:create
+    - partner_network_connect:delete
+    - partner_network_connect:read
+    - partner_network_connect:update
+    - partner_network_connect:view_credentials
+    - project:create
+    - project:delete
+    - project:read
+    - project:update
+    - regions:read
+    - registry:create
+    - registry:delete
+    - registry:read
+    - registry:update
+    - reserved_ip:create
+    - reserved_ip:delete
+    - reserved_ip:read
+    - reserved_ip:update
+    - sizes:read
+    - snapshot:delete
+    - snapshot:read
+    - spaces_key:create
+    - spaces_key:create_credentials
+    - spaces_key:delete
+    - spaces_key:read
+    - spaces_key:update
+    - spaces_keys:create
+    - spaces:read
+    - spaces:update
+    - ssh_key:create
+    - ssh_key:delete
+    - ssh_key:read
+    - ssh_key:update
+    - tag:create
+    - tag:delete
+    - tag:read
+    - uptime:create
+    - uptime:delete
+    - uptime:read
+    - uptime:update
+    - vendor_portal:create
+    - vendor_portal:delete
+    - vendor_portal:read
+    - vendor_portal:update
+    - vpc_peering:create
+    - vpc_peering:delete
+    - vpc_peering:read
+    - vpc_peering:update
+    - vpc:create
+    - vpc:delete
+    - vpc:read
+    - vpc:update
+
+# source: https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes
+discord:
+    - activities.read
+    - activities.write
+    - applications.builds.read
+    - applications.builds.upload
+    - applications.commands
+    - applications.commands.permissions.update
+    - applications.commands.update
+    - applications.entitlements
+    - applications.store.update
+    - bot
+    - connections
+    - dm_channels.read
+    - email
+    - gdm.join
+    - guilds
+    - guilds.join
+    - guilds.members.read
+    - identify
+    - messages.read
+    - relationships.read
+    - role_connections.write
+    - rpc
+    - rpc.activities.write
+    - rpc.notifications.read
+    - rpc.voice.read
+    - rpc.voice.write
+    - voice
+    - webhook.incoming
+
+# source: https://developers.docusign.com/platform/auth/reference/scopes/
+docusign:
+    - account_read
+    - account_write
+    - adm_store_unified_repo_read
+    - adm_store_unified_repo_write
+    - click.manage
+    - click.send
+    - domain_read
+    - domain_write
+    - dtr.envelopes.read
+    - dtr.envelopes.write
+    - dtr.events.read
+    - dtr.events.write
+    - dtr.rooms.read
+    - dtr.rooms.write
+    - envelope_read
+    - envelope_send
+    - envelope_write
+    - envelopes
+    - group_read
+    - group_write
+    - id_evidence_management_read
+    - id_evidence_management_write
+    - identity_verification_read
+    - identity_verification_write
+    - impersonation
+    - manage
+    - notary_read
+    - notary_write
+    - organization_read
+    - organization_write
+    - room_read
+    - room_sender
+    - room_write
+    - signature
+    - user_account
+    - user_read
+    - user_write
+    - webhook_delete
+    - webhook_read
+    - webhook_write
+    - workflow_read
+    - workflow_write
+
+# source: https://developers.docusign.com/platform/auth/reference/scopes/ (same scopes for sandbox environment)
+docusign-sandbox:
+    - account_read
+    - account_write
+    - adm_store_unified_repo_read
+    - adm_store_unified_repo_write
+    - click.manage
+    - click.send
+    - domain_read
+    - domain_write
+    - dtr.envelopes.read
+    - dtr.envelopes.write
+    - dtr.events.read
+    - dtr.events.write
+    - dtr.rooms.read
+    - dtr.rooms.write
+    - envelope_read
+    - envelope_send
+    - envelope_write
+    - envelopes
+    - group_read
+    - group_write
+    - id_evidence_management_read
+    - id_evidence_management_write
+    - identity_verification_read
+    - identity_verification_write
+    - impersonation
+    - manage
+    - notary_read
+    - notary_write
+    - organization_read
+    - organization_write
+    - room_read
+    - room_sender
+    - room_write
+    - signature
+    - user_account
+    - user_read
+    - user_write
+    - webhook_delete
+    - webhook_read
+    - webhook_write
+    - workflow_read
+    - workflow_write
+
+# source: providers.yaml (no official OAuth scopes page found - DrChrono uses permissions set in developer dashboard)
+drchrono: []
+
+# source: https://www.dropbox.com/developers/reference/oauth-guide (scopes configured in App Console)
+dropbox:
+    - account_info.read
+    - files.content.read
+    - files.content.write
+    - files.metadata.read
+    - files.metadata.write
+    - sharing.read
+    - sharing.write
+    - team_data.member
+    - team_data.team_space
+    - team_info.read
+
+# source: https://developers.hellosign.com/docs/guides/o-auth/overview
+dropbox-sign:
+    - account_access
+    - api_app_access
+    - basic_account_info
+    - request_signature
+    - signature_request_access
+    - team_access
+    - template_access
+
+# source: https://developer.ebay.com/api-docs/static/oauth-scopes.html (scopes assigned per app keyset - check Application Keys page for specific scopes)
+ebay:
+    - https://api.ebay.com/oauth/api_scope
+    - https://api.ebay.com/oauth/api_scope/buy.guest.order
+    - https://api.ebay.com/oauth/api_scope/buy.item.feed
+    - https://api.ebay.com/oauth/api_scope/buy.marketing
+    - https://api.ebay.com/oauth/api_scope/buy.marketplace.insights
+    - https://api.ebay.com/oauth/api_scope/buy.product.feed
+    - https://api.ebay.com/oauth/api_scope/commerce.identity.readonly
+    - https://api.ebay.com/oauth/api_scope/commerce.notification.subscription
+    - https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.account
+    - https://api.ebay.com/oauth/api_scope/sell.account.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.analytics.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.fulfillment
+    - https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.inventory
+    - https://api.ebay.com/oauth/api_scope/sell.inventory.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.marketing
+    - https://api.ebay.com/oauth/api_scope/sell.marketing.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly
+
+# source: https://developer.ebay.com/api-docs/static/oauth-scopes.html (same scopes for sandbox environment)
+ebay-sandbox:
+    - https://api.ebay.com/oauth/api_scope
+    - https://api.ebay.com/oauth/api_scope/buy.guest.order
+    - https://api.ebay.com/oauth/api_scope/buy.item.feed
+    - https://api.ebay.com/oauth/api_scope/buy.marketing
+    - https://api.ebay.com/oauth/api_scope/buy.marketplace.insights
+    - https://api.ebay.com/oauth/api_scope/buy.product.feed
+    - https://api.ebay.com/oauth/api_scope/commerce.identity.readonly
+    - https://api.ebay.com/oauth/api_scope/commerce.notification.subscription
+    - https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.account
+    - https://api.ebay.com/oauth/api_scope/sell.account.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.analytics.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.fulfillment
+    - https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.inventory
+    - https://api.ebay.com/oauth/api_scope/sell.inventory.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.marketing
+    - https://api.ebay.com/oauth/api_scope/sell.marketing.readonly
+    - https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly
+
+# source: https://developers.egnyte.com/docs/Public_API_Authentication
+egnyte:
+    - Egnyte.ai
+    - Egnyte.bookmark
+    - Egnyte.controlleddocs
+    - Egnyte.filesystem
+    - Egnyte.link
+    - Egnyte.permission
+    - Egnyte.projectfolders
+    - Egnyte.sign
+    - Egnyte.user
+    - Egnyte.webhooks
+
+# source: https://developer.employmenthero.com/api-references/ (scopes configured per app at creation time - not dynamically requested in OAuth flow)
+employment-hero:
+    - bank_accounts:list
+    - employees:list
+    - employees:show
+    - employment_histories:list
+    - organisations:list
+    - organisations:show
+    - teams:list
+    - timesheet_entries:list
+
+# source: https://developers.envoy.com/hub/docs/scopes
+envoy:
+    - companies.read
+    - employees.read
+    - flows.read
+    - invites.read
+    - invites.write
+    - locations.read
+    - reservations.read
+    - reservations.write
+    - spaces.read
+    - work-schedules.read
+    - work-schedules.write
+
+# source: https://dev.epicgames.com/docs/api-ref/enums/eos-e-auth-scope-flags
+epic-games:
+    - basic_profile
+    - country
+    - email
+    - friends_list
+    - friends_management
+    - presence
+
+# source: https://www.eventbrite.com/platform/docs/authentication (Eventbrite uses broad OAuth scopes - no granular list documented)
+eventbrite: []
+
+# source: https://start.exactonline.nl/docs/HlpRestAPIResources.aspx (scopes are per-endpoint in Exact Online - no comprehensive list available)
+exact-online: []
+
+# source: https://developer.exist.io/reference/authentication/oauth2
+exist:
+    - activity_read
+    - activity_write
+    - custom_read
+    - custom_write
+    - events_read
+    - events_write
+    - finance_read
+    - finance_write
+    - food_read
+    - food_write
+    - health_read
+    - health_write
+    - location_read
+    - location_write
+    - manual_read
+    - manual_write
+    - media_read
+    - media_write
+    - medication_read
+    - medication_write
+    - mood_read
+    - mood_write
+    - productivity_read
+    - productivity_write
+    - sleep_read
+    - sleep_write
+    - social_read
+    - social_write
+    - symptoms_read
+    - symptoms_write
+    - weather_read
+    - weather_write
+    - workouts_read
+    - workouts_write
+
+# source: https://developers.facebook.com/docs/permissions/reference
+facebook:
+    - ads_management
+    - ads_read
+    - business_management
+    - catalog_management
+    - email
+    - instagram_basic
+    - instagram_content_publish
+    - instagram_manage_comments
+    - instagram_manage_insights
+    - instagram_shopping_tag_products
+    - leads_retrieval
+    - pages_manage_ads
+    - pages_manage_cta
+    - pages_manage_engagement
+    - pages_manage_instant_articles
+    - pages_manage_metadata
+    - pages_manage_posts
+    - pages_messaging
+    - pages_messaging_subscriptions
+    - pages_read_engagement
+    - pages_read_user_content
+    - pages_show_list
+    - pages_user_gender
+    - pages_user_locale
+    - pages_user_timezone
+    - public_profile
+    - publish_to_groups
+    - publish_video
+    - read_insights
+    - user_age_range
+    - user_birthday
+    - user_friends
+    - user_gender
+    - user_hometown
+    - user_likes
+    - user_link
+    - user_location
+    - user_photos
+    - user_posts
+    - user_videos
+
+# source: https://apidoc.factorialhr.com/docs/oauth-scopes (exhaustive list of all scopes available for Factorial OAuth2)
+factorial:
+    - banking
+    - company_holidays
+    - company_legal_entities
+    - company_locations
+    - contracts
+    - custom_fields
+    - documents
+    - employee_updates
+    - employees
+    - expenses
+    - finance
+    - integrations
+    - job_catalog
+    - marketplace
+    - payroll
+    - payroll_supplements
+    - performance
+    - posts
+    - project_management_expenses
+    - project_management_projects
+    - project_management_time
+    - recruitment
+    - shift_management
+    - tasks
+    - time_off
+    - time_tracking
+    - trainings
+
+# source: https://api.fanvue.com/docs/authentication/scopes (complete list of Fanvue OAuth2 scopes)
+fanvue:
+    - read:chat
+    - read:creator
+    - read:fan
+    - read:insights
+    - read:media
+    - read:self
+    - write:chat
+    - write:creator
+    - write:media
+    - write:post
+
+# source: https://developers.fathom.ai/sdks/oauth (Fathom OAuth2 uses a single scope for API access)
+fathom-oauth:
+    - public_api
+
+# source: https://www.figma.com/developers/api (Figma OAuth2 scopes - FigJam is a Figma product and uses the same OAuth infrastructure and scopes)
+figjam:
+    - current_user:read
+    - file_comments:read
+    - file_comments:write
+    - file_content:read
+    - file_dev_resources:read
+    - file_dev_resources:write
+    - file_metadata:read
+    - file_variables:read
+    - file_variables:write
+    - file_versions:read
+    - files:read
+    - library_analytics:read
+    - library_assets:read
+    - library_content:read
+    - org:activity_log_read
+    - projects:read
+    - team_library_content:read
+    - webhooks:read
+    - webhooks:write
+
+# source: https://www.figma.com/developers/api
+figma:
+    - current_user:read
+    - file_comments:read
+    - file_comments:write
+    - file_content:read
+    - file_dev_resources:read
+    - file_dev_resources:write
+    - file_metadata:read
+    - file_variables:read
+    - file_variables:write
+    - file_versions:read
+    - files:read
+    - library_analytics:read
+    - library_assets:read
+    - library_content:read
+    - org:activity_log_read
+    - projects:read
+    - team_library_content:read
+    - webhooks:read
+    - webhooks:write
+
+# source: https://fillout.com/help/oauth-applications (Fillout OAuth2 does not use granular scopes; permissions are managed in the developer dashboard)
+fillout: []
+
+# source: https://dev.fitbit.com/build/reference/web-api/developer-guide/authorization/
+fitbit:
+    - activity
+    - heartrate
+    - location
+    - nutrition
+    - oxygen_saturation
+    - profile
+    - respiratory_rate
+    - settings
+    - sleep
+    - social
+    - temperature
+    - weight
+
+# source: https://www.fortnox.se/developer/guides-and-good-to-know/scopes (complete list of Fortnox OAuth2 scopes)
+fortnox:
+    - archive
+    - article
+    - assets
+    - bookkeeping
+    - companyinformation
+    - connectfile
+    - costcenter
+    - currency
+    - customer
+    - deletevoucher
+    - inbox
+    - invoice
+    - noxfinansinvoice
+    - offer
+    - order
+    - payment
+    - price
+    - print
+    - profile
+    - project
+    - salary
+    - settings
+    - supplier
+    - supplierinvoice
+    - timereporting
+
+# source: https://dev.freeagent.com/docs/oauth (FreeAgent OAuth2 does not use granular scopes; full API access is granted via OAuth2 flow)
+freeagent: []
+
+# source: https://dev.freeagent.com/docs/oauth (FreeAgent Sandbox uses the same OAuth2 configuration as production; no granular scopes)
+freeagent-sandbox: []
+
+# source: https://www.freshbooks.com/api/scopes (complete list of all FreshBooks OAuth2 scopes - combines entity:read and entity:write for all 22 object types)
+freshbooks:
+    - user:bill_payments:read
+    - user:bill_payments:write
+    - user:bill_vendors:read
+    - user:bill_vendors:write
+    - user:billable_items:read
+    - user:billable_items:write
+    - user:bills:read
+    - user:bills:write
+    - user:business:read
+    - user:business:write
+    - user:clients:read
+    - user:clients:write
+    - user:credit_notes:read
+    - user:credit_notes:write
+    - user:estimates:read
+    - user:estimates:write
+    - user:expenses:read
+    - user:expenses:write
+    - user:invoices:read
+    - user:invoices:write
+    - user:journal_entries:read
+    - user:journal_entries:write
+    - user:notifications:read
+    - user:notifications:write
+    - user:online_payments:read
+    - user:online_payments:write
+    - user:other_income:read
+    - user:other_income:write
+    - user:payments:read
+    - user:payments:write
+    - user:profile:read
+    - user:projects:read
+    - user:projects:write
+    - user:reports:read
+    - user:reports:write
+    - user:retainers:read
+    - user:retainers:write
+    - user:taxes:read
+    - user:taxes:write
+    - user:teams:read
+    - user:teams:write
+    - user:time_entries:read
+    - user:time_entries:write
+
+# source: https://dev.frontapp.com/docs/authentication (Token scopes documentation) and https://dev.frontapp.com/reference (API endpoint scope requirements)
+front:
+    - accounts:read
+    - accounts:write
+    - analytics:read
+    - channels:read
+    - comments:write
+    - contacts:delete
+    - contacts:read
+    - contacts:write
+    - conversations:delete
+    - conversations:read
+    - conversations:write
+    - drafts:write
+    - events:*:read
+    - inboxes:read
+    - inboxes:write
+    - knowledge_bases:read
+    - messages:send
+    - rules:read
+    - signatures:read
+    - tags:read
+    - teammates:read
+    - teammates:write
+    - teams:read
+
+# source: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps
+github:
+    - admin:gpg_key
+    - admin:org
+    - admin:org_hook
+    - admin:public_key
+    - admin:repo_hook
+    - codespace
+    - delete_repo
+    - delete:packages
+    - gist
+    - notifications
+    - project
+    - public_repo
+    - read:audit_log
+    - read:gpg_key
+    - read:org
+    - read:packages
+    - read:project
+    - read:public_key
+    - read:repo_hook
+    - read:user
+    - repo
+    - repo_deployment
+    - repo:invite
+    - repo:status
+    - security_events
+    - user
+    - user:email
+    - user:follow
+    - workflow
+    - write:gpg_key
+    - write:org
+    - write:packages
+    - write:public_key
+    - write:repo_hook
+
+# source: https://docs.gitlab.com/ee/integration/oauth_provider.html
+gitlab:
+    - admin_mode
+    - ai_features
+    - api
+    - create_runner
+    - email
+    - k8s_proxy
+    - manage_runner
+    - openid
+    - profile
+    - read_api
+    - read_observability
+    - read_registry
+    - read_repository
+    - read_service_ping
+    - read_user
+    - read_virtual_registry
+    - sudo
+    - write_observability
+    - write_registry
+    - write_repository
+    - write_virtual_registry
+
+# source: https://help.gong.io/docs/create-an-app-for-gong
+gong-oauth:
+    - calls.read
+    - calls.write
+    - scorecards.read
+    - scorecards.write
+    - teams.read
+    - teams.write
+    - users.read
+    - users.write
+    - workspaces.read
+    - workspaces.write
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes
+google:
+    - email
+    - https://mail.google.com/
+    - https://www.googleapis.com/auth/analytics
+    - https://www.googleapis.com/auth/analytics.edit
+    - https://www.googleapis.com/auth/analytics.manage.users
+    - https://www.googleapis.com/auth/analytics.manage.users.readonly
+    - https://www.googleapis.com/auth/analytics.readonly
+    - https://www.googleapis.com/auth/analytics.user.deletion
+    - https://www.googleapis.com/auth/calendar
+    - https://www.googleapis.com/auth/calendar.acls
+    - https://www.googleapis.com/auth/calendar.acls.readonly
+    - https://www.googleapis.com/auth/calendar.app.created
+    - https://www.googleapis.com/auth/calendar.calendarlist
+    - https://www.googleapis.com/auth/calendar.calendarlist.readonly
+    - https://www.googleapis.com/auth/calendar.calendars
+    - https://www.googleapis.com/auth/calendar.calendars.readonly
+    - https://www.googleapis.com/auth/calendar.events
+    - https://www.googleapis.com/auth/calendar.events.freebusy
+    - https://www.googleapis.com/auth/calendar.events.owned
+    - https://www.googleapis.com/auth/calendar.events.owned.readonly
+    - https://www.googleapis.com/auth/calendar.events.public.readonly
+    - https://www.googleapis.com/auth/calendar.events.readonly
+    - https://www.googleapis.com/auth/calendar.freebusy
+    - https://www.googleapis.com/auth/calendar.readonly
+    - https://www.googleapis.com/auth/calendar.settings.readonly
+    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform.read-only
+    - https://www.googleapis.com/auth/directory.group
+    - https://www.googleapis.com/auth/directory.group.readonly
+    - https://www.googleapis.com/auth/directory.orgunit
+    - https://www.googleapis.com/auth/directory.orgunit.readonly
+    - https://www.googleapis.com/auth/directory.user
+    - https://www.googleapis.com/auth/directory.user.readonly
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.appdata
+    - https://www.googleapis.com/auth/drive.apps.readonly
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.install
+    - https://www.googleapis.com/auth/drive.metadata
+    - https://www.googleapis.com/auth/drive.metadata.readonly
+    - https://www.googleapis.com/auth/drive.photos.readonly
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/drive.scripts
+    - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+    - https://www.googleapis.com/auth/gmail.addons.current.message.action
+    - https://www.googleapis.com/auth/gmail.addons.current.message.metadata
+    - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+    - https://www.googleapis.com/auth/gmail.compose
+    - https://www.googleapis.com/auth/gmail.insert
+    - https://www.googleapis.com/auth/gmail.labels
+    - https://www.googleapis.com/auth/gmail.metadata
+    - https://www.googleapis.com/auth/gmail.modify
+    - https://www.googleapis.com/auth/gmail.readonly
+    - https://www.googleapis.com/auth/gmail.send
+    - https://www.googleapis.com/auth/gmail.settings.basic
+    - https://www.googleapis.com/auth/gmail.settings.sharing
+    - https://www.googleapis.com/auth/spreadsheets
+    - https://www.googleapis.com/auth/spreadsheets.readonly
+    - https://www.googleapis.com/auth/userinfo.email
+    - https://www.googleapis.com/auth/userinfo.profile
+    - openid
+    - profile
+
+# source: https://developers.google.com/google-ads/api/docs/oauth/overview (Google Ads uses same scopes as Google)
+google-ads:
+    - email
+    - https://mail.google.com/
+    - https://www.googleapis.com/auth/analytics
+    - https://www.googleapis.com/auth/analytics.edit
+    - https://www.googleapis.com/auth/analytics.manage.users
+    - https://www.googleapis.com/auth/analytics.manage.users.readonly
+    - https://www.googleapis.com/auth/analytics.readonly
+    - https://www.googleapis.com/auth/analytics.user.deletion
+    - https://www.googleapis.com/auth/calendar
+    - https://www.googleapis.com/auth/calendar.acls
+    - https://www.googleapis.com/auth/calendar.acls.readonly
+    - https://www.googleapis.com/auth/calendar.app.created
+    - https://www.googleapis.com/auth/calendar.calendarlist
+    - https://www.googleapis.com/auth/calendar.calendarlist.readonly
+    - https://www.googleapis.com/auth/calendar.calendars
+    - https://www.googleapis.com/auth/calendar.calendars.readonly
+    - https://www.googleapis.com/auth/calendar.events
+    - https://www.googleapis.com/auth/calendar.events.freebusy
+    - https://www.googleapis.com/auth/calendar.events.owned
+    - https://www.googleapis.com/auth/calendar.events.owned.readonly
+    - https://www.googleapis.com/auth/calendar.events.public.readonly
+    - https://www.googleapis.com/auth/calendar.events.readonly
+    - https://www.googleapis.com/auth/calendar.freebusy
+    - https://www.googleapis.com/auth/calendar.readonly
+    - https://www.googleapis.com/auth/calendar.settings.readonly
+    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform.read-only
+    - https://www.googleapis.com/auth/directory.group
+    - https://www.googleapis.com/auth/directory.group.readonly
+    - https://www.googleapis.com/auth/directory.orgunit
+    - https://www.googleapis.com/auth/directory.orgunit.readonly
+    - https://www.googleapis.com/auth/directory.user
+    - https://www.googleapis.com/auth/directory.user.readonly
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.appdata
+    - https://www.googleapis.com/auth/drive.apps.readonly
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.install
+    - https://www.googleapis.com/auth/drive.metadata
+    - https://www.googleapis.com/auth/drive.metadata.readonly
+    - https://www.googleapis.com/auth/drive.photos.readonly
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/drive.scripts
+    - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+    - https://www.googleapis.com/auth/gmail.addons.current.message.action
+    - https://www.googleapis.com/auth/gmail.addons.current.message.metadata
+    - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+    - https://www.googleapis.com/auth/gmail.compose
+    - https://www.googleapis.com/auth/gmail.insert
+    - https://www.googleapis.com/auth/gmail.labels
+    - https://www.googleapis.com/auth/gmail.metadata
+    - https://www.googleapis.com/auth/gmail.modify
+    - https://www.googleapis.com/auth/gmail.readonly
+    - https://www.googleapis.com/auth/gmail.send
+    - https://www.googleapis.com/auth/gmail.settings.basic
+    - https://www.googleapis.com/auth/gmail.settings.sharing
+    - https://www.googleapis.com/auth/spreadsheets
+    - https://www.googleapis.com/auth/spreadsheets.readonly
+    - https://www.googleapis.com/auth/userinfo.email
+    - https://www.googleapis.com/auth/userinfo.profile
+    - openid
+    - profile
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Google Analytics uses same scopes as Google)
+google-analytics:
+    - email
+    - https://www.googleapis.com/auth/analytics
+    - https://www.googleapis.com/auth/analytics.edit
+    - https://www.googleapis.com/auth/analytics.manage.users
+    - https://www.googleapis.com/auth/analytics.manage.users.readonly
+    - https://www.googleapis.com/auth/analytics.readonly
+    - https://www.googleapis.com/auth/analytics.user.deletion
+    - https://www.googleapis.com/auth/userinfo.email
+    - https://www.googleapis.com/auth/userinfo.profile
+    - openid
+    - profile
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (BigQuery API scopes)
+google-bigquery:
+    - https://www.googleapis.com/auth/bigquery
+    - https://www.googleapis.com/auth/bigquery.insertdata
+    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform.read-only
+    - https://www.googleapis.com/auth/devstorage.full_control
+    - https://www.googleapis.com/auth/devstorage.read_only
+    - https://www.googleapis.com/auth/devstorage.read_write
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Calendar API scopes)
+google-calendar:
+    - https://www.googleapis.com/auth/calendar
+    - https://www.googleapis.com/auth/calendar.acls
+    - https://www.googleapis.com/auth/calendar.acls.readonly
+    - https://www.googleapis.com/auth/calendar.app.created
+    - https://www.googleapis.com/auth/calendar.calendarlist
+    - https://www.googleapis.com/auth/calendar.calendarlist.readonly
+    - https://www.googleapis.com/auth/calendar.calendars
+    - https://www.googleapis.com/auth/calendar.calendars.readonly
+    - https://www.googleapis.com/auth/calendar.events
+    - https://www.googleapis.com/auth/calendar.events.freebusy
+    - https://www.googleapis.com/auth/calendar.events.owned
+    - https://www.googleapis.com/auth/calendar.events.owned.readonly
+    - https://www.googleapis.com/auth/calendar.events.public.readonly
+    - https://www.googleapis.com/auth/calendar.events.readonly
+    - https://www.googleapis.com/auth/calendar.freebusy
+    - https://www.googleapis.com/auth/calendar.readonly
+    - https://www.googleapis.com/auth/calendar.settings.readonly
+
+# source: https://developers.google.com/workspace/chat/authenticate-authorize-chat-user
+# Chat API scopes - Note: Chat apps may use additional bot-specific authentication
+google-chat:
+    - https://www.googleapis.com/auth/chat.bot
+    - https://www.googleapis.com/auth/chat.spaces.create
+    - https://www.googleapis.com/auth/chat.spaces.readonly
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Cloud Storage JSON API scopes)
+google-cloud-storage:
+    - https://www.googleapis.com/auth/cloud-platform
+    - https://www.googleapis.com/auth/cloud-platform.read-only
+    - https://www.googleapis.com/auth/devstorage.full_control
+    - https://www.googleapis.com/auth/devstorage.read_only
+    - https://www.googleapis.com/auth/devstorage.read_write
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Docs API scopes)
+google-docs:
+    - https://www.googleapis.com/auth/documents
+    - https://www.googleapis.com/auth/documents.readonly
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.readonly
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Drive API scopes)
+google-drive:
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.appdata
+    - https://www.googleapis.com/auth/drive.apps.readonly
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.install
+    - https://www.googleapis.com/auth/drive.metadata
+    - https://www.googleapis.com/auth/drive.metadata.readonly
+    - https://www.googleapis.com/auth/drive.photos.readonly
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/drive.scripts
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Forms API scopes)
+google-forms:
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/forms.body
+    - https://www.googleapis.com/auth/forms.body.readonly
+    - https://www.googleapis.com/auth/forms.responses.readonly
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Gmail API scopes)
+google-mail:
+    - https://mail.google.com/
+    - https://www.googleapis.com/auth/gmail.addons.current.action.compose
+    - https://www.googleapis.com/auth/gmail.addons.current.message.action
+    - https://www.googleapis.com/auth/gmail.addons.current.message.metadata
+    - https://www.googleapis.com/auth/gmail.addons.current.message.readonly
+    - https://www.googleapis.com/auth/gmail.compose
+    - https://www.googleapis.com/auth/gmail.insert
+    - https://www.googleapis.com/auth/gmail.labels
+    - https://www.googleapis.com/auth/gmail.metadata
+    - https://www.googleapis.com/auth/gmail.modify
+    - https://www.googleapis.com/auth/gmail.readonly
+    - https://www.googleapis.com/auth/gmail.send
+    - https://www.googleapis.com/auth/gmail.settings.basic
+    - https://www.googleapis.com/auth/gmail.settings.sharing
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Meet API scopes)
+google-meet:
+    - https://www.googleapis.com/auth/meetings.space.created
+    - https://www.googleapis.com/auth/meetings.space.readonly
+    - https://www.googleapis.com/auth/meetings.space.settings
+
+# source: https://developers.google.com/android-publisher (Google Play Android Developer API)
+google-play:
+    - https://www.googleapis.com/auth/androidpublisher
+
+# source: https://developers.google.com/webmaster-tools/v3/how-tos/authorizing
+google-search-console:
+    - https://www.googleapis.com/auth/webmasters
+    - https://www.googleapis.com/auth/webmasters.readonly
+
+# source: https://developers.google.com/identity/protocols/oauth2/scopes (Sheets API scopes)
+google-sheet:
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/spreadsheets
+    - https://www.googleapis.com/auth/spreadsheets.readonly
+
+# source: https://developers.google.com/workspace/slides/api/scopes
+google-slides:
+    - https://www.googleapis.com/auth/drive
+    - https://www.googleapis.com/auth/drive.file
+    - https://www.googleapis.com/auth/drive.readonly
+    - https://www.googleapis.com/auth/presentations
+    - https://www.googleapis.com/auth/presentations.readonly
+
+# source: https://developers.google.com/tasks/reference/rest (Tasks API scopes)
+google-tasks:
+    - https://www.googleapis.com/auth/tasks
+    - https://www.googleapis.com/auth/tasks.readonly
+
+# source: https://developers.google.com/workspace/admin/directory/v1/guides/authorizing (Directory API scopes)
+google-workspace-admin:
+    - https://www.googleapis.com/auth/admin.directory.customer
+    - https://www.googleapis.com/auth/admin.directory.customer.readonly
+    - https://www.googleapis.com/auth/admin.directory.device.chromeos
+    - https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly
+    - https://www.googleapis.com/auth/admin.directory.device.mobile
+    - https://www.googleapis.com/auth/admin.directory.device.mobile.action
+    - https://www.googleapis.com/auth/admin.directory.device.mobile.readonly
+    - https://www.googleapis.com/auth/admin.directory.domain
+    - https://www.googleapis.com/auth/admin.directory.domain.readonly
+    - https://www.googleapis.com/auth/admin.directory.group
+    - https://www.googleapis.com/auth/admin.directory.group.member
+    - https://www.googleapis.com/auth/admin.directory.group.member.readonly
+    - https://www.googleapis.com/auth/admin.directory.group.readonly
+    - https://www.googleapis.com/auth/admin.directory.orgunit
+    - https://www.googleapis.com/auth/admin.directory.orgunit.readonly
+    - https://www.googleapis.com/auth/admin.directory.resource.calendar
+    - https://www.googleapis.com/auth/admin.directory.resource.calendar.readonly
+    - https://www.googleapis.com/auth/admin.directory.rolemanagement
+    - https://www.googleapis.com/auth/admin.directory.rolemanagement.readonly
+    - https://www.googleapis.com/auth/admin.directory.user
+    - https://www.googleapis.com/auth/admin.directory.user.alias
+    - https://www.googleapis.com/auth/admin.directory.user.alias.readonly
+    - https://www.googleapis.com/auth/admin.directory.user.readonly
+    - https://www.googleapis.com/auth/admin.directory.user.security
+    - https://www.googleapis.com/auth/admin.directory.userschema
+    - https://www.googleapis.com/auth/admin.directory.userschema.readonly
+
+# source: https://developers.gorgias.com/docs/oauth2-scopes
+gorgias:
+    - account:read
+    - account:write
+    - apps:read
+    - apps:write
+    - custom_fields:read
+    - custom_fields:write
+    - customers:read
+    - customers:write
+    - email
+    - events:read
+    - events:write
+    - integrations:read
+    - integrations:write
+    - jobs:read
+    - jobs:write
+    - macros:read
+    - macros:write
+    - offline
+    - openid
+    - profile
+    - rules:read
+    - rules:write
+    - satisfaction_survey:read
+    - satisfaction_survey:write
+    - statistics:read
+    - tags:read
+    - tags:write
+    - tickets:read
+    - tickets:write
+    - users:read
+    - users:write
+
+# source: https://docs.grain.com/docs/public-api/authentication (Grain OAuth2 uses PKCE flow, no granular scopes documented)
+# Grain OAuth2 implementation does not expose granular scopes - permissions configured at app level
+grain: []
+
+# source: https://developers.greenhouse.io/harvest.html#authentication (Greenhouse uses endpoint-based OAuth2 scopes configured per-app)
+# Scopes are granular and follow pattern: harvest:{resource}:{action} (e.g., harvest:candidates:list, harvest:jobs:read)
+# Full scope list available at: https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth
+greenhouse: []
+
+# source: https://harvestdocs.greenhouse.io/docs/harvest-partner-oauth (Harvest Partner OAuth uses granular harvest:* scopes)
+# Scopes follow pattern: harvest:{resource}:{action} - All scopes must be requested during OAuth app registration
+# Full API reference: https://harvestdocs.greenhouse.io/reference
+greenhouse-harvest-partner:
+    - harvest:activity_feed:list
+    - harvest:activity_feed:write
+    - harvest:applications:convert_to_candidate
+    - harvest:applications:create
+    - harvest:applications:delete
+    - harvest:applications:hire
+    - harvest:applications:list
+    - harvest:applications:move
+    - harvest:applications:read
+    - harvest:applications:reject
+    - harvest:applications:unreject
+    - harvest:applications:write
+    - harvest:approvals:create
+    - harvest:approvals:list
+    - harvest:approvals:read
+    - harvest:approvals:update
+    - harvest:approvals:write
+    - harvest:approver_groups:list
+    - harvest:approver_groups:write
+    - harvest:approvers:list
+    - harvest:attachments:create
+    - harvest:attachments:delete
+    - harvest:attachments:list
+    - harvest:attachments:read
+    - harvest:attachments:write
+    - harvest:bulk_requests:list
+    - harvest:candidate_educations:create
+    - harvest:candidate_educations:delete
+    - harvest:candidate_educations:list
+    - harvest:candidate_educations:write
+    - harvest:candidate_employments:create
+    - harvest:candidate_employments:delete
+    - harvest:candidate_employments:list
+    - harvest:candidate_employments:write
+    - harvest:candidate_tags:create
+    - harvest:candidate_tags:delete
+    - harvest:candidate_tags:list
+    - harvest:candidate_tags:write
+    - harvest:candidates:anonymize
+    - harvest:candidates:create
+    - harvest:candidates:delete
+    - harvest:candidates:list
+    - harvest:candidates:merge
+    - harvest:candidates:read
+    - harvest:candidates:update
+    - harvest:candidates:write
+    - harvest:close_reasons:list
+    - harvest:custom_field_departments:create
+    - harvest:custom_field_departments:delete
+    - harvest:custom_field_departments:list
+    - harvest:custom_field_departments:write
+    - harvest:custom_field_offices:create
+    - harvest:custom_field_offices:delete
+    - harvest:custom_field_offices:list
+    - harvest:custom_field_offices:write
+    - harvest:custom_field_options:create
+    - harvest:custom_field_options:delete
+    - harvest:custom_field_options:list
+    - harvest:custom_field_options:read
+    - harvest:custom_field_options:update
+    - harvest:custom_field_options:write
+    - harvest:custom_fields:create
+    - harvest:custom_fields:delete
+    - harvest:custom_fields:list
+    - harvest:custom_fields:read
+    - harvest:custom_fields:update
+    - harvest:custom_fields:write
+    - harvest:default_interviewers:list
+    - harvest:demographic_answer_options:list
+    - harvest:demographic_answers:list
+    - harvest:demographic_question_sets:list
+    - harvest:demographic_questions:list
+    - harvest:departments:create
+    - harvest:departments:list
+    - harvest:departments:read
+    - harvest:departments:update
+    - harvest:departments:write
+    - harvest:eeoc:list
+    - harvest:email_templates:list
+    - harvest:email_templates:read
+    - harvest:future_job_permissions:create
+    - harvest:future_job_permissions:delete
+    - harvest:future_job_permissions:list
+    - harvest:future_job_permissions:write
+    - harvest:interview_kits:list
+    - harvest:interviewer_tags:list
+    - harvest:interviewers:list
+    - harvest:interviews:create
+    - harvest:interviews:delete
+    - harvest:interviews:list
+    - harvest:interviews:read
+    - harvest:interviews:update
+    - harvest:interviews:write
+    - harvest:job_board_custom_locations:list
+    - harvest:job_candidate_attributes:list
+    - harvest:job_hiring_managers:create
+    - harvest:job_hiring_managers:delete
+    - harvest:job_hiring_managers:list
+    - harvest:job_hiring_managers:write
+    - harvest:job_interview_stages:list
+    - harvest:job_interviews:list
+    - harvest:job_notes:create
+    - harvest:job_notes:delete
+    - harvest:job_notes:list
+    - harvest:job_notes:read
+    - harvest:job_notes:update
+    - harvest:job_notes:write
+    - harvest:job_openings:create
+    - harvest:job_openings:delete
+    - harvest:job_openings:list
+    - harvest:job_openings:read
+    - harvest:job_openings:update
+    - harvest:job_openings:write
+    - harvest:job_owners:create
+    - harvest:job_owners:delete
+    - harvest:job_owners:list
+    - harvest:job_owners:write
+    - harvest:job_post_locations:create
+    - harvest:job_post_locations:delete
+    - harvest:job_post_locations:list
+    - harvest:job_post_locations:write
+    - harvest:job_posts:create
+    - harvest:job_posts:list
+    - harvest:job_posts:read
+    - harvest:job_posts:update
+    - harvest:job_posts:write
+    - harvest:job_stages:list
+    - harvest:job_stages:read
+    - harvest:jobs:create
+    - harvest:jobs:list
+    - harvest:jobs:read
+    - harvest:jobs:update
+    - harvest:jobs:write
+    - harvest:notes:create
+    - harvest:notes:list
+    - harvest:notes:read
+    - harvest:notes:write
+    - harvest:offers:create
+    - harvest:offers:list
+    - harvest:offers:read
+    - harvest:offers:update
+    - harvest:offers:write
+    - harvest:offices:create
+    - harvest:offices:list
+    - harvest:offices:read
+    - harvest:offices:update
+    - harvest:offices:write
+    - harvest:openings:create
+    - harvest:openings:delete
+    - harvest:openings:list
+    - harvest:openings:read
+    - harvest:openings:update
+    - harvest:openings:write
+    - harvest:prospect_details:list
+    - harvest:prospect_pool_stages:list
+    - harvest:prospect_pools:list
+    - harvest:referrers:list
+    - harvest:rejection_details:list
+    - harvest:rejection_details:read
+    - harvest:rejection_details:update
+    - harvest:rejection_details:write
+    - harvest:rejection_reasons:list
+    - harvest:scorecard_candidate_attributes:create
+    - harvest:scorecard_candidate_attributes:list
+    - harvest:scorecard_candidate_attributes:update
+    - harvest:scorecard_candidate_attributes:write
+    - harvest:scorecard_question_answer_options:create
+    - harvest:scorecard_question_answer_options:list
+    - harvest:scorecard_question_answer_options:write
+    - harvest:scorecard_question_answers:create
+    - harvest:scorecard_question_answers:list
+    - harvest:scorecard_question_answers:update
+    - harvest:scorecard_question_answers:write
+    - harvest:scorecard_question_candidate_attributes:list
+    - harvest:scorecard_question_options:list
+    - harvest:scorecard_questions:list
+    - harvest:scorecards:create
+    - harvest:scorecards:list
+    - harvest:scorecards:read
+    - harvest:scorecards:update
+    - harvest:scorecards:write
+    - harvest:sources:list
+    - harvest:tracking_links:list
+    - harvest:user_emails:create
+    - harvest:user_emails:list
+    - harvest:user_emails:write
+    - harvest:user_job_permissions:create
+    - harvest:user_job_permissions:delete
+    - harvest:user_job_permissions:list
+    - harvest:user_job_permissions:write
+    - harvest:user_roles:list
+    - harvest:users:activate
+    - harvest:users:create
+    - harvest:users:deactivate
+    - harvest:users:list
+    - harvest:users:read
+    - harvest:users:update
+    - harvest:users:write
+
+# source: https://developers.greenhouse.io/candidate-ingestion.html (Ingestion API OAuth2 scopes documented in official API reference)
+# Scopes: candidates.create, candidates.view, jobs.view, prospect_pools.view
+greenhouse-ingestion:
+    - candidates.create
+    - candidates.view
+    - jobs.view
+    - prospect_pools.view
+
+# source: https://app.gumroad.com/api (Gumroad OAuth2 scopes)
+gumroad:
+    - edit_products
+    - mark_sales_as_shipped
+    - view_payouts
+    - view_profile
+    - view_sales
+
+# source: https://docs.gusto.com/app-integrations/docs/scopes (Gusto uses resource:action pattern for scopes)
+gusto:
+    - benefits:read
+    - benefits:write
+    - companies:read
+    - companies:write
+    - contractor_payments:read
+    - employees:read
+    - employees:write
+    - payrolls:read
+    - payrolls:write
+    - time_off:read
+    - time_off:write
+    - time_tracking:read
+    - time_tracking:write
+
+# source: https://docs.gusto.com/app-integrations/docs/scopes (Gusto Demo uses same scopes as Gusto)
+gusto-demo:
+    - benefits:read
+    - benefits:write
+    - companies:read
+    - companies:write
+    - contractor_payments:read
+    - employees:read
+    - employees:write
+    - payrolls:read
+    - payrolls:write
+    - time_off:read
+    - time_off:write
+    - time_tracking:read
+    - time_tracking:write
+
+# source: https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/ (Harvest OAuth2 uses account-based scopes)
+# Scopes format: harvest:{ACCOUNT_ID}, forecast:{ACCOUNT_ID}, harvest:all, forecast:all, or all
+harvest:
+    - all
+    - forecast:all
+    - harvest:all
+
+# source: https://developer.healthgorilla.com/docs/scopes-access-control (Health Gorilla scopes assigned during registration)
+# Scopes are configured at registration time and vary by integration. Examples include: create_users, place_orders, get_profile
+health-gorilla: []
+
+# source: https://developer.helpscout.com/mailbox-api/overview/authentication/ (Help Scout Mailbox OAuth2 - no granular scopes)
+# Help Scout Mailbox uses OAuth2 but does not expose granular scopes. Access is determined at app configuration.
+helpscout-mailbox: []
+
+# source: https://docs.heygen.com/docs/connecting-your-app-to-heygen-with-oauth-20 (HeyGen OAuth2 with PKCE)
+# HeyGen OAuth2 uses Authorization Code Flow with PKCE. No granular scopes documented.
+heygen: []
+
+# source: https://highlevel.guide/docs/api/authentication (no official scopes page found, using providers.yaml fallback)
+highlevel:
+    - appointments.readonly
+    - appointments.write
+    - calendars.readonly
+    - calendars.write
+    - campaigns.readonly
+    - campaigns.write
+    - contacts.readonly
+    - contacts.write
+    - conversations.readonly
+    - conversations.write
+    - forms.readonly
+    - forms.write
+    - funnels.readonly
+    - funnels.write
+    - invoices.readonly
+    - invoices.write
+    - links.readonly
+    - links.write
+    - locations.readonly
+    - locations.write
+    - locations/oauth.readonly
+    - locations/oauth.write
+    - media.readonly
+    - media.write
+    - notes.readonly
+    - notes.write
+    - oauth.write
+    - opportunities.readonly
+    - opportunities.write
+    - payments.readonly
+    - payments.write
+    - reviews.readonly
+    - reviews.write
+    - snapshots.readonly
+    - snapshots.write
+    - surveys.readonly
+    - surveys.write
+    - tasks.readonly
+    - tasks.write
+    - triggers.readonly
+    - triggers.write
+    - users.readonly
+    - users.write
+
+# source: https://marketplace.gohighlevel.com/docs/Authorization/Scopes
+highlevel-white-label:
+    - adbuilder.readonly
+    - adbuilder.write
+    - affiliate.readonly
+    - affiliate.write
+    - affiliateManager.readonly
+    - affiliateManager.write
+    - blog.readonly
+    - blog.write
+    - businesses.readonly
+    - businesses.write
+    - calendars.readonly
+    - calendars.write
+    - calendars/events.readonly
+    - calendars/events.write
+    - calendars/groups.readonly
+    - calendars/groups.write
+    - calendars/resources.readonly
+    - calendars/resources.write
+    - campaigns.readonly
+    - contacts.readonly
+    - contacts.write
+    - conversations.readonly
+    - conversations.write
+    - conversations/message.readonly
+    - conversations/message.write
+    - forms.readonly
+    - forms.write
+    - funnels/funnel.readonly
+    - funnels/page.readonly
+    - funnels/pagecount.readonly
+    - funnels/redirect.readonly
+    - funnels/redirect.write
+    - invoices.readonly
+    - invoices.write
+    - invoices/estimate.readonly
+    - invoices/estimate.write
+    - invoices/schedule.readonly
+    - invoices/schedule.write
+    - invoices/template.readonly
+    - invoices/template.write
+    - lc-email.readonly
+    - lc-email.write
+    - links.readonly
+    - links.write
+    - locations.readonly
+    - locations.write
+    - locations/customFields.readonly
+    - locations/customFields.write
+    - locations/customValues.readonly
+    - locations/customValues.write
+    - locations/tags.readonly
+    - locations/tags.write
+    - locations/tasks.readonly
+    - locations/templates.readonly
+    - medias.readonly
+    - medias.write
+    - membership.readonly
+    - membership.write
+    - oauth.readonly
+    - oauth.write
+    - objects/record.readonly
+    - objects/record.write
+    - objects/schema.readonly
+    - objects/schema.write
+    - opportunities.readonly
+    - opportunities.write
+    - payments/coupons.readonly
+    - payments/coupons.write
+    - payments/custom-provider.readonly
+    - payments/custom-provider.write
+    - payments/integration.readonly
+    - payments/integration.write
+    - payments/orders.readonly
+    - payments/orders.write
+    - payments/subscriptions.readonly
+    - payments/transactions.readonly
+    - products.readonly
+    - products.write
+    - products/collection.readonly
+    - products/collection.write
+    - products/prices.readonly
+    - products/prices.write
+    - saas/company.write
+    - saas/location.read
+    - saas/location.write
+    - sites.readonly
+    - sites.write
+    - snapshots.readonly
+    - snapshots.write
+    - snapshots/share.readonly
+    - snapshots/share.write
+    - socialplanner/account.readonly
+    - socialplanner/account.write
+    - socialplanner/analytics.readonly
+    - socialplanner/brand.readonly
+    - socialplanner/brand.write
+    - socialplanner/category.readonly
+    - socialplanner/csv.readonly
+    - socialplanner/csv.write
+    - socialplanner/emoji.readonly
+    - socialplanner/engagement.readonly
+    - socialplanner/engagement.write
+    - socialplanner/instagram.readonly
+    - socialplanner/instagram.write
+    - socialplanner/oauth.readonly
+    - socialplanner/oauth.write
+    - socialplanner/planner.readonly
+    - socialplanner/planner.write
+    - socialplanner/post.readonly
+    - socialplanner/post.write
+    - socialplanner/template.readonly
+    - socialplanner/template.write
+    - surveys.readonly
+    - surveys.write
+    - workflows.readonly
+    - workflows.write
+
+# source: https://developers.hover.to/docs/oauth-20-authentication (Hover OAuth2)
+# Hover uses 'all' scope for full API access
+hover:
+    - all
+
+# source: https://developers.hubspot.com/docs/guides/apps/authentication/scopes
+hubspot:
+    - cms.domains.read
+    - cms.domains.write
+    - cms.functions.read
+    - cms.functions.write
+    - cms.knowledge_base.articles.publish
+    - cms.knowledge_base.articles.read
+    - cms.knowledge_base.articles.write
+    - cms.knowledge_base.settings.read
+    - cms.knowledge_base.settings.write
+    - cms.membership.access_groups.read
+    - cms.membership.access_groups.write
+    - crm.dealsplits.read_write
+    - crm.lists.read
+    - crm.lists.write
+    - crm.objects.appointments.read
+    - crm.objects.appointments.sensitive.read
+    - crm.objects.appointments.sensitive.write
+    - crm.objects.appointments.write
+    - crm.objects.carts.read
+    - crm.objects.carts.write
+    - crm.objects.commercepayments.read
+    - crm.objects.companies.highly_sensitive.read
+    - crm.objects.companies.highly_sensitive.write
+    - crm.objects.companies.read
+    - crm.objects.companies.sensitive.read
+    - crm.objects.companies.sensitive.write
+    - crm.objects.companies.write
+    - crm.objects.contacts.highly_sensitive.read
+    - crm.objects.contacts.highly_sensitive.write
+    - crm.objects.contacts.read
+    - crm.objects.contacts.sensitive.read
+    - crm.objects.contacts.sensitive.write
+    - crm.objects.contacts.write
+    - crm.objects.courses.read
+    - crm.objects.courses.write
+    - crm.objects.custom.highly_sensitive.read
+    - crm.objects.custom.highly_sensitive.write
+    - crm.objects.custom.read
+    - crm.objects.custom.sensitive.read
+    - crm.objects.custom.sensitive.write
+    - crm.objects.custom.write
+    - crm.objects.deals.highly_sensitive.read
+    - crm.objects.deals.highly_sensitive.write
+    - crm.objects.deals.read
+    - crm.objects.deals.sensitive.read
+    - crm.objects.deals.sensitive.write
+    - crm.objects.deals.write
+    - crm.objects.feedback_submission.read
+    - crm.objects.goals.read
+    - crm.objects.invoices.read
+    - crm.objects.leads.read
+    - crm.objects.leads.write
+    - crm.objects.line_items.read
+    - crm.objects.line_items.write
+    - crm.objects.listings.read
+    - crm.objects.listings.write
+    - crm.objects.marketing_events.read
+    - crm.objects.marketing_events.write
+    - crm.objects.orders.read
+    - crm.objects.orders.write
+    - crm.objects.owners.read
+    - crm.objects.partner-clients.read
+    - crm.objects.partner-clients.write
+    - crm.objects.partner-services.read
+    - crm.objects.partner-services.write
+    - crm.objects.projects.highly_sensitive.read
+    - crm.objects.projects.highly_sensitive.write
+    - crm.objects.projects.read
+    - crm.objects.projects.sensitive.read
+    - crm.objects.projects.sensitive.write
+    - crm.objects.projects.write
+    - crm.objects.quotes.read
+    - crm.objects.quotes.write
+    - crm.objects.subscriptions.read
+    - crm.objects.subscriptions.write
+    - crm.objects.tasks.read
+    - crm.objects.tasks.write
+    - crm.objects.users.read
+    - crm.objects.users.write
+    - crm.schemas.carts.read
+    - crm.schemas.carts.write
+    - crm.schemas.companies.read
+    - crm.schemas.contacts.read
+    - crm.schemas.deals.read
+    - crm.schemas.goals.read
+    - crm.schemas.invoices.read
+    - crm.schemas.leads.read
+    - crm.schemas.line_items.read
+    - crm.schemas.orders.read
+    - crm.schemas.quotes.read
+    - crm.schemas.subscriptions.read
+    - forms.uploaded_files.read
+    - oauth
+    - sales.attribution.read
+    - sales.attribution.write
+    - tickets.actions.write
+    - tickets.read
+    - tickets.write
+    - timeline.read
+    - timeline.write
+
+# source: https://developers.instagram.com/docs/permissions (fallback: no official scopes page found)
+instagram:
+    - instagram_basic
+    - instagram_content_publish
+    - instagram_manage_comments
+    - instagram_manage_insights
+    - instagram_shopping_tag_products
+
+# source: https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/oauth-scopes
+intercom:
+    - read_activity_logs
+    - read_admins
+    - read_apps
+    - read_articles
+    - read_channels
+    - read_collections
+    - read_companies
+    - read_contacts
+    - read_conversations
+    - read_counts
+    - read_custom_objects
+    - read_events
+    - read_exports
+    - read_help_center
+    - read_leads
+    - read_messages
+    - read_news_items
+    - read_newsfeeds
+    - read_phone_numbers
+    - read_phone_switch
+    - read_sections
+    - read_segments
+    - read_tags
+    - read_teams
+    - read_teams_admin
+    - read_ticket_types
+    - read_tickets
+    - read_users
+    - read_visitors
+    - read_webhooks
+    - write_admins
+    - write_apps
+    - write_articles
+    - write_channels
+    - write_collections
+    - write_companies
+    - write_contacts
+    - write_conversations
+    - write_custom_objects
+    - write_data_attributes
+    - write_events
+    - write_exports
+    - write_help_center
+    - write_leads
+    - write_messages
+    - write_news_items
+    - write_newsfeeds
+    - write_phone_numbers
+    - write_phone_switch
+    - write_sections
+    - write_segments
+    - write_tags
+    - write_teams
+    - write_teams_admin
+    - write_ticket_types
+    - write_tickets
+    - write_users
+    - write_visitors
+    - write_webhooks
+
+# source: https://developer.intuit.com/app/developer/qbo/docs/learn/scopes (Intuit QuickBooks OAuth2 scopes)
+intuit:
+    - address
+    - com.intuit.quickbooks.accounting
+    - com.intuit.quickbooks.payment
+    - email
+    - openid
+    - phone
+    - profile
+
+# source: https://developer.ironcladapp.com (Ironclad OAuth2 scopes not publicly documented - configured per OAuth app)
+# No official OAuth2 scopes page found - permissions configured at app level
+ironclad: []
+
+# source: https://developer.atlassian.com/cloud/jira/platform/scopes-for-connect-apps/
+jira:
+    - ACCESS_EMAIL_ADDRESSES
+    - ACT_AS_USER
+    - ADMIN
+    - DELETE
+    - NONE
+    - offline_access
+    - PROJECT_ADMIN
+    - READ
+    - WRITE
+
+# source: https://confluence.atlassian.com/jirakb/jira-data-center-oauth-2-0-scopes-1208191465.html (Jira Data Center OAuth2 uses same scopes as Jira Cloud)
+jira-data-center:
+    - ACCESS_EMAIL_ADDRESSES
+    - ACT_AS_USER
+    - ADMIN
+    - DELETE
+    - NONE
+    - offline_access
+    - PROJECT_ADMIN
+    - READ
+    - WRITE
+
+# source: https://id.jobadder.com/.well-known/openid-configuration (JobAdder uses OpenID Connect standard scopes)
+jobadder:
+    - offline_access
+
+# source: https://developer.getjobber.com/docs/getting_started/ (Jobber scopes configured per-app during registration)
+# Scopes determine GraphQL API access. No exhaustive public list available.
+jobber: []
+
+# source: https://public-api.justworks.com/v1/docs (Justworks OAuth2 scopes - hierarchical structure)
+justworks:
+    - company.bank_account:read
+    - company.basic:read
+    - company.detail:read
+    - deductions:read
+    - deductions:write
+    - member.basic:read
+    - member.detail:read
+    - member.dob:read
+    - member.employment:read
+    - member.pay:read
+    - member.sex:read
+    - member.tax_id:read
+    - payroll:read
+    - paystub:read
+    - time_off:read
+
+# source: https://developer.keap.com/getting-started-oauth-keys/ (only scope available is 'full')
+keap:
+    - full
+
+# source: https://kintone.dev/en/docs/common/authentication/oauth-permission-scope/
+kintone:
+    - k:app_record:read
+    - k:app_record:write
+    - k:app_settings:read
+    - k:app_settings:write
+    - k:file:read
+    - k:file:write
+
+# source: https://developers.klaviyo.com/en/docs/authenticate_
+klaviyo-oauth:
+    - accounts:read
+    - campaigns:read
+    - campaigns:write
+    - catalogs:read
+    - catalogs:write
+    - conversations:read
+    - conversations:write
+    - coupon-codes:read
+    - coupon-codes:write
+    - coupons:read
+    - coupons:write
+    - data-privacy:read
+    - data-privacy:write
+    - events:read
+    - events:write
+    - flows:read
+    - flows:write
+    - forms:read
+    - images:read
+    - images:write
+    - lists:read
+    - lists:write
+    - metrics:read
+    - metrics:write
+    - profiles:read
+    - profiles:write
+    - push-tokens:read
+    - push-tokens:write
+    - reviews:read
+    - segments:read
+    - segments:write
+    - subscriptions:read
+    - subscriptions:write
+    - tags:read
+    - tags:write
+    - templates:read
+    - templates:write
+    - tracking-settings:read
+    - tracking-settings:write
+    - web-feeds:read
+    - web-feeds:write
+
+# source: https://hire.lever.co/developer/documentation
+lever:
+    - applications:read:admin
+    - archive_reasons:read:admin
+    - audit_events:read:admin
+    - confidential:access:admin
+    - contact:read:admin
+    - contact:write:admin
+    - diversity_surveys:read:admin
+    - eeo_responses_pii:read:admin
+    - eeo_responses:read:admin
+    - feedback_templates:read:admin
+    - feedback_templates:write:admin
+    - feedback:read:admin
+    - feedback:write:admin
+    - files:read:admin
+    - files:write:admin
+    - form_templates:read:admin
+    - form_templates:write:admin
+    - forms:read:admin
+    - forms:write:admin
+    - groups:read:admin
+    - groups:write:admin
+    - interviews:read:admin
+    - interviews:write:admin
+    - notes:read:admin
+    - notes:write:admin
+    - offers:read:admin
+    - offline_access
+    - opportunities:read:admin
+    - opportunities:write:admin
+    - panels:read:admin
+    - panels:write:admin
+    - permissions:read:admin
+    - permissions:write:admin
+    - postings:read:admin
+    - postings:write:admin
+    - referrals:read:admin
+    - requisition_fields:read:admin
+    - requisition_fields:write:admin
+    - requisitions:read:admin
+    - requisitions:write:admin
+    - resumes:read:admin
+    - roles:read:admin
+    - roles:write:admin
+    - sources:read:admin
+    - stages:read:admin
+    - tags:read:admin
+    - tasks:read:admin
+    - uploads:write:admin
+    - users:read:admin
+    - users:write:admin
+    - webhooks:read:admin
+    - webhooks:write:admin
+
+# source: https://hire.lever.co/developer/documentation (same scopes as production)
+lever-sandbox:
+    - applications:read:admin
+    - archive_reasons:read:admin
+    - audit_events:read:admin
+    - confidential:access:admin
+    - contact:read:admin
+    - contact:write:admin
+    - diversity_surveys:read:admin
+    - eeo_responses_pii:read:admin
+    - eeo_responses:read:admin
+    - feedback_templates:read:admin
+    - feedback_templates:write:admin
+    - feedback:read:admin
+    - feedback:write:admin
+    - files:read:admin
+    - files:write:admin
+    - form_templates:read:admin
+    - form_templates:write:admin
+    - forms:read:admin
+    - forms:write:admin
+    - groups:read:admin
+    - groups:write:admin
+    - interviews:read:admin
+    - interviews:write:admin
+    - notes:read:admin
+    - notes:write:admin
+    - offers:read:admin
+    - offline_access
+    - opportunities:read:admin
+    - opportunities:write:admin
+    - panels:read:admin
+    - panels:write:admin
+    - permissions:read:admin
+    - permissions:write:admin
+    - postings:read:admin
+    - postings:write:admin
+    - referrals:read:admin
+    - requisition_fields:read:admin
+    - requisition_fields:write:admin
+    - requisitions:read:admin
+    - requisitions:write:admin
+    - resumes:read:admin
+    - roles:read:admin
+    - roles:write:admin
+    - sources:read:admin
+    - stages:read:admin
+    - tags:read:admin
+    - tasks:read:admin
+    - uploads:write:admin
+    - users:read:admin
+    - users:write:admin
+    - webhooks:read:admin
+    - webhooks:write:admin
+
+# source: https://x-series-api.lightspeedhq.com/v1.0/docs/scopes
+lightspeed-retail:
+    - audit:read
+    - billing:partner_subscription:read
+    - billing:partner_subscription:write
+    - business_rules:read
+    - business_rules:write
+    - channels:read
+    - consignments:read
+    - consignments:write:inventory_count
+    - consignments:write:stock_order
+    - consignments:write:stock_transfer
+    - custom_fields:read
+    - custom_fields:write
+    - customers:read
+    - customers:write
+    - fulfillments:read
+    - fulfillments:write
+    - gift_cards:read
+    - gift_cards:write:issue
+    - gift_cards:write:redeem
+    - inventory:read
+    - outlets:read
+    - payment_types:read
+    - payments:read
+    - products:read
+    - products:read:price_books
+    - products:write
+    - products:write:price_books
+    - promotions:read
+    - promotions:write
+    - register:close
+    - register:open
+    - registers:read
+    - remote_rules:read
+    - remote_rules:write
+    - retailer:read
+    - sales:read
+    - sales:write
+    - serial_numbers:read
+    - serial_numbers:write
+    - services:read
+    - services:write
+    - store_credits:read
+    - store_credits:write:issue
+    - suppliers:read
+    - suppliers:write
+    - taxes:read
+    - taxes:write
+    - users:read
+    - users:write
+    - webhooks
+
+# source: https://developers.linear.app/docs/oauth/scopes
+linear:
+    - admin
+    - comments:create
+    - comments:read
+    - comments:write
+    - cycles:create
+    - cycles:read
+    - cycles:write
+    - documents:create
+    - documents:read
+    - documents:write
+    - issues:create
+    - issues:read
+    - issues:write
+    - projects:create
+    - projects:read
+    - projects:write
+    - read
+    - teams:create
+    - teams:read
+    - teams:write
+    - users:create
+    - users:read
+    - users:write
+    - webhooks:create
+    - webhooks:read
+    - webhooks:write
+    - write
+
+# source: https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access
+linkedin:
+    - email
+    - profile
+    - r_ads
+    - r_ads_leadgen_automation
+    - r_ads_reporting
+    - r_assets
+    - r_basicprofile
+    - r_emailaddress
+    - r_liteprofile
+    - r_organization_admin
+    - r_organization_social
+    - r_sales_nav_analytics
+    - r_sales_nav_display
+    - r_sales_nav_profiles
+    - r_sales_nav_validation
+    - rw_organization_admin
+    - w_ads
+    - w_member_social
+    - w_organization_social
+
+# source: providers.yaml (no official OAuth2 scopes documentation found for LinkHut)
+# LinkHut OAuth2 implementation does not document granular scopes publicly
+linkhut: []
+
+# source: https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/ (Mailchimp does not use granular OAuth scopes - token grants full access)
+mailchimp: []
+
+# source: https://developer.maximizer.com/reference/oauth
+maximizer:
+    - data
+    - data.readonly
+    - webaccess
+
+# source: https://developer.maximizer.com/reference/oauth (same scopes as cloud version)
+maximizer-on-premise:
+    - data
+    - data.readonly
+    - webaccess
+
+# source: https://docs.mercury.com/docs/start-oauth2-flow
+mercury:
+    - offline_access
+    - read
+
+# source: https://developers.facebook.com/docs/permissions/reference (Meta Marketing API uses Facebook OAuth)
+meta-marketing-api:
+    - ads_management
+    - ads_read
+    - business_management
+    - catalog_management
+    - email
+    - instagram_basic
+    - instagram_content_publish
+    - instagram_manage_comments
+    - instagram_manage_insights
+    - instagram_shopping_tag_products
+    - leads_retrieval
+    - pages_manage_ads
+    - pages_manage_cta
+    - pages_manage_engagement
+    - pages_manage_instant_articles
+    - pages_manage_metadata
+    - pages_manage_posts
+    - pages_messaging
+    - pages_messaging_subscriptions
+    - pages_read_engagement
+    - pages_read_user_content
+    - pages_show_list
+    - pages_user_gender
+    - pages_user_locale
+    - pages_user_timezone
+    - public_profile
+    - publish_to_groups
+    - publish_video
+    - read_insights
+    - user_age_range
+    - user_birthday
+    - user_friends
+    - user_gender
+    - user_hometown
+    - user_likes
+    - user_link
+    - user_location
+    - user_photos
+    - user_posts
+    - user_videos
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference
+microsoft:
+    - .default
+    - AccessReview.Read.All
+    - AccessReview.ReadWrite.All
+    - AdministrativeUnit.Read.All
+    - AdministrativeUnit.ReadWrite.All
+    - Agreement.Read.All
+    - Agreement.ReadWrite.All
+    - AppCatalog.Read.All
+    - AppCatalog.ReadWrite.All
+    - Application.Read.All
+    - Application.ReadWrite.All
+    - Application.ReadWrite.OwnedBy
+    - ApplicationKey.Read.All
+    - ApplicationKey.ReadWrite.All
+    - AppRoleAssignment.Read.All
+    - AppRoleAssignment.ReadWrite.All
+    - AttackSimulation.Read.All
+    - AttackSimulation.ReadWrite.All
+    - AuditLog.Read.All
+    - AuthenticationContext.Read.All
+    - AuthenticationContext.ReadWrite.All
+    - BackupRestore-Configuration.Read.All
+    - BackupRestore-Configuration.ReadWrite.All
+    - BackupRestore-Control.Read.All
+    - BackupRestore-Control.ReadWrite.All
+    - BackupRestore-Monitor.Read.All
+    - BackupRestore-Restore.Read.All
+    - BackupRestore-Restore.ReadWrite.All
+    - Calendars.Read
+    - Calendars.Read.Shared
+    - Calendars.ReadWrite
+    - Calendars.ReadWrite.Shared
+    - ChannelMessage.Read.All
+    - ChannelMessage.Send
+    - Chat.Read
+    - Chat.ReadWrite
+    - ChatMessage.Read.All
+    - ChatMessage.Send
+    - ChatSettings.Read.All
+    - ChatSettings.ReadWrite.All
+    - CloudPC.Read.All
+    - CloudPC.ReadWrite.All
+    - Collaboration.Read.All
+    - Collaboration.ReadWrite.All
+    - Community.Read.All
+    - Community.ReadWrite.All
+    - ComplianceAssessment.Read.All
+    - ComplianceAssessment.ReadWrite.All
+    - ConsentRequest.Read.All
+    - ConsentRequest.ReadWrite.All
+    - Contacts.Read
+    - Contacts.ReadWrite
+    - CustomAuthenticationExtension.Read.All
+    - CustomAuthenticationExtension.ReadWrite.All
+    - CustomSecAttributeAssignment.Read.All
+    - CustomSecAttributeAssignment.ReadWrite.All
+    - CustomSecAttributeDefinition.Read.All
+    - CustomSecAttributeDefinition.ReadWrite.All
+    - DataPolicyOperation.Read.All
+    - DelegatedAdminRelationship.Read.All
+    - DelegatedAdminRelationship.ReadWrite.All
+    - Device.Read.All
+    - DeviceManagementApps.Read.All
+    - DeviceManagementApps.ReadWrite.All
+    - DeviceManagementConfiguration.Read.All
+    - DeviceManagementConfiguration.ReadWrite.All
+    - DeviceManagementManagedDevices.Read.All
+    - DeviceManagementManagedDevices.ReadWrite.All
+    - DeviceManagementRBAC.Read.All
+    - DeviceManagementRBAC.ReadWrite.All
+    - DeviceManagementServiceConfig.Read.All
+    - DeviceManagementServiceConfig.ReadWrite.All
+    - DeviceManagementServiceConfiguration.Read.All
+    - DeviceManagementServiceConfiguration.ReadWrite.All
+    - Directory.Read.All
+    - Directory.ReadWrite.All
+    - DirectoryRecommendations.Read.All
+    - DirectoryRecommendations.ReadWrite.All
+    - Domain.Read.All
+    - Domain.ReadWrite.All
+    - EducationAssignment.Read.All
+    - EducationAssignment.ReadWrite.All
+    - EducationClass.Read.All
+    - EducationClass.ReadWrite.All
+    - EducationOrganization.Read.All
+    - EducationOrganization.ReadWrite.All
+    - EducationRoster.Read.All
+    - EducationRoster.ReadWrite.All
+    - EducationSchool.Read.All
+    - EducationSchool.ReadWrite.All
+    - EducationSubmission.Read.All
+    - EducationSubmission.ReadWrite.All
+    - EducationSynchronization.Read.All
+    - EducationSynchronization.ReadWrite.All
+    - EducationUser.Read.All
+    - EducationUser.ReadWrite.All
+    - email
+    - EntitlementManagement.Read.All
+    - EntitlementManagement.ReadWrite.All
+    - ExternalConnection.Read.All
+    - ExternalConnection.ReadWrite.All
+    - ExternalItem.Read.All
+    - ExternalItem.ReadWrite.All
+    - FeatureRolloutPolicy.Read.All
+    - FeatureRolloutPolicy.ReadWrite.All
+    - FederatedTokenValidation.Read.All
+    - FederatedTokenValidation.ReadWrite.All
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - GovernanceResource.Read.All
+    - GovernanceResource.ReadWrite.All
+    - Group.Read.All
+    - Group.ReadWrite.All
+    - GroupMember.Read.All
+    - GroupMember.ReadWrite.All
+    - IdentityProvider.Read.All
+    - IdentityProvider.ReadWrite.All
+    - IdentityRiskEvent.Read.All
+    - IdentityRiskEvent.ReadWrite.All
+    - IdentityRiskyUser.Read.All
+    - IdentityRiskyUser.ReadWrite.All
+    - IdentityUserFlow.Read.All
+    - IdentityUserFlow.ReadWrite.All
+    - IndustryData.Read.All
+    - IndustryData.ReadWrite.All
+    - InformationProtectionPolicy.Read.All
+    - InformationProtectionPolicy.ReadWrite.All
+    - LifecycleWorkflows.Read.All
+    - LifecycleWorkflows.ReadWrite.All
+    - Mail.Read
+    - Mail.Read.Shared
+    - Mail.ReadWrite
+    - Mail.ReadWrite.Shared
+    - Mail.Send
+    - Mail.Send.Shared
+    - NetworkAccess.Read.All
+    - NetworkAccess.ReadWrite.All
+    - offline_access
+    - OnPremDirectorySynchronization.Read.All
+    - OnPremDirectorySynchronization.ReadWrite.All
+    - OnPremisesPublishingProfiles.Read.All
+    - OnPremisesPublishingProfiles.ReadWrite.All
+    - openid
+    - Organization.Read.All
+    - Organization.ReadWrite.All
+    - People.Read
+    - People.Read.All
+    - PermissionGrantConditionSet.Read.All
+    - PermissionGrantConditionSet.ReadWrite.All
+    - PermissionGrantPolicy.Read.All
+    - PermissionGrantPolicy.ReadWrite.All
+    - Place.Read.All
+    - Place.ReadWrite.All
+    - Policy.Read.All
+    - Policy.ReadWrite.ApplicationConfiguration
+    - Policy.ReadWrite.AuthenticationFlows
+    - Policy.ReadWrite.AuthenticationMethod
+    - Policy.ReadWrite.Authorization
+    - Policy.ReadWrite.ConditionalAccess
+    - Policy.ReadWrite.ConsentRequest
+    - Policy.ReadWrite.CrossTenantAccess
+    - Policy.ReadWrite.DeviceConfiguration
+    - Policy.ReadWrite.FeatureRollout
+    - Policy.ReadWrite.MobilityManagement
+    - Policy.ReadWrite.Privacy
+    - Policy.ReadWrite.SecurityDefaults
+    - Policy.ReadWrite.TrustFramework
+    - PrivilegedAccess.Read.AzureAD
+    - PrivilegedAccess.Read.AzureADGroup
+    - PrivilegedAccess.Read.AzureResources
+    - PrivilegedAccess.ReadWrite.AzureAD
+    - PrivilegedAccess.ReadWrite.AzureADGroup
+    - PrivilegedAccess.ReadWrite.AzureResources
+    - profile
+    - RecordsManagement.Read.All
+    - RecordsManagement.ReadWrite.All
+    - Reports.Read.All
+    - RoleManagement.Read.All
+    - RoleManagement.ReadWrite.All
+    - SchemaExtension.Read.All
+    - SchemaExtension.ReadWrite.All
+    - SecureScore.Read.All
+    - SecureScore.ReadWrite.All
+    - SecurityActions.Read.All
+    - SecurityActions.ReadWrite.All
+    - SecurityEvents.Read.All
+    - SecurityEvents.ReadWrite.All
+    - ServiceHealth.Read.All
+    - ServiceMessage.Read.All
+    - ServicePrincipal.Read.All
+    - ServicePrincipal.ReadWrite.All
+    - Sites.Read.All
+    - Sites.ReadWrite.All
+    - StorageFolder.Read.All
+    - StorageFolder.ReadWrite.All
+    - SubscribedSku.Read.All
+    - Synchronization.Read.All
+    - Synchronization.ReadWrite.All
+    - Tasks.Read
+    - Tasks.ReadWrite
+    - Team.ReadBasic.All
+    - TeamsActivity.Read.All
+    - TeamsActivity.Send
+    - TeamsApp.Read.All
+    - TeamsApp.ReadWrite.All
+    - TeamsAppInstallation.Read.All
+    - TeamsAppInstallation.ReadWrite.All
+    - TeamsTab.Create.Chat
+    - TeamsTab.Create.Group
+    - TeamsTab.Create.Team
+    - TeamsTab.Read.All
+    - TeamsTab.Read.Chat
+    - TeamsTab.Read.Group
+    - TeamsTab.Read.Team
+    - TeamsTab.ReadWrite.All
+    - TeamsTab.ReadWrite.Chat
+    - TeamsTab.ReadWrite.Group
+    - TeamsTab.ReadWrite.Team
+    - TeamTemplate.Read.All
+    - TeamTemplate.ReadWrite.All
+    - Teamwork.Read.All
+    - Teamwork.ReadWrite.All
+    - TeamworkAppSettings.Read.All
+    - TeamworkAppSettings.ReadWrite.All
+    - TeamworkDevice.Read.All
+    - TeamworkDevice.ReadWrite.All
+    - TeamworkTag.Read.All
+    - TeamworkTag.ReadWrite.All
+    - TermStore.Read.All
+    - TermStore.ReadWrite.All
+    - ThreatAssessment.Read.All
+    - ThreatAssessment.ReadWrite.All
+    - ThreatSubmission.Read.All
+    - ThreatSubmission.ReadWrite.All
+    - ThreatSubmissionPolicy.Read.All
+    - ThreatSubmissionPolicy.ReadWrite.All
+    - User.ManageIdentities.All
+    - User.Read
+    - User.Read.All
+    - User.ReadBasic.All
+    - User.ReadWrite
+    - User.ReadWrite.All
+    - UserAuthenticationMethod.Read.All
+    - UserAuthenticationMethod.ReadWrite.All
+    - WorkforceIntegration.Read.All
+    - WorkforceIntegration.ReadWrite.All
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Admin consent uses same Microsoft Graph permissions)
+microsoft-admin:
+    - .default
+    - AccessReview.Read.All
+    - AccessReview.ReadWrite.All
+    - AdministrativeUnit.Read.All
+    - AdministrativeUnit.ReadWrite.All
+    - Agreement.Read.All
+    - Agreement.ReadWrite.All
+    - AppCatalog.Read.All
+    - AppCatalog.ReadWrite.All
+    - Application.Read.All
+    - Application.ReadWrite.All
+    - Application.ReadWrite.OwnedBy
+    - ApplicationKey.Read.All
+    - ApplicationKey.ReadWrite.All
+    - AppRoleAssignment.Read.All
+    - AppRoleAssignment.ReadWrite.All
+    - AttackSimulation.Read.All
+    - AttackSimulation.ReadWrite.All
+    - AuditLog.Read.All
+    - AuthenticationContext.Read.All
+    - AuthenticationContext.ReadWrite.All
+    - BackupRestore-Configuration.Read.All
+    - BackupRestore-Configuration.ReadWrite.All
+    - BackupRestore-Control.Read.All
+    - BackupRestore-Control.ReadWrite.All
+    - BackupRestore-Monitor.Read.All
+    - BackupRestore-Restore.Read.All
+    - BackupRestore-Restore.ReadWrite.All
+    - Calendars.Read
+    - Calendars.Read.Shared
+    - Calendars.ReadWrite
+    - Calendars.ReadWrite.Shared
+    - ChannelMessage.Read.All
+    - ChannelMessage.Send
+    - Chat.Read
+    - Chat.ReadWrite
+    - ChatMessage.Read.All
+    - ChatMessage.Send
+    - ChatSettings.Read.All
+    - ChatSettings.ReadWrite.All
+    - CloudPC.Read.All
+    - CloudPC.ReadWrite.All
+    - Collaboration.Read.All
+    - Collaboration.ReadWrite.All
+    - Community.Read.All
+    - Community.ReadWrite.All
+    - ComplianceAssessment.Read.All
+    - ComplianceAssessment.ReadWrite.All
+    - ConsentRequest.Read.All
+    - ConsentRequest.ReadWrite.All
+    - Contacts.Read
+    - Contacts.ReadWrite
+    - CustomAuthenticationExtension.Read.All
+    - CustomAuthenticationExtension.ReadWrite.All
+    - CustomSecAttributeAssignment.Read.All
+    - CustomSecAttributeAssignment.ReadWrite.All
+    - CustomSecAttributeDefinition.Read.All
+    - CustomSecAttributeDefinition.ReadWrite.All
+    - DataPolicyOperation.Read.All
+    - DelegatedAdminRelationship.Read.All
+    - DelegatedAdminRelationship.ReadWrite.All
+    - Device.Read.All
+    - DeviceManagementApps.Read.All
+    - DeviceManagementApps.ReadWrite.All
+    - DeviceManagementConfiguration.Read.All
+    - DeviceManagementConfiguration.ReadWrite.All
+    - DeviceManagementManagedDevices.Read.All
+    - DeviceManagementManagedDevices.ReadWrite.All
+    - DeviceManagementRBAC.Read.All
+    - DeviceManagementRBAC.ReadWrite.All
+    - DeviceManagementServiceConfig.Read.All
+    - DeviceManagementServiceConfig.ReadWrite.All
+    - DeviceManagementServiceConfiguration.Read.All
+    - DeviceManagementServiceConfiguration.ReadWrite.All
+    - Directory.Read.All
+    - Directory.ReadWrite.All
+    - DirectoryRecommendations.Read.All
+    - DirectoryRecommendations.ReadWrite.All
+    - Domain.Read.All
+    - Domain.ReadWrite.All
+    - EducationAssignment.Read.All
+    - EducationAssignment.ReadWrite.All
+    - EducationClass.Read.All
+    - EducationClass.ReadWrite.All
+    - EducationOrganization.Read.All
+    - EducationOrganization.ReadWrite.All
+    - EducationRoster.Read.All
+    - EducationRoster.ReadWrite.All
+    - EducationSchool.Read.All
+    - EducationSchool.ReadWrite.All
+    - EducationSubmission.Read.All
+    - EducationSubmission.ReadWrite.All
+    - EducationSynchronization.Read.All
+    - EducationSynchronization.ReadWrite.All
+    - EducationUser.Read.All
+    - EducationUser.ReadWrite.All
+    - email
+    - EntitlementManagement.Read.All
+    - EntitlementManagement.ReadWrite.All
+    - ExternalConnection.Read.All
+    - ExternalConnection.ReadWrite.All
+    - ExternalItem.Read.All
+    - ExternalItem.ReadWrite.All
+    - FeatureRolloutPolicy.Read.All
+    - FeatureRolloutPolicy.ReadWrite.All
+    - FederatedTokenValidation.Read.All
+    - FederatedTokenValidation.ReadWrite.All
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - GovernanceResource.Read.All
+    - GovernanceResource.ReadWrite.All
+    - Group.Read.All
+    - Group.ReadWrite.All
+    - GroupMember.Read.All
+    - GroupMember.ReadWrite.All
+    - IdentityProvider.Read.All
+    - IdentityProvider.ReadWrite.All
+    - IdentityRiskEvent.Read.All
+    - IdentityRiskEvent.ReadWrite.All
+    - IdentityRiskyUser.Read.All
+    - IdentityRiskyUser.ReadWrite.All
+    - IdentityUserFlow.Read.All
+    - IdentityUserFlow.ReadWrite.All
+    - IndustryData.Read.All
+    - IndustryData.ReadWrite.All
+    - InformationProtectionPolicy.Read.All
+    - InformationProtectionPolicy.ReadWrite.All
+    - LifecycleWorkflows.Read.All
+    - LifecycleWorkflows.ReadWrite.All
+    - Mail.Read
+    - Mail.Read.Shared
+    - Mail.ReadWrite
+    - Mail.ReadWrite.Shared
+    - Mail.Send
+    - Mail.Send.Shared
+    - NetworkAccess.Read.All
+    - NetworkAccess.ReadWrite.All
+    - offline_access
+    - OnPremDirectorySynchronization.Read.All
+    - OnPremDirectorySynchronization.ReadWrite.All
+    - OnPremisesPublishingProfiles.Read.All
+    - OnPremisesPublishingProfiles.ReadWrite.All
+    - openid
+    - Organization.Read.All
+    - Organization.ReadWrite.All
+    - People.Read
+    - People.Read.All
+    - PermissionGrantConditionSet.Read.All
+    - PermissionGrantConditionSet.ReadWrite.All
+    - PermissionGrantPolicy.Read.All
+    - PermissionGrantPolicy.ReadWrite.All
+    - Place.Read.All
+    - Place.ReadWrite.All
+    - Policy.Read.All
+    - Policy.ReadWrite.ApplicationConfiguration
+    - Policy.ReadWrite.AuthenticationFlows
+    - Policy.ReadWrite.AuthenticationMethod
+    - Policy.ReadWrite.Authorization
+    - Policy.ReadWrite.ConditionalAccess
+    - Policy.ReadWrite.ConsentRequest
+    - Policy.ReadWrite.CrossTenantAccess
+    - Policy.ReadWrite.DeviceConfiguration
+    - Policy.ReadWrite.FeatureRollout
+    - Policy.ReadWrite.IdentityDefault
+    - Policy.ReadWrite.PermissionGrant
+    - Policy.ReadWrite.TrustFramework
+    - Presence.Read.All
+    - Presence.ReadWrite.All
+    - Printer.Create
+    - Printer.Read.All
+    - Printer.ReadWrite.All
+    - PrinterShare.Read.All
+    - PrinterShare.ReadWrite.All
+    - PrintJob.Create
+    - PrintJob.Read.All
+    - PrintJob.ReadWrite.All
+    - PrivilegedAccess.Read.All
+    - PrivilegedAccess.ReadWrite.All
+    - Profile
+    - RecordsManagement.Read.All
+    - RecordsManagement.ReadWrite.All
+    - Reports.Read.All
+    - Reports.ReadWrite.All
+    - ReportsSettings.Read.All
+    - ReportsSettings.ReadWrite.All
+    - ResourceSpecificPermissionGrant.Read.All
+    - ResourceSpecificPermissionGrant.ReadWrite.All
+    - RoleManagement.Read.All
+    - RoleManagement.ReadWrite.All
+    - Schedule.Read.All
+    - Schedule.ReadWrite.All
+    - SearchAndExport.Read.All
+    - SearchAndExport.ReadWrite.All
+    - SecurityActions.Read.All
+    - SecurityActions.ReadWrite.All
+    - SecurityEvents.Read.All
+    - SecurityEvents.ReadWrite.All
+    - ServiceAction.Read.All
+    - ServiceAction.ReadWrite.All
+    - ServiceHealth.Read.All
+    - ServiceMessage.Read.All
+    - SharePointTenantSettings.Read.All
+    - SharePointTenantSettings.ReadWrite.All
+    - Sites.FullControl.All
+    - Sites.Manage.All
+    - Sites.Read.All
+    - Sites.ReadWrite.All
+    - Sites.Selected
+    - Team.Create
+    - TeamMember.Read.All
+    - TeamMember.ReadWrite.All
+    - TeamsAppInstallation.Read.All
+    - TeamsAppInstallation.ReadWrite.All
+    - TeamSettings.Read.All
+    - TeamSettings.ReadWrite.All
+    - TeamsUserConfiguration.Read.All
+    - TeamsUserConfiguration.ReadWrite.All
+    - TeamTemplate.Read.All
+    - Teamwork.Read.All
+    - Teamwork.ReadWrite.All
+    - ThreatIntelligence.Read.All
+    - ThreatIntelligence.ReadWrite.All
+    - ThreatSubmission.Read.All
+    - ThreatSubmission.ReadWrite.All
+    - ThreatSubmissionPolicy.Read.All
+    - ThreatSubmissionPolicy.ReadWrite.All
+    - TrustFrameworkKeySet.Read.All
+    - TrustFrameworkKeySet.ReadWrite.All
+    - User.Read.All
+    - User.ReadWrite.All
+    - UserAuthenticationMethod.Read.All
+    - UserAuthenticationMethod.ReadWrite.All
+    - UserNotification.Read.All
+    - UserNotification.ReadWrite.All
+    - UserRiskDetection.Read.All
+    - UserRiskDetection.ReadWrite.All
+    - UserRiskEvent.Read.All
+    - UserRiskEvent.ReadWrite.All
+    - UserRiskEventUpdate.Read.All
+    - UserRiskEventUpdate.ReadWrite.All
+    - UserRiskSummary.Read.All
+    - UserRiskSummary.ReadWrite.All
+    - UserSettings.Read.All
+    - UserSettings.ReadWrite.All
+
+# source: https://learn.microsoft.com/en-us/advertising/guides/authentication-oauth#request-authorization (Microsoft Ads specific scopes)
+microsoft-ads:
+    - https://ads.microsoft.com/msads.manage
+    - offline_access
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Entra ID uses standard Microsoft Graph permissions)
+microsoft-entra-id:
+    - .default
+    - Application.Read.All
+    - Application.ReadWrite.All
+    - AuditLog.Read.All
+    - Directory.Read.All
+    - Directory.ReadWrite.All
+    - Domain.Read.All
+    - Group.Read.All
+    - Group.ReadWrite.All
+    - GroupMember.Read.All
+    - GroupMember.ReadWrite.All
+    - offline_access
+    - openid
+    - Organization.Read.All
+    - Organization.ReadWrite.All
+    - Policy.Read.All
+    - Policy.ReadWrite.All
+    - RoleManagement.Read.All
+    - RoleManagement.ReadWrite.All
+    - User.Read.All
+    - User.ReadWrite.All
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Excel uses Files.Read/Files.ReadWrite from Microsoft Graph)
+microsoft-excel:
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - offline_access
+    - openid
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Planner uses specific Planner permissions from Microsoft Graph)
+microsoft-planner:
+    - Group.Read.All
+    - Group.ReadWrite.All
+    - offline_access
+    - openid
+    - Planner.Read.All
+    - Planner.ReadWrite.All
+    - Tasks.Read
+    - Tasks.Read.All
+    - Tasks.ReadWrite
+    - Tasks.ReadWrite.All
+    - User.Read
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Power BI uses standard Microsoft Graph permissions)
+microsoft-power-bi:
+    - .default
+    - Dashboard.Read.All
+    - Dashboard.ReadWrite.All
+    - Dataset.Read.All
+    - Dataset.ReadWrite.All
+    - email
+    - Gateway.Read.All
+    - Gateway.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+    - Report.Read.All
+    - Report.ReadWrite.All
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft PowerPoint uses standard Microsoft Graph permissions)
+microsoft-powerpoint:
+    - .default
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Teams uses standard Microsoft Graph permissions)
+microsoft-teams:
+    - .default
+    - Channel.Read.All
+    - Channel.ReadWrite.All
+    - ChannelMember.Read.All
+    - ChannelMember.ReadWrite.All
+    - ChannelMessage.Read.All
+    - ChannelMessage.ReadWrite
+    - Chat.Create
+    - Chat.Read
+    - Chat.ReadBasic
+    - Chat.ReadWrite
+    - ChatMember.Read
+    - ChatMember.ReadWrite
+    - ChatMessage.Read
+    - ChatMessage.Send
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc (Microsoft Teams Bot uses .default scope)
+microsoft-teams-bot:
+    - .default
+    - offline_access
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Tenant Specific uses standard Microsoft Graph permissions)
+microsoft-tenant-specific:
+    - .default
+    - Directory.Read.All
+    - Directory.ReadWrite.All
+    - email
+    - Group.Read.All
+    - Group.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Microsoft Word uses standard Microsoft Graph permissions)
+microsoft-word:
+    - .default
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://developers.miro.com/reference/scopes
+miro:
+    - auditlogs:read
+    - boards:export
+    - boards:read
+    - boards:write
+    - contentlogs:export
+    - identity:read
+    - identity:write
+    - microphone:listen
+    - organizations:cases:management
+    - organizations:groups:read
+    - organizations:groups:write
+    - organizations:read
+    - organizations:teams:read
+    - organizations:teams:write
+    - projects:read
+    - projects:write
+    - screen:record
+    - sessions:delete
+    - team:read
+    - team:write
+    - webcam:record
+
+# source: https://docs.mollie.com/reference/authorize
+mollie:
+    - chargebacks.read
+    - chargebacks.write
+    - customers.read
+    - customers.write
+    - invoices.read
+    - invoices.write
+    - mandates.read
+    - mandates.write
+    - on behalf of:read
+    - on behalf of:write
+    - organizations.read
+    - organizations.write
+    - payments.read
+    - payments.write
+    - profiles.read
+    - profiles.write
+    - refunds.read
+    - refunds.write
+    - settlements.read
+    - settlements.write
+    - subscriptions.read
+    - subscriptions.write
+
+# source: https://developer.monday.com/apps/docs/oauth
+monday:
+    - account:read
+    - assets:read
+    - boards:read
+    - boards:write
+    - departments:read
+    - departments:write
+    - docs:read
+    - docs:write
+    - me:read
+    - notifications:write
+    - tags:read
+    - teams:read
+    - teams:write
+    - updates:read
+    - updates:write
+    - users:read
+    - users:write
+    - webhooks:read
+    - webhooks:write
+    - workspaces:read
+    - workspaces:write
+
+# source: https://developers.mural.co/public/docs/scopes
+mural:
+    - identity:read
+    - murals:read
+    - murals:write
+    - rooms:read
+    - rooms:write
+    - templates:read
+    - templates:write
+    - users:read
+    - workspaces:read
+    - workspaces:write
+
+# source: https://developers.namely.com/docs/namely-api/ZG9jOjE1NTkwMDU5-authentication (Namely uses 'default' scope)
+namely:
+    - default
+
+# source: https://nationbuilder.com/api_quickstart (NationBuilder uses 'default' scope)
+nationbuilder:
+    - default
+
+# source: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_157780312610.html (NetSuite OAuth2 uses rest_webservices, restlets, suite_analytics)
+netsuite:
+    - rest_webservices
+    - restlets
+    - suite_analytics
+
+# source: https://app.ninjarmm.com/apidocs-beta/authorization/overview
+ninjaone-rmm-oauth2:
+    - control
+    - management
+    - monitoring
+    - offline_access
+
+# source: https://developers.notion.com/docs/authorization
+notion: []
+
+# source: https://odoo-restapi.readthedocs.io/en/latest/connection/logging_in/oauth2_authentication.html (Odoo uses custom configurable scopes - these are the default standard scopes)
+odoo:
+    - create
+    - delete
+    - read
+    - write
+
+# source: https://developer.okta.com/docs/api/oauth2/
+okta:
+    - address
+    - device_sso
+    - email
+    - groups
+    - offline_access
+    - okta.apps.manage
+    - okta.apps.read
+    - okta.authenticators.manage
+    - okta.authenticators.read
+    - okta.authorizationServers.manage
+    - okta.authorizationServers.read
+    - okta.clients.manage
+    - okta.clients.read
+    - okta.clients.register
+    - okta.clients.trust.read
+    - okta.devices.manage
+    - okta.devices.read
+    - okta.domains.manage
+    - okta.domains.read
+    - okta.eventHooks.manage
+    - okta.eventHooks.read
+    - okta.factors.manage
+    - okta.factors.read
+    - okta.groups.manage
+    - okta.groups.read
+    - okta.idps.manage
+    - okta.idps.read
+    - okta.inlineHooks.manage
+    - okta.inlineHooks.read
+    - okta.linkedObjects.manage
+    - okta.linkedObjects.read
+    - okta.logs.read
+    - okta.policies.manage
+    - okta.policies.read
+    - okta.profileMappings.manage
+    - okta.profileMappings.read
+    - okta.roles.manage
+    - okta.roles.read
+    - okta.schemas.manage
+    - okta.schemas.read
+    - okta.sessions.manage
+    - okta.sessions.read
+    - okta.templates.manage
+    - okta.templates.read
+    - okta.trustedOrigins.manage
+    - okta.trustedOrigins.read
+    - okta.users.manage
+    - okta.users.manage.self
+    - okta.users.read
+    - okta.users.read.self
+    - openid
+    - phone
+    - profile
+
+# source: https://developer.okta.com/docs/api/oauth2/ (Okta Preview uses same scopes as Okta)
+okta-preview:
+    - address
+    - device_sso
+    - email
+    - groups
+    - offline_access
+    - okta.apps.manage
+    - okta.apps.read
+    - okta.authenticators.manage
+    - okta.authenticators.read
+    - okta.authorizationServers.manage
+    - okta.authorizationServers.read
+    - okta.clients.manage
+    - okta.clients.read
+    - okta.clients.register
+    - okta.clients.trust.read
+    - okta.devices.manage
+    - okta.devices.read
+    - okta.domains.manage
+    - okta.domains.read
+    - okta.eventHooks.manage
+    - okta.eventHooks.read
+    - okta.factors.manage
+    - okta.factors.read
+    - okta.groups.manage
+    - okta.groups.read
+    - okta.idps.manage
+    - okta.idps.read
+    - okta.inlineHooks.manage
+    - okta.inlineHooks.read
+    - okta.linkedObjects.manage
+    - okta.linkedObjects.read
+    - okta.logs.read
+    - okta.policies.manage
+    - okta.policies.read
+    - okta.profileMappings.manage
+    - okta.profileMappings.read
+    - okta.roles.manage
+    - okta.roles.read
+    - okta.schemas.manage
+    - okta.schemas.read
+    - okta.sessions.manage
+    - okta.sessions.read
+    - okta.templates.manage
+    - okta.templates.read
+    - okta.trustedOrigins.manage
+    - okta.trustedOrigins.read
+    - okta.users.manage
+    - okta.users.manage.self
+    - okta.users.read
+    - okta.users.read.self
+    - openid
+    - phone
+    - profile
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (OneDrive for Business uses standard Microsoft Graph permissions)
+one-drive:
+    - .default
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.Read.Selected
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - Files.ReadWrite.Selected
+    - offline_access
+    - openid
+    - profile
+    - Sites.Read.All
+    - Sites.ReadWrite.All
+
+# source: https://learn.microsoft.com/fi-fi/onedrive/developer/rest-api/concepts/permissions_reference?view=odsp-graph-online (OneDrive Personal uses standard Microsoft Graph file permissions)
+one-drive-personal:
+    - .default
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://learn.microsoft.com/en-us/previous-versions/office/office-365-api/how-to/onenote-auth (OneNote uses Microsoft Graph Notes permissions)
+one-note:
+    - .default
+    - email
+    - Notes.Create
+    - Notes.Read
+    - Notes.Read.All
+    - Notes.ReadWrite
+    - Notes.ReadWrite.All
+    - offline_access
+    - openid
+    - profile
+
+# source: https://osu.ppy.sh/docs/index.html#scopes (osu OAuth2 scopes)
+osu:
+    - chat.read
+    - chat.write
+    - chat.write_manage
+    - delegate
+    - forum.write
+    - forum.write_manage
+    - friends.read
+    - group_permissions
+    - identify
+    - multiplayer.write_manage
+    - public
+
+# source: https://cloud.ouraring.com/docs/authentication
+oura:
+    - daily
+    - email
+    - heartrate
+    - personal
+    - session
+    - spo2
+    - tag
+    - workout
+
+# source: https://learn.microsoft.com/en-us/graph/permissions-reference (Outlook is alias for Microsoft)
+outlook:
+    - .default
+    - Calendars.Read
+    - Calendars.ReadWrite
+    - Contacts.Read
+    - Contacts.ReadWrite
+    - Directory.Read.All
+    - Directory.ReadWrite.All
+    - email
+    - Files.Read
+    - Files.Read.All
+    - Files.ReadWrite
+    - Files.ReadWrite.All
+    - Mail.Read
+    - Mail.ReadWrite
+    - Mail.Send
+    - offline_access
+    - openid
+    - profile
+    - Tasks.Read
+    - Tasks.ReadWrite
+    - User.Read
+    - User.Read.All
+    - User.ReadBasic.All
+    - User.ReadWrite
+    - User.ReadWrite.All
+
+# source: https://developers.outreach.io/api/oauth/
+outreach:
+    - accounts.all
+    - accounts.read
+    - calls.all
+    - calls.read
+    - emails.all
+    - emails.read
+    - mailboxes.all
+    - mailboxes.read
+    - opportunities.all
+    - opportunities.read
+    - plugins.all
+    - plugins.read
+    - prospects.all
+    - prospects.read
+    - sequences.all
+    - sequences.read
+    - tasks.all
+    - tasks.read
+    - templates.all
+    - templates.read
+    - users.all
+    - users.read
+
+# source: https://developer.pagerduty.com/docs/app-integration-development/oauth-2-x-overview (PagerDuty OAuth2 scopes not granular - permissions managed via OAuth app configuration)
+pagerduty: []
+
+# source: https://developers.pandadoc.com/reference/oauth-20-authentication (Pandadoc uses read and read+write scopes)
+pandadoc:
+    - read
+    - read+write
+
+# source: https://developers.paycor.com/guides (Paycor OAuth2 uses offline_access scope as default)
+paycor:
+    - offline_access
+
+# source: https://developers.paycor.com/guides (Paycor Sandbox uses same OAuth2 scopes as production)
+paycor-sandbox:
+    - offline_access
+
+# source: providers.yaml (Payfit OAuth2 documentation not publicly accessible - using default_scopes from providers.yaml)
+# No official OAuth2 scopes page found - scopes configured per OAuth app registration
+payfit: []
+
+# source: https://developer.paypal.com/api/rest/authentication/ (PayPal uses URL-based scopes for different services)
+paypal:
+    - https://api-m.paypal.com/v1/payments/.*
+    - https://api-m.paypal.com/v1/vault/credit-card
+    - https://api-m.paypal.com/v1/vault/credit-card/.*
+    - https://uri.paypal.com/payments/payouts
+    - https://uri.paypal.com/services/applications/webhooks
+    - https://uri.paypal.com/services/disputes/read-buyer
+    - https://uri.paypal.com/services/disputes/read-seller
+    - https://uri.paypal.com/services/disputes/update-seller
+    - https://uri.paypal.com/services/invoicing
+    - https://uri.paypal.com/services/payments/payment/authcapture
+    - https://uri.paypal.com/services/payments/realtimepayment
+    - https://uri.paypal.com/services/payments/refund
+    - https://uri.paypal.com/services/subscriptions
+
+# source: https://developer.paypal.com/api/rest/authentication/ (PayPal Sandbox uses same URL-based scopes as production)
+paypal-sandbox:
+    - https://api-m.sandbox.paypal.com/v1/payments/.*
+    - https://api-m.sandbox.paypal.com/v1/vault/credit-card
+    - https://api-m.sandbox.paypal.com/v1/vault/credit-card/.*
+    - https://uri.paypal.com/payments/payouts
+    - https://uri.paypal.com/services/applications/webhooks
+    - https://uri.paypal.com/services/disputes/read-buyer
+    - https://uri.paypal.com/services/disputes/read-seller
+    - https://uri.paypal.com/services/disputes/update-seller
+    - https://uri.paypal.com/services/invoicing
+    - https://uri.paypal.com/services/payments/payment/authcapture
+    - https://uri.paypal.com/services/payments/realtimepayment
+    - https://uri.paypal.com/services/payments/refund
+    - https://uri.paypal.com/services/subscriptions
+
+# source: https://app.pennylane.com/api/docs (Pennylane OAuth2 scopes not publicly documented - using providers.yaml fallback)
+# No official OAuth2 scopes page found - scopes configured per OAuth app registration
+pennylane: []
+
+# source: https://docs.pingidentity.com/r/en-us/pingone/authorization_code_grant (PingOne uses standard OIDC scopes)
+pingone:
+    - email
+    - offline_access
+    - openid
+    - phone
+    - profile
+
+# source: https://developer.pinterest.com (Pinterest OAuth2 scopes exist but documentation requires login - using providers.yaml fallback)
+# No publicly accessible OAuth2 scopes page found without authentication
+pinterest: []
+
+# source: https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations
+pipedrive:
+    - activities:full
+    - activities:read
+    - admin
+    - base
+    - contact-fields:full
+    - contacts:full
+    - contacts:read
+    - deal-fields:full
+    - deals:full
+    - deals:read
+    - goals:full
+    - goals:read
+    - leads:full
+    - leads:read
+    - mail:full
+    - mail:read
+    - messengers-integration
+    - phone-integration
+    - product-fields:full
+    - products:full
+    - products:read
+    - projects:full
+    - projects:read
+    - recents:read
+    - search:read
+    - users:read
+    - video-calls
+    - webhooks:full
+    - webhooks:read
+
+# source: https://get.pleo.io/v2/docs/oauth2-authentication (Pleo OAuth2 scopes not publicly documented)
+pleo: []
+
+# source: https://docs.podium.com/reference/authentication (Podium OAuth2 scopes not publicly documented - permissions configured via developer dashboard)
+podium: []
+
+# source: https://support.practicefusion.com/kb/article/275-api-fhir-oauth/ (PracticeFusion uses SMART on FHIR scopes)
+practicefusion:
+    - fhirUser
+    - launch
+    - launch/patient
+    - offline_access
+    - openid
+    - patient/*.read
+    - patient/AllergyIntolerance.read
+    - patient/CarePlan.read
+    - patient/Condition.read
+    - patient/Device.read
+    - patient/DiagnosticReport.read
+    - patient/DocumentReference.read
+    - patient/Encounter.read
+    - patient/Goal.read
+    - patient/Immunization.read
+    - patient/Medication.read
+    - patient/MedicationOrder.read
+    - patient/MedicationRequest.read
+    - patient/Observation.read
+    - patient/Patient.read
+    - patient/Practitioner.read
+    - patient/Procedure.read
+    - profile
+
+# source: https://nango.dev/docs/integrations/all/precisefp (PreciseFP requires wildcard '*' scope for OAuth2 - server-side permissions control access)
+precisefp:
+    - '*'
+
+# source: https://www.printful.com/docs (no official OAuth2 scopes documentation found - Printful uses server-side permissions)
+printful: []
+
+# source: https://developers.procore.com/documentation (no granular OAuth2 scopes documented - Procore uses permission-based app authorization)
+procore: []
+
+# source: https://developer.productboard.com/docs/how-to-integrate-with-productboard-via-oauth2-developer-documentation
+productboard:
+    - custom_fields:read
+    - feedback_forms:create
+    - feedback_forms:read
+    - initiatives:create
+    - initiatives:manage
+    - initiatives:read
+    - key_results:create
+    - key_results:manage
+    - key_results:read
+    - members_pii:read
+    - notes:create
+    - objectives:create
+    - objectives:manage
+    - objectives:read
+    - plugin_integrations:manage
+    - product_hierarchy_data:create
+    - product_hierarchy_data:manage
+    - product_hierarchy_data:read
+    - releases:create
+    - releases:manage
+    - releases:read
+    - users_pii:read
+    - users:manage
+    - users:read
+
+# source: https://api.qualtrics.com (Qualtrics scopes not publicly documented - uses default_scopes from providers.yaml)
+qualtrics: []
+
+# source: https://developer.intuit.com/app/developer/qbo/docs/learn/scopes (page not accessible, using providers.yaml fallback)
+quickbooks:
+    - address
+    - com.intuit.quickbooks.accounting
+    - com.intuit.quickbooks.accounting.readonly
+    - com.intuit.quickbooks.benefits
+    - com.intuit.quickbooks.benefits.readonly
+    - com.intuit.quickbooks.payment
+    - com.intuit.quickbooks.payroll
+    - com.intuit.quickbooks.payroll.readonly
+    - com.intuit.quickbooks.profile
+    - com.intuit.quickbooks.profile.readonly
+    - email
+    - openid
+    - phone
+    - profile
+
+# source: https://developer.intuit.com/app/developer/qbo/docs/learn/scopes (quickbooks-sandbox alias uses same scopes as quickbooks)
+quickbooks-sandbox:
+    - address
+    - com.intuit.quickbooks.accounting
+    - com.intuit.quickbooks.accounting.readonly
+    - com.intuit.quickbooks.benefits
+    - com.intuit.quickbooks.benefits.readonly
+    - com.intuit.quickbooks.payment
+    - com.intuit.quickbooks.payroll
+    - com.intuit.quickbooks.payroll.readonly
+    - com.intuit.quickbooks.profile
+    - com.intuit.quickbooks.profile.readonly
+    - email
+    - openid
+    - phone
+    - profile
+
+# source: https://docs.ramp.com/openapi/developer-api.json (Ramp OAuth2 scopes from OpenAPI spec)
+ramp:
+    - accounting:read
+    - accounting:write
+    - ai_usage:write
+    - attendee_types:read
+    - attendee_types:write
+    - audit_logs:read
+    - bank_accounts:read
+    - bank_feeds:read
+    - bills:read
+    - bills:write
+    - blank_canvas:write
+    - business:read
+    - cards:read
+    - cards:read_vault
+    - cards:write
+    - cashbacks:read
+    - comments:write
+    - custom_forms:read
+    - custom_records:read
+    - custom_records:write
+    - departments:read
+    - departments:write
+    - embedded_cards:write
+    - entities:read
+    - external_attendees:read
+    - external_attendees:write
+    - item_receipts:read
+    - item_receipts:write
+    - leads:read
+    - leads:write
+    - limits:read
+    - limits:write
+    - locations:read
+    - locations:write
+    - memos:read
+    - memos:write
+    - merchants:read
+    - offline_access
+    - openid
+    - purchase_orders:read
+    - purchase_orders:write
+    - receipt_integrations:read
+    - receipt_integrations:write
+    - receipts:read
+    - receipts:write
+    - reimbursements:read
+    - reimbursements:write
+    - repayments:read
+    - spend_programs:read
+    - spend_programs:write
+    - spend_requests:read
+    - spend_requests:write
+    - statements:read
+    - transactions:read
+    - transactions:write
+    - transfers:read
+    - treasury:read
+    - trips:read
+    - unified_requests:read
+    - users:read
+    - users:write
+    - vendors:read
+    - vendors:write
+
+# source: https://docs.ramp.com/openapi/developer-api.json (Ramp Sandbox uses same scopes as production)
+ramp-sandbox:
+    - accounting:read
+    - accounting:write
+    - ai_usage:write
+    - attendee_types:read
+    - attendee_types:write
+    - audit_logs:read
+    - bank_accounts:read
+    - bank_feeds:read
+    - bills:read
+    - bills:write
+    - blank_canvas:write
+    - business:read
+    - cards:read
+    - cards:read_vault
+    - cards:write
+    - cashbacks:read
+    - comments:write
+    - custom_forms:read
+    - custom_records:read
+    - custom_records:write
+    - departments:read
+    - departments:write
+    - embedded_cards:write
+    - entities:read
+    - external_attendees:read
+    - external_attendees:write
+    - item_receipts:read
+    - item_receipts:write
+    - leads:read
+    - leads:write
+    - limits:read
+    - limits:write
+    - locations:read
+    - locations:write
+    - memos:read
+    - memos:write
+    - merchants:read
+    - offline_access
+    - openid
+    - purchase_orders:read
+    - purchase_orders:write
+    - receipt_integrations:read
+    - receipt_integrations:write
+    - receipts:read
+    - receipts:write
+    - reimbursements:read
+    - reimbursements:write
+    - repayments:read
+    - spend_programs:read
+    - spend_programs:write
+    - spend_requests:read
+    - spend_requests:write
+    - statements:read
+    - transactions:read
+    - transactions:write
+    - transfers:read
+    - treasury:read
+    - trips:read
+    - unified_requests:read
+    - users:read
+    - users:write
+    - vendors:read
+    - vendors:write
+
+# source: https://foundations-documentation.reapit.cloud/api/reapit-connect (Reapit Connect uses OAuth2 with permissions granted during app installation - no explicit scopes in OAuth flow)
+reapit: []
+
+# source: https://www.reddit.com/dev/api/oauth (Reddit OAuth2 scopes from official API documentation)
+reddit:
+    - account
+    - announcements
+    - edit
+    - flair
+    - history
+    - identity
+    - livemanage
+    - modconfig
+    - modflair
+    - modlog
+    - modmail
+    - modnote
+    - modothers
+    - modposts
+    - modself
+    - modwiki
+    - mysubreddits
+    - privatemessages
+    - read
+    - report
+    - save
+    - structuredstyles
+    - submit
+    - subscribe
+    - vote
+    - wikiedit
+    - wikiread
+
+# source: https://developers.ringcentral.com/guide/basics/permissions (RingCentral OAuth2 scopes from official documentation)
+ring-central:
+    - A2P_SMS
+    - Accounts
+    - AI
+    - Analytics
+    - CallControl
+    - Contacts
+    - ControlWebinars
+    - DirectRingOut
+    - EditAccounts
+    - EditCallLog
+    - EditCustomData
+    - EditExtensions
+    - EditMessages
+    - EditPaymentInfo
+    - EditPresence
+    - EditReportingSettings
+    - EditUserCredentials
+    - EditWebinars
+    - Faxes
+    - Glip
+    - InternalMessages
+    - Meetings
+    - ReadAccounts
+    - ReadCallLog
+    - ReadCallRecording
+    - ReadClientInfo
+    - ReadContacts
+    - ReadMessages
+    - ReadPresence
+    - ReadWebinars
+    - RingOut
+    - RoleManagement
+    - SMS
+    - SubscriptionWebhook
+    - TeamMessaging
+    - Video
+    - Voicemail
+    - VoipCalling
+
+# source: https://developers.ringcentral.com/guide/basics/permissions (RingCentral Sandbox uses same scopes as production)
+ring-central-sandbox:
+    - A2P_SMS
+    - Accounts
+    - AI
+    - Analytics
+    - CallControl
+    - Contacts
+    - ControlWebinars
+    - DirectRingOut
+    - EditAccounts
+    - EditCallLog
+    - EditCustomData
+    - EditExtensions
+    - EditMessages
+    - EditPaymentInfo
+    - EditPresence
+    - EditReportingSettings
+    - EditUserCredentials
+    - EditWebinars
+    - Faxes
+    - Glip
+    - InternalMessages
+    - Meetings
+    - ReadAccounts
+    - ReadCallLog
+    - ReadCallRecording
+    - ReadClientInfo
+    - ReadContacts
+    - ReadMessages
+    - ReadPresence
+    - ReadWebinars
+    - RingOut
+    - RoleManagement
+    - SMS
+    - SubscriptionWebhook
+    - TeamMessaging
+    - Video
+    - Voicemail
+    - VoipCalling
+
+# source: https://nango.dev/docs/integrations/all/rippling-shop-app (no official OAuth2 scopes documentation found)
+rippling-shop-app: []
+
+# source: https://nango.dev/docs/integrations/all/sage (Sage OAuth2 scopes not publicly documented)
+sage: []
+
+# source: https://nango.dev/docs/integrations/all/sage-intacct-oauth (Sage Intacct OAuth2 scopes not publicly documented)
+sage-intacct-oauth: []
+
+# source: https://nango.dev/docs/integrations/all/sage-people (Sage People uses Salesforce OAuth2 infrastructure - no independent scopes documentation found)
+sage-people: []
+
+# source: https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_scopes.htm (page not accessible, using providers.yaml fallback)
+salesforce:
+    - analytics_api
+    - api
+    - cdp_ingest_api
+    - cdp_profile_api
+    - cdp_query_api
+    - cdp_token_exchange_api
+    - chatbot_api
+    - chatter_api
+    - content_delivery_api
+    - custom_permissions
+    - eclair_api
+    - external_data_sources_api
+    - fsl_api
+    - full
+    - id
+    - interaction_api
+    - lightning
+    - offline_access
+    - openid
+    - refresh_token
+    - sandbox_api
+    - self_service_api
+    - sfap_api
+    - user_registration_api
+    - visualforce
+    - wave_analytics_api
+    - wave_analytics_data_api
+    - wave_api
+    - web
+
+# source: https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_scopes.htm (Salesforce Experience Cloud uses same scopes as standard Salesforce)
+salesforce-experience-cloud:
+    - analytics_api
+    - api
+    - cdp_ingest_api
+    - cdp_profile_api
+    - cdp_query_api
+    - cdp_token_exchange_api
+    - chatbot_api
+    - chatter_api
+    - content_delivery_api
+    - custom_permissions
+    - eclair_api
+    - external_data_sources_api
+    - fsl_api
+    - full
+    - id
+    - interaction_api
+    - lightning
+    - offline_access
+    - openid
+    - refresh_token
+    - sandbox_api
+    - self_service_api
+    - sfap_api
+    - user_registration_api
+    - visualforce
+    - wave_analytics_api
+    - wave_analytics_data_api
+    - wave_api
+    - web
+
+# source: https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_scopes.htm
+salesforce-sandbox:
+    - api
+    - cdp_api
+    - chatter_api
+    - content
+    - custom_permissions
+    - einstein_gpt_api
+    - einstein_prediction_api
+    - full
+    - id
+    - lightning
+    - mt_api_access
+    - named_api
+    - offline_access
+    - openid
+    - refresh_token
+    - sfap_api
+    - user_registration_api
+    - visualforce
+    - wave_analytics_data_api
+    - web
+
+# source: https://developers.salesloft.com/docs/api/salesloft-platform/
+salesloft:
+    - account:read
+    - accounts:delete
+    - accounts:read
+    - accounts:write
+    - activities:read
+    - activities:write
+    - audit_reports:read
+    - audit_reports:write
+    - cadences:delete
+    - cadences:read
+    - cadences:write
+    - calls:read
+    - calls:write
+    - conversations:read
+    - conversations:write
+    - crm_id_account:write
+    - crm_id_person:write
+    - crm:read
+    - crm:write
+    - data_control:read
+    - data_control:write
+    - dialer_recordings:read
+    - email_contents:read
+    - emails:read
+    - emails:write
+    - external_emails:create
+    - external_emails:write
+    - external_id_configuration:delete
+    - external_id_configuration:read
+    - external_id_configuration:write
+    - external_id:delete
+    - external_id:read
+    - external_id:write
+    - groups:write
+    - meetings:read
+    - meetings:write
+    - notes:delete
+    - notes:read
+    - notes:write
+    - notifications:write
+    - opportunities:delete
+    - opportunities:read
+    - opportunities:write
+    - people:delete
+    - people:read
+    - people:write
+    - signal_registrations:read
+    - signal_registrations:write
+    - signals:write
+    - tasks:delete
+    - tasks:read
+    - tasks:write
+    - team:delete
+    - team:read
+    - team:write
+    - workflow:delete
+    - workflow:read
+    - workflow:write
+
+# source: https://developer.salesmsg.com/docs (no official OAuth2 scopes page found)
+salesmsg-oauth2: []
+
+# source: https://developer.schwab.com/products/trader-api--individual (no official OAuth2 scopes page found)
+schwab: []
+
+# source: https://segment.com/docs/api/config-api/authentication (token-based, no explicit scopes)
+segment: []
+
+# source: https://api.sellsy.com/api/doc/oauth2 (no official OAuth2 scopes page found)
+sellsy: []
+
+# source: https://docs.sentry.io/api/permissions/
+sentry-oauth:
+    - event:admin
+    - event:read
+    - event:write
+    - member:admin
+    - member:read
+    - member:write
+    - org:admin
+    - org:read
+    - org:write
+    - project:admin
+    - project:read
+    - project:releases
+    - project:write
+    - team:admin
+    - team:read
+    - team:write
+
+# source: https://developer.servicem8.com/docs/authentication
+servicem8:
+    - manage_activities
+    - manage_addon_manifests
+    - manage_customer_contacts
+    - manage_customers
+    - manage_invoices
+    - manage_job_contacts
+    - manage_job_materials
+    - manage_job_messages
+    - manage_jobs
+    - manage_locations
+    - manage_materials
+    - manage_payments
+    - manage_pricing_items
+    - manage_quotes
+    - manage_schedule
+    - manage_staff
+    - manage_templates
+    - manage_webhooks
+    - publish_email
+    - publish_sms
+    - read_activities
+    - read_addon_manifests
+    - read_customer_contacts
+    - read_customers
+    - read_invoices
+    - read_job_contacts
+    - read_job_materials
+    - read_job_messages
+    - read_jobs
+    - read_locations
+    - read_materials
+    - read_payments
+    - read_pricing_items
+    - read_quotes
+    - read_schedule
+    - read_staff
+    - read_templates
+    - read_webhooks
+    - staff_activity
+    - staff_locations
+    - vendor
+    - vendor_email
+    - vendor_logo
+
+# source: https://www.servicenow.com/docs/bundle/tokyo-platform-security/page/administer/security/concept/c_OAuth2Scopes.html (no standard scopes - uses custom scopes defined per integration)
+servicenow: []
+
+# source: https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc (sharepoint-online aliases microsoft but requires independent scope research - uses Microsoft OAuth with Graph API)
+sharepoint-online:
+    - email
+    - https://graph.microsoft.com/.default
+    - offline_access
+    - openid
+    - profile
+
+# source: https://shopify.dev/docs/api/usage/access-scopes
+shopify:
+    - customer_read_companies
+    - customer_read_customers
+    - customer_read_draft_orders
+    - customer_read_locations
+    - customer_read_markets
+    - customer_read_metaobjects
+    - customer_read_orders
+    - customer_read_own_subscription_contracts
+    - customer_read_store_credit_accounts
+    - customer_write_companies
+    - customer_write_customers
+    - customer_write_locations
+    - customer_write_orders
+    - customer_write_own_subscription_contracts
+    - customer_write_subscription_contracts
+    - read_all_orders
+    - read_assigned_fulfillment_orders
+    - read_cart_transforms
+    - read_checkout_branding_settings
+    - read_content
+    - read_customer_events
+    - read_customer_merge
+    - read_customer_payment_methods
+    - read_customers
+    - read_delivery_customizations
+    - read_discounts
+    - read_draft_orders
+    - read_files
+    - read_fulfillments
+    - read_gift_cards
+    - read_inventory
+    - read_legal_policies
+    - read_locales
+    - read_locations
+    - read_marketing_events
+    - read_marketplace_fulfillment_orders
+    - read_markets
+    - read_merchant_approval_signals
+    - read_merchant_managed_fulfillment_orders
+    - read_metaobject_definitions
+    - read_metaobjects
+    - read_online_store_navigation
+    - read_online_store_pages
+    - read_order_edits
+    - read_orders
+    - read_own_subscription_contracts
+    - read_payment_customizations
+    - read_payment_gateways
+    - read_payment_mandate
+    - read_payment_terms
+    - read_price_rules
+    - read_privacy_settings
+    - read_products
+    - read_purchase_options
+    - read_reports
+    - read_returns
+    - read_script_tags
+    - read_shipping
+    - read_shopify_payments_dispute_evidences
+    - read_shopify_payments_disputes
+    - read_shopify_payments_payouts
+    - read_store_credit_account_transactions
+    - read_store_credit_accounts
+    - read_themes
+    - read_third_party_fulfillment_orders
+    - read_translations
+    - read_users
+    - read_validations
+    - unauthenticated_read_checkouts
+    - unauthenticated_read_content
+    - unauthenticated_read_customer_tags
+    - unauthenticated_read_customers
+    - unauthenticated_read_metaobjects
+    - unauthenticated_read_product_inventory
+    - unauthenticated_read_product_listings
+    - unauthenticated_read_product_pickup_locations
+    - unauthenticated_read_product_tags
+    - unauthenticated_read_selling_plans
+    - unauthenticated_write_checkouts
+    - unauthenticated_write_customers
+    - write_app_proxy
+    - write_assigned_fulfillment_orders
+    - write_cart_transforms
+    - write_checkout_branding_settings
+    - write_content
+    - write_customer_merge
+    - write_customers
+    - write_delivery_customizations
+    - write_discounts
+    - write_draft_orders
+    - write_files
+    - write_fulfillments
+    - write_gift_cards
+    - write_inventory
+    - write_locales
+    - write_locations
+    - write_marketing_events
+    - write_markets
+    - write_merchant_managed_fulfillment_orders
+    - write_metaobject_definitions
+    - write_metaobjects
+    - write_online_store_navigation
+    - write_order_edits
+    - write_orders
+    - write_own_subscription_contracts
+    - write_payment_customizations
+    - write_payment_gateways
+    - write_payment_mandate
+    - write_payment_sessions
+    - write_payment_terms
+    - write_pixels
+    - write_price_rules
+    - write_privacy_settings
+    - write_products
+    - write_purchase_options
+    - write_returns
+    - write_script_tags
+    - write_shipping
+    - write_store_credit_account_transactions
+    - write_themes
+    - write_third_party_fulfillment_orders
+    - write_translations
+    - write_validations
+
+# source: https://docs.signnow.com/docs/signnow/oauth2 (wildcard scope)
+signnow:
+    - '*'
+
+# source: https://docs.signnow.com/docs/signnow/oauth2 (sandbox uses same wildcard scope as production)
+signnow-sandbox:
+    - '*'
+
+# source: https://api.slack.com/scopes
+slack:
+    - app_configurations:read
+    - app_configurations:write
+    - app_mentions:read
+    - apps.requests:write
+    - assistant:write
+    - auditlogs:read
+    - authorizations:read
+    - bookmarks:read
+    - bookmarks:write
+    - bot
+    - calls:read
+    - calls:write
+    - canvases:read
+    - canvases:write
+    - channels:history
+    - channels:manage
+    - channels:read
+    - chat:write
+    - chat:write.customize
+    - chat:write.public
+    - client
+    - commands
+    - connections:write
+    - conversations.connect:manage
+    - conversations.connect:read
+    - conversations.connect:write
+    - datastore:read
+    - datastore:write
+    - dnd:read
+    - dnd:write
+    - email
+    - emoji:read
+    - files:read
+    - files:write
+    - groups:history
+    - groups:read
+    - groups:write
+    - hosting:read
+    - identify
+    - im:history
+    - im:read
+    - im:write
+    - incoming-webhook
+    - links:embed.write
+    - links:read
+    - links:write
+    - lists:read
+    - lists:write
+    - metadata.message:read
+    - mpim:history
+    - mpim:read
+    - mpim:write
+    - openid
+    - pins:read
+    - pins:write
+    - profile
+    - reactions:read
+    - reactions:write
+    - reminders:read
+    - reminders:write
+    - remote_files:read
+    - remote_files:share
+    - remote_files:write
+    - search:read
+    - search:read.enterprise
+    - stars:read
+    - stars:write
+    - team:read
+    - tokens.basic
+    - triggers:read
+    - triggers:write
+    - usergroups:read
+    - usergroups:write
+    - users:read
+    - users:read.email
+    - users:write
+    - users.profile:read
+    - users.profile:write
+    - workflows:steps:execute
+    - workflows:steps:execute:admin
+    - workflows:steps:execute:bot
+    - workflows:steps:execute:user
+    - workflows:steps:execute:workspace
+    - workflows:steps:execute.manage
+    - workflows.templates:read
+    - workflows.templates:write
+
+# source: https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth
+smartsheet:
+    - ADMIN_SHEETS
+    - ADMIN_SIGHTS
+    - ADMIN_USERS
+    - ADMIN_WEBHOOKS
+    - CREATE_SIGHTS
+    - DELETE_SHEETS
+    - DELETE_SIGHTS
+    - READ_CONTACTS
+    - READ_SHEETS
+    - READ_SIGHTS
+    - READ_USERS
+    - SHARE_SHEETS
+    - SHARE_SIGHTS
+    - WRITE_SHEETS
+
+# source: https://docs.snap.com/api/marketing-api/Ads-API/authentication
+snapchat:
+    - snapchat-marketing-api
+    - snapchat-offline-conversions-api
+    - snapchat-profile-api
+
+# source: https://docs.snowflake.com/en/user-guide/oauth-intro (no explicit OAuth2 scopes - uses role-based access control)
+snowflake: []
+
+# source: https://dev.splitwise.com/docs (no official OAuth2 scopes page found)
+splitwise: []
+
+# source: https://developer.spotify.com/documentation/web-api/concepts/scopes
+spotify:
+    - app-remote-control
+    - playlist-modify-private
+    - playlist-modify-public
+    - playlist-read-collaborative
+    - playlist-read-private
+    - soa-create-partner
+    - soa-manage-entitlements
+    - soa-manage-partner
+    - streaming
+    - ugc-image-upload
+    - user-follow-modify
+    - user-follow-read
+    - user-library-modify
+    - user-library-read
+    - user-modify-playback-state
+    - user-personalized
+    - user-read-currently-playing
+    - user-read-email
+    - user-read-playback-position
+    - user-read-playback-state
+    - user-read-private
+    - user-read-recently-played
+    - user-soa-link
+    - user-soa-unlink
+    - user-top-read
+
+# source: https://developers.squarespace.com/oauth
+squarespace:
+    - offline
+    - website.inventory
+    - website.inventory.read
+    - website.orders
+    - website.orders.read
+    - website.products
+    - website.transactions.read
+
+# source: https://developer.squareup.com/reference/square/oauth-api
+squareup:
+    - APPOINTMENTS_ALL_READ
+    - APPOINTMENTS_ALL_WRITE
+    - APPOINTMENTS_BUSINESS_SETTINGS_READ
+    - APPOINTMENTS_READ
+    - APPOINTMENTS_WRITE
+    - BANK_ACCOUNTS_READ
+    - CASH_DRAWER_READ
+    - CUSTOMERS_READ
+    - CUSTOMERS_WRITE
+    - DEVICE_READ
+    - DEVICE_WRITE
+    - DISPUTES_READ
+    - EMPLOYEES_READ
+    - EMPLOYEES_WRITE
+    - GIFTCARDS_READ
+    - GIFTCARDS_WRITE
+    - INVENTORY_READ
+    - INVENTORY_WRITE
+    - INVOICES_READ
+    - INVOICES_WRITE
+    - ITEMS_READ
+    - ITEMS_WRITE
+    - LOYALTY_READ
+    - LOYALTY_WRITE
+    - MERCHANT_PROFILE_READ
+    - MERCHANT_PROFILE_WRITE
+    - ORDERS_CREATE
+    - ORDERS_READ
+    - ORDERS_WRITE
+    - PAYMENTS_READ
+    - PAYMENTS_WRITE
+    - PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS
+    - PAYMENTS_WRITE_SHARED_ONFILE
+    - SETTLEMENTS_READ
+    - TIMECARDS_READ
+    - TIMECARDS_WRITE
+    - VENDOR_READ
+    - VENDOR_WRITE
+
+# source: https://developers.strava.com/docs/authentication/#scope-description
+strava:
+    - activity:read
+    - activity:read_all
+    - activity:write
+    - profile:read_all
+    - profile:write
+    - read
+    - read_all
+
+# source: https://developers.strava.com/docs/authentication/
+strava-web:
+    - activity:read
+    - activity:read_all
+    - activity:write
+    - profile:read_all
+    - profile:write
+    - read
+    - read_all
+
+# source: https://stripe.com/docs/connect/oauth-reference
+stripe:
+    - read_only
+    - read_write
+
+# source: https://stripe.com/docs/connect/oauth-reference
+stripe-app:
+    - read_only
+    - read_write
+
+# source: https://developers.tiktok.com/doc/tiktok-api-scopes/
+tiktok-accounts:
+    - local.product.manage
+    - local.shop.manage
+    - local.voucher.manage
+    - portability.activity.ongoing
+    - portability.activity.single
+    - portability.all.ongoing
+    - portability.all.single
+    - portability.directmessages.ongoing
+    - portability.directmessages.single
+    - portability.postsandprofile.ongoing
+    - portability.postsandprofile.single
+    - research.adlib.basic
+    - research.data.basic
+    - research.data.u18eu
+    - research.data.vra
+    - user.info.basic
+    - user.info.profile
+    - user.info.stats
+    - video.list
+    - video.publish
+    - video.upload
+
+# source: https://developers.tiktok.com/doc/tiktok-api-scopes/
+tiktok-personal:
+    - local.product.manage
+    - local.shop.manage
+    - local.voucher.manage
+    - portability.activity.ongoing
+    - portability.activity.single
+    - portability.all.ongoing
+    - portability.all.single
+    - portability.directmessages.ongoing
+    - portability.directmessages.single
+    - portability.postsandprofile.ongoing
+    - portability.postsandprofile.single
+    - research.adlib.basic
+    - research.data.basic
+    - research.data.u18eu
+    - research.data.vra
+    - user.info.basic
+    - user.info.profile
+    - user.info.stats
+    - video.list
+    - video.publish
+    - video.upload
+
+# source: https://docs.x.com/x-api/getting-started/about-permissions-and-scopes
+twitter-v2:
+    - block.read
+    - bookmark.read
+    - bookmark.write
+    - follow.read
+    - follow.write
+    - like.read
+    - like.write
+    - list.read
+    - list.write
+    - mute.read
+    - mute.write
+    - offline.access
+    - space.read
+    - space.write
+    - tweet.read
+    - tweet.write
+    - users.read
+
+# source: https://www.typeform.com/developers/get-started/scopes/
+typeform:
+    - accounts:read
+    - forms:read
+    - forms:write
+    - images:read
+    - images:write
+    - offline
+    - responses:read
+    - responses:write
+    - themes:read
+    - themes:write
+    - webhooks:read
+    - webhooks:write
+    - workspaces:read
+    - workspaces:write
+
+# source: http://dev.wealthbox.com/
+wealthbox:
+    - data
+    - login
+
+# source: https://developer.whoop.com/api/
+whoop:
+    - read:body_measurement
+    - read:cycles
+    - read:profile
+    - read:recovery
+    - read:sleep
+    - read:workout
+
+# source: https://developer.xero.com/documentation/guides/oauth2/scopes (page content not accessible)
+xero:
+    - accounting.attachments
+    - accounting.attachments.read
+    - accounting.journals.read
+    - accounting.reports.read
+    - accounting.settings
+    - accounting.settings.read
+    - accounting.transactions
+    - accounting.transactions.read
+    - assets
+    - assets.read
+    - bankfeeds
+    - email
+    - files
+    - files.read
+    - offline_access
+    - openid
+    - paymentservices
+    - payroll.employees
+    - payroll.employees.read
+    - payroll.payruns
+    - payroll.payruns.read
+    - payroll.payslip
+    - payroll.payslip.read
+    - payroll.settings
+    - payroll.settings.read
+    - payroll.timesheets
+    - payroll.timesheets.read
+    - profile
+    - projects
+    - projects.read
+
+# source: https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps
+youtube:
+    - https://www.googleapis.com/auth/youtube
+    - https://www.googleapis.com/auth/youtube.channel-memberships.creator
+    - https://www.googleapis.com/auth/youtube.force-ssl
+    - https://www.googleapis.com/auth/youtube.readonly
+    - https://www.googleapis.com/auth/youtube.upload
+    - https://www.googleapis.com/auth/youtubepartner
+    - https://www.googleapis.com/auth/youtubepartner-channel-audit
+
+# source: https://developer.zendesk.com/api-reference/ticketing/oauth/oauth_scopes/
+zendesk:
+    - read
+    - write
+
+# source: https://www.zoho.com/crm/developer/docs/api/v2/scopes.html
+zoho-crm:
+    - ZohoCRM.bulk.ALL
+    - ZohoCRM.bulk.CREATE
+    - ZohoCRM.bulk.READ
+    - ZohoCRM.coql.READ
+    - ZohoCRM.modules.accounts.ALL
+    - ZohoCRM.modules.activities.ALL
+    - ZohoCRM.modules.ALL
+    - ZohoCRM.modules.approvals.ALL
+    - ZohoCRM.modules.calls.ALL
+    - ZohoCRM.modules.campaigns.ALL
+    - ZohoCRM.modules.cases.ALL
+    - ZohoCRM.modules.contacts.ALL
+    - ZohoCRM.modules.custom.ALL
+    - ZohoCRM.modules.dashboards.ALL
+    - ZohoCRM.modules.deals.ALL
+    - ZohoCRM.modules.events.ALL
+    - ZohoCRM.modules.invoices.ALL
+    - ZohoCRM.modules.leads.ALL
+    - ZohoCRM.modules.notes.ALL
+    - ZohoCRM.modules.pricebooks.ALL
+    - ZohoCRM.modules.products.ALL
+    - ZohoCRM.modules.purchaseorders.ALL
+    - ZohoCRM.modules.quotes.ALL
+    - ZohoCRM.modules.salesorders.ALL
+    - ZohoCRM.modules.search.ALL
+    - ZohoCRM.modules.solutions.ALL
+    - ZohoCRM.modules.tasks.ALL
+    - ZohoCRM.modules.vendors.ALL
+    - ZohoCRM.notifications.CREATE
+    - ZohoCRM.notifications.DELETE
+    - ZohoCRM.notifications.READ
+    - ZohoCRM.notifications.UPDATE
+    - ZohoCRM.org.ALL
+    - ZohoCRM.settings.ALL
+    - ZohoCRM.settings.currencies.ALL
+    - ZohoCRM.settings.custom_buttons.ALL
+    - ZohoCRM.settings.custom_links.ALL
+    - ZohoCRM.settings.custom_views.ALL
+    - ZohoCRM.settings.fields.ALL
+    - ZohoCRM.settings.layouts.ALL
+    - ZohoCRM.settings.macros.ALL
+    - ZohoCRM.settings.modules.ALL
+    - ZohoCRM.settings.profiles.ALL
+    - ZohoCRM.settings.related_lists.ALL
+    - ZohoCRM.settings.roles.ALL
+    - ZohoCRM.settings.tab_groups.ALL
+    - ZohoCRM.settings.tags.ALL
+    - ZohoCRM.settings.territories.ALL
+    - ZohoCRM.settings.variables.ALL
+    - ZohoCRM.users.ALL
+
+# source: https://www.zoho.com/mail/help/api/using-oauth-2.html
+zoho-mail:
+    - ZohoMail.accounts.READ
+    - ZohoMail.attachments.ALL
+    - ZohoMail.attachments.READ
+    - ZohoMail.contacts.ALL
+    - ZohoMail.contacts.READ
+    - ZohoMail.folders.ALL
+    - ZohoMail.folders.READ
+    - ZohoMail.messages.ALL
+    - ZohoMail.messages.CREATE
+    - ZohoMail.messages.DELETE
+    - ZohoMail.messages.READ
+    - ZohoMail.messages.UPDATE
+    - ZohoMail.notes.ALL
+    - ZohoMail.notes.READ
+    - ZohoMail.tags.ALL
+    - ZohoMail.tags.READ
+    - ZohoMail.tasks.ALL
+    - ZohoMail.tasks.READ
+
+# source: https://developers.zoom.us/docs/integrations/oauth-scopes/
+zoom:
+    - account:read:account
+    - account:read:master_account
+    - dashboard_home:read:admin
+    - dashboard_meetings:read:admin
+    - dashboard_webinars:read:admin
+    - dashboard_zr:read:admin
+    - dashboard:read:admin
+    - meeting_token:read:admin
+    - meeting:read:admin
+    - meeting:write:admin
+    - recording:read:admin
+    - recording:write:admin
+    - report:read:admin
+    - report:read:user
+    - room:read:admin
+    - room:write:admin
+    - user:read:admin
+    - user:write:admin
+    - webinar:read:admin
+    - webinar:write:admin

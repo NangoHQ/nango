@@ -21,6 +21,7 @@
     },
     "files": [
         "dist/**/*",
-        "providers.yaml"
+        "providers.yaml",
+        "providers.scopes.yaml"
     ]
 }
