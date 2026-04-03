@@ -25,15 +25,28 @@ const route: WebhookHandler = async (nango, headers) => {
         ...(headers['x-goog-resource-state'] && { webhookTypeValue: headers['x-goog-resource-state'] })
     };
 
+    // First, try to match the resource URI to the googleCalendarWatchResourceUris (multiple calendar matching)
+    let response =
+        typeof resourceUri === 'string'
+            ? await nango.executeScriptForWebhooks({
+                  ...baseArgs,
+                  connectionIdentifierValue: resourceUri,
+                  propName: 'metadata.googleCalendarWatchResourceUris'
+              })
+            : { connectionIds: [] as string[], connectionMetadata: {} };
+
+    // If no match, fallback to connection_config.emailAddressHash (primary calendar matching)
     const emailAddressHash = emailAddress ? hashEmailAddress(emailAddress) : undefined;
+    if (response.connectionIds.length === 0) {
+        response = await nango.executeScriptForWebhooks({
+            ...baseArgs,
+            connectionIdentifier: 'emailAddressHash',
+            ...(emailAddressHash && { connectionIdentifierValue: emailAddressHash }),
+            propName: 'emailAddressHash'
+        });
+    }
 
-    let response = await nango.executeScriptForWebhooks({
-        ...baseArgs,
-        connectionIdentifier: 'emailAddressHash',
-        ...(emailAddressHash && { connectionIdentifierValue: emailAddressHash }),
-        propName: 'emailAddressHash'
-    });
-
+    // If no match, fallback further to metadata.emailAddress (primary calendar matching)
     if (response.connectionIds.length === 0) {
         response = await nango.executeScriptForWebhooks({
             ...baseArgs,
@@ -41,15 +54,16 @@ const route: WebhookHandler = async (nango, headers) => {
             ...(emailAddress && { connectionIdentifierValue: emailAddress }),
             propName: 'metadata.emailAddress'
         });
+    }
 
-        if (response.connectionIds.length === 0) {
-            response = await nango.executeScriptForWebhooks({
-                ...baseArgs,
-                connectionIdentifier: 'emailAddress',
-                ...(emailAddress && { connectionIdentifierValue: emailAddress }),
-                propName: 'metadata.email'
-            });
-        }
+    // If no match, fallback further to metadata.email (primary calendar matching)
+    if (response.connectionIds.length === 0) {
+        response = await nango.executeScriptForWebhooks({
+            ...baseArgs,
+            connectionIdentifier: 'emailAddress',
+            ...(emailAddress && { connectionIdentifierValue: emailAddress }),
+            propName: 'metadata.email'
+        });
     }
 
     return Ok({
