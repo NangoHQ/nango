@@ -150,7 +150,7 @@ if (staleKeys.length > 0) {
     changed.push(...staleKeys);
 }
 
-const previousContent = fs.readFileSync(providersScopesPath, 'utf-8');
+const previousContent = fs.existsSync(providersScopesPath) ? fs.readFileSync(providersScopesPath, 'utf-8') : '';
 const existingComments = extractYamlComments(previousContent);
 const nextContent = renderScopesYaml(filteredScopes, existingComments);
 const hasContentChanges = previousContent !== nextContent;

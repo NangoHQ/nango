@@ -82,6 +82,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         if (newScopes.length === 0) return;
         const merged = Array.from(new Set([...scopes, ...newScopes]));
         if (merged.length !== scopes.length) {
+            setLoading(true);
             await onValueChange(merged);
         }
         setInputValue('');
@@ -116,13 +117,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         {scope}
                     </span>
                 ))}
-                <div className="ml-auto flex items-center gap-1 shrink-0">
-                    {loading ? (
-                        <Loader2 size={14} className="animate-spin text-text-secondary" />
-                    ) : isSharedCredentials ? (
-                        <Badge variant="gray">Nango provided</Badge>
-                    ) : null}
-                </div>
+                <div className="ml-auto flex items-center gap-1 shrink-0">{isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}</div>
             </div>
         );
     }
