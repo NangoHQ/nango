@@ -225,6 +225,13 @@ export const getSyncs = async (
     });
 };
 
+export const getSyncsByIds = async ({ syncIds }: { syncIds: string[] }): Promise<Pick<Sync, 'id' | 'nango_connection_id'>[]> => {
+    if (syncIds.length === 0) {
+        return [];
+    }
+    return db.knex.select('id', 'nango_connection_id').from<Sync>(TABLE).whereIn('id', syncIds).andWhere({ deleted: false });
+};
+
 export const getSyncsByConnectionId = async ({
     connectionId,
     filter = []
