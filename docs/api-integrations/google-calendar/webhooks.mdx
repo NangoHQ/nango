@@ -323,7 +323,7 @@ To do this in bulk, iterate over the [list connections](/reference/api/connectio
 
 
 <Warning>
-If Nango cannot match the incoming webhook to a connection, the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+If Nango cannot match the incoming webhook to a connection, the webhook will still be forwarded but won't include a `connectionId` in the payload.
 </Warning>
 
 ## Rollback strategy
