@@ -232,9 +232,5 @@ export const RoleBadge: React.FC<{ role: Role }> = ({ role }) => {
         }
     }, [role]);
 
-    return (
-        <Badge variant="ghost" className="-uppercase">
-            {roleLabel}
-        </Badge>
-    );
+    return <Badge variant="ghost">{roleLabel}</Badge>;
 };

@@ -1190,6 +1190,64 @@ apple-app-store:
         base_url: https://api.appstoreconnect.apple.com
     docs: https://nango.dev/docs/integrations/all/apple-app-store
 
+apple-business-manager:
+    display_name: Apple Business Manager
+    categories:
+        - productivity
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://account.apple.com/auth/oauth2/v2/token
+    token_params:
+        grant_type: client_credentials
+        client_id: ${credentials.clientId}
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: business.api
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${assertionOption.privateKey}
+        lifetimeInSeconds: 15552000
+        header:
+            alg: ES256
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://account.apple.com/auth/oauth2/v2/token
+            jti: ${random}
+    proxy:
+        base_url: https://api-business.apple.com
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    docs: https://nango.dev/docs/api-integrations/apple-business-manager
+    docs_connect: https://nango.dev/docs/api-integrations/apple-business-manager/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID generated when you create an API account.
+            doc_section: '#step-2-note-your-credentials'
+        keyId:
+            type: string
+            title: Key ID
+            description: The Key ID generated when you create an API account.
+            doc_section: '#step-2-note-your-credentials'
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    assertion_option:
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC private key (PEM format) used to sign the client assertion JWT.
+            doc_section: '#step-1-create-an-api-account-and-generate-a-private-key'
+
 appstle-subscriptions:
     display_name: Appstle Subscriptions
     categories:
@@ -4153,20 +4211,27 @@ connectwise-psa:
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
     proxy:
-        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        base_url: https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
             accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
-    docs: https://nango.dev/docs/integrations/all/connectwise-psa
+    docs: https://nango.dev/docs/api-integrations/connectwise-psa
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-psa/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The full ConnectWise PSA hostname.
+            example: api-na.myconnectwise.net
+            format: hostname
+            prefix: https://
+            suffix: /v4_6_release/apis/3.0
         subdomain:
             type: string
-            title: ConnectWise PSA subdomain
-            description: The subdomain to connect to ConnectWise PSA
-            pattern: '^api-(au|eu|na)$'
-            example: api-au
-            suffix: .myconnectwise.net
-            prefix: https://
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
         apiVersion:
             type: string
             title: Api version
@@ -14925,6 +14990,7 @@ sap-success-factors:
         assertion: ${credentials.assertion}
         new_token: true
     assertion:
+        type: saml
         key: ${assertionOption.privateKey}
         issuer: www.successfactors.com
         lifetimeInSeconds: '315360000'
@@ -15149,6 +15215,40 @@ semrush:
             title: API Key
             description: Your Semrush API key
             doc_section: '#step-1-finding-your-api-key'
+
+sentinelone:
+    display_name: SentinelOne
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: ApiToken ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /web/api/v2.1/sites?limit=1
+    docs: https://nango.dev/docs/api-integrations/sentinelone
+    docs_connect: https://nango.dev/docs/api-integrations/sentinelone/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your SentinelOne management console
+            format: hostname
+            prefix: https://
+            example: your-tenant.sentinelone.net
+            doc_section: '#step-2-find-your-hostname'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your SentinelOne service user
+            doc_section: '#step-1-generate-your-api-token'
 
 sentry:
     display_name: Sentry

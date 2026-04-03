@@ -281,6 +281,37 @@ The production flag currently governs role-based access. In the future it may al
 These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid secret key retains full API access regardless of their dashboard role.
 </Info>
 
+## Single sign-on (SSO) {#sso}
+
+Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
+
+### Availability
+
+| Plan | SSO support |
+| - | - |
+| Free / Starter | Google SSO only |
+| Growth | SSO with 20+ identity providers (add-on) |
+| Enterprise (Cloud) | SSO with 20+ identity providers (included) |
+| Enterprise (Self-hosted) | Not yet available (planned) |
+
+### Supported providers
+
+Through WorkOS, Nango supports the main SSO providers, including **Okta**, **Entra ID**, **OneLogin** and 20+ other identity providers.
+
+### How to enable SSO
+
+1. To enable SSO for your account, contact the Nango team (on our shared Slack channel or the [community](https://nango.dev/slack)).
+2. If you are on the Growth plan, we will subscribe your workspace to the SSO add-on.
+3. We will invite an admin from your company to complete the SSO setup flow.
+
+### Setup flow
+
+During setup, your company admin can configure the **domains allowed to sign in**. User accounts are created automatically through just-in-time (JIT) provisioning.
+
+### How users log in
+
+Once SSO is configured, users sign in through your company's identity provider (IdP). Nango currently does not provide a dedicated SSO button on the login page — login must be initiated from the IdP side.
+
 ## IP Allowlist
 
 Some integrations require network-level access controls that only allow inbound traffic from known IP addresses.
