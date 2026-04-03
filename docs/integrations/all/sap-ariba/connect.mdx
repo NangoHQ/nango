@@ -1,0 +1,73 @@
+---
+title: SAP Ariba - How do I link my account?
+sidebarTitle: SAP Ariba
+---
+
+# Overview
+
+To authenticate with SAP Ariba, you need:
+1. **Client ID** - A unique identifier for your application.
+2. **Client Secret** - A confidential key used to authenticate the identity of your application.
+3. **Region** - Your SAP Ariba data center region (US, EU, or Australia).
+4. **Application Key (API Key)** - Required for all API requests.
+5. **Realm** - Your organization's identifier in SAP Ariba.
+
+This guide will walk you through obtaining these credentials within SAP Ariba.
+
+### Prerequisites:
+
+- You must have an account with [SAP Ariba Developer Portal](https://developer.ariba.com).
+- You need access to an SAP Ariba realm (organization).
+
+### Instructions:
+
+## Step 1: Select Your Region
+
+SAP Ariba has different data centers for different regions. Select the region where your SAP Ariba instance is hosted:
+
+| Region | Region Value | Description |
+|--------|--------------|-------------|
+| United States | *(leave empty)* | Default region for US-based customers |
+| Europe | `-eu` | For EU-based customers |
+| Australia | `.au.cloud` | For APAC customers |
+
+The region determines which API endpoints will be used for authentication and API calls. Enter the exact value shown in the "Region Value" column.
+
+## Step 2: Get Your API Key
+
+1. Log in to the [SAP Ariba Developer Portal](https://developer.ariba.com).
+2. Navigate to **Manage > Applications**.
+3. Select your application (or create one if you haven't already).
+4. Navigate to **Application Details**.
+5. Copy your **Application Key** (also called `apikey`).
+
+This API Key is required in the header of all API requests to SAP Ariba.
+
+## Step 3: Find Your Realm
+
+Your realm is your organization's identifier in SAP Ariba:
+
+1. Your realm is typically in the format `{company}-{environment}`.
+   - Example: `mycompany-T` for test environment
+   - Example: `mycompany-P` for production environment
+2. You can find your realm in your SAP Ariba application URL or in your SAP Ariba account settings.
+3. Contact your SAP Ariba administrator if you're unsure of your realm.
+
+## Step 4: Get OAuth Credentials
+
+1. In the SAP Ariba Developer Portal, navigate to your application's **Credentials** section.
+2. Copy your **OAuth Client ID**.
+3. Click **Generate** to create a new **OAuth Client Secret** (if you don't have one).
+4. Store these credentials securely - the Client Secret is only shown once.
+
+## Step 5: Enter credentials in the Connect UI
+
+Once you have all your credentials:
+1. Open the form where you need to authenticate with SAP Ariba.
+2. Enter your **Region** value (leave empty for US, use `-eu` for Europe, or `.au.cloud` for Australia).
+3. Enter your **Application Key (API Key)**.
+4. Enter your **Realm**.
+5. Enter your **Client ID** and **Client Secret**.
+6. Submit the form, and you should be successfully authenticated.
+
+You are now connected to SAP Ariba.

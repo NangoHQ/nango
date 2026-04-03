@@ -481,7 +481,8 @@
                                 "urn:ietf:params:oauth:grant-type:saml2-bearer",
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
                                 "password",
-                                "refresh_token"
+                                "refresh_token",
+                                "openapi_2lo"
                             ]
                         },
                         "request": {

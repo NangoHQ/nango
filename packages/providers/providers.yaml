@@ -14560,6 +14560,51 @@ sage-people:
             pattern: '^https?://.*$'
             automated: true
 
+sap-ariba:
+    display_name: SAP Ariba
+    categories:
+        - erp
+    auth_mode: OAUTH2_CC
+    token_url: https://api${connectionConfig.region}.ariba.com/v2/oauth/token || https://api.ariba.com/v2/oauth/token
+    token_params:
+        grant_type: openapi_2lo
+    token_request_auth_method: basic
+    body_format: form
+    proxy:
+        base_url: https://openapi${connectionConfig.region}.ariba.com || https://openapi.ariba.com
+        headers:
+            apikey: ${connectionConfig.apiKey}
+            X-ARIBA-NETWORK-ID: ${connectionConfig.anid}
+        retry:
+            after:
+                - retry-after
+    docs: https://nango.dev/docs/integrations/all/sap-ariba
+    docs_connect: https://nango.dev/docs/integrations/all/sap-ariba/connect
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: Your SAP Ariba data center region. Leave empty for US, use "-eu" for Europe, or ".au.cloud" for Australia.
+            example: -eu
+            doc_section: '#step-1-select-your-region'
+            order: 1
+            optional: true
+        apiKey:
+            type: string
+            title: Application Key (API Key)
+            description: Your SAP Ariba application's API Key from the Developer Portal
+            secret: true
+            doc_section: '#step-2-get-your-api-key'
+            order: 2
+        anid:
+            type: string
+            title: Ariba Network ID (ANID)
+            description: Your SAP Ariba Network ID (e.g., AN01234567890). Found in your SAP Ariba account settings.
+            example: AN01234567890
+            pattern: '^AN[0-9]+$'
+            doc_section: '#step-3-find-your-anid'
+            order: 3
+
 salesforce:
     display_name: Salesforce
     categories:

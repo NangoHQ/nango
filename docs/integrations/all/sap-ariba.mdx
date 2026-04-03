@@ -1,0 +1,74 @@
+---
+title: SAP Ariba
+sidebarTitle: SAP Ariba
+---
+
+import Overview from "/snippets/overview.mdx"
+
+<Overview />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | Not required | Free developer account available at [developer.ariba.com](https://developer.ariba.com). |
+| Paid test account | May be required | Sandbox environments may require partnership. |
+| Partnership | May be required | Required for production access to customer data. |
+| App review | Not required | API access auto-approved within 12 hours. |
+| Security audit | May be required | May be required for enterprise deployments. |
+
+
+## Setup guide
+
+### Prerequisites
+- SAP Ariba Developer Portal account
+- Access to an SAP Ariba realm (test or production)
+
+### Step 1: Register Your Application
+1. Log in to the [SAP Ariba Developer Portal](https://developer.ariba.com)
+2. Navigate to **Manage > Applications**
+3. Click **Create New Application**
+4. Fill in the required application details
+5. Request API access for your needed APIs (e.g., Operational Reporting, Supplier Data)
+6. Wait for auto-approval (typically 12 hours)
+
+### Step 2: Obtain OAuth Credentials
+1. Navigate to your application's **Settings**
+2. Copy your **OAuth Client ID**
+3. Generate and copy your **OAuth Client Secret**
+4. Copy your **Application Key (API Key)**
+
+### Step 3: Configure in Nango
+Use the credentials obtained above when connecting to SAP Ariba through Nango.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-ariba.mdx)</Note>
+
+
+## Useful links
+
+- [SAP Ariba Developer Portal](https://developer.ariba.com)
+- [OAuth Authentication Guide](https://help.sap.com/docs/ariba-apis/help-for-sap-ariba-developer-portal/use-of-api-gateway-and-oauth-to-authenticate-applications)
+- [SAP Ariba APIs Documentation](https://help.sap.com/docs/ariba-apis)
+- [API Reference](https://developer.ariba.com/api)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-ariba.mdx)</Note>
+
+## API gotchas
+
+- SAP Ariba uses a custom OAuth 2.0 grant type `openapi_2lo` instead of standard `client_credentials`.
+- All API requests require BOTH an OAuth Bearer token AND an `apikey` header.
+- The `realm` parameter is required for most API endpoints and identifies your organization.
+- Different regions have different API endpoints (US, EU, Australia). Use the correct region suffix:
+  - US: leave empty
+  - EU: `-eu`
+  - Australia: `.au.cloud`
+- Rate limits are strict for reporting APIs (1 req/sec, 2 req/min, 8 req/hour, 40 req/day for job submissions).
+- Some APIs are asynchronous and require polling for results via "view templates".
+- To refresh the token, simply use `nango.getConnection()` to generate a new set of tokens.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/sap-ariba.mdx)</Note>
+
+<Card title="Connect to SAP Ariba" icon="link" href="/integrations/all/sap-ariba/connect" horizontal>
+  Guide to connect to SAP Ariba using Connect UI
+</Card>
