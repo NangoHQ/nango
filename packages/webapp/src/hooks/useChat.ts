@@ -9,8 +9,25 @@ export type AgentEvent =
     | { eventType: 'agent.lifecycle'; type: 'progress'; message: string }
     | { eventType: 'agent.session.started'; type: 'session'; session_id: string }
     | { eventType: 'agent.delta'; type: 'progress'; messageId: string; message: string }
-    | { eventType: 'agent.tool.updated'; type: 'debug'; messageId: string; message: string }
-    | { eventType: 'agent.message.updated'; type: 'debug'; messageId: string; message: string }
+    | {
+          eventType: 'agent.tool.updated';
+          type: 'debug';
+          messageId: string;
+          tool: string;
+          status: 'pending' | 'running' | 'completed' | 'error';
+          input: Record<string, unknown>;
+          title?: string;
+          duration?: number;
+      }
+    | {
+          eventType: 'agent.message.updated';
+          type: 'debug';
+          messageId: string;
+          tokens: { input: number; output: number; total: number };
+          cost: number;
+          finish: string;
+          duration: number;
+      }
     | { eventType: 'agent.question'; type: 'question'; question_id: string; message: string; options?: string[] | undefined }
     | { eventType: 'agent.permission.requested'; type: 'question'; question_id: string; permission: string; patterns: string[] }
     | { eventType: 'agent.session.idle'; type: 'done'; message: string }
@@ -51,11 +68,24 @@ function parseEvent(eventType: AgentEventName, data: Record<string, unknown>): A
         case 'agent.tool.updated': {
             const tool = data['tool'] as string;
             const state = data['state'] as Record<string, unknown>;
-            return { eventType, type: 'debug', messageId: data['messageId'] as string, message: `${tool}: ${state?.['status'] as string}` };
+            const status = state['status'] as 'pending' | 'running' | 'completed' | 'error';
+            const input = (state['input'] ?? {}) as Record<string, unknown>;
+            const title = state['title'] as string | undefined;
+            const time = state['time'] as { start?: number; end?: number } | undefined;
+            const duration = time?.start && time?.end ? time.end - time.start : undefined;
+            return { eventType, type: 'debug', messageId: data['messageId'] as string, tool, status, input, title, duration };
         }
         case 'agent.message.updated': {
             const msg = data['message'] as Record<string, unknown>;
-            return { eventType, type: 'debug', messageId: msg['id'] as string, message: JSON.stringify(msg) };
+            const time = msg['time'] as { created: number; completed?: number } | undefined;
+            if (msg['role'] !== 'assistant' || !time?.completed) {
+                return null;
+            }
+            const tokens = (msg['tokens'] as { input: number; output: number; total: number }) ?? { input: 0, output: 0, total: 0 };
+            const cost = (msg['cost'] as number) ?? 0;
+            const finish = (msg['finish'] as string) ?? '';
+            const duration = time.completed - time.created;
+            return { eventType, type: 'debug', messageId: msg['id'] as string, tokens, cost, finish, duration };
         }
         case 'agent.question':
             return {
@@ -134,11 +164,13 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
                 setStatus('awaiting_answer');
             } else if (eventType === 'agent.session.idle') {
                 setStatus('finished');
-                es.close();
+                eventSourceRef.current?.close();
+                eventSourceRef.current = null;
             } else if (eventType === 'agent.error') {
                 setError(data['error'] instanceof Object ? JSON.stringify(data['error']) : (data['error'] as string));
                 setStatus('error');
-                es.close();
+                eventSourceRef.current?.close();
+                eventSourceRef.current = null;
             }
         };
 
@@ -161,7 +193,8 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
         es.onerror = () => {
             setError('Connection lost');
             setStatus('error');
-            es.close();
+            eventSourceRef.current?.close();
+            eventSourceRef.current = null;
         };
     }, []);
 
@@ -206,7 +239,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
                 return;
             }
 
-            const res = await apiFetch(`/api/v1/agent/session/${sessionToken}/answer`, {
+            const res = await apiFetch(`/api/v1/agent/session/${sessionToken}/answer?env=${env}`, {
                 method: 'POST',
                 body: JSON.stringify({ question_id: pendingQuestion.question_id, response })
             });

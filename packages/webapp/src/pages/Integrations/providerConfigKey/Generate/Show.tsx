@@ -1,10 +1,11 @@
-import { ArrowUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 import { useKeyPress } from 'react-use';
 
 import { ChatComponent } from './chatComponents/ChatComponent';
+import { Button } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useChat } from '@/hooks/useChat';
@@ -13,6 +14,8 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
+
+const STICK_THRESHOLD = 40;
 
 export const GenerateFunction: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -36,6 +39,33 @@ export const GenerateFunction: React.FC = () => {
         const t = setTimeout(() => setPositionedAtBottom(true), 300);
         return () => clearTimeout(t);
     }, [inputVisible]);
+
+    // Scroll-to-bottom sticky logic
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const isSticky = useRef(true);
+    const [showScrollButton, setShowScrollButton] = useState(false);
+
+    const scrollToBottom = (smooth = true) => {
+        const el = scrollRef.current;
+        if (!el) return;
+        el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'instant' });
+    };
+
+    const handleScroll = () => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+        const atBottom = distanceFromBottom <= STICK_THRESHOLD;
+        isSticky.current = atBottom;
+        setShowScrollButton(!atBottom);
+    };
+
+    // Auto-scroll when new events arrive if sticky
+    useEffect(() => {
+        if (isSticky.current) {
+            scrollToBottom(false);
+        }
+    }, [events]);
 
     const handleSubmit = () => {
         if (!prompt.trim() || isLocked) return;
@@ -81,22 +111,51 @@ export const GenerateFunction: React.FC = () => {
                 <title>Generate function - Nango</title>
             </Helmet>
 
-            {/* Gradient overlays - hidden on initial idle state */}
-            {status !== 'idle' && (
-                <>
-                    <div className="pointer-events-none absolute top-0 left-0 right-0 h-16 z-10 bg-gradient-to-b from-black to-transparent" />
-                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-36 z-10 bg-gradient-to-t from-black to-transparent" />
-                </>
-            )}
-
             {/** Chat container - takes full size so scrollbar sits at the far right */}
-            <div className="w-full h-full pb-36 pt-12 flex items-start justify-center overflow-y-auto">
+            <div ref={scrollRef} onScroll={handleScroll} className="w-full h-full overflow-y-auto">
+                {/* Top gradient - sticky inside scroll container so scrollbar renders above it */}
+                {status !== 'idle' && (
+                    <div className="sticky top-0 z-10 h-0 w-full pointer-events-none">
+                        <div className="h-16 bg-gradient-to-b from-black to-transparent" />
+                    </div>
+                )}
+
                 {/* Chat messages */}
-                <div className="flex-1 w-full max-w-2xl flex flex-col gap-4">
-                    {displayEvents.map((event, i) => (
-                        <ChatComponent key={i} event={event} isLast={i === displayEvents.length - 1} onAnswer={(response) => void sendAnswer(response)} />
-                    ))}
+                <div className="pt-12 pb-36 w-full flex items-start justify-center">
+                    <div className="flex-1 w-full max-w-2xl flex flex-col gap-4">
+                        {displayEvents.map((event, i) => (
+                            <ChatComponent key={i} event={event} isLast={i === displayEvents.length - 1} onAnswer={(response) => void sendAnswer(response)} />
+                        ))}
+                    </div>
                 </div>
+
+                {/* Bottom gradient - sticky inside scroll container so scrollbar renders above it */}
+                {status !== 'idle' && (
+                    <div className="sticky bottom-0 z-10 h-0 w-full pointer-events-none">
+                        <div className="h-36 -mt-36 bg-gradient-to-t from-black to-transparent" />
+                    </div>
+                )}
+            </div>
+
+            {/* Scroll-to-bottom button */}
+            <div
+                className={cn(
+                    'absolute left-1/2 -translate-x-1/2 z-30 transition-all duration-200',
+                    positionedAtBottom ? 'bottom-24' : 'bottom-16',
+                    showScrollButton && status !== 'idle' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                )}
+            >
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                        scrollToBottom();
+                        isSticky.current = true;
+                        setShowScrollButton(false);
+                    }}
+                >
+                    <ArrowDown /> scroll to bottom
+                </Button>
             </div>
 
             {/* Prompt input — centered on first message, pinned to bottom after */}

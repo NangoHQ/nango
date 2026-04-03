@@ -1,12 +1,10 @@
 import { DeltaChatComponent } from './DeltaChatComponent';
 import { ErrorChatComponent } from './ErrorChatComponent';
 import { LifecycleChatComponent } from './LifecycleChatComponent';
-import { MessageUpdatedChatComponent } from './MessageUpdatedChatComponent';
 import { PermissionRequestedChatComponent } from './PermissionRequestedChatComponent';
 import { QuestionChatComponent } from './QuestionChatComponent';
 import { SessionIdleChatComponent } from './SessionIdleChatComponent';
 import { SessionStartedChatComponent } from './SessionStartedChatComponent';
-import { ToolUpdatedChatComponent } from './ToolUpdatedChatComponent';
 import { UserMessageChatComponent } from './UserMessageChatComponent';
 
 import type { AgentEvent } from '@/hooks/useChat';
@@ -29,12 +27,6 @@ export const ChatComponent: React.FC<ChatComponentProps> = ({ event, isLast, onA
         case 'agent.delta':
             inner = <DeltaChatComponent message={event.message} />;
             break;
-        case 'agent.tool.updated':
-            inner = <ToolUpdatedChatComponent message={event.message} />;
-            break;
-        case 'agent.message.updated':
-            inner = <MessageUpdatedChatComponent message={event.message} />;
-            break;
         case 'agent.question':
             inner = <QuestionChatComponent message={event.message} options={event.options} onAnswer={onAnswer} />;
             break;
@@ -50,6 +42,14 @@ export const ChatComponent: React.FC<ChatComponentProps> = ({ event, isLast, onA
         case 'user.message':
             inner = <UserMessageChatComponent message={event.message} />;
             break;
+        default:
+            return null;
+        // case 'agent.tool.updated':
+        //     inner = <ToolUpdatedChatComponent tool={event.tool} status={event.status} input={event.input} title={event.title} duration={event.duration} />;
+        //     break;
+        // case 'agent.message.updated':
+        //     inner = <MessageUpdatedChatComponent tokens={event.tokens} cost={event.cost} finish={event.finish} duration={event.duration} />;
+        //     break;
     }
     return <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">{inner}</div>;
 };
