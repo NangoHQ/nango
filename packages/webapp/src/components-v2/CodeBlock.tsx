@@ -52,7 +52,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, ico
                 <span className="text-text-tertiary text-s">{title}</span>
                 <div className="flex gap-2 items-center">
                     {displayLanguage && (
-                        <Badge variant="gray">
+                        <Badge variant="gray" className="uppercase">
                             {icon && icon}
                             {displayLanguage}
                         </Badge>

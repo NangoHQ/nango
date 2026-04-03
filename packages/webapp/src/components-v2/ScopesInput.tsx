@@ -79,7 +79,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({ scopesString, onChange
                     {loading ? (
                         <Loader2 className="animate-spin" />
                     ) : isSharedCredentials ? (
-                        <Badge variant="gray">Nango provided</Badge>
+                        <Badge variant="gray" className="uppercase">
+                            Nango provided
+                        </Badge>
                     ) : (
                         !readOnly && (
                             <Button variant="ghost" size="icon" onClick={() => onSubmit()}>

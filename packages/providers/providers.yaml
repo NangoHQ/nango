@@ -4211,20 +4211,27 @@ connectwise-psa:
     auth_mode: BASIC
     webhook_routing_script: connectwisePsaWebhookRouting
     proxy:
-        base_url: https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
+        base_url: https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0
         headers:
             accept: application/vnd.connectwise.com+json; version=${connectionConfig.apiVersion}
             clientid: ${connectionConfig.clientId}
-    docs: https://nango.dev/docs/integrations/all/connectwise-psa
+    docs: https://nango.dev/docs/api-integrations/connectwise-psa
+    docs_connect: https://nango.dev/docs/api-integrations/connectwise-psa/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The full ConnectWise PSA hostname.
+            example: api-na.myconnectwise.net
+            format: hostname
+            prefix: https://
+            suffix: /v4_6_release/apis/3.0
         subdomain:
             type: string
-            title: ConnectWise PSA subdomain
-            description: The subdomain to connect to ConnectWise PSA
-            pattern: '^api-(au|eu|na)$'
-            example: api-au
-            suffix: .myconnectwise.net
-            prefix: https://
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
         apiVersion:
             type: string
             title: Api version
@@ -15209,6 +15216,40 @@ semrush:
             title: API Key
             description: Your Semrush API key
             doc_section: '#step-1-finding-your-api-key'
+
+sentinelone:
+    display_name: SentinelOne
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: ApiToken ${apiKey}
+            accept: application/json
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /web/api/v2.1/sites?limit=1
+    docs: https://nango.dev/docs/api-integrations/sentinelone
+    docs_connect: https://nango.dev/docs/api-integrations/sentinelone/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your SentinelOne management console
+            format: hostname
+            prefix: https://
+            example: your-tenant.sentinelone.net
+            doc_section: '#step-2-find-your-hostname'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your SentinelOne service user
+            doc_section: '#step-1-generate-your-api-token'
 
 sentry:
     display_name: Sentry
