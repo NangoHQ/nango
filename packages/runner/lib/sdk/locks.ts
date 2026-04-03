@@ -3,8 +3,10 @@ import crypto from 'node:crypto';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import type { Locking } from '@nangohq/kvstore';
+import type { KVStore } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
+
+const LOCK_STORAGE_PREFIX = 'runner:lock:';
 
 interface Lock {
     key: string;
@@ -20,57 +22,85 @@ export interface Locks {
 }
 
 export class KVLocks implements Locks {
-    private locking: Locking;
+    private store: KVStore;
 
-    constructor(locking: Locking) {
-        this.locking = locking;
+    constructor(store: KVStore) {
+        this.store = store;
     }
 
     private createHash(key: string): string {
         return crypto.createHash('sha256').update(key).digest().subarray(0, 16).toString('base64url');
     }
 
-    private getLockKey(owner: string, key?: string): string {
-        return key ? `runner:${owner}:${this.createHash(key)}` : `runner:${owner}`;
+    /** Stable KV key for a logical lock — mutual exclusion is per logical key, not per owner. */
+    private storageKey(logicalKey: string): string {
+        return `${LOCK_STORAGE_PREFIX}${this.createHash(logicalKey)}`;
+    }
+
+    private validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Result<boolean> {
+        if (!owner || owner.length === 0 || owner.length > 255) {
+            return Err('Invalid lock owner (must be between 1 and 255 characters)');
+        }
+        if (!key || key.length === 0 || key.length > 255) {
+            return Err('Invalid lock key (must be between 1 and 255 characters)');
+        }
+        if (ttlMs <= 0) {
+            return Err('Invalid lock TTL (must be greater than 0)');
+        }
+        return Ok(true);
     }
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
+        const validation = this.validateTryAcquireInputs(owner, key, ttlMs);
+        if (validation.isErr()) {
+            return validation;
+        }
+
+        const sk = this.storageKey(key);
         try {
-            await this.locking.tryAcquire(lockKey, ttlMs, 1000);
+            // Same-owner TTL refresh (atomic). No leading get — avoids a stale read before refresh.
+            if (await this.store.setIfValueEquals(sk, owner, owner, ttlMs)) {
+                return Ok(true);
+            }
+
+            await this.store.set(sk, owner, { canOverride: false, ttlMs });
             return Ok(true);
         } catch (err: any) {
-            return Err(new Error(`Error acquiring lock for key ${lockKey}`, { cause: err }));
+            if (err instanceof Error && err.message === 'set_key_already_exists') {
+                return Ok(false);
+            }
+            return Err(new Error(`Error acquiring lock for key ${key}`, { cause: err }));
         }
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
+        const sk = this.storageKey(key);
         try {
-            await this.locking.release({ key: lockKey });
-            return Ok(true);
+            const deleted = await this.store.deleteIfValueEquals(sk, owner);
+            return Ok(deleted);
         } catch (err: any) {
-            return Err(new Error(`Error releasing lock for key ${lockKey}`, { cause: err }));
+            return Err(new Error(`Error releasing lock for key ${key}`, { cause: err }));
         }
     }
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
-        const lockKey = this.getLockKey(owner);
         try {
-            await this.locking.releaseAll(lockKey);
+            for await (const sk of this.store.scan(`${LOCK_STORAGE_PREFIX}*`)) {
+                await this.store.deleteIfValueEquals(sk, owner);
+            }
             return Ok(undefined);
         } catch (err: any) {
-            return Err(new Error(`Failed to release all locks for key ${lockKey}`, { cause: err }));
+            return Err(new Error('Failed to release all locks for owner', { cause: err }));
         }
     }
 
     public async hasLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
+        const sk = this.storageKey(key);
         try {
-            const hasLock = await this.locking.hasLock(lockKey);
-            return Ok(hasLock);
+            const holder = await this.store.get(sk);
+            return Ok(holder === owner);
         } catch (err: any) {
-            return Err(new Error(`Failed to check for lock with key ${lockKey}`, { cause: err }));
+            return Err(new Error(`Failed to check for lock with key ${key}`, { cause: err }));
         }
     }
 }

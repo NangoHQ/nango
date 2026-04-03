@@ -46,6 +46,30 @@ export class InMemoryKVStore implements KVStore {
         return Promise.reject(new Error('set_key_already_exists'));
     }
 
+    public async setIfValueEquals(key: string, expectedValue: string, newValue: string, ttlMs: number): Promise<boolean> {
+        const res = this.store.get(key);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.set(key, { value: newValue, timestamp: Date.now(), ttlMs: ttlMs || 0 });
+        return Promise.resolve(true);
+    }
+
+    public async deleteIfValueEquals(key: string, expectedValue: string): Promise<boolean> {
+        const res = this.store.get(key);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.delete(key);
+        return Promise.resolve(true);
+    }
+
     public async delete(key: string): Promise<void> {
         this.store.delete(key);
         return Promise.resolve();
