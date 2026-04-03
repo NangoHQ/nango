@@ -32,6 +32,30 @@ export const ENVS = z.object({
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
+        .string()
+        .transform((s, ctx) => {
+            if (s.trim() === '') {
+                return [];
+            }
+            try {
+                const parsed = JSON.parse(s);
+                if (!Array.isArray(parsed) || !parsed.every((item: unknown) => typeof item === 'string')) {
+                    ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a JSON array of strings`);
+                    return z.NEVER;
+                }
+                return parsed;
+            } catch {
+                ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a valid JSON array of strings`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z.array(z.string()).transform((arr) => {
+                return arr.map((e) => e.trim()).filter((e) => e.length > 0);
+            })
+        )
+        .default([]),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),

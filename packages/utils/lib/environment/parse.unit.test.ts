@@ -114,4 +114,28 @@ describe('parse', () => {
             ]
         });
     });
+
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to empty array', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+    });
+
+    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON array and trim entries', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([' 169.254.169.254 ', 'localhost', ''])
+        });
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'localhost']);
+    });
+
+    it('should throw on invalid NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: 'not-json' });
+        }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
+    });
+
+    it('should throw when NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST is not a string array', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([1, 2]) });
+        }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
+    });
 });
