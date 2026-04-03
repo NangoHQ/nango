@@ -23,6 +23,7 @@ import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
 
 import type { PlanDefinitionList } from '../types.js';
+import type { StripeError } from '@/utils/stripe.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
@@ -230,6 +231,9 @@ const PlanChangeDialog: React.FC<{
             if (!isControlled) {
                 setInternalOpen(value);
             }
+            if (!value) {
+                setError(null);
+            }
             onOpenChange?.(value);
         },
         [isControlled, onOpenChange]
@@ -237,8 +241,25 @@ const PlanChangeDialog: React.FC<{
 
     const [loading, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const refInterval = useRef<NodeJS.Timeout>();
+
+    /**
+     * Extracts a `card_error` from the Stripe error or fallback to `defaultError`.
+     *
+     * @param error - The `StripeError` object returned from `confirmCardPayment`
+     * @param defaultError - Fallback message when the error type is not user-actionable
+     * @returns `card_error` message if present, otherwise the `defaultError`
+     */
+    const getStripeCardErrorOrDefault = (error: StripeError, defaultError: string = 'An error occurred while validating your payment.') => {
+        switch (error.type) {
+            case 'card_error':
+                return error.message ?? defaultError;
+            default:
+                return defaultError;
+        }
+    };
 
     const onUpgrade = async () => {
         if (!selectedPlan?.plan.code) {
@@ -247,11 +268,12 @@ const PlanChangeDialog: React.FC<{
 
         setLoading(true);
         setLongWait(false);
+        setError(null);
 
         const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.code });
         if ('error' in res.json) {
             setLoading(false);
-            toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
+            setError(res.json.error.message ?? 'An error occurred. Please try again.');
             return;
         }
 
@@ -261,8 +283,8 @@ const PlanChangeDialog: React.FC<{
             const result = await stripe!.confirmCardPayment(res.json.data.paymentIntent.client_secret);
 
             if (result.error) {
-                console.error({ error: result.error });
-                toast({ title: 'An error occurred while validating your payment', variant: 'error' });
+                setLoading(false);
+                setError(getStripeCardErrorOrDefault(result.error));
                 return;
             } else if (result.paymentIntent.status === 'succeeded') {
                 console.log('payment success', result);
@@ -368,6 +390,11 @@ const PlanChangeDialog: React.FC<{
                         <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                     )}
                 </div>
+                {error && (
+                    <Alert variant="error">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="secondary">Cancel</Button>
