@@ -1,13 +1,17 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import { connectionService } from '@nangohq/shared';
+import { connectionService, getSyncsByConnectionIds } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { GetConnections } from '@nangohq/types';
+
+const orchestrator = getOrchestrator();
 
 const queryStringValidation = z
     .object({
@@ -45,9 +49,38 @@ export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
         withError: queryString.withError
     });
 
+    const pausedSyncsByConnection = new Map<number, string[]>();
+    const connectionIds = connections.map((data) => data.connection.id);
+    const span = tracer.scope().active();
+    const syncsResult = await getSyncsByConnectionIds({ connectionIds });
+    if (syncsResult.isErr()) {
+        span?.setTag('error', syncsResult.error);
+    } else {
+        const syncs = syncsResult.value;
+        if (syncs.length > 0) {
+            const scheduleResult = await orchestrator.searchSchedules(syncs.map((s) => ({ syncId: s.id, environmentId: environment.id })));
+            if (scheduleResult.isErr()) {
+                span?.setTag('error', scheduleResult.error);
+            } else {
+                for (const sync of syncs) {
+                    if (scheduleResult.value.get(sync.id)?.state === 'PAUSED') {
+                        const existing = pausedSyncsByConnection.get(sync.nango_connection_id) ?? [];
+                        pausedSyncsByConnection.set(sync.nango_connection_id, [...existing, sync.name]);
+                    }
+                }
+            }
+        }
+    }
+
     res.status(200).send({
         data: connections.map((data) => {
-            return connectionSimpleToApi({ data: data.connection, provider: data.provider, activeLog: data.active_logs, endUser: data.end_user });
+            return connectionSimpleToApi({
+                data: data.connection,
+                provider: data.provider,
+                activeLog: data.active_logs,
+                endUser: data.end_user,
+                pausedSyncs: pausedSyncsByConnection.get(data.connection.id) ?? []
+            });
         })
     });
 });
