@@ -34,6 +34,9 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -227,6 +230,11 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessions
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
+
+publicAPI.use('/remote-function', jsonContentTypeMiddleware);
+publicAPI.route('/remote-function/compile').post(apiAuth, postRemoteFunctionCompile);
+publicAPI.route('/remote-function/dryrun').post(apiAuth, postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/deploy').post(apiAuth, postRemoteFunctionDeploy);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);

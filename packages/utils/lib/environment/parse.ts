@@ -504,6 +504,14 @@ export const ENVS = z.object({
     NANGO_WEBHOOK_CIRCUIT_BREAKER_COOLDOWN_DURATION_SECS: z.coerce.number().optional().default(60),
     NANGO_WEBHOOK_CIRCUIT_BREAKER_AUTO_RESET_SECS: z.coerce.number().optional().default(3600),
 
+    // ----- Agent Builder
+    SANDBOX_API_KEY: z.string().optional(),
+    SANDBOX_COMPILER_TEMPLATE: z.string().optional().default('nango-sf-compiler'),
+    SANDBOX_AGENT_TEMPLATE: z.string().optional().default('nango-opencode-agent'),
+    AGENT_RUNTIME: z.enum(['e2b', 'local']).optional().default('local'),
+    LOCAL_AGENT_IMAGE: z.string().optional().default('nango-local-agent'),
+    LOCAL_COMPILER_IMAGE: z.string().optional().default('nango-local-compiler'),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),
