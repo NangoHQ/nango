@@ -348,6 +348,46 @@ describe('Connection service integration tests', () => {
         });
     });
 
+    describe('upsertAuthConnection', () => {
+        it('should preserve existing tags when called with empty tags (reconnect without tags)', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createConfigSeed(env, 'github', 'github');
+
+            const connection = await createConnectionSeed({ env, provider: 'github', tags: { connection_type: 'pull' } });
+
+            const [result] = await connectionService.upsertAuthConnection({
+                connectionId: connection.connection_id,
+                providerConfigKey: 'github',
+                credentials: { type: 'API_KEY', apiKey: 'new-token' },
+                config,
+                environment: env,
+                tags: {}
+            });
+
+            const updated = await connectionService.getConnectionById(result!.connection.id);
+            expect(updated?.tags).toStrictEqual({ connection_type: 'pull' });
+        });
+
+        it('should update tags when new non-empty tags are provided', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createConfigSeed(env, 'github', 'github');
+
+            const connection = await createConnectionSeed({ env, provider: 'github', tags: { connection_type: 'pull' } });
+
+            const [result] = await connectionService.upsertAuthConnection({
+                connectionId: connection.connection_id,
+                providerConfigKey: 'github',
+                credentials: { type: 'API_KEY', apiKey: 'new-token' },
+                config,
+                environment: env,
+                tags: { connection_type: 'push' }
+            });
+
+            const updated = await connectionService.getConnectionById(result!.connection.id);
+            expect(updated?.tags).toStrictEqual({ connection_type: 'push' });
+        });
+    });
+
     describe('paginate', () => {
         it('should paginate through connections', async () => {
             const env = await createEnvironmentSeed();
