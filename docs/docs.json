@@ -724,6 +724,7 @@
               "integrations/all/productboard",
               "api-integrations/procore",
               "api-integrations/provenexpert",
+              "api-integrations/prtg-classic",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
               "api-integrations/quentn",

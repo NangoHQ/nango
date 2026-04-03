@@ -13295,6 +13295,38 @@ prospeo:
             pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-your-api-key'
 
+prtg-classic:
+    display_name: PRTG Classic
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.host}
+        query:
+            apitoken: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/table.json?content=sensors&count=1
+    docs: https://nango.dev/docs/api-integrations/prtg-classic
+    docs_connect: https://nango.dev/docs/api-integrations/prtg-classic/connect
+    connection_config:
+        host:
+            type: string
+            title: Instance Host
+            description: The host of your PRTG instance
+            pattern: '^[A-Za-z0-9.-]+(:\d+)?$'
+            example: monitor.example.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-instance-host'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your PRTG account
+            doc_section: '#step-2-finding-your-api-key'
+
 private-api-bearer:
     display_name: Private API (Bearer Auth)
     categories:
