@@ -12,7 +12,7 @@ jobs:
         runs-on: ubuntu-latest
         # Only run for trusted authors, blocks external contributors
         if: >-
-            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR","CONTRIBUTOR"]'),
             github.event.pull_request.author_association)
         steps:
             - name: Checkout
