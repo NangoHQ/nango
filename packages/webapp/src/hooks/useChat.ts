@@ -8,9 +8,9 @@ import type { AgentEventName, PostAgentSessionStart } from '@nangohq/types';
 export type AgentEvent =
     | { eventType: 'agent.lifecycle'; type: 'progress'; message: string }
     | { eventType: 'agent.session.started'; type: 'session'; session_id: string }
-    | { eventType: 'agent.delta'; type: 'progress'; message: string }
-    | { eventType: 'agent.tool.updated'; type: 'debug'; message: string }
-    | { eventType: 'agent.message.updated'; type: 'debug'; message: string }
+    | { eventType: 'agent.delta'; type: 'progress'; messageId: string; message: string }
+    | { eventType: 'agent.tool.updated'; type: 'debug'; messageId: string; message: string }
+    | { eventType: 'agent.message.updated'; type: 'debug'; messageId: string; message: string }
     | { eventType: 'agent.question'; type: 'question'; question_id: string; message: string; options?: string[] | undefined }
     | { eventType: 'agent.permission.requested'; type: 'question'; question_id: string; permission: string; patterns: string[] }
     | { eventType: 'agent.session.idle'; type: 'done'; message: string }
@@ -45,13 +45,18 @@ function parseEvent(eventType: AgentEventName, data: Record<string, unknown>): A
         case 'agent.lifecycle':
             return { eventType, type: 'progress', message: data['message'] as string };
         case 'agent.session.started':
-            return { eventType, type: 'session', session_id: data['session_id'] as string };
+            return { eventType, type: 'session', session_id: data['sessionId'] as string };
         case 'agent.delta':
-            return { eventType, type: 'progress', message: data['message'] as string };
-        case 'agent.tool.updated':
-            return { eventType, type: 'debug', message: data['message'] as string };
-        case 'agent.message.updated':
-            return { eventType, type: 'debug', message: data['message'] as string };
+            return { eventType, type: 'progress', messageId: data['messageId'] as string, message: data['delta'] as string };
+        case 'agent.tool.updated': {
+            const tool = data['tool'] as string;
+            const state = data['state'] as Record<string, unknown>;
+            return { eventType, type: 'debug', messageId: data['messageId'] as string, message: `${tool}: ${state?.['status'] as string}` };
+        }
+        case 'agent.message.updated': {
+            const msg = data['message'] as Record<string, unknown>;
+            return { eventType, type: 'debug', messageId: msg['id'] as string, message: JSON.stringify(msg) };
+        }
         case 'agent.question':
             return {
                 eventType,
@@ -71,7 +76,7 @@ function parseEvent(eventType: AgentEventName, data: Record<string, unknown>): A
         case 'agent.session.idle':
             return { eventType, type: 'done', message: data['message'] as string };
         case 'agent.error':
-            return { eventType, type: 'error', message: data['message'] as string };
+            return { eventType, type: 'error', message: data['error'] instanceof Object ? JSON.stringify(data['error']) : (data['error'] as string) };
     }
 }
 
@@ -99,7 +104,28 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
             const data = JSON.parse(e.data as string) as Record<string, unknown>;
             const event = parseEvent(eventType, data);
             if (event) {
-                setEvents((prev) => [...prev, event]);
+                setEvents((prev) => {
+                    if (event.eventType === 'agent.delta') {
+                        for (let i = prev.length - 1; i >= 0; i--) {
+                            const ev = prev[i];
+                            if (ev.eventType === 'agent.delta' && ev.messageId === event.messageId) {
+                                const updated = [...prev];
+                                updated[i] = { ...ev, message: ev.message + event.message };
+                                return updated;
+                            }
+                        }
+                    } else if (event.eventType === 'agent.tool.updated' || event.eventType === 'agent.message.updated') {
+                        for (let i = prev.length - 1; i >= 0; i--) {
+                            const ev = prev[i];
+                            if (ev.eventType === event.eventType && ev.messageId === event.messageId) {
+                                const updated = [...prev];
+                                updated[i] = event;
+                                return updated;
+                            }
+                        }
+                    }
+                    return [...prev, event];
+                });
             }
 
             if (eventType === 'agent.question' || eventType === 'agent.permission.requested') {
@@ -110,7 +136,7 @@ export function useChat({ env, integrationId, connectionId }: UseChatParams): Us
                 setStatus('finished');
                 es.close();
             } else if (eventType === 'agent.error') {
-                setError(data['message'] as string);
+                setError(data['error'] instanceof Object ? JSON.stringify(data['error']) : (data['error'] as string));
                 setStatus('error');
                 es.close();
             }
