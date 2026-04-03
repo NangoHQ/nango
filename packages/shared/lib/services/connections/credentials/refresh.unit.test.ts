@@ -1,7 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { shouldRefreshCredentials } from './refresh.js';
+import * as kvstoreModule from '@nangohq/kvstore';
+import { LockTimeoutError } from '@nangohq/kvstore';
+
+import { refreshCredentialsIfNeeded, shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
+import connectionService from '../../connection.service.js';
 import { REFRESH_MARGIN_MS } from '../utils.js';
 
 import type { Config } from '../../../models/index.js';
@@ -151,5 +155,53 @@ describe('shouldRefreshCredentials', () => {
 
             expect(res).toStrictEqual({ should: false, reason: 'no_expires_at' });
         });
+    });
+});
+
+describe('refreshCredentialsIfNeeded', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should return refresh_token_lock_timeout (503) when Redis lock times out, not refresh_token_external_error (400)', async () => {
+        const connection = getTestConnection({
+            connection_id: 'test-conn',
+            environment_id: 42,
+            provider_config_key: 'airtable',
+            credentials: {
+                type: 'OAUTH2',
+                access_token: 'old_token',
+                refresh_token: 'old_refresh',
+                expires_at: new Date(Date.now() - 1000),
+                raw: {}
+            }
+        });
+
+        vi.spyOn(connectionService, 'getConnection').mockResolvedValue({
+            success: true,
+            error: null,
+            response: connection
+        } as any);
+
+        vi.spyOn(kvstoreModule, 'getLocking').mockResolvedValue({
+            tryAcquire: vi.fn().mockRejectedValue(new LockTimeoutError('lock:refresh:42:airtable:test-conn', 12000)),
+            release: vi.fn().mockResolvedValue(undefined)
+        } as any);
+
+        const res = await refreshCredentialsIfNeeded({
+            connectionId: 'test-conn',
+            environmentId: 42,
+            environment_id: 42,
+            providerConfig: { unique_key: 'airtable', provider: 'airtable' } as Config,
+            provider: { auth_mode: 'OAUTH2', token_expiration_buffer: 0 } as ProviderOAuth2,
+            instantRefresh: false,
+            logCtx: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() } as any
+        });
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.type).toBe('refresh_token_lock_timeout');
+            expect(res.error.status).toBe(503);
+        }
     });
 });
