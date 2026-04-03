@@ -112,6 +112,11 @@ export interface OAuthAuthBody {
     scopes?: string | undefined;
 }
 
+export interface OAuth2CCAuthBody {
+    authType: Extract<AuthModeType, 'OAUTH2_CC'>;
+    scopes?: string | undefined;
+}
+
 export interface AppAuthBody {
     authType: Extract<AuthModeType, 'APP'>;
     appId?: string | undefined;
@@ -149,7 +154,14 @@ export interface InstallPluginAuthBody {
     password?: string | undefined;
 }
 
-export type IntegrationAuthBody = OAuthAuthBody | AppAuthBody | CustomAuthBody | MCPOAuth2AuthBody | MCPOAuth2GenericAuthBody | InstallPluginAuthBody;
+export type IntegrationAuthBody =
+    | OAuthAuthBody
+    | OAuth2CCAuthBody
+    | AppAuthBody
+    | CustomAuthBody
+    | MCPOAuth2AuthBody
+    | MCPOAuth2GenericAuthBody
+    | InstallPluginAuthBody;
 
 export type PostIntegration = Endpoint<{
     Method: 'POST';

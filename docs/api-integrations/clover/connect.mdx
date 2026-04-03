@@ -1,0 +1,44 @@
+---
+title: Clover - How do I link my account?
+sidebarTitle: Clover
+---
+
+# Overview
+
+To authenticate with Clover, you need:
+1. **Authorization Host** - The Clover authorization hostname for your region.
+2. **API Host** - The Clover API hostname for your region.
+
+This guide will walk you through finding the correct values based on your environment and region.
+
+### Prerequisites:
+
+- You must have a Clover merchant account or a sandbox developer account.
+
+### Instructions:
+
+#### Step 1: Identify your environment and region
+
+Use the table below to find the correct hostnames for your environment and region:
+
+| Environment | Region | Authorization Host (`authorizeHost`) | API Host (`apiHost`) |
+|-------------|--------|--------------------------------------|----------------------|
+| Sandbox | — | `sandbox.dev.clover.com` | `apisandbox.dev.clover.com` |
+| Production | North America | `www.clover.com` | `api.clover.com` |
+| Production | Europe | `www.eu.clover.com` | `api.eu.clover.com` |
+| Production | Latin America | `www.la.clover.com` | `api.la.clover.com` |
+
+- Use the **Sandbox** row while developing and testing your integration.
+- Use the **Production** row matching your merchant's region when going live.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have identified the correct hostnames:
+1. Open the form where you need to authenticate with Clover.
+2. Enter the **Authorization Host** and **API Host** in their respective fields.
+3. Submit the form to begin the OAuth flow and connect your Clover merchant account.
+
+<img src="/api-integrations/clover/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Clover.

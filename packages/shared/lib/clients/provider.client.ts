@@ -54,6 +54,7 @@ class ProviderClient {
             case 'fanvue':
             case 'heygen':
             case 'mercury':
+            case 'clover':
                 return true;
             default:
                 return false;
@@ -118,6 +119,8 @@ class ProviderClient {
                 return this.createHeyGenToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'mercury':
                 return this.createMercuryToken(tokenUrl, code, callBackUrl, codeVerifier);
+            case 'clover':
+                return this.createCloverToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -130,6 +133,7 @@ class ProviderClient {
 
         const credentials = connection.credentials;
         const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
+        const interpolatedRefreshUrl = provider.refresh_url ? makeUrl(provider.refresh_url, connection.connection_config) : null;
 
         if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin' && config.provider !== 'instagram') {
             throw new NangoError('missing_refresh_token');
@@ -215,6 +219,8 @@ class ProviderClient {
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'mercury':
                 return this.refreshMercuryToken(interpolatedTokenUrl.href, credentials.refresh_token!);
+            case 'clover':
+                return this.refreshCloverToken(interpolatedRefreshUrl!.href, credentials.refresh_token!, config.oauth_client_id);
             case 'heygen':
                 return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
             default:
@@ -1096,6 +1102,42 @@ class ProviderClient {
             throw new NangoError('mercury_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('mercury_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createCloverToken(tokenUrl: string, code: string, client_id: string, client_secret: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const response = await axios.post(tokenUrl, { client_id, client_secret, code }, { headers: { 'Content-Type': 'application/json' } });
+
+            if (response.status === 200 && response.data) {
+                const { access_token_expiration, ...rest } = response.data;
+                return {
+                    ...rest,
+                    expires_at: access_token_expiration
+                };
+            }
+
+            throw new NangoError('clover_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('clover_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshCloverToken(refreshUrl: string, refresh_token: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const response = await axios.post(refreshUrl, { client_id, refresh_token }, { headers: { 'Content-Type': 'application/json' } });
+
+            if (response.status === 200 && response.data) {
+                const { access_token_expiration, ...rest } = response.data;
+                return {
+                    ...rest,
+                    expires_at: access_token_expiration
+                };
+            }
+
+            throw new NangoError('clover_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('clover_refresh_token_request_error', stringifyError(err));
         }
     }
 

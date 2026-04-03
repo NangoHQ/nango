@@ -53,7 +53,13 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
     const onValueChange = async (newScopes: string[]) => {
         if (isSharedCredentials || readOnly) return;
         const countDifference = newScopes.length - scopes.length;
-        setLoading(true);
+
+        if (countDifference === 0) {
+            setInputValue('');
+            setLoading(false);
+            return;
+        }
+
         try {
             await onChange?.(newScopes.join(','), countDifference);
             setScopes(newScopes);
