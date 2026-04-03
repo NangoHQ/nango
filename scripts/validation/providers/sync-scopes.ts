@@ -506,8 +506,13 @@ async function runAgentMode(): Promise<void> {
         process.exit(1);
     }
 
-    const apiKey = getOpencodeApiKey(args.model);
-    freePort(args.port);
+    const [modelProvider] = args.model.split('/');
+    if (modelProvider !== 'opencode') {
+        throw new Error(`Unsupported model provider "${modelProvider}" in model "${args.model}". Supported: opencode.`);
+    }
+
+    const apiKey = getOpencodeApiKey();
+    checkPort(args.port);
 
     const opencodeConfig = {
         model: args.model,
@@ -515,7 +520,7 @@ async function runAgentMode(): Promise<void> {
             external_directory: 'deny',
             doom_loop: 'allow',
             read: { '*': 'allow' },
-            edit: { '*': 'allow' }
+            edit: { [providersScopesPath]: 'allow' }
         }
     };
 
@@ -663,12 +668,7 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
     return chunks;
 }
 
-function getOpencodeApiKey(model: string): string {
-    const [provider] = model.split('/');
-    if (provider !== 'opencode') {
-        throw new Error(`Unsupported provider "${provider}" from model "${model}". Supported provider: opencode.`);
-    }
-
+function getOpencodeApiKey(): string {
     const key = process.env['OPENCODE_API_KEY'] || process.env['OPENCODE_GO_API_KEY'];
     if (!key) {
         throw new Error('Missing OpenCode API key. Set OPENCODE_API_KEY (or OPENCODE_GO_API_KEY).');
@@ -676,20 +676,20 @@ function getOpencodeApiKey(model: string): string {
     return key;
 }
 
-function freePort(port: number): void {
+function checkPort(port: number): void {
     let pids: string;
     try {
         pids = execSync(`lsof -ti :${port}`, { encoding: 'utf-8' }).trim();
     } catch {
         return;
     }
-    for (const pid of pids.split('\n').filter(Boolean)) {
-        try {
-            process.kill(Number(pid), 'SIGTERM');
-        } catch {
-            // Ignore stale PIDs.
-        }
+    if (!pids) {
+        return;
     }
+    console.error(`Port ${port} is already in use (PID(s): ${pids.split('\n').filter(Boolean).join(', ')}).`);
+    console.error(`Kill the process manually and retry:`);
+    console.error(`  kill ${pids.split('\n').filter(Boolean).join(' ')}`);
+    process.exit(1);
 }
 
 function buildAgentPrompt(params: { providerNames: string[]; baseRef: string; providersYamlPath: string; providersScopesPath: string }): string {
