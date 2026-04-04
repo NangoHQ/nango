@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
+import { ProxyError, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
@@ -724,6 +724,46 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should use ConnectWise PSA custom hostname when provided', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { hostname: 'psa.example.com', subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://psa.example.com/v4_6_release/apis/3.0/api/test');
+    });
+
+    it('should keep ConnectWise PSA subdomain behavior when custom hostname is absent', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://api-na.myconnectwise.net/v4_6_release/apis/3.0/api/test');
+    });
+
     it('should handle Proxy base URL interpolation with hostname when connection configuration param is present', () => {
         const config = getDefaultProxy({
             provider: {
@@ -1015,6 +1055,41 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://my-secret-key.example.com/api/test');
+    });
+});
+
+describe('getAxiosConfiguration', () => {
+    it('should set beforeRedirect by default (headers are forwarded on redirect by default)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
+    });
+
+    it('should set beforeRedirect when forwardHeadersOnRedirect is false (to track metric)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            forwardHeadersOnRedirect: false
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
     });
 });
 

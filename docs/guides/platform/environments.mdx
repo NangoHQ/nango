@@ -19,13 +19,28 @@ Each environment in your Nango account is completely isolated with its own:
 Each Nango account comes with **dev** and **prod** environments by default. Additional environments are available depending on your [pricing plan](https://www.nango.dev/pricing).
 </Info>
 
+## Production environments
+
+Any environment can be designated as a production environment. This affects how team members interact with it based on their [role](/guides/platform/security#team-and-roles).
+
+**To mark an environment as production:**
+
+1. Open the environment settings (gear icon in the top navigation)
+2. Toggle the **Production environment** switch
+
+<Info>
+Only **Full Access** team members can toggle the production flag. Once an environment is marked as production, **Support** members get read-only access to it, and **Contributor** members lose access entirely.
+</Info>
+
+By default, the `prod` environment created with your account is already marked as production.
+
 ## Best practices
 
 **Mirror your application environments**
 
 We recommend creating Nango environments that match your application's deployment stages. For example:
 - Local development → dev environment
-- Staging → staging environment  
+- Staging → staging environment
 - Production → prod environment
 - Demo → demo environment
 

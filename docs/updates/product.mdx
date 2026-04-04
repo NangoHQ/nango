@@ -4,6 +4,74 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="March 27, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="34 new APIs in March">
+      - [Amplitude (MCP US)](/api-integrations/amplitude-mcp)
+      - [Avanan](/api-integrations/avanan)
+      - [Axiom](/api-integrations/axiom)
+      - [Bliro](/api-integrations/bliro)
+      - [Circleback (MCP)](/api-integrations/circleback-mcp)
+      - [Clay](/api-integrations/clay)
+      - [CleverReach](/api-integrations/cleverreach)
+      - [Clio](/api-integrations/clio)
+      - [Conta Azul](/api-integrations/conta-azul)
+      - [Front (API Key)](/api-integrations/front-api-key)
+      - [Google Contacts](/api-integrations/google-contacts)
+      - [Google Tasks](/api-integrations/google-tasks)
+      - [Heymarket](/api-integrations/heymarket)
+      - [KlickTipp](/api-integrations/klicktipp)
+      - [Lightspeed Retail (X-Series)](/api-integrations/lightspeed-retail)
+      - [Mailjet](/api-integrations/mailjet)
+      - [Microsoft PowerPoint](/api-integrations/microsoft-powerpoint)
+      - [Microsoft Word](/api-integrations/microsoft-word)
+      - [Pleo](/api-integrations/pleo)
+      - [ProvenExpert](/api-integrations/provenexpert)
+      - [Quentn](/api-integrations/quentn)
+      - [Reply.io](/api-integrations/reply-io)
+      - [Salesforce (Client Credentials)](/api-integrations/salesforce-cc)
+      - [ShipBob (Personal Access Token)](/api-integrations/shipbob-pat)
+      - [ShopWorks](/api-integrations/shopworks)
+      - [Slack (MCP)](/api-integrations/slack-mcp)
+      - [Supabase (MCP)](/api-integrations/supabase-mcp)
+      - [Telegram](/api-integrations/telegram)
+      - [Trigify IO (MCP)](/api-integrations/trigify-io-mcp)
+      - [Triple Whale](/api-integrations/triple-whale)
+      - [Toggl Track](/api-integrations/toggl)
+      - [Typefully (API v2)](/api-integrations/typefully-v2)
+      - [Vercel (MCP)](/api-integrations/vercel-mcp)
+      - [WebinarJam](/api-integrations/webinarjam)
+    </Accordion>
+  </AccordionGroup>
+
+  ## Role-based access control (RBAC)
+
+  We added role-based access control to the Nango dashboard. You can now assign one of three roles when inviting team members:
+
+  | **Full Access** | **Support** | **Contributor** |
+  | - | - | - |
+  | Unrestricted access across all environments. Manages account settings, billing, and team. | Read-only production access without sensitive credentials. Full access in non-production. | Non-production environments only. No production access. |
+
+  ![RBAC Team Invite Roles](/images/changelog/rbac-team-invite-roles.jpg)
+
+  Key details:
+
+  - **Production flag:** Mark any environment as production in **Environment Settings > General**. Once set, Support members get read-only access and Contributors lose access entirely.
+  - **API access is unaffected:** Roles apply to dashboard access only. Any caller with a valid secret key retains full API access.
+
+  Available on the Growth and Enterprise plans. See the [Team & roles documentation](/guides/platform/security#team-and-roles).
+
+  ## New blog posts
+
+  New posts from the Nango team in March:
+
+  - [Launching RBAC and our commitment to the enterprise](https://www.nango.dev/blog/launching-rbac-and-our-commitment-to-the-enterprise)
+  - [What we learned building 200+ API integrations with OpenCode](https://www.nango.dev/blog/learned-building-200-api-integrations-with-opencode)
+  - [How to build reliable tool calls for AI agents integrating with external APIs](https://www.nango.dev/blog/build-reliable-tool-calls-for-ai-agents-integrating-with-external-apis)
+</Update>
+
+---
+
 <Update label="February 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in February">
@@ -1207,8 +1275,8 @@ description: "Product updates and improvements."
       - [Booking.com](/integrations/all/booking-com)
       - [Buildium](/integrations/all/buildium)
       - [Chattermill](/integrations/all/chattermill)
-      - [ConnectWise PSA](/integrations/all/connectwise-psa)
-      - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa)
+      - [ConnectWise PSA](/api-integrations/connectwise-psa)
+      - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa-staging)
       - [Databricks (Account Level)](/integrations/all/databricks-account)
       - [Databricks (Workspace Level)](/integrations/all/databricks-workspace)
       - [Datadog](/integrations/all/datadog)

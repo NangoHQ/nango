@@ -1,18 +1,19 @@
-import { Ellipsis } from 'lucide-react';
+import { Ellipsis, ExternalLink } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
+import { RoleSelect } from './RoleSelect';
 import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
 import { Dot } from '@/components-v2/Dot';
 import { PermissionGate } from '@/components-v2/PermissionGate';
+import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/dropdown-menu';
 import { Input } from '@/components-v2/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
@@ -21,16 +22,6 @@ import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
 
 import type { ApiInvitation, ApiUser, Role } from '@nangohq/types';
-
-const roles: { value: Role; label: string; description: string }[] = [
-    { value: 'administrator', label: 'Full access', description: 'Full access to everything, including sensitive data.' },
-    {
-        value: 'production_support',
-        label: 'Support',
-        description: 'Full access to non-production environments. Read-only access to non-sensitive production data.'
-    },
-    { value: 'development_full_access', label: 'Contributor', description: 'Full access to non-production environments.' }
-];
 
 const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user, onClose }) => {
     const env = useStore((state) => state.env);
@@ -58,23 +49,15 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                 <DialogHeader>
                     <DialogTitle>Edit role</DialogTitle>
                 </DialogHeader>
-                <div className="flex items-center gap-2">
-                    <Input type="email" value={user.email} disabled className="flex-1" />
-                    <Select value={role} onValueChange={(value) => setRole(value as Role)}>
-                        <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Select a role">{roles.find((r) => r.value === role)?.label}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent align="end" className="p-0 max-w-71">
-                            {roles.map(({ value, label, description }) => (
-                                <SelectItem key={value} value={value} className="h-fit p-2">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-text-primary text-body-medium-regular">{label}</span>
-                                        <p className="text-text-secondary text-body-small-regular">{description}</p>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                        <Input type="email" value={user.email} disabled className="flex-1" />
+                        <RoleSelect value={role} onChange={setRole} />
+                    </div>
+                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" type="external" icon>
+                        Learn more about roles and permissions
+                    </StyledLink>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -102,10 +85,11 @@ export const TeamMembers: React.FC = () => {
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
     const allUsers: ((ApiUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
-        () => [
-            ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
-            ...(data?.data.invitedUsers || []).map((u) => ({ ...u, is_invitation: true as const }))
-        ],
+        () =>
+            [
+                ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
+                ...(data?.data.invitedUsers || []).map((u) => ({ ...u, is_invitation: true as const }))
+            ].sort((a, b) => a.email.localeCompare(b.email)),
         [data]
     );
 
@@ -138,7 +122,14 @@ export const TeamMembers: React.FC = () => {
                     <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
+                        <TableHead>
+                            <div className="inline-flex items-center gap-0.5">
+                                <span>Role</span>
+                                <ButtonLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" size="icon" variant="ghost" target="_blank">
+                                    <ExternalLink className="size-3" />
+                                </ButtonLink>
+                            </div>
+                        </TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
@@ -241,9 +232,5 @@ export const RoleBadge: React.FC<{ role: Role }> = ({ role }) => {
         }
     }, [role]);
 
-    return (
-        <Badge variant="ghost" className="-uppercase">
-            {roleLabel}
-        </Badge>
-    );
+    return <Badge variant="ghost">{roleLabel}</Badge>;
 };

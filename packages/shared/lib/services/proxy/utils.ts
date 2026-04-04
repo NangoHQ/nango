@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
 
 import {
     connectionCopyWithParsedConnectionConfig,
@@ -71,8 +71,14 @@ export function getAxiosConfiguration({
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
         url,
-        headers,
-        beforeRedirect: (options: Record<string, any>) => {
+        headers
+    };
+
+    // TODO: change default to false after removing the metric below
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
+    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
+        if (shouldForward) {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
@@ -139,7 +145,7 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, forwardHeadersOnRedirect } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -204,7 +210,8 @@ export function getProxyConfiguration({
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
-        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {})
     };
 
     return Ok(configBody);

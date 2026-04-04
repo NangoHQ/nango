@@ -45,12 +45,10 @@ export const CreateIntegrationList = () => {
 
         return new Fuse(initialProviders, {
             keys: [
-                { name: 'displayName', weight: 0.3 },
-                { name: 'name', weight: 0.3 },
-                { name: 'authMode', weight: 0.2 },
-                { name: 'categories', weight: 0.2 }
+                { name: 'displayName', weight: 0.6 },
+                { name: 'name', weight: 0.4 }
             ],
-            threshold: 0.4, // 0.0 = exact match, 1.0 = match anything. 0.4 is a good balance
+            threshold: 0.3,
             includeScore: true,
             minMatchCharLength: 1,
             ignoreLocation: true, // Search anywhere in the string
@@ -205,7 +203,7 @@ const Provider = ({
             <div className="inline-flex gap-1.5 items-center justify-end">
                 <AuthBadge authMode={provider.authMode} />
                 {provider.categories?.map((category) => (
-                    <Badge key={category} variant="ghost">
+                    <Badge key={category} variant="ghost" className="uppercase">
                         {category}
                     </Badge>
                 ))}
