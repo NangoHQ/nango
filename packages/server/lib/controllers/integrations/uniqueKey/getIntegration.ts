@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 import * as z from 'zod';
 
 import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
@@ -75,11 +77,18 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
                 webhook_secret: integration?.custom?.['webhookSecret'] || null
             };
         } else if (provider.auth_mode === 'APP') {
+            let webhookSecret: string | null = null;
+            if (integration.oauth_client_secret) {
+                const decodedKey = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
+                const hash = `${integration.oauth_client_id}${decodedKey}${integration.app_link}`;
+                webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+            }
             include.credentials = {
                 type: provider.auth_mode,
                 app_id: integration.oauth_client_id,
                 private_key: integration.oauth_client_secret,
-                app_link: integration.app_link || null
+                app_link: integration.app_link || null,
+                webhook_secret: webhookSecret
             };
         } else {
             include.credentials = null;

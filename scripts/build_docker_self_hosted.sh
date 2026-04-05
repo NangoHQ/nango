@@ -18,28 +18,25 @@ fi
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
-echo ""
-echo -e "Building self-hosted nangohq/nango-server:hosted-$GIT_HASH"
+SELF_HOSTED_IMAGE="ghcr.io/llmvault/integrations:latest"
 
-VERSION=$(node -p "require('../package.json').version")
+echo ""
+echo -e "Building self-hosted $SELF_HOSTED_IMAGE"
 
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg BASE_IMAGE_HASH="$GIT_HASH" \
+  --build-arg git_hash="$GIT_HASH" \
+  --target self-hosted \
   --cache-from type=gha \
   --cache-to type=gha,mode=max \
-  -t nangohq/nango-server:hosted \
-  -t "nangohq/nango-server:hosted-$GIT_HASH" \
-  -t "nangohq/nango-server:hosted-$VERSION" \
-  --file ../Dockerfile.self_hosted \
+  -t "$SELF_HOSTED_IMAGE" \
+  --file ../Dockerfile \
   --output=type=docker \
   ../
 
 if [ $PUSH ]; then
   echo "Pushing"
-  docker push nangohq/nango-server:hosted
-  docker push "nangohq/nango-server:hosted-$GIT_HASH"
-  docker push "nangohq/nango-server:hosted-$VERSION"
+  docker push "$SELF_HOSTED_IMAGE"
 else
   echo "Not pushing"
 fi
