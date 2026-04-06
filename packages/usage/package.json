@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/account-usage",
+    "name": "@nangohq/usage",
     "version": "1.0.0",
     "description": "Simple local usage tracking for monthly usage limits.",
     "private": true,
@@ -10,7 +10,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/account-usage"
+        "directory": "packages/usage"
     },
     "dependencies": {
         "@nangohq/billing": "file:../billing",
