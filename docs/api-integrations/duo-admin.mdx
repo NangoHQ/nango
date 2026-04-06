@@ -1,0 +1,109 @@
+---
+title: 'Cisco Duo Admin API'
+sidebarTitle: 'Cisco Duo Admin API'
+description: 'Integrate your application with the Cisco Duo Admin API'
+---
+
+## 🚀 Quickstart
+
+Connect to Cisco Duo Admin API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Cisco Duo Admin API_.
+    </Step>
+    <Step title="Authorize Cisco Duo Admin API">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Integration Key, Secret Key, and API Hostname. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Cisco Duo Admin API">
+    Let's make your first request to the Duo Admin API (fetch an account summary). Duo requires each request to be signed, so generate the Duo `Date` and `Authorization` headers and forward them through Nango. Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and Duo credentials:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            DUO_DATE="$(LC_ALL=C date -u '+%a, %d %b %Y %H:%M:%S -0000')"
+            DUO_HOSTNAME="<DUO-API-HOSTNAME>"
+            DUO_HOSTNAME_LOWER="$(printf '%s' "${DUO_HOSTNAME}" | tr '[:upper:]' '[:lower:]')"
+            DUO_IKEY="<DUO-INTEGRATION-KEY>"
+            DUO_SKEY="<DUO-SECRET-KEY>"
+            DUO_SIGNATURE="$(
+              printf '%s\n%s\n%s\n%s\n' "${DUO_DATE}" "GET" "${DUO_HOSTNAME_LOWER}" "/admin/v1/info/summary" |
+                openssl dgst -sha1 -hmac "${DUO_SKEY}" -hex |
+                awk '{print $2}'
+            )"
+            DUO_AUTH="$(printf '%s:%s' "${DUO_IKEY}" "${DUO_SIGNATURE}" | base64 | tr -d '\n')"
+
+            curl "https://api.nango.dev/proxy/admin/v1/info/summary" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Nango-Proxy-Date: ${DUO_DATE}" \
+              -H "Nango-Proxy-Authorization: Basic ${DUO_AUTH}"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import crypto from 'node:crypto';
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const endpoint = '/admin/v1/info/summary';
+        const duoDate = new Date().toUTCString().replace('GMT', '-0000');
+        const duoHostname = '<DUO-API-HOSTNAME>';
+        const duoIntegrationKey = '<DUO-INTEGRATION-KEY>';
+        const duoSecretKey = '<DUO-SECRET-KEY>';
+        const canonicalRequest = [duoDate, 'GET', duoHostname.toLowerCase(), endpoint, ''].join('\n');
+        const duoSignature = crypto.createHmac('sha1', duoSecretKey).update(canonicalRequest, 'utf8').digest('hex');
+        const duoAuthorization = `Basic ${Buffer.from(`${duoIntegrationKey}:${duoSignature}`).toString('base64')}`;
+
+        const res = await nango.get({
+            endpoint,
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: {
+                Date: duoDate,
+                Authorization: duoAuthorization
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Cisco Duo Admin API Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to connect your Cisco Duo Admin API application](/api-integrations/duo-admin/connect)
+Get your Duo Integration Key, Secret Key, and API Hostname and connect them to Nango
+
+Official docs: [Duo Admin API docs](https://duo.com/docs/adminapi)
+
+## 🧩 Pre-built syncs & actions for Cisco Duo Admin API
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/duo-admin/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

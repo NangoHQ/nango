@@ -412,6 +412,7 @@
               "api-integrations/dropbox",
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
+              "api-integrations/duo-admin",
               "integrations/all/e-conomic",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",

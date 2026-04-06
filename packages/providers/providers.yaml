@@ -5408,6 +5408,38 @@ drupal:
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
 
+duo-admin:
+    display_name: Cisco Duo Admin API
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/duo-admin
+    docs_connect: https://nango.dev/docs/api-integrations/duo-admin/connect
+    credentials:
+        username:
+            type: string
+            title: Integration Key
+            description: The integration key for your Cisco Duo Admin API application
+            doc_section: '#step-1-find-your-integration-key-secret-key-and-api-hostname'
+        password:
+            type: string
+            title: Secret Key
+            description: The secret key for your Cisco Duo Admin API application
+            secret: true
+            doc_section: '#step-1-find-your-integration-key-secret-key-and-api-hostname'
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: The API hostname for your Cisco Duo Admin API application
+            example: api-xxxxxxxx.duosecurity.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-integration-key-secret-key-and-api-hostname'
+
 emarsys:
     display_name: Emarsys Core API (WSSE)
     categories:

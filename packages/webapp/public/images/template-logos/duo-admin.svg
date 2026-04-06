@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 768" role="img" aria-labelledby="title">
+  <title>Cisco Duo Admin API</title>
+  <rect width="768" height="768" fill="#3F6D43"/>
+  <circle cx="384" cy="384" r="384" fill="#63B246"/>
+  <path d="M115 291H202C246.2 291 282 326.8 282 371H115V291Z" fill="#FFFFFF"/>
+  <path d="M115 381H282C282 425.2 246.2 461 202 461H115V381Z" fill="#E6F4DC"/>
+  <path d="M297 291H379V465C333.7 465 297 428.3 297 383V291Z" fill="#FFFFFF"/>
+  <path d="M389 291H471V465H389V291Z" fill="#E6F4DC"/>
+  <path d="M478 371C478 326.8 513.8 291 558 291C602.2 291 638 326.8 638 371H478Z" fill="#FFFFFF"/>
+  <path d="M478 381H638C638 425.2 602.2 461 558 461C513.8 461 478 425.2 478 381Z" fill="#E6F4DC"/>
+</svg>
