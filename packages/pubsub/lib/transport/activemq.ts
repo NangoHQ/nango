@@ -9,7 +9,7 @@ import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';
 
 import type { SubscribeProps, Transport } from './transport.js';
-import type { Event } from '../event.js';
+import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { StompConfig, StompSubscription } from '@stomp/stompjs';
 

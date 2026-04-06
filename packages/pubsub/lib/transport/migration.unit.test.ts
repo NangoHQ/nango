@@ -5,8 +5,8 @@ import { Err, Ok } from '@nangohq/utils';
 import { Migration } from './migration.js';
 
 import type { MigrationTransportError } from './migration.js';
-import type { Event } from '../event.js';
 import type { Transport } from './transport.js';
+import type { Event } from '@nangohq/types';
 
 function mockTransport(partial?: Partial<Transport>): Transport {
     return {

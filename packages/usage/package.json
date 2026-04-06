@@ -13,6 +13,7 @@
         "directory": "packages/usage"
     },
     "dependencies": {
+        "@clickhouse/client": "1.18.2",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
         "@nangohq/email": "file:../email",

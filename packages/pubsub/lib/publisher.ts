@@ -2,8 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { metrics } from '@nangohq/utils';
 
-import type { Event } from './event.js';
 import type { Transport } from './transport/transport.js';
+import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
 

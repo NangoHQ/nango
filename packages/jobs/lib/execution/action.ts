@@ -314,7 +314,7 @@ export async function handleActionSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -500,7 +500,7 @@ function onFailure({
                     type: 'action',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });
