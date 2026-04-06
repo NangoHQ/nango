@@ -1,5 +1,4 @@
 import { Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSWRConfig } from 'swr';
 
@@ -10,7 +9,7 @@ import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
 import { useToast } from '../../../../../hooks/useToast.js';
 import { PermissionGate } from '@/components-v2/PermissionGate.js';
 import { Button } from '@/components-v2/ui/button.js';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog.js';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { useEnvironment } from '@/hooks/useEnvironment.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 
@@ -25,9 +24,9 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
     const { can } = usePermissions();
     const canDeleteIntegration = environment ? can(permissions.canDeleteProdIntegrations) || !environment.is_production : false;
 
-    const [open, setOpen] = useState(false);
     const { mutate, cache } = useSWRConfig();
     const { mutateAsync: deleteIntegration, isPending } = useDeleteIntegration(env, integration.unique_key);
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const onDelete = async () => {
         try {
@@ -41,32 +40,32 @@ export const DeleteIntegrationButton: React.FC<{ env: string; integration: ApiIn
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <PermissionGate condition={canDeleteIntegration} asChild>
-                    {(allowed) => (
-                        <Button variant="destructive" size="lg" loading={isPending} className={className} disabled={!allowed}>
-                            <Trash2 />
-                            Delete integration
-                        </Button>
-                    )}
-                </PermissionGate>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogTitle>Delete integration?</DialogTitle>
-                <DialogDescription>
-                    You are about to permanently delete this integration, all of its associated connections and records. This operation is not reversible, are
-                    you sure you wish to continue?
-                </DialogDescription>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
-                    <Button variant="destructive" onClick={onDelete} disabled={isPending}>
-                        Delete integration, connections and records
+        <>
+            <PermissionGate condition={canDeleteIntegration} asChild>
+                {(allowed) => (
+                    <Button
+                        variant="destructive"
+                        size="lg"
+                        loading={isPending}
+                        className={className}
+                        disabled={!allowed}
+                        onClick={() =>
+                            confirm({
+                                title: 'Delete integration?',
+                                description:
+                                    'You are about to permanently delete this integration, all of its associated connections and records. This operation is not reversible, are you sure you wish to continue?',
+                                confirmButtonText: 'Delete integration, connections and records',
+                                confirmVariant: 'destructive',
+                                onConfirm: onDelete
+                            })
+                        }
+                    >
+                        <Trash2 />
+                        Delete integration
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                )}
+            </PermissionGate>
+            {DialogComponent}
+        </>
     );
 };
