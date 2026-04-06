@@ -7,17 +7,15 @@ import type { WebhookHandler } from './types.js';
 const route: WebhookHandler = async (nango, headers) => {
     // https://developers.google.com/workspace/calendar/api/guides/push
     // we will need to just forward the headers since the body is empty
-
-    // Extract email from x-goog-resource-uri header
-    // Format: https://www.googleapis.com/calendar/v3/calendars/{email}/events?alt=json
-    let emailAddress: string | undefined;
     const resourceUri = headers['x-goog-resource-uri'];
 
-    if (typeof resourceUri === 'string') {
-        const match = resourceUri.match(/\/calendars\/([^/]+)\//);
-        if (match && match[1]) {
-            emailAddress = decodeURIComponent(match[1]);
-        }
+    if (!resourceUri || typeof resourceUri !== 'string') {
+        return Ok({
+            content: { status: 'success' },
+            statusCode: 200,
+            connectionIds: [],
+            toForward: headers
+        });
     }
 
     const baseArgs = {
@@ -36,6 +34,13 @@ const route: WebhookHandler = async (nango, headers) => {
             : { connectionIds: [] as string[], connectionMetadata: {} };
 
     // If no match, fallback to connection_config.emailAddressHash (primary calendar matching)
+    // Extract email from x-goog-resource-uri header
+    // Format: https://www.googleapis.com/calendar/v3/calendars/{email}/events?alt=json
+    let emailAddress: string | undefined;
+    const match = resourceUri.match(/\/calendars\/([^/]+)\//);
+    if (match && match[1]) {
+        emailAddress = decodeURIComponent(match[1]);
+    }
     const emailAddressHash = emailAddress ? hashEmailAddress(emailAddress) : undefined;
     if (response.connectionIds.length === 0) {
         response = await nango.executeScriptForWebhooks({

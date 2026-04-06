@@ -100,4 +100,30 @@ describe('googleCalendarWebhookRouting', () => {
             })
         );
     });
+
+    it('returns no connection ids and performs no lookups when x-goog-resource-uri is missing', async () => {
+        const integration = getTestConfig({ provider: 'google-calendar' });
+
+        const mock = vi.fn();
+
+        const nangoMock = new InternalNango({
+            team: seeders.getTestTeam(),
+            environment: seeders.getTestEnvironment(),
+            plan: seeders.getTestPlan(),
+            integration,
+            logContextGetter
+        });
+        nangoMock.executeScriptForWebhooks = mock;
+
+        const headers = { 'x-goog-resource-state': 'exists' };
+
+        const result = await GoogleCalendarWebhookRouting.default(nangoMock as unknown as InternalNango, headers as any, {}, '');
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk() && 'connectionIds' in result.value) {
+            expect(result.value.connectionIds).toEqual([]);
+            expect(result.value.statusCode).toBe(200);
+        }
+        expect(mock).not.toHaveBeenCalled();
+    });
 });
