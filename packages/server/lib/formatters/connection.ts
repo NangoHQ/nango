@@ -135,6 +135,6 @@ function redactObject(obj: Record<string, unknown>): Record<string, unknown> {
     return result;
 }
 
-function redactCredentials(credentials: DBConnectionDecrypted['credentials']): DBConnectionDecrypted['credentials'] {
+export function redactCredentials(credentials: DBConnectionDecrypted['credentials']): DBConnectionDecrypted['credentials'] {
     return redactObject(credentials as Record<string, unknown>) as DBConnectionDecrypted['credentials'];
 }
