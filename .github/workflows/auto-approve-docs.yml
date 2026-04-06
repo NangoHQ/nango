@@ -21,16 +21,22 @@ jobs:
                       const org = context.repo.owner;
 
                       // Trusted app
-                      if (type === 'Bot' && login === 'mintlify[bot]') return true;
+                      if (type === 'Bot' && login === 'mintlify[bot]') {
+                        console.log(`Trusted: bot ${login}`);
+                        return true;
+                      }
 
                       // Collaborators (write and admin)
                       try {
                         const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-                          owner: org,
+                          owner: context.repo.owner,
                           repo: context.repo.repo,
                           username: login,
                         });
-                        if (['write', 'admin'].includes(data.permission)) return true;
+                        if (['write', 'admin'].includes(data.permission)) {
+                          console.log(`Trusted: collaborator ${login} (${data.permission})`);
+                          return true;
+                        }
                       } catch (err) { if (err.status !== 404) throw err; }
 
                       // Engineers team
@@ -40,9 +46,13 @@ jobs:
                           team_slug: 'engineers',
                           username: login,
                         });
-                        if (teamMembership.state === 'active') return true;
+                        if (teamMembership.state === 'active') {
+                          console.log(`Trusted: engineers team member ${login}`);
+                          return true;
+                        }
                       } catch (err) { if (err.status !== 404) throw err; }
 
+                      console.log(`Not trusted: ${login}`);
                       return false;
                   result-encoding: string
 
