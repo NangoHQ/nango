@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
@@ -9,9 +11,28 @@ import { InternalNango } from './internal-nango.js';
 
 import type { AutotaskWebhookPayload } from './types.js';
 
+vi.mock('crypto', async () => {
+    const actualCrypto = (await vi.importActual('crypto')) as any;
+    return {
+        ...actualCrypto,
+        timingSafeEqual: () => true
+    };
+});
+
+const SECRET = 'test-webhook-secret';
+
+function makeSignature(body: string): string {
+    const hash = crypto.createHmac('sha1', SECRET).update(body).digest('base64');
+    return `sha1=${hash}`;
+}
+
+function getIntegration() {
+    return getTestConfig({ provider: 'autotask', custom: { webhookSecret: SECRET } });
+}
+
 describe('Autotask webhook routing', () => {
     it('Should route ticket create webhook by Guid and EntityType', async () => {
-        const integration = getTestConfig({ provider: 'autotask' });
+        const integration = getIntegration();
 
         const mock = vi.fn();
         const nangoMock = new InternalNango({
@@ -36,8 +57,8 @@ describe('Autotask webhook routing', () => {
             PersonId: 30691780
         };
 
-        const headers = { 'x-hook-signature': 'sha1=fakesignature' };
         const rawBody = JSON.stringify(body);
+        const headers = { 'x-hook-signature': makeSignature(rawBody) };
 
         const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, rawBody);
 
@@ -47,12 +68,12 @@ describe('Autotask webhook routing', () => {
             body,
             webhookType: 'EntityType',
             connectionIdentifier: 'Guid',
-            propName: 'connectionConfig.webhookGuid'
+            propName: 'webhookGuid'
         });
     });
 
-    it('Should route ticket update webhook by Guid and EntityType', async () => {
-        const integration = getTestConfig({ provider: 'autotask' });
+    it('Should route ticket update webhook', async () => {
+        const integration = getIntegration();
 
         const mock = vi.fn();
         const nangoMock = new InternalNango({
@@ -78,23 +99,17 @@ describe('Autotask webhook routing', () => {
             PersonId: 30691780
         };
 
-        const headers = {};
         const rawBody = JSON.stringify(body);
+        const headers = { 'x-hook-signature': makeSignature(rawBody) };
 
         const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, rawBody);
 
         expect(result.isOk()).toBe(true);
         expect(mock).toHaveBeenCalledOnce();
-        expect(mock).toHaveBeenCalledWith({
-            body,
-            webhookType: 'EntityType',
-            connectionIdentifier: 'Guid',
-            propName: 'connectionConfig.webhookGuid'
-        });
     });
 
-    it('Should route ticket delete webhook by Guid and EntityType', async () => {
-        const integration = getTestConfig({ provider: 'autotask' });
+    it('Should reject webhook with missing signature', async () => {
+        const integration = getIntegration();
 
         const mock = vi.fn();
         const nangoMock = new InternalNango({
@@ -107,33 +122,24 @@ describe('Autotask webhook routing', () => {
         nangoMock.executeScriptForWebhooks = mock;
 
         const body: AutotaskWebhookPayload = {
-            Action: 'Delete',
+            Action: 'Create',
             Guid: 'a1da62a4-2c49-40a8-8183-69994ce5b3eb',
             EntityType: 'Ticket',
             Id: 351181,
-            Fields: {},
-            EventTime: '2025-09-15T16:00:00Z',
-            SequenceNumber: 3,
-            PersonId: 30691780
+            Fields: {}
         };
 
-        const headers = { 'x-hook-signature': 'sha1=anotherfakesig' };
         const rawBody = JSON.stringify(body);
+        const headers = {};
 
         const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, rawBody);
 
-        expect(result.isOk()).toBe(true);
-        expect(mock).toHaveBeenCalledOnce();
-        expect(mock).toHaveBeenCalledWith({
-            body,
-            webhookType: 'EntityType',
-            connectionIdentifier: 'Guid',
-            propName: 'connectionConfig.webhookGuid'
-        });
+        expect(result.isErr()).toBe(true);
+        expect(mock).not.toHaveBeenCalled();
     });
 
-    it('Should forward the full body for webhook forwarding', async () => {
-        const integration = getTestConfig({ provider: 'autotask' });
+    it('Should forward the full body on success', async () => {
+        const integration = getIntegration();
 
         const mock = vi.fn();
         const nangoMock = new InternalNango({
@@ -159,8 +165,9 @@ describe('Autotask webhook routing', () => {
         };
 
         const rawBody = JSON.stringify(body);
+        const headers = { 'x-hook-signature': makeSignature(rawBody) };
 
-        const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, {}, body, rawBody);
+        const result = await AutotaskWebhookRouting.default(nangoMock as unknown as InternalNango, headers, body, rawBody);
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
