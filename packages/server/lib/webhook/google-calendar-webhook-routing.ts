@@ -24,14 +24,11 @@ const route: WebhookHandler = async (nango, headers) => {
     };
 
     // First, try to match the resource URI to the googleCalendarWatchResourceUris (multiple calendar matching)
-    let response =
-        typeof resourceUri === 'string'
-            ? await nango.executeScriptForWebhooks({
-                  ...baseArgs,
-                  connectionIdentifierValue: resourceUri,
-                  propName: 'metadata.googleCalendarWatchResourceUris'
-              })
-            : { connectionIds: [] as string[], connectionMetadata: {} };
+    let response = await nango.executeScriptForWebhooks({
+        ...baseArgs,
+        connectionIdentifierValue: resourceUri,
+        propName: 'metadata.googleCalendarWatchResourceUris'
+    });
 
     // If no match, fallback to connection_config.emailAddressHash (primary calendar matching)
     // Extract email from x-goog-resource-uri header
