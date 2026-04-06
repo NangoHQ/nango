@@ -21,7 +21,9 @@ function validate(integration: IntegrationConfig, headerSignature: string, rawBo
     const prefix = 'sha1=';
     const providedHash = headerSignature.startsWith(prefix) ? headerSignature.substring(prefix.length) : headerSignature;
     const computedHash = crypto.createHmac('sha1', integration.custom['webhookSecret']).update(rawBody).digest('base64');
-    return crypto.timingSafeEqual(Buffer.from(computedHash), Buffer.from(providedHash));
+    const computedBuf = Buffer.from(computedHash);
+    const providedBuf = Buffer.from(providedHash);
+    return computedBuf.length === providedBuf.length && crypto.timingSafeEqual(computedBuf, providedBuf);
 }
 
 /**
