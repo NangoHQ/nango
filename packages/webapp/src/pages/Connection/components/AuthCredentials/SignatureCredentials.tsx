@@ -1,5 +1,6 @@
 import { RefreshCwIcon } from 'lucide-react';
 
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { SecretInput } from '@/components-v2/SecretInput';
 import { Button } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
@@ -32,10 +33,14 @@ export const SignatureCredentialsComponent: React.FC<{
                     <Label htmlFor="token">Token</Label>
                     <div className="flex gap-2 items-center">
                         <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
-                        <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing}>
-                            <RefreshCwIcon />
-                            Refresh
-                        </Button>
+                        <PermissionGate condition={canRead} asChild>
+                            {(allowed) => (
+                                <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                    <RefreshCwIcon />
+                                    Refresh
+                                </Button>
+                            )}
+                        </PermissionGate>
                     </div>
                 </div>
             )}
