@@ -293,9 +293,9 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
-### Multiple calendars
+### Other calendars
 
-If you want to subscribe to notifications from multiple calendars, add the resource URIs for each calendar to **`metadata.googleCalendarWatchResourceUris`**:
+If you want to subscribe to notifications from other calendars besides the primary calendar, add the resource URIs for each calendar to **`metadata.googleCalendarWatchResourceUris`**:
 
 - The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-URI` string exactly as Google sends it**: same encoding, path, and query string.
 - The lookup on **`metadata.googleCalendarWatchResourceUris`** takes priority over the primary calendar matching described [above for primary calendars](#primary-calendar), so include the URIs for all calendars you are subscribing to, including the primary calendar.
