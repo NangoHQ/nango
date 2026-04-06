@@ -300,7 +300,7 @@ If you want to subscribe to notifications from other calendars besides the prima
 - The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-URI` string exactly as Google sends it**: same encoding, path, and query string.
 - The lookup on **`metadata.googleCalendarWatchResourceUris`** takes priority over the primary calendar matching described [above for primary calendars](#primary-calendar), so include the URIs for all calendars you are subscribing to, including the primary calendar.
 
-**Duplicates:** If more than one connection lists the **same** URI in `googleCalendarWatchResourceUris`, **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with appropriate connection id.
+**Duplicates:** If more than one connection lists the **same** URI in `googleCalendarWatchResourceUris`, **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with appropriate `connectionId`.
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connection/metadata" \
