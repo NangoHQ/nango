@@ -13325,6 +13325,8 @@ prtg-classic:
             type: string
             title: API Key
             description: The API key for your PRTG account
+            pattern: '^\S+$'
+            example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
             doc_section: '#step-2-finding-your-api-key'
 
 private-api-bearer:
