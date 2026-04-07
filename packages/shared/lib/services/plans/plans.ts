@@ -153,6 +153,8 @@ export async function handlePlanChanged(
     const isCurrentFree = currentPlan.value.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
 
+    const isDowngrade = isPotentialDowngrade({ from: currentPlan.value.name, to: newPlan.code });
+
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         name: newPlan.code,
@@ -171,7 +173,7 @@ export async function handlePlanChanged(
     productTracking.track({
         name: 'account:billing:plan_changed',
         team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, orbCustomerId: currentPlan.value.orb_customer_id }
+        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.value.orb_customer_id }
     });
 
     return Ok(true);
