@@ -1048,6 +1048,16 @@ class ConnectionService {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
+                if (!expiration && typeof token === 'string') {
+                    const decoded = jwtClient.decode(token);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || tokenExpiresAt < expiresAt) {
+                            expiresAt = tokenExpiresAt;
+                        }
+                    }
+                }
+
                 if (refreshToken) {
                     const decoded = jwtClient.decode(refreshToken);
                     if (decoded && typeof decoded['exp'] === 'number') {
@@ -1503,14 +1513,29 @@ class ConnectionService {
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
-                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
 
                     if (step.token_headers) {
                         for (const [key, value] of Object.entries(step.token_headers)) {
-                            stepHeaders[key] = interpolateString(value, dynamicCredentials);
+                            const stepNumber = extractStepNumber(value);
+                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
+
+                            const applyInterpolation = (input: any, source: Record<string, any>) => {
+                                if (typeof input === 'object' && input !== null) {
+                                    return interpolateObject(input, source);
+                                } else if (typeof input === 'string') {
+                                    return interpolateString(input, source);
+                                }
+                                return input;
+                            };
+
+                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
+                            stepHeaders[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
                         }
                     }
 
