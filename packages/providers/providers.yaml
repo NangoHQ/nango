@@ -7475,6 +7475,7 @@ google:
             response_path: items
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
+    webhook_routing_script: googleWebhookRouting
 
 google-analytics:
     display_name: Google Analytics

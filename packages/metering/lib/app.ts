@@ -1,9 +1,9 @@
 import './tracer.js';
 import * as cron from 'node-cron';
 
-import { getUsageTracker } from '@nangohq/account-usage';
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
+import { getUsageTracker } from '@nangohq/usage';
 import { initSentry, once, report } from '@nangohq/utils';
 
 import { exportUsageCron } from './crons/usage.js';

@@ -42,7 +42,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted, options?:
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
-        credentials: options?.includeCredentials ? connection.credentials : ({} as DBConnectionDecrypted['credentials']),
+        credentials: options?.includeCredentials ? connection.credentials : redactCredentials(connection.credentials),
         metadata: connection.metadata,
         tags: connection.tags,
         last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,
@@ -110,4 +110,31 @@ export function connectionFullToPublicApi({
             : null,
         credentials: data.credentials
     };
+}
+
+const NON_SENSITIVE_KEYS = new Set(['type', 'expires_at']);
+
+function redactValue(value: unknown): unknown {
+    if (value === null || value === undefined) {
+        return value;
+    }
+    if (Array.isArray(value)) {
+        return value.map(redactValue);
+    }
+    if (typeof value === 'object') {
+        return redactObject(value as Record<string, unknown>);
+    }
+    return 'REDACTED';
+}
+
+function redactObject(obj: Record<string, unknown>): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        result[key] = NON_SENSITIVE_KEYS.has(key) ? value : redactValue(value);
+    }
+    return result;
+}
+
+export function redactCredentials(credentials: DBConnectionDecrypted['credentials']): DBConnectionDecrypted['credentials'] {
+    return redactObject(credentials as Record<string, unknown>) as DBConnectionDecrypted['credentials'];
 }
