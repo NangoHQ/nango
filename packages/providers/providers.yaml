@@ -10602,13 +10602,13 @@ microsoft-teams-bot:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
-    docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
-    docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
+    docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
     connection_config:
         tenantId:
             type: string
             title: Tenant ID
-            description: The unique identifier for the Azure AD tenant
+            description: The unique identifier for your Microsoft Entra ID tenant.
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
