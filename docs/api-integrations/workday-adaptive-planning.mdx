@@ -29,6 +29,9 @@ Connect to Workday Adaptive Planning with Nango and see data flow in 2 minutes.
 
                 # Step 2: Use the token in an Adaptive Planning XML API request
                 curl -X POST "https://api.nango.dev/proxy/api/v40" \
+                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
                   -H "Content-Type: application/xml" \
                   -d "<?xml version='1.0' encoding='UTF-8'?>
                 <call method=\"exportLevels\" callerName=\"your-app\">
