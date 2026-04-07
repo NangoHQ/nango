@@ -14307,8 +14307,9 @@ sap-ariba:
         retry:
             after:
                 - retry-after
-    docs: https://nango.dev/docs/integrations/all/sap-ariba
-    docs_connect: https://nango.dev/docs/integrations/all/sap-ariba/connect
+    docs: https://nango.dev/docs/api-integrations/sap-ariba
+    docs_connect: https://nango.dev/docs/api-integrations/sap-ariba/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/sap-ariba/sap-ariba-api-credentials-setup
     connection_config:
         region:
             type: string
