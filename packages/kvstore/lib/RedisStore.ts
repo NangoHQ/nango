@@ -2,11 +2,8 @@ import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';
 
 /** Atomically refresh TTL only if the current value still matches (same-owner lock refresh). */
-const SET_IF_VALUE_EQUALS_LUA = `
+const COMPARE_AND_SET = `
 local v = redis.call('GET', KEYS[1])
-if v == false then
-  return 0
-end
 if v ~= ARGV[1] then
   return 0
 end
@@ -14,7 +11,7 @@ redis.call('SET', KEYS[1], ARGV[2], 'PX', tonumber(ARGV[3]))
 return 1
 `;
 
-const DELETE_IF_VALUE_EQUALS_LUA = `
+const COMPARE_AND_DELETE = `
 local v = redis.call('GET', KEYS[1])
 if v == false then
   return 0
@@ -58,7 +55,7 @@ export class RedisKVStore implements KVStore {
     }
 
     public async setIfValueEquals(key: string, expectedValue: string, newValue: string, ttlMs: number): Promise<boolean> {
-        const n = await this.client.eval(SET_IF_VALUE_EQUALS_LUA, {
+        const n = await this.client.eval(COMPARE_AND_SET, {
             keys: [key],
             arguments: [expectedValue, newValue, String(ttlMs)]
         });
@@ -66,7 +63,7 @@ export class RedisKVStore implements KVStore {
     }
 
     public async deleteIfValueEquals(key: string, expectedValue: string): Promise<boolean> {
-        const n = await this.client.eval(DELETE_IF_VALUE_EQUALS_LUA, {
+        const n = await this.client.eval(COMPARE_AND_DELETE, {
             keys: [key],
             arguments: [expectedValue]
         });
