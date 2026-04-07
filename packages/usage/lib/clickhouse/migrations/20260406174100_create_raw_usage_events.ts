@@ -1,4 +1,5 @@
-export const sql = `
+export const sql = [
+    `
     CREATE TABLE IF NOT EXISTS usage.raw_events
     (
         ts               DateTime64(3),
@@ -12,4 +13,5 @@ export const sql = `
     PARTITION BY toYYYYMM(ts)
     ORDER BY (account_id, type, idempotency_key)
     TTL toDateTime(ts) + INTERVAL 90 DAY
-`;
+    `
+];
