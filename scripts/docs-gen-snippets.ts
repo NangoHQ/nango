@@ -72,7 +72,8 @@ for (const docsPath of docsPaths) {
                 console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
             }
 
-            const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
+            const isAlias = !!(maybeAliased as any)['alias'];
+            const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider], isAlias);
             await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
             const casesSnippet = useCasesSnippet(useCases[provider]);
@@ -90,12 +91,14 @@ if (missingDocs.length > 0) {
     console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 
-function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
+function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, isAlias = false) {
     const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
     const hasAuthParams = !!providerConfig.authorization_params;
     const hasAuthGuide = !!providerConfig.docs_connect;
     const hasUseCases = useCases && useCases.length > 0;
-    const hasWebHooks = !!providerConfig.webhook_routing_script;
+    // TODO: aliases inherit webhook_routing_script from their parent at runtime — verify per-alias
+    // whether webhooks are truly supported before showing ✅ for aliased providers.
+    const hasWebHooks = !isAlias && !!providerConfig.webhook_routing_script;
     const hasPagination = !!providerConfig.proxy?.paginate;
     const hasRateLimit = !!providerConfig.proxy?.retry?.at;
 

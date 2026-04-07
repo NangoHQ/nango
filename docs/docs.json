@@ -698,6 +698,7 @@
               "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
               "api-integrations/perdoo",
+              "api-integrations/perk",
               "integrations/all/perimeter81",
               "integrations/all/perplexity",
               "integrations/all/personio",

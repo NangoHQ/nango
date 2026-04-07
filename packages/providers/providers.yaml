@@ -17232,6 +17232,29 @@ tremendous-sandbox:
         base_url: https://testflight.tremendous.com/api/v2
     docs: https://nango.dev/docs/integrations/all/tremendous-sandbox
 
+perk:
+    display_name: Perk
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.travelperk.com/oauth2/authorize/
+    token_url: https://app.travelperk.com/accounts/oauth2/token/
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.travelperk.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/perk
+    setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+
 trello:
     display_name: Trello
     categories:
