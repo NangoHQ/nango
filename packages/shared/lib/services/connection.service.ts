@@ -1486,26 +1486,34 @@ class ConnectionService {
                         continue;
                     }
 
+                    const applyInterpolation = (input: any, source: Record<string, any>) => {
+                        if (typeof input === 'object' && input !== null) {
+                            return interpolateObject(input, source);
+                        } else if (typeof input === 'string') {
+                            return interpolateString(input, source);
+                        }
+                        return input;
+                    };
+
+                    const isResolved = (val: any): val is string => typeof val === 'string' && !val.includes('${');
+
+                    const resolveStepValue = (value: string): any => {
+                        const stepNumber = extractStepNumber(value);
+                        const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
+                        const fromCredentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                        const fromStepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                        return isResolved(fromStepResponse)
+                            ? fromStepResponse
+                            : isResolved(fromCredentials)
+                              ? fromCredentials
+                              : (fromStepResponse ?? fromCredentials);
+                    };
+
                     let stepPostBody: Record<string, any> = {};
 
                     if (step.token_params) {
                         for (const [key, value] of Object.entries(step.token_params)) {
-                            const stepNumber = extractStepNumber(value);
-                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
-
-                            const applyInterpolation = (input: any, source: Record<string, any>) => {
-                                if (typeof input === 'object' && input !== null) {
-                                    return interpolateObject(input, source);
-                                } else if (typeof input === 'string') {
-                                    return interpolateString(input, source);
-                                }
-                                return input;
-                            };
-
-                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
-                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
-                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
-                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
+                            stepPostBody[key] = resolveStepValue(value);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
@@ -1520,22 +1528,7 @@ class ConnectionService {
 
                     if (step.token_headers) {
                         for (const [key, value] of Object.entries(step.token_headers)) {
-                            const stepNumber = extractStepNumber(value);
-                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
-
-                            const applyInterpolation = (input: any, source: Record<string, any>) => {
-                                if (typeof input === 'object' && input !== null) {
-                                    return interpolateObject(input, source);
-                                } else if (typeof input === 'string') {
-                                    return interpolateString(input, source);
-                                }
-                                return input;
-                            };
-
-                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
-                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
-                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
-                            stepHeaders[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
+                            stepHeaders[key] = resolveStepValue(value);
                         }
                     }
 
