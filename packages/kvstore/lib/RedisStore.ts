@@ -23,6 +23,45 @@ redis.call('DEL', KEYS[1])
 return 1
 `;
 
+const COMPARE_AND_SET_NX_WITH_COMPANION = `
+local ok = redis.call('SET', KEYS[1], ARGV[1], 'NX', 'PX', tonumber(ARGV[2]))
+if not ok then
+  return 0
+end
+local ok2 = redis.call('SET', KEYS[2], ARGV[3], 'PX', tonumber(ARGV[2]))
+if not ok2 then
+  redis.call('DEL', KEYS[1])
+  return 0
+end
+return 1
+`;
+
+const COMPARE_AND_SET_WITH_COMPANION = `
+local v = redis.call('GET', KEYS[1])
+if v == false then
+  return 0
+end
+if v ~= ARGV[1] then
+  return 0
+end
+redis.call('SET', KEYS[1], ARGV[2], 'PX', tonumber(ARGV[3]))
+redis.call('SET', KEYS[2], ARGV[4], 'PX', tonumber(ARGV[3]))
+return 1
+`;
+
+const COMPARE_AND_DELETE_WITH_COMPANION = `
+local v = redis.call('GET', KEYS[1])
+if v == false then
+  return 0
+end
+if v ~= ARGV[1] then
+  return 0
+end
+redis.call('DEL', KEYS[1])
+redis.call('DEL', KEYS[2])
+return 1
+`;
+
 export class RedisKVStore implements KVStore {
     protected client: RedisClientType;
 
@@ -65,6 +104,37 @@ export class RedisKVStore implements KVStore {
     public async deleteIfValueEquals(key: string, expectedValue: string): Promise<boolean> {
         const n = await this.client.eval(COMPARE_AND_DELETE, {
             keys: [key],
+            arguments: [expectedValue]
+        });
+        return n === 1;
+    }
+
+    public async setNxWithCompanion(mainKey: string, companionKey: string, value: string, companionValue: string, ttlMs: number): Promise<boolean> {
+        const n = await this.client.eval(COMPARE_AND_SET_NX_WITH_COMPANION, {
+            keys: [mainKey, companionKey],
+            arguments: [value, String(ttlMs), companionValue]
+        });
+        return n === 1;
+    }
+
+    public async setIfValueEqualsWithCompanion(
+        mainKey: string,
+        companionKey: string,
+        expectedValue: string,
+        newValue: string,
+        companionValue: string,
+        ttlMs: number
+    ): Promise<boolean> {
+        const n = await this.client.eval(COMPARE_AND_SET_WITH_COMPANION, {
+            keys: [mainKey, companionKey],
+            arguments: [expectedValue, newValue, String(ttlMs), companionValue]
+        });
+        return n === 1;
+    }
+
+    public async deleteIfValueEqualsWithCompanion(mainKey: string, companionKey: string, expectedValue: string): Promise<boolean> {
+        const n = await this.client.eval(COMPARE_AND_DELETE_WITH_COMPANION, {
+            keys: [mainKey, companionKey],
             arguments: [expectedValue]
         });
         return n === 1;

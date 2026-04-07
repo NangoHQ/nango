@@ -70,6 +70,53 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(true);
     }
 
+    public async setNxWithCompanion(mainKey: string, companionKey: string, value: string, companionValue: string, ttlMs: number): Promise<boolean> {
+        const main = this.store.get(mainKey);
+        if (main !== undefined && !this.isExpired(main)) {
+            return Promise.resolve(false);
+        }
+        const now = Date.now();
+        const entry = { value, timestamp: now, ttlMs };
+        this.store.set(mainKey, entry);
+        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
+        return Promise.resolve(true);
+    }
+
+    public async setIfValueEqualsWithCompanion(
+        mainKey: string,
+        companionKey: string,
+        expectedValue: string,
+        newValue: string,
+        companionValue: string,
+        ttlMs: number
+    ): Promise<boolean> {
+        const res = this.store.get(mainKey);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        const now = Date.now();
+        const entry = { value: newValue, timestamp: now, ttlMs };
+        this.store.set(mainKey, entry);
+        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
+        return Promise.resolve(true);
+    }
+
+    public async deleteIfValueEqualsWithCompanion(mainKey: string, companionKey: string, expectedValue: string): Promise<boolean> {
+        const res = this.store.get(mainKey);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.delete(mainKey);
+        this.store.delete(companionKey);
+        return Promise.resolve(true);
+    }
+
     public async delete(key: string): Promise<void> {
         this.store.delete(key);
         return Promise.resolve();

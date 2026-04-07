@@ -7,6 +7,10 @@ import type { KVStore } from '@nangohq/kvstore';
 import type { Result } from '@nangohq/utils';
 
 const LOCK_STORAGE_PREFIX = 'runner:lock:';
+/** Secondary index: runner:lock:owner:<hash(owner)>:<hash(logicalKey)> — same TTL as the main lock key. */
+const LOCK_OWNER_INDEX_PREFIX = `${LOCK_STORAGE_PREFIX}owner:`;
+/** Placeholder value for owner-index entries (the key structure carries the identity). */
+const LOCK_OWNER_INDEX_VALUE = '1';
 
 interface Lock {
     key: string;
@@ -37,6 +41,28 @@ export class KVLocks implements Locks {
         return `${LOCK_STORAGE_PREFIX}${this.createHash(logicalKey)}`;
     }
 
+    /** Owner-scoped index entry so releaseAllLocks can scan only this owner's keys. */
+    private ownerIndexKey(owner: string, logicalKey: string): string {
+        return `${LOCK_OWNER_INDEX_PREFIX}${this.createHash(owner)}:${this.createHash(logicalKey)}`;
+    }
+
+    private ownerIndexScanPrefix(owner: string): string {
+        return `${LOCK_OWNER_INDEX_PREFIX}${this.createHash(owner)}:`;
+    }
+
+    /** Derive the main lock key from an owner index key (suffix after owner prefix is the logical-key hash). */
+    private mainKeyFromOwnerIndexKey(owner: string, indexKey: string): string | null {
+        const p = this.ownerIndexScanPrefix(owner);
+        if (!indexKey.startsWith(p)) {
+            return null;
+        }
+        const logicalHash = indexKey.slice(p.length);
+        if (!logicalHash) {
+            return null;
+        }
+        return `${LOCK_STORAGE_PREFIX}${logicalHash}`;
+    }
+
     private validateTryAcquireInputs(owner: string, key: string, ttlMs: number): Result<boolean> {
         if (!owner || owner.length === 0 || owner.length > 255) {
             return Err('Invalid lock owner (must be between 1 and 255 characters)');
@@ -57,26 +83,27 @@ export class KVLocks implements Locks {
         }
 
         const sk = this.storageKey(key);
+        const ik = this.ownerIndexKey(owner, key);
         try {
-            // Same-owner TTL refresh (atomic). No leading get — avoids a stale read before refresh.
-            if (await this.store.setIfValueEquals(sk, owner, owner, ttlMs)) {
+            // Same-owner TTL refresh (atomic on main + owner index). No leading get — avoids a stale read before refresh.
+            if (await this.store.setIfValueEqualsWithCompanion(sk, ik, owner, owner, LOCK_OWNER_INDEX_VALUE, ttlMs)) {
                 return Ok(true);
             }
 
-            await this.store.set(sk, owner, { canOverride: false, ttlMs });
-            return Ok(true);
-        } catch (err: any) {
-            if (err instanceof Error && err.message === 'set_key_already_exists') {
-                return Ok(false);
+            if (await this.store.setNxWithCompanion(sk, ik, owner, LOCK_OWNER_INDEX_VALUE, ttlMs)) {
+                return Ok(true);
             }
+            return Ok(false);
+        } catch (err: any) {
             return Err(new Error(`Error acquiring lock for key ${key}`, { cause: err }));
         }
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
         const sk = this.storageKey(key);
+        const ik = this.ownerIndexKey(owner, key);
         try {
-            const deleted = await this.store.deleteIfValueEquals(sk, owner);
+            const deleted = await this.store.deleteIfValueEqualsWithCompanion(sk, ik, owner);
             return Ok(deleted);
         } catch (err: any) {
             return Err(new Error(`Error releasing lock for key ${key}`, { cause: err }));
@@ -85,8 +112,14 @@ export class KVLocks implements Locks {
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
         try {
-            for await (const sk of this.store.scan(`${LOCK_STORAGE_PREFIX}*`)) {
-                await this.store.deleteIfValueEquals(sk, owner);
+            const prefix = this.ownerIndexScanPrefix(owner);
+            for await (const ik of this.store.scan(`${prefix}*`)) {
+                const sk = this.mainKeyFromOwnerIndexKey(owner, ik);
+                if (sk) {
+                    await this.store.deleteIfValueEqualsWithCompanion(sk, ik, owner);
+                }
+                // Drop index entry even if we no longer hold the main lock (stale index after handoff or TTL skew).
+                await this.store.delete(ik);
             }
             return Ok(undefined);
         } catch (err: any) {

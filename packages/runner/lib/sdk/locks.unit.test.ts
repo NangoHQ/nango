@@ -190,7 +190,9 @@ describe('KVLocks race regressions', () => {
         expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'reassigned', ttlMs: 10_000 })).unwrap()).toBe(true);
         const keys: string[] = [];
         for await (const k of store.scan('runner:lock:*')) {
-            keys.push(k);
+            if (!k.startsWith('runner:lock:owner:')) {
+                keys.push(k);
+            }
         }
         expect(keys).toHaveLength(1);
         await store.set(keys[0]!, 'owner2', { canOverride: true, ttlMs: 10_000 });
