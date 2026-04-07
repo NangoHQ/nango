@@ -1,0 +1,45 @@
+---
+title: ClickHouse - How do I link my account?
+sidebarTitle: ClickHouse
+---
+
+# Overview
+
+To authenticate with ClickHouse Cloud, you will need:
+
+1. **Key ID** – Your ClickHouse Cloud API Key ID; used as the Basic Auth username.
+2. **Key Secret** – Your ClickHouse Cloud API Key Secret; used as the Basic Auth password. Keep it secure.
+
+### Prerequisites
+
+- A ClickHouse Cloud account with an active organization.
+
+### Instructions
+
+#### Step 1: Create an API key
+
+1. Log in to your ClickHouse Cloud console and navigate to the [Profile](https://console.clickhouse.cloud/profile) page.
+2. Navigate to your organization settings and go to **API Keys**.
+3. Click **Generate API Key**.
+
+<img src="/api-integrations/clickhouse/api_key.png"/>
+
+4. Give the key a name and select the appropriate role/permissions.
+
+<img src="/api-integrations/clickhouse/create_api_key_form.png"/>
+
+5. Click **Create** and copy both the **Key ID** and **Key Secret** — the secret is only shown once.
+
+<img src="/api-integrations/clickhouse/generated_key.png"/>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Key ID** and **Key Secret**:
+
+1. Open the form where you need to authenticate with ClickHouse.
+2. Enter your **Key ID** and **Key Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/clickhouse/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to ClickHouse Cloud.

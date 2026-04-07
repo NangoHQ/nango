@@ -347,6 +347,7 @@
               "integrations/all/clari-copilot",
               "api-integrations/clay",
               "api-integrations/cleverreach",
+              "api-integrations/clickhouse",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",

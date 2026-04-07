@@ -3671,6 +3671,38 @@ cleverreach:
     docs: https://nango.dev/docs/api-integrations/cleverreach
     setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app
 
+clickhouse:
+    display_name: ClickHouse
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.clickhouse.cloud
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/organizations
+    docs: https://nango.dev/docs/api-integrations/clickhouse
+    docs_connect: https://nango.dev/docs/api-integrations/clickhouse/connect
+    credentials:
+        username:
+            type: string
+            title: Key ID
+            description: Your ClickHouse Cloud API Key ID.
+            pattern: '^[a-zA-Z0-9]+$'
+            example: 'Mlx1****************'
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Key Secret
+            description: Your ClickHouse Cloud API Key Secret.
+            secret: true
+            pattern: '^[a-zA-Z0-9]+$'
+            example: '4b1d2i7O**********************************'
+            doc_section: '#step-1-create-an-api-key'
+
 clicksend:
     display_name: ClickSend
     categories:
