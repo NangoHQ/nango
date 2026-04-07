@@ -83,7 +83,7 @@
             "path": "packages/types"
         },
         {
-            "path": "packages/account-usage"
+            "path": "packages/usage"
         },
         {
             "path": "packages/email"

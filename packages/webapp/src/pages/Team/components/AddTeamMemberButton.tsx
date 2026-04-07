@@ -8,6 +8,7 @@ import { permissions } from '@nangohq/authz';
 
 import { RoleSelect } from './RoleSelect';
 import { PermissionGate } from '@/components-v2/PermissionGate';
+import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
@@ -72,36 +73,44 @@ export const AddTeamMemberButton = () => {
                 <DialogHeader>
                     <DialogTitle>Invite a team member</DialogTitle>
                 </DialogHeader>
-                <Form {...form}>
-                    <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="flex items-start gap-2">
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field, fieldState }) => (
-                                    <FormItem className="flex-1">
-                                        <FormControl>
-                                            <InputGroup>
-                                                <InputGroupInput
-                                                    placeholder="name@company.com"
-                                                    autoComplete="off"
-                                                    {...field}
-                                                    aria-invalid={!!fieldState.error}
-                                                />
-                                            </InputGroup>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Controller
-                                control={form.control}
-                                name="role"
-                                render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} />}
-                            />
-                        </div>
-                    </form>
-                </Form>
+
+                <div className="flex flex-col gap-4">
+                    <Form {...form}>
+                        <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
+                            <div className="flex items-start gap-2">
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field, fieldState }) => (
+                                        <FormItem className="flex-1">
+                                            <FormControl>
+                                                <InputGroup>
+                                                    <InputGroupInput
+                                                        placeholder="name@company.com"
+                                                        autoComplete="off"
+                                                        {...field}
+                                                        aria-invalid={!!fieldState.error}
+                                                    />
+                                                </InputGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Controller
+                                    control={form.control}
+                                    name="role"
+                                    render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} />}
+                                />
+                            </div>
+                        </form>
+                    </Form>
+
+                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" type="external" icon>
+                        Learn more about roles and permissions
+                    </StyledLink>
+                </div>
+
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="secondary">Cancel</Button>

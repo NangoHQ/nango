@@ -724,6 +724,46 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should use ConnectWise PSA custom hostname when provided', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { hostname: 'psa.example.com', subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://psa.example.com/v4_6_release/apis/3.0/api/test');
+    });
+
+    it('should keep ConnectWise PSA subdomain behavior when custom hostname is absent', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://api-na.myconnectwise.net/v4_6_release/apis/3.0/api/test');
+    });
+
     it('should handle Proxy base URL interpolation with hostname when connection configuration param is present', () => {
         const config = getDefaultProxy({
             provider: {

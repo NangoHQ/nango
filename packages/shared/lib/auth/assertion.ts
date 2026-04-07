@@ -6,6 +6,7 @@ import { SignedXml } from 'xml-crypto';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { signJWT } from './jwt.js';
 import { AuthCredentialsError } from '../utils/error.js';
 import { formatPem, interpolateObject, interpolateString } from '../utils/utils.js';
 
@@ -264,7 +265,7 @@ function createSignedAssertion(options: SamlAssertionOptions): string {
     return Buffer.from(xml).toString('base64');
 }
 
-export function generateAssertion({
+export function generateSamlAssertion({
     provider,
     dynamicCredentials,
     connectionConfig,
@@ -315,5 +316,59 @@ export function generateAssertion({
         return Ok(assertion);
     } catch (err) {
         return Err(new AuthCredentialsError('failed_to_generate_assertion', { cause: err }));
+    }
+}
+
+export function generateJwtAssertion({
+    provider,
+    dynamicCredentials,
+    connectionConfig,
+    assertionOption
+}: {
+    provider: ProviderTwoStep;
+    dynamicCredentials: Record<string, any>;
+    connectionConfig: Record<string, string>;
+    assertionOption?: Record<string, any>;
+}): Result<string, AuthCredentialsError> {
+    try {
+        const providerAssertion = provider.assertion;
+        if (!providerAssertion) {
+            return Err(new AuthCredentialsError('missing_assertion_config'));
+        }
+
+        if (!providerAssertion.key) {
+            return Err(new AuthCredentialsError('missing_private_key'));
+        }
+
+        const interpolationValues = {
+            credentials: dynamicCredentials,
+            connectionConfig: connectionConfig || {},
+            assertionOption: assertionOption || {}
+        };
+
+        const signingKey = interpolateString(providerAssertion.key, interpolationValues);
+        const lifetimeInSeconds = providerAssertion.lifetimeInSeconds ?? 3600;
+        const now = Math.floor(Date.now() / 1000);
+
+        const header: Record<string, any> = {};
+        for (const [k, v] of Object.entries(providerAssertion.header ?? {})) {
+            header[k] = interpolateString(v, interpolationValues);
+        }
+
+        // add more properties to the payload
+        const payload: Record<string, any> = {
+            iat: now,
+            exp: now + lifetimeInSeconds
+        };
+        for (const [k, v] of Object.entries(providerAssertion.payload ?? {})) {
+            payload[k] = interpolateString(v, interpolationValues);
+        }
+
+        const privateKey = generatePrivateKey(signingKey);
+        const token = signJWT({ payload, secretOrPrivateKey: privateKey, options: { header } });
+
+        return Ok(token);
+    } catch (err) {
+        return Err(err instanceof AuthCredentialsError ? err : new AuthCredentialsError('failed_to_generate_jwt_assertion', { cause: err }));
     }
 }

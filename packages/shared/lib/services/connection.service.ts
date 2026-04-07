@@ -10,10 +10,10 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 
 import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
+import * as assertionClient from '../auth/assertion.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
-import * as samlClient from '../auth/samlAssertion.js';
 import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
@@ -1352,12 +1352,21 @@ class ConnectionService {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
-            const create = samlClient.generateAssertion({
-                provider,
-                dynamicCredentials: credentials,
-                connectionConfig,
-                ...(assertionOption && { assertionOption })
-            });
+            const assertionType = provider.assertion.type;
+            const create =
+                assertionType === 'jwt'
+                    ? assertionClient.generateJwtAssertion({
+                          provider,
+                          dynamicCredentials: credentials,
+                          connectionConfig,
+                          ...(assertionOption && { assertionOption })
+                      })
+                    : assertionClient.generateSamlAssertion({
+                          provider,
+                          dynamicCredentials: credentials,
+                          connectionConfig,
+                          ...(assertionOption && { assertionOption })
+                      });
 
             if (create.isErr()) {
                 console.log(create.error);

@@ -1,0 +1,51 @@
+---
+title: ConnectWise PSA - How do I link my account?
+sidebarTitle: ConnectWise PSA
+---
+
+# Overview
+
+To authenticate with ConnectWise PSA, you need:
+1. **Hostname** - The full ConnectWise PSA hostname for your tenant.
+2. **API Version** - The API version to include in the ConnectWise PSA `Accept` header.
+3. **Client ID** - The Client ID assigned to your integration.
+4. **Username** - Your Company ID followed by your public key, integrator username, or member ID.
+5. **Password** - Your private key, integrator password, or member hash.
+
+### Prerequisites
+
+- Access to your ConnectWise PSA tenant.
+- ConnectWise PSA API credentials and a Client ID.
+
+### Instructions
+
+##### Step 1: Find your hostname and API version
+
+For standard cloud tenants, use one of the full ConnectWise PSA hostnames below:
+
+- `api-na.myconnectwise.net`
+- `api-eu.myconnectwise.net`
+- `api-au.myconnectwise.net`
+
+If your tenant uses a custom domain, enter that hostname instead, for example `cw.example.com`.
+
+Enter the hostname only, without the protocol or API path. For API version details, see [Versioning](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Versioning).
+
+##### Step 2: Get your Client ID and API credentials
+
+Use the [Client ID](https://developer.connectwise.com/ClientID) page to obtain your Client ID.
+
+Then follow [How to obtain your keys](https://developer.connectwise.com/Products/ConnectWise_PSA/Developer_Guide#Obtaining_your_Keys) to generate your API credentials.
+
+ConnectWise PSA uses BASIC authentication:
+
+- **Username** starts with your Company ID, followed by your public key, integrator username, or member ID.
+- **Password** is your private key, integrator password, or member hash.
+
+##### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ConnectWise PSA.
+2. Enter your **Hostname**, **API Version**, **Client ID**, **Username**, and **Password**.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to ConnectWise PSA.

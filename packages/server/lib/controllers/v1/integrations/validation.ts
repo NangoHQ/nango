@@ -69,11 +69,19 @@ export const integrationAuthTypeInstallPluginSchema = z
     })
     .strict();
 
+export const integrationAuthTypeOAuth2CCSchema = z
+    .object({
+        authType: z.enum(['OAUTH2_CC']),
+        scopes: scopesSchema
+    })
+    .strict();
+
 // Discriminated union for all auth types
 export const integrationAuthTypeSchema = z.discriminatedUnion(
     'authType',
     [
         integrationAuthTypeOAuthSchema,
+        integrationAuthTypeOAuth2CCSchema,
         integrationAuthTypeAppSchema,
         integrationAuthTypeCustomSchema,
         integrationAuthTypeMcpOAuth2Schema,

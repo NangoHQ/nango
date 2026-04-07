@@ -318,6 +318,18 @@ const { data } = await nango.createConnectSession({
     ```
     When set to empty strings, Connect UI will display optional input fields for users to enter their own OAuth app credentials.
   </ResponseField>
+
+  <ResponseField name="overrides" type="object">
+    Override Connect UI settings per integration. The key is your integration's unique ID (e.g. `jira`, `slack`, `github`) and the value is an object with the settings to override. Currently supports overriding the documentation URL shown in info icons during the connect flow:
+    ```js
+    overrides: {
+      '<INTEGRATION-ID>': {
+        docs_connect: 'https://your-docs.com/how-to-connect'
+      }
+    }
+    ```
+    Available on the [Growth plan](https://www.nango.dev/pricing).
+  </ResponseField>
 </Expandable>
 
 **Returns**
