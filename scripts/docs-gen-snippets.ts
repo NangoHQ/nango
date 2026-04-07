@@ -25,6 +25,9 @@ const providersPath = 'packages/providers/providers.yaml';
 const docsPaths = ['docs/integrations/all', 'docs/api-integrations'];
 const snippetsPath = 'docs/snippets/generated';
 
+// TODO: remove once alias providers declare webhook support in providers.yaml explicitly.
+const snippetSkipList = new Set(['confluence']);
+
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
 const flows = JSON.parse(flowsString);
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
@@ -50,6 +53,11 @@ for (const docsPath of docsPaths) {
             // Skip if already processed from another directory
             if (providersHandled.includes(provider)) {
                 console.log(`Skipping ${provider} (already processed from another directory)`);
+                continue;
+            }
+
+            if (snippetSkipList.has(provider)) {
+                providersHandled.push(provider);
                 continue;
             }
 
@@ -96,8 +104,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, isAlias
     const hasAuthParams = !!providerConfig.authorization_params;
     const hasAuthGuide = !!providerConfig.docs_connect;
     const hasUseCases = useCases && useCases.length > 0;
-    // TODO: aliases inherit webhook_routing_script from their parent at runtime — verify per-alias
-    // whether webhooks are truly supported before showing ✅ for aliased providers.
+    // TODO: remove once alias providers declare webhook support in providers.yaml explicitly.
     const hasWebHooks = !isAlias && !!providerConfig.webhook_routing_script;
     const hasPagination = !!providerConfig.proxy?.paginate;
     const hasRateLimit = !!providerConfig.proxy?.retry?.at;
