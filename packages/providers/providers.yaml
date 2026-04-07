@@ -8314,6 +8314,46 @@ hackerrank-work:
             default_value: ''
             hidden: true
 
+halo-psa:
+    display_name: Halo PSA
+    categories:
+        - support
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/auth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    default_scopes:
+        - all
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://nango.dev/docs/api-integrations/halo-psa
+    docs_connect: https://nango.dev/docs/api-integrations/halo-psa/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Halo PSA hostname.
+            example: example.halopsa.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-halo-api-details'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Halo PSA API application Client ID
+            doc_section: '#step-3-create-an-api-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Halo PSA API application Client Secret
+            secret: true
+            doc_section: '#step-3-create-an-api-application'
+
 harvest:
     display_name: Harvest
     categories:

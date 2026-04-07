@@ -531,6 +531,7 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/halo-psa",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
               "integrations/all/heap",

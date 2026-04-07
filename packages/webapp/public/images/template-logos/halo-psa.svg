@@ -1,0 +1,6 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="64" height="64" rx="8" fill="white"/>
+<circle cx="32" cy="32" r="22" fill="#101820"/>
+<circle cx="32" cy="32" r="14" stroke="#00AEEF" stroke-width="4"/>
+<text x="32" y="35" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="7" font-weight="700">HALO</text>
+</svg>
