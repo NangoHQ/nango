@@ -1,10 +1,9 @@
 import { LogOut } from 'lucide-react';
-import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { SignupForm } from './components/SignupForm';
-import { apiAcceptInvite, apiDeclineInvite, useInvite } from '../../hooks/useInvite';
+import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
@@ -20,32 +19,26 @@ export const InviteSignup: React.FC = () => {
 
     const { user: isLogged } = useUser();
     const { data: inviteResponse, error: inviteError, isPending: _isInvitePending } = useInvite(token);
-    const [loadingDecline, setLoadingDecline] = useState(false);
-    const [loadingAccept, setLoadingAccept] = useState(false);
+    const acceptInvite = useAcceptInvite();
+    const declineInvite = useDeclineInvite();
 
     const onAccept = async () => {
-        setLoadingAccept(true);
-
-        const accepted = await apiAcceptInvite(token!);
-        if (accepted.res.status === 200) {
+        try {
+            await acceptInvite.mutateAsync({ token: token! });
             toast({ title: `You joined the team`, variant: 'success' });
             navigate('/');
-        } else {
+        } catch {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         }
-        setLoadingAccept(false);
     };
     const onDecline = async () => {
-        setLoadingDecline(true);
-
-        const declined = await apiDeclineInvite(token!);
-        if (declined.res.status === 200) {
+        try {
+            await declineInvite.mutateAsync({ token: token! });
             toast({ title: `You declined the invitation`, variant: 'success' });
             navigate('/');
-        } else {
+        } catch {
             toast({ title: 'An unexpected error occurred', variant: 'error' });
         }
-        setLoadingDecline(false);
     };
 
     if (inviteError) {
@@ -146,10 +139,10 @@ export const InviteSignup: React.FC = () => {
 
             {isLogged ? (
                 <div className="flex gap-2 items-center justify-center">
-                    <Button variant="secondary" size="lg" onClick={onDecline} disabled={loadingAccept} loading={loadingDecline}>
+                    <Button variant="secondary" size="lg" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
                         Decline
                     </Button>
-                    <Button variant="destructive" size="lg" onClick={onAccept} disabled={loadingDecline} loading={loadingAccept}>
+                    <Button variant="destructive" size="lg" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
                         Join a different team
                     </Button>
                 </div>

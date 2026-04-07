@@ -42,7 +42,6 @@ export type * from './scripts/on-events/db.js';
 export type * from './scripts/on-events/api.js';
 export type * from './scripts/syncs/api.js';
 export type * from './scripts/http.api.js';
-export type * from './apiStatus/api.js';
 export type * from './slackNotifications/db.js';
 export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
@@ -96,3 +95,6 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+
+export type * from './lambda/index.js';
+export type * from './authz/types.js';

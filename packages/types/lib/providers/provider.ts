@@ -50,6 +50,7 @@ export interface BaseProvider {
         query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
+        forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
@@ -223,6 +224,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_request_method?: 'GET';
     }[];
     assertion?: {
+        type?: 'saml' | 'jwt';
         key?: string;
         issuer?: string;
         lifetimeInSeconds?: number;
@@ -230,6 +232,9 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
         sessionIndex?: string;
         recipient?: string;
+        // jwt-specific
+        header?: Record<string, string>;
+        payload?: Record<string, string>;
     };
     assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;

@@ -280,6 +280,7 @@ class OAuthController {
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
+                    req,
                     res,
                     connectionConfig,
                     authorizationParams,
@@ -289,13 +290,22 @@ class OAuthController {
                 });
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
-                await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                await this.appRequest(provider, config, session, req, res, authorizationParams, logCtx);
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
-                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, req, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
-                await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpGenericRequest({
+                    provider: provider as ProviderMcpOAuth2Generic,
+                    config,
+                    session,
+                    req,
+                    res,
+                    connectionConfig,
+                    callbackUrl,
+                    logCtx
+                });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -335,7 +345,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        let connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -483,6 +493,10 @@ class OAuthController {
                 return;
             }
 
+            const tokenMetadata = getConnectionMetadata(credentials.raw, provider, 'token_response_metadata');
+
+            connectionConfig = { ...connectionConfig, ...tokenMetadata };
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
@@ -595,6 +609,7 @@ class OAuthController {
         provider,
         providerConfig,
         session,
+        req,
         res,
         connectionConfig,
         authorizationParams,
@@ -605,6 +620,7 @@ class OAuthController {
         provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
@@ -730,6 +746,13 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
+                res.cookie(`oauth2-${session.id}`, '1', {
+                    maxAge: 60 * 60 * 1000,
+                    secure: req.secure,
+                    httpOnly: true,
+                    sameSite: req.secure ? 'none' : 'lax'
+                });
+
                 res.redirect(authorizationUri);
             } else {
                 const grantType = provider.token_params.grant_type;
@@ -761,6 +784,7 @@ class OAuthController {
         provider: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
+        req: Request,
         res: Response,
         authorizationParams: Record<string, string | undefined>,
         logCtx: LogContext
@@ -800,6 +824,13 @@ class OAuthController {
             const authorizationUri = `${appUrl}?${params.toString()}`;
 
             void logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
+
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
 
             res.redirect(authorizationUri);
         } catch (err) {
@@ -843,6 +874,7 @@ class OAuthController {
         provider,
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -851,6 +883,7 @@ class OAuthController {
         provider: ProviderMcpOAUTH2;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -912,6 +945,13 @@ class OAuthController {
                 scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
             });
 
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
+
             res.redirect(authorizationUri);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -926,6 +966,7 @@ class OAuthController {
     private async mcpGenericRequest({
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -934,6 +975,7 @@ class OAuthController {
         provider: ProviderMcpOAuth2Generic;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -1017,6 +1059,12 @@ class OAuthController {
                 scopes: scopes || ''
             });
 
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
             res.redirect(authResult.authorizationUrl.href);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -1146,6 +1194,19 @@ class OAuthController {
 
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
+
+            if (
+                (session.authMode === 'OAUTH2' ||
+                    session.authMode === 'CUSTOM' ||
+                    session.authMode === 'MCP_OAUTH2' ||
+                    session.authMode === 'MCP_OAUTH2_GENERIC') &&
+                req.cookies[`oauth2-${session.id}`] !== '1'
+            ) {
+                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
+                    account_id: account.id,
+                    auth_mode: session.authMode
+                });
+            }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);

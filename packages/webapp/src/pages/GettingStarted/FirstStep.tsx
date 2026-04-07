@@ -28,7 +28,8 @@ interface FirstStepProps {
 
 export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnectClicked, onConnected, onDisconnected }) => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const { user } = useUser();
 
     const { toast } = useToast();

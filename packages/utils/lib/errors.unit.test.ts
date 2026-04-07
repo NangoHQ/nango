@@ -34,62 +34,12 @@ describe('stringifyError', () => {
             expect(() => stringifyError(404)).not.toThrow();
         });
 
-        it('should filter axios response.data.error to whitelisted message fields only', () => {
-            const err: any = {
-                response: {
-                    data: {
-                        error: {
-                            message: 'Invalid credentials',
-                            error: 'unauthorized',
-                            error_description: 'Access denied',
-                            detail: 'User not found',
-                            timestamp: '2024-01-01',
-                            request_id: 'abc123'
-                        }
-                    }
-                }
-            };
-
-            const parsed = JSON.parse(stringifyError(err));
-
-            expect(parsed.provider_error_payload).toEqual({
-                message: 'Invalid credentials',
-                error: 'unauthorized',
-                error_description: 'Access denied',
-                detail: 'User not found'
-            });
-        });
-
-        it('should extract provider_error_payload from response.data.error object', () => {
-            const err: any = {
-                response: {
-                    data: {
-                        error: {
-                            reason: 'token_expired',
-                            description: 'The access token has expired',
-                            timestamp: '2024-01-01',
-                            request_id: 'abc123'
-                        }
-                    }
-                }
-            };
-
-            const parsed = JSON.parse(stringifyError(err));
-
-            expect(parsed.provider_error_payload).toEqual({
-                reason: 'token_expired',
-                description: 'The access token has expired'
-            });
-        });
-
         it('should not include provider_error_payload if no whitelisted fields match', () => {
             const err: any = {
                 response: {
                     data: {
-                        error: {
-                            timestamp: '2024-01-01',
-                            request_id: 'abc123'
-                        }
+                        timestamp: '2024-01-01',
+                        request_id: 'abc123'
                     }
                 }
             };
@@ -98,12 +48,128 @@ describe('stringifyError', () => {
             expect(parsed).not.toHaveProperty('provider_error_payload');
         });
 
+        it('should set provider_error_payload to the string directly when response.data is a string', () => {
+            const err: any = { response: { data: 'Unauthorized User' } };
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed.provider_error_payload).toEqual('Unauthorized User');
+        });
+
         it('should not extract provider_error_payload for invalid response.data structures', () => {
-            const cases = [{ response: { data: null } }, { response: { data: 'string response' } }, { response: { data: { error: {} } } }];
+            const cases = [{ response: { data: null } }, { response: { data: { error: {} } } }];
 
             cases.forEach((err) => {
                 expect(JSON.parse(stringifyError(err))).not.toHaveProperty('provider_error_payload');
             });
+        });
+
+        it('should extract top-level string error fields from response.data', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: 'invalid_grant',
+                        error_description: 'Token has expired'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed.provider_error_payload).toEqual({
+                error: 'invalid_grant',
+                error_description: 'Token has expired'
+            });
+        });
+
+        it('should extract top-level message/detail fields from response.data when no nested error object', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        message: 'Not found',
+                        detail: 'Resource does not exist',
+                        timestamp: '2024-01-01'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed.provider_error_payload).toEqual({
+                message: 'Not found',
+                detail: 'Resource does not exist'
+            });
+        });
+
+        it('should extract all matching PROVIDER_ERROR_MESSAGE_FIELDS from response.data', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: 'unauthorized',
+                        error_message: 'Access denied',
+                        details: 'Insufficient permissions',
+                        reason: 'scope_missing',
+                        description: 'Required scope not granted',
+                        request_id: 'abc123'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed.provider_error_payload).toEqual({
+                error: 'unauthorized',
+                error_message: 'Access denied',
+                details: 'Insufficient permissions',
+                reason: 'scope_missing',
+                description: 'Required scope not granted'
+            });
+        });
+
+        it('should extract whitelisted fields from nested error object and top-level primitive fields', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: { message: 'Nested error message', code: 401 },
+                        error_description: 'Top-level description'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            // 'message' extracted from nested error object, 'error_description' from top-level
+            expect(parsed.provider_error_payload).toEqual({
+                message: 'Nested error message',
+                error_description: 'Top-level description'
+            });
+        });
+
+        it('should allow top-level fields to override same fields from nested error object', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        error: { message: 'Nested message', description: 'Nested description' },
+                        message: 'Top-level message'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            // top-level 'message' overrides the same field from nested error object
+            expect(parsed.provider_error_payload).toEqual({
+                message: 'Top-level message',
+                description: 'Nested description'
+            });
+        });
+
+        it('should not set provider_error_payload when response.data has no PROVIDER_ERROR_MESSAGE_FIELDS', () => {
+            const err: any = {
+                response: {
+                    data: {
+                        code: 404,
+                        timestamp: '2024-01-01',
+                        requestId: 'abc123'
+                    }
+                }
+            };
+
+            const parsed = JSON.parse(stringifyError(err));
+            expect(parsed).not.toHaveProperty('provider_error_payload');
         });
 
         it('should extract Boom-style data.payload', () => {
@@ -129,7 +195,8 @@ describe('stringifyError', () => {
             const err: any = {
                 response: {
                     data: {
-                        error: { message: 'Axios error' }
+                        error: 'invalid_grant',
+                        message: 'Axios error'
                     }
                 },
                 data: {
@@ -138,7 +205,7 @@ describe('stringifyError', () => {
             };
 
             const parsed = JSON.parse(stringifyError(err));
-            expect(parsed.provider_error_payload).toEqual({ message: 'Axios error' });
+            expect(parsed.provider_error_payload).toEqual({ error: 'invalid_grant', message: 'Axios error' });
         });
 
         it('should format with pretty printing when opts.pretty is true', () => {

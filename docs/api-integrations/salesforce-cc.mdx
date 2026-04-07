@@ -1,0 +1,84 @@
+---
+title: 'Salesforce (Client Credentials)'
+sidebarTitle: 'Salesforce (Client Credentials)'
+description: 'Integrate your application with the Salesforce (Client Credentials) API'
+---
+
+
+## 🚀 Quickstart
+
+Connect to Salesforce with Nango using client credentials and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Salesforce (Client Credentials)_.
+    </Step>
+    <Step title="Authorize Salesforce">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Client ID, Client Secret, and Hostname. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Salesforce API">
+    Let's make your first request to the Salesforce API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/services/data/v58.0/query?q=SELECT+Id,FirstName,LastName,Email+FROM+Contact+LIMIT+10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/services/data/v58.0/query',
+            params: { q: "SELECT Id,FirstName,LastName,Email FROM Contact LIMIT 10" },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Salesforce (Client Credentials) Integration Guides
+
+- [How do I link my account?](/api-integrations/salesforce-cc/connect)  
+  Learn how to obtain your Client ID, Client Secret, and Hostname from Salesforce and use them to connect your account using the Connect UI.
+
+Official docs: [Salesforce API docs](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest.htm)
+
+## 🧩 Pre-built syncs & actions for Salesforce (Client Credentials)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+
+## Going further
+
+<Card title="Connect to Salesforce (Client Credentials)" icon="link" href="/api-integrations/salesforce-cc/connect" horizontal>
+  Guide to connect to Salesforce (Client Credentials) using Connect UI
+</Card>
+---  

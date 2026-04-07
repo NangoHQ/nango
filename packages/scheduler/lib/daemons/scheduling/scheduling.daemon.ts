@@ -56,39 +56,36 @@ export class SchedulingDaemon extends SchedulerDaemon {
                         if (getDueSchedules.isErr()) {
                             throw new Error(`Failed to get due schedules: ${stringifyError(getDueSchedules.error)}`);
                         } else {
-                            await tracer.trace('scheduler.scheduling.tasks_creation', async () => {
+                            await tracer.trace('scheduler.scheduling.tasks_creation', async (span) => {
                                 const now = new Date();
-                                const createTasks = getDueSchedules.value.map((schedule) =>
-                                    tasks.create(trx, {
-                                        scheduleId: schedule.id,
-                                        startsAfter: now,
-                                        name: `${schedule.name}:${now.toISOString()}`,
-                                        payload: schedule.payload,
-                                        groupKey: schedule.groupKey,
-                                        groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
-                                        retryCount: 0,
-                                        retryMax: schedule.retryMax,
-                                        createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                                        startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                                        heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                                        ownerKey: null
-                                    })
-                                );
-                                const res = await Promise.allSettled(createTasks);
+                                const taskProps = getDueSchedules.value.map((schedule) => ({
+                                    scheduleId: schedule.id,
+                                    startsAfter: now,
+                                    name: `${schedule.name}:${now.toISOString()}`,
+                                    payload: schedule.payload,
+                                    groupKey: schedule.groupKey,
+                                    groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
+                                    retryCount: 0,
+                                    retryMax: schedule.retryMax,
+                                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                                    ownerKey: null
+                                }));
+                                const createRes = await tasks.create(trx, taskProps);
+                                if (createRes.isErr()) {
+                                    throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
+                                }
+                                if (createRes.value.cappedGroupKeys.length > 0) {
+                                    logger.warn(`Capped scheduling tasks for group keys: ${createRes.value.cappedGroupKeys.join(', ')}`);
+                                }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];
-                                for (const taskRes of res) {
-                                    if (taskRes.status === 'rejected') {
-                                        logger.error(`Failed to schedule task: ${taskRes.reason}`);
-                                    } else if (taskRes.value.isErr()) {
-                                        logger.error(`Failed to schedule task: ${stringifyError(taskRes.value.error)}`);
-                                    } else {
-                                        const task = taskRes.value.value;
-                                        if (task.scheduleId) {
-                                            scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
-                                        }
-                                        scheduledTasks.push(task);
+                                for (const task of createRes.value.tasks) {
+                                    if (task.scheduleId) {
+                                        scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
                                     }
+                                    scheduledTasks.push(task);
                                 }
 
                                 // Update the last scheduled task for each schedule
@@ -96,6 +93,10 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                 if (scheduleRes.isErr()) {
                                     logger.error(`Error updating schedules with last scheduled task: ${stringifyError(scheduleRes.error)}`);
                                 }
+
+                                span.addTags({
+                                    'scheduling.scheduled': scheduledTasks.length
+                                });
 
                                 // Notify the listeners about the scheduled tasks
                                 scheduledTasks.forEach((task) => this.onScheduling(task));

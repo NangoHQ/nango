@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
+import { ProxyError, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
@@ -724,6 +724,46 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should use ConnectWise PSA custom hostname when provided', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { hostname: 'psa.example.com', subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://psa.example.com/v4_6_release/apis/3.0/api/test');
+    });
+
+    it('should keep ConnectWise PSA subdomain behavior when custom hostname is absent', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://api-na.myconnectwise.net/v4_6_release/apis/3.0/api/test');
+    });
+
     it('should handle Proxy base URL interpolation with hostname when connection configuration param is present', () => {
         const config = getDefaultProxy({
             provider: {
@@ -763,6 +803,46 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://amplitude.com/api/test');
+    });
+
+    it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { region: 'na' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-na.amazon.com/api/test');
+    });
+
+    it('should use first base URL when subdomain connectionConfig param is present (e.g. amazon-selling-partner with subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { subdomain: 'sellingpartnerapi', region: 'eu' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-eu.amazon.com/api/test');
     });
 
     it('should construct url with a string query params with ?', () => {
@@ -975,6 +1055,41 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://my-secret-key.example.com/api/test');
+    });
+});
+
+describe('getAxiosConfiguration', () => {
+    it('should set beforeRedirect by default (headers are forwarded on redirect by default)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
+    });
+
+    it('should set beforeRedirect when forwardHeadersOnRedirect is false (to track metric)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            forwardHeadersOnRedirect: false
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
     });
 });
 

@@ -1,7 +1,7 @@
+import { permissions } from '@nangohq/authz';
 import { configService, countSyncConfigByConfigId, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions } from '../../../authz/permissions.js';
 import { resolve } from '../../../authz/resolve.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';

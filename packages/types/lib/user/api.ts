@@ -36,6 +36,7 @@ export interface ApiUser {
     email: string;
     name: string;
     uuid: string;
+    role: Role;
     gettingStartedClosed: boolean;
 }
 

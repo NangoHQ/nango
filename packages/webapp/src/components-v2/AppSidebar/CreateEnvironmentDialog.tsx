@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader } from 'lucide-react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
@@ -9,9 +8,9 @@ import { Button } from '../ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
-import { apiPostEnvironment } from '@/hooks/useEnvironment';
-import { useMeta } from '@/hooks/useMeta';
+import { usePostEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
+import { APIError } from '@/utils/api';
 
 interface CreateEnvironmentDialogProps {
     open: boolean;
@@ -37,31 +36,28 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
 
     const { toast } = useToast();
     const navigate = useNavigate();
-    const { refetch: refetchMeta } = useMeta();
-
-    const [loading, setLoading] = useState(false);
+    const { mutateAsync: postEnvironmentAsync, isPending } = usePostEnvironment();
 
     async function onSubmit(data: EnvironmentForm) {
-        setLoading(true);
-
-        const res = await apiPostEnvironment({ name: data.name });
-        if ('error' in res.json) {
-            const err = res.json.error;
-            if (err.code === 'invalid_body') {
-                form.setError('name', { message: 'Invalid environment name' });
-            } else if (['conflict', 'feature_disabled', 'resource_capped'].includes(err.code)) {
-                toast({ title: err.message, variant: 'error' });
+        try {
+            const res = await postEnvironmentAsync({ name: data.name });
+            navigate(`/${res.data.name}`);
+            onOpenChange(false);
+            form.reset();
+        } catch (err) {
+            if (err instanceof APIError && 'error' in err.json) {
+                const apiErr = err.json.error;
+                if (apiErr.code === 'invalid_body') {
+                    form.setError('name', { message: 'Invalid environment name' });
+                } else if (['conflict', 'feature_disabled', 'resource_capped'].includes(apiErr.code)) {
+                    toast({ title: apiErr.message, variant: 'error' });
+                } else {
+                    toast({ title: 'Failed to create environment', variant: 'error' });
+                }
             } else {
                 toast({ title: 'Failed to create environment', variant: 'error' });
             }
-        } else {
-            navigate(`/${res.json.data.name}`);
-            onOpenChange(false);
-            form.reset();
-            void refetchMeta();
         }
-
-        setLoading(false);
     }
 
     return (
@@ -89,8 +85,8 @@ export const CreateEnvironmentDialog: React.FC<CreateEnvironmentDialogProps> = (
                             <DialogClose asChild>
                                 <Button variant="secondary">Cancel</Button>
                             </DialogClose>
-                            <Button variant="primary" type="submit" disabled={loading}>
-                                {loading && <Loader className="animate-spin h-full w-full" />}
+                            <Button variant="primary" type="submit" disabled={isPending}>
+                                {isPending && <Loader className="animate-spin h-full w-full" />}
                                 Create Environment
                             </Button>
                         </DialogFooter>

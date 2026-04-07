@@ -5,18 +5,19 @@ import type { AppCredentials } from '@nangohq/types';
 
 export const AppCredentialsComponent: React.FC<{
     credentials: AppCredentials;
-}> = ({ credentials }) => {
+    canRead: boolean;
+}> = ({ credentials, canRead }) => {
     return (
         <>
             <div className="flex flex-col gap-2">
                 <Label htmlFor="access_token">Access token</Label>
-                <SecretInput id="access_token" value={credentials.access_token} disabled copy />
+                <SecretInput id="access_token" value={credentials.access_token} disabled copy canRead={canRead} />
             </div>
 
             {credentials.jwtToken && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="jwt_token">JWT token</Label>
-                    <SecretInput id="jwt_token" value={credentials.jwtToken} disabled copy />
+                    <SecretInput id="jwt_token" value={credentials.jwtToken} disabled copy canRead={canRead} />
                 </div>
             )}
         </>

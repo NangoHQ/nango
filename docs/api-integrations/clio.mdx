@@ -1,0 +1,84 @@
+---
+title: 'Clio'
+sidebarTitle: 'Clio'
+description: 'Integrate your application with the Clio API'
+---
+
+## 🚀 Quickstart
+
+Connect to Clio with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Clio_.
+    </Step>
+    <Step title="Authorize Clio">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Clio. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Clio API">
+    Let's make your first request to the Clio API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v4/users/who_am_i" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v4/users/who_am_i',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Clio Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Clio OAuth app](/api-integrations/clio/how-to-register-your-own-clio-api-oauth-app)
+Register an OAuth app with Clio and obtain credentials to connect it to Nango
+- [How do I link my Clio account?](/api-integrations/clio/connect)
+Learn how to authenticate with Clio and link your account
+
+Official docs: [Clio API Documentation](https://docs.developers.clio.com/api-reference/)
+
+## 🧩 Pre-built syncs & actions for Clio
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/clio/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

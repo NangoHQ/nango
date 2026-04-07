@@ -17,7 +17,8 @@ export interface ConnectUIPreviewRef {
 
 export const ConnectUIPreview = forwardRef<ConnectUIPreviewRef, { className?: string }>(({ className }, ref) => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
 
     const connectUIContainer = useRef<HTMLDivElement>(null);
     const connectUIIframe = useRef<HTMLIFrameElement>();

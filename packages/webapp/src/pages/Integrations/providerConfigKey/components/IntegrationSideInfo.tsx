@@ -3,17 +3,11 @@ import { Link } from 'react-router-dom';
 
 import { CopyButton } from '@/components-v2/CopyButton';
 import { SideInfo, SideInfoRow } from '@/components-v2/SideInfo';
-import { useApiStatus } from '@/hooks/useApiStatus';
-import { StatusWidget } from '@/pages/Integrations/components/StatusWidget';
 import { getDisplayName } from '@/pages/Integrations/utils';
-import { useStore } from '@/store';
 
 import type { ApiIntegration, Provider } from '@nangohq/types';
 
 export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provider: Provider }> = ({ integration, provider }) => {
-    const env = useStore((state) => state.env);
-    const { data: apiStatus } = useApiStatus(integration.provider, env);
-
     return (
         <SideInfo>
             <SideInfoRow label="Auth method">
@@ -38,13 +32,6 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
                     </Link>
                 </span>
             </SideInfoRow>
-            {apiStatus?.status && apiStatus?.status !== 'unknown' && (
-                <SideInfoRow label="API status">
-                    <div className="flex">
-                        <StatusWidget className="text-text-primary" status={apiStatus?.status} />
-                    </div>
-                </SideInfoRow>
-            )}
             <SideInfoRow label="Created">
                 <span className="text-text-primary text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
                     {new Date(integration.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}

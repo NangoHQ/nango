@@ -1,7 +1,9 @@
 import { Ok } from '@nangohq/utils';
 
 import { ActiveMQ } from './activemq.js';
+import { Migration } from './migration.js';
 import { NoOpTransport } from './noop.js';
+import { SnsSqs } from './sns-sqs.js';
 import { envs } from '../env.js';
 
 import type { Event } from '../event.js';
@@ -15,6 +17,21 @@ export class DefaultTransport implements Transport {
     constructor() {
         if (envs.NANGO_PUBSUB_TRANSPORT === 'activemq') {
             this.transport = new ActiveMQ();
+        } else if (envs.NANGO_PUBSUB_TRANSPORT === 'sns-sqs') {
+            const cfg = envs.NANGO_PUBSUB_SNS_SQS_CONFIG;
+            this.transport = new SnsSqs({
+                topicArns: cfg.topicArns,
+                queueUrls: cfg.queueUrls
+            });
+        } else if (envs.NANGO_PUBSUB_TRANSPORT === 'migration') {
+            const cfg = envs.NANGO_PUBSUB_SNS_SQS_CONFIG;
+            this.transport = new Migration(new ActiveMQ(), [
+                new ActiveMQ(),
+                new SnsSqs({
+                    topicArns: cfg.topicArns,
+                    queueUrls: cfg.queueUrls
+                })
+            ]);
         } else {
             this.transport = new NoOpTransport();
         }

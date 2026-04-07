@@ -5,8 +5,8 @@ import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
-import type { Usage } from '@nangohq/account-usage';
 import type { Transport, UsageEvent } from '@nangohq/pubsub';
+import type { Usage } from '@nangohq/usage';
 import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;

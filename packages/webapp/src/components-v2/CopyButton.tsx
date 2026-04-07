@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { cn } from '@/utils/utils';
 
-export const CopyButton: React.FC<{ text: string }> = ({ text }) => {
+export const CopyButton: React.FC<{ text: string; disabled?: boolean }> = ({ text, disabled }) => {
     const [copied, setCopied] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -29,7 +29,7 @@ export const CopyButton: React.FC<{ text: string }> = ({ text }) => {
     const animationClass = hasInteracted ? 'animate-in zoom-in-45' : '';
 
     return (
-        <Button data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className="group">
+        <Button disabled={disabled} data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className="group">
             <Check className={cn('size-3.5 hidden group-data-[copied=true]:inline', animationClass)} />
             <Copy className={cn('size-3.5 inline group-data-[copied=true]:hidden', animationClass)} />
         </Button>

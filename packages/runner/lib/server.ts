@@ -7,10 +7,10 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { heartbeatIntervalMs } from './env.js';
+import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
-import { abortControllers, locks, usage } from './state.js';
+import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -73,6 +73,22 @@ function startProcedure() {
                     ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
                     : heartbeatIntervalMs * 3;
 
+                // Poll Redis for abort flag when running with multiple replicas
+                const abortPoll = abortViaRedis
+                    ? setInterval(async () => {
+                          try {
+                              const shouldAbort = await kvStore.exists(`function:${taskId}:abort`);
+                              if (shouldAbort) {
+                                  logger.info('Aborting task via Redis poll', { taskId });
+                                  abortController.abort();
+                                  clearInterval(abortPoll!);
+                              }
+                          } catch (err) {
+                              logger.error('Error checking abort flag', { taskId, error: err });
+                          }
+                      }, abortCheckIntervalMs)
+                    : null;
+
                 const heartbeat = setInterval(async () => {
                     if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
                         // Jobs and orchestrator will kill the task if the heartbeat is not successful for too long
@@ -109,6 +125,9 @@ function startProcedure() {
                     });
                 } finally {
                     clearInterval(heartbeat);
+                    if (abortPoll) {
+                        clearInterval(abortPoll);
+                    }
                     abortControllers.delete(taskId);
                     await usage.untrack(taskId);
                     logger.info(`Task ${taskId} completed`);

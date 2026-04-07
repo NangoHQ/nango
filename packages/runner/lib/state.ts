@@ -8,17 +8,19 @@ import type { KVStore } from '@nangohq/kvstore';
 
 export const abortControllers = new Map<string, AbortController>();
 
-let conflictTracker: KVStore;
+export const abortViaRedis = envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'REDIS';
 
+let kvStoreInstance: KVStore;
 if (envs.RUNNER_CONFLICT_RESOLUTION_MODE === 'REDIS') {
-    conflictTracker = await getKVStore('customer');
+    kvStoreInstance = await getKVStore('customer');
 } else {
-    conflictTracker = new InMemoryKVStore();
+    kvStoreInstance = new InMemoryKVStore();
 }
+export const kvStore = kvStoreInstance;
 export const usage = new RunnerMonitor({
     runnerId: envs.RUNNER_NODE_ID,
     conflictTracking: {
-        tracker: conflictTracker
+        tracker: kvStoreInstance
     }
 });
 export const locks = new MapLocks();

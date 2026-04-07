@@ -1,0 +1,42 @@
+---
+title: Front (API Key) - How do I link my account?
+sidebarTitle: Front (API Key)
+---
+
+# Overview
+
+To authenticate with Front, you will need:
+1. **API Token** - A token that grants secure access to the Front Core API at the company level.
+
+This guide will walk you through creating an **API Token** from the Front developer settings.
+
+### Prerequisites
+
+- You must have a Front account with **admin** privileges.
+
+### Instructions
+
+#### Step 1: Finding your API token
+
+1. Log in to your [Front account](https://app.frontapp.com) and navigate to the [API Tokens](https://app.frontapp.com/settings/developers/tokens/) tab.
+2. Click **Create API token**.
+
+<img src="/api-integrations/front-api-key/create_token.png"/>
+
+3. Enter a descriptive name for the token.
+4. Select the features, namespaces, and permissions the token should have, then click **Create**.
+5. Click **Reveal** or **Copy** to obtain the token value.
+
+<img src="/api-integrations/front-api-key/generated_token.png"/>
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Token**:
+1. Open the form where you need to authenticate with Front.
+2. Enter your **API Token** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/front-api-key/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Front.

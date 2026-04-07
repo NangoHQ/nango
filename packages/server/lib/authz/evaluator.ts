@@ -1,7 +1,6 @@
 import { ROLE_DENY_MAP } from './deny-map.js';
 
-import type { Action, Permission, PermissionEvaluator, Resource, Scope } from './types.js';
-import type { Role } from '@nangohq/types';
+import type { Action, Permission, PermissionEvaluator, Resource, Role, Scope } from '@nangohq/types';
 
 function matchesAction(rule: Action, actual: Action): boolean {
     return rule === '*' || rule === actual;

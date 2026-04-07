@@ -2,10 +2,10 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
+import { permissions } from '@nangohq/authz';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions } from '../../../../authz/permissions.js';
 import { resolve } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';

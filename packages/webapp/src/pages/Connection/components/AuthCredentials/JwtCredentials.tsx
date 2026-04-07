@@ -1,5 +1,6 @@
 import { RefreshCwIcon } from 'lucide-react';
 
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { SecretInput } from '@/components-v2/SecretInput';
 import { Button } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
@@ -12,7 +13,8 @@ export const JwtCredentialsComponent: React.FC<{
     credentials: JwtCredentials;
     connection: ApiConnectionFull;
     providerConfigKey: string;
-}> = ({ credentials, connection, providerConfigKey }) => {
+    canRead: boolean;
+}> = ({ credentials, connection, providerConfigKey, canRead }) => {
     const { forceRefresh, isRefreshing } = useRefreshConnectionWithToast(connection, providerConfigKey);
 
     return (
@@ -21,11 +23,15 @@ export const JwtCredentialsComponent: React.FC<{
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="token">Token</Label>
                     <div className="flex gap-2 items-center">
-                        <SecretInput id="token" value={credentials.token} disabled copy />
-                        <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing}>
-                            <RefreshCwIcon />
-                            Refresh
-                        </Button>
+                        <SecretInput id="token" value={credentials.token} disabled copy canRead={canRead} />
+                        <PermissionGate condition={canRead} asChild>
+                            {(allowed) => (
+                                <Button variant="secondary" size="sm" className="h-full" onClick={forceRefresh} loading={isRefreshing} disabled={!allowed}>
+                                    <RefreshCwIcon />
+                                    Refresh
+                                </Button>
+                            )}
+                        </PermissionGate>
                     </div>
                 </div>
             )}
@@ -45,6 +51,7 @@ export const JwtCredentialsComponent: React.FC<{
                         }
                         disabled
                         copy
+                        canRead={canRead}
                     />
                 </div>
             )}
@@ -60,7 +67,7 @@ export const JwtCredentialsComponent: React.FC<{
                 return (
                     <div className="flex flex-col gap-2" key={key}>
                         <Label htmlFor={key}>{label}</Label>
-                        <SecretInput id={key} value={value} disabled copy />
+                        <SecretInput id={key} value={value} disabled copy canRead={canRead} />
                     </div>
                 );
             })}

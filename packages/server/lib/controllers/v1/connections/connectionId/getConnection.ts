@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
+import { permissions } from '@nangohq/authz';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { permissions } from '../../../../authz/permissions.js';
 import { resolve } from '../../../../authz/resolve.js';
 import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';

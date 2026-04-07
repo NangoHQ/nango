@@ -315,7 +315,8 @@ export async function handleWebhookSuccess({
                         now: nangoProps.startedAt,
                         success: true,
                         responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0 },
-                        operation: 'WEBHOOK'
+                        operation: 'WEBHOOK',
+                        checkpoints
                     });
 
                     if (res.isErr()) {
@@ -494,7 +495,8 @@ async function onFailure({
                                 description: error.message
                             },
                             now: new Date(),
-                            operation: 'WEBHOOK'
+                            operation: 'WEBHOOK',
+                            checkpoints
                         });
 
                         if (res.isErr()) {

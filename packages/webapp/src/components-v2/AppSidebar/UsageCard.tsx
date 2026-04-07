@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { Skeleton } from '../../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { useStore } from '../../store.js';
 import { cn } from '../../utils/utils.js';
+import { usePermissions } from '@/hooks/usePermissions.js';
 
 const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 /**
@@ -50,27 +53,35 @@ export default function UsageCard() {
     const env = useStore((state) => state.env);
     const { data: usage, isLoading } = useApiGetUsage(env);
 
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
+
+    const content = isLoading ? (
+        <>
+            <Skeleton className="h-[24px]" />
+            <Skeleton className="h-[24px]" />
+            <Skeleton className="h-[24px]" />
+        </>
+    ) : (
+        Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
+            <div key={metric} className="flex flex-row justify-between items-center">
+                <span className="text-text-primary font-medium">{usage.label}</span>
+                <div>
+                    <UsageBadge usage={usage.usage} limit={usage.limit} />
+                </div>
+            </div>
+        ))
+    );
+
+    const baseClassName = 'flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted';
+
+    if (!canManageBilling) {
+        return <div className={baseClassName}>{content}</div>;
+    }
+
     return (
-        <Link
-            to={`/${env}/team/billing#usage`}
-            className="flex flex-col gap-4.5 px-3 py-3.5 text-xs rounded-sm bg-bg-surface border-[0.5px] border-border-muted cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent"
-        >
-            {isLoading ? (
-                <>
-                    <Skeleton className="h-[24px]" />
-                    <Skeleton className="h-[24px]" />
-                    <Skeleton className="h-[24px]" />
-                </>
-            ) : (
-                Object.entries(usage?.data ?? {}).map(([metric, usage]) => (
-                    <div key={metric} className="flex flex-row justify-between items-center">
-                        <span className="text-text-primary font-medium">{usage.label}</span>
-                        <div>
-                            <UsageBadge usage={usage.usage} limit={usage.limit} />
-                        </div>
-                    </div>
-                ))
-            )}
+        <Link to={`/${env}/team/billing#usage`} className={cn(baseClassName, 'cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent')}>
+            {content}
         </Link>
     );
 }

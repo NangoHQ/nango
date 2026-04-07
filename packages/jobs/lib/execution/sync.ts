@@ -464,7 +464,8 @@ export async function handleSyncSuccess({
                                     updated,
                                     deleted
                                 },
-                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
+                                operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL,
+                                checkpoints
                             });
 
                             if (res.isErr()) {
@@ -942,7 +943,8 @@ async function onFailure({
                             ...(error.additional_properties ? { additional_properties: error.additional_properties } : {})
                         },
                         now: lastSyncDate,
-                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL
+                        operation: lastSyncDate ? SyncJobsType.INCREMENTAL : SyncJobsType.FULL,
+                        checkpoints
                     });
 
                     if (res.isErr()) {

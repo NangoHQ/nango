@@ -5,9 +5,9 @@ import { ConnectUISettings } from './ConnectUISettings';
 import { DeprecatedSettings } from './Deprecated';
 import { Functions } from './Functions';
 import { General } from './General';
-import { Notifications } from './Notifications';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
+import { Webhooks } from './Webhooks';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useTeam } from '../../../hooks/useTeam';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -22,16 +22,18 @@ import type { ReactNode } from 'react';
 const EnvironmentSettingsContent: React.FC<{ value: string; children: ReactNode }> = ({ value, children }) => {
     return (
         <NavigationContent value={value} className="h-fit flex w-full">
-            <div className="flex-1"></div>
-            <div className="max-w-[900px] min-w-[715px] w-full">{children}</div>
+            <div className="w-full">{children}</div>
         </NavigationContent>
     );
 };
 export const EnvironmentSettings: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { team } = useTeam(env);
+    const { data: teamData } = useTeam(env);
+    const team = teamData?.data;
 
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const isProd = environmentAndAccount?.environment?.is_production || false;
     const [activeTab, setActiveTab] = useHashNavigation('general');
 
     if (!environmentAndAccount || !team) {
@@ -52,24 +54,28 @@ export const EnvironmentSettings: React.FC = () => {
             </DashboardLayout>
         );
     }
-    const canSeeDeprecatedAuthorization = new Date(team.created_at) <= new Date('2025-08-25');
+    const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout fullWidth className="flex-col justify-center">
+        <DashboardLayout fullWidth className="flex flex-col gap-8">
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
 
-            <div className="flex mb-8 justify-center">
-                <div className="flex text-left text-3xl tracking-tight text-white w-[1153px] gap-2.5">
-                    <h2 className="font-semibold">Environment Settings</h2>
-                    <Badge size="custom" className="px-3.5 text-title-group">
-                        {env}
-                    </Badge>
+            <div className="flex flex-col gap-2.5">
+                <h2 className="text-title-subsection text-text-primary">Environment settings</h2>
+                <div className="flex gap-2.5">
+                    <span className="text-heading-sm text-text-secondary">{env}</span>
+                    {isProd && (
+                        <Badge variant="secondary" className="text-heading-sm text-text-secondary">
+                            Prod
+                        </Badge>
+                    )}
                 </div>
             </div>
+
             <div className="flex h-fit justify-center" key={env}>
-                <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-[1153px] mx-auto">
+                <Navigation value={activeTab} onValueChange={setActiveTab}>
                     <NavigationList className="w-[209px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
@@ -90,7 +96,7 @@ export const EnvironmentSettings: React.FC = () => {
                         <ConnectUISettings />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'webhooks'}>
-                        <Notifications />
+                        <Webhooks />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'slack-alerts'}>
                         <SlackAlertsSettings />

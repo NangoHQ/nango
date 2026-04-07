@@ -347,7 +347,7 @@ describe('authz integration', () => {
 
             expect(res.res.status).toBe(200);
             const connection = (res.json as any).data.connection;
-            expect(connection.credentials).toEqual({});
+            expect(connection.credentials).toEqual({ type: 'API_KEY', apiKey: 'REDACTED' });
         });
 
         it('should strip secret_key from prod environment response', async () => {

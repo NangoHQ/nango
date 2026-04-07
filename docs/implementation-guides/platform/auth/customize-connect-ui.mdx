@@ -113,6 +113,69 @@ nango.auth('zendesk', {
 
 This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connection/get)), or see it in connection details in the Nango UI.
 
+## Override documentation links
+
+By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect in a customer-facing application and want these links to point to your own documentation instead, you can override them per integration using the `overrides` parameter when [creating a Connect session](/reference/api/connect/sessions/create).
+
+<Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+
+<Tabs>
+
+<Tab title="Node SDK">
+See the full [SDK reference](/reference/sdks/node#create-a-connect-session) for all available parameters.
+
+```js
+const { data } = await nango.createConnectSession({
+    // Recommended: copied onto the connection and included in auth webhooks.
+    tags: {
+        end_user_id: '<END-USER-ID>',
+        end_user_email: '<END-USER-EMAIL>',
+        organization_id: '<ORGANIZATION-ID>'
+    },
+
+    allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
+    integrations_config_defaults: {
+        '<INTEGRATION-ID-1>': {
+            connection_config: {
+                '<CONFIG-KEY>': '<VALUE>'
+            }
+        }
+    },
+    overrides: {
+        '<INTEGRATION-ID-1>': {
+            docs_connect: 'https://your-docs.com/how-to-connect'
+        }
+    }
+});
+```
+</Tab>
+
+<Tab title="REST API">
+See the full [API reference](/reference/api/connect/sessions/create) for all available parameters.
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/connect/sessions \
+  --header 'Authorization: Bearer <SECRET-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "tags": {
+        "end_user_id": "<END-USER-ID>",
+        "end_user_email": "<END-USER-EMAIL>"
+    },
+    "overrides": {
+        "<INTEGRATION-ID>": {
+            "docs_connect": "https://your-docs.com/how-to-connect"
+        }
+    }
+}'
+```
+</Tab>
+
+</Tabs>
+
+Replace `<INTEGRATION-ID>` with the unique name of the integration (e.g. `jira`, `slack`) and set `docs_connect` to the URL you want the info icons to link to.
+
 # Next
 Once the authorization succeeds, [_save the connection ID_](/implementation-guides/platform/auth/implement-api-auth#3-listen-for-webhooks-%26-save-the-connection-id-backend).
 
