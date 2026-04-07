@@ -54,7 +54,7 @@ export class InMemoryKVStore implements KVStore {
         if (res.value !== expectedValue) {
             return Promise.resolve(false);
         }
-        this.store.set(key, { value: newValue, timestamp: Date.now(), ttlMs: ttlMs || 0 });
+        this.store.set(key, { value: newValue, timestamp: Date.now(), ttlMs });
         return Promise.resolve(true);
     }
 
