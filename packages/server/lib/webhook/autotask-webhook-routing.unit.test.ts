@@ -106,6 +106,12 @@ describe('Autotask webhook routing', () => {
 
         expect(result.isOk()).toBe(true);
         expect(mock).toHaveBeenCalledOnce();
+        expect(mock).toHaveBeenCalledWith({
+            body,
+            webhookType: 'EntityType',
+            connectionIdentifier: 'Guid',
+            propName: 'webhookGuid'
+        });
     });
 
     it('Should reject webhook with missing signature', async () => {

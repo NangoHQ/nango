@@ -20,25 +20,13 @@ Autotask supports webhooks for various entity types (Tickets, Companies, Contact
 
 In the Nango dashboard, go to your Autotask integration settings and enter the webhook secret key. This is the same `SecretKey` you will use when creating the webhook in Autotask. Nango uses this to verify the `x-hook-signature` HMAC-SHA1 signature on incoming webhooks.
 
-### 2. Set the webhook GUID on the connection
+### 2. Get your webhook URL
 
-Each Autotask webhook has a unique `Guid`. Nango uses this to route webhooks to the correct connection. Set the `webhookGuid` in the connection's `connectionConfig`:
-
-```bash
-curl -X PATCH "https://api.nango.dev/connection/<CONNECTION_ID>/config" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
-  -H "Provider-Config-Key: autotask" \
-  -H "Content-Type: application/json" \
-  -d '{"webhookGuid": "<AUTOTASK_WEBHOOK_GUID>"}'
-```
-
-You will get the `Guid` after creating the webhook in Autotask (step 3).
+Copy the webhook URL from your Autotask integration page in the Nango dashboard, under the **Webhook URL** section.
 
 ### 3. Create the webhook in Autotask
 
-Copy the webhook URL from your Autotask integration page in the Nango dashboard.
-
-Then create a webhook via the Autotask REST API. Replace the placeholders:
+Create a webhook via the Autotask REST API. Replace the placeholders:
 
 ```bash
 curl -X POST "https://webservices<ZONE>.autotask.net/atservicesrest/v1.0/TicketWebhooks" \
@@ -89,7 +77,19 @@ curl -X GET "https://webservices<ZONE>.autotask.net/atservicesrest/v1.0/TicketWe
   -H "APIIntegrationcode: <INTEGRATION_CODE>" | jq '.item | {name, isActive, isReady, webhookGUID}'
 ```
 
-Should show `isActive: true` and `isReady: true`. Use the `webhookGUID` value to update the connection config (step 2).
+Should show `isActive: true` and `isReady: true`.
+
+### 6. Set the webhook GUID on the connection
+
+Each Autotask webhook has a unique `Guid`. Nango uses this to route webhooks to the correct connection. Use the `webhookGUID` value from step 5 to set the `webhookGuid` in the connection's `connectionConfig`:
+
+```bash
+curl -X PATCH "https://api.nango.dev/connection/<CONNECTION_ID>/config" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Provider-Config-Key: autotask" \
+  -H "Content-Type: application/json" \
+  -d '{"webhookGuid": "<AUTOTASK_WEBHOOK_GUID>"}'
+```
 
 ## Webhook payload
 
