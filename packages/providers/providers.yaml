@@ -2389,6 +2389,25 @@ bill:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://nango.dev/docs/integrations/all/bill
 
+bing-webmasters:
+    display_name: Bing Webmasters
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://www.bing.com/webmasters/oauth/authorize
+    token_url: https://www.bing.com/webmasters/oauth/token
+    refresh_url: https://www.bing.com/webmasters/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_token_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.bing.com/webmaster/api.svc/json
+    docs: https://nango.dev/docs/api-integrations/bing-webmasters
+    setup_guide_url: https://nango.dev/docs/api-integrations/bing-webmasters/how-to-register-your-own-bing-webmasters-api-oauth-app
+
 bitbucket:
     display_name: Bitbucket
     categories:
