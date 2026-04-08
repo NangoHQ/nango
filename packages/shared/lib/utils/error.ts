@@ -274,6 +274,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
                 break;
 
+            case 'refresh_token_lock_timeout':
+                this.status = 503;
+                this.message = `Could not acquire the refresh lock for this connection. Please retry.`;
+                break;
+
             case 'request_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to request for an access token. Please try again later.`;

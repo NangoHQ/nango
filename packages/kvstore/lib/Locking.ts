@@ -6,6 +6,18 @@ export interface Lock {
     readonly key: string;
 }
 
+export class LockTimeoutError extends Error {
+    public readonly key: string;
+    public readonly timeoutMs: number;
+
+    constructor(key: string, timeoutMs: number) {
+        super(`Acquiring lock for key: ${key} timed out after ${timeoutMs}ms`);
+        this.name = this.constructor.name;
+        this.key = key;
+        this.timeoutMs = timeoutMs;
+    }
+}
+
 export class Locking {
     private store: KVStore;
 
@@ -30,7 +42,7 @@ export class Locking {
                 await new Promise((resolve) => setTimeout(resolve, 50));
             }
         }
-        throw new Error(`Acquiring lock for key: ${key} timed out after ${acquisitionTimeoutMs}ms`);
+        throw new LockTimeoutError(key, acquisitionTimeoutMs);
     }
 
     public async acquire(key: string, ttlMs: number): Promise<Lock> {
