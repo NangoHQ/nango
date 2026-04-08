@@ -12648,12 +12648,13 @@ pendo-oauth:
     token_url: https://app.pendo.io/oauth/v1/token
     token_params:
         grant_type: client_credentials
-        scope: read:me
+    default_scopes:
+        - read:me
     body_format: form
     proxy:
         base_url: https://app.pendo.io
-    docs: https://nango.dev/docs/integrations/all/pendo-oauth
-    docs_connect: https://nango.dev/docs/integrations/all/pendo-oauth/connect
+    docs: https://nango.dev/docs/api-integrations/pendo-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/pendo-oauth/connect
     credentials:
         client_id:
             type: string
