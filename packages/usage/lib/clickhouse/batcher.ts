@@ -90,6 +90,7 @@ export class Batcher<T> {
             const batchToRetry = batch.filter((item) => item.retries < this.maxProcessingRetry).map((item) => ({ ...item, retries: item.retries + 1 }));
             const dropped = batch.length - batchToRetry.length;
             if (dropped > 0) {
+                // TODO: push metric
                 logger.error(`Clickhouse batcher: dropping ${dropped} items after exhausting retries.`);
             }
             this.queue.unshift(...batchToRetry);
