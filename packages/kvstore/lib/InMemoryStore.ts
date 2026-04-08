@@ -1,4 +1,4 @@
-import type { KVStore } from './KVStore.js';
+import type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 
 interface Value {
     value: string;
@@ -70,7 +70,7 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(true);
     }
 
-    public async setNxWithCompanion(mainKey: string, companionKey: string, value: string, companionValue: string, ttlMs: number): Promise<boolean> {
+    public async setNxWithCompanion({ mainKey, companionKey, value, companionValue, ttlMs }: SetNxWithCompanionArgs): Promise<boolean> {
         const main = this.store.get(mainKey);
         if (main !== undefined && !this.isExpired(main)) {
             return Promise.resolve(false);
@@ -82,14 +82,14 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(true);
     }
 
-    public async setIfValueEqualsWithCompanion(
-        mainKey: string,
-        companionKey: string,
-        expectedValue: string,
-        newValue: string,
-        companionValue: string,
-        ttlMs: number
-    ): Promise<boolean> {
+    public async setIfValueEqualsWithCompanion({
+        mainKey,
+        companionKey,
+        expectedValue,
+        newValue,
+        companionValue,
+        ttlMs
+    }: SetIfValueEqualsWithCompanionArgs): Promise<boolean> {
         const res = this.store.get(mainKey);
         if (res === undefined || this.isExpired(res)) {
             return Promise.resolve(false);
@@ -104,7 +104,7 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve(true);
     }
 
-    public async deleteIfValueEqualsWithCompanion(mainKey: string, companionKey: string, expectedValue: string): Promise<boolean> {
+    public async deleteIfValueEqualsWithCompanion({ mainKey, companionKey, expectedValue }: DeleteIfValueEqualsWithCompanionArgs): Promise<boolean> {
         const res = this.store.get(mainKey);
         if (res === undefined || this.isExpired(res)) {
             return Promise.resolve(false);

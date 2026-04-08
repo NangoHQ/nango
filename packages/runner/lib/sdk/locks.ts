@@ -46,6 +46,11 @@ export class KVLocks implements Locks {
         return `${LOCK_OWNER_INDEX_PREFIX}${this.createHash(owner)}:${this.createHash(logicalKey)}`;
     }
 
+    /** Main lock key plus owner-index key (always used together for acquire/release). */
+    private lockKeys({ owner, key }: { owner: string; key: string }): { sk: string; ik: string } {
+        return { sk: this.storageKey(key), ik: this.ownerIndexKey(owner, key) };
+    }
+
     private ownerIndexScanPrefix(owner: string): string {
         return `${LOCK_OWNER_INDEX_PREFIX}${this.createHash(owner)}:`;
     }
@@ -82,15 +87,31 @@ export class KVLocks implements Locks {
             return validation;
         }
 
-        const sk = this.storageKey(key);
-        const ik = this.ownerIndexKey(owner, key);
+        const { sk, ik } = this.lockKeys({ owner, key });
         try {
             // Same-owner TTL refresh (atomic on main + owner index). No leading get — avoids a stale read before refresh.
-            if (await this.store.setIfValueEqualsWithCompanion(sk, ik, owner, owner, LOCK_OWNER_INDEX_VALUE, ttlMs)) {
+            if (
+                await this.store.setIfValueEqualsWithCompanion({
+                    mainKey: sk,
+                    companionKey: ik,
+                    expectedValue: owner,
+                    newValue: owner,
+                    companionValue: LOCK_OWNER_INDEX_VALUE,
+                    ttlMs
+                })
+            ) {
                 return Ok(true);
             }
 
-            if (await this.store.setNxWithCompanion(sk, ik, owner, LOCK_OWNER_INDEX_VALUE, ttlMs)) {
+            if (
+                await this.store.setNxWithCompanion({
+                    mainKey: sk,
+                    companionKey: ik,
+                    value: owner,
+                    companionValue: LOCK_OWNER_INDEX_VALUE,
+                    ttlMs
+                })
+            ) {
                 return Ok(true);
             }
             return Ok(false);
@@ -100,10 +121,13 @@ export class KVLocks implements Locks {
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const sk = this.storageKey(key);
-        const ik = this.ownerIndexKey(owner, key);
+        const { sk, ik } = this.lockKeys({ owner, key });
         try {
-            const deleted = await this.store.deleteIfValueEqualsWithCompanion(sk, ik, owner);
+            const deleted = await this.store.deleteIfValueEqualsWithCompanion({
+                mainKey: sk,
+                companionKey: ik,
+                expectedValue: owner
+            });
             return Ok(deleted);
         } catch (err: any) {
             return Err(new Error(`Error releasing lock for key ${key}`, { cause: err }));
@@ -116,7 +140,11 @@ export class KVLocks implements Locks {
             for await (const ik of this.store.scan(`${prefix}*`)) {
                 const sk = this.mainKeyFromOwnerIndexKey(owner, ik);
                 if (sk) {
-                    await this.store.deleteIfValueEqualsWithCompanion(sk, ik, owner);
+                    await this.store.deleteIfValueEqualsWithCompanion({
+                        mainKey: sk,
+                        companionKey: ik,
+                        expectedValue: owner
+                    });
                 }
                 // Drop index entry even if we no longer hold the main lock (stale index after handoff or TTL skew).
                 await this.store.delete(ik);
@@ -128,7 +156,7 @@ export class KVLocks implements Locks {
     }
 
     public async hasLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const sk = this.storageKey(key);
+        const { sk } = this.lockKeys({ owner, key });
         try {
             const holder = await this.store.get(sk);
             return Ok(holder === owner);

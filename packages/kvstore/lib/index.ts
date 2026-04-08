@@ -12,7 +12,7 @@ import type { RedisClientType } from 'redis';
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
-export type { KVStore } from './KVStore.js';
+export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 
 type KvBoundary = 'system' | 'customer';

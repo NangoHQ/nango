@@ -1,3 +1,26 @@
+export interface SetNxWithCompanionArgs {
+    mainKey: string;
+    companionKey: string;
+    value: string;
+    companionValue: string;
+    ttlMs: number;
+}
+
+export interface SetIfValueEqualsWithCompanionArgs {
+    mainKey: string;
+    companionKey: string;
+    expectedValue: string;
+    newValue: string;
+    companionValue: string;
+    ttlMs: number;
+}
+
+export interface DeleteIfValueEqualsWithCompanionArgs {
+    mainKey: string;
+    companionKey: string;
+    expectedValue: string;
+}
+
 export interface KVStore {
     destroy(): Promise<void>;
     set(key: string, value: string, options?: { canOverride?: boolean; ttlMs?: number }): Promise<void>;
@@ -15,23 +38,16 @@ export interface KVStore {
      * If mainKey is absent, set mainKey and companionKey with the same TTL (atomically).
      * Returns true if both were written; false if mainKey already exists.
      */
-    setNxWithCompanion(mainKey: string, companionKey: string, value: string, companionValue: string, ttlMs: number): Promise<boolean>;
+    setNxWithCompanion(args: SetNxWithCompanionArgs): Promise<boolean>;
     /**
      * If mainKey exists and equals expectedValue, refresh TTL on mainKey and companionKey (atomically).
      * companionValue is written to companionKey on success.
      */
-    setIfValueEqualsWithCompanion(
-        mainKey: string,
-        companionKey: string,
-        expectedValue: string,
-        newValue: string,
-        companionValue: string,
-        ttlMs: number
-    ): Promise<boolean>;
+    setIfValueEqualsWithCompanion(args: SetIfValueEqualsWithCompanionArgs): Promise<boolean>;
     /**
      * If mainKey exists and equals expectedValue, delete mainKey and companionKey (atomically).
      */
-    deleteIfValueEqualsWithCompanion(mainKey: string, companionKey: string, expectedValue: string): Promise<boolean>;
+    deleteIfValueEqualsWithCompanion(args: DeleteIfValueEqualsWithCompanionArgs): Promise<boolean>;
     get(key: string): Promise<string | null>;
     delete(key: string): Promise<void>;
     exists(key: string): Promise<boolean>;
