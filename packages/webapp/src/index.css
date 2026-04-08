@@ -376,9 +376,9 @@
     --color-feedback-error-bg: var(--color-red-100);
     --color-feedback-error-alt: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
-    --color-feedback-neutral-fg: var(--colors-icon-icon-tertiary);
-    --color-feedback-neutral-bg: var(--colors-background-bg-subtle);
-    --color-feedback-neutral-alt: var(--colors-background-bg-subtle);
+    --color-feedback-neutral-fg: var(--color-text-secondary);
+    --color-feedback-neutral-bg: var(--color-bg-subtle);
+    --color-feedback-neutral-alt: var(--color-bg-subtle);
 
     /* Dropdown */
     --color-dropdown-bg-default: var(--color-gray-75);

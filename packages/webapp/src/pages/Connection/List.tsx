@@ -1,7 +1,7 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
@@ -234,12 +234,18 @@ export const ConnectionList = () => {
         );
     }, [connections, selectedStatusFilters]);
 
+    useEffect(() => {
+        if (selectedStatusFilters.length > 0 && displayedConnections.length === 0 && hasNextPage && !isFetchingNextPage) {
+            void fetchNextPage();
+        }
+    }, [displayedConnections.length, selectedStatusFilters.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
     const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0;
 
     const connectionCount = displayedConnections.length;
     const hasConnections = connectionCount > 0;
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
-    const showEmptyStateWithFilters = !loading && connectionCount === 0 && hasFiltered;
+    const showEmptyStateWithFilters = !loading && !isFetchingNextPage && connectionCount === 0 && hasFiltered && !hasNextPage;
 
     const table = useReactTable({
         data: displayedConnections,
