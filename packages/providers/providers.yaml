@@ -6155,6 +6155,30 @@ freeagent-sandbox:
     docs: https://nango.dev/docs/api-integrations/freeagent-sandbox
     setup_guide_url: https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app
 
+freepik:
+    display_name: Freepik
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.freepik.com
+        headers:
+            x-freepik-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/resources
+    docs: https://nango.dev/docs/api-integrations/freepik
+    docs_connect: https://nango.dev/docs/api-integrations/freepik/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Freepik account.
+            doc_section: '#step-1-obtain-your-freepik-api-key'
+            example: FPSXc7b3**********************5b2a
+            pattern: 'FPSX[0-9a-f]{32}'
+
 figjam:
     display_name: FigJam
     categories:
