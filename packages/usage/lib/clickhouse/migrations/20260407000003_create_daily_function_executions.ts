@@ -5,7 +5,6 @@ export const sql = [
         day              Date,
         account_id       Int64,
         environment_id   Int64,
-        environment_name LowCardinality(String),
         integration_id   LowCardinality(String),
         connection_id    String,
         function_name    String,
@@ -19,7 +18,8 @@ export const sql = [
     )
     ENGINE = SummingMergeTree((value, duration_ms, custom_logs, proxy_calls))
     PARTITION BY toYYYYMM(day)
-    ORDER BY (account_id, environment_id, integration_id, connection_id, function_name, function_type, success, runtime, day)
+    ORDER BY (account_id, day, environment_id, integration_id, connection_id, function_name, function_type, success, runtime)
+    TTL day + INTERVAL 24 MONTH
     `,
     `
     CREATE MATERIALIZED VIEW IF NOT EXISTS usage.daily_function_executions_mv
@@ -28,7 +28,6 @@ export const sql = [
         toDate(ts)                                                              AS day,
         account_id,
         attributes.environmentId::Int64                                         AS environment_id,
-        attributes.environmentName::String                                      AS environment_name,
         attributes.integrationId::String                                        AS integration_id,
         attributes.connectionId::String                                         AS connection_id,
         attributes.functionName::String                                         AS function_name,
@@ -41,6 +40,6 @@ export const sql = [
         sum(coalesce(attributes.telemetryBag.proxyCalls::Nullable(UInt64), 0))  AS proxy_calls
     FROM usage.raw_events
     WHERE type = 'usage.function_executions'
-    GROUP BY day, account_id, environment_id, environment_name, integration_id, connection_id, function_name, function_type, success, runtime
+    GROUP BY day, account_id, environment_id, integration_id, connection_id, function_name, function_type, success, runtime
     `
 ];
