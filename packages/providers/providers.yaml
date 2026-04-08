@@ -8323,8 +8323,6 @@ halo-psa:
     token_url: https://${connectionConfig.hostname}/auth/token
     token_request_auth_method: basic
     scope_separator: ' '
-    default_scopes:
-        - all
     token_params:
         grant_type: client_credentials
     proxy:
