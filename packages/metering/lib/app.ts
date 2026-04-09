@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
-import { getUsageTracker } from '@nangohq/usage';
+import { ClickhouseIngestion, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
 import { initSentry, once, report } from '@nangohq/utils';
 
 import { exportUsageCron } from './crons/usage.js';
@@ -33,15 +33,23 @@ try {
         process.exit(1);
     }
 
+    // Usage migrations
+    const usageMigration = await migrateUsage();
+    if (usageMigration.isErr()) {
+        logger.error('Usage migration failed', usageMigration.error);
+        process.exit(1);
+    }
+
     // Usage
+    const clickhouse = new ClickhouseIngestion();
     const usageTracker = await getUsageTracker(envs.NANGO_REDIS_URL);
 
     // Usage processor
-    const usageProc = new UsageProcessor(pubsubTransport, usageTracker);
+    const usageProc = new UsageProcessor({ transport: pubsubTransport, usageTracker, clickhouse });
     usageProc.start();
 
     // Team processor
-    const teamProc = new TeamProcessor(pubsubTransport);
+    const teamProc = new TeamProcessor({ transport: pubsubTransport });
     teamProc.start();
 
     // Crons
@@ -53,7 +61,14 @@ try {
         if (disconnect.isErr()) {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);
         }
-        await billing.shutdown();
+        const billingShutdown = await billing.shutdown();
+        if (billingShutdown.isErr()) {
+            logger.error('Error shutting down billing', billingShutdown.error);
+        }
+        const clickhouseShutdown = await clickhouse.shutdown();
+        if (clickhouseShutdown.isErr()) {
+            logger.error('Error shutting down Clickhouse ingestion', clickhouseShutdown.error);
+        }
         cron.getTasks().forEach((task) => task.stop());
         process.exit();
     });

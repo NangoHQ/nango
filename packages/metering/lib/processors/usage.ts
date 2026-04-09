@@ -5,8 +5,9 @@ import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
-import type { Transport, UsageEvent } from '@nangohq/pubsub';
-import type { Usage } from '@nangohq/usage';
+import type { Transport } from '@nangohq/pubsub';
+import type { UsageEvent } from '@nangohq/types';
+import type { ClickhouseIngestion, Usage } from '@nangohq/usage';
 import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -14,10 +15,12 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 export class UsageProcessor {
     private subscriber: Subscriber;
     private usageTracker: Usage;
+    private clickhouse: ClickhouseIngestion;
 
-    constructor(transport: Transport, usageTracker: Usage) {
+    constructor({ transport, usageTracker, clickhouse }: { transport: Transport; usageTracker: Usage; clickhouse: ClickhouseIngestion }) {
         this.subscriber = new Subscriber(transport);
         this.usageTracker = usageTracker;
+        this.clickhouse = clickhouse;
     }
 
     public start(): void {
@@ -51,6 +54,8 @@ export class UsageProcessor {
                     const mar = event.payload.value;
                     metrics.increment(metrics.Types.BILLED_RECORDS_COUNT, mar, { accountId });
 
+                    this.clickhouse.add([event]);
+
                     return billing.add([
                         {
                             type: 'monthly_active_records',
@@ -82,6 +87,9 @@ export class UsageProcessor {
                 }
                 case 'usage.actions': {
                     const { accountId, environmentId, environmentName, integrationId, actionName } = event.payload.properties;
+
+                    this.clickhouse.add([event]);
+
                     return billing.add([
                         {
                             type: 'billable_actions',
@@ -127,7 +135,7 @@ export class UsageProcessor {
                         telemetryBag,
                         frequencyMs,
                         success,
-                        functionRuntime = 'runner'
+                        runtime = 'runner'
                     } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
                     const customLogs = telemetryBag?.customLogs ?? 0;
@@ -157,6 +165,9 @@ export class UsageProcessor {
                     if (incrLogs.isErr()) {
                         logger.error(`Failed to increment logs for account ${accountId}: ${incrLogs.error}`);
                     }
+
+                    // Clickhouse
+                    this.clickhouse.add([event]);
 
                     // Billing
                     billing.add([
@@ -209,7 +220,7 @@ export class UsageProcessor {
                         success: String(success),
                         accountId,
                         frequencyBucket,
-                        functionRuntime
+                        functionRuntime: runtime
                     });
                     return Ok(undefined);
                 }
@@ -221,6 +232,8 @@ export class UsageProcessor {
                         metric: 'proxy',
                         delta: event.payload.value
                     });
+                    // Clickhouse
+                    this.clickhouse.add([event]);
                     // Billing
                     billing.add([
                         {
@@ -252,6 +265,8 @@ export class UsageProcessor {
                     if (incrWebhook.isErr()) {
                         logger.error(`Failed to increment webhook_forwards for account ${accountId}: ${incrWebhook.error}`);
                     }
+                    // Clickhouse
+                    this.clickhouse.add([event]);
                     // Billing
                     billing.add([
                         {

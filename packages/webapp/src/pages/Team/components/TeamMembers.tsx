@@ -55,7 +55,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                         <Input type="email" value={user.email} disabled className="flex-1" />
                         <RoleSelect value={role} onChange={setRole} />
                     </div>
-                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" type="external" icon>
+                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" type="external" icon>
                         Learn more about roles and permissions
                     </StyledLink>
                 </div>
@@ -125,7 +125,7 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://docs.nango.dev/guides/platform/security#team-&-roles" size="icon" variant="ghost" target="_blank">
+                                <ButtonLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" size="icon" variant="ghost" target="_blank">
                                     <ExternalLink className="size-3" />
                                 </ButtonLink>
                             </div>
