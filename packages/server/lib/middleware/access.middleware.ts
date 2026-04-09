@@ -3,7 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, accountService, customerKeyService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
 import {
     Err,
     Ok,
@@ -41,6 +41,53 @@ const ignoreEnvPaths = [
 ];
 
 export class AccessMiddleware {
+    private async validateApiKey(secret: string): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+            plan: DBPlan | null;
+            scopes: string[];
+            apiKeyId: number;
+        }>
+    > {
+        if (!keyRegex.test(secret)) {
+            return Err('invalid_secret_key_format');
+        }
+
+        const hashed = await customerKeyService.hashSecret(secret);
+        if (hashed.isErr()) {
+            return Err('hash_failed');
+        }
+
+        const apiKeyResult = await customerKeyService.getApiKeyByHash(db.readOnly, hashed.value);
+        if (apiKeyResult.isErr()) {
+            return Err('lookup_failed');
+        }
+
+        const apiKey = apiKeyResult.value;
+        if (!apiKey) {
+            return Err('not_found_in_api_keys');
+        }
+
+        // Resolve environment from the relation
+        const accountContext = await accountService.getAccountContext({ environmentId: apiKey.entity_id });
+        if (!accountContext) {
+            return Err('unknown_account');
+        }
+
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
+        }
+
+        return Ok({
+            account: accountContext.account,
+            environment: accountContext.environment,
+            plan: accountContext.plan,
+            scopes: apiKey.scopes ?? [],
+            apiKeyId: apiKey.id
+        });
+    }
+
     private async validateSecretKey(secret: string): Promise<
         Result<{
             account: DBTeam;
@@ -86,6 +133,24 @@ export class AccessMiddleware {
                 return;
             }
 
+            // NAN-5088: dual-read — try api_keys first, fall back to legacy api_secrets
+            const apiKeyResult = await this.validateApiKey(secret);
+            if (apiKeyResult.isOk()) {
+                res.locals['authType'] = 'secretKey';
+                res.locals['account'] = apiKeyResult.value.account;
+                res.locals['environment'] = apiKeyResult.value.environment;
+                res.locals['plan'] = apiKeyResult.value.plan;
+                res.locals['apiKeyScopes'] = apiKeyResult.value.scopes;
+
+                // Debounced last_used_at update
+                void customerKeyService.updateLastUsedAt(db.knex, apiKeyResult.value.apiKeyId, new Date());
+
+                tagTraceUser(apiKeyResult.value);
+                next();
+                return;
+            }
+
+            // Fallback to legacy api_secrets
             const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
@@ -96,6 +161,7 @@ export class AccessMiddleware {
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
+            // No apiKeyScopes — legacy key, scope middleware will allow access
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -354,18 +420,28 @@ export class AccessMiddleware {
                     return;
                 }
 
-                const secretKeyResult = await this.validateSecretKey(token);
-                if (secretKeyResult.isErr()) {
-                    errorManager.errRes(res, secretKeyResult.error.message);
-                    return;
+                // NAN-5088: dual-read — try api_keys first, fall back to legacy api_secrets
+                const apiKeyResult = await this.validateApiKey(token);
+                if (apiKeyResult.isOk()) {
+                    res.locals['authType'] = 'secretKey';
+                    res.locals['account'] = apiKeyResult.value.account;
+                    res.locals['environment'] = apiKeyResult.value.environment;
+                    res.locals['plan'] = apiKeyResult.value.plan;
+                    res.locals['apiKeyScopes'] = apiKeyResult.value.scopes;
+                    void customerKeyService.updateLastUsedAt(db.knex, apiKeyResult.value.apiKeyId, new Date());
+                    tagTraceUser(apiKeyResult.value);
+                } else {
+                    const secretKeyResult = await this.validateSecretKey(token);
+                    if (secretKeyResult.isErr()) {
+                        errorManager.errRes(res, secretKeyResult.error.message);
+                        return;
+                    }
+                    res.locals['authType'] = 'secretKey';
+                    res.locals['account'] = secretKeyResult.value.account;
+                    res.locals['environment'] = secretKeyResult.value.environment;
+                    res.locals['plan'] = secretKeyResult.value.plan;
+                    tagTraceUser(secretKeyResult.value);
                 }
-
-                res.locals['authType'] = 'secretKey';
-                res.locals['account'] = secretKeyResult.value.account;
-                res.locals['environment'] = secretKeyResult.value.environment;
-                res.locals['plan'] = secretKeyResult.value.plan;
-
-                tagTraceUser(secretKeyResult.value);
             } else {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;

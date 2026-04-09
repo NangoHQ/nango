@@ -1,7 +1,9 @@
 import { permissions } from '@nangohq/authz';
+import db from '@nangohq/database';
 import {
     accountService,
     connectionService,
+    customerKeyService,
     environmentService,
     externalWebhookService,
     generateSlackConnectionId,
@@ -72,6 +74,15 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
+    // NAN-5088: fetch webhook signing key (redacted for production if user lacks permission)
+    let webhookSigningKey: string | null = null;
+    if (!environment.is_production || (await resolve(res.locals, permissions.canReadProdSecretKey))) {
+        const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (signingKeyResult.isOk()) {
+            webhookSigningKey = signingKeyResult.value.secret;
+        }
+    }
+
     res.status(200).send({
         plan: plan ? planToApi(plan) : null,
         environmentAndAccount: {
@@ -98,7 +109,8 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             uuid: account.uuid,
             name: account.name,
             email: user.email,
-            slack_notifications_channel
+            slack_notifications_channel,
+            webhook_signing_key: webhookSigningKey
         }
     });
 });

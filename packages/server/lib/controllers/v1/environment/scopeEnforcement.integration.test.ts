@@ -1,0 +1,341 @@
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+import { seeders } from '@nangohq/shared';
+
+import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
+
+let api: Awaited<ReturnType<typeof runServer>>;
+
+/**
+ * NAN-5088: Scope enforcement tests.
+ *
+ * For each public API route group, verify that:
+ * 1. A key WITH the required scope passes (not 403)
+ * 2. A key WITHOUT the required scope is denied (403)
+ *
+ * We use a "wrong" scope (one that doesn't match) to test denial.
+ * We don't validate the full response — just that scope enforcement is wired.
+ * The actual status may be 200, 400, 404, etc. depending on the endpoint's validation,
+ * but it must NOT be 403 when the correct scope is present.
+ */
+
+const WRONG_SCOPE = 'environment:mcp'; // unlikely to match any route except /mcp
+
+async function createKeyWithScopes(scopes: string[]): Promise<string> {
+    const { env, user } = await seeders.seedAccountEnvAndUser();
+    const session = await authenticateUser(api, user);
+    const res = await api.fetch('/api/v1/environment/api-keys', {
+        method: 'POST',
+        // @ts-expect-error query params are required
+        query: { env: env.name },
+        body: { display_name: 'test', scopes },
+        session
+    });
+    isSuccess(res.json);
+    return res.json.data.secret;
+}
+
+describe('Scope enforcement on public API routes', () => {
+    beforeAll(async () => {
+        api = await runServer();
+    });
+
+    afterAll(() => {
+        api.server.close();
+    });
+
+    // ── Integrations ────────────────────────────────────────────────
+
+    describe('GET /integrations', () => {
+        it('should allow with integrations:list scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:list']);
+            const res = await api.fetch('/integrations', { method: 'GET', token } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without integrations scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/integrations', { method: 'GET', token } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('POST /integrations', () => {
+        it('should allow with integrations:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:write']);
+            const res = await api.fetch('/integrations', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without integrations:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/integrations', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('GET /integrations/:uniqueKey', () => {
+        it('should allow with integrations:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:read']);
+            const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'GET', token, params: { uniqueKey: 'nonexistent' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without integrations:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'GET', token, params: { uniqueKey: 'nonexistent' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('DELETE /integrations/:uniqueKey', () => {
+        it('should allow with integrations:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:write']);
+            const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'DELETE', token, params: { uniqueKey: 'nonexistent' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without integrations:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'DELETE', token, params: { uniqueKey: 'nonexistent' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Connections ──────────────────────────────────────────────────
+
+    describe('GET /connections', () => {
+        it('should allow with connections:list scope', async () => {
+            const token = await createKeyWithScopes(['environment:connections:list']);
+            const res = await api.fetch('/connections', { method: 'GET', token } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without connections scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/connections', { method: 'GET', token } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('GET /connections/:connectionId', () => {
+        it('should allow with connections:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:connections:read']);
+            const res = await api.fetch('/connections/:connectionId' as any, { method: 'GET', token, params: { connectionId: 'nonexistent' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without connections:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/connections/:connectionId' as any, { method: 'GET', token, params: { connectionId: 'nonexistent' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('DELETE /connections/:connectionId', () => {
+        it('should allow with connections:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:connections:write']);
+            const res = await api.fetch('/connections/:connectionId' as any, { method: 'DELETE', token, params: { connectionId: 'nonexistent' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without connections:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/connections/:connectionId' as any, { method: 'DELETE', token, params: { connectionId: 'nonexistent' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Connect Sessions ────────────────────────────────────────────
+
+    describe('POST /connect/sessions', () => {
+        it('should allow with connect_sessions:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:connect_sessions:write']);
+            const res = await api.fetch('/connect/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without connect_sessions:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/connect/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Deploy ───────────────────────────────────────────────────────
+
+    describe('POST /sync/deploy', () => {
+        it('should allow with deploy scope', async () => {
+            const token = await createKeyWithScopes(['environment:deploy']);
+            const res = await api.fetch('/sync/deploy' as any, { method: 'POST', token, body: {}, headers: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without deploy scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/sync/deploy' as any, { method: 'POST', token, body: {}, headers: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Records ──────────────────────────────────────────────────────
+
+    describe('GET /records', () => {
+        it('should allow with records:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:records:read']);
+            const res = await api.fetch('/records' as any, { method: 'GET', token, query: { model: 'test' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without records:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/records' as any, { method: 'GET', token, query: { model: 'test' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Syncs ────────────────────────────────────────────────────────
+
+    describe('POST /sync/trigger', () => {
+        it('should allow with syncs:execute scope', async () => {
+            const token = await createKeyWithScopes(['environment:syncs:execute']);
+            const res = await api.fetch('/sync/trigger' as any, { method: 'POST', token, body: {}, headers: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without syncs:execute scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/sync/trigger' as any, { method: 'POST', token, body: {}, headers: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('GET /sync/status', () => {
+        it('should allow with syncs:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:syncs:read']);
+            const res = await api.fetch('/sync/status' as any, { method: 'GET', token, query: { syncs: 'test', provider_config_key: 'test' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without syncs:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/sync/status' as any, { method: 'GET', token, query: { syncs: 'test', provider_config_key: 'test' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Actions ──────────────────────────────────────────────────────
+
+    describe('POST /action/trigger', () => {
+        it('should allow with actions:execute scope', async () => {
+            const token = await createKeyWithScopes(['environment:actions:execute']);
+            const res = await api.fetch(
+                '/action/trigger' as any,
+                { method: 'POST', token, body: { action_name: 'test', input: {} }, headers: { 'provider-config-key': 'test', 'connection-id': 'test' } } as any
+            );
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without actions:execute scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch(
+                '/action/trigger' as any,
+                { method: 'POST', token, body: { action_name: 'test', input: {} }, headers: { 'provider-config-key': 'test', 'connection-id': 'test' } } as any
+            );
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Proxy ────────────────────────────────────────────────────────
+
+    describe('GET /proxy/*', () => {
+        it('should allow with proxy scope', async () => {
+            const token = await createKeyWithScopes(['environment:proxy']);
+            const res = await api.fetch('/proxy/:anyPath' as any, { method: 'GET', token, params: { anyPath: 'test' } } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without proxy scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/proxy/:anyPath' as any, { method: 'GET', token, params: { anyPath: 'test' } } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Config ───────────────────────────────────────────────────────
+
+    describe('GET /environment-variables', () => {
+        it('should allow with config:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:config:read']);
+            const res = await api.fetch('/environment-variables' as any, { method: 'GET', token } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without config:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/environment-variables' as any, { method: 'GET', token } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('GET /scripts/config', () => {
+        it('should allow with config:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:config:read']);
+            const res = await api.fetch('/scripts/config', { method: 'GET', token } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without config:read scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/scripts/config', { method: 'GET', token } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── MCP ──────────────────────────────────────────────────────────
+
+    describe('POST /mcp', () => {
+        it('should allow with mcp scope', async () => {
+            const token = await createKeyWithScopes(['environment:mcp']);
+            const res = await api.fetch('/mcp' as any, { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without mcp scope', async () => {
+            const token = await createKeyWithScopes(['environment:deploy']);
+            const res = await api.fetch('/mcp' as any, { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Wildcard ─────────────────────────────────────────────────────
+
+    describe('wildcard scope', () => {
+        it('environment:* should grant access to all routes', async () => {
+            const token = await createKeyWithScopes(['environment:*']);
+
+            const routes: { path: string; method: string; extra?: Record<string, unknown> }[] = [
+                { path: '/integrations', method: 'GET' },
+                { path: '/connections', method: 'GET' },
+                { path: '/scripts/config', method: 'GET' }
+            ];
+
+            for (const route of routes) {
+                const res = await api.fetch(route.path as any, { method: route.method, token, ...route.extra } as any);
+                expect(res.res.status).not.toBe(403);
+            }
+        });
+
+        it('environment:integrations:* should grant access to all integration routes', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:*']);
+
+            // Should work
+            const listRes = await api.fetch('/integrations', { method: 'GET', token } as any);
+            expect(listRes.res.status).not.toBe(403);
+
+            // Should not work for connections
+            const connRes = await api.fetch('/connections', { method: 'GET', token } as any);
+            expect(connRes.res.status).toBe(403);
+        });
+    });
+});

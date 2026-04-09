@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet';
 
+import { ApiKeys } from './ApiKeys';
 import { BackendSettings } from './Backend';
 import { ConnectUISettings } from './ConnectUISettings';
 import { DeprecatedSettings } from './Deprecated';
@@ -78,6 +79,7 @@ export const EnvironmentSettings: React.FC = () => {
                 <Navigation value={activeTab} onValueChange={setActiveTab}>
                     <NavigationList className="w-[209px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
+                        <NavigationTrigger value="api-keys">API Keys</NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
                         <NavigationTrigger value="connect-ui">Connect UI</NavigationTrigger>
                         <NavigationTrigger value="webhooks">Webhooks</NavigationTrigger>
@@ -88,6 +90,9 @@ export const EnvironmentSettings: React.FC = () => {
                     </NavigationList>
                     <EnvironmentSettingsContent value={'general'}>
                         <General />
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'api-keys'}>
+                        <ApiKeys />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'backend'}>
                         <BackendSettings />

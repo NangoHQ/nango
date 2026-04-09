@@ -1,0 +1,159 @@
+---
+title: "API Keys"
+sidebarTitle: "API Keys"
+description: "Manage API keys with scoped permissions for your Nango environments."
+---
+
+# API Keys
+
+API keys allow programmatic access to your Nango environment. Each environment can have multiple API keys with different permissions, enabling you to follow the principle of least privilege.
+
+## Managing API Keys
+
+API keys are managed in the Nango UI under **Environment Settings > API Keys**.
+
+Each environment comes with a **Default - Full access** key that grants access to all API endpoints. You can create additional keys with restricted scopes for specific use cases.
+
+### Creating a Key
+
+1. Go to **Environment Settings > API Keys**
+2. Click **Create API Key**
+3. Enter a display name (e.g., "CI Deploy Key", "Backend service")
+4. Select the scopes you need — use the presets for common patterns or pick individual scopes
+5. The key is created immediately and can be revealed and copied from the key list
+
+### Rotating a Key
+
+To rotate a key:
+1. Create a new key with the same scopes
+2. Update your application to use the new key
+3. Monitor the **Last used** column on the old key to confirm it's no longer in use
+4. Delete the old key
+
+### Using a Key
+
+Pass the API key as a Bearer token in the `Authorization` header:
+
+<Tabs>
+  <Tab title="Node SDK">
+    ```ts
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: '<YOUR-API-KEY>' });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request GET \
+      --url https://api.nango.dev/connections \
+      --header 'Authorization: Bearer <YOUR-API-KEY>'
+    ```
+  </Tab>
+</Tabs>
+
+## Scopes
+
+Scopes control what an API key can access. When creating a key, you select which scopes to grant. A key without a specific scope will receive a `403 Forbidden` response when trying to access a protected endpoint.
+
+### Scope Presets
+
+Common scope combinations are available as presets in the UI:
+
+| Preset | Scopes | Use case |
+|--------|--------|----------|
+| **Full access** | All scopes | Default key, unrestricted access |
+| **Auth** | `environment:connect_sessions:write` | Backend creating connect sessions for the auth flow |
+| **CI/CD deploy** | `environment:deploy` | CI/CD pipelines deploying syncs and actions |
+| **Backend service** | `environment:connections:read`, `environment:records:read`, `environment:actions:execute`, `environment:syncs:execute`, `environment:proxy` | Backend service consuming data and triggering operations |
+
+### Available Scopes
+
+#### Integrations
+
+| Scope | Description |
+|-------|-------------|
+| `environment:integrations:list` | List integrations (no credentials) |
+| `environment:integrations:list_credentials` | List integrations with client credentials |
+| `environment:integrations:read` | Read a single integration (no credentials) |
+| `environment:integrations:read_credentials` | Read a single integration with client credentials |
+| `environment:integrations:write` | Create, update, delete integrations |
+
+#### Connections
+
+| Scope | Description |
+|-------|-------------|
+| `environment:connections:list` | List connections (no credentials) |
+| `environment:connections:list_credentials` | List connections with access/refresh tokens |
+| `environment:connections:read` | Read a single connection (no credentials) |
+| `environment:connections:read_credentials` | Read a single connection with access/refresh tokens |
+| `environment:connections:write` | Create, update, delete connections and metadata |
+
+#### Connect Sessions
+
+| Scope | Description |
+|-------|-------------|
+| `environment:connect_sessions:write` | Create and reconnect sessions for the Connect UI auth flow |
+
+#### Syncs
+
+| Scope | Description |
+|-------|-------------|
+| `environment:syncs:read` | Read sync status |
+| `environment:syncs:execute` | Trigger, pause, start syncs |
+| `environment:syncs:manage` | Update sync frequency, create/delete sync variants |
+
+#### Deploy
+
+| Scope | Description |
+|-------|-------------|
+| `environment:deploy` | Deploy syncs and actions via CLI or API |
+
+#### Records
+
+| Scope | Description |
+|-------|-------------|
+| `environment:records:read` | Read synced records |
+| `environment:records:write` | Prune records |
+
+#### Actions
+
+| Scope | Description |
+|-------|-------------|
+| `environment:actions:execute` | Trigger actions and read action results |
+
+#### Proxy
+
+| Scope | Description |
+|-------|-------------|
+| `environment:proxy` | Send proxy requests to external APIs through Nango |
+
+#### Config
+
+| Scope | Description |
+|-------|-------------|
+| `environment:config:read` | Read environment variables and scripts config |
+
+#### MCP
+
+| Scope | Description |
+|-------|-------------|
+| `environment:mcp` | Access the MCP endpoint |
+
+### Credential Scopes
+
+The `list_credentials` and `read_credentials` scopes are supersets of `list` and `read` respectively. Selecting `read_credentials` automatically includes `read` access — you don't need to select both.
+
+Credential scopes control access to sensitive authentication material:
+- **Connections**: access/refresh tokens
+- **Integrations**: client ID and client secret
+
+### CLI Scopes
+
+| CLI Command | Required Scope |
+|-------------|---------------|
+| `nango deploy` | `environment:deploy` |
+| `nango dryrun` | `environment:connections:read_credentials` + `environment:integrations:read` |
+
+<Tip>
+  For local development, use a key with full access. For CI/CD pipelines deploying to production, create a dedicated key with only the `environment:deploy` scope.
+</Tip>

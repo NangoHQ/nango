@@ -38,6 +38,7 @@ export type GetEnvironment = Endpoint<{
             name: string;
             email: string;
             slack_notifications_channel: string | null;
+            webhook_signing_key: string | null;
         };
     };
 }>;
@@ -72,4 +73,44 @@ export type GetPublicEnvironmentVariables = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/environment-variables';
     Success: { name: string; value: string }[];
+}>;
+
+export type ListApiKeys = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/environment/api-keys';
+    Success: {
+        data: {
+            id: number;
+            display_name: string;
+            scopes: string[];
+            secret: string;
+            last_used_at: string | null;
+            created_at: string;
+        }[];
+    };
+}>;
+
+export type CreateApiKey = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/environment/api-keys';
+    Body: {
+        display_name: string;
+        scopes?: string[];
+    };
+    Success: {
+        data: {
+            id: number;
+            display_name: string;
+            scopes: string[];
+            secret: string;
+            created_at: string;
+        };
+    };
+}>;
+
+export type DeleteApiKey = Endpoint<{
+    Method: 'DELETE';
+    Path: '/api/v1/environment/api-keys/:keyId';
+    Params: { keyId: number };
+    Success: { success: true };
 }>;

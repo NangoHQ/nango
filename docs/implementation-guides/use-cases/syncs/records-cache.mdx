@@ -106,7 +106,7 @@ You must persist the cursor on your side for each combination of **connection** 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
 // Fetch only records that changed since your last cursor
 const result = await nango.listRecords({
@@ -128,7 +128,7 @@ if (result.records.length > 0) {
 <Tab title="cURL">
 ```bash
 curl -G https://api.nango.dev/records \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
   --header 'Provider-Config-Key: <INTEGRATION-ID>' \
   --header 'Connection-Id: <CONNECTION-ID>' \
   --data-urlencode 'model=Contact' \

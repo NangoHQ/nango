@@ -5,6 +5,7 @@ import db from '@nangohq/database';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import customerKeyService from './customerKey.service.js';
 import secretService from './secret.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -91,7 +92,7 @@ class EnvironmentService {
                 trx.rollback();
                 return null;
             }
-            // Invariant: Every environment always has one default key.
+            // Invariant: Every environment always has one default key (used by runners for persist auth).
             const created = await secretService.createSecret(trx, {
                 environmentId: environment.id,
                 displayName: 'default',
@@ -103,6 +104,25 @@ class EnvironmentService {
             const secret = created.value;
             environment.secret_key = secret.secret;
             environment.pending_secret_key = null;
+
+            // NAN-5088: create a customer API key with the same value (dual-read period)
+            const apiKey = await customerKeyService.createApiKey(trx, {
+                accountId: accountId,
+                environmentId: environment.id,
+                displayName: 'Default - Full access',
+                secret: secret.secret
+            });
+            if (apiKey.isErr()) {
+                throw apiKey.error;
+            }
+
+            // NAN-5088: create a webhook signing key with the same value
+            await customerKeyService.createWebhookSigningKey(trx, {
+                accountId: accountId,
+                environmentId: environment.id,
+                secret: secret.secret
+            });
+
             return environment;
         });
     }
