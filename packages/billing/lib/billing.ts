@@ -44,15 +44,10 @@ export class Billing {
     }
 
     async shutdown(): Promise<Result<void>> {
-        if (!this.batcher) {
-            return Ok(undefined);
+        if (this.batcher) {
+            return this.batcher.shutdown();
         }
-        const res = await this.batcher.shutdown();
-        if (res.isErr()) {
-            logger.error(`Shutdown failure: ${res.error}`);
-        }
-        logger.info(`Successful shutdown`);
-        return res;
+        return Ok(undefined);
     }
 
     add(events: BillingEvent[]): Result<void> {

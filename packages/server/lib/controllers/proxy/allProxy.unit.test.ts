@@ -211,6 +211,28 @@ describe('handleErrorResponse', () => {
         expect(mockLogCtx.error).toHaveBeenCalledWith('Unknown error', { error: err });
     });
 
+    it('should return 400 base_url_override_not_allowed when error chain contains proxy_redirect_to_denied_host', () => {
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn(),
+            set: vi.fn().mockReturnThis(),
+            writeHead: vi.fn()
+        } as unknown as Response;
+        const err = new Error('Axios redirect aborted');
+        err.cause = new ProxyError('proxy_redirect_to_denied_host', 'blocked');
+
+        handleErrorResponse({ res, error: err, logCtx: mockLogCtx });
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+        expect(mockLogCtx.error).toHaveBeenCalledWith('Proxy redirect denied by denylist', { error: err.cause });
+    });
+
     it('should return upstream status and send errorObject when Axios error has no response.data', () => {
         const res = {
             status: vi.fn().mockReturnThis(),

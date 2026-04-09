@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
+import { ProxyError, absoluteUrlFromRedirectRequestOptions, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
@@ -1091,6 +1091,65 @@ describe('getAxiosConfiguration', () => {
 
         expect(axiosConfig.beforeRedirect).toBeDefined();
     });
+
+    it('invokes validateProxyRedirectUrl with redirect href before other beforeRedirect work', () => {
+        const seen: string[] = [];
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRedirectUrl: (absoluteUrl) => {
+                seen.push(absoluteUrl);
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
+        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails);
+
+        expect(seen).toEqual(['https://redirect.example/next']);
+    });
+
+    it('propagates throw from validateProxyRedirectUrl', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRedirectUrl: () => {
+                throw new ProxyError('proxy_redirect_to_denied_host', 'blocked');
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
+        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails)).toThrow(ProxyError);
+    });
+});
+
+describe('absoluteUrlFromRedirectRequestOptions', () => {
+    it('returns href when present', () => {
+        expect(absoluteUrlFromRedirectRequestOptions({ href: 'https://a.example/path' })).toBe('https://a.example/path');
+    });
+
+    it('composes from protocol host path when href missing', () => {
+        expect(
+            absoluteUrlFromRedirectRequestOptions({
+                protocol: 'https:',
+                host: 'api.example.com',
+                path: '/p?q=1'
+            })
+        ).toBe('https://api.example.com/p?q=1');
+    });
 });
 
 describe('getProxyConfiguration', () => {
@@ -1200,5 +1259,28 @@ describe('getProxyConfiguration', () => {
             params: { foo: 'bar' },
             responseType: 'blob'
         });
+    });
+
+    it('passes through validateProxyRedirectUrl', () => {
+        const validateProxyRedirectUrl = (url: string): void => {
+            void url;
+        };
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            endpoint: '/api/test',
+            baseUrlOverride: 'https://api.github.com.override',
+            validateProxyRedirectUrl
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            providerName: 'github'
+        };
+
+        const res = getProxyConfiguration({ externalConfig, internalConfig });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.validateProxyRedirectUrl).toBe(validateProxyRedirectUrl);
     });
 });

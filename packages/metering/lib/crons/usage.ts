@@ -81,6 +81,7 @@ const observability = {
                             }
                         }
                     ]);
+                    // TODO: ingest into clickhouse
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
                 }
             } catch (err) {
@@ -155,6 +156,8 @@ const observability = {
                 if (toBilling.isErr()) {
                     logger.error(`Failed to ingest record billing events`);
                 }
+
+                // TODO ingest into clickhouse
 
                 // send to datadog
                 for (const {

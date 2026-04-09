@@ -6,13 +6,14 @@ import { Err, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 
-import type { TeamUpdatedEvent, Transport } from '@nangohq/pubsub';
+import type { Transport } from '@nangohq/pubsub';
+import type { TeamUpdatedEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class TeamProcessor {
     private subscriber: Subscriber;
 
-    constructor(transport: Transport) {
+    constructor({ transport }: { transport: Transport }) {
         this.subscriber = new Subscriber(transport);
     }
 

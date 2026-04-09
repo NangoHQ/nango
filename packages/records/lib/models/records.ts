@@ -31,6 +31,16 @@ dayjs.extend(utc);
 
 const BATCH_SIZE = envs.RECORDS_BATCH_SIZE;
 
+class LockError extends Error {}
+
+async function acquireAdvisoryLock(trx: Knex.Transaction, { name, connectionId, model }: { name: string; connectionId: number; model: string }): Promise<void> {
+    try {
+        await trx.raw(`SELECT pg_advisory_xact_lock(?) as ${name}`, [newLockId(connectionId, model)]);
+    } catch {
+        throw new LockError(`Failed to acquire lock for model ${model} (connection ${connectionId}). Another operation may be in progress. Please retry.`);
+    }
+}
+
 interface UpsertedMetadata {
     partition: string;
     external_id: string;
@@ -332,7 +342,7 @@ export async function upsert({
             () => {
                 return db.transaction(async (trx) => {
                     // Lock to prevent concurrent upserts
-                    await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_${softDelete ? 'delete' : 'upsert'}`, [newLockId(connectionId, model)]);
+                    await acquireAdvisoryLock(trx, { name: `lock_records_${softDelete ? 'delete' : 'upsert'}`, connectionId, model });
 
                     const summary: UpsertSummary = {
                         addedKeys: [],
@@ -557,9 +567,11 @@ export async function upsert({
             }
         );
     } catch (err: any) {
-        let errorMessage = `Failed to upsert records to table ${RECORDS_TABLE}.\n`;
-        errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
-        errorMessage += `Attempted to insert/update/delete: ${recordsWithoutDuplicates.length} records\n`;
+        if (err instanceof LockError) {
+            span.setTag('error', err);
+            return Err(err);
+        }
+        let errorMessage = `Failed to upsert ${recordsWithoutDuplicates.length} records. (connectionId: ${connectionId}, model: ${model})\n`;
 
         if ('code' in err) {
             const errorCode = (err as { code: string }).code;
@@ -616,7 +628,8 @@ export async function update({
         const activatedKeys: string[] = [];
         await db.transaction(async (trx) => {
             // Lock to prevent concurrent updates
-            await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_update`, [newLockId(connectionId, model)]);
+            await acquireAdvisoryLock(trx, { name: 'lock_records_update', connectionId, model });
+
             let deltaSizeInBytes = 0;
             for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                 const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
@@ -781,9 +794,11 @@ export async function update({
             unchangedKeys: []
         });
     } catch (err: any) {
-        let errorMessage = `Failed to update records to table ${RECORDS_TABLE}.\n`;
-        errorMessage += `Model: ${model}, Nango Connection ID: ${connectionId}.\n`;
-        errorMessage += `Attempted to update: ${recordsWithoutDuplicates.length} records\n`;
+        if (err instanceof LockError) {
+            span.setTag('error', err);
+            return Err(err);
+        }
+        let errorMessage = `Failed to update ${recordsWithoutDuplicates.length} records. (connectionId: ${connectionId}, model: ${model})\n`;
 
         if ('code' in err) errorMessage += `Error code: ${(err as { code: string }).code}.\n`;
         if ('detail' in err) errorMessage += `Detail: ${(err as { detail: string }).detail}.\n`;
@@ -863,7 +878,7 @@ export async function deleteRecords({
             const now = trx.fn.now(6);
             // Lock to prevent concurrent deletions (skip lock if dry run)
             if (!dryRun) {
-                await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_delete`, [newLockId(connectionId, model)]);
+                await acquireAdvisoryLock(trx, { name: 'lock_records_delete', connectionId, model });
             }
 
             do {
@@ -1000,6 +1015,10 @@ export async function deleteRecords({
 
         return Ok({ count: totalRecords, lastCursor });
     } catch (err) {
+        if (err instanceof LockError) {
+            span.setTag('error', err);
+            return Err(err);
+        }
         span.setTag('error', err);
         return Err(new Error(`Failed to delete records connection ${connectionId}, model ${model}`, { cause: err }));
     } finally {
@@ -1042,7 +1061,7 @@ export async function deleteOutdatedRecords({
                 () => {
                     return db.transaction(async (trx) => {
                         // Lock to prevent concurrent modifications with upserts and deletes
-                        await trx.raw(`SELECT pg_advisory_xact_lock(?) as lock_records_outdated`, [newLockId(connectionId, model)]);
+                        await acquireAdvisoryLock(trx, { name: 'lock_records_outdated', connectionId, model });
 
                         const res: {
                             id: string;
@@ -1139,6 +1158,10 @@ export async function deleteOutdatedRecords({
         }
         return Ok(deletedIds);
     } catch (err) {
+        if (err instanceof LockError) {
+            span.setTag('error', err);
+            return Err(err);
+        }
         const e = new Error(`Failed to mark previous generation records as deleted for connection ${connectionId}, model ${model}, generation ${generation}`, {
             cause: err
         });
@@ -1402,7 +1425,7 @@ async function getRecordsToUpdate({
         .whereNotIn([`${RECORDS_TABLE}.external_id`, `${RECORDS_TABLE}.data_hash`], keysWithHash);
 }
 
-function newLockId(connectionId: number, model: string): bigint {
+export function newLockId(connectionId: number, model: string): bigint {
     // convert modelHash to unsigned 32-bit integer to ensure
     // negative hash values don't cause sign extension problems
     // when combined with connectionId in the bitwise OR operation

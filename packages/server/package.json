@@ -21,7 +21,7 @@
     "dependencies": {
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/authz": "file:../authz",
-        "@nangohq/account-usage": "file:../account-usage",
+        "@nangohq/usage": "file:../usage",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
         "@nangohq/email": "file:../email",

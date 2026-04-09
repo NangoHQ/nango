@@ -3671,6 +3671,38 @@ cleverreach:
     docs: https://nango.dev/docs/api-integrations/cleverreach
     setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app
 
+clickhouse:
+    display_name: ClickHouse
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.clickhouse.cloud
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/organizations
+    docs: https://nango.dev/docs/api-integrations/clickhouse
+    docs_connect: https://nango.dev/docs/api-integrations/clickhouse/connect
+    credentials:
+        username:
+            type: string
+            title: Key ID
+            description: Your ClickHouse Cloud API Key ID.
+            pattern: '^[a-zA-Z0-9]+$'
+            example: 'Mlx1****************'
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Key Secret
+            description: Your ClickHouse Cloud API Key Secret.
+            secret: true
+            pattern: '^[a-zA-Z0-9]+$'
+            example: '4b1d2i7O**********************************'
+            doc_section: '#step-1-create-an-api-key'
+
 clicksend:
     display_name: ClickSend
     categories:
@@ -6155,6 +6187,30 @@ freeagent-sandbox:
     docs: https://nango.dev/docs/api-integrations/freeagent-sandbox
     setup_guide_url: https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app
 
+freepik:
+    display_name: Freepik
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.freepik.com
+        headers:
+            x-freepik-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/resources
+    docs: https://nango.dev/docs/api-integrations/freepik
+    docs_connect: https://nango.dev/docs/api-integrations/freepik/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Freepik account.
+            doc_section: '#step-1-obtain-your-freepik-api-key'
+            example: FPSXc7b3**********************5b2a
+            pattern: 'FPSX[0-9a-f]{32}'
+
 figjam:
     display_name: FigJam
     categories:
@@ -7475,6 +7531,7 @@ google:
             response_path: items
     docs: https://nango.dev/docs/api-integrations/google
     setup_guide_url: https://nango.dev/docs/api-integrations/google/how-to-register-your-own-google-api-oauth-app
+    webhook_routing_script: googleWebhookRouting
 
 google-analytics:
     display_name: Google Analytics
@@ -8312,6 +8369,44 @@ hackerrank-work:
             description: ''
             default_value: ''
             hidden: true
+
+halo-psa:
+    display_name: Halo PSA
+    categories:
+        - support
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/auth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://nango.dev/docs/api-integrations/halo-psa
+    docs_connect: https://nango.dev/docs/api-integrations/halo-psa/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Halo PSA hostname.
+            example: example.halopsa.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-halo-api-details'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Halo PSA API application Client ID
+            doc_section: '#step-3-create-an-api-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Halo PSA API application Client Secret
+            secret: true
+            doc_section: '#step-3-create-an-api-application'
 
 harvest:
     display_name: Harvest
@@ -10601,13 +10696,13 @@ microsoft-teams-bot:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
-    docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
-    docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
+    docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
     connection_config:
         tenantId:
             type: string
             title: Tenant ID
-            description: The unique identifier for the Azure AD tenant
+            description: The unique identifier for your Microsoft Entra ID tenant.
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -13294,6 +13389,40 @@ prospeo:
             example: 65d2be5e227e447d8777d36f934c611c
             pattern: '^[a-f0-9]{32}$'
             doc_section: '#step-1-finding-your-api-key'
+
+prtg-classic:
+    display_name: PRTG Classic
+    categories:
+        - support
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.host}
+        query:
+            apitoken: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/table.json?content=sensors&count=1
+    docs: https://nango.dev/docs/api-integrations/prtg-classic
+    docs_connect: https://nango.dev/docs/api-integrations/prtg-classic/connect
+    connection_config:
+        host:
+            type: string
+            title: Instance Host
+            description: The host of your PRTG instance
+            pattern: '^[A-Za-z0-9.-]+(:\d+)?$'
+            example: monitor.example.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-instance-host'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your PRTG account
+            pattern: '^[A-Z2-7]+=*$'
+            example: RUTOWB5KVJCMEOWHL5MLUWMA324UGNDLPS6JKLTEDT======
+            doc_section: '#step-2-finding-your-api-key'
 
 private-api-bearer:
     display_name: Private API (Bearer Auth)
@@ -17231,6 +17360,29 @@ tremendous-sandbox:
         base_url: https://testflight.tremendous.com/api/v2
     docs: https://nango.dev/docs/integrations/all/tremendous-sandbox
 
+perk:
+    display_name: Perk
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.travelperk.com/oauth2/authorize/
+    token_url: https://app.travelperk.com/accounts/oauth2/token/
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.travelperk.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/perk
+    setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+
 trello:
     display_name: Trello
     categories:
@@ -18792,6 +18944,75 @@ workday-refresh-token:
             description: Your Workday refresh token for the Integration System User
             secret: true
             doc_section: '#step-4-generating-a-refresh-token'
+
+workday-adaptive-planning:
+    display_name: Workday Adaptive Planning
+    categories:
+        - accounting
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.host}/ccx/oauth2/${connectionConfig.tenant}/token
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        assertion: ${credentials.assertion}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    assertion:
+        type: jwt
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: RS256
+            typ: JWT
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.isu}
+            aud: wd
+    additional_steps:
+        - token_request_method: GET
+          token_url: https://${connectionConfig.host}/ccx/api/planning/v1/${connectionConfig.tenant}/adaptiveAPIAccessToken
+          token_headers:
+              authorization: Bearer ${step1.access_token}
+    token_response:
+        token: adaptiveAPIAccessToken
+    proxy:
+        base_url: https://api.adaptiveplanning.com
+    docs: https://nango.dev/docs/api-integrations/workday-adaptive-planning
+    docs_connect: https://nango.dev/docs/api-integrations/workday-adaptive-planning/connect
+    connection_config:
+        host:
+            type: string
+            title: Host
+            description: The hostname of your Workday account.
+            format: hostname
+            example: wd3-impl-services1.workday.com
+            prefix: https://
+            order: 1
+        tenant:
+            type: string
+            title: Tenant
+            description: The tenant of your Workday account.
+            example: mytenant
+            order: 2
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from the Workday API Client registration.
+        isu:
+            type: string
+            title: ISU Username
+            description: The Integration System User (ISU) username.
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key (PEM format) used to sign the JWT.
+            secret: true
 
 workpath:
     display_name: Workpath
