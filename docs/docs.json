@@ -838,6 +838,7 @@
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
               "integrations/all/statista",
+              "api-integrations/stay-ai",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "integrations/all/streak",

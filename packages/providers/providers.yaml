@@ -16451,6 +16451,26 @@ statista:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+stay-ai:
+    display_name: Stay AI
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retextion.com/api
+        headers:
+            x-retextion-access-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/stay-ai
+    docs_connect: https://nango.dev/docs/api-integrations/stay-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stay AI API key.
+            example: 7k9***f-***da3e-***hjtb-***22cy
+            pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
+            doc_section: '#step-1-create-a-new-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
