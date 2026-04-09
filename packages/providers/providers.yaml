@@ -19698,6 +19698,34 @@ snipe-it:
             doc_section: '#step-2-finding-your-domain'
             order: 1
 
+zorus:
+    display_name: Zorus
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://developer.zorustech.com
+        headers:
+            authorization: Impersonation ${apiKey}
+            zorus-api-version: '1.0'
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/customers/search
+            data: { 'page': 1, 'pageSize': 1 }
+    docs: https://nango.dev/docs/api-integrations/zorus
+    docs_connect: https://nango.dev/docs/api-integrations/zorus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from the Zorus Portal.
+            doc_section: '#step-1-generating-your-api-token'
+            example: 1_a1b2c3d4-e5f6-7890-abcd-1234567890ab
+            pattern: '^[0-9]+_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+
 zuora:
     display_name: Zuora
     categories:
