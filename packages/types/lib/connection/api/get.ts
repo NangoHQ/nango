@@ -21,6 +21,7 @@ export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' 
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
     tags: Tags;
+    pausedSyncs: string[];
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';

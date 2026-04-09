@@ -19,7 +19,7 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
 
     return (
         <div className="flex w-full gap-11 justify-between">
-            <div className="flex flex-col gap-8 max-w-2xl">
+            <div className="flex flex-col gap-8 w-full max-w-2xl">
                 {errorLog && (
                     <Alert variant="error">
                         <Info />
