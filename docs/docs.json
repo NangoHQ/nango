@@ -919,6 +919,7 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workday-adaptive-planning-basic",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",

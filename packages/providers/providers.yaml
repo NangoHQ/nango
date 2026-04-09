@@ -18667,6 +18667,28 @@ workday:
             description: Workday API Password
             doc_section: '#step-5-finding-your-password'
 
+workday-adaptive-planning-basic:
+    display_name: Workday Adaptive Planning (Basic Auth)
+    categories:
+        - finance
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.adaptiveplanning.com/api/rest
+    docs: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic
+    docs_connect: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Workday Adaptive Planning username.
+            doc_section: '#step-1-find-your-username-and-password'
+        password:
+            type: string
+            title: Password
+            description: Your Workday Adaptive Planning password.
+            secret: true
+            doc_section: '#step-1-find-your-username-and-password'
+
 workday-oauth:
     display_name: Workday (OAuth)
     categories:
