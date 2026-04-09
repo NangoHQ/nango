@@ -10292,6 +10292,31 @@ listmonk:
             description: The token to your Listmonk account
             secret: true
 
+listrak:
+    display_name: Listrak
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.listrak.com/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.listrak.com/email
+    docs: https://nango.dev/docs/api-integrations/listrak
+    docs_connect: https://nango.dev/docs/api-integrations/listrak/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Listrak API Client ID
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Listrak API Client Secret
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 make:
     display_name: Make
     categories:

@@ -607,6 +607,7 @@
               "api-integrations/linkedin",
               "integrations/all/linkhut",
               "integrations/all/listmonk",
+              "api-integrations/listrak",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
               "integrations/all/loop-returns",
