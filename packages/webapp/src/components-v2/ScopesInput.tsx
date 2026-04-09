@@ -63,6 +63,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         try {
             await onChange?.(newScopes.join(','), countDifference);
             setScopes(newScopes);
+            setInputValue('');
         } finally {
             setLoading(false);
         }
@@ -172,6 +173,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <ComboboxContent
                         anchor={chipsRef}
                         sideOffset={0}
+                        collisionAvoidance={{ side: 'none' }}
                         className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle mb-2"
                     >
                         <ComboboxEmpty>No results found.</ComboboxEmpty>
