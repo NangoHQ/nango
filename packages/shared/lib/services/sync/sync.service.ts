@@ -225,6 +225,33 @@ export const getSyncs = async (
     });
 };
 
+export const getSyncsByIds = async ({ syncIds }: { syncIds: string[] }): Promise<Pick<Sync, 'id' | 'nango_connection_id'>[]> => {
+    if (syncIds.length === 0) {
+        return [];
+    }
+    return db.knex.select('id', 'nango_connection_id').from<Sync>(TABLE).whereIn('id', syncIds).andWhere({ deleted: false });
+};
+
+export const getSyncsByConnectionIds = async ({
+    connectionIds
+}: {
+    connectionIds: number[];
+}): Promise<Result<Pick<Sync, 'id' | 'name' | 'nango_connection_id'>[]>> => {
+    if (connectionIds.length === 0) {
+        return Ok([]);
+    }
+    try {
+        const result = await db.knex
+            .select('id', 'name', 'nango_connection_id')
+            .from<Sync>(TABLE)
+            .whereIn('nango_connection_id', connectionIds)
+            .andWhere({ deleted: false });
+        return Ok(result);
+    } catch (err) {
+        return Err(new Error(`Failed to get syncs by connection ids: ${stringifyError(err)}`));
+    }
+};
+
 export const getSyncsByConnectionId = async ({
     connectionId,
     filter = []

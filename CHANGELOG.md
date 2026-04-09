@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.48] - 2026-04-08
+
+### Added
+
+- *(lambda)* Add types for test event type (#5737) by @rossmcewan
+- *(proxy)* Add a flag in the proxyConfig to enable forwarding header on redirect (#5668) by @hassan254-prog
+- *(pubsub)* Adding sns-sqs transport (#5695) by @rossmcewan
+- *(lambda)* Add integrationConfig to nangoPropsSchema (#5747) by @hassan254-prog
+- *(integrations)* Add support for shipbob (pat) (#5748) by @hassan254-prog
+- Remove api down watch (#5744) by @kaposke
+- *(webapp)* RBAC UI feedback (low hanging) (#5734) by @kaposke
+- *(website)* Replace webflow provider sync with sanity cms sync (#5730) by @hassan254-prog
+- *(sanity-sync)* Add env targeting to sanity providers sync (#5756) by @hassan254-prog
+- *(integrations)* Add support for cin7-core (#5758) by @hassan254-prog
+- *(integrations)* Add support for orange logic (#5755) by @hassan254-prog
+- *(integrations)* Add support for google maps (#5754) by @hassan254-prog
+- *(integrations)* Add support for workpath (#5753) by @hassan254-prog
+- *(integrations)* Add support for clover (#5757) by @hassan254-prog
+- *(sanity-sync)* Add categories to providers missing categories (#5763) by @hassan254-prog
+- Add March 2026 product changelog: RBAC, 34 new APIs, blog posts (#5768) by @SapneshNaik
+- *(server)* Track missing OAuth state cookies to assess CSRF fix re-enablement impact (#5733) by @agusayerza
+- *(sanity-sync)* Add more logs to sanity sync (#5777) by @hassan254-prog
+- Add rbac docs links (#5735) by @kaposke
+- *(integrations)* Add support for apple business manager (#5743) by @hassan254-prog
+- Env settings badge redesign (#5762) by @kaposke
+- *(connectwise-psa)* Support custom ConnectWise PSA hostnames (#5745) by @justonf
+- *(providers)* Add SentinelOne (#5769) by @justonf
+- *(auto-approve)* Add trusted author (#5786) by @TBonnin
+- *(webhooks)* Add support for webhooks from multiple calendars (#5787) by @rbwest
+- Add running-and-testing-locally skill with browser testing workflow (#5731) by @pfreixes
+- Redact connection credentials instead of deleting them (#5796) by @kaposke
+- Add `isDowngrade` to `plan_changed` event (#5782) by @kaposke
+- *(providers)* Add PRTG Classic integration (#5788) by @justonf
+- *(integrations)* Add support for workday adaptive planning (#5801) by @hassan254-prog
+- *(connections)* Add   pausedSyncs to connection list API (#5699) by @agusayerza
+
+### Changed
+
+- Bump max string length in checkpoint (#5740) by @rbwest
+- RBAC docs (#5752) by @bastienbeurier
+- Auto-approve gh action for docs only PRs (#5751) by @TBonnin
+- *(records)* Create records_data table (#5741) by @TBonnin
+- Read records payload from new table (#5761) by @TBonnin
+- *(records)* Writing records payload to dedicated table (#5742) by @TBonnin
+- Update docs on overriding connect UI docs url (#5764) by @SapneshNaik
+- Rename function builder skill references (#5767) by @marcindobry
+- Add SSO documentation to security page (#5785) by @mintlify[bot]
+- Rename account-usage to usage (#5792) by @TBonnin
+
+### Fixed
+
+- *(webapp)* Narrow provider search to name fields only (#5739) by @hassan254-prog
+- *(vulns)* Npm audit fix (#5738) by @rossmcewan
+- *(webapp)* Allow for scopes to be defined when creating an oauth2_cc integration (#5732) by @hassan254-prog
+- Revert wrongly committed TODO in docs by @TBonnin
+- *(sanity-sync)* Fix envs vars always evaluating to true (#5771) by @hassan254-prog
+- Docs only PR should skip code related gh actions (#5765) by @TBonnin
+- *(vulns)* Fix vulnerabilities (#5770) by @rossmcewan
+- Improve error message on records lock timeout (#5789) by @TBonnin
+- *(webapp)* Delete integrations button not working (#5794) by @kaposke
+- *(webapp)* Improve error feedback on plan upgrade flows (#5780) by @ErickRDev
+- *(vulns)* Fix vulns (#5809) by @rossmcewan
+
 ## [v0.69.47] - 2026-03-30
 
 ### Added
@@ -512,7 +575,7 @@ All notable changes to this project will be documented in this file.
 - *(integrations)* Add support for microsoft planner (#5289) by @digggy
 - *(integrations)* Add support for sellercloud (#5242) by @hassan254-prog
 - *(ui)* Use tags for email and display_name in AvatarOrganization (#5343) by @marcindobry
-- *(integrations)* Add Upsales API integration (#5112) by @frkst
+- *(integrations)* Add Upsales API integration (#5112)
 - *(persist)* Adds checkpoint endpoints to the persist (#5335) by @TBonnin
 - *(tags)* Match the validation of end_user tags to new tags (#5341) by @marcindobry
 - *(docs)* Add docs for records retention policies (#5217) by @TBonnin
@@ -6272,6 +6335,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.48]: https://github.com/NangoHQ/nango/compare/v0.69.47..v0.69.48
 [v0.69.47]: https://github.com/NangoHQ/nango/compare/v0.69.46..v0.69.47
 [v0.69.46]: https://github.com/NangoHQ/nango/compare/v0.69.45..v0.69.46
 [v0.69.45]: https://github.com/NangoHQ/nango/compare/v0.69.44..v0.69.45

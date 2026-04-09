@@ -3,28 +3,30 @@
   "theme": "mint",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#71c0e2",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
     "default": "system"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "dark": "#0b0b0c",
+      "light": "#ffffff"
+    }
+  },
+  "css": "custom.css",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
-  "contextual": {
-    "options": [
-      "copy",
-      "cursor",
-      "vscode",
-      "chatgpt",
-      "claude"
-    ]
-  },
   "seo": {
     "indexing": "all",
     "metatags": {
@@ -35,13 +37,18 @@
   "navbar": {
     "links": [
       {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
+        "type": "github",
+        "href": "https://github.com/NangoHQ/nango"
+      },
+      {
+        "label": "Log In",
+        "href": "https://app.nango.dev"
       }
     ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
+      "type": "button",
+      "label": "Sign Up",
+      "href": "https://app.nango.dev/signup"
     }
   },
   "footer": {
@@ -92,6 +99,7 @@
     "tabs": [
       {
         "tab": "Documentation",
+        "icon": "book-open",
         "groups": [
           {
             "group": "Getting Started",
@@ -211,6 +219,7 @@
       },
       {
         "tab": "APIs & Integrations",
+        "icon": "plug",
         "groups": [
           {
             "group": "700+ APIs & Integrations",
@@ -347,6 +356,7 @@
               "integrations/all/clari-copilot",
               "api-integrations/clay",
               "api-integrations/cleverreach",
+              "api-integrations/clickhouse",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
@@ -438,6 +448,7 @@
               "api-integrations/fellow",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
+              "api-integrations/freepik",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
@@ -532,6 +543,7 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/halo-psa",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
               "integrations/all/heap",
@@ -699,6 +711,7 @@
               "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
               "api-integrations/perdoo",
+              "api-integrations/perk",
               "integrations/all/perimeter81",
               "integrations/all/perplexity",
               "integrations/all/personio",
@@ -725,6 +738,7 @@
               "integrations/all/productboard",
               "api-integrations/procore",
               "api-integrations/provenexpert",
+              "api-integrations/prtg-classic",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
               "api-integrations/quentn",
@@ -920,6 +934,7 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workday-adaptive-planning",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",
@@ -959,6 +974,7 @@
       },
       {
         "tab": "Reference",
+        "icon": "square-terminal",
         "groups": [
           {
             "group": "Frontend",
@@ -1097,6 +1113,7 @@
       },
       {
         "tab": "Updates",
+        "icon": "bolt",
         "groups": [
           {
             "group": "Updates",

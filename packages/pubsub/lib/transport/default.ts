@@ -6,8 +6,8 @@ import { NoOpTransport } from './noop.js';
 import { SnsSqs } from './sns-sqs.js';
 import { envs } from '../env.js';
 
-import type { Event } from '../event.js';
 import type { SubscribeProps, Transport } from './transport.js';
+import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class DefaultTransport implements Transport {

@@ -587,7 +587,7 @@ export async function handleSyncSuccess({
                     success: true,
                     frequencyMs,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });
@@ -1008,7 +1008,7 @@ async function onFailure({
                     type: 'sync',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });

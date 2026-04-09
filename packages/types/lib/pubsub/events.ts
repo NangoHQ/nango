@@ -1,4 +1,6 @@
-import type { DBTeam, DBUser, FunctionRuntime } from '@nangohq/types';
+import type { FunctionRuntime } from '../runner/sdk.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
 
 type Serializable = string | number | boolean | Date | null | undefined | Serializable[] | { [key: string]: Serializable };
 
@@ -46,7 +48,6 @@ interface UsageEventBase<TType extends string, TPayload extends Serializable> ex
             environmentName: string;
             integrationId: string;
             connectionId: string;
-            functionRuntime?: FunctionRuntime | undefined;
         };
     };
 }
@@ -98,6 +99,7 @@ export type UsageFunctionExecutionsEvent = UsageEventBase<
             type: 'sync' | 'action' | 'webhook' | 'on-event';
             success: boolean;
             functionName: string;
+            runtime: FunctionRuntime | undefined;
             telemetryBag:
                 | {
                       durationMs: number;

@@ -27,7 +27,10 @@ export function getDisplayName(authMode: AuthModeType): string {
     return displayNames[authMode] || authMode.replaceAll('_', ' ').toUpperCase();
 }
 
-export function validateUrl(value: string): string | null {
+export function validateUrl(value: string, allowEmpty = false): string | null {
+    if (allowEmpty && value === '') {
+        return null;
+    }
     const message = 'Must be a valid URL (e.g., https://example.com)';
     try {
         // The URL constructor will throw if the URL is invalid.
