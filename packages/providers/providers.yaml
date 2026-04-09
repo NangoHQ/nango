@@ -18821,7 +18821,7 @@ workday:
 workday-adaptive-planning-basic:
     display_name: Workday Adaptive Planning (Basic Auth)
     categories:
-        - finance
+        - accounting
     auth_mode: BASIC
     proxy:
         base_url: https://api.adaptiveplanning.com/api/rest
