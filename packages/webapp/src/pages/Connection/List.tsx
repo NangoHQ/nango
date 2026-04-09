@@ -35,6 +35,7 @@ import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 type StatusFilterValue = 'ok' | 'error' | 'auth_error' | 'sync_error' | 'paused';
+const validStatusFilterValues = new Set<string>(['ok', 'error', 'auth_error', 'sync_error', 'paused']);
 
 const statusOptions: ComboboxOption<StatusFilterValue>[] = [
     { label: 'OK', value: 'ok' },
@@ -175,7 +176,7 @@ export const ConnectionList = () => {
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
-    const selectedStatusFilters = (rawStatusFilters ?? []) as StatusFilterValue[];
+    const selectedStatusFilters = (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s));
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
