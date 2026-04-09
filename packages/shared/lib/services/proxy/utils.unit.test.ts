@@ -1,7 +1,15 @@
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildCanonicalParams, buildProxyHeaders, buildProxyURL, getAxiosConfiguration, getProxyConfiguration } from './utils.js';
+import {
+    ProxyError,
+    absoluteUrlFromRedirectRequestOptions,
+    buildCanonicalParams,
+    buildProxyHeaders,
+    buildProxyURL,
+    getAxiosConfiguration,
+    getProxyConfiguration
+} from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
