@@ -52,13 +52,13 @@ export function useCreateApiKey(env: string) {
     });
 }
 
-export function useUpdateApiKeyScopes(env: string) {
+export function useUpdateApiKey(env: string) {
     const queryClient = useQueryClient();
-    return useMutation<undefined, APIError, { keyId: number; scopes: string[] }>({
-        mutationFn: async ({ keyId, scopes }) => {
+    return useMutation<undefined, APIError, { keyId: number; scopes?: string[]; display_name?: string }>({
+        mutationFn: async ({ keyId, ...body }) => {
             const res = await apiFetch(`/api/v1/environment/api-keys/${keyId}?env=${env}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ scopes })
+                body: JSON.stringify(body)
             });
 
             if (!res.ok) {

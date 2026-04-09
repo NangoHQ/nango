@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { permissions } from '@nangohq/authz';
 
 import SettingsContent from './components/SettingsContent';
-import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKeyScopes } from '../../../hooks/useApiKeys';
+import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -132,9 +132,14 @@ interface ScopeSelectorProps {
     onChange: (scopes: string[]) => void;
 }
 
-function groupWildcard(group: { group: string; scopes: string[] }): string {
-    // 'environment:integrations:list' -> 'environment:integrations:*'
+function groupWildcard(group: { group: string; scopes: string[] }): string | null {
+    // Only produce a wildcard for groups with multiple scopes and 3+ segments
+    // e.g. 'environment:integrations:list' -> 'environment:integrations:*'
+    // but NOT 'environment:deploy' -> 'environment:*' (too broad)
     const parts = group.scopes[0].split(':');
+    if (parts.length < 3 || group.scopes.length <= 1) {
+        return null; // No wildcard for single-scope or 2-segment groups
+    }
     return parts.slice(0, -1).join(':') + ':*';
 }
 
@@ -151,18 +156,36 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
         onChange(selectedScopes.includes(scope) ? selectedScopes.filter((s) => s !== scope) : [...selectedScopes, scope]);
     };
 
-    const isGroupWildcardSelected = (group: { group: string; scopes: string[] }) => selectedScopes.includes(groupWildcard(group));
+    const isGroupWildcardSelected = (group: { group: string; scopes: string[] }) => {
+        const wc = groupWildcard(group);
+        return wc ? selectedScopes.includes(wc) : false;
+    };
+
+    const isGroupAllSelected = (group: { group: string; scopes: string[] }) =>
+        isGroupWildcardSelected(group) || group.scopes.every((s) => selectedScopes.includes(s));
 
     const toggleGroup = (group: { group: string; scopes: string[] }) => {
         if (hasFullAccess) return;
         const wc = groupWildcard(group);
-        if (selectedScopes.includes(wc)) {
-            // Uncheck group: remove wildcard, let user pick individual scopes
+        if (wc && selectedScopes.includes(wc)) {
+            // Uncheck group: remove wildcard
             onChange(selectedScopes.filter((s) => s !== wc));
-        } else {
+        } else if (wc && !isGroupAllSelected(group)) {
             // Check group: store the wildcard, remove any individual scopes from this group
             const cleaned = selectedScopes.filter((s) => !group.scopes.includes(s));
             onChange([...cleaned, wc]);
+        } else if (!wc) {
+            // No wildcard available (single-scope group): toggle all scopes individually
+            const allSelected = group.scopes.every((s) => selectedScopes.includes(s));
+            if (allSelected) {
+                onChange(selectedScopes.filter((s) => !group.scopes.includes(s)));
+            } else {
+                const newScopes = new Set([...selectedScopes, ...group.scopes]);
+                onChange(Array.from(newScopes));
+            }
+        } else {
+            // All individually selected, uncheck all
+            onChange(selectedScopes.filter((s) => !group.scopes.includes(s)));
         }
     };
 
@@ -198,8 +221,9 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                         </div>
                     )}
                     {SCOPE_GROUPS.map((group) => {
-                        const groupSelected = isGroupWildcardSelected(group);
-                        const childrenDisabled = hasFullAccess || groupSelected;
+                        const groupSelected = isGroupAllSelected(group);
+                        const wildcardSelected = isGroupWildcardSelected(group);
+                        const childrenDisabled = hasFullAccess || wildcardSelected;
                         return (
                             <div key={group.group} className="flex flex-col gap-1">
                                 <label className={`flex items-center gap-2 ${hasFullAccess ? '' : 'cursor-pointer'}`}>
@@ -214,7 +238,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                         className="accent-brand"
                                     />
                                     <span className="text-body-small-semi text-text-secondary">{group.group}</span>
-                                    {groupSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
+                                    {wildcardSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
                                 </label>
                                 {group.scopes.map((scope) => (
                                     <label key={scope} className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
@@ -326,20 +350,30 @@ interface KeyDetailProps {
 
 const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onBack, onDelete, canReadSecret, canManageKeys }) => {
     const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
-    const { mutateAsync: updateScopes, isPending } = useUpdateApiKeyScopes(env);
+    const [editedName, setEditedName] = useState<string>(apiKey.display_name);
+    const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
     const { toast } = useToast();
 
-    const hasChanges = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
+    const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
+    const nameChanged = editedName.trim() !== apiKey.display_name;
+    const hasChanges = scopesChanged || nameChanged;
 
     const handleSave = async () => {
         try {
-            await updateScopes({ keyId: apiKey.id, scopes: editedScopes.length > 0 ? editedScopes : ['environment:*'] });
-            toast({ title: 'Scopes updated', variant: 'success' });
+            const updates: { keyId: number; scopes?: string[]; display_name?: string } = { keyId: apiKey.id };
+            if (scopesChanged) {
+                updates.scopes = editedScopes.length > 0 ? editedScopes : ['environment:*'];
+            }
+            if (nameChanged) {
+                updates.display_name = editedName.trim();
+            }
+            await updateApiKey(updates);
+            toast({ title: 'API key updated', variant: 'success' });
         } catch (err) {
             if (err instanceof APIError) {
-                toast({ title: (err.json as any)?.error?.message ?? 'Failed to update scopes', variant: 'error' });
+                toast({ title: (err.json as any)?.error?.message ?? 'Failed to update API key', variant: 'error' });
             } else {
-                toast({ title: 'Failed to update scopes', variant: 'error' });
+                toast({ title: 'Failed to update API key', variant: 'error' });
             }
         }
     };
@@ -351,7 +385,11 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onBack, onDelete, ca
                     <ChevronLeft size={16} />
                     Back
                 </Button>
-                <h3 className="text-body-medium-semi text-text-primary">{apiKey.display_name}</h3>
+                {canManageKeys ? (
+                    <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-body-medium-semi text-text-primary max-w-xs" />
+                ) : (
+                    <h3 className="text-body-medium-semi text-text-primary">{apiKey.display_name}</h3>
+                )}
             </div>
 
             <div className="flex flex-col gap-4">

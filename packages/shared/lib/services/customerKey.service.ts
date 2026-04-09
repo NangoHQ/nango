@@ -186,6 +186,37 @@ class CustomerKeyService {
         }
     }
 
+    public async renameApiKey(trx: Knex, keyId: number, displayName: string, envId: number): Promise<Result<void>> {
+        try {
+            // Check uniqueness: no other API key in the same environment should have this name
+            const existing = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .select(`${CUSTOMER_KEYS_TABLE}.id`)
+                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName)
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .whereNot(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .first();
+
+            if (existing) {
+                return Err(new NangoError('duplicate_api_secret', { display_name: displayName }));
+            }
+
+            const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .where({ id: keyId })
+                .whereNull('deleted_at')
+                .update({ display_name: displayName, updated_at: trx.fn.now() as unknown as Date });
+            if (updated === 0) {
+                return Err(new NangoError('no_such_api_secret', { id: keyId }));
+            }
+            return Ok();
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
     public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[]): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
