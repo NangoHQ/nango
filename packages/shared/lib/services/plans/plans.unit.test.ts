@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { getPlanDefinition } from './definitions.js';
-import { mergeFlags } from './plans.js';
+import { mergeFlags, resetTrialStateOnPlanChange } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
@@ -71,6 +71,18 @@ describe('mergeFlags', () => {
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+        });
+    });
+});
+
+describe('resetTrialStateOnPlanChange', () => {
+    it('should clear persisted trial state when a plan changes', () => {
+        expect(resetTrialStateOnPlanChange()).toStrictEqual({
+            trial_start_at: null,
+            trial_end_at: null,
+            trial_end_notified_at: null,
+            trial_extension_count: 0,
+            trial_expired: null
         });
     });
 });
