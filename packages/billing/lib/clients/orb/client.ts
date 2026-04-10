@@ -1,21 +1,20 @@
 import Orb from 'orb-billing';
-import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, metrics, retry } from '@nangohq/utils';
 
-import { envs } from '../envs.js';
+import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { envs } from '../../envs.js';
 
 import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
+    BillingInvoicingDetails,
     BillingSubscription,
     BillingUsageMetrics,
     DBTeam,
-    DBUser,
     GetBillingUsageOpts,
-    Result,
-    UsageMetric
+    Result
 } from '@nangohq/types';
 
 export class OrbClient implements BillingClient {
@@ -62,38 +61,51 @@ export class OrbClient implements BillingClient {
         return Ok(undefined);
     }
 
-    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
+    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
         try {
-            let exists: Orb.Customers.Customer | null = null;
+            const orbCustomer = await this.orbSDK.customers.fetchByExternalId(String(accountId));
+            const customer = fromOrbCustomer(orbCustomer);
+            return Ok(customer);
+        } catch (err) {
+            return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async getOrCreateCustomer(accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>): Promise<Result<BillingCustomer>> {
+        try {
+            let orbCustomer: Orb.Customers.Customer | null = null;
             try {
-                exists = await this.orbSDK.customers.fetchByExternalId(String(team.id));
-            } catch {
-                // expected error
-            }
+                orbCustomer = await this.orbSDK.customers.fetchByExternalId(String(accountId));
+            } catch (err) {
+                if (!isOrbNotFoundError(err)) {
+                    // propagate non 404 errors, as they're unrelated to the customer enrollment on Orb
+                    throw err;
+                }
 
-            if (exists) {
-                await this.orbSDK.customers.update(exists.id, {
-                    name: team.name
+                orbCustomer = await this.orbSDK.customers.create({
+                    external_customer_id: String(accountId),
+                    currency: 'USD',
+                    name: defaultTo.legalEntityName,
+                    email: defaultTo.email
                 });
-                return Ok({ id: exists.id, portalUrl: exists.portal_url });
             }
 
-            const customer = await this.orbSDK.customers.create({
-                external_customer_id: String(team.id),
-                currency: 'USD',
-                name: team.name,
-                email: user.email
-            });
-            return Ok({ id: customer.id, portalUrl: customer.portal_url });
+            return Ok(fromOrbCustomer(orbCustomer));
         } catch (err) {
             return Err(new Error('failed_to_upsert_customer', { cause: err }));
         }
     }
 
-    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
+    async putCustomer(accountId: number, invoicingDetails: BillingInvoicingDetails): Promise<Result<BillingCustomer>> {
         try {
-            await this.orbSDK.customers.update(customerId, { name });
-            return Ok(undefined);
+            const payload = toOrbPutCustomerPayload(invoicingDetails);
+            if (payload.isErr()) {
+                return Err(payload.error);
+            }
+
+            const orbCustomer = await this.orbSDK.customers.updateByExternalId(String(accountId), payload.value);
+            const customer = fromOrbCustomer(orbCustomer);
+            return Ok(customer);
         } catch (err) {
             return Err(new Error('failed_to_update_customer', { cause: err }));
         }
@@ -109,15 +121,6 @@ export class OrbClient implements BillingClient {
             return Ok(undefined);
         } catch (err) {
             return Err(new Error('failed_to_link_customer', { cause: err }));
-        }
-    }
-
-    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
-        try {
-            const customer = await this.orbSDK.customers.fetchByExternalId(String(accountId));
-            return Ok({ id: customer.id, portalUrl: customer.portal_url });
-        } catch (err) {
-            return Err(new Error('failed_to_get_customer', { cause: err }));
         }
     }
 
@@ -327,43 +330,6 @@ export class OrbClient implements BillingClient {
     }
 }
 
-function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
-    const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
-
-    // orb doesn't accept nested properties, we need to flatten them with dot notation
-    const properties: Record<string, string | number | boolean> = {};
-    for (const [topLevelKey, value] of Object.entries(rest)) {
-        if (!value) continue;
-        if (typeof value === 'object') {
-            for (const [k, v] of Object.entries(value)) {
-                properties[`${topLevelKey}.${k}`] = v;
-            }
-        } else {
-            properties[topLevelKey] = value;
-        }
-    }
-
-    return {
-        event_name: event.type,
-        idempotency_key: idempotencyKey || uuidv7(),
-        external_customer_id: accountId.toString(),
-        timestamp: timestamp.toISOString(),
-        properties
-    };
-}
-
-function orbMetricToUsageMetric(name: string): UsageMetric | null {
-    // Not ideal to match on BillingMetric name but Orb only exposes the user friendly name or internal ids
-    const lowerName = name.toLowerCase();
-    // order matters here
-    if (lowerName.includes('legacy')) return null;
-    if (lowerName.includes('logs')) return 'function_logs';
-    if (lowerName.includes('proxy')) return 'proxy';
-    if (lowerName.includes('forward')) return 'webhook_forwards';
-    if (lowerName.includes('compute')) return 'function_compute_gbms';
-    if (lowerName.includes('function')) return 'function_executions';
-    if (lowerName.includes('connections')) return 'connections';
-    if (lowerName.includes('records')) return 'records';
-
-    return null;
+function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
+    return err instanceof Orb.NotFoundError;
 }
