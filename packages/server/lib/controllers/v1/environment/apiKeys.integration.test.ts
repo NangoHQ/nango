@@ -172,6 +172,35 @@ describe('API Keys endpoints', () => {
             const updated = listRes.json.data.find((k: any) => k.id === keyId);
             expect(updated!.scopes).toEqual(['environment:connections:read', 'environment:records:read']);
         });
+
+        it('should return not_found when patching a key from another environment', async () => {
+            const { env: envA, user } = await seeders.seedAccountEnvAndUser();
+            const envB = await seeders.createEnvironmentSeed(envA.account_id, 'other-env');
+            const session = await authenticateUser(api, user);
+
+            const createRes = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params are required
+                query: { env: envA.name },
+                body: { display_name: 'Foreign key', scopes: ['environment:deploy'] },
+                session
+            });
+            isSuccess(createRes.json);
+            const keyId = createRes.json.data.id;
+
+            const patchRes = await api.fetch(
+                `/api/v1/environment/api-keys/${keyId}` as any,
+                {
+                    method: 'PATCH',
+                    query: { env: envB.name },
+                    body: { scopes: ['environment:connections:read'] } as any,
+                    session
+                } as any
+            );
+
+            expect(patchRes.res.status).toBe(404);
+            expect(patchRes.json.error.code).toBe('not_found');
+        });
     });
 
     describe('DELETE /api/v1/environment/api-keys/:keyId', () => {
@@ -248,6 +277,34 @@ describe('API Keys endpoints', () => {
             // Key should no longer authenticate
             const authRes2 = await api.fetch('/integrations', { method: 'GET', token: secret });
             expect(authRes2.res.status).toBe(401);
+        });
+
+        it('should return not_found when deleting a key from another environment', async () => {
+            const { env: envA, user } = await seeders.seedAccountEnvAndUser();
+            const envB = await seeders.createEnvironmentSeed(envA.account_id, 'other-env-delete');
+            const session = await authenticateUser(api, user);
+
+            const createRes = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params are required
+                query: { env: envA.name },
+                body: { display_name: 'Foreign delete key' },
+                session
+            });
+            isSuccess(createRes.json);
+            const keyId = createRes.json.data.id;
+
+            const deleteRes = await api.fetch(
+                `/api/v1/environment/api-keys/${keyId}` as any,
+                {
+                    method: 'DELETE',
+                    query: { env: envB.name },
+                    session
+                } as any
+            );
+
+            expect(deleteRes.res.status).toBe(404);
+            expect(deleteRes.json.error.code).toBe('not_found');
         });
     });
 

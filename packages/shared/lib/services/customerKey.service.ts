@@ -229,8 +229,16 @@ class CustomerKeyService {
                 }
 
                 const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                    .where({ id: keyId })
-                    .whereNull('deleted_at')
+                    .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                    .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                    .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                    .whereExists(function () {
+                        void this.select(1)
+                            .from(CUSTOMER_KEYS_RELATIONS_TABLE)
+                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
+                            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                    })
                     .update({ display_name: displayName, updated_at: innerTrx.fn.now() as unknown as Date });
                 if (updated === 0) {
                     throw new NangoError('no_such_api_secret', { id: keyId });
@@ -242,11 +250,19 @@ class CustomerKeyService {
         }
     }
 
-    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[]): Promise<Result<void>> {
+    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[], envId: number): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .where({ id: keyId })
-                .whereNull('deleted_at')
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .whereExists(function () {
+                    void this.select(1)
+                        .from(CUSTOMER_KEYS_RELATIONS_TABLE)
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
+                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                })
                 .update({ scopes, updated_at: trx.fn.now() as unknown as Date });
             if (updated === 0) {
                 return Err(new NangoError('no_such_api_secret', { id: keyId }));
@@ -257,13 +273,25 @@ class CustomerKeyService {
         }
     }
 
-    public async deleteCustomerKey(trx: Knex, keyId: number): Promise<Result<void>> {
+    public async deleteCustomerKey(trx: Knex, keyId: number, envId: number): Promise<Result<void>> {
         try {
-            await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .where({ id: keyId })
+            const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .whereExists(function () {
+                    void this.select(1)
+                        .from(CUSTOMER_KEYS_RELATIONS_TABLE)
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
+                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                })
                 .update({
                     deleted_at: trx.fn.now() as unknown as Date
                 });
+            if (updated === 0) {
+                return Err(new NangoError('no_such_api_secret', { id: keyId }));
+            }
             return Ok();
         } catch (err) {
             return Err(err);

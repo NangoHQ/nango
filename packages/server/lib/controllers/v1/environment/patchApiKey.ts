@@ -44,7 +44,7 @@ export const patchApiKey = async (req: Request, res: Response<any, RequestLocals
     }
 
     if (parsed.data.scopes) {
-        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes);
+        const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes, environment.id);
         if (result.isErr()) {
             res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
             return;
