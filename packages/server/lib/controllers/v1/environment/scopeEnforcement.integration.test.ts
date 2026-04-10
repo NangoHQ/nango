@@ -338,4 +338,171 @@ describe('Scope enforcement on public API routes', () => {
             expect(connRes.res.status).toBe(403);
         });
     });
+
+    // ── Credential stripping ─────────────────────────────────────────
+
+    describe('credential stripping based on scope', () => {
+        it('GET /connections/:id with read scope should strip credentials', async () => {
+            const { env, user } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            await seeders.createConnectionSeed({
+                env,
+                provider: 'github',
+                connectionId: 'test-conn',
+                rawCredentials: { type: 'OAUTH2', access_token: 'secret-token-123', raw: {} } as any
+            });
+
+            const session = await authenticateUser(api, user);
+
+            // Create key with read only (no credentials)
+            const readKey = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params
+                query: { env: env.name },
+                body: { display_name: 'read-only', scopes: ['environment:connections:read'] },
+                session
+            });
+            isSuccess(readKey.json);
+
+            const res = await api.fetch(
+                '/connections/:connectionId' as any,
+                {
+                    method: 'GET',
+                    token: readKey.json.data.secret,
+                    params: { connectionId: 'test-conn' },
+                    query: { provider_config_key: 'github' }
+                } as any
+            );
+
+            expect(res.res.status).toBe(200);
+            // Credentials should be empty/stripped
+            expect(res.json.credentials).toEqual({});
+        });
+
+        it('GET /connections/:id with read_credentials scope should include credentials', async () => {
+            const { env, user } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            await seeders.createConnectionSeed({
+                env,
+                provider: 'github',
+                connectionId: 'test-conn-creds',
+                rawCredentials: { type: 'OAUTH2', access_token: 'secret-token-456', raw: {} } as any
+            });
+
+            const session = await authenticateUser(api, user);
+
+            // Create key with read_credentials
+            const credKey = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params
+                query: { env: env.name },
+                body: { display_name: 'with-creds', scopes: ['environment:connections:read_credentials'] },
+                session
+            });
+            isSuccess(credKey.json);
+
+            const res = await api.fetch(
+                '/connections/:connectionId' as any,
+                {
+                    method: 'GET',
+                    token: credKey.json.data.secret,
+                    params: { connectionId: 'test-conn-creds' },
+                    query: { provider_config_key: 'github' }
+                } as any
+            );
+
+            expect(res.res.status).toBe(200);
+            // Credentials should be present
+            expect(res.json.credentials).toBeDefined();
+            expect(res.json.credentials.access_token).toBeTruthy();
+        });
+
+        it('GET /integrations/:key?include=credentials with read scope should not include credentials', async () => {
+            const { env, user } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+
+            const session = await authenticateUser(api, user);
+
+            // Create key with read only
+            const readKey = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params
+                query: { env: env.name },
+                body: { display_name: 'int-read', scopes: ['environment:integrations:read'] },
+                session
+            });
+            isSuccess(readKey.json);
+
+            const res = await api.fetch(
+                '/integrations/:uniqueKey' as any,
+                {
+                    method: 'GET',
+                    token: readKey.json.data.secret,
+                    params: { uniqueKey: 'github' },
+                    query: { include: 'credentials' }
+                } as any
+            );
+
+            expect(res.res.status).toBe(200);
+            // Credentials should NOT be included (scope doesn't allow it)
+            expect(res.json.data.credentials).toBeUndefined();
+        });
+
+        it('GET /integrations/:key?include=credentials with read_credentials scope should include credentials', async () => {
+            const { env, user } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+
+            const session = await authenticateUser(api, user);
+
+            // Create key with read_credentials
+            const credKey = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params
+                query: { env: env.name },
+                body: { display_name: 'int-creds', scopes: ['environment:integrations:read_credentials'] },
+                session
+            });
+            isSuccess(credKey.json);
+
+            const res = await api.fetch(
+                '/integrations/:uniqueKey' as any,
+                {
+                    method: 'GET',
+                    token: credKey.json.data.secret,
+                    params: { uniqueKey: 'github' },
+                    query: { include: 'credentials' }
+                } as any
+            );
+
+            expect(res.res.status).toBe(200);
+            // Credentials should be included
+            expect(res.json.data.credentials).toBeDefined();
+        });
+
+        it('legacy api_secrets key should include credentials (backward compatible)', async () => {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            await seeders.createConfigSeed(env, 'github', 'github');
+            await seeders.createConnectionSeed({
+                env,
+                provider: 'github',
+                connectionId: 'test-conn-legacy',
+                rawCredentials: { type: 'OAUTH2', access_token: 'legacy-token', raw: {} } as any
+            });
+
+            const res = await api.fetch(
+                '/connections/:connectionId' as any,
+                {
+                    method: 'GET',
+                    token: secret.secret,
+                    params: { connectionId: 'test-conn-legacy' },
+                    query: { provider_config_key: 'github' }
+                } as any
+            );
+
+            expect(res.res.status).toBe(200);
+            // Legacy keys have no scope restriction — credentials included
+            expect(res.json.credentials).toBeDefined();
+            expect(res.json.credentials.access_token).toBeTruthy();
+        });
+    });
 });

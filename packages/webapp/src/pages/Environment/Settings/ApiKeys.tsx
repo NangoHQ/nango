@@ -25,36 +25,61 @@ import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
 
 // ── Scope definitions ──────────────────────────────────────────────
 
-const SCOPE_GROUPS: { group: string; scopes: string[] }[] = [
+interface ScopeItem {
+    value: string;
+    label: string;
+    credentials?: string; // child credential scope (e.g., list_credentials)
+}
+
+interface ScopeGroup {
+    group: string;
+    items: ScopeItem[];
+}
+
+const SCOPE_GROUPS: ScopeGroup[] = [
     {
         group: 'Integrations',
-        scopes: [
-            'environment:integrations:list',
-            'environment:integrations:list_credentials',
-            'environment:integrations:read',
-            'environment:integrations:read_credentials',
-            'environment:integrations:write'
+        items: [
+            { value: 'environment:integrations:list', label: 'list', credentials: 'environment:integrations:list_credentials' },
+            { value: 'environment:integrations:read', label: 'read', credentials: 'environment:integrations:read_credentials' },
+            { value: 'environment:integrations:write', label: 'write' }
         ]
     },
     {
         group: 'Connections',
-        scopes: [
-            'environment:connections:list',
-            'environment:connections:list_credentials',
-            'environment:connections:read',
-            'environment:connections:read_credentials',
-            'environment:connections:write'
+        items: [
+            { value: 'environment:connections:list', label: 'list', credentials: 'environment:connections:list_credentials' },
+            { value: 'environment:connections:read', label: 'read', credentials: 'environment:connections:read_credentials' },
+            { value: 'environment:connections:write', label: 'write' }
         ]
     },
-    { group: 'Connect Sessions', scopes: ['environment:connect_sessions:write'] },
-    { group: 'Syncs', scopes: ['environment:syncs:read', 'environment:syncs:execute', 'environment:syncs:manage'] },
-    { group: 'Deploy', scopes: ['environment:deploy'] },
-    { group: 'Records', scopes: ['environment:records:read', 'environment:records:write'] },
-    { group: 'Actions', scopes: ['environment:actions:execute'] },
-    { group: 'Proxy', scopes: ['environment:proxy'] },
-    { group: 'Config', scopes: ['environment:config:read'] },
-    { group: 'MCP', scopes: ['environment:mcp'] }
+    { group: 'Connect Sessions', items: [{ value: 'environment:connect_sessions:write', label: 'write' }] },
+    {
+        group: 'Syncs',
+        items: [
+            { value: 'environment:syncs:read', label: 'read' },
+            { value: 'environment:syncs:execute', label: 'execute' },
+            { value: 'environment:syncs:manage', label: 'manage' }
+        ]
+    },
+    { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
+    {
+        group: 'Records',
+        items: [
+            { value: 'environment:records:read', label: 'read' },
+            { value: 'environment:records:write', label: 'write' }
+        ]
+    },
+    { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
+    { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
+    { group: 'Config', items: [{ value: 'environment:config:read', label: 'read' }] },
+    { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
+
+// Flatten all scope values for expansion/wildcard matching
+function allGroupScopes(group: ScopeGroup): string[] {
+    return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
+}
 
 const SCOPE_PRESETS: { label: string; description: string; scopes: string[] }[] = [
     { label: 'Full access', description: 'All permissions', scopes: ['environment:*'] },
@@ -69,7 +94,7 @@ const SCOPE_PRESETS: { label: string; description: string; scopes: string[] }[] 
 
 const MAX_VISIBLE_SCOPES = 3;
 
-const ALL_INDIVIDUAL_SCOPES = SCOPE_GROUPS.flatMap((g) => g.scopes);
+const ALL_INDIVIDUAL_SCOPES = SCOPE_GROUPS.flatMap((g) => allGroupScopes(g));
 
 function expandScopes(scopes: string[]): string[] {
     const expanded = new Set<string>();
@@ -89,11 +114,6 @@ function expandScopes(scopes: string[]): string[] {
         }
     }
     return Array.from(expanded);
-}
-
-function scopeLabel(scope: string): string {
-    const parts = scope.split(':');
-    return parts[parts.length - 1];
 }
 
 function formatRelativeTime(dateStr: string | null): string {
@@ -153,64 +173,94 @@ interface ScopeSelectorProps {
     onChange: (scopes: string[]) => void;
 }
 
-function groupWildcard(group: { group: string; scopes: string[] }): string | null {
-    // Only produce a wildcard for groups with multiple scopes and 3+ segments
-    // e.g. 'environment:integrations:list' -> 'environment:integrations:*'
-    // but NOT 'environment:deploy' -> 'environment:*' (too broad)
-    const parts = group.scopes[0].split(':');
-    if (parts.length < 3 || group.scopes.length <= 1) {
-        return null; // No wildcard for single-scope or 2-segment groups
+function groupWildcard(group: ScopeGroup): string | null {
+    const allScopes = allGroupScopes(group);
+    const parts = group.items[0].value.split(':');
+    if (parts.length < 3 || allScopes.length <= 1) {
+        return null;
     }
     return parts.slice(0, -1).join(':') + ':*';
 }
 
 function isScopeSelected(scope: string, selectedScopes: string[]): boolean {
     if (selectedScopes.includes(scope)) return true;
-    // Check wildcards: environment:* covers everything, environment:integrations:* covers integrations
     return selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)));
 }
 
 const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange }) => {
     const hasFullAccess = selectedScopes.includes('environment:*');
 
-    const toggleScope = (scope: string) => {
-        onChange(selectedScopes.includes(scope) ? selectedScopes.filter((s) => s !== scope) : [...selectedScopes, scope]);
+    const toggleScope = (scope: string, credentialChild?: string) => {
+        const isSelected = isScopeSelected(scope, selectedScopes) || (!!credentialChild && isScopeSelected(credentialChild, selectedScopes));
+        if (isSelected) {
+            // If selected via wildcard, expand the wildcard first then remove this scope
+            const matchingWildcard = selectedScopes.find((s) => s.endsWith(':*') && s !== scope && scope.startsWith(s.slice(0, -1)));
+            if (matchingWildcard) {
+                // Expand wildcard to individual scopes, minus the one being unchecked (and its credential child)
+                const expanded = ALL_INDIVIDUAL_SCOPES.filter((s) => s.startsWith(matchingWildcard.slice(0, -1)));
+                const without = expanded.filter((s) => s !== scope && s !== credentialChild);
+                const rest = selectedScopes.filter((s) => s !== matchingWildcard);
+                onChange([...rest, ...without]);
+            } else {
+                onChange(selectedScopes.filter((s) => s !== scope && s !== credentialChild));
+            }
+        } else {
+            onChange([...selectedScopes, scope]);
+        }
     };
 
-    const isGroupWildcardSelected = (group: { group: string; scopes: string[] }) => {
+    const toggleCredential = (parent: string, credential: string) => {
+        const isSelected = isScopeSelected(credential, selectedScopes);
+        if (isSelected) {
+            // Uncheck credentials → downgrade to parent only
+            const matchingWildcard = selectedScopes.find((s) => s.endsWith(':*') && s !== credential && credential.startsWith(s.slice(0, -1)));
+            if (matchingWildcard) {
+                const expanded = ALL_INDIVIDUAL_SCOPES.filter((s) => s.startsWith(matchingWildcard.slice(0, -1)));
+                const without = expanded.filter((s) => s !== credential);
+                const rest = selectedScopes.filter((s) => s !== matchingWildcard);
+                onChange([...rest, ...without]);
+            } else {
+                // Replace credential with parent (downgrade)
+                onChange([...selectedScopes.filter((s) => s !== credential), ...(selectedScopes.includes(parent) ? [] : [parent])]);
+            }
+        } else {
+            // Check credentials → replaces parent (superset)
+            onChange([...selectedScopes.filter((s) => s !== parent), credential]);
+        }
+    };
+
+    const isGroupWildcardSelected = (group: ScopeGroup) => {
         const wc = groupWildcard(group);
         return wc ? selectedScopes.includes(wc) : false;
     };
 
-    const isGroupAllSelected = (group: { group: string; scopes: string[] }) =>
-        isGroupWildcardSelected(group) || group.scopes.every((s) => selectedScopes.includes(s));
+    const isGroupAllSelected = (group: ScopeGroup) => {
+        const all = allGroupScopes(group);
+        return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
+    };
 
-    const toggleGroup = (group: { group: string; scopes: string[] }) => {
+    const toggleGroup = (group: ScopeGroup) => {
         if (hasFullAccess) return;
         const wc = groupWildcard(group);
+        const all = allGroupScopes(group);
         if (wc && selectedScopes.includes(wc)) {
-            // Uncheck group: remove wildcard
             onChange(selectedScopes.filter((s) => s !== wc));
         } else if (wc && !isGroupAllSelected(group)) {
-            // Check group: store the wildcard, remove any individual scopes from this group
-            const cleaned = selectedScopes.filter((s) => !group.scopes.includes(s));
+            const cleaned = selectedScopes.filter((s) => !all.includes(s));
             onChange([...cleaned, wc]);
         } else if (!wc) {
-            // No wildcard available (single-scope group): toggle all scopes individually
-            const allSelected = group.scopes.every((s) => selectedScopes.includes(s));
+            const allSelected = all.every((s) => selectedScopes.includes(s));
             if (allSelected) {
-                onChange(selectedScopes.filter((s) => !group.scopes.includes(s)));
+                onChange(selectedScopes.filter((s) => !all.includes(s)));
             } else {
-                const newScopes = new Set([...selectedScopes, ...group.scopes]);
-                onChange(Array.from(newScopes));
+                onChange(Array.from(new Set([...selectedScopes, ...all])));
             }
         } else {
-            // All individually selected, uncheck all
-            onChange(selectedScopes.filter((s) => !group.scopes.includes(s)));
+            onChange(selectedScopes.filter((s) => !all.includes(s)));
         }
     };
 
-    const hasAnyChildSelected = (group: { group: string; scopes: string[] }) => group.scopes.some((s) => selectedScopes.includes(s));
+    const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
 
     return (
         <div className="flex flex-col gap-3">
@@ -260,7 +310,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                 <label className={`flex items-center gap-2 ${hasFullAccess ? '' : 'cursor-pointer'}`}>
                                     <input
                                         type="checkbox"
-                                        checked={groupSelected || isScopeSelected(group.scopes[0], selectedScopes)}
+                                        checked={groupSelected || isScopeSelected(group.items[0].value, selectedScopes)}
                                         disabled={hasFullAccess}
                                         ref={(el) => {
                                             if (el) el.indeterminate = !hasFullAccess && !groupSelected && hasAnyChildSelected(group);
@@ -271,19 +321,38 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                     <span className="text-body-small-semi text-text-secondary">{group.group}</span>
                                     {wildcardSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
                                 </label>
-                                {group.scopes.map((scope) => (
-                                    <label key={scope} className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={isScopeSelected(scope, selectedScopes)}
-                                            disabled={childrenDisabled}
-                                            onChange={() => toggleScope(scope)}
-                                            className="accent-brand"
-                                        />
-                                        <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
-                                            {scopeLabel(scope)}
-                                        </span>
-                                    </label>
+                                {group.items.map((item) => (
+                                    <div key={item.value} className="flex flex-col gap-1">
+                                        <label className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
+                                            <input
+                                                type="checkbox"
+                                                checked={
+                                                    isScopeSelected(item.value, selectedScopes) ||
+                                                    (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
+                                                }
+                                                disabled={childrenDisabled}
+                                                onChange={() => toggleScope(item.value, item.credentials)}
+                                                className="accent-brand"
+                                            />
+                                            <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
+                                                {item.label}
+                                            </span>
+                                        </label>
+                                        {item.credentials && (
+                                            <label className={`flex items-center gap-2 pl-10 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isScopeSelected(item.credentials, selectedScopes)}
+                                                    disabled={childrenDisabled}
+                                                    onChange={() => toggleCredential(item.value, item.credentials!)}
+                                                    className="accent-brand"
+                                                />
+                                                <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
+                                                    with credentials
+                                                </span>
+                                            </label>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         );

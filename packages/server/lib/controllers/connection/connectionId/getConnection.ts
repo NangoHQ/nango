@@ -7,6 +7,7 @@ import { Err, Ok, metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
+import { hasScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
@@ -132,7 +133,9 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    const response = await getApiPublicConnection(connection.credentials);
+    // NAN-5088: strip credentials if key only has read, not read_credentials
+    const includeCredentials = hasScope(res.locals['apiKeyScopes'] as string[] | undefined, 'environment:connections:read_credentials');
+    const response = await getApiPublicConnection(includeCredentials ? connection.credentials : {});
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
         return;
