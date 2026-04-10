@@ -134,7 +134,10 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    const includeCredentials = hasScope(res.locals['apiKeyScopes'] as string[] | undefined, 'environment:connections:read_credentials');
+    const includeCredentials = hasScope({
+        grantedScopes: res.locals['apiKeyScopes'] as string[] | undefined,
+        requiredScope: 'environment:connections:read_credentials'
+    });
     const response = await getApiPublicConnection(connection.credentials, includeCredentials);
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
