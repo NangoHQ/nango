@@ -157,7 +157,7 @@ export function usePlayground(inputFields: InputField[]) {
 
             if (!operation) {
                 setPendingOperationId(null);
-                setResult({ success: false, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
+                setResult({ success: true, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
                 setRunning(false);
                 return;
             }
