@@ -7,7 +7,7 @@ import {
     getManagedAuthEmailVerificationFromError,
     getManagedAuthRequestMetadata,
     setManagedAuthEmailVerification
-} from './utils.js';
+} from './auth.js';
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
