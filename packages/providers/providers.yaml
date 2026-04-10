@@ -3671,6 +3671,38 @@ cleverreach:
     docs: https://nango.dev/docs/api-integrations/cleverreach
     setup_guide_url: https://nango.dev/docs/api-integrations/cleverreach/how-to-register-your-own-cleverreach-api-oauth-app
 
+clickhouse:
+    display_name: ClickHouse
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.clickhouse.cloud
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/organizations
+    docs: https://nango.dev/docs/api-integrations/clickhouse
+    docs_connect: https://nango.dev/docs/api-integrations/clickhouse/connect
+    credentials:
+        username:
+            type: string
+            title: Key ID
+            description: Your ClickHouse Cloud API Key ID.
+            pattern: '^[a-zA-Z0-9]+$'
+            example: 'Mlx1****************'
+            doc_section: '#step-1-create-an-api-key'
+        password:
+            type: string
+            title: Key Secret
+            description: Your ClickHouse Cloud API Key Secret.
+            secret: true
+            pattern: '^[a-zA-Z0-9]+$'
+            example: '4b1d2i7O**********************************'
+            doc_section: '#step-1-create-an-api-key'
+
 clicksend:
     display_name: ClickSend
     categories:
@@ -6155,6 +6187,30 @@ freeagent-sandbox:
     docs: https://nango.dev/docs/api-integrations/freeagent-sandbox
     setup_guide_url: https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app
 
+freepik:
+    display_name: Freepik
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.freepik.com
+        headers:
+            x-freepik-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/resources
+    docs: https://nango.dev/docs/api-integrations/freepik
+    docs_connect: https://nango.dev/docs/api-integrations/freepik/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key for your Freepik account.
+            doc_section: '#step-1-obtain-your-freepik-api-key'
+            example: FPSXc7b3**********************5b2a
+            pattern: 'FPSX[0-9a-f]{32}'
+
 figjam:
     display_name: FigJam
     categories:
@@ -8313,6 +8369,44 @@ hackerrank-work:
             description: ''
             default_value: ''
             hidden: true
+
+halo-psa:
+    display_name: Halo PSA
+    categories:
+        - support
+        - ticketing
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.hostname}/auth/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+    docs: https://nango.dev/docs/api-integrations/halo-psa
+    docs_connect: https://nango.dev/docs/api-integrations/halo-psa/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Halo PSA hostname.
+            example: example.halopsa.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-1-find-your-halo-api-details'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Halo PSA API application Client ID
+            doc_section: '#step-3-create-an-api-application'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Halo PSA API application Client Secret
+            secret: true
+            doc_section: '#step-3-create-an-api-application'
 
 harvest:
     display_name: Harvest
@@ -10602,13 +10696,13 @@ microsoft-teams-bot:
             botHostTenantId: ${connectionConfig.botHostTenantId}
     webhook_routing_script: microsoftTeamsWebhookRouting
     post_connection_script: microsoftTeamsBotPostConnection
-    docs: https://nango.dev/docs/integrations/all/microsoft-teams-bot
-    docs_connect: https://nango.dev/docs/integrations/all/microsoft-teams-bot/connect
+    docs: https://nango.dev/docs/api-integrations/microsoft-teams-bot
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-teams-bot/connect
     connection_config:
         tenantId:
             type: string
             title: Tenant ID
-            description: The unique identifier for the Azure AD tenant
+            description: The unique identifier for your Microsoft Entra ID tenant.
             format: uuid
             example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
             doc_section: '#step-1-finding-your-tenant-id'
@@ -12639,6 +12733,34 @@ pendo:
             title: API Key
             description: The API key for your Pendo account
             doc_section: '#step-1-finding-pendo-api-key'
+
+pendo-oauth:
+    display_name: Pendo (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://app.pendo.io/oauth/v1/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - read:me
+    body_format: form
+    proxy:
+        base_url: https://app.pendo.io
+    docs: https://nango.dev/docs/api-integrations/pendo-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/pendo-oauth/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Pendo OAuth client ID
+            doc_section: '#step-1-finding-your-pendo-oauth-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Pendo OAuth client secret
+            secret: true
+            doc_section: '#step-1-finding-your-pendo-oauth-credentials'
 
 pennylane:
     display_name: Pennylane
@@ -17266,6 +17388,29 @@ tremendous-sandbox:
         base_url: https://testflight.tremendous.com/api/v2
     docs: https://nango.dev/docs/integrations/all/tremendous-sandbox
 
+perk:
+    display_name: Perk
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.travelperk.com/oauth2/authorize/
+    token_url: https://app.travelperk.com/accounts/oauth2/token/
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.travelperk.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/perk
+    setup_guide_url: https://nango.dev/docs/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app
+
 trello:
     display_name: Trello
     categories:
@@ -18701,6 +18846,28 @@ workday:
             description: Workday API Password
             doc_section: '#step-5-finding-your-password'
 
+workday-adaptive-planning-basic:
+    display_name: Workday Adaptive Planning (Basic Auth)
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.adaptiveplanning.com/api/rest
+    docs: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic
+    docs_connect: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Workday Adaptive Planning username.
+            doc_section: '#step-1-find-your-username-and-password'
+        password:
+            type: string
+            title: Password
+            description: Your Workday Adaptive Planning password.
+            secret: true
+            doc_section: '#step-1-find-your-username-and-password'
+
 workday-oauth:
     display_name: Workday (OAuth)
     categories:
@@ -19552,6 +19719,34 @@ snipe-it:
             prefix: https://
             doc_section: '#step-2-finding-your-domain'
             order: 1
+
+zorus:
+    display_name: Zorus
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://developer.zorustech.com
+        headers:
+            authorization: Impersonation ${apiKey}
+            zorus-api-version: '1.0'
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/customers/search
+            data: { 'page': 1, 'pageSize': 1 }
+    docs: https://nango.dev/docs/api-integrations/zorus
+    docs_connect: https://nango.dev/docs/api-integrations/zorus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from the Zorus Portal.
+            doc_section: '#step-1-generating-your-api-token'
+            example: 1_a1b2c3d4-e5f6-7890-abcd-1234567890ab
+            pattern: '^[0-9]+_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 zuora:
     display_name: Zuora

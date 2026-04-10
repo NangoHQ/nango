@@ -78,6 +78,31 @@ describe(`GET ${route}`, () => {
         });
     });
 
+    it('should return 400 base_url_override_not_allowed when base-url-override host is denylisted', async () => {
+        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: secret.secret,
+            params: { anyPath: 'users/octocat' },
+            headers: {
+                'connection-id': connection.connection_id,
+                'provider-config-key': integration.unique_key,
+                'base-url-override': 'https://denylisted-proxy-test.invalid'
+            }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+    });
+
     it('should use all the headers', async () => {
         const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
