@@ -18,7 +18,7 @@ export const sql = [
     )
     ENGINE = SummingMergeTree((value, duration_ms, custom_logs, proxy_calls))
     PARTITION BY toYYYYMM(day)
-    ORDER BY (account_id, day, environment_id, integration_id, connection_id, function_name, function_type, success, runtime)
+    ORDER BY (account_id, day, environment_id, integration_id, connection_id, function_type, function_name, success, runtime)
     TTL day + INTERVAL 24 MONTH
     `,
     `
@@ -40,6 +40,6 @@ export const sql = [
         sum(coalesce(attributes.telemetryBag.proxyCalls::Nullable(UInt64), 0))  AS proxy_calls
     FROM usage.raw_events
     WHERE type = 'usage.function_executions'
-    GROUP BY day, account_id, environment_id, integration_id, connection_id, function_name, function_type, success, runtime
+    GROUP BY day, account_id, environment_id, integration_id, connection_id, function_type, function_name, success, runtime
     `
 ];
