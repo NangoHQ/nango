@@ -1,5 +1,4 @@
 import { IconKey, IconPencil, IconTrash } from '@tabler/icons-react';
-import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -194,7 +193,17 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
     return (
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-                <label className="text-body-medium-semi text-text-primary">Quick presets</label>
+                <div className="flex items-center justify-between">
+                    <label className="text-body-medium-semi text-text-primary">Quick presets</label>
+                    <a
+                        href="https://nango.dev/docs/implementation-guides/platform/api-keys#scopes"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-body-small-regular text-text-brand hover:underline"
+                    >
+                        Learn more about scopes
+                    </a>
+                </div>
                 <p className="text-body-small-regular text-text-tertiary">Select a preset to pre-fill scopes, then customize below</p>
                 <div className="flex flex-wrap gap-2">
                     {SCOPE_PRESETS.map((preset) => (
@@ -342,13 +351,12 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
 interface KeyDetailProps {
     apiKey: ApiKeyListItem;
     env: string;
-    onBack: () => void;
     onDelete: (keyId: number) => void;
     canReadSecret: boolean;
     canManageKeys: boolean;
 }
 
-const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onBack, onDelete, canReadSecret, canManageKeys }) => {
+const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSecret, canManageKeys }) => {
     const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
     const [editedName, setEditedName] = useState<string>(apiKey.display_name);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
@@ -379,66 +387,65 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onBack, onDelete, ca
     };
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={onBack}>
-                    <ChevronLeft size={16} />
-                    Back
-                </Button>
+        <div className="flex flex-col gap-4">
+            <div className="flex gap-6">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-body-small-semi text-text-secondary">Created</span>
+                    <span className="text-body-small-regular text-text-primary">{formatDate(apiKey.created_at)}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-body-small-semi text-text-secondary">Modified</span>
+                    <span className="text-body-small-regular text-text-primary">{formatDate(apiKey.updated_at)}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-body-small-semi text-text-secondary">Last used</span>
+                    <span className="text-body-small-regular text-text-primary" title={formatFullDate(apiKey.last_used_at)}>
+                        {formatRelativeTime(apiKey.last_used_at)}
+                    </span>
+                </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+                <label className="text-body-small-semi text-text-secondary">Name</label>
                 {canManageKeys ? (
-                    <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} className="text-body-medium-semi text-text-primary max-w-xs" />
+                    <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
                 ) : (
-                    <h3 className="text-body-medium-semi text-text-primary">{apiKey.display_name}</h3>
+                    <span className="text-body-medium-semi text-text-primary">{apiKey.display_name}</span>
                 )}
             </div>
 
-            <div className="flex flex-col gap-4">
-                <div className="flex gap-6">
-                    <div className="flex flex-col gap-0.5">
-                        <span className="text-body-small-semi text-text-secondary">Created</span>
-                        <span className="text-body-small-regular text-text-primary">{formatDate(apiKey.created_at)}</span>
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                        <span className="text-body-small-semi text-text-secondary">Last used</span>
-                        <span className="text-body-small-regular text-text-primary" title={formatFullDate(apiKey.last_used_at)}>
-                            {formatRelativeTime(apiKey.last_used_at)}
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-body-small-semi text-text-secondary">Secret</label>
-                    {canReadSecret ? (
-                        <SecretInput value={apiKey.secret} copy canRead readOnly />
-                    ) : (
-                        <span className="font-mono text-body-small-regular text-text-secondary">{apiKey.secret}</span>
-                    )}
-                </div>
-
-                {canManageKeys ? (
-                    <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} />
+            <div className="flex flex-col gap-1.5">
+                <label className="text-body-small-semi text-text-secondary">Secret</label>
+                {canReadSecret ? (
+                    <SecretInput value={apiKey.secret} copy canRead readOnly />
                 ) : (
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-body-small-semi text-text-secondary">Scopes</label>
-                        <div className="border border-border-muted rounded p-3 flex flex-wrap gap-1 opacity-60">
-                            {expandScopes(apiKey.scopes).map((scope) => (
-                                <Badge key={scope} variant="secondary">
-                                    {scope}
-                                </Badge>
-                            ))}
-                        </div>
-                        <p className="text-body-small-regular text-text-tertiary">You do not have permission to edit scopes on this environment.</p>
-                    </div>
+                    <span className="font-mono text-body-small-regular text-text-secondary">{apiKey.secret}</span>
                 )}
+            </div>
 
-                <div className="flex justify-between pt-2 border-t border-border-muted">
-                    {canManageKeys ? <DeleteApiKeyButton displayName={apiKey.display_name} onDelete={() => onDelete(apiKey.id)} /> : <div />}
-                    {hasChanges && canManageKeys && (
-                        <Button size="sm" onClick={handleSave} loading={isPending}>
-                            Save changes
-                        </Button>
-                    )}
+            {canManageKeys ? (
+                <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} />
+            ) : (
+                <div className="flex flex-col gap-1.5">
+                    <label className="text-body-small-semi text-text-secondary">Scopes</label>
+                    <div className="border border-border-muted rounded p-3 flex flex-wrap gap-1 opacity-60">
+                        {expandScopes(apiKey.scopes).map((scope) => (
+                            <Badge key={scope} variant="secondary">
+                                {scope}
+                            </Badge>
+                        ))}
+                    </div>
+                    <p className="text-body-small-regular text-text-tertiary">You do not have permission to edit scopes on this environment.</p>
                 </div>
+            )}
+
+            <div className="flex justify-between pt-2 border-t border-border-muted">
+                {canManageKeys ? <DeleteApiKeyButton displayName={apiKey.display_name} onDelete={() => onDelete(apiKey.id)} /> : <div />}
+                {hasChanges && canManageKeys && (
+                    <Button size="sm" onClick={handleSave} loading={isPending}>
+                        Save changes
+                    </Button>
+                )}
             </div>
         </div>
     );
@@ -513,7 +520,6 @@ export const ApiKeys: React.FC = () => {
                 <KeyDetail
                     apiKey={selectedKey}
                     env={env}
-                    onBack={() => setSelectedKeyId(null)}
                     onDelete={(keyId) => void handleDelete(keyId)}
                     canReadSecret={canReadSecret}
                     canManageKeys={canManageKeys}
@@ -542,7 +548,6 @@ export const ApiKeys: React.FC = () => {
                             <TableHead>Name</TableHead>
                             <TableHead>Scopes</TableHead>
                             <TableHead>Last used</TableHead>
-                            <TableHead>Created</TableHead>
                             <TableHead></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -573,9 +578,6 @@ export const ApiKeys: React.FC = () => {
                                     <span className="text-text-secondary" title={formatFullDate(key.last_used_at)}>
                                         {formatRelativeTime(key.last_used_at)}
                                     </span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-text-secondary">{formatDate(key.created_at)}</span>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex items-center gap-1">

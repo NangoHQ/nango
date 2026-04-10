@@ -33,7 +33,8 @@ export const listApiKeys = asyncWrapper<ListApiKeys>(async (req, res) => {
             scopes: key.scopes ?? [],
             secret,
             last_used_at: key.last_used_at ? key.last_used_at.toISOString() : null,
-            created_at: key.created_at.toISOString()
+            created_at: key.created_at.toISOString(),
+            updated_at: key.updated_at.toISOString()
         };
     });
 

@@ -39,7 +39,13 @@ export const createApiKey = asyncWrapper<CreateApiKey>(async (req, res) => {
     });
 
     if (result.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
+        const isDuplicate = result.error.message.includes('duplicate');
+        res.status(isDuplicate ? 409 : 500).send({
+            error: {
+                code: isDuplicate ? 'conflict' : 'server_error',
+                message: isDuplicate ? 'A key with this name already exists' : 'Failed to create API key'
+            }
+        });
         return;
     }
 

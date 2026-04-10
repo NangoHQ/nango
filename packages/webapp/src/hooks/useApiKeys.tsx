@@ -9,6 +9,7 @@ export interface ApiKeyListItem {
     secret: string;
     last_used_at: string | null;
     created_at: string;
+    updated_at: string;
 }
 
 export const apiKeysQueryKey = (env: string) => [env, 'api-keys'] as const;
