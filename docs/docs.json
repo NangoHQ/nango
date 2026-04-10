@@ -970,6 +970,7 @@
           {
             "group": "Backend",
             "pages": [
+              "reference/api-keys",
               {
                 "group": "HTTP API",
                 "icon": "cloud",
