@@ -18,7 +18,7 @@ const KEY_TYPE_LOCK_IDS: Record<string, number> = { api: 1, webhook_signing: 2 }
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
         const lockId = KEY_TYPE_LOCK_IDS[keyType] ?? 0;
-        await trx.raw('SELECT pg_advisory_xact_lock(?, ?)', [accountId, lockId]);
+        await trx.raw(`SELECT pg_advisory_xact_lock(?, ?) as "lock_customer_key_name_${keyType}"`, [accountId, lockId]);
     }
     public async createApiKey(
         trx: Knex,
