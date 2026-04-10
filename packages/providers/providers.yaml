@@ -5428,7 +5428,7 @@ drata:
 cisco-duo-admin:
     display_name: Cisco Duo Admin API
     categories:
-        - security
+        - other
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}
@@ -5437,11 +5437,7 @@ cisco-duo-admin:
             authorization: "Basic ${base64(${credentials.username}:${hmacSha1Hex(${now:ddd, DD MMM YYYY HH:mm:ss ZZ}\n${method}\n${connectionConfig.hostname}\n${path}\n${params}, ${credentials.password})})}"
         retry:
             after:
-                - 'Retry-After'
-        verification:
-            method: GET
-            endpoints:
-                - /admin/v1/users?limit=1
+                - 'retry-after'
     docs: https://nango.dev/docs/api-integrations/cisco-duo-admin
     docs_connect: https://nango.dev/docs/api-integrations/cisco-duo-admin/connect
     connection_config:

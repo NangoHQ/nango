@@ -336,8 +336,8 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
             .map((pair) => {
                 const i = pair.indexOf('=');
                 return {
-                    k: decodeURIComponent(i === -1 ? pair : pair.slice(0, i)),
-                    v: decodeURIComponent(i === -1 ? '' : pair.slice(i + 1))
+                    k: decodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
+                    v: decodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
                 };
             })
             .sort((a, b) => a.k.localeCompare(b.k))
@@ -491,9 +491,9 @@ export function buildProxyHeaders({
         const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
         const stableReplacers = getStableInterpolationReplacers(headerValues);
 
-        const queryStringStart = config.endpoint.indexOf('?');
-        const endpointPath = queryStringStart !== -1 ? config.endpoint.slice(0, queryStringStart) : config.endpoint;
-        const endpointQuery = queryStringStart !== -1 ? config.endpoint.slice(queryStringStart + 1) : '';
+        const parsedUrl = new URL(url);
+        const endpointPath = parsedUrl.pathname;
+        const endpointQuery = parsedUrl.search.slice(1);
         const baseReplacers = {
             endpoint: config.endpoint,
             path: endpointPath,
