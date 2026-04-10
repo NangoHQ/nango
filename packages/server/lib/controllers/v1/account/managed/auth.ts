@@ -6,7 +6,7 @@ import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 
 import type { InviteAccountState } from './postSignup.js';
-import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
@@ -89,6 +89,19 @@ export async function setManagedAuthEmailVerification(req: Request, verification
         state
     };
     await saveSession(req);
+}
+
+async function loginManagedAuthUser(req: Request, user: DBUser): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        req.login(user, (err) => {
+            if (err) {
+                reject(err instanceof Error ? err : new Error(String(err)));
+                return;
+            }
+
+            resolve();
+        });
+    });
 }
 
 export function getManagedAuthRequestMetadata(req: Request) {
@@ -198,35 +211,35 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
-    await new Promise<void>((resolve) => {
-        req.login(user, async function (err) {
-            if (err) {
-                res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
-                resolve();
+    try {
+        await loginManagedAuthUser(req, user);
+    } catch (err) {
+        report(err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
+        return;
+    }
+
+    try {
+        if (invitation) {
+            await acceptInvitation(invitation.token);
+            const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
+            if (!updated) {
+                res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
                 return;
             }
 
-            if (invitation) {
-                await acceptInvitation(invitation.token);
-                const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
-                if (!updated) {
-                    res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
-                    resolve();
-                    return;
-                }
-
-                // @ts-expect-error you got to love passport
-                req.session.passport.user.account_id = invitation.account_id;
-                respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-            } else if (isNewUser) {
-                respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
-            } else {
-                respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-            }
-
-            resolve();
-        });
-    });
+            // @ts-expect-error you got to love passport
+            req.session.passport.user.account_id = invitation.account_id;
+            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
+        } else if (isNewUser) {
+            respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
+        } else {
+            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
+        }
+    } catch (err) {
+        report(err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to finalize login' } });
+    }
 }
 
 function respondWithSuccess(res: Response, url: string, responseMode: 'json' | 'redirect') {
