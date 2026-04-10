@@ -39,10 +39,12 @@ export const createApiKey = asyncWrapper<CreateApiKey>(async (req, res) => {
     });
 
     if (result.isErr()) {
-        const errType = 'type' in result.error ? (result.error as any).type : '';
-        if (errType === 'duplicate_api_secret') {
+        const err = result.error;
+        const errType = (err as any).type ?? '';
+        const errMsg = err.message ?? '';
+        if (errType === 'duplicate_api_secret' || errMsg.includes('duplicate_api_secret')) {
             res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (errType === 'resource_capped') {
+        } else if (errType === 'resource_capped' || errMsg.includes('resource_capped')) {
             res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of API keys per environment reached' } });
         } else {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
