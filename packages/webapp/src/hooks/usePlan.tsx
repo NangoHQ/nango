@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial } from '@nangohq/types';
+import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from '@nangohq/types';
 
 export async function apiGetCurrentPlan(env: string) {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, {
@@ -67,10 +67,12 @@ export function useApiGetUsage(env: string) {
     });
 }
 
+export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
+
 export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: ['plans', 'billing-usage', timeframe],
+        queryKey: [...GetBillingUsageQueryKey, timeframe],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
@@ -102,6 +104,24 @@ export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver
     }, [plan]);
 
     return res;
+}
+
+export function usePutBillingInvoicingDetails(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PutBillingInvoicingDetails['Success'], APIError, PutBillingInvoicingDetails['Body']>({
+        mutationFn: async (body): Promise<PutBillingInvoicingDetails['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/invoicing?env=${env}`, {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as PutBillingInvoicingDetails['Reply'];
+            if (res.status !== 200 || 'error' in json) throw new APIError({ res, json });
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: GetBillingUsageQueryKey });
+        }
+    });
 }
 
 export function useApiPostPlanChange(env: string) {
