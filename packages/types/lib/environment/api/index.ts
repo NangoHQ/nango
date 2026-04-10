@@ -106,6 +106,7 @@ export type CreateApiKey = Endpoint<{
             created_at: string;
         };
     };
+    Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
 
 export type DeleteApiKey = Endpoint<{
