@@ -1971,7 +1971,7 @@ aws:
             title: API Subdomain
             description: The API subdomain to the API you want to connect to
             example: idp.us-east-2
-            pattern: '^[a-z.-]+$'
+            pattern: '^[a-z0-9.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
 
@@ -10311,6 +10311,31 @@ listmonk:
             description: The token to your Listmonk account
             secret: true
 
+listrak:
+    display_name: Listrak
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.listrak.com/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.listrak.com/email
+    docs: https://nango.dev/docs/api-integrations/listrak
+    docs_connect: https://nango.dev/docs/api-integrations/listrak/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Listrak API Client ID
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Listrak API Client Secret
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 make:
     display_name: Make
     categories:
@@ -16625,6 +16650,26 @@ statista:
             example: c5c28261f9ade4e34891ccf761491b94
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+stay-ai:
+    display_name: Stay AI
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retextion.com/api
+        headers:
+            x-retextion-access-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/stay-ai
+    docs_connect: https://nango.dev/docs/api-integrations/stay-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stay AI API key.
+            example: 7k9***f-***da3e-***hjtb-***22cy
+            pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
+            doc_section: '#step-1-create-a-new-api-key'
 
 strava:
     display_name: Strava (Mobile)
