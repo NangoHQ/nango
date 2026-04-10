@@ -817,6 +817,7 @@
               "integrations/all/shipstation-v2",
               "api-integrations/shipbob-pat",
               "api-integrations/shopify",
+              "api-integrations/shopify-cc",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
