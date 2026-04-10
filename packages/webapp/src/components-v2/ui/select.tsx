@@ -112,7 +112,7 @@ function SelectScrollUpButton({ className, ...props }: React.ComponentProps<type
             className={cn('flex cursor-default items-center justify-center py-1', className)}
             {...props}
         >
-            <ChevronUpIcon />
+            <ChevronUpIcon className="size-4" />
         </SelectPrimitive.ScrollUpButton>
     );
 }
@@ -124,7 +124,7 @@ function SelectScrollDownButton({ className, ...props }: React.ComponentProps<ty
             className={cn('flex cursor-default items-center justify-center py-1', className)}
             {...props}
         >
-            <ChevronDownIcon />
+            <ChevronDownIcon className="size-4" />
         </SelectPrimitive.ScrollDownButton>
     );
 }
