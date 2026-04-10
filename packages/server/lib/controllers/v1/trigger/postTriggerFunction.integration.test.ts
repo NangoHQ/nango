@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { envs } from '@nangohq/logs';
 import { seeders, syncManager } from '@nangohq/shared';
 
-import { authenticateUser, isError, runServer } from '../../../utils/tests.js';
+import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -16,24 +16,26 @@ const mockRunSyncCommand = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedV
 });
 
 describe(`POST ${endpoint}`, () => {
+    let logsEnabled: boolean;
+
     beforeAll(async () => {
         api = await runServer();
+        logsEnabled = envs.NANGO_LOGS_ENABLED;
         envs.NANGO_LOGS_ENABLED = false;
     });
     afterAll(() => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         api.server.close();
     });
 
-    it('should require session auth', async () => {
+    it('should be protected', async () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
             body: { type: 'sync', function_name: 'sync1', provider_config_key: 'test-key', connection_id: 'conn1' }
         });
 
-        isError(res.json);
-        expect(res.res.status).toBe(401);
-        expect(res.json).toStrictEqual({ error: { code: 'unauthorized' } });
+        shouldBeProtected(res);
     });
 
     it('should require the env query param', async () => {
@@ -49,7 +51,9 @@ describe(`POST ${endpoint}`, () => {
         });
 
         isError(res.json);
-        expect(res.res.status).toBe(400);
+        // sessionAuth middleware validates env and returns 401 for missing/invalid env
+        expect(res.res.status).toBe(401);
+        expect(res.json.error.code).toBe('invalid_env');
     });
 
     describe('body validation', () => {

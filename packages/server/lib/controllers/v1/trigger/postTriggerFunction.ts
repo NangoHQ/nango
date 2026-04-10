@@ -4,7 +4,7 @@ import * as z from 'zod';
 import { OtlpSpan, defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, configService, connectionService, errorManager, getSyncConfigRaw, syncManager } from '@nangohq/shared';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
@@ -88,7 +88,7 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
                         integration: { id: provider.id!, name: connection.provider_config_key, provider: provider.provider },
                         connection: { id: connection.id, name: connection.connection_id },
                         syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
-                        meta: { input }
+                        meta: truncateJson({ input })
                     }
                 );
                 logCtx.attachSpan(new OtlpSpan(logCtx.operation));

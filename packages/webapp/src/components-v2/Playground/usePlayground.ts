@@ -35,7 +35,10 @@ export function usePlayground(inputFields: InputField[]) {
         enabled: !!pendingOperationId && isOpen,
         refetchInterval: (query) => {
             const state = query.state.data?.state;
-            return state === 'running' || state === 'waiting' ? STATUS_POLL_INTERVAL_MS : false;
+            // Keep polling if data is null (transient fetch failure) or still in progress.
+            // Only stop on a known terminal state.
+            if (state && state !== 'running' && state !== 'waiting') return false;
+            return STATUS_POLL_INTERVAL_MS;
         }
     });
 
@@ -143,18 +146,18 @@ export function usePlayground(inputFields: InputField[]) {
                 await sleepWithAbort(FIND_OP_POLL_INTERVAL_MS, controller.signal);
             }
 
-            if (!operation) {
+            // For actions, the full output is already in triggerData — use it directly.
+            // Log lookup failure only means no Logs link; it doesn't mean the action failed.
+            if (playgroundFunctionType === 'action') {
                 setPendingOperationId(null);
-                setResult({ success: false, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
+                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs, operationId: operation?.id });
                 setRunning(false);
                 return;
             }
 
-            // For actions, the full output is already in triggerData — use it directly.
-            // The operation is synchronous and complete; no need to poll status.
-            if (playgroundFunctionType === 'action') {
+            if (!operation) {
                 setPendingOperationId(null);
-                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs, operationId: operation.id });
+                setResult({ success: false, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
                 setRunning(false);
                 return;
             }
