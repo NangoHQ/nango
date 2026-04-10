@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, stringToHash } from '@nangohq/utils';
 
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -11,14 +11,10 @@ import type { Knex } from 'knex';
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
 
-// Advisory lock namespace for customer key name uniqueness.
-// Uses (account_id, key_type_hash) to avoid contention across accounts/key types.
-const KEY_TYPE_LOCK_IDS: Record<string, number> = { api: 1, webhook_signing: 2 };
-
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
-        const lockId = KEY_TYPE_LOCK_IDS[keyType] ?? 0;
-        await trx.raw(`SELECT pg_advisory_xact_lock(?, ?) as "lock_customer_key_name_${keyType}"`, [accountId, lockId]);
+        const lockKey = stringToHash(`customer_key_name:${accountId}:${keyType}`);
+        await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
     public async createApiKey(
         trx: Knex,
