@@ -11,7 +11,15 @@ import type { Knex } from 'knex';
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
 
+// Advisory lock namespace for customer key name uniqueness.
+// Uses (account_id, key_type_hash) to avoid contention across accounts/key types.
+const KEY_TYPE_LOCK_IDS: Record<string, number> = { api: 1, webhook_signing: 2 };
+
 class CustomerKeyService {
+    private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
+        const lockId = KEY_TYPE_LOCK_IDS[keyType] ?? 0;
+        await trx.raw('SELECT pg_advisory_xact_lock(?, ?)', [accountId, lockId]);
+    }
     public async createApiKey(
         trx: Knex,
         {
@@ -29,6 +37,8 @@ class CustomerKeyService {
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
+            await this.acquireNameLock(trx, accountId, 'api');
+
             const plainText = providedSecret ?? uuid.v4();
 
             const hashed = await this.hashSecret(plainText);
@@ -186,8 +196,10 @@ class CustomerKeyService {
         }
     }
 
-    public async renameApiKey(trx: Knex, keyId: number, displayName: string, envId: number): Promise<Result<void>> {
+    public async renameApiKey(trx: Knex, keyId: number, displayName: string, envId: number, accountId: number): Promise<Result<void>> {
         try {
+            await this.acquireNameLock(trx, accountId, 'api');
+
             // Check uniqueness: no other API key in the same environment should have this name
             const existing = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .select(`${CUSTOMER_KEYS_TABLE}.id`)

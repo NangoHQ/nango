@@ -21,6 +21,7 @@ export const patchApiKey = async (req: Request, res: Response<any, RequestLocals
     }
 
     const environment = res.locals['environment']!;
+    const account = res.locals['account']!;
 
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -29,7 +30,7 @@ export const patchApiKey = async (req: Request, res: Response<any, RequestLocals
     }
 
     if (parsed.data.display_name) {
-        const result = await customerKeyService.renameApiKey(db.knex, keyId, parsed.data.display_name, environment.id);
+        const result = await customerKeyService.renameApiKey(db.knex, keyId, parsed.data.display_name, environment.id, account.id);
         if (result.isErr()) {
             const msg = result.error.message.includes('duplicate') ? 'A key with this name already exists' : 'API key not found';
             res.status(result.error.message.includes('duplicate') ? 409 : 404).send({
