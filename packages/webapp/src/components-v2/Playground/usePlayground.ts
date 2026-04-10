@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
@@ -15,7 +14,6 @@ const STATUS_POLL_INTERVAL_MS = 1500;
 
 export function usePlayground(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
-    const baseUrl = useStore((s) => s.baseUrl);
     const isOpen = usePlaygroundStore((s) => s.isOpen);
     const playgroundIntegration = usePlaygroundStore((s) => s.integration);
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
@@ -27,9 +25,6 @@ export function usePlayground(inputFields: InputField[]) {
     const setPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setRunning = usePlaygroundStore((s) => s.setRunning);
     const setInputErrors = usePlaygroundStore((s) => s.setInputErrors);
-
-    const { data } = useEnvironment(env);
-    const environmentAndAccount = data?.environmentAndAccount;
 
     const runAbortRef = useRef<AbortController | null>(null);
 
@@ -66,9 +61,8 @@ export function usePlayground(inputFields: InputField[]) {
 
     // --- handleRun ---
     const handleRun = useCallback(async () => {
-        if (!playgroundIntegration || !playgroundConnection || !playgroundFunction || !playgroundFunctionType || !environmentAndAccount) return;
+        if (!playgroundIntegration || !playgroundConnection || !playgroundFunction || !playgroundFunctionType) return;
 
-        const secretKey = environmentAndAccount.environment.secret_key;
         const controller = new AbortController();
         runAbortRef.current = controller;
         setRunning(true);
@@ -89,28 +83,24 @@ export function usePlayground(inputFields: InputField[]) {
                     setRunning(false);
                     return;
                 }
-
-                response = await fetch(`${baseUrl}/action/trigger`, {
+                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
                     method: 'POST',
                     signal: controller.signal,
-                    headers: {
-                        Authorization: `Bearer ${secretKey}`,
-                        'Content-Type': 'application/json',
-                        'provider-config-key': playgroundIntegration,
-                        'connection-id': playgroundConnection
-                    },
-                    body: JSON.stringify({ action_name: playgroundFunction, input: parseResult.parsed })
+                    body: JSON.stringify({
+                        type: 'action',
+                        function_name: playgroundFunction,
+                        provider_config_key: playgroundIntegration,
+                        connection_id: playgroundConnection,
+                        input: parseResult.parsed
+                    })
                 });
             } else {
-                response = await fetch(`${baseUrl}/sync/trigger`, {
+                response = await apiFetch(`/api/v1/trigger/function?env=${env}`, {
                     method: 'POST',
                     signal: controller.signal,
-                    headers: {
-                        Authorization: `Bearer ${secretKey}`,
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({
-                        syncs: [playgroundFunction],
+                        type: 'sync',
+                        function_name: playgroundFunction,
                         provider_config_key: playgroundIntegration,
                         connection_id: playgroundConnection
                     })
@@ -160,7 +150,16 @@ export function usePlayground(inputFields: InputField[]) {
                 return;
             }
 
-            // Hand off to useQuery for status polling.
+            // For actions, the full output is already in triggerData — use it directly.
+            // The operation is synchronous and complete; no need to poll status.
+            if (playgroundFunctionType === 'action') {
+                setPendingOperationId(null);
+                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs, operationId: operation.id });
+                setRunning(false);
+                return;
+            }
+
+            // Syncs: hand off to useQuery for status polling.
             // running stays true — useQuery's useEffect will set it to false on terminal state.
             setPendingOperationId(operation.id);
         } catch (err: unknown) {
@@ -180,8 +179,6 @@ export function usePlayground(inputFields: InputField[]) {
         playgroundConnection,
         playgroundFunction,
         playgroundFunctionType,
-        environmentAndAccount,
-        baseUrl,
         env,
         inputFields,
         inputValues,

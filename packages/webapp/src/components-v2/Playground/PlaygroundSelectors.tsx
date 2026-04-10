@@ -35,6 +35,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     const setPlaygroundConnectionSearch = usePlaygroundStore((s) => s.setConnectionSearch);
     const setPlaygroundPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setPlaygroundRunning = usePlaygroundStore((s) => s.setRunning);
+    const running = usePlaygroundStore((s) => s.running);
 
     const [debouncedConnectionSearch, setDebouncedConnectionSearch] = useState('');
     useDebounce(() => setDebouncedConnectionSearch(connectionSearch || ''), 250, [connectionSearch]);
@@ -138,6 +139,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 value={playgroundIntegration || ''}
                 onValueChange={handleIntegrationChange}
                 placeholder="Pick integration"
+                disabled={running}
                 options={integrationOptions}
                 searchPlaceholder="Search integrations"
                 showCheckbox={false}
@@ -166,7 +168,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 value={playgroundConnection || ''}
                 onValueChange={handleConnectionChange}
                 placeholder="Select connection"
-                disabled={!playgroundIntegration}
+                disabled={running || !playgroundIntegration}
                 options={connectionOptions}
                 searchPlaceholder="Search connections"
                 searchValue={connectionSearch}
@@ -197,7 +199,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
                 value={playgroundFunction || ''}
                 onValueChange={handleFunctionChange}
                 placeholder="Select function"
-                disabled={!playgroundIntegration}
+                disabled={running || !playgroundIntegration}
                 options={functionOptions}
                 searchPlaceholder="Search functions"
                 showCheckbox={false}
