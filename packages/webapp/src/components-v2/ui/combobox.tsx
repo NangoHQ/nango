@@ -108,7 +108,7 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 ref={ref}
                 data-slot="combobox-chips"
                 className={cn(
-                    'flex min-h-9 flex-wrap items-center gap-1.5 rounded border border-border-muted bg-bg-surface px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-bg-surface px-2 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
                     className
                 )}
                 {...props}

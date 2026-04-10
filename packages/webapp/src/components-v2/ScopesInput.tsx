@@ -1,18 +1,10 @@
-import { Copy, CornerDownLeft, Loader2 } from 'lucide-react';
+import { Copy, CornerDownLeft, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Badge } from './ui/badge.js';
-import {
-    Combobox,
-    ComboboxChip,
-    ComboboxChips,
-    ComboboxChipsInput,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxItem,
-    ComboboxList,
-    ComboboxValue
-} from './ui/combobox.js';
+import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxContent, ComboboxItem, ComboboxList, ComboboxValue } from './ui/combobox.js';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.js';
+import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -73,6 +65,11 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         void navigator.clipboard.writeText(scopes.join(','));
     };
 
+    const deleteAllScopes = async () => {
+        setLoading(true);
+        await onValueChange([]);
+    };
+
     const [inputValue, setInputValue] = useState('');
 
     const addScopesFromText = async (text: string) => {
@@ -106,6 +103,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     const hasAvailableScopesDropdown = showAvailableScopesDropdown && !!availableScopes?.length && !isSharedCredentials && !readOnly;
     const finalPlaceholder = placeholder ?? (isSharedCredentials ? '' : 'Add new scope');
+    const filteredSuggestions = (availableScopes ?? []).filter(
+        (s) => !scopes.includes(s) && (!inputValue.trim() || s.toLowerCase().includes(inputValue.trim().toLowerCase()))
+    );
 
     if (isSharedCredentials || readOnly) {
         return (
@@ -124,15 +124,30 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
     }
 
     return (
-        <div className="relative mb-8 min-w-0">
+        <div className="relative min-w-0">
             {scopes.length > 0 && !loading && (
-                <button
-                    type="button"
-                    onClick={copyScopes}
-                    className="absolute -top-6 right-0 text-text-tertiary hover:text-text-primary flex items-center gap-1 text-xs p-0.5"
-                >
-                    <Copy size={12} />
-                </button>
+                <div className="absolute -top-6 right-0 flex items-center gap-1">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button type="button" onClick={copyScopes} className="text-text-tertiary hover:text-text-primary flex items-center p-0.5">
+                                <Copy size={12} />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Copy all</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                type="button"
+                                onClick={() => void deleteAllScopes()}
+                                className="text-text-tertiary hover:text-text-primary flex items-center p-0.5"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">Delete all</TooltipContent>
+                    </Tooltip>
+                </div>
             )}
             <Combobox
                 items={availableScopes ?? []}
@@ -142,12 +157,14 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 disabled={loading}
                 open={hasAvailableScopesDropdown ? undefined : false}
             >
-                <ComboboxChips ref={chipsRef}>
-                    <ComboboxValue>
-                        {scopes.map((scope) => (
-                            <ComboboxChip key={scope}>{scope}</ComboboxChip>
-                        ))}
-                    </ComboboxValue>
+                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1', scopes.length === 0 ? 'h-9' : 'min-h-9 py-1')}>
+                    {scopes.length > 0 && (
+                        <ComboboxValue>
+                            {scopes.map((scope) => (
+                                <ComboboxChip key={scope}>{scope}</ComboboxChip>
+                            ))}
+                        </ComboboxValue>
+                    )}
                     <ComboboxChipsInput
                         placeholder={scopes.length === 0 ? finalPlaceholder : ''}
                         value={inputValue}
@@ -159,13 +176,18 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         {loading ? (
                             <Loader2 size={14} className="animate-spin text-text-secondary" />
                         ) : (
-                            <button
-                                type="button"
-                                onClick={() => void addScopesFromText(inputValue)}
-                                className="text-text-tertiary hover:text-text-primary flex items-center p-0.5"
-                            >
-                                <CornerDownLeft size={14} />
-                            </button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        onClick={() => void addScopesFromText(inputValue)}
+                                        className="text-text-tertiary hover:text-text-primary flex items-center p-0.5"
+                                    >
+                                        <CornerDownLeft size={14} />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Add scope</TooltipContent>
+                            </Tooltip>
                         )}
                     </div>
                 </ComboboxChips>
@@ -176,7 +198,22 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         collisionAvoidance={{ side: 'none' }}
                         className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle mb-2"
                     >
-                        <ComboboxEmpty>No results found.</ComboboxEmpty>
+                        {inputValue.trim() && (
+                            <button
+                                type="button"
+                                onClick={() => void addScopesFromText(inputValue)}
+                                className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                            >
+                                <span className="inline-flex h-6 items-center gap-1 rounded-md bg-bg-elevated px-2 text-xs font-medium text-text-primary shrink-0">
+                                    <Plus size={11} />
+                                    Add
+                                </span>
+                                <span>
+                                    <span className="font-medium text-text-primary">&quot;{inputValue.trim()}&quot;</span> as a new scope
+                                </span>
+                            </button>
+                        )}
+                        {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-tertiary">Suggested scopes</p>}
                         <ComboboxList className="p-0">
                             {(scope) => (
                                 <ComboboxItem key={scope as string} value={scope} className="rounded-none px-2">
