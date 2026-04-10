@@ -19,7 +19,7 @@ Each environment comes with a **Default - Full access** key that grants access t
 1. Go to **Environment Settings > API Keys**
 2. Click **Create API Key**
 3. Enter a display name (e.g., "CI Deploy Key", "Backend service")
-4. Select the scopes you need — use the presets for common patterns or pick individual scopes
+4. Choose **Full access** or **Custom** permissions — custom lets you pick individual scopes
 5. The key is created immediately and can be revealed and copied from the key list
 
 ### Rotating a Key
@@ -53,18 +53,7 @@ Pass the API key as a Bearer token in the `Authorization` header:
 
 ## Scopes
 
-Scopes control what an API key can access. When creating a key, you select which scopes to grant. A key without a specific scope will receive a `403 Forbidden` response when trying to access a protected endpoint.
-
-### Scope Presets
-
-Common scope combinations are available as presets in the UI:
-
-| Preset | Scopes | Use case |
-|--------|--------|----------|
-| **Full access** | All scopes | Default key, unrestricted access |
-| **Auth** | `environment:connect_sessions:write` | Backend creating connect sessions for the auth flow |
-| **CI/CD deploy** | `environment:deploy` | CI/CD pipelines deploying syncs and actions |
-| **Backend service** | `environment:connections:read`, `environment:records:read`, `environment:actions:execute`, `environment:syncs:execute`, `environment:proxy` | Backend service consuming data and triggering operations |
+Scopes control what an API key can access. When creating a key with **Custom** permissions, you select which scopes to grant. A key without a specific scope will receive a `403 Forbidden` response when trying to access a protected endpoint.
 
 ### Available Scopes
 
@@ -147,7 +136,47 @@ Credential scopes control access to sensitive authentication material:
 - **Connections**: access/refresh tokens
 - **Integrations**: client ID and client secret
 
-### CLI Scopes
+## Advised Profiles
+
+Common scope combinations for typical use cases:
+
+### Auth (Connect UI)
+
+For backends that create connect sessions for the auth flow:
+
+| Scope |
+|-------|
+| `environment:connect_sessions:write` |
+
+### CI/CD Deploy
+
+For CI/CD pipelines deploying syncs and actions to production:
+
+| Scope |
+|-------|
+| `environment:deploy` |
+
+### Backend Service
+
+For backend services that consume data, trigger actions, and proxy requests:
+
+| Scope |
+|-------|
+| `environment:connections:read` |
+| `environment:records:read` |
+| `environment:actions:execute` |
+| `environment:syncs:execute` |
+| `environment:proxy` |
+
+Add `environment:connections:read_credentials` if the service needs access to connection tokens.
+
+### Local Development
+
+For local development, use a **Full access** key. This is the default key created for each environment.
+
+## CLI
+
+The Nango CLI uses the `NANGO_SECRET_KEY_<ENV>` environment variable for authentication. Set it to an API key with the required scopes:
 
 | CLI Command | Required Scope |
 |-------------|---------------|
@@ -155,5 +184,5 @@ Credential scopes control access to sensitive authentication material:
 | `nango dryrun` | `environment:connections:read_credentials` + `environment:integrations:read` |
 
 <Tip>
-  For local development, use a key with full access. For CI/CD pipelines deploying to production, create a dedicated key with only the `environment:deploy` scope.
+  For local development with `nango dryrun`, use a key with full access on the dev environment. For CI/CD pipelines deploying to production, create a dedicated key with only the `environment:deploy` scope.
 </Tip>

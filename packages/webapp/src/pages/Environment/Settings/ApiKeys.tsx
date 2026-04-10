@@ -8,7 +8,6 @@ import { permissions } from '@nangohq/authz';
 import SettingsContent from './components/SettingsContent';
 import {
     SCOPE_GROUPS,
-    SCOPE_PRESETS,
     allGroupScopes,
     expandScopes,
     groupWildcard,
@@ -96,6 +95,8 @@ interface ScopeSelectorProps {
 
 const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange }) => {
     const hasFullAccess = selectedScopes.includes('environment:*');
+    const isCustom = !hasFullAccess && selectedScopes.length > 0;
+    const [showCustom, setShowCustom] = useState(isCustom);
 
     const isGroupWildcardSelected = (group: ScopeGroup) => {
         const wc = groupWildcard(group);
@@ -113,9 +114,9 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                    <label className="text-body-medium-semi text-text-primary">Quick presets</label>
+                    <label className="text-body-medium-semi text-text-primary">Permissions</label>
                     <a
-                        href="https://nango.dev/docs/implementation-guides/platform/api-keys#scopes"
+                        href="https://nango.dev/docs/reference/api-keys#scopes"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-body-small-regular text-text-brand hover:underline"
@@ -123,90 +124,106 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                         Learn more about scopes
                     </a>
                 </div>
-                <p className="text-body-small-regular text-text-tertiary">Select a preset to pre-fill scopes, then customize below</p>
-                <div className="flex flex-wrap gap-2">
-                    {SCOPE_PRESETS.map((preset) => (
-                        <button
-                            key={preset.label}
-                            type="button"
-                            onClick={() => onChange([...preset.scopes])}
-                            title={preset.description}
-                            className="px-3 py-1.5 rounded text-body-small-regular border transition-colors cursor-pointer bg-bg-surface text-text-secondary border-border-muted hover:border-border-default"
-                        >
-                            {preset.label}
-                        </button>
-                    ))}
+                <div className="flex gap-2">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setShowCustom(false);
+                            onChange(['environment:*']);
+                        }}
+                        className={`px-3 py-1.5 rounded text-body-small-regular border transition-colors cursor-pointer ${
+                            hasFullAccess && !showCustom
+                                ? 'bg-bg-accent text-text-brand border-transparent'
+                                : 'bg-bg-surface text-text-secondary border-border-muted hover:border-border-default'
+                        }`}
+                    >
+                        Full access
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setShowCustom(true);
+                            if (hasFullAccess) {
+                                onChange([]);
+                            }
+                        }}
+                        className={`px-3 py-1.5 rounded text-body-small-regular border transition-colors cursor-pointer ${
+                            showCustom || isCustom
+                                ? 'bg-bg-accent text-text-brand border-transparent'
+                                : 'bg-bg-surface text-text-secondary border-border-muted hover:border-border-default'
+                        }`}
+                    >
+                        Custom
+                    </button>
                 </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-                <label className="text-body-medium-semi text-text-primary">Scopes</label>
-                <div className="max-h-[280px] overflow-y-auto border border-border-muted rounded p-3 flex flex-col gap-3">
-                    {hasFullAccess && (
-                        <div className="flex items-center gap-2 pb-2 border-b border-border-muted">
-                            <input type="checkbox" checked={true} onChange={() => onChange([])} className="accent-brand" />
-                            <span className="text-body-small-semi text-text-primary">Full access</span>
-                            <span className="text-body-small-regular text-text-tertiary">— all current and future scopes</span>
-                        </div>
-                    )}
-                    {SCOPE_GROUPS.map((group) => {
-                        const groupSelected = isGroupAllSelected(group);
-                        const wildcardSelected = isGroupWildcardSelected(group);
-                        const childrenDisabled = hasFullAccess || wildcardSelected;
-                        return (
-                            <div key={group.group} className="flex flex-col gap-1">
-                                <label className={`flex items-center gap-2 ${hasFullAccess ? '' : 'cursor-pointer'}`}>
-                                    <input
-                                        type="checkbox"
-                                        checked={groupSelected || isScopeSelected(group.items[0].value, selectedScopes)}
-                                        disabled={hasFullAccess}
-                                        ref={(el) => {
-                                            if (el) el.indeterminate = !hasFullAccess && !groupSelected && hasAnyChildSelected(group);
-                                        }}
-                                        onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
-                                        className="accent-brand"
-                                    />
-                                    <span className="text-body-small-semi text-text-secondary">{group.group}</span>
-                                    {wildcardSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
-                                </label>
-                                {group.items.map((item) => (
-                                    <div key={item.value} className="flex flex-col gap-1">
-                                        <label className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    isScopeSelected(item.value, selectedScopes) ||
-                                                    (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
-                                                }
-                                                disabled={childrenDisabled}
-                                                onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
-                                                className="accent-brand"
-                                            />
-                                            <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
-                                                {item.label}
-                                            </span>
-                                        </label>
-                                        {item.credentials && (
-                                            <label className={`flex items-center gap-2 pl-10 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
+            {(showCustom || isCustom) && (
+                <div className="flex flex-col gap-1.5">
+                    <div className="max-h-[280px] overflow-y-auto border border-border-muted rounded p-3 flex flex-col gap-3">
+                        {SCOPE_GROUPS.map((group) => {
+                            const groupSelected = isGroupAllSelected(group);
+                            const wildcardSelected = isGroupWildcardSelected(group);
+                            const childrenDisabled = hasFullAccess || wildcardSelected;
+                            return (
+                                <div key={group.group} className="flex flex-col gap-1">
+                                    <label className={`flex items-center gap-2 ${hasFullAccess ? '' : 'cursor-pointer'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={groupSelected || isScopeSelected(group.items[0].value, selectedScopes)}
+                                            disabled={hasFullAccess}
+                                            ref={(el) => {
+                                                if (el) el.indeterminate = !hasFullAccess && !groupSelected && hasAnyChildSelected(group);
+                                            }}
+                                            onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
+                                            className="accent-brand"
+                                        />
+                                        <span className="text-body-small-semi text-text-secondary">{group.group}</span>
+                                        {wildcardSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
+                                    </label>
+                                    {group.items.map((item) => (
+                                        <div key={item.value} className="flex flex-col gap-1">
+                                            <label className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
                                                 <input
                                                     type="checkbox"
-                                                    checked={isScopeSelected(item.credentials, selectedScopes)}
+                                                    checked={
+                                                        isScopeSelected(item.value, selectedScopes) ||
+                                                        (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
+                                                    }
                                                     disabled={childrenDisabled}
-                                                    onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                    onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
                                                     className="accent-brand"
                                                 />
                                                 <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
-                                                    with credentials
+                                                    {item.label}
                                                 </span>
                                             </label>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })}
+                                            {item.credentials && (
+                                                <label className={`flex items-center gap-2 pl-10 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isScopeSelected(item.credentials, selectedScopes)}
+                                                        disabled={childrenDisabled}
+                                                        onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                        className="accent-brand"
+                                                    />
+                                                    <span
+                                                        className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}
+                                                    >
+                                                        with credentials
+                                                    </span>
+                                                </label>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    {selectedScopes.length === 0 && (
+                        <p className="text-body-small-regular text-text-tertiary">No scopes selected — select at least one scope</p>
+                    )}
                 </div>
-                {selectedScopes.length === 0 && <p className="text-body-small-regular text-text-tertiary">No scopes selected — key will have full access</p>}
-            </div>
+            )}
         </div>
     );
 };
