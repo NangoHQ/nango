@@ -4,6 +4,9 @@ exports.config = { transaction: false };
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
+    // ON CONFLICT DO NOTHING: environments created between Step 2 (dual-read code deployed)
+    // and this migration already have keys in customer_keys via createEnvironment.
+    // The backfill skips those to avoid unique constraint violations.
     await knex.raw(`
         BEGIN;
 
@@ -47,7 +50,7 @@ exports.up = async function (knex) {
                 s.secret,
                 s.iv,
                 s.tag,
-                s.hashed || ':ws'                AS hashed,
+                s.hashed,
                 s.created_at,
                 s.updated_at
             FROM api_secrets s
@@ -63,7 +66,7 @@ exports.up = async function (knex) {
             FROM api_secrets s
             JOIN _nango_environments e ON e.id = s.environment_id
             JOIN customer_keys ck
-                ON  ck.hashed = s.hashed || ':ws'
+                ON  ck.hashed = s.hashed
                 AND ck.account_id = e.account_id
                 AND ck.key_type = 'webhook_signing'
             WHERE s.is_default = true
