@@ -185,29 +185,6 @@ class CustomerKeyService {
         }
     }
 
-    public async getApiKeyByHash(trx: Knex, hash: string): Promise<Result<(DBCustomerKey & { entity_id: number }) | null>> {
-        try {
-            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .select(`${CUSTOMER_KEYS_TABLE}.*`, `${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_TABLE}.hashed`, hash)
-                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .first();
-
-            if (!row) {
-                return Ok(null);
-            }
-
-            const decrypted = encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey & {
-                entity_id: number;
-            };
-            return Ok(decrypted);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey>> {
         try {
             const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
@@ -293,23 +270,7 @@ class CustomerKeyService {
         }
     }
 
-    public async updateLastUsedAt(trx: Knex, keyId: number, now: Date): Promise<void> {
-        try {
-            const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
-            await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .where({ id: keyId })
-                .where(function () {
-                    void this.whereNull('last_used_at').orWhere('last_used_at', '<', oneMinuteAgo);
-                })
-                .update({
-                    last_used_at: now
-                });
-        } catch {
-            // Fire-and-forget: swallow errors intentionally.
-        }
-    }
-
-    public async hashSecret(plainText: string): Promise<Result<string>> {
+    private async hashSecret(plainText: string): Promise<Result<string>> {
         try {
             if (!encryptionManager.shouldEncrypt()) {
                 return Ok(plainText);
