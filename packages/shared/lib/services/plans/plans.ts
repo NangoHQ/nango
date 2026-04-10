@@ -128,19 +128,6 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where('plans.auto_idle', true);
 }
 
-export function resetTrialStateOnPlanChange(): Pick<
-    DBPlan,
-    'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'
-> {
-    return {
-        trial_start_at: null,
-        trial_end_at: null,
-        trial_end_notified_at: null,
-        trial_extension_count: 0,
-        trial_expired: null
-    };
-}
-
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
@@ -178,7 +165,15 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
-        ...resetTrialStateOnPlanChange(),
+        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+            ? {
+                  trial_start_at: null,
+                  trial_end_at: null,
+                  trial_end_notified_at: null,
+                  trial_extension_count: 0,
+                  trial_expired: null
+              }
+            : {}),
         ...mergedFlags
     });
 
