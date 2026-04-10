@@ -1,13 +1,6 @@
 exports.config = { transaction: false };
 
 /**
- * NAN-5088: API Key Permissions — Step 1
- *
- * Creates:
- * - customer_keys: unified table for all customer-facing keys (API keys, webhook signing keys, etc.)
- * - customer_keys_relations: generic entity mapping (environment, account, etc.)
- * - cleanup trigger on _nango_environments DELETE for customer_keys_relations
- *
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
@@ -36,9 +29,7 @@ exports.up = async function (knex) {
 
         CREATE INDEX IF NOT EXISTS idx_customer_keys_key_type
             ON customer_keys (key_type);
-    `);
 
-    await knex.raw(`
         CREATE TABLE IF NOT EXISTS customer_keys_relations (
             customer_key_id INTEGER NOT NULL REFERENCES customer_keys(id) ON DELETE CASCADE,
             entity_type     VARCHAR(50) NOT NULL,
@@ -48,9 +39,7 @@ exports.up = async function (knex) {
 
         CREATE INDEX IF NOT EXISTS idx_customer_keys_relations_entity
             ON customer_keys_relations (entity_type, entity_id);
-    `);
 
-    await knex.raw(`
         CREATE OR REPLACE FUNCTION cleanup_customer_key_relations()
         RETURNS TRIGGER AS $$
         BEGIN
@@ -66,14 +55,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.raw(`
-        DROP TRIGGER IF EXISTS trg_env_delete_customer_key_relations ON _nango_environments;
-        DROP FUNCTION IF EXISTS cleanup_customer_key_relations();
-        DROP TABLE IF EXISTS customer_keys_relations;
-        DROP TABLE IF EXISTS customer_keys;
-    `);
-};
+exports.down = function () {};

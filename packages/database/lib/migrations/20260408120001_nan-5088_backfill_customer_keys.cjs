@@ -1,19 +1,12 @@
 exports.config = { transaction: false };
 
 /**
- * NAN-5088: API Key Permissions — Step 3
- *
- * Backfill: copies all existing default api_secrets into customer_keys as both
- * API keys (key_type='api') and webhook signing keys (key_type='webhook_signing'),
- * and creates the corresponding environment relations.
- *
  * @param {import('knex').Knex} knex
  */
 exports.up = async function (knex) {
     await knex.raw(`
         BEGIN;
 
-        -- Copy default secrets as API keys
         INSERT INTO customer_keys (account_id, key_type, display_name, scopes, secret, iv, tag, hashed, created_at, updated_at)
             SELECT
                 e.account_id,
@@ -31,7 +24,6 @@ exports.up = async function (knex) {
             WHERE s.is_default = true
         ON CONFLICT DO NOTHING;
 
-        -- Create environment relations for API keys
         INSERT INTO customer_keys_relations (customer_key_id, entity_type, entity_id)
             SELECT
                 ck.id                AS customer_key_id,
@@ -46,7 +38,6 @@ exports.up = async function (knex) {
             WHERE s.is_default = true
         ON CONFLICT DO NOTHING;
 
-        -- Copy default secrets as webhook signing keys (same secret value, different key_type)
         INSERT INTO customer_keys (account_id, key_type, display_name, scopes, secret, iv, tag, hashed, created_at, updated_at)
             SELECT
                 e.account_id,
@@ -56,7 +47,6 @@ exports.up = async function (knex) {
                 s.secret,
                 s.iv,
                 s.tag,
-                -- hashed with a prefix to avoid collision with the API key row
                 s.hashed || ':ws'                AS hashed,
                 s.created_at,
                 s.updated_at
@@ -65,7 +55,6 @@ exports.up = async function (knex) {
             WHERE s.is_default = true
         ON CONFLICT DO NOTHING;
 
-        -- Create environment relations for webhook signing keys
         INSERT INTO customer_keys_relations (customer_key_id, entity_type, entity_id)
             SELECT
                 ck.id                AS customer_key_id,
@@ -84,12 +73,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.raw(`
-        DELETE FROM customer_keys_relations;
-        DELETE FROM customer_keys;
-    `);
-};
+exports.down = function () {};
