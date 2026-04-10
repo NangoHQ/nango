@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasScope } from './scope.middleware';
+import { hasScope } from './scope.middleware.js';
 
 describe('hasScope', () => {
     it('returns true when grantedScopes is undefined (legacy key)', () => {
