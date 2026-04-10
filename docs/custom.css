@@ -27,11 +27,21 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
   a[href="https://github.com/NangoHQ/nango"] { display: none !important; }
 }
 
+/* ══ SEARCH / ASK AI DIALOGS — always on top ════════════════════ */
+/*
+ * Mintlify renders search and Ask AI via headlessui portals (z-40).
+ * The navbar's backdrop-blur creates a stacking context quirk where
+ * its z-10 tab children can paint over the z-40 dialog panel.
+ * Fix: raise the headlessui dialog above the navbar entirely.
+ */
+[id^="headlessui-dialog-"]:not([id*="panel"]) {
+  z-index: 200 !important;
+}
+
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 /*
- * IMPORTANT: Keep z-index at 30 (matching Mintlify's native z-30 class).
- * Mintlify's search and Ask AI dialogs use z-40, so they must be able
- * to render above the navbar. Setting this to 100 hides the dialogs.
+ * z-index: 30 matches Mintlify's native z-30 class so it stays
+ * below the headlessui dialog portals (now at z-200 above).
  */
 @media (min-width: 768px) {
   #navbar {
