@@ -27,6 +27,8 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 }) => {
     const [scopes, setScopes] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [inputValue, setInputValue] = useState('');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const chipsRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -56,6 +58,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
             await onChange?.(newScopes.join(','), countDifference);
             setScopes(newScopes);
             setInputValue('');
+            setDropdownOpen(false);
         } finally {
             setLoading(false);
         }
@@ -70,8 +73,6 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         await onValueChange([]);
     };
 
-    const [inputValue, setInputValue] = useState('');
-
     const addScopesFromText = async (text: string) => {
         const newScopes = text
             .split(',')
@@ -84,6 +85,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
             await onValueChange(merged);
         }
         setInputValue('');
+        setDropdownOpen(false);
     };
 
     const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -155,7 +157,8 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 value={scopes}
                 onValueChange={(newScopes) => void onValueChange(newScopes)}
                 disabled={loading}
-                open={hasAvailableScopesDropdown ? undefined : false}
+                open={hasAvailableScopesDropdown ? dropdownOpen : false}
+                onOpenChange={setDropdownOpen}
             >
                 <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1', scopes.length === 0 ? 'h-9' : 'min-h-9 py-1')}>
                     {scopes.length > 0 && (
@@ -171,6 +174,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         onChange={(e) => setInputValue((e.target as HTMLInputElement).value)}
                         onKeyDown={(e) => void handleKeyDown(e)}
                         onPaste={(e) => void handlePaste(e)}
+                        onFocus={() => hasAvailableScopesDropdown && setDropdownOpen(true)}
                     />
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         {loading ? (
