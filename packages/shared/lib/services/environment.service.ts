@@ -105,7 +105,6 @@ class EnvironmentService {
             environment.secret_key = secret.secret;
             environment.pending_secret_key = null;
 
-            // NAN-5088: create a customer API key with the same value (dual-read period)
             const apiKey = await customerKeyService.createApiKey(trx, {
                 accountId: accountId,
                 environmentId: environment.id,
@@ -116,7 +115,6 @@ class EnvironmentService {
                 throw apiKey.error;
             }
 
-            // NAN-5088: create a webhook signing key with the same value
             await customerKeyService.createWebhookSigningKey(trx, {
                 accountId: accountId,
                 environmentId: environment.id,

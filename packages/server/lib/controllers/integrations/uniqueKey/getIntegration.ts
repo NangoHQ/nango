@@ -66,7 +66,6 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
     if (queryInclude.has('webhook')) {
         include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.provider}` : null;
     }
-    // NAN-5088: only include credentials if key has read_credentials scope
     if (queryInclude.has('credentials') && hasScope(res.locals['apiKeyScopes'] as string[] | undefined, 'environment:integrations:read_credentials')) {
         if (provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'TBA') {
             include.credentials = {

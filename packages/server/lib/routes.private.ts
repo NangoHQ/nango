@@ -194,7 +194,7 @@ web.route('/environments/current').get(webAuth, can({ action: 'read', resource: 
 web.route('/environments/webhook').patch(webAuth, can({ action: 'update', resource: 'webhook', scopedBy: envScope }), patchWebhook);
 web.route('/environments/variables').post(webAuth, can({ action: 'update', resource: 'environment_variable', scopedBy: envScope }), postEnvironmentVariables);
 
-// API Key management (NAN-5088)
+// API Key management
 web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
 web.route('/environment/api-keys').post(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
 web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), patchApiKey);

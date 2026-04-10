@@ -71,7 +71,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         return;
     }
 
-    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}): Promise<Result<ApiPublicConnectionFull>> => {
+    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}, includeCredentials = true): Promise<Result<ApiPublicConnectionFull>> => {
         // We are using listConnections because it has everything we need, but this is a bit wrong
         const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
         if (finalConnections.length !== 1 || !finalConnections[0]) {
@@ -86,7 +86,8 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
                 },
                 activeLog: finalConnections[0].active_logs,
                 endUser: finalConnections[0].end_user,
-                provider: finalConnections[0].provider
+                provider: finalConnections[0].provider,
+                includeCredentials
             })
         );
     };
@@ -133,9 +134,8 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    // NAN-5088: strip credentials if key only has read, not read_credentials
     const includeCredentials = hasScope(res.locals['apiKeyScopes'] as string[] | undefined, 'environment:connections:read_credentials');
-    const response = await getApiPublicConnection(includeCredentials ? connection.credentials : {});
+    const response = await getApiPublicConnection(connection.credentials, includeCredentials);
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
         return;

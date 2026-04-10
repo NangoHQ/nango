@@ -133,7 +133,7 @@ export class AccessMiddleware {
                 return;
             }
 
-            // NAN-5088: dual-read — try api_keys first, fall back to legacy api_secrets
+            // Dual-read: try customer_keys first, fall back to legacy api_secrets
             const apiKeyResult = await this.validateApiKey(secret);
             if (apiKeyResult.isOk()) {
                 res.locals['authType'] = 'secretKey';
@@ -420,7 +420,7 @@ export class AccessMiddleware {
                     return;
                 }
 
-                // NAN-5088: dual-read — try api_keys first, fall back to legacy api_secrets
+                // Dual-read: try customer_keys first, fall back to legacy api_secrets
                 const apiKeyResult = await this.validateApiKey(token);
                 if (apiKeyResult.isOk()) {
                     res.locals['authType'] = 'secretKey';

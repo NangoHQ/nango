@@ -74,7 +74,6 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    // NAN-5088: fetch webhook signing key (redacted for production if user lacks permission)
     let webhookSigningKey: string | null = null;
     if (!environment.is_production || (await resolve(res.locals, permissions.canReadProdSecretKey))) {
         const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
