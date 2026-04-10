@@ -216,7 +216,19 @@ class AccountService {
                         return null;
                     }
 
-                    return this.getAccountContext({ accountId: env.account_id, envName });
+                    const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
+
+                    if (!accountContext) {
+                        return null;
+                    }
+
+                    return {
+                        ...accountContext,
+                        auth: {
+                            source: 'api_secret',
+                            scopes: ['environment:*']
+                        }
+                    };
                 }
             }
         }
