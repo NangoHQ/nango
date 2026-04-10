@@ -233,11 +233,11 @@ class CustomerKeyService {
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .whereExists(function () {
-                        void this.select(1)
+                        void this.select(innerTrx.raw('1'))
                             .from(CUSTOMER_KEYS_RELATIONS_TABLE)
                             .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
+                            .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
                     })
                     .update({ display_name: displayName, updated_at: innerTrx.fn.now() as unknown as Date });
                 if (updated === 0) {
@@ -257,11 +257,11 @@ class CustomerKeyService {
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                 .whereExists(function () {
-                    void this.select(1)
+                    void this.select(trx.raw('1'))
                         .from(CUSTOMER_KEYS_RELATIONS_TABLE)
                         .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
                 })
                 .update({ scopes, updated_at: trx.fn.now() as unknown as Date });
             if (updated === 0) {
@@ -280,11 +280,11 @@ class CustomerKeyService {
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                 .whereExists(function () {
-                    void this.select(1)
+                    void this.select(trx.raw('1'))
                         .from(CUSTOMER_KEYS_RELATIONS_TABLE)
                         .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
-                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                        .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId);
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
                 })
                 .update({
                     deleted_at: trx.fn.now() as unknown as Date
