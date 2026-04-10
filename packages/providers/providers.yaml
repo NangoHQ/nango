@@ -1971,7 +1971,7 @@ aws:
             title: API Subdomain
             description: The API subdomain to the API you want to connect to
             example: idp.us-east-2
-            pattern: '^[a-z.-]+$'
+            pattern: '^[a-z0-9.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
 
