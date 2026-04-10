@@ -7,26 +7,15 @@ import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../ut
 
 import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
+import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
-
-interface AuthenticatedUser {
-    email: string;
-    firstName?: string | null;
-    lastName?: string | null;
-}
-
-interface WorkOSOrganizationClient {
-    getOrganization(organizationId: string): Promise<{ name: string }>;
-}
 
 interface FinalizeManagedAuthParams {
     req: Request;
     res: Response;
-    authorizedUser: AuthenticatedUser;
+    authorizedUser: User;
     organizationId?: string | undefined;
-    workos: {
-        organizations: WorkOSOrganizationClient;
-    };
+    workos: Pick<WorkOS, 'organizations'>;
     state?: string | undefined;
     responseMode?: 'json' | 'redirect';
 }
