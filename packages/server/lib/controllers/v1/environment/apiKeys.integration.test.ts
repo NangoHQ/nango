@@ -88,6 +88,47 @@ describe('API Keys endpoints', () => {
             isSuccess(res.json);
             expect(res.json.data.scopes).toEqual(['environment:*']);
         });
+
+        it('should enforce max keys per environment limit', async () => {
+            const { env, user, account } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+
+            // Insert keys directly to approach the limit without 50 HTTP calls
+            // The env already has 1 default key from seeding, so insert 49 more
+            for (let i = 0; i < 49; i++) {
+                const hashed = `fake-hash-${env.id}-${i}`;
+                const [key] = await db
+                    .knex('customer_keys')
+                    .insert({
+                        account_id: account.id,
+                        key_type: 'api',
+                        display_name: `bulk-key-${i}`,
+                        scopes: ['environment:*'],
+                        secret: `fake-secret-${i}`,
+                        iv: '',
+                        tag: '',
+                        hashed
+                    })
+                    .returning('id');
+                await db.knex('customer_keys_relations').insert({
+                    customer_key_id: key!.id,
+                    entity_type: 'environment',
+                    entity_id: env.id
+                });
+            }
+
+            // Now at 50 keys — next create should fail
+            const res = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                // @ts-expect-error query params are required
+                query: { env: env.name },
+                body: { display_name: 'One too many' },
+                session
+            });
+
+            expect(res.res.status).toBe(400);
+            expect((res.json as any).error.code).toBe('resource_capped');
+        });
     });
 
     describe('PATCH /api/v1/environment/api-keys/:keyId', () => {

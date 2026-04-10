@@ -10,6 +10,9 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
+// Internal safety limit — not a product constraint, just prevents unbounded key creation.
+// Can be raised without migration if needed.
+export const MAX_API_KEYS_PER_ENV = 50;
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -56,6 +59,19 @@ class CustomerKeyService {
 
                 if (existing) {
                     throw new NangoError('duplicate_api_secret', { display_name: displayName });
+                }
+
+                // Check max keys per environment
+                const count = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+                    .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
+                    .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                    .count('* as total')
+                    .first();
+                if (count && Number(count['total']) >= MAX_API_KEYS_PER_ENV) {
+                    throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
                 }
 
                 const customerKey = {
@@ -157,7 +173,8 @@ class CustomerKeyService {
                 .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
                 .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`);
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
             const decrypted = rows.map(
                 (row) => encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey

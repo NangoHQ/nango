@@ -1,5 +1,7 @@
+import { EyeSlashIcon } from '@heroicons/react/24/outline';
 import { IconKey, IconPencil, IconTrash } from '@tabler/icons-react';
-import { useState } from 'react';
+import { EyeIcon } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
@@ -8,9 +10,9 @@ import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '.
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { CopyButton } from '@/components-v2/CopyButton';
 import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
 import { PermissionGate } from '@/components-v2/PermissionGate';
-import { SecretInput } from '@/components-v2/SecretInput';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
@@ -123,6 +125,26 @@ function formatDate(dateStr: string | null): string {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
+
+// ── Secret field with masked preview ─────────────────────────────────
+
+const KeySecretField: React.FC<{ secret: string; canRead: boolean }> = ({ secret, canRead }) => {
+    const [revealed, setRevealed] = useState(false);
+    const toggle = useCallback(() => setRevealed((r) => !r), []);
+    const masked = `····${secret.slice(-4)}`;
+
+    return (
+        <div className="flex items-center gap-2 rounded border border-border-muted bg-bg-surface px-3 py-1.5">
+            <span className="flex-1 font-mono text-body-small-regular text-text-primary">{revealed && canRead ? secret : masked}</span>
+            {canRead && (
+                <Button type="button" variant="ghost" size="icon" onClick={toggle}>
+                    {revealed ? <EyeIcon size={16} /> : <EyeSlashIcon className="h-4 w-4" />}
+                </Button>
+            )}
+            {canRead && <CopyButton text={secret} />}
+        </div>
+    );
+};
 
 // ── Scope selector (used in create dialog) ──────────────────────────
 
@@ -416,11 +438,7 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSec
 
             <div className="flex flex-col gap-1.5">
                 <label className="text-body-small-semi text-text-secondary">Secret</label>
-                {canReadSecret ? (
-                    <SecretInput value={apiKey.secret} copy canRead readOnly />
-                ) : (
-                    <span className="font-mono text-body-small-regular text-text-secondary">{apiKey.secret}</span>
-                )}
+                <KeySecretField secret={apiKey.secret} canRead={canReadSecret} />
             </div>
 
             {canManageKeys ? (
@@ -546,6 +564,7 @@ export const ApiKeys: React.FC = () => {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Name</TableHead>
+                            <TableHead>Key</TableHead>
                             <TableHead>Scopes</TableHead>
                             <TableHead>Last used</TableHead>
                             <TableHead></TableHead>
@@ -556,6 +575,9 @@ export const ApiKeys: React.FC = () => {
                             <TableRow key={key.id}>
                                 <TableCell>
                                     <span className="text-body-small-semi text-text-primary">{key.display_name}</span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="font-mono text-body-small-regular text-text-tertiary">····{key.secret.slice(-4)}</span>
                                 </TableCell>
                                 <TableCell>
                                     {(() => {
