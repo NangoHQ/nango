@@ -6,6 +6,17 @@ import { useCallback, useState } from 'react';
 import { permissions } from '@nangohq/authz';
 
 import SettingsContent from './components/SettingsContent';
+import {
+    SCOPE_GROUPS,
+    SCOPE_PRESETS,
+    allGroupScopes,
+    expandScopes,
+    groupWildcard,
+    isScopeSelected,
+    toggleCredential as toggleCredentialFn,
+    toggleGroup as toggleGroupFn,
+    toggleScope as toggleScopeFn
+} from './scope-logic';
 import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
@@ -21,100 +32,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
+import type { ScopeGroup } from './scope-logic';
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
 
-// ── Scope definitions ──────────────────────────────────────────────
-
-interface ScopeItem {
-    value: string;
-    label: string;
-    credentials?: string; // child credential scope (e.g., list_credentials)
-}
-
-interface ScopeGroup {
-    group: string;
-    items: ScopeItem[];
-}
-
-const SCOPE_GROUPS: ScopeGroup[] = [
-    {
-        group: 'Integrations',
-        items: [
-            { value: 'environment:integrations:list', label: 'list', credentials: 'environment:integrations:list_credentials' },
-            { value: 'environment:integrations:read', label: 'read', credentials: 'environment:integrations:read_credentials' },
-            { value: 'environment:integrations:write', label: 'write' }
-        ]
-    },
-    {
-        group: 'Connections',
-        items: [
-            { value: 'environment:connections:list', label: 'list', credentials: 'environment:connections:list_credentials' },
-            { value: 'environment:connections:read', label: 'read', credentials: 'environment:connections:read_credentials' },
-            { value: 'environment:connections:write', label: 'write' }
-        ]
-    },
-    { group: 'Connect Sessions', items: [{ value: 'environment:connect_sessions:write', label: 'write' }] },
-    {
-        group: 'Syncs',
-        items: [
-            { value: 'environment:syncs:read', label: 'read' },
-            { value: 'environment:syncs:execute', label: 'execute' },
-            { value: 'environment:syncs:manage', label: 'manage' }
-        ]
-    },
-    { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
-    {
-        group: 'Records',
-        items: [
-            { value: 'environment:records:read', label: 'read' },
-            { value: 'environment:records:write', label: 'write' }
-        ]
-    },
-    { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
-    { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
-    { group: 'Config', items: [{ value: 'environment:config:read', label: 'read' }] },
-    { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
-];
-
-// Flatten all scope values for expansion/wildcard matching
-function allGroupScopes(group: ScopeGroup): string[] {
-    return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
-}
-
-const SCOPE_PRESETS: { label: string; description: string; scopes: string[] }[] = [
-    { label: 'Full access', description: 'All permissions', scopes: ['environment:*'] },
-    { label: 'Auth', description: 'Create connect sessions', scopes: ['environment:connect_sessions:write'] },
-    { label: 'CI/CD deploy', description: 'Deploy syncs and actions', scopes: ['environment:deploy'] },
-    {
-        label: 'Backend service',
-        description: 'Read connections, records, execute actions/syncs, proxy',
-        scopes: ['environment:connections:read', 'environment:records:read', 'environment:actions:execute', 'environment:syncs:execute', 'environment:proxy']
-    }
-];
-
 const MAX_VISIBLE_SCOPES = 3;
-
-const ALL_INDIVIDUAL_SCOPES = SCOPE_GROUPS.flatMap((g) => allGroupScopes(g));
-
-function expandScopes(scopes: string[]): string[] {
-    const expanded = new Set<string>();
-    for (const scope of scopes) {
-        if (scope === 'environment:*') {
-            return ALL_INDIVIDUAL_SCOPES;
-        }
-        if (scope.endsWith(':*')) {
-            const prefix = scope.slice(0, -1);
-            for (const s of ALL_INDIVIDUAL_SCOPES) {
-                if (s.startsWith(prefix)) {
-                    expanded.add(s);
-                }
-            }
-        } else {
-            expanded.add(scope);
-        }
-    }
-    return Array.from(expanded);
-}
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) return 'Never';
@@ -173,61 +94,8 @@ interface ScopeSelectorProps {
     onChange: (scopes: string[]) => void;
 }
 
-function groupWildcard(group: ScopeGroup): string | null {
-    const allScopes = allGroupScopes(group);
-    const parts = group.items[0].value.split(':');
-    if (parts.length < 3 || allScopes.length <= 1) {
-        return null;
-    }
-    return parts.slice(0, -1).join(':') + ':*';
-}
-
-function isScopeSelected(scope: string, selectedScopes: string[]): boolean {
-    if (selectedScopes.includes(scope)) return true;
-    return selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)));
-}
-
 const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange }) => {
     const hasFullAccess = selectedScopes.includes('environment:*');
-
-    const toggleScope = (scope: string, credentialChild?: string) => {
-        const isSelected = isScopeSelected(scope, selectedScopes) || (!!credentialChild && isScopeSelected(credentialChild, selectedScopes));
-        if (isSelected) {
-            // If selected via wildcard, expand the wildcard first then remove this scope
-            const matchingWildcard = selectedScopes.find((s) => s.endsWith(':*') && s !== scope && scope.startsWith(s.slice(0, -1)));
-            if (matchingWildcard) {
-                // Expand wildcard to individual scopes, minus the one being unchecked (and its credential child)
-                const expanded = ALL_INDIVIDUAL_SCOPES.filter((s) => s.startsWith(matchingWildcard.slice(0, -1)));
-                const without = expanded.filter((s) => s !== scope && s !== credentialChild);
-                const rest = selectedScopes.filter((s) => s !== matchingWildcard);
-                onChange([...rest, ...without]);
-            } else {
-                onChange(selectedScopes.filter((s) => s !== scope && s !== credentialChild));
-            }
-        } else {
-            onChange([...selectedScopes, scope]);
-        }
-    };
-
-    const toggleCredential = (parent: string, credential: string) => {
-        const isSelected = isScopeSelected(credential, selectedScopes);
-        if (isSelected) {
-            // Uncheck credentials → downgrade to parent only
-            const matchingWildcard = selectedScopes.find((s) => s.endsWith(':*') && s !== credential && credential.startsWith(s.slice(0, -1)));
-            if (matchingWildcard) {
-                const expanded = ALL_INDIVIDUAL_SCOPES.filter((s) => s.startsWith(matchingWildcard.slice(0, -1)));
-                const without = expanded.filter((s) => s !== credential);
-                const rest = selectedScopes.filter((s) => s !== matchingWildcard);
-                onChange([...rest, ...without]);
-            } else {
-                // Replace credential with parent (downgrade)
-                onChange([...selectedScopes.filter((s) => s !== credential), ...(selectedScopes.includes(parent) ? [] : [parent])]);
-            }
-        } else {
-            // Check credentials → replaces parent (superset)
-            onChange([...selectedScopes.filter((s) => s !== parent), credential]);
-        }
-    };
 
     const isGroupWildcardSelected = (group: ScopeGroup) => {
         const wc = groupWildcard(group);
@@ -237,27 +105,6 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
     const isGroupAllSelected = (group: ScopeGroup) => {
         const all = allGroupScopes(group);
         return isGroupWildcardSelected(group) || all.every((s) => selectedScopes.includes(s));
-    };
-
-    const toggleGroup = (group: ScopeGroup) => {
-        if (hasFullAccess) return;
-        const wc = groupWildcard(group);
-        const all = allGroupScopes(group);
-        if (wc && selectedScopes.includes(wc)) {
-            onChange(selectedScopes.filter((s) => s !== wc));
-        } else if (wc && !isGroupAllSelected(group)) {
-            const cleaned = selectedScopes.filter((s) => !all.includes(s));
-            onChange([...cleaned, wc]);
-        } else if (!wc) {
-            const allSelected = all.every((s) => selectedScopes.includes(s));
-            if (allSelected) {
-                onChange(selectedScopes.filter((s) => !all.includes(s)));
-            } else {
-                onChange(Array.from(new Set([...selectedScopes, ...all])));
-            }
-        } else {
-            onChange(selectedScopes.filter((s) => !all.includes(s)));
-        }
     };
 
     const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
@@ -315,7 +162,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                         ref={(el) => {
                                             if (el) el.indeterminate = !hasFullAccess && !groupSelected && hasAnyChildSelected(group);
                                         }}
-                                        onChange={() => toggleGroup(group)}
+                                        onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
                                         className="accent-brand"
                                     />
                                     <span className="text-body-small-semi text-text-secondary">{group.group}</span>
@@ -331,7 +178,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                                     (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
                                                 }
                                                 disabled={childrenDisabled}
-                                                onChange={() => toggleScope(item.value, item.credentials)}
+                                                onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
                                                 className="accent-brand"
                                             />
                                             <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
@@ -344,7 +191,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
                                                     type="checkbox"
                                                     checked={isScopeSelected(item.credentials, selectedScopes)}
                                                     disabled={childrenDisabled}
-                                                    onChange={() => toggleCredential(item.value, item.credentials!)}
+                                                    onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
                                                     className="accent-brand"
                                                 />
                                                 <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
