@@ -18,7 +18,7 @@ const logger = getLogger('Server.AuthManagedVerification');
 
 const validation = z
     .object({
-        code: z.string().trim().min(6).max(12)
+        code: z.string().trim().min(1).max(255)
     })
     .strict();
 
