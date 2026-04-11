@@ -537,6 +537,11 @@ export const ENVS = z.object({
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
+    E2B_SANDBOX_AGENT_TEMPLATE: z.string().min(1).default('agent-workspace:staging'),
+
+    // Agent Builder
+    AGENT_RUNTIME: z.enum(['e2b', 'local']).optional().default('local'),
+    OPENCODE_API_KEY: z.string().optional(),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

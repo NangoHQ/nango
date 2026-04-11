@@ -95,6 +95,7 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+export type * from './agent/api.js';
 export type * from './functions/api.js';
 
 export type * from './lambda/index.js';

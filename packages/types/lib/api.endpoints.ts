@@ -11,6 +11,7 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
+import type { GetAgentSessionEvents, PostAgentSessionAnswer, PostAgentSessionStart } from './agent/api.js';
 import type { EndpointMethod } from './api.js';
 import type {
     PostPublicApiKeyAuthorization,
@@ -192,7 +193,10 @@ export type PrivateApiEndpoints =
     | GetConnectUISettings
     | PutConnectUISettings
     | GetProviders
-    | GetProvider;
+    | GetProvider
+    | PostAgentSessionStart
+    | GetAgentSessionEvents
+    | PostAgentSessionAnswer;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

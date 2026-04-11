@@ -24,6 +24,19 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
+    it('should parse the sandbox agent template', () => {
+        const res = parseEnvs(ENVS, { E2B_SANDBOX_AGENT_TEMPLATE: 'agent-workspace:dev' });
+        expect(res.E2B_SANDBOX_AGENT_TEMPLATE).toBe('agent-workspace:dev');
+    });
+
+    it('should default to local agent runtime and sandbox templates', () => {
+        const res = parseEnvs(ENVS, {});
+
+        expect(res).toMatchObject({ AGENT_RUNTIME: 'local' });
+        expect(res.E2B_SANDBOX_AGENT_TEMPLATE).toBe('agent-workspace:staging');
+        expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:staging');
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });
