@@ -23,7 +23,7 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
     const val = validation.safeParse(req.query);
     if (!val.success) {
         logger.error('Invalid payload received from WorkOS');
-        res.redirect(`${basePublicUrl}/signup`);
+        res.redirect(`${basePublicUrl}/signin?error=sso_session_expired`);
         return;
     }
 

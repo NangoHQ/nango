@@ -54,6 +54,16 @@ describe(`POST ${route}`, () => {
         vi.clearAllMocks();
     });
 
+    it('should redirect invalid WorkOS callback payloads to signin', async () => {
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?error=access_denied`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin?error=sso_session_expired');
+        expect(workosMocks.authenticateWithCode).not.toHaveBeenCalled();
+    });
+
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
         const email = `${nanoid()}@example.com`;
         const verificationCode = '123456';
