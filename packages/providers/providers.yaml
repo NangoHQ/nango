@@ -10004,6 +10004,7 @@ linear:
     scope_separator: ','
     authorization_params:
         prompt: consent
+        actor: app
     proxy:
         base_url: https://api.linear.app
         retry:
