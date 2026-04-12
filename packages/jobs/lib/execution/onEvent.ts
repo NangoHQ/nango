@@ -222,7 +222,7 @@ export async function handleOnEventSuccess({
                 type: 'on-event',
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -331,7 +331,7 @@ function onFailure({
                     type: 'on-event',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });

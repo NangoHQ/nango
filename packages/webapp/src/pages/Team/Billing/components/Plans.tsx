@@ -1,6 +1,5 @@
 import { Info, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { mutate } from 'swr';
 
 import { permissions } from '@nangohq/authz';
 
@@ -14,15 +13,16 @@ import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
-import { useEnvironment } from '@/hooks/useEnvironment';
+import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { apiGetCurrentPlan, apiPostPlanChange, useApiGetPlans } from '@/hooks/usePlan';
+import { apiGetCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
 
 import type { PlanDefinitionList } from '../types.js';
+import type { StripeError } from '@/utils/stripe.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
@@ -178,15 +178,21 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
 
         if (isDowngrade && plan.canChange) {
             return (
-                <PlanChangeDialog selectedPlan={planDefinition} activePlan={activePlan}>
+                <>
                     <PermissionGate asChild condition={canChangePlan}>
                         {(allowed) => (
-                            <Button variant="destructive" className="w-27" disabled={!allowed}>
+                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="destructive" className="w-27" disabled={!allowed}>
                                 Downgrade
                             </Button>
                         )}
                     </PermissionGate>
-                </PlanChangeDialog>
+                    <PlanChangeDialog
+                        open={planChangeDialogOpen}
+                        onOpenChange={setPlanChangeDialogOpen}
+                        selectedPlan={planDefinition}
+                        activePlan={activePlan}
+                    />
+                </>
             );
         }
 
@@ -230,15 +236,37 @@ const PlanChangeDialog: React.FC<{
             if (!isControlled) {
                 setInternalOpen(value);
             }
+            if (!value) {
+                setError(null);
+            }
             onOpenChange?.(value);
         },
         [isControlled, onOpenChange]
     );
 
+    const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
+
     const [loading, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const refInterval = useRef<NodeJS.Timeout>();
+
+    /**
+     * Extracts a `card_error` from the Stripe error or fallback to `defaultError`.
+     *
+     * @param error - The `StripeError` object returned from `confirmCardPayment`
+     * @param defaultError - Fallback message when the error type is not user-actionable
+     * @returns `card_error` message if present, otherwise the `defaultError`
+     */
+    const getStripeCardErrorOrDefault = (error: StripeError, defaultError: string = 'An error occurred while validating your payment.') => {
+        switch (error.type) {
+            case 'card_error':
+                return error.message ?? defaultError;
+            default:
+                return defaultError;
+        }
+    };
 
     const onUpgrade = async () => {
         if (!selectedPlan?.plan.code) {
@@ -247,22 +275,29 @@ const PlanChangeDialog: React.FC<{
 
         setLoading(true);
         setLongWait(false);
+        setError(null);
 
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.code });
-        if ('error' in res.json) {
+        let json: Awaited<ReturnType<typeof postPlanChange>>;
+        try {
+            json = await postPlanChange({ orbId: selectedPlan.plan.code });
+        } catch {
             setLoading(false);
-            toast({ title: 'Failed to upgrade, an error occurred', variant: 'error' });
+            setError('An error occurred. Please try again.');
             return;
         }
 
-        if ('paymentIntent' in res.json.data) {
-            res.json.data.paymentIntent;
+        if ('paymentIntent' in json.data) {
             const stripe = await stripePromise;
-            const result = await stripe!.confirmCardPayment(res.json.data.paymentIntent.client_secret);
+            if (!stripe) {
+                setLoading(false);
+                setError('Payment processor failed to load. Please refresh the page and try again.');
+                return;
+            }
 
+            const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
             if (result.error) {
-                console.error({ error: result.error });
-                toast({ title: 'An error occurred while validating your payment', variant: 'error' });
+                setLoading(false);
+                setError(getStripeCardErrorOrDefault(result.error));
                 return;
             } else if (result.paymentIntent.status === 'succeeded') {
                 console.log('payment success', result);
@@ -283,8 +318,7 @@ const PlanChangeDialog: React.FC<{
 
             await Promise.all([
                 queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.refetchQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/environments`))
+                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
             ]);
 
             setLongWait(false);
@@ -300,10 +334,13 @@ const PlanChangeDialog: React.FC<{
         }
 
         setLoading(true);
-        const res = await apiPostPlanChange(env, { orbId: selectedPlan.plan.code });
-        if ('error' in res.json) {
+        setError(null);
+
+        try {
+            await postPlanChange({ orbId: selectedPlan.plan.code });
+        } catch {
             setLoading(false);
-            toast({ title: 'Failed to downgrade, an error occurred', variant: 'error' });
+            setError('An error occurred. Please try again.');
             return;
         }
 
@@ -321,8 +358,7 @@ const PlanChangeDialog: React.FC<{
 
             await Promise.all([
                 queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.refetchQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                mutate((key) => typeof key === 'string' && key.startsWith(`/api/v1/environments`))
+                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
             ]);
 
             setLongWait(false);
@@ -368,6 +404,11 @@ const PlanChangeDialog: React.FC<{
                         <p className="text-s text-text-tertiary text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                     )}
                 </div>
+                {error && (
+                    <Alert variant="error">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
                 <DialogFooter>
                     <DialogClose asChild>
                         <Button variant="secondary">Cancel</Button>

@@ -30,7 +30,7 @@
             "path": "../shared"
         },
         {
-            "path": "../account-usage"
+            "path": "../usage"
         }
     ],
     "include": ["lib/**/*"]

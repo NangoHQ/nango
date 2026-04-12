@@ -116,6 +116,10 @@ export class Batcher<T> {
             // Put failed items back at the front of the queue
             // unless they have been retried too many times
             const batchToRetry = aggregated.filter((item) => item.retries < this.maxProcessingRetry).map((item) => ({ ...item, retries: item.retries + 1 }));
+            const dropped = batch.length - batchToRetry.length;
+            if (dropped > 0) {
+                logger.error(`Batcher: dropping ${dropped} items after exhausting retries.`);
+            }
             this.queue.unshift(...batchToRetry);
 
             return Err(new Error('Batcher failed to process batch', { cause: err }));

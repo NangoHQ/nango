@@ -1,0 +1,37 @@
+---
+title: 'Pendo (OAuth) - How do I link my account?'
+sidebarTitle: 'Pendo (OAuth)'
+---
+
+# Overview
+
+To authenticate with Pendo using OAuth (`client_credentials` grant), you need:
+
+1. **Client ID** - Your Pendo OAuth client ID
+2. **Client Secret** - Your Pendo OAuth client secret
+
+This guide will walk you through finding those credentials within Pendo.
+
+### Prerequisites
+
+- An active Pendo account.
+- OAuth `client_credentials` access enabled on your subscription. This is currently an early-release Pendo capability and is not yet covered by Pendo's public documentation. To enable it, contact your Pendo account team and request a **Client ID** and **Client Secret** for machine-to-machine (service account) access.
+
+### Instructions
+
+#### Step 1: Getting your Pendo OAuth credentials
+
+1. Reach out to your Pendo account team / support and request OAuth `client_credentials` access for your subscription.
+2. Pendo will provide you with a **Client ID** and **Client Secret**.
+3. Securely capture and store these values, the client secret will not be provided again.
+
+#### Step 2: (Optional) Adjust scopes on the integration
+
+The **Pendo (OAuth)** integration in Nango is pre-configured with the `read:me` scope, which is the only scope Pendo currently exposes for `client_credentials` access. You typically don't need to change anything here. If Pendo provisions additional scopes for your subscription, you can adjust them by opening the integration in the Nango dashboard and going to the **Settings** tab → **Scopes** section.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Client Secret**:
+
+1. Open the form where you need to authenticate with Pendo.
+2. Enter your **Client ID** and **Client Secret** in the respective fields.

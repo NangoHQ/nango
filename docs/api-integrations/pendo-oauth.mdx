@@ -1,0 +1,85 @@
+---
+title: 'Pendo (OAuth)'
+sidebarTitle: 'Pendo (OAuth)'
+description: 'Integrate your application with the Pendo API using OAuth2 client credentials'
+---
+
+## 🚀 Quickstart
+
+Connect to Pendo with Nango using the OAuth2 client credentials flow and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Pendo (OAuth)_.
+
+    The integration is pre-configured with the `read:me` scope (the only scope Pendo currently exposes for `client_credentials` access). If Pendo provisions additional scopes for your subscription, you can add them in the **Settings** tab of the integration.
+    </Step>
+    <Step title="Authorize Pendo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Pendo OAuth `client_id` and `client_secret`. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Pendo API">
+    Make your first request to the Pendo API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/feature" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/feature',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Pendo (OAuth) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to set up Pendo OAuth credentials](/api-integrations/pendo-oauth/connect)  
+  Obtain your Pendo OAuth `client_id` and `client_secret` and configure the required scopes
+
+Official API reference: [Pendo Engage API](https://engageapi.pendo.io/)
+
+<Note>Pendo's OAuth `client_credentials` flow is currently an early-release capability and is not yet covered by public Pendo documentation. To enable it, contact your Pendo account team.</Note>
+
+## 🧩 Pre-built syncs & actions for Pendo (OAuth)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pendo-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

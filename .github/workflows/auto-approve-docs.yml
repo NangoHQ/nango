@@ -10,15 +10,58 @@ permissions:
 jobs:
     auto-approve:
         runs-on: ubuntu-latest
-        # Only run for trusted authors, blocks external contributors
-        if: >-
-            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
-            github.event.pull_request.author_association)
         steps:
+            - name: Check if trusted author
+              id: trust_check
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const login = context.payload.pull_request.user.login;
+                      const type = context.payload.pull_request.user.type;
+                      const org = context.repo.owner;
+
+                      // Trusted app
+                      if (type === 'Bot' && login === 'mintlify[bot]') {
+                        console.log(`Trusted: bot ${login}`);
+                        return true;
+                      }
+
+                      // Collaborators (write and admin)
+                      try {
+                        const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          username: login,
+                        });
+                        if (['write', 'admin'].includes(data.permission)) {
+                          console.log(`Trusted: collaborator ${login} (${data.permission})`);
+                          return true;
+                        }
+                      } catch (err) { if (err.status !== 404) throw err; }
+
+                      // Engineers team
+                      try {
+                        const { data: teamMembership } = await github.rest.teams.getMembershipForUserInOrg({
+                          org,
+                          team_slug: 'engineers',
+                          username: login,
+                        });
+                        if (teamMembership.state === 'active') {
+                          console.log(`Trusted: engineers team member ${login}`);
+                          return true;
+                        }
+                      } catch (err) { if (err.status !== 404) throw err; }
+
+                      console.log(`Not trusted: ${login}`);
+                      return false;
+                  result-encoding: string
+
             - name: Checkout
+              if: steps.trust_check.outputs.result == 'true'
               uses: actions/checkout@v4
 
             - name: Check changed paths
+              if: steps.trust_check.outputs.result == 'true'
               uses: dorny/paths-filter@v4
               id: filter
               with:
@@ -29,6 +72,7 @@ jobs:
                           - '!docs/**'
 
             - name: Generate GitHub App token
+              if: steps.trust_check.outputs.result == 'true'
               id: app-token
               uses: actions/create-github-app-token@v1
               with:
@@ -36,7 +80,7 @@ jobs:
                   private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
 
             - name: Approve PR
-              if: steps.filter.outputs.non_docs == 'false'
+              if: steps.trust_check.outputs.result == 'true' && steps.filter.outputs.non_docs == 'false'
               uses: hmarr/auto-approve-action@v4
               with:
                   github-token: ${{ steps.app-token.outputs.token }}

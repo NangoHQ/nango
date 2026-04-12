@@ -15,7 +15,9 @@ The Google Calendar API uses notification channels to deliver webhooks. The flow
 3. When the watched calendar changes, Google sends a notification to Nango
 4. Nango matches the notification to the correct connection and forwards it to your app
 
-Nango extracts the calendar owner from the `X-Goog-Resource-URI` header (e.g. `.../calendars/user@example.com/events...`) to match the webhook to a connection. For new connections, Nango persists only a hash of the user's email (`connection_config.emailAddressHash`) automatically at connection time — no manual setup required.
+Nango derives the calendar identifier from the `X-Goog-Resource-URI` header (e.g. `https://www.googleapis.com/calendar/v3/calendars/user%40example.com/events?alt=json`) and matches the webhook to a connection. For **new** connections on the **google-calendar** integration, Nango persists a hash of the user's email in **`connection_config.emailAddressHash`** at connection time, so the usual **primary-calendar** flow in this guide needs no extra metadata for routing.
+
+Watching **additional calendars** uses a different metadata-based step; see [Connection matching](#connection-matching).
 
 ## Setup
 
@@ -263,7 +265,9 @@ See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
 
 ## Connection matching
 
-Nango matches the incoming request to a connection using the calendar identifier (email) extracted from `X-Goog-Resource-URI` (e.g. `.../calendars/user@example.com/events...`). The lookup order is:
+### Primary calendar
+
+For primary calendars, Nango matches the incoming request to a connection using the calendar identifier (email) extracted from `X-Goog-Resource-URI` (e.g. `.../calendars/user@example.com/events...`). The lookup order is:
 
 1. `connection_config.emailAddressHash` — automatically set by Nango for new connections (created after 2026-03-11)
 2. `metadata.emailAddress` — fallback (customer-controlled)
@@ -289,8 +293,37 @@ curl -X PATCH "https://api.nango.dev/connection/metadata" \
 
 To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
 
+### Other calendars
+
+If you want to subscribe to notifications from other calendars besides the primary calendar, add the resource URIs for each calendar to **`metadata.googleCalendarWatchResourceUris`**:
+
+- The value must be a JSON **`string[]`**. Store the **`X-Goog-Resource-URI` string exactly as Google sends it**: same encoding, path, and query string.
+- The lookup on **`metadata.googleCalendarWatchResourceUris`** takes priority over the primary calendar matching described [above for primary calendars](#primary-calendar), so include the URIs for all calendars you are subscribing to, including the primary calendar.
+
+**Duplicates:** If more than one connection lists the **same** URI in `googleCalendarWatchResourceUris`, **every** matching connection is included. Nango forwards the webhook **once per matching connection**, with appropriate `connectionId`.
+
+```bash
+curl -X PATCH "https://api.nango.dev/connection/metadata" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "google-calendar",
+    "metadata": {
+      "googleCalendarWatchResourceUris": [
+        "https://www.googleapis.com/calendar/v3/calendars/cal1@example.com/events?alt=json",
+        "https://www.googleapis.com/calendar/v3/calendars/cal2@example.com/events?alt=json"
+      ]
+    }
+  }'
+```
+This will associate both listed calendar resource URIs with the connection. Nango will match any incoming webhook with those exact `X-Goog-Resource-URI` values to this connection.
+
+To do this in bulk, iterate over the [list connections](/reference/api/connection/list) response and [update the metadata](/reference/api/connection/update-metadata) for each one.
+
+
 <Warning>
-If Nango cannot match the incoming webhook to a connection (because it can't find a matching hash/email in `connection_config` or `metadata`), the webhook will still be received but won't include a `connectionId` in the forwarded payload.
+If Nango cannot match the incoming webhook to a connection, the webhook will still be forwarded but won't include a `connectionId` in the payload.
 </Warning>
 
 ## Rollback strategy

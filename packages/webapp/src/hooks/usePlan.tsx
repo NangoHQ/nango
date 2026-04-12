@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
@@ -104,14 +104,20 @@ export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver
     return res;
 }
 
-export async function apiPostPlanChange(env: string, body: PostPlanChange['Body']) {
-    const res = await apiFetch(`/api/v1/plans/change?env=${env}`, {
-        method: 'POST',
-        body: JSON.stringify(body)
-    });
+export function useApiPostPlanChange(env: string) {
+    return useMutation<PostPlanChange['Success'], APIError, PostPlanChange['Body']>({
+        mutationFn: async (body): Promise<PostPlanChange['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/change?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
 
-    return {
-        res,
-        json: (await res.json()) as PostPlanChange['Reply']
-    };
+            const json = (await res.json()) as PostPlanChange['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
 }

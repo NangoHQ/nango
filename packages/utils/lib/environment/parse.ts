@@ -32,6 +32,30 @@ export const ENVS = z.object({
     NANGO_ADMIN_INVITE_TOKEN: z.string().optional(),
     NANGO_SERVER_PUBLIC_BODY_LIMIT: z.string().optional().default('75mb'),
     SERVER_SHUTDOWN_DELAY_MS: z.coerce.number().optional().default(0),
+    NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: z
+        .string()
+        .transform((s, ctx) => {
+            if (s.trim() === '') {
+                return [];
+            }
+            try {
+                const parsed = JSON.parse(s);
+                if (!Array.isArray(parsed) || !parsed.every((item: unknown) => typeof item === 'string')) {
+                    ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a JSON array of strings`);
+                    return z.NEVER;
+                }
+                return parsed;
+            } catch {
+                ctx.addIssue(`NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST must be a valid JSON array of strings`);
+                return z.NEVER;
+            }
+        })
+        .pipe(
+            z.array(z.string()).transform((arr) => {
+                return arr.map((e) => e.trim()).filter((e) => e.length > 0);
+            })
+        )
+        .default([]),
 
     // Connect
     NANGO_PUBLIC_CONNECT_URL: z.url().optional(),
@@ -86,6 +110,7 @@ export const ENVS = z.object({
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
+    ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
     // Jobs
     JOBS_SERVICE_URL: z.url().optional().default('http://localhost:3005'),
@@ -243,6 +268,12 @@ export const ENVS = z.object({
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
+
+    // ClickHouse
+    CLICKHOUSE_URL: z.string().optional(),
+    CLICKHOUSE_USAGE_INGEST_BATCH_SIZE: z.coerce.number().optional().default(10_000),
+    CLICKHOUSE_USAGE_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
+    CLICKHOUSE_USAGE_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(500_000),
 
     // Usage
     USAGE_CAPPING_ENABLED: z.stringbool().optional().default(false),

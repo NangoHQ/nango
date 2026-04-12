@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import type { Event } from '../event.js';
 import type { SubscribeProps, Transport } from './transport.js';
+import type { Event } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export class MigrationTransportError extends Error {
