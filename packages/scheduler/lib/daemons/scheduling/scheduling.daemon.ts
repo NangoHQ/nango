@@ -108,6 +108,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                 }
             } catch (err) {
                 logger.error(err);
+                throw err;
             }
         });
     }
