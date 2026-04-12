@@ -231,10 +231,12 @@ publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
-publicAPI.use('/remote-function', jsonContentTypeMiddleware);
-publicAPI.route('/remote-function/compile').post(apiAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(apiAuth, postRemoteFunctionDryrun);
-publicAPI.route('/remote-function/deploy').post(apiAuth, postRemoteFunctionDeploy);
+if (envs.NODE_ENV !== 'production') {
+    publicAPI.use('/remote-function', jsonContentTypeMiddleware);
+    publicAPI.route('/remote-function/compile').post(apiAuth, postRemoteFunctionCompile);
+    publicAPI.route('/remote-function/dryrun').post(apiAuth, postRemoteFunctionDryrun);
+    publicAPI.route('/remote-function/deploy').post(apiAuth, postRemoteFunctionDeploy);
+}
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
