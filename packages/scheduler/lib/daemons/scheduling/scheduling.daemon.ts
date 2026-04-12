@@ -77,7 +77,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
                                 }
                                 if (createRes.value.cappedGroupKeys.length > 0) {
-                                    logger.warn(`Capped scheduling tasks for group keys: ${createRes.value.cappedGroupKeys.join(', ')}`);
+                                    logger.warning(`Capped scheduling tasks for group keys: ${createRes.value.cappedGroupKeys.join(', ')}`);
                                 }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];
