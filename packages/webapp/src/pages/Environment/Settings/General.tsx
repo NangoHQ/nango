@@ -11,6 +11,7 @@ import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
@@ -117,34 +118,39 @@ export const General: React.FC = () => {
                     </div>
                 }
             >
-                <PermissionGate condition={canToggleIsProduction}>
-                    {(allowed) => (
-                        <Switch
-                            disabled={!allowed}
-                            checked={environment?.is_production}
-                            onCheckedChange={(checked) =>
-                                confirm({
-                                    title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
-                                    description: 'This impacts which team members have access to this environment.',
-                                    onConfirm: async () => {
-                                        await patchEnvironmentAsync({ is_production: checked });
-                                        await refetchMeta();
-                                        toast({
-                                            title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
-                                            variant: 'success'
-                                        });
-                                    },
-                                    confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                                    confirmVariant: 'destructive',
-                                    docs: {
-                                        title: 'Learn more',
-                                        url: 'https://docs.nango.dev/guides/platform/environments#production-environments'
-                                    }
-                                })
-                            }
-                        />
-                    )}
-                </PermissionGate>
+                <ConditionalTooltip
+                    condition={env === PROD_ENVIRONMENT_NAME}
+                    content={`You cannot change the production status of the ${PROD_ENVIRONMENT_NAME} environment`}
+                >
+                    <PermissionGate condition={canToggleIsProduction}>
+                        {(allowed) => (
+                            <Switch
+                                disabled={env === PROD_ENVIRONMENT_NAME || !allowed}
+                                checked={environment?.is_production}
+                                onCheckedChange={(checked) =>
+                                    confirm({
+                                        title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
+                                        description: 'This impacts which team members have access to this environment.',
+                                        onConfirm: async () => {
+                                            await patchEnvironmentAsync({ is_production: checked });
+                                            await refetchMeta();
+                                            toast({
+                                                title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
+                                                variant: 'success'
+                                            });
+                                        },
+                                        confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
+                                        confirmVariant: 'destructive',
+                                        docs: {
+                                            title: 'Learn more',
+                                            url: 'https://docs.nango.dev/guides/platform/environments#production-environments'
+                                        }
+                                    })
+                                }
+                            />
+                        )}
+                    </PermissionGate>
+                </ConditionalTooltip>
             </SettingsGroup>
 
             <SettingsGroup label="Environment suppression" className="items-center">

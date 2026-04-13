@@ -7,16 +7,18 @@ sidebarTitle: 'Microsoft Teams Bot Connect'
 
 To connect Microsoft Teams Bot in Nango, you need to provide:
 
-1. **Tenant ID** — The Azure AD tenant with an active MS Teams subscription.
+1. **Tenant ID** — The unique identifier for your Microsoft Entra ID tenant with an active MS Teams subscription.
 
 This guide explains where to find your Tenant ID and how to enter it in the Connect UI.
 
 ### Step 1: Finding your Tenant ID
 
-1. Sign in to the [Azure Portal](https://portal.azure.com).
-2. If you have multiple tenants, use the **Settings** (directory + subscription) icon to switch to the tenant that has your Microsoft Teams subscription.
-3. In the left menu, go to **Microsoft Entra ID** (or **Azure Active Directory**).
-4. Open **Overview**. Your **Tenant ID** (a GUID such as `a1b2c3d4-e5f6-47a8-9b0c-d1234567890f`) is shown as **Tenant ID** or **Directory ID**.
+1. Sign in to your [Microsoft Entra admin center](https://entra.microsoft.com/#home).
+2. If you have multiple tenants, go to **Entra ID** > **Overview** in the left menu, click **Manage tenants**, and switch to the tenant with an active Microsoft Teams subscription.
+3. Your **Tenant ID** (a GUID such as `a1b2c3d4-e5f6-47a8-9b0c-d1234567890f`) is displayed under **Tenant details**.
+
+<img src="/api-integrations/microsoft-teams-bot/entra_id.png"/>
+
 
 ### Step 2: Enter values in the Connect UI
 

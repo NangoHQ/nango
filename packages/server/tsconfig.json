@@ -48,7 +48,7 @@
             "path": "../billing"
         },
         {
-            "path": "../account-usage"
+            "path": "../usage"
         },
         {
             "path": "../email"

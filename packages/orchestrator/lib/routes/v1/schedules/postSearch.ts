@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { validateRequest } from '@nangohq/utils';
 
-import type { Schedule, Scheduler } from '@nangohq/scheduler';
+import type { Schedule, ScheduleState, Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
@@ -14,6 +14,7 @@ type PostSearch = Endpoint<{
     Path: typeof path;
     Body: {
         names?: string[] | undefined;
+        state?: ScheduleState | undefined;
         limit: number;
     };
     Error: ApiError<'search_failed'>;
@@ -22,7 +23,9 @@ type PostSearch = Endpoint<{
 
 const bodySchema = z
     .object({
-        names: z.array(z.string().min(1)).optional(),
+        // max = page size (20 connections) * (~25 assumed schedules per connection) * 2 as buffer
+        names: z.array(z.string().min(1)).max(1000).optional(),
+        state: z.enum(['STARTED', 'PAUSED', 'DELETED'] satisfies ScheduleState[]).optional(),
         limit: z.number().int()
     })
     .strict();
@@ -33,10 +36,11 @@ const validate = validateRequest<PostSearch>({
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostSearch>) => {
-        const { names, limit } = res.locals.parsedBody;
+        const { names, state, limit } = res.locals.parsedBody;
         const getSchedules = await scheduler.searchSchedules({
             limit,
-            ...(names ? { names } : {})
+            ...(names ? { names } : {}),
+            ...(state ? { state } : {})
         });
         if (getSchedules.isErr()) {
             res.status(500).json({ error: { code: 'search_failed', message: getSchedules.error.message } });
