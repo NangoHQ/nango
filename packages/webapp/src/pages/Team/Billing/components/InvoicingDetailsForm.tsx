@@ -8,7 +8,7 @@ import { InvoicingAddressFields } from './InvoicingAddressFields';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { Button } from '@/components-v2/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
 import { Input } from '@/components-v2/ui/input';
 import { Skeleton } from '@/components-v2/ui/skeleton';
@@ -95,7 +95,6 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                 <Card className="bg-bg-elevated rounded border-none">
                     <CardHeader>
                         <CardTitle className="text-text-primary">Billing information</CardTitle>
-                        <CardDescription className="text-text-tertiary">Legal entity and email address as they appear on invoices</CardDescription>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-5">
                         <FormField

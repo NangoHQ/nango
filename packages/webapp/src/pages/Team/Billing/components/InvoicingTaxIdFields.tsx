@@ -4,7 +4,7 @@ import { useFormContext, useWatch } from 'react-hook-form';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { FormLabelWithTooltip } from './FormLabelWithTooltip';
 import { Button } from '@/components-v2/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
 import { Input } from '@/components-v2/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
@@ -29,7 +29,6 @@ export const InvoicingTaxIdFields: React.FC = () => {
                 <CardHeader>
                     <div className="flex flex-col gap-1.5">
                         <CardTitle className="text-text-primary">Tax ID</CardTitle>
-                        <CardDescription className="text-text-tertiary">Tax identification as it appears on invoices</CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -46,7 +45,6 @@ export const InvoicingTaxIdFields: React.FC = () => {
             <CardHeader className="flex flex-row items-center justify-between p-6">
                 <div className="flex flex-col gap-1.5">
                     <CardTitle className="text-text-primary">Tax ID</CardTitle>
-                    <CardDescription className="text-text-tertiary">Tax identification as it appears on invoices</CardDescription>
                 </div>
                 <Button type="button" variant="ghost" size="icon" onClick={handleRemove}>
                     <Trash2 className="size-4 text-fg-error" />
