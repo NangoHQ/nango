@@ -155,7 +155,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                             <Tooltip>
                                 <TooltipTrigger>
                                     {/* TODO: Replace badge */}
-                                    <Badge variant="gray" size="xs" className="-uppercase">
+                                    <Badge variant="gray" size="xs">
                                         {truncateMiddle(sync.variant)}
                                     </Badge>
                                 </TooltipTrigger>

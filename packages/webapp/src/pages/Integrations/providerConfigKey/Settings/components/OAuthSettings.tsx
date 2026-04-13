@@ -157,7 +157,12 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="scopes">Scopes</Label>
-                    <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} isSharedCredentials={isSharedCredentials} />
+                    <ScopesInput
+                        scopesString={integration.oauth_scopes || ''}
+                        onChange={handleScopesChange}
+                        isSharedCredentials={isSharedCredentials}
+                        readOnly={!canEdit}
+                    />
                 </div>
             )}
 

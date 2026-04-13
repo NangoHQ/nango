@@ -15,8 +15,7 @@ Transform integration documentation files from a tabbed structure to a flat stru
 1. Inline quickstart section
 2. Separate integration guide links
 3. Pre-built syncs & actions table
-4. Removal of StatusWidget component
-5. Creation of separate setup guide files from OAuth tab content
+4. Creation of separate setup guide files from OAuth tab content
 
 ## New URL Structure
 
@@ -210,16 +209,7 @@ description: 'Integrate your application with the Salesforce API'
 - Rewrite description to: `'Integrate your application with the [Integration Name] API'`
 - Remove any emojis from description
 
-### 3. Remove StatusWidget
-
-**Remove these lines:**
-```jsx
-import { StatusWidget } from "/snippets/api-down-watch/status-widget.jsx"
-
-<StatusWidget service="salesforce" />
-```
-
-### 3a. Generate Quickstart Proxy Example (if needed)
+### 3. Generate Quickstart Proxy Example (if needed)
 
 If the source file doesn't have an existing API call example, generate one dynamically:
 
@@ -766,7 +756,6 @@ Before writing the transformed files, verify:
 - [ ] **File location:** `docs/api-integrations/[slug].mdx` (NOT `docs/integrations/all/[slug].mdx`)
 - [ ] Frontmatter properly formatted (single opening `---`, no extra separators)
 - [ ] Description updated to new format without emojis
-- [ ] StatusWidget import and component removed
 - [ ] Tabs structure completely removed
 - [ ] Quickstart has 4 steps with new intro sentence
 - [ ] "✅ You're connected!" moved inside Step 3
@@ -844,7 +833,6 @@ When migrating a file, report:
 
 **Changes to main file:**
 - Moved from `integrations/all/` to `api-integrations/`
-- Removed StatusWidget
 - Restructured Quickstart (4 steps)
 - Added Integration Guides section (linking to setup guide with TWO SPACES after closing parenthesis)
 - Added Pre-built syncs & actions section using snippet import
@@ -968,7 +956,6 @@ If the integration has no syncs/actions:
 **Key differences in main file:**
 1. **File moved** from `integrations/all/` to `api-integrations/`
 2. Frontmatter has updated description (emojis removed)
-3. No StatusWidget
 4. No Tabs wrapper
 5. Quickstart is inline with 4 steps
 6. Integration Guides section added (linking to `/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app` with TWO SPACES after closing parenthesis)

@@ -107,6 +107,8 @@ export const EditableInput: React.FC<EditableInputProps> = ({
         }
     };
 
+    const displayValue = !canRead ? '•'.repeat(32) : value;
+
     return (
         <div className="flex flex-col gap-2">
             <InputGroup>
@@ -114,7 +116,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     <InputGroupTextarea
                         ref={textareaRef}
                         id={id}
-                        value={value}
+                        value={displayValue}
                         onChange={handleChange}
                         className="h-36"
                         disabled={!editing}
@@ -127,7 +129,7 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     <InputGroupInput
                         ref={inputRef}
                         id={id}
-                        value={value}
+                        value={displayValue}
                         placeholder={editing ? placeHolder : undefined}
                         onChange={handleChange}
                         type={secret && !editing ? 'password' : 'text'}

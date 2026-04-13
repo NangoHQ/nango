@@ -7,9 +7,9 @@ import { report } from '@nangohq/utils';
 import { SnsSqs } from './sns-sqs.js';
 import { serde } from '../utils/serde.js';
 
-import type { Event } from '../event.js';
 import type { SNSClient } from '@aws-sdk/client-sns';
 import type { SQSClient } from '@aws-sdk/client-sqs';
+import type { Event } from '@nangohq/types';
 
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal();

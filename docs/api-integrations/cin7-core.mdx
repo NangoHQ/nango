@@ -1,0 +1,81 @@
+---
+title: 'Cin7 Core'
+sidebarTitle: 'Cin7 Core'
+description: 'Integrate your application with the Cin7 Core API'
+---
+
+## 🚀 Quickstart
+
+Connect to Cin7 Core with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Cin7 Core_.
+    </Step>
+    <Step title="Authorize Cin7 Core">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Account ID and API Application Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Cin7 Core API">
+    Let's make your first request to the Cin7 Core API (get account info). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/me" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Cin7 Core Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Cin7 Core API credentials](/api-integrations/cin7-core/connect)
+Find your Account ID and generate an API Application Key in the Cin7 Core dashboard
+
+Official docs: [Cin7 Core API Documentation](https://developer.cin7.com/docs/)
+
+## 🧩 Pre-built syncs & actions for Cin7 Core
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/cin7-core/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

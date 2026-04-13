@@ -7,6 +7,7 @@ import { permissions } from '@nangohq/authz';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
@@ -122,7 +123,18 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                 <>
                     <div className="flex gap-5 items-center">
                         <Label htmlFor="webhook_forwarding">Webhook Forwarding</Label>
-                        <Switch name="webhook_forwarding" checked={webhookForwarding} onCheckedChange={handleWebhookForwardingChange} />
+                        <PermissionGate asChild condition={canEdit}>
+                            {(allowed) => (
+                                <div className="flex items-center">
+                                    <Switch
+                                        name="webhook_forwarding"
+                                        checked={webhookForwarding}
+                                        onCheckedChange={handleWebhookForwardingChange}
+                                        disabled={!allowed}
+                                    />
+                                </div>
+                            )}
+                        </PermissionGate>
                     </div>
                     {/* Webhook URL */}
                     <div className="flex flex-col gap-2">

@@ -35,8 +35,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     hostWs.href,
                     connectUrl,
                     'https://*.posthog.com',
-                    'https://*.stripe.com',
-                    'https://api.apidownwatch.com'
+                    'https://*.stripe.com'
                 ],
                 fontSrc: ["'self'", 'https://*.googleapis.com', 'https://*.gstatic.com'],
                 frameSrc: ["'self'", 'https://accounts.google.com', hostPublic, hostApi, connectUrl, 'https://www.youtube.com', 'https://*.stripe.com'],
@@ -65,8 +64,7 @@ export function securityMiddlewares(): RequestHandler[] {
                     'https://*.googleapis.com',
                     'https://apis.google.com',
                     'https://*.posthog.com',
-                    'https://www.youtube.com',
-                    'https://api.apidownwatch.com'
+                    'https://www.youtube.com'
                 ],
                 styleSrc: ['blob:', "'self'", "'unsafe-inline'", 'https://*.googleapis.com', hostPublic, hostApi],
                 workerSrc: ['blob:', "'self'", hostPublic, hostApi, 'https://*.googleapis.com', 'https://*.posthog.com']

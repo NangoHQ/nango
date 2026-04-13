@@ -6,7 +6,9 @@ export const NangoProvidedInput: React.FC<React.ComponentProps<'input'> & { fake
         <InputGroup>
             <InputGroupInput disabled value={'•'.repeat(fakeValueSize)} {...props} />
             <InputGroupAddon align="inline-end">
-                <Badge variant="gray">Nango provided</Badge>
+                <Badge variant="gray" className="uppercase">
+                    Nango provided
+                </Badge>
             </InputGroupAddon>
         </InputGroup>
     );

@@ -2,18 +2,22 @@ import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
 import { FunctionsTab } from './Functions/Tab';
 import { SettingsTab } from './Settings/Tab';
 import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 
@@ -24,6 +28,10 @@ export const ShowIntegration: React.FC = () => {
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
     const environmentAndAccount = environmentData?.environmentAndAccount;
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environmentAndAccount?.environment.is_production;
+
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 
@@ -70,9 +78,13 @@ export const ShowIntegration: React.FC = () => {
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>
-                    <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg">
-                        Add test connection
-                    </ButtonLink>
+                    <PermissionGate condition={canCreateTestConnection} asChild>
+                        {(allowed) => (
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg" disabled={!allowed}>
+                                Add test connection
+                            </ButtonLink>
+                        )}
+                    </PermissionGate>
                 </div>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>

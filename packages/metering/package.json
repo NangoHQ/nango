@@ -14,7 +14,7 @@
         "directory": "packages/metering"
     },
     "dependencies": {
-        "@nangohq/account-usage": "file:../account-usage",
+        "@nangohq/usage": "file:../usage",
         "@nangohq/database": "file:../database",
         "@nangohq/billing": "file:../billing",
         "@nangohq/kvstore": "file:../kvstore",

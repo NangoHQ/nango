@@ -26,6 +26,7 @@ export { default as autotaskWebhookRouting } from './autotask-webhook-routing.js
 export { default as connectwisePsaWebhookRouting } from './connectwise-psa-webhook-routing.js';
 export { default as shipstationWebhookRouting } from './shipstation-webhook-routing.js';
 export { default as googleCalendarWebhookRouting } from './google-calendar-webhook-routing.js';
+export { default as googleWebhookRouting } from './google-webhook-routing.js';
 export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
 export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
 export type * from './types.js';

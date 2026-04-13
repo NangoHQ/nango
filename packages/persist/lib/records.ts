@@ -97,7 +97,7 @@ export async function persistRecords({
     });
 
     if (formatting.isErr()) {
-        void logCtx.error('There was an issue with the batch', { error: formatting.error, persistType });
+        void logCtx.error('Failed to persist records', { error: formatting.error, persistType });
         const err = new Error(`Failed to ${persistType} records ${activityLogId}`);
 
         span.setTag('error', err).finish();
@@ -229,11 +229,9 @@ export async function persistRecords({
 
         return Ok(persistResult.value.nextMerging);
     } else {
-        const content = `There was an issue with the batch ${persistType}. ${stringifyError(persistResult.error)}`;
+        void logCtx.error('Failed to persist records', { error: persistResult.error, persistType });
 
-        void logCtx.error('There was an issue with the batch', { error: persistResult.error, persistType });
-
-        errorManager.report(content, {
+        errorManager.report(`There was an issue with the batch${persistType}. ${stringifyError(persistResult.error)}`, {
             environmentId: environment.id,
             source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,
