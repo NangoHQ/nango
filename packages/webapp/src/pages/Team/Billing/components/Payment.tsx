@@ -7,6 +7,7 @@ import { Dot } from '../../../../components-v2/Dot';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
@@ -25,33 +26,40 @@ export const Payment: React.FC = () => {
         <div className="flex-1 flex flex-col gap-8">
             <div className="flex flex-col gap-5">
                 <h3 className="text-body-small-regular text-text-secondary">PAYMENT</h3>
-                {isPaymentMethodsLoading ? (
-                    <Skeleton className="w-full h-22.5" />
-                ) : paymentMethodsError ? (
-                    <CriticalErrorAlert message="Error loading payment method" />
-                ) : (
-                    <div className="w-full inline-flex items-center justify-between px-5 py-6 rounded border border-border-muted">
-                        <div className="inline-flex gap-3 items-center">
-                            <div className="size-10 flex items-center justify-center border border-border-muted rounded">
-                                <CreditCard className="size-4.5 text-icon-primary" />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="inline-flex gap-1.5 items-center">
-                                    <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
-                                    <Dot variant={paymentMethod ? 'brand' : 'error'} />
+                <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
+                    <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
+                        <CardTitle className="text-text-primary !text-heading-sm">Payment method</CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-0">
+                        {isPaymentMethodsLoading ? (
+                            <Skeleton className="w-full h-22.5" />
+                        ) : paymentMethodsError ? (
+                            <CriticalErrorAlert message="Error loading payment method" />
+                        ) : (
+                            <div className="w-full inline-flex items-center justify-between px-6 py-9">
+                                <div className="inline-flex gap-3 items-center">
+                                    <div className="size-10 flex items-center justify-center border border-border-muted rounded">
+                                        <CreditCard className="size-4.5 text-icon-primary" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="inline-flex gap-1.5 items-center">
+                                            <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
+                                            <Dot variant={paymentMethod ? 'brand' : 'error'} />
+                                        </div>
+                                        <span className="text-text-tertiary text-s leading-5 font-medium">
+                                            {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className="text-text-tertiary text-s leading-5 font-medium">
-                                    {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
-                                </span>
+                                <PaymentMethodDialog replace={!!paymentMethod}>
+                                    <Button size={'sm'} className="min-w-27">
+                                        {paymentMethod ? 'Update' : 'Add payment method'}
+                                    </Button>
+                                </PaymentMethodDialog>
                             </div>
-                        </div>
-                        <PaymentMethodDialog replace={!!paymentMethod}>
-                            <Button size={'sm'} className="min-w-27">
-                                {paymentMethod ? 'Update' : 'Add payment method'}
-                            </Button>
-                        </PaymentMethodDialog>
-                    </div>
-                )}
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <div className="flex flex-col gap-5">
