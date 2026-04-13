@@ -93,30 +93,6 @@
     {
       "source": "/guides/platform/ai-integration-builder",
       "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
-    },
-    {
-      "source": "/integrations/google-security-review",
-      "destination": "/api-integrations/google-shared/google-security-review"
-    },
-    {
-      "source": "/api-integrations/google/google-security-review",
-      "destination": "/api-integrations/google-shared/google-security-review"
-    },
-    {
-      "source": "/integrations/all/google-chat",
-      "destination": "/api-integrations/google-chat"
-    },
-    {
-      "source": "/integrations/all/google-slides",
-      "destination": "/api-integrations/google-slides"
-    },
-    {
-      "source": "/integrations/all/google-cloud-storage",
-      "destination": "/api-integrations/google-cloud-storage"
-    },
-    {
-      "source": "/integrations/all/google-workspace-admin",
-      "destination": "/api-integrations/google-workspace-admin"
     }
   ],
   "navigation": {
