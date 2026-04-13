@@ -14826,9 +14826,9 @@ salesforce-jwt:
             typ: JWT
         payload:
             iss: ${credentials.clientId}
-            aud: https://${credentials.authorizationUrl}
+            aud: https://${connectionConfig.authorizationUrl}
             sub: ${credentials.username}
-    token_url: https://login.salesforce.com/services/oauth2/token
+    token_url: https://${connectionConfig.authorizationUrl}/services/oauth2/token
     token_params:
         grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
         assertion: ${token}
@@ -14841,6 +14841,14 @@ salesforce-jwt:
     token_expires_in_ms: 0
     docs: https://nango.dev/docs/api-integrations/salesforce-jwt
     docs_connect: https://nango.dev/docs/api-integrations/salesforce-jwt/connect
+    connection_config:
+        authorizationUrl:
+            type: string
+            title: Authorization Server URL
+            description: Your Salesforce authorization server URL.
+            format: hostname
+            example: 'login.salesforce.com'
+            doc_section: '#step-5-finding-the-authorization-server-url'
     credentials:
         clientId:
             type: string
@@ -14868,13 +14876,6 @@ salesforce-jwt:
             description: The private key that matches the certificate you uploaded to the Connected App.
             example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
             doc_section: '#step-1-create-a-private-key-and-self-signed-digital-certificate'
-        authorizationUrl:
-            type: string
-            title: Authorization Server URL
-            description: Your Salesforce authorization server URL.
-            format: hostname
-            example: 'login.salesforce.com'
-            doc_section: '#step-5-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
