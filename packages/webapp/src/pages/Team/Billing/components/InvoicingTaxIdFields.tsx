@@ -1,4 +1,5 @@
 import { ChevronDown, Trash2 } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
@@ -13,6 +14,30 @@ import type { InvoicingFormData } from './InvoicingDetailsForm';
 export const InvoicingTaxIdFields: React.FC = () => {
     const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const taxId = useWatch({ control, name: 'taxId' });
+    const selectedCountry = useWatch({ control, name: 'taxId.country' });
+    const selectedType = useWatch({ control, name: 'taxId.type' });
+
+    const filteredTypes = useMemo(() => {
+        if (!selectedCountry) return taxIdTypes;
+        const prefix = selectedCountry.toLowerCase() + '_';
+        const matches = taxIdTypes.filter((t) => t.value.startsWith(prefix));
+        return matches.length > 0 ? matches : taxIdTypes;
+    }, [selectedCountry]);
+
+    useEffect(() => {
+        if (selectedType && !filteredTypes.some((t) => t.value === selectedType)) {
+            setValue('taxId.type', '');
+            setValue('taxId.value', '');
+            clearErrors(['taxId.type', 'taxId.value']);
+        }
+    }, [filteredTypes]);
+
+    const selectedTypeDef = taxIdTypes.find((t) => t.value === selectedType);
+    const valuePlaceholder = selectedTypeDef?.placeholder ?? 'Tax ID value';
+    const docType = selectedType ? selectedType.split('_')[1]?.toUpperCase() : null;
+    const docFormat = selectedTypeDef?.placeholder.replace(/\d/g, 'X') ?? null;
+
+    const taxIdValue = useWatch({ control, name: 'taxId.value' });
 
     const handleAdd = () => {
         setValue('taxId', { country: '', type: '', value: '' });
@@ -83,7 +108,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        {taxIdTypes.map(({ value, label }) => (
+                                        {filteredTypes.map(({ value, label }) => (
                                             <SelectItem key={value} value={value}>
                                                 {label}
                                             </SelectItem>
@@ -103,9 +128,13 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                     Value <span className="text-alert-400">*</span>
                                 </FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="12-3456789" {...field} />
+                                    <InvoicingInput placeholder={`e.g. ${valuePlaceholder}`} {...field} />
                                 </FormControl>
-                                <FormMessage />
+                                {docType && docFormat && (
+                                    <p className={`text-body-small-regular ${taxIdValue ? 'text-text-tertiary' : 'text-alert-400'}`}>
+                                        Enter your {docType} in the format {docFormat}
+                                    </p>
+                                )}
                             </FormItem>
                         )}
                     />
