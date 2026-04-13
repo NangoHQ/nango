@@ -3,28 +3,30 @@
   "theme": "mint",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#71c0e2",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
     "default": "system"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "dark": "#0b0b0c",
+      "light": "#ffffff"
+    }
+  },
+  "css": "custom.css",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
-  "contextual": {
-    "options": [
-      "copy",
-      "cursor",
-      "vscode",
-      "chatgpt",
-      "claude"
-    ]
-  },
   "seo": {
     "indexing": "all",
     "metatags": {
@@ -35,13 +37,18 @@
   "navbar": {
     "links": [
       {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
+        "type": "github",
+        "href": "https://github.com/NangoHQ/nango"
+      },
+      {
+        "label": "Log In",
+        "href": "https://app.nango.dev"
       }
     ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
+      "type": "button",
+      "label": "Sign Up",
+      "href": "https://app.nango.dev/signup"
     }
   },
   "footer": {
@@ -116,6 +123,7 @@
     "tabs": [
       {
         "tab": "Documentation",
+        "icon": "book-open",
         "groups": [
           {
             "group": "Getting Started",
@@ -235,6 +243,7 @@
       },
       {
         "tab": "APIs & Integrations",
+        "icon": "plug",
         "groups": [
           {
             "group": "700+ APIs & Integrations",
@@ -280,6 +289,7 @@
               "api-integrations/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
+              "api-integrations/apple-business-manager",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
               "api-integrations/asana-mcp",
@@ -363,14 +373,17 @@
               "integrations/all/checkr-partner",
               "integrations/all/checkr-partner-staging",
               "integrations/all/chorus",
+              "api-integrations/cin7-core",
               "integrations/all/circle-so",
               "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
               "api-integrations/clay",
               "api-integrations/cleverreach",
+              "api-integrations/clickhouse",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
+              "api-integrations/clover",
               "api-integrations/clio",
               "integrations/all/close",
               "api-integrations/cloudbeds",
@@ -386,7 +399,7 @@
               "api-integrations/confluence",
               "integrations/all/confluence-basic",
               "integrations/all/confluence-data-center",
-              "integrations/all/connectwise-psa",
+              "api-integrations/connectwise-psa",
               "integrations/all/connectwise-psa-staging",
               "api-integrations/connectwise-rmm",
               "api-integrations/constant-contact",
@@ -457,6 +470,7 @@
               "api-integrations/fellow",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
+              "api-integrations/freepik",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
@@ -515,6 +529,7 @@
               "api-integrations/google-drive",
               "api-integrations/google-forms",
               "api-integrations/google-mail",
+              "api-integrations/google-maps",
               "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
@@ -550,6 +565,7 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/halo-psa",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
               "integrations/all/heap",
@@ -614,6 +630,7 @@
               "api-integrations/linkedin",
               "integrations/all/linkhut",
               "integrations/all/listmonk",
+              "api-integrations/listrak",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
               "integrations/all/loop-returns",
@@ -687,6 +704,7 @@
               "integrations/all/one-note",
               "integrations/all/onelogin",
               "api-integrations/oomnitza",
+              "api-integrations/orange-logic",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -712,10 +730,12 @@
               "integrations/all/paycor",
               "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
+              "api-integrations/pendo-oauth",
               "integrations/all/pennylane",
               "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
               "api-integrations/perdoo",
+              "api-integrations/perk",
               "integrations/all/perimeter81",
               "integrations/all/perplexity",
               "integrations/all/personio",
@@ -742,6 +762,7 @@
               "integrations/all/productboard",
               "api-integrations/procore",
               "api-integrations/provenexpert",
+              "api-integrations/prtg-classic",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
               "api-integrations/quentn",
@@ -805,6 +826,7 @@
               "integrations/all/segment",
               "integrations/all/semrush",
               "integrations/all/sendgrid",
+              "api-integrations/sentinelone",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
@@ -855,6 +877,7 @@
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
               "integrations/all/statista",
+              "api-integrations/stay-ai",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "integrations/all/streak",
@@ -936,10 +959,13 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workday-adaptive-planning",
+              "api-integrations/workday-adaptive-planning-basic",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",
               "api-integrations/workos",
+              "api-integrations/workpath",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
@@ -967,6 +993,7 @@
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
               "integrations/all/zoominfo",
+              "api-integrations/zorus",
               "integrations/all/zuora"
             ]
           }
@@ -974,6 +1001,7 @@
       },
       {
         "tab": "Reference",
+        "icon": "square-terminal",
         "groups": [
           {
             "group": "Frontend",
@@ -1099,8 +1127,7 @@
             "group": "Functions",
             "pages": [
               "reference/cli",
-              "reference/functions",
-              "reference/TODO"
+              "reference/functions"
             ]
           },
           {
@@ -1113,6 +1140,7 @@
       },
       {
         "tab": "Updates",
+        "icon": "bolt",
         "groups": [
           {
             "group": "Updates",

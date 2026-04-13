@@ -6,7 +6,7 @@
         "@isaacs/brace-expansion": "5.0.1",
         "@apidevtools/swagger-cli": "4.0.4",
         "@redocly/cli": "2.19.1",
-        "ajv": "8.17.1",
+        "ajv": "8.18.0",
         "chalk": "5.4.1",
         "figures": "6.1.0",
         "git-cliff": "2.10.0",

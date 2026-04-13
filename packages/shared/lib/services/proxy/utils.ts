@@ -37,7 +37,8 @@ type ProxyErrorCode =
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
-    | 'invalid_certificate_or_key_format';
+    | 'invalid_certificate_or_key_format'
+    | 'proxy_redirect_to_denied_host';
 
 export interface RetryReason {
     retry: boolean;
@@ -55,6 +56,28 @@ export class ProxyError extends Error {
 
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const providedHeaders: Lowercase<string>[] = ['user-agent'];
+
+/**
+ * Absolute URL for the upcoming redirect request, from Node `follow-redirects` options
+ * (after `spreadUrlObject`, `href` is set).
+ */
+export function absoluteUrlFromRedirectRequestOptions(options: Record<string, unknown>): string | null {
+    if (typeof options['href'] === 'string' && options['href'].length > 0) {
+        return options['href'];
+    }
+    const protocol = typeof options['protocol'] === 'string' ? options['protocol'] : '';
+    const host =
+        typeof options['host'] === 'string'
+            ? options['host']
+            : typeof options['hostname'] === 'string'
+              ? `${options['hostname']}${typeof options['port'] === 'number' && options['port'] ? `:${options['port']}` : ''}`
+              : '';
+    const path = typeof options['path'] === 'string' ? options['path'] : '/';
+    if (!protocol || !host) {
+        return null;
+    }
+    return `${protocol}//${host}${path.startsWith('/') ? path : `/${path}`}`;
+}
 
 export function getAxiosConfiguration({
     proxyConfig,
@@ -77,6 +100,12 @@ export function getAxiosConfiguration({
     // TODO: change default to false after removing the metric below
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
     axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+        if (proxyConfig.validateProxyRedirectUrl) {
+            const absolute = absoluteUrlFromRedirectRequestOptions(options);
+            if (absolute) {
+                proxyConfig.validateProxyRedirectUrl(absolute);
+            }
+        }
         metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
         if (shouldForward) {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
@@ -145,7 +174,17 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn, forwardHeadersOnRedirect } = externalConfig;
+    const {
+        endpoint: passedEndpoint,
+        providerConfigKey,
+        method,
+        retries,
+        headers,
+        baseUrlOverride,
+        retryOn,
+        forwardHeadersOnRedirect,
+        validateProxyRedirectUrl
+    } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -211,7 +250,8 @@ export function getProxyConfiguration({
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
         retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
-        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {})
+        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+        ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
     };
 
     return Ok(configBody);

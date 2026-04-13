@@ -19,9 +19,10 @@ jobs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
             - uses: actions/checkout@v4
-            - uses: dorny/paths-filter@v3
+            - uses: dorny/paths-filter@v4
               id: filter
               with:
+                  predicate-quantifier: 'every'
                   filters: |
                       docs_only:
                           - 'docs/**'

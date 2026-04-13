@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,10 +11,11 @@ import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { ButtonLink } from '@/components-v2/ui/button';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -104,36 +105,52 @@ export const General: React.FC = () => {
 
             <SettingsGroup
                 label={
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <InfoTooltip icon={<Info />}>Production environments are only accessible to administrators and support roles.</InfoTooltip>
+                        <ButtonLink
+                            to="https://docs.nango.dev/guides/platform/environments#production-environments"
+                            size="icon"
+                            variant="ghost"
+                            target="_blank"
+                        >
+                            <ExternalLink />
+                        </ButtonLink>
                     </div>
                 }
             >
-                <PermissionGate condition={canToggleIsProduction}>
-                    {(allowed) => (
-                        <Switch
-                            disabled={!allowed}
-                            checked={environment?.is_production}
-                            onCheckedChange={(checked) =>
-                                confirm({
-                                    title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
-                                    description: 'This impacts which team members have access to this environment.',
-                                    onConfirm: async () => {
-                                        await patchEnvironmentAsync({ is_production: checked });
-                                        await refetchMeta();
-                                        toast({
-                                            title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
-                                            variant: 'success'
-                                        });
-                                    },
-                                    confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
-                                    confirmVariant: 'destructive'
-                                })
-                            }
-                        />
-                    )}
-                </PermissionGate>
+                <ConditionalTooltip
+                    condition={env === PROD_ENVIRONMENT_NAME}
+                    content={`You cannot change the production status of the ${PROD_ENVIRONMENT_NAME} environment`}
+                >
+                    <PermissionGate condition={canToggleIsProduction}>
+                        {(allowed) => (
+                            <Switch
+                                disabled={env === PROD_ENVIRONMENT_NAME || !allowed}
+                                checked={environment?.is_production}
+                                onCheckedChange={(checked) =>
+                                    confirm({
+                                        title: checked ? 'Upgrade to production environment' : 'Downgrade to non-production environment',
+                                        description: 'This impacts which team members have access to this environment.',
+                                        onConfirm: async () => {
+                                            await patchEnvironmentAsync({ is_production: checked });
+                                            await refetchMeta();
+                                            toast({
+                                                title: `Successfully ${checked ? 'upgraded' : 'downgraded'} to ${checked ? 'production' : 'non-production'} environment`,
+                                                variant: 'success'
+                                            });
+                                        },
+                                        confirmButtonText: checked ? 'Upgrade' : 'Downgrade',
+                                        confirmVariant: 'destructive',
+                                        docs: {
+                                            title: 'Learn more',
+                                            url: 'https://docs.nango.dev/guides/platform/environments#production-environments'
+                                        }
+                                    })
+                                }
+                            />
+                        )}
+                    </PermissionGate>
+                </ConditionalTooltip>
             </SettingsGroup>
 
             <SettingsGroup label="Environment suppression" className="items-center">

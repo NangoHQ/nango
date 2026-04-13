@@ -141,12 +141,12 @@ const GroupedFunctionsTable: React.FC<{
                                 </TableCell>
                                 <TableCell>
                                     {func.pre_built ? (
-                                        <Badge variant="gray">
+                                        <Badge variant="gray" className="uppercase">
                                             <Box />
                                             Template
                                         </Badge>
                                     ) : (
-                                        <Badge variant="gray">
+                                        <Badge variant="gray" className="uppercase">
                                             <Code /> Custom
                                         </Badge>
                                     )}

@@ -55,5 +55,5 @@ jobs:
                   SANITY_TOKEN: ${{ secrets.SANITY_TOKEN }}
                   SANITY_PROJECT_ID: ${{ vars.SANITY_PROJECT_ID }}
                   SANITY_DATASET: ${{ vars.SANITY_DATASET }}
-                  FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update == 'true' }}
-                  DRYRUN: ${{ inputs.dry_run == 'true' }}
+                  FORCE_UPDATE: ${{ github.event_name == 'schedule' || inputs.force_update }}
+                  DRYRUN: ${{ inputs.dry_run }}

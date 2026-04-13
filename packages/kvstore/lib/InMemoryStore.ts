@@ -1,4 +1,4 @@
-import type { KVStore } from './KVStore.js';
+import type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 
 interface Value {
     value: string;
@@ -44,6 +44,77 @@ export class InMemoryKVStore implements KVStore {
             return Promise.resolve();
         }
         return Promise.reject(new Error('set_key_already_exists'));
+    }
+
+    public async setIfValueEquals(key: string, expectedValue: string, newValue: string, ttlMs: number): Promise<boolean> {
+        const res = this.store.get(key);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.set(key, { value: newValue, timestamp: Date.now(), ttlMs });
+        return Promise.resolve(true);
+    }
+
+    public async deleteIfValueEquals(key: string, expectedValue: string): Promise<boolean> {
+        const res = this.store.get(key);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.delete(key);
+        return Promise.resolve(true);
+    }
+
+    public async setNxWithCompanion({ mainKey, companionKey, value, companionValue, ttlMs }: SetNxWithCompanionArgs): Promise<boolean> {
+        const main = this.store.get(mainKey);
+        if (main !== undefined && !this.isExpired(main)) {
+            return Promise.resolve(false);
+        }
+        const now = Date.now();
+        const entry = { value, timestamp: now, ttlMs };
+        this.store.set(mainKey, entry);
+        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
+        return Promise.resolve(true);
+    }
+
+    public async setIfValueEqualsWithCompanion({
+        mainKey,
+        companionKey,
+        expectedValue,
+        newValue,
+        companionValue,
+        ttlMs
+    }: SetIfValueEqualsWithCompanionArgs): Promise<boolean> {
+        const res = this.store.get(mainKey);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        const now = Date.now();
+        const entry = { value: newValue, timestamp: now, ttlMs };
+        this.store.set(mainKey, entry);
+        this.store.set(companionKey, { value: companionValue, timestamp: now, ttlMs });
+        return Promise.resolve(true);
+    }
+
+    public async deleteIfValueEqualsWithCompanion({ mainKey, companionKey, expectedValue }: DeleteIfValueEqualsWithCompanionArgs): Promise<boolean> {
+        const res = this.store.get(mainKey);
+        if (res === undefined || this.isExpired(res)) {
+            return Promise.resolve(false);
+        }
+        if (res.value !== expectedValue) {
+            return Promise.resolve(false);
+        }
+        this.store.delete(mainKey);
+        this.store.delete(companionKey);
+        return Promise.resolve(true);
     }
 
     public async delete(key: string): Promise<void> {

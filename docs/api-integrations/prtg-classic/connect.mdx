@@ -1,0 +1,47 @@
+---
+title: PRTG Classic - How do I link my account?
+sidebarTitle: PRTG Classic
+---
+
+# Overview
+
+To authenticate with PRTG's classic HTTP API, you will need:
+1. **Instance Host** - The host of your PRTG instance.
+2. **API Key** - A key that grants Nango permission to access the classic PRTG HTTP API.
+
+This guide will walk you through finding both values in PRTG.
+
+<Note>This integration is for the classic PRTG HTTP API with `apitoken` query authentication, not PRTG API v2.</Note>
+
+### Prerequisites:
+
+- You must have access to a PRTG user account that can create API keys.
+
+### Instructions:
+
+#### Step 1: Finding Your Instance Host
+
+1. Log in to your PRTG instance.
+2. Copy the host from your browser address bar, for example `monitor.example.com`.
+
+#### Step 2: Finding Your API Key
+
+1. In PRTG, go to **Setup** -> **Account Settings** -> **API Keys**.
+2. Click **+** and select **Add API Key**.
+<img src="/api-integrations/prtg-classic/api-keys-tab.png" />
+
+3. Fill in the key details, set the required access level, and copy the generated API key.
+
+<img src="/api-integrations/prtg-classic/add-api-key.png" />
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Instance Host** and **API Key**:
+
+1. Open the form where you need to authenticate with PRTG.
+2. Enter your **Instance Host** and **API Key** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/prtg-classic/connect-ui.png" />
+
+You are now connected to PRTG.

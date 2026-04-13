@@ -1,0 +1,13 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="64" height="64" fill="#FFFFFF"/>
+<g transform="translate(9.5 10.5) scale(1.2)">
+<path d="M19.0599 0.75L0.649902 25.61L19.0599 36.23L37.4599 25.6L19.0599 0.75ZM18.1599 33.65L3.7499 25.33L18.1599 16.98V33.65ZM18.1599 14.92L5.2499 22.4L18.1599 4.96V14.92ZM19.9499 4.96L32.8599 22.4L19.9499 14.91V4.96ZM19.9499 16.98L34.3599 25.34L19.9499 33.66V16.98Z" fill="url(#paint0_linear_zorus)"/>
+<path d="M20.8399 20.25V22.26L24.5999 24.44H20.8399V26.18H31.0399L20.8399 20.25ZM17.2699 30.4V28.4L13.3999 26.17H17.2699V24.43H6.93994L17.2699 30.39V30.4Z" fill="#041242"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_zorus" x1="32.36" y1="57.756" x2="32.36" y2="12.9" gradientUnits="userSpaceOnUse">
+<stop offset="0.17" stop-color="#660DAC"/>
+<stop offset="1" stop-color="#00B5F4"/>
+</linearGradient>
+</defs>
+</svg>
