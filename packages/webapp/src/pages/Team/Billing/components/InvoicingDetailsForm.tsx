@@ -21,6 +21,10 @@ export const InvoicingInput = (props: React.ComponentProps<typeof Input>) => (
     <Input className="data-[filled=true]:not-aria-invalid:border-border-muted" {...props} />
 );
 
+export const OptionalTag = () => (
+    <span className="bg-bg-elevated border border-border-strong rounded px-2 py-0.5 text-body-small-regular text-text-muted">Optional</span>
+);
+
 const countryValues = countryCodes.map((c) => c.value) as [string, ...string[]];
 const taxIdTypeValues = taxIdTypes.map((t) => t.value) as [string, ...string[]];
 
@@ -94,7 +98,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
                 <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
                     <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
                         <CardTitle className="text-text-primary !text-heading-sm">Billing information</CardTitle>
