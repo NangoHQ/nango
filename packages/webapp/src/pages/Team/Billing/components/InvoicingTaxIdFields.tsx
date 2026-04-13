@@ -40,12 +40,12 @@ export const InvoicingTaxIdFields: React.FC = () => {
     const taxIdValue = useWatch({ control, name: 'taxId.value' });
 
     const handleAdd = () => {
-        setValue('taxId', { country: '', type: '', value: '' });
+        setValue('taxId', { country: '', type: '', value: '' }, { shouldDirty: true });
         clearErrors('taxId');
     };
 
     const handleRemove = () => {
-        setValue('taxId', null);
+        setValue('taxId', null, { shouldDirty: true });
     };
 
     return (

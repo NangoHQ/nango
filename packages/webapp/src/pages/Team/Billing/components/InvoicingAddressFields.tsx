@@ -15,12 +15,12 @@ export const InvoicingAddressFields: React.FC = () => {
     const address = useWatch({ control, name: 'address' });
 
     const handleAdd = () => {
-        setValue('address', { line1: null, line2: null, city: null, state: null, postalCode: null, country: '' });
+        setValue('address', { line1: null, line2: null, city: null, state: null, postalCode: null, country: '' }, { shouldDirty: true });
         clearErrors('address');
     };
 
     const handleRemove = () => {
-        setValue('address', null);
+        setValue('address', null, { shouldDirty: true });
     };
 
     return (
