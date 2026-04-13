@@ -22,8 +22,10 @@ interface State {
     setDebugMode: (value: boolean) => void;
 }
 
+const initialEnv: unknown = storage.getItem(LocalStorageKeys.LastEnvironment);
+
 export const useStore = create<State>()((set, get) => ({
-    env: storage.getItem(LocalStorageKeys.LastEnvironment) || 'dev',
+    env: typeof initialEnv === 'string' && initialEnv ? initialEnv : 'dev',
     envs: [{ name: 'dev' }, { name: PROD_ENVIRONMENT_NAME }],
     baseUrl: 'https://api.nango.dev',
     showGettingStarted: true,
@@ -31,6 +33,7 @@ export const useStore = create<State>()((set, get) => ({
 
     setEnv: (value) => {
         if (get().env !== value) {
+            usePlaygroundStore.getState().abortActiveRun?.();
             usePlaygroundStore.getState().reset();
         }
         set({ env: value });

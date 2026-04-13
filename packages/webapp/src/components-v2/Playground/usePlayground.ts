@@ -25,13 +25,33 @@ export function usePlayground(inputFields: InputField[]) {
     const setPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setRunning = usePlaygroundStore((s) => s.setRunning);
     const setInputErrors = usePlaygroundStore((s) => s.setInputErrors);
+    const setAbortActiveRun = usePlaygroundStore((s) => s.setAbortActiveRun);
 
     const runAbortRef = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        setAbortActiveRun(() => {
+            runAbortRef.current?.abort();
+            setPendingOperationId(null);
+            setRunning(false);
+            setResult(null);
+        });
+
+        return () => {
+            setAbortActiveRun(null);
+        };
+    }, [setAbortActiveRun, setPendingOperationId, setResult, setRunning]);
 
     // --- useQuery: poll operation status when pendingOperationId is set ---
     const { data: operationData } = useQuery({
         queryKey: ['playground-operation', env, pendingOperationId],
-        queryFn: () => fetchOperation(pendingOperationId!, env),
+        queryFn: async () => {
+            if (!pendingOperationId) {
+                return null;
+            }
+
+            return fetchOperation(pendingOperationId, env);
+        },
         enabled: !!pendingOperationId && isOpen,
         refetchInterval: (query) => {
             const state = query.state.data?.state;
