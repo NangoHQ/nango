@@ -350,6 +350,7 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
         if (!data) return '';
         if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
         if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
+        if (data instanceof URLSearchParams) return fromQueryString(data.toString());
         if (typeof data !== 'object' || data instanceof FormData) return '';
         return Object.entries(data as Record<string, unknown>)
             .sort(([a], [b]) => a.localeCompare(b))
