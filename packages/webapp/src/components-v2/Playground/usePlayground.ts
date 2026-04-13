@@ -126,6 +126,15 @@ export function usePlayground(inputFields: InputField[]) {
                 return;
             }
 
+            // For actions, the full output is already in triggerData.
+            // Don't block the UI on log discovery.
+            if (playgroundFunctionType === 'action') {
+                setPendingOperationId(null);
+                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs });
+                setRunning(false);
+                return;
+            }
+
             // Poll until we find the matching operation in logs.
             const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
             const findStart = Date.now();
@@ -144,15 +153,6 @@ export function usePlayground(inputFields: InputField[]) {
                 );
                 if (operation) break;
                 await sleepWithAbort(FIND_OP_POLL_INTERVAL_MS, controller.signal);
-            }
-
-            // For actions, the full output is already in triggerData — use it directly.
-            // Log lookup failure only means no Logs link; it doesn't mean the action failed.
-            if (playgroundFunctionType === 'action') {
-                setPendingOperationId(null);
-                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs, operationId: operation?.id });
-                setRunning(false);
-                return;
             }
 
             if (!operation) {
