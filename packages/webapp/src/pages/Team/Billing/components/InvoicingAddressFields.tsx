@@ -2,11 +2,10 @@ import { Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes } from '../invoicingConstants';
-import { FormLabelWithTooltip } from './FormLabelWithTooltip';
+import { InvoicingInput } from './InvoicingDetailsForm';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
-import { FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
-import { Input } from '@/components-v2/ui/input';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
@@ -25,7 +24,7 @@ export const InvoicingAddressFields: React.FC = () => {
 
     if (!address) {
         return (
-            <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+            <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
                 <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
                     <CardTitle className="text-text-primary !text-heading-sm">Billing address</CardTitle>
                 </CardHeader>
@@ -39,22 +38,22 @@ export const InvoicingAddressFields: React.FC = () => {
     }
 
     return (
-        <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+        <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
             <CardHeader className="bg-bg-elevated h-10 flex flex-row items-center justify-between px-6">
                 <CardTitle className="text-text-primary !text-heading-sm">Billing address</CardTitle>
                 <Button type="button" variant="ghost" size="icon" onClick={handleRemove}>
                     <Trash2 className="size-4 text-fg-error" />
                 </Button>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3 items-start">
+            <CardContent className="grid grid-cols-2 gap-3 items-start px-6 py-9">
                 <FormField
                     control={control}
                     name="address.line1"
                     render={({ field }) => (
-                        <FormItem className="col-span-2">
-                            <FormLabelWithTooltip tooltip="Street address or P.O. box">Address line 1</FormLabelWithTooltip>
+                        <FormItem>
+                            <FormLabel>Address line 1</FormLabel>
                             <FormControl>
-                                <Input placeholder="123 Main St" {...field} value={field.value ?? ''} />
+                                <InvoicingInput placeholder="123 Main St" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -64,10 +63,10 @@ export const InvoicingAddressFields: React.FC = () => {
                     control={control}
                     name="address.line2"
                     render={({ field }) => (
-                        <FormItem className="col-span-2">
-                            <FormLabelWithTooltip tooltip="Apartment, suite, unit, building, or floor">Address line 2</FormLabelWithTooltip>
+                        <FormItem>
+                            <FormLabel>Address line 2</FormLabel>
                             <FormControl>
-                                <Input placeholder="Suite 100" {...field} value={field.value ?? ''} />
+                                <InvoicingInput placeholder="Suite 100" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -78,9 +77,9 @@ export const InvoicingAddressFields: React.FC = () => {
                     name="address.city"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabelWithTooltip tooltip="City or locality">City</FormLabelWithTooltip>
+                            <FormLabel>City</FormLabel>
                             <FormControl>
-                                <Input placeholder="San Francisco" {...field} value={field.value ?? ''} />
+                                <InvoicingInput placeholder="San Francisco" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -91,9 +90,9 @@ export const InvoicingAddressFields: React.FC = () => {
                     name="address.state"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabelWithTooltip tooltip="State, province, or region">State</FormLabelWithTooltip>
+                            <FormLabel>State</FormLabel>
                             <FormControl>
-                                <Input placeholder="CA" {...field} value={field.value ?? ''} />
+                                <InvoicingInput placeholder="CA" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -104,9 +103,9 @@ export const InvoicingAddressFields: React.FC = () => {
                     name="address.postalCode"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabelWithTooltip tooltip="ZIP or postal code">Postal code</FormLabelWithTooltip>
+                            <FormLabel>Postal code</FormLabel>
                             <FormControl>
-                                <Input placeholder="94105" {...field} value={field.value ?? ''} />
+                                <InvoicingInput placeholder="94105" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -117,12 +116,12 @@ export const InvoicingAddressFields: React.FC = () => {
                     name="address.country"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabelWithTooltip required tooltip="Country">
-                                Country
-                            </FormLabelWithTooltip>
+                            <FormLabel className="flex gap-1 items-center">
+                                Country <span className="text-alert-400">*</span>
+                            </FormLabel>
                             <Select value={field.value || undefined} onValueChange={field.onChange}>
                                 <FormControl>
-                                    <SelectTrigger className="w-full bg-bg-surface border-border-strong data-[placeholder]:border-border-muted text-text-primary data-[placeholder]:text-text-tertiary hover:bg-bg-surface focus:border-border-default">
+                                    <SelectTrigger className="w-full bg-bg-surface border-border-muted text-text-primary data-[placeholder]:text-text-tertiary hover:bg-bg-surface focus:border-border-default">
                                         <SelectValue placeholder="Select a country" />
                                     </SelectTrigger>
                                 </FormControl>

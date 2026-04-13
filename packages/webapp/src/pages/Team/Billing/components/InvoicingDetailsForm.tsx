@@ -3,13 +3,12 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { FormLabelWithTooltip } from './FormLabelWithTooltip';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
 import { Input } from '@/components-v2/ui/input';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
@@ -17,6 +16,10 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
 import type { BillingCustomer } from '@nangohq/types';
+
+export const InvoicingInput = (props: React.ComponentProps<typeof Input>) => (
+    <Input className="data-[filled=true]:not-aria-invalid:border-border-muted" {...props} />
+);
 
 const countryValues = countryCodes.map((c) => c.value) as [string, ...string[]];
 const taxIdTypeValues = taxIdTypes.map((t) => t.value) as [string, ...string[]];
@@ -92,21 +95,21 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+                <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
                     <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
                         <CardTitle className="text-text-primary !text-heading-sm">Billing information</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-5">
+                    <CardContent className="flex flex-row gap-5 items-start [&>*]:flex-1 px-6 py-9">
                         <FormField
                             control={form.control}
                             name="legalEntityName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabelWithTooltip required tooltip="The registered legal name of your company">
-                                        Legal entity name
-                                    </FormLabelWithTooltip>
+                                    <FormLabel className="flex gap-1 items-center">
+                                        Legal entity name <span className="text-alert-400">*</span>
+                                    </FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Acme Inc." {...field} />
+                                        <InvoicingInput placeholder="Acme Inc." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -117,11 +120,11 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabelWithTooltip required tooltip="Email address where invoices will be sent">
-                                        Billing email
-                                    </FormLabelWithTooltip>
+                                    <FormLabel className="flex gap-1 items-center">
+                                        Billing email <span className="text-alert-400">*</span>
+                                    </FormLabel>
                                     <FormControl>
-                                        <Input type="email" placeholder="billing@company.com" {...field} />
+                                        <InvoicingInput type="email" placeholder="billing@company.com" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -133,9 +136,9 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                 <InvoicingAddressFields />
                 <InvoicingTaxIdFields />
 
-                <div className="flex justify-end">
-                    <Button type="submit" variant="primary" size="sm" loading={isPending}>
-                        Save
+                <div className="flex justify-start">
+                    <Button type="submit" variant="primary" size="lg" loading={isPending}>
+                        Save changes
                     </Button>
                 </div>
             </form>

@@ -30,13 +30,13 @@ export const Payment: React.FC = () => {
                     <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
                         <CardTitle className="text-text-primary !text-heading-sm">Payment method</CardTitle>
                     </CardHeader>
-                    <CardContent className="px-0">
+                    <CardContent className="px-6 py-9">
                         {isPaymentMethodsLoading ? (
                             <Skeleton className="w-full h-22.5" />
                         ) : paymentMethodsError ? (
                             <CriticalErrorAlert message="Error loading payment method" />
                         ) : (
-                            <div className="w-full inline-flex items-center justify-between px-6 py-9">
+                            <div className="w-full inline-flex items-center justify-between">
                                 <div className="inline-flex gap-3 items-center">
                                     <div className="size-10 flex items-center justify-center border border-border-muted rounded">
                                         <CreditCard className="size-4.5 text-icon-primary" />
