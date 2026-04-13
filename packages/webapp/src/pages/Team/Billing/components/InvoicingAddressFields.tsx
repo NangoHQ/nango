@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
 export const InvoicingAddressFields: React.FC = () => {
-    const { control, setValue } = useFormContext<InvoicingFormData>();
+    const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const address = useWatch({ control, name: 'address' });
 
     const handleAdd = () => {
         setValue('address', { line1: null, line2: null, city: null, state: null, postalCode: null, country: '' });
+        clearErrors('address');
     };
 
     const handleRemove = () => {

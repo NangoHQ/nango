@@ -11,11 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
 export const InvoicingTaxIdFields: React.FC = () => {
-    const { control, setValue } = useFormContext<InvoicingFormData>();
+    const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const taxId = useWatch({ control, name: 'taxId' });
 
     const handleAdd = () => {
         setValue('taxId', { country: '', type: '', value: '' });
+        clearErrors('taxId');
     };
 
     const handleRemove = () => {
