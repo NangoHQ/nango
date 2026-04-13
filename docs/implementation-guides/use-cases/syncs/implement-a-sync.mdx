@@ -29,7 +29,7 @@ You can implement two-way syncs by combining syncs with [Actions](/implementatio
 - Syncs can use **[checkpoints](/implementation-guides/use-cases/syncs/checkpoints)** to save progress, resume after failures, and avoid re-fetching all data on every run
 - Synced data is cached in Nango (encrypted at rest and in transit)
 - Nango detects changes (additions, updates, deletes) and sends webhooks to your app
-- You set the polling frequency (15 seconds minimum interval)
+- You set the polling frequency (see [minimum sync frequency](/guides/platform/limits#minimum-sync-frequency))
 - All sync runs and API requests are logged in [Nango's logs](/guides/platform/observability)
 
 Syncs are defined on the integration (e.g., GitHub, Google Drive) by implementing a [Function](/guides/primitives/functions) with the sync's logic. Nango then executes the sync for each Connection of this integration, letting you customize logic and frequency per customer if needed.
