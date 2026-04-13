@@ -103,6 +103,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,
+        has_rbac: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,

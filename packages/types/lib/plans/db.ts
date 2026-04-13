@@ -127,6 +127,13 @@ export interface DBPlan extends Timestamps {
     has_webhooks_forward: boolean;
 
     /**
+     * Enable role-based access control (non-administrator roles)
+     * When false, all users/invites must be 'administrator'
+     * @default false
+     */
+    has_rbac: boolean;
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */

@@ -33,6 +33,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         auto_idle: true,
         has_webhooks_script: false,
         has_webhooks_forward: false,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
