@@ -92,9 +92,9 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                <Card className="bg-bg-elevated rounded border-none">
-                    <CardHeader>
-                        <CardTitle className="text-text-primary">Billing information</CardTitle>
+                <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+                    <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
+                        <CardTitle className="text-text-primary !text-heading-sm">Billing information</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-5">
                         <FormField

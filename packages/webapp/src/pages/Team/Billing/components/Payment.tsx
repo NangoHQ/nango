@@ -7,7 +7,6 @@ import { Dot } from '../../../../components-v2/Dot';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
-import { Separator } from '@/components-v2/ui/separator';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
@@ -25,7 +24,7 @@ export const Payment: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col gap-8">
             <div className="flex flex-col gap-5">
-                <h3 className="text-heading-sm text-text-primary">Payment Details</h3>
+                <h3 className="text-body-small-regular text-text-secondary">PAYMENT</h3>
                 {isPaymentMethodsLoading ? (
                     <Skeleton className="w-full h-22.5" />
                 ) : paymentMethodsError ? (
@@ -55,18 +54,11 @@ export const Payment: React.FC = () => {
                 )}
             </div>
 
-            <Separator className="bg-border-muted" />
-
             <div className="flex flex-col gap-5">
-                <h3 className="text-heading-sm text-text-primary">Invoicing Details</h3>
-
-                {usageError ? (
-                    <CriticalErrorAlert message="Error loading invoicing details" />
-                ) : (
-                    <>
-                        <InvoicingDetailsForm customer={usage?.data.customer} />
-
-                        {isUsageLoading ? (
+                <div className="flex items-center justify-between">
+                    <h3 className="text-body-small-regular text-text-secondary">INVOICING</h3>
+                    {!usageError &&
+                        (isUsageLoading ? (
                             <Skeleton className="w-27 h-5" />
                         ) : (
                             usage?.data.customer.portalUrl && (
@@ -74,9 +66,10 @@ export const Payment: React.FC = () => {
                                     View invoices
                                 </StyledLink>
                             )
-                        )}
-                    </>
-                )}
+                        ))}
+                </div>
+
+                {usageError ? <CriticalErrorAlert message="Error loading invoicing details" /> : <InvoicingDetailsForm customer={usage?.data.customer} />}
             </div>
         </div>
     );

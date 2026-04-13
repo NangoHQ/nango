@@ -25,11 +25,9 @@ export const InvoicingAddressFields: React.FC = () => {
 
     if (!address) {
         return (
-            <Card className="bg-bg-elevated rounded border-none">
-                <CardHeader>
-                    <div className="flex flex-col gap-1.5">
-                        <CardTitle className="text-text-primary">Billing address</CardTitle>
-                    </div>
+            <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+                <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
+                    <CardTitle className="text-text-primary !text-heading-sm">Billing address</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Button type="button" variant="secondary" size="sm" onClick={handleAdd}>
@@ -41,11 +39,9 @@ export const InvoicingAddressFields: React.FC = () => {
     }
 
     return (
-        <Card className="bg-bg-elevated rounded border-none">
-            <CardHeader className="flex flex-row items-center justify-between p-6">
-                <div className="flex flex-col gap-1.5">
-                    <CardTitle className="text-text-primary">Billing address</CardTitle>
-                </div>
+        <Card className="bg-bg-surface rounded border-2 border-border-disabled pt-0">
+            <CardHeader className="bg-bg-elevated h-10 flex flex-row items-center justify-between px-6">
+                <CardTitle className="text-text-primary !text-heading-sm">Billing address</CardTitle>
                 <Button type="button" variant="ghost" size="icon" onClick={handleRemove}>
                     <Trash2 className="size-4 text-fg-error" />
                 </Button>
