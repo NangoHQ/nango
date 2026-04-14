@@ -11,15 +11,12 @@ import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['data']; providerConfigKey: string }> = ({
-    connectionData,
-    providerConfigKey
-}) => {
+export const SettingsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
     const { data } = useEnvironment(env);
     const environment = data?.environmentAndAccount?.environment;
@@ -46,7 +43,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
     return (
         <>
             {DialogComponent}
-            <div className="flex justify-between items-start gap-11">
+            <ConnectionSideInfo connectionData={connectionData}>
                 <div className="w-full flex items-center justify-between">
                     <span className="text-body-medium-semi text-text-strong">Connection deletion</span>
                     <PermissionGate condition={canDeleteConnection} asChild>
@@ -72,9 +69,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
                         )}
                     </PermissionGate>
                 </div>
-
-                <ConnectionSideInfo connectionData={connectionData} />
-            </div>
+            </ConnectionSideInfo>
         </>
     );
 };

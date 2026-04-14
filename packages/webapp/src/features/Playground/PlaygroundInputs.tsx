@@ -45,7 +45,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
                                 <AlertButtonLink
-                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}#auth`}
+                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
                                     variant="info-secondary"
                                     onClick={() => setPlaygroundOpen(false)}
                                 >

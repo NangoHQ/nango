@@ -269,4 +269,21 @@
 .mantine-Prism-code {
     font-family: 'Geist Mono';
     background-color: var(--surface-canvas) !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) var(--surface-canvas);
+}
+
+.mantine-Prism-code::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.mantine-Prism-code::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 5px;
+    border: 2px solid var(--surface-canvas);
+}
+
+.mantine-Prism-code::-webkit-scrollbar-track {
+    background-color: var(--surface-canvas);
 }
