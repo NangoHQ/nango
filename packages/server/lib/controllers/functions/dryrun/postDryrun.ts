@@ -29,7 +29,6 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
     if (!connectionResult.success || !connectionResult.response) {
         sendStepError({
             res,
-            step: 'lookup',
             status: 404,
             error: { type: 'connection_not_found', message: `Connection '${body.connection_id}' was not found for integration '${body.integration_id}'` }
         });
@@ -38,7 +37,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
 
     const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
     if (defaultSecret.isErr()) {
-        sendStepError({ res, step: 'lookup', status: 500, error: defaultSecret.error });
+        sendStepError({ res, status: 500, error: defaultSecret.error });
         return;
     }
 
@@ -71,6 +70,6 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             output: result.output
         });
     } catch (err) {
-        sendStepError({ res, step: 'execution', error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
     }
 });

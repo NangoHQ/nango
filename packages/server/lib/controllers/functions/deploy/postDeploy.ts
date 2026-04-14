@@ -49,7 +49,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
 
     const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
     if (defaultSecret.isErr()) {
-        sendStepError({ res, step: 'deployment', status: 500, error: defaultSecret.error });
+        sendStepError({ res, status: 500, error: defaultSecret.error });
         return;
     }
 
@@ -71,6 +71,6 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             output: result.output
         });
     } catch (err) {
-        sendStepError({ res, step: 'deployment', error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
     }
 });

@@ -49,7 +49,6 @@ export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>
     } catch (err) {
         sendStepError({
             res,
-            step: 'compilation',
             error: err,
             ...(err instanceof RemoteFunctionError ? {} : { status: 500 })
         });

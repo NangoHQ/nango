@@ -5,8 +5,6 @@ import { remoteFunctionProjectPath } from './runtime.js';
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
 
-export type RemoteFunctionStep = 'compilation' | 'deployment' | 'lookup' | 'execution';
-
 /**
  * Runtime allow-list for error codes exposed by the remote-function API.
  * normalizeError receives arbitrary Error-like objects, so internal codes
@@ -40,7 +38,7 @@ export class RemoteFunctionError extends Error {
     }
 }
 
-export function sendStepError({ res, step: _step, error, status }: { res: Response; step: RemoteFunctionStep; error: unknown; status?: number }): void {
+export function sendStepError({ res, error, status }: { res: Response; error: unknown; status?: number }): void {
     const normalized = normalizeError(error);
 
     res.status(status ?? normalized.status ?? 500).send({

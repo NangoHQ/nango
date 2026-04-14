@@ -18,7 +18,6 @@ describe('remote function helpers', () => {
 
         sendStepError({
             res,
-            step: 'deployment',
             error: new RemoteFunctionError({ code: 'deployment_error', message: 'Deploy failed', status: 400 })
         });
 
@@ -31,7 +30,6 @@ describe('remote function helpers', () => {
 
         sendStepError({
             res,
-            step: 'execution',
             error: Object.assign(new Error('Docker is unavailable'), { code: 'ENOENT' })
         });
 
@@ -44,7 +42,6 @@ describe('remote function helpers', () => {
 
         sendStepError({
             res,
-            step: 'execution',
             error: new Error('Fetch failed http://localhost:3003/sync/deploy?env=dev')
         });
 
@@ -56,7 +53,6 @@ describe('remote function helpers', () => {
 
         sendStepError({
             res,
-            step: 'compilation',
             error: new Error('Failed at /home/user/nango-integrations/github/syncs/foo.ts:12:3 while reading /tmp/nango-dryrun-input.json')
         });
 
