@@ -1,19 +1,27 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
 
 import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from '@nangohq/types';
 
-export async function apiGetCurrentPlan(env: string) {
-    const res = await apiFetch(`/api/v1/plans/current?env=${env}`, {
-        method: 'GET'
+export function currentPlanQueryOptions(env: string) {
+    return queryOptions<GetPlan['Success'], APIError>({
+        enabled: Boolean(env),
+        queryKey: ['plans', 'current', env],
+        queryFn: async (): Promise<GetPlan['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
+            const json = (await res.json()) as GetPlan['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
     });
+}
 
-    return {
-        res,
-        json: (await res.json()) as GetPlan['Reply']
-    };
+export function useApiGetCurrentPlan(env: string) {
+    return useQuery(currentPlanQueryOptions(env));
 }
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {

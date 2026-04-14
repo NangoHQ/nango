@@ -38,9 +38,14 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
         return;
     }
 
-    const { account, user: me } = res.locals;
+    const { account, user: me, plan } = res.locals;
     const params: PatchTeamUser['Params'] = paramVal.data;
     const body: PatchTeamUser['Body'] = bodyVal.data;
+
+    if (!plan?.has_rbac && body.role !== 'administrator') {
+        res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
+        return;
+    }
 
     const user = await userService.getUserById(params.id);
     if (!user || user.account_id !== account.id) {

@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
 
@@ -28,6 +29,8 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
     const { toast } = useToast();
     const [role, setRole] = useState<Role>(user.role);
     const { mutateAsync: patchTeamUser, isPending } = usePatchTeamUser(env);
+    const { data: currentPlan } = useApiGetCurrentPlan(env);
+    const hasRBAC = currentPlan?.data.has_rbac ?? false;
 
     const onSubmit = async () => {
         if (role === user.role) {
@@ -53,7 +56,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2">
                         <Input type="email" value={user.email} disabled className="flex-1" />
-                        <RoleSelect value={role} onChange={setRole} />
+                        <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
                     </div>
                     <StyledLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" type="external" icon>
                         Learn more about roles and permissions
