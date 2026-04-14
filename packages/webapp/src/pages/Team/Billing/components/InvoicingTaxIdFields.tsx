@@ -2,7 +2,7 @@ import { ChevronDown, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { countryCodes, taxIdTypes } from '../invoicingConstants';
+import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingInput, OptionalTag } from './InvoicingDetailsForm';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
@@ -17,13 +17,17 @@ export const InvoicingTaxIdFields: React.FC = () => {
     const selectedCountry = useWatch({ control, name: 'taxId.country' });
     const selectedType = useWatch({ control, name: 'taxId.type' });
 
+    // Narrow the type dropdown to only the tax ID types supported by the selected country.
+    // Falls back to the full list if the country has no mapping (shouldn't happen in practice).
     const filteredTypes = useMemo(() => {
         if (!selectedCountry) return taxIdTypes;
-        const prefix = selectedCountry.toLowerCase() + '_';
-        const matches = taxIdTypes.filter((t) => t.value.startsWith(prefix));
-        return matches.length > 0 ? matches : taxIdTypes;
+        const supported = countryToTaxIdTypes[selectedCountry];
+        if (!supported || supported.length === 0) return taxIdTypes;
+        return taxIdTypes.filter((t) => supported.includes(t.value));
     }, [selectedCountry]);
 
+    // When the country changes and the previously selected type is no longer valid,
+    // clear the type and value so the form doesn't submit a stale/incompatible tax ID.
     useEffect(() => {
         if (selectedType && !filteredTypes.some((t) => t.value === selectedType)) {
             setValue('taxId.type', '');
