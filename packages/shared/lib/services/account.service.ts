@@ -374,7 +374,9 @@ class AccountService {
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
         // 1. read auth context from replica, 2. best-effort debounced update on primary.
-        const res = await db.knex.raw<{
+        const {
+            rows: [row]
+        } = await db.knex.raw<{
             rows: {
                 account: DBTeam;
                 environment: DBEnvironment;
@@ -447,8 +449,6 @@ class AccountService {
             `,
             [hash, hash]
         );
-
-        const row = res.rows[0];
         if (!row) {
             return null;
         }
