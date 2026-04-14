@@ -220,7 +220,7 @@ describe('Scheduler', () => {
         expect(updated.frequencyMs).toBe(newFrequency);
         expect(updated.nextExecutionAt).toEqual(new Date(updated.startsAt.getTime() + newFrequency));
     });
-    it('should create task with webhook group key (advisory lock path)', async () => {
+    it('should create task with webhook group key', async () => {
         const task = await immediate(scheduler, { taskProps: { groupKey: `webhook:${nanoid()}` } });
         expect(task.state).toBe('CREATED');
         expect(task.groupKey).toMatch(/^webhook:/);
