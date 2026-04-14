@@ -6,6 +6,18 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('should only enable RBAC by default on growth, growth-v2, and enterprise', () => {
+        expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('growth-v2')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('enterprise')?.flags.has_rbac).toBe(true);
+    });
+
     describe('when downgrading', () => {
         it('should reset all flags to new plan default values, including overrides', () => {
             const currentPlan = makePlan({
