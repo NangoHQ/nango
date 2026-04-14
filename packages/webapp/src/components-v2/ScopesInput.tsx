@@ -2,7 +2,17 @@ import { Copy, CornerDownLeft, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Badge } from './ui/badge.js';
-import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxContent, ComboboxItem, ComboboxList, ComboboxValue } from './ui/combobox.js';
+import {
+    Combobox,
+    ComboboxChip,
+    ComboboxChips,
+    ComboboxChipsInput,
+    ComboboxCollection,
+    ComboboxContent,
+    ComboboxItem,
+    ComboboxList,
+    ComboboxValue
+} from './ui/combobox.js';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.js';
 import { cn } from '@/utils/utils';
 
@@ -155,12 +165,13 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 items={availableScopes ?? []}
                 multiple
                 value={scopes}
+                inputValue={inputValue}
                 onValueChange={(newScopes) => void onValueChange(newScopes)}
                 disabled={loading}
                 open={hasAvailableScopesDropdown ? dropdownOpen : false}
                 onOpenChange={setDropdownOpen}
             >
-                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1', scopes.length === 0 ? 'h-9' : 'min-h-9 py-1')}>
+                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1 min-h-9')}>
                     {scopes.length > 0 && (
                         <ComboboxValue>
                             {scopes.map((scope) => (
@@ -200,13 +211,13 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         anchor={chipsRef}
                         sideOffset={0}
                         collisionAvoidance={{ side: 'none' }}
-                        className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle mb-2"
+                        className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle flex flex-col"
                     >
                         {inputValue.trim() && (
                             <button
                                 type="button"
                                 onClick={() => void addScopesFromText(inputValue)}
-                                className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary shrink-0"
                             >
                                 <span className="inline-flex h-6 items-center gap-1 rounded-md bg-bg-elevated px-2 text-xs font-medium text-text-primary shrink-0">
                                     <Plus size={11} />
@@ -217,13 +228,15 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                                 </span>
                             </button>
                         )}
-                        {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-tertiary">Suggested scopes</p>}
-                        <ComboboxList className="p-0">
-                            {(scope) => (
-                                <ComboboxItem key={scope as string} value={scope} className="rounded-none px-2">
-                                    {scope as string}
-                                </ComboboxItem>
-                            )}
+                        <ComboboxList className="p-0 flex-1 min-h-0 max-h-none">
+                            {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-tertiary">Suggested scopes</p>}
+                            <ComboboxCollection>
+                                {(scope) => (
+                                    <ComboboxItem key={scope as string} value={scope} className="rounded-none px-2">
+                                        {scope as string}
+                                    </ComboboxItem>
+                                )}
+                            </ComboboxCollection>
                         </ComboboxList>
                     </ComboboxContent>
                 )}
