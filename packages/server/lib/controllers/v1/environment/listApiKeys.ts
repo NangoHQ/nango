@@ -1,9 +1,8 @@
-import { permissions } from '@nangohq/authz';
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../authz/resolve.js';
+import { canReadProdSecret } from '../../../authz/resolve.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { ListApiKeys } from '@nangohq/types';
@@ -17,7 +16,7 @@ export const listApiKeys = asyncWrapper<ListApiKeys>(async (req, res) => {
 
     const { environment } = res.locals;
 
-    const canReadSecret = !environment.is_production || (await resolve(res.locals, permissions.canReadProdSecretKey));
+    const canReadSecret = await canReadProdSecret(res.locals, environment);
 
     const keysResult = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
     if (keysResult.isErr()) {

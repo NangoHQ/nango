@@ -49,17 +49,6 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 
-export const SCOPE_PRESETS: { label: string; description: string; scopes: string[] }[] = [
-    { label: 'Full access', description: 'All permissions', scopes: ['environment:*'] },
-    { label: 'Auth', description: 'Create connect sessions', scopes: ['environment:connect_sessions:write'] },
-    { label: 'CI/CD deploy', description: 'Deploy syncs and actions', scopes: ['environment:deploy'] },
-    {
-        label: 'Backend service',
-        description: 'Read connections, records, execute actions/syncs, proxy',
-        scopes: ['environment:connections:read', 'environment:records:read', 'environment:actions:execute', 'environment:syncs:execute', 'environment:proxy']
-    }
-];
-
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
 }

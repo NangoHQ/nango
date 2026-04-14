@@ -1,3 +1,5 @@
+import * as z from 'zod';
+
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
@@ -6,6 +8,10 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { DeleteApiKey } from '@nangohq/types';
 
+const validationParams = z.object({
+    keyId: z.coerce.number().int().positive()
+});
+
 export const deleteApiKey = asyncWrapper<DeleteApiKey>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
@@ -13,11 +19,13 @@ export const deleteApiKey = asyncWrapper<DeleteApiKey>(async (req, res) => {
         return;
     }
 
-    const keyId = Number(req.params['keyId']);
-    if (isNaN(keyId)) {
-        res.status(400).send({ error: { code: 'invalid_query_params', message: 'keyId must be a number' } });
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valParams.error) } });
         return;
     }
+
+    const { keyId } = valParams.data;
 
     const { environment } = res.locals;
 
