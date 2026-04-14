@@ -30,6 +30,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should be protected', async () => {
+        // @ts-expect-error duplicate GET/POST path confuses api.fetch endpoint inference
         const res = await api.fetch(route, { method: 'POST', params: { id: crypto.randomUUID() } });
 
         shouldBeProtected(res);
@@ -52,16 +53,15 @@ describe(`POST ${route}`, () => {
             });
         });
 
-        expect(invitation).toBeTruthy();
+        if (!invitation) {
+            throw new Error('Failed to create invitation');
+        }
 
         await updatePlan(db.knex, { id: inviter.plan.id, has_rbac: false });
 
         const session = await authenticateUser(api, invitee.user);
-        const res = await api.fetch(route, {
-            method: 'POST',
-            params: { id: invitation!.token },
-            session
-        });
+        // @ts-expect-error duplicate GET/POST path confuses api.fetch endpoint inference
+        const res = await api.fetch(route, { method: 'POST', params: { id: invitation.token }, session });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
@@ -71,7 +71,7 @@ describe(`POST ${route}`, () => {
         expect(updatedUser?.account_id).toBe(inviter.account.id);
         expect(updatedUser?.role).toBe(envs.DEFAULT_USER_ROLE);
 
-        const acceptedInvitation = await db.knex.select('*').from<DBInvitation>('_nango_invited_users').where({ id: invitation!.id }).first();
+        const acceptedInvitation = await db.knex.select('*').from<DBInvitation>('_nango_invited_users').where({ id: invitation.id }).first();
 
         expect(acceptedInvitation?.accepted).toBe(true);
         expect(acceptedInvitation?.role).toBe(nonDefaultRole);

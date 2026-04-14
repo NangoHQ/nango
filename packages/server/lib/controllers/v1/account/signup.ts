@@ -3,13 +3,14 @@ import crypto from 'crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, getPlan, pbkdf2, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
+import { hasRbac } from '../../../utils/rbac.js';
 
 import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
@@ -78,18 +79,19 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        const plan = await getPlan(db.knex, { accountId: validToken.account_id });
-        if (plan.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
-            return;
-        }
-
         account = await accountService.getAccountById(db.knex, validToken.account_id);
         if (!account) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
         }
-        if (plan.value.has_rbac) {
+
+        const hasRbacRes = await hasRbac({ accountId: validToken.account_id });
+        if (hasRbacRes.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
+            return;
+        }
+
+        if (hasRbacRes.value) {
             invitationRole = validToken.role;
         }
         await acceptInvitation(token);

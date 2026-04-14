@@ -1,11 +1,11 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { acceptInvitation, getInvitation, getPlan, userService } from '@nangohq/shared';
+import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { hasRbac } from '../../../utils/rbac.js';
 
 import type { AcceptInvite } from '@nangohq/types';
 
@@ -38,13 +38,13 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
         return;
     }
 
-    const plan = await getPlan(db.knex, { accountId: invitation.account_id });
-    if (plan.isErr()) {
+    const hasRbacRes = await hasRbac({ accountId: invitation.account_id });
+    if (hasRbacRes.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
         return;
     }
 
-    const role = plan.value.has_rbac ? invitation.role : envs.DEFAULT_USER_ROLE;
+    const role = hasRbacRes.value ? invitation.role : envs.DEFAULT_USER_ROLE;
 
     await acceptInvitation(data.id);
     const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role });
@@ -54,8 +54,8 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
     }
 
     // User is stored in session, so we need to update the DB
-    // @ts-expect-error you got to love passport
-    req.session.passport.user = updated;
+    const passportSession = (req.session as typeof req.session & { passport: { user: typeof updated } }).passport;
+    passportSession.user = updated;
     req.session.save((err) => {
         if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });

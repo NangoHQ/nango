@@ -7,6 +7,7 @@ import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 import { envs } from '../../../env.js';
 import { sendInviteEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { hasRbac } from '../../../utils/rbac.js';
 
 import type { PostInvite } from '@nangohq/types';
 
@@ -36,7 +37,13 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
     const body = val.data;
     const effectiveRole = body.role ?? envs.DEFAULT_USER_ROLE;
 
-    if (!plan?.has_rbac && effectiveRole !== envs.DEFAULT_USER_ROLE) {
+    const hasRbacRes = await hasRbac({ accountId: account.id, plan });
+    if (hasRbacRes.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to load team plan' } });
+        return;
+    }
+
+    if (!hasRbacRes.value && effectiveRole !== envs.DEFAULT_USER_ROLE) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
         return;
     }
