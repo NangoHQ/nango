@@ -13772,6 +13772,37 @@ quickbase:
             example: bb_aa_xxxxxx_xxxxxxxxxxxxxxxxx
             doc_section: '#step-2-finding-your-user-token'
 
+qualia:
+    display_name: Qualia
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.qualia.io/api
+    docs: https://nango.dev/docs/api-integrations/qualia
+    docs_connect: https://nango.dev/docs/api-integrations/qualia/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the Qualia platform you want to connect to.
+            pattern: '^[a-z0-9-]+$'
+            example: connect
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Qualia organization username.
+            doc_section: '#step-2-finding-your-api-key'
+        password:
+            type: string
+            title: Password
+            description: Your Qualia API password.
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
+
 quickbooks:
     display_name: Quickbooks
     categories:
