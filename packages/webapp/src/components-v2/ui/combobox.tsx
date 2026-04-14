@@ -267,8 +267,6 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     );
 }
 
-// ---- Chips-based combobox primitives (added in this branch, not in master) ----
-
 const Combobox = ComboboxPrimitive.Root;
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {

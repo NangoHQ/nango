@@ -1,7 +1,9 @@
-import { Copy, CornerDownLeft, Loader2, Plus, Trash2 } from 'lucide-react';
+import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { CopyButton } from './CopyButton.js';
 import { Badge } from './ui/badge.js';
+import { Button } from './ui/button.js';
 import {
     Combobox,
     ComboboxChip,
@@ -64,6 +66,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
             return;
         }
 
+        setLoading(true);
         try {
             await onChange?.(newScopes.join(','), countDifference);
             setScopes(newScopes);
@@ -74,12 +77,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         }
     };
 
-    const copyScopes = () => {
-        void navigator.clipboard.writeText(scopes.join(','));
-    };
-
     const deleteAllScopes = async () => {
-        setLoading(true);
         await onValueChange([]);
     };
 
@@ -91,7 +89,6 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
         if (newScopes.length === 0) return;
         const merged = Array.from(new Set([...scopes, ...newScopes]));
         if (merged.length !== scopes.length) {
-            setLoading(true);
             await onValueChange(merged);
         }
         setInputValue('');
@@ -130,7 +127,10 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         {scope}
                     </span>
                 ))}
-                <div className="ml-auto flex items-center gap-1 shrink-0">{isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}</div>
+                <div className="ml-auto flex items-center gap-1 shrink-0">
+                    {scopes.length > 0 && <CopyButton text={scopes.join(',')} />}
+                    {isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}
+                </div>
             </div>
         );
     }
@@ -141,21 +141,17 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 <div className="absolute -top-6 right-0 flex items-center gap-1">
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={copyScopes} className="text-text-tertiary hover:text-text-primary flex items-center p-0.5">
-                                <Copy size={12} />
-                            </button>
+                            <span>
+                                <CopyButton text={scopes.join(',')} />
+                            </span>
                         </TooltipTrigger>
                         <TooltipContent side="top">Copy all</TooltipContent>
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button
-                                type="button"
-                                onClick={() => void deleteAllScopes()}
-                                className="text-text-tertiary hover:text-text-primary flex items-center p-0.5"
-                            >
-                                <Trash2 size={12} />
-                            </button>
+                            <Button type="button" size="icon" variant="ghost" onClick={() => void deleteAllScopes()}>
+                                <Trash2 />
+                            </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top">Delete all</TooltipContent>
                     </Tooltip>
@@ -188,22 +184,14 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         onFocus={() => hasAvailableScopesDropdown && setDropdownOpen(true)}
                     />
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
-                        {loading ? (
-                            <Loader2 size={14} className="animate-spin text-text-secondary" />
-                        ) : (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        type="button"
-                                        onClick={() => void addScopesFromText(inputValue)}
-                                        className="text-text-tertiary hover:text-text-primary flex items-center p-0.5"
-                                    >
-                                        <CornerDownLeft size={14} />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">Add scope</TooltipContent>
-                            </Tooltip>
-                        )}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button type="button" size="icon" variant="ghost" loading={loading} onClick={() => void addScopesFromText(inputValue)}>
+                                    <CornerDownLeft />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Add scope</TooltipContent>
+                        </Tooltip>
                     </div>
                 </ComboboxChips>
                 {hasAvailableScopesDropdown && (
@@ -213,22 +201,22 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                         collisionAvoidance={{ side: 'none' }}
                         className="rounded-t-none shadow-none ring-0 border border-t-0 border-border-muted bg-bg-subtle flex flex-col"
                     >
-                        {inputValue.trim() && (
-                            <button
-                                type="button"
-                                onClick={() => void addScopesFromText(inputValue)}
-                                className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary shrink-0"
-                            >
-                                <span className="inline-flex h-6 items-center gap-1 rounded-md bg-bg-elevated px-2 text-xs font-medium text-text-primary shrink-0">
-                                    <Plus size={11} />
-                                    Add
-                                </span>
-                                <span>
-                                    <span className="font-medium text-text-primary">&quot;{inputValue.trim()}&quot;</span> as a new scope
-                                </span>
-                            </button>
-                        )}
                         <ComboboxList className="p-0 flex-1 min-h-0 max-h-none">
+                            {inputValue.trim() && (
+                                <button
+                                    type="button"
+                                    onClick={() => void addScopesFromText(inputValue)}
+                                    className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-text-secondary hover:bg-dropdown-bg-hover hover:text-text-primary shrink-0"
+                                >
+                                    <span className="inline-flex h-6 items-center gap-1 rounded-md bg-bg-elevated px-2 text-xs font-medium text-text-primary shrink-0">
+                                        <Plus className="size-3.5" />
+                                        Add
+                                    </span>
+                                    <span>
+                                        <span className="font-medium text-text-primary">&quot;{inputValue.trim()}&quot;</span> as a new scope
+                                    </span>
+                                </button>
+                            )}
                             {filteredSuggestions.length > 0 && <p className="px-2 py-1.5 text-sm text-text-tertiary">Suggested scopes</p>}
                             <ComboboxCollection>
                                 {(scope) => (

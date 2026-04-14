@@ -29,7 +29,7 @@ export const CopyButton: React.FC<{ text: string; disabled?: boolean }> = ({ tex
     const animationClass = hasInteracted ? 'animate-in zoom-in-45' : '';
 
     return (
-        <Button disabled={disabled} data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className="group">
+        <Button type="button" disabled={disabled} data-copied={copied} variant="ghost" size="icon" onClick={copyToClipboard} className="group">
             <Check className={cn('size-3.5 hidden group-data-[copied=true]:inline', animationClass)} />
             <Copy className={cn('size-3.5 inline group-data-[copied=true]:hidden', animationClass)} />
         </Button>
