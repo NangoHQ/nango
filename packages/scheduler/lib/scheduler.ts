@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
 
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
@@ -14,6 +14,10 @@ import type { ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, Task
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
+
+function shouldSerializeImmediateEnqueue(groupKey: string): boolean {
+    return groupKey.startsWith('webhook:');
+}
 
 export class Scheduler {
     private expiring: ExpiringDaemon;
@@ -200,6 +204,10 @@ export class Scheduler {
                     startsAfter: now,
                     scheduleId: null
                 };
+            }
+
+            if (shouldSerializeImmediateEnqueue(taskProps.groupKey)) {
+                await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_immediate_enqueue"`, [stringToHash(`enqueue:${taskProps.groupKey}`)]);
             }
 
             const created = await tasks.create(trx, [taskProps]);
