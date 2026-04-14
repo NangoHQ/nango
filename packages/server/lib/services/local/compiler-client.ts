@@ -2,17 +2,23 @@ import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, readContainerFile, writeContainerFile } from './docker.js';
 import { CompilerError, buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
-import { remoteFunctionLocalImage, remoteFunctionProjectPath } from '../remote-function/runtime.js';
+import {
+    remoteFunctionCompileTimeoutMs,
+    remoteFunctionCompilerSandboxTimeoutMs,
+    remoteFunctionLocalImage,
+    remoteFunctionProjectPath
+} from '../remote-function/runtime.js';
 
 import type { CompileRequest, CompileResult } from '../remote-function/compiler-client.js';
-
-const compilerTimeoutMs = 3 * 60 * 1000;
 
 export async function invokeLocalCompiler(request: CompileRequest): Promise<CompileResult> {
     const containerName = `nango-compiler-${randomUUID().slice(0, 8)}`;
 
     try {
-        await execDockerFileAsync(['run', '-d', '--name', containerName, remoteFunctionLocalImage, 'sleep', '300'], { timeout: 10_000 });
+        await execDockerFileAsync(
+            ['run', '-d', '--name', containerName, remoteFunctionLocalImage, 'sleep', String(Math.ceil(remoteFunctionCompilerSandboxTimeoutMs / 1000))],
+            { timeout: 10_000 }
+        );
 
         const { tsFilePath, cjsFilePath } = getFilePaths(request);
 
@@ -21,7 +27,7 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
 
         try {
             await execDockerFileAsync(['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
-                timeout: compilerTimeoutMs
+                timeout: remoteFunctionCompileTimeoutMs
             });
         } catch (err) {
             throw new CompilerError(getExecErrorOutput(err), 'compilation');

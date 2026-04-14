@@ -7,7 +7,7 @@ import { isLocal } from '@nangohq/utils';
 import { buildDeployArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
-import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
+import { remoteFunctionCompilerTemplate, remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
 
@@ -25,8 +25,6 @@ export interface DeployResult {
     output: string;
 }
 
-const deployTimeoutMs = 5 * 60 * 1000;
-
 export async function invokeDeploy(request: DeployRequest): Promise<DeployResult> {
     if (isLocal) {
         return invokeLocalDeploy(request);
@@ -38,7 +36,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
     }
 
     const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
-        timeoutMs: deployTimeoutMs,
+        timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-deploy', requestId: randomUUID() },
         network: { allowPublicTraffic: true },
@@ -62,7 +60,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         try {
             const result = await sandbox.commands.run(command, {
                 cwd: remoteFunctionProjectPath,
-                timeoutMs: deployTimeoutMs,
+                timeoutMs: remoteFunctionDeployTimeoutMs,
                 envs
             });
             return { output: result.stdout };

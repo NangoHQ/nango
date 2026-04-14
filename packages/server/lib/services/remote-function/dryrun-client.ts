@@ -7,7 +7,13 @@ import { isLocal } from '@nangohq/utils';
 import { buildDryrunArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
-import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
+import {
+    remoteFunctionCompileTimeoutMs,
+    remoteFunctionCompilerTemplate,
+    remoteFunctionDryrunSandboxTimeoutMs,
+    remoteFunctionDryrunTimeoutMs,
+    remoteFunctionProjectPath
+} from './runtime.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
@@ -30,9 +36,6 @@ export interface DryrunResult {
     output: string;
 }
 
-const compileTimeoutMs = 3 * 60 * 1000;
-const dryrunTimeoutMs = 5 * 60 * 1000;
-
 export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult> {
     if (isLocal) {
         return invokeLocalDryrun(request);
@@ -44,7 +47,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
     }
 
     const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
-        timeoutMs: dryrunTimeoutMs,
+        timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-dryrun', requestId: randomUUID() },
         network: { allowPublicTraffic: true },
@@ -60,7 +63,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
         try {
             await sandbox.commands.run('nango compile', {
                 cwd: remoteFunctionProjectPath,
-                timeoutMs: compileTimeoutMs,
+                timeoutMs: remoteFunctionCompileTimeoutMs,
                 envs: { NO_COLOR: '1' }
             });
         } catch (err) {
@@ -93,7 +96,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
         try {
             const result = await sandbox.commands.run(command, {
                 cwd: remoteFunctionProjectPath,
-                timeoutMs: dryrunTimeoutMs,
+                timeoutMs: remoteFunctionDryrunTimeoutMs,
                 envs
             });
             return { output: result.stdout };

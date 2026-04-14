@@ -4,11 +4,14 @@ import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDoc
 import { buildDeployArgs } from '../remote-function/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 import { RemoteFunctionError } from '../remote-function/helpers.js';
-import { remoteFunctionLocalImage, remoteFunctionProjectPath } from '../remote-function/runtime.js';
+import {
+    remoteFunctionDeploySandboxTimeoutMs,
+    remoteFunctionDeployTimeoutMs,
+    remoteFunctionLocalImage,
+    remoteFunctionProjectPath
+} from '../remote-function/runtime.js';
 
 import type { DeployRequest, DeployResult } from '../remote-function/deploy-client.js';
-
-const deployTimeoutMs = 5 * 60 * 1000;
 
 export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployResult> {
     const containerName = `nango-deploy-${randomUUID().slice(0, 8)}`;
@@ -33,7 +36,7 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
                 'host.docker.internal:host-gateway',
                 remoteFunctionLocalImage,
                 'sleep',
-                '300'
+                String(Math.ceil(remoteFunctionDeploySandboxTimeoutMs / 1000))
             ],
             { timeout: 10_000 }
         );
@@ -46,7 +49,7 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
         try {
             const { stdout, stderr } = await execDockerFileAsync(
                 ['exec', '-w', remoteFunctionProjectPath, containerName, 'nango', ...buildDeployArgs(request)],
-                { timeout: deployTimeoutMs }
+                { timeout: remoteFunctionDeployTimeoutMs }
             );
             return { output: stdout || stderr };
         } catch (err) {

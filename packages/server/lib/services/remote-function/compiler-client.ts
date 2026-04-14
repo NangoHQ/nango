@@ -6,7 +6,12 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 import { isLocal } from '@nangohq/utils';
 
 import { RemoteFunctionError } from './helpers.js';
-import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
+import {
+    remoteFunctionCompileTimeoutMs,
+    remoteFunctionCompilerSandboxTimeoutMs,
+    remoteFunctionCompilerTemplate,
+    remoteFunctionProjectPath
+} from './runtime.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 export interface CompileRequest {
@@ -34,8 +39,6 @@ export class CompilerError extends RemoteFunctionError {
     }
 }
 
-const compilerTimeoutMs = 3 * 60 * 1000;
-
 export async function invokeCompiler(request: CompileRequest): Promise<CompileResult> {
     if (isLocal) {
         return invokeLocalCompiler(request);
@@ -47,7 +50,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
     }
 
     const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
-        timeoutMs: compilerTimeoutMs,
+        timeoutMs: remoteFunctionCompilerSandboxTimeoutMs,
         allowInternetAccess: true,
         metadata: { purpose: 'nango-compiler', requestId: randomUUID() },
         network: { allowPublicTraffic: true },
@@ -63,7 +66,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         try {
             await sandbox.commands.run('nango compile', {
                 cwd: remoteFunctionProjectPath,
-                timeoutMs: compilerTimeoutMs,
+                timeoutMs: remoteFunctionCompileTimeoutMs,
                 envs: { NO_COLOR: '1' }
             });
         } catch (err) {

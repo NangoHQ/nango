@@ -4,12 +4,15 @@ import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDoc
 import { buildDryrunArgs } from '../remote-function/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 import { RemoteFunctionError } from '../remote-function/helpers.js';
-import { remoteFunctionLocalImage, remoteFunctionProjectPath } from '../remote-function/runtime.js';
+import {
+    remoteFunctionCompileTimeoutMs,
+    remoteFunctionDryrunSandboxTimeoutMs,
+    remoteFunctionDryrunTimeoutMs,
+    remoteFunctionLocalImage,
+    remoteFunctionProjectPath
+} from '../remote-function/runtime.js';
 
 import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-client.js';
-
-const compileTimeoutMs = 3 * 60 * 1000;
-const dryrunTimeoutMs = 5 * 60 * 1000;
 
 export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunResult> {
     const containerName = `nango-dryrun-${randomUUID().slice(0, 8)}`;
@@ -32,7 +35,7 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
                 'host.docker.internal:host-gateway',
                 remoteFunctionLocalImage,
                 'sleep',
-                '300'
+                String(Math.ceil(remoteFunctionDryrunSandboxTimeoutMs / 1000))
             ],
             { timeout: 10_000 }
         );
@@ -44,7 +47,7 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 
         try {
             await execDockerFileAsync(['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
-                timeout: compileTimeoutMs
+                timeout: remoteFunctionCompileTimeoutMs
             });
         } catch (err) {
             throw new RemoteFunctionError({
@@ -67,7 +70,7 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
         try {
             const { stdout, stderr } = await execDockerFileAsync(
                 ['exec', '-w', remoteFunctionProjectPath, containerName, 'nango', ...buildDryrunArgs(request)],
-                { timeout: dryrunTimeoutMs }
+                { timeout: remoteFunctionDryrunTimeoutMs }
             );
             return { output: stdout || stderr };
         } catch (err) {
