@@ -2,10 +2,11 @@ import { ChevronDown, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes } from '../invoicingConstants';
-import { InvoicingInput, OptionalTag } from './InvoicingDetailsForm';
+import { OptionalTag } from './InvoicingDetailsForm';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
+import { Input } from '@/components-v2/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
@@ -49,7 +50,7 @@ export const InvoicingAddressFields: React.FC = () => {
                             <FormItem>
                                 <FormLabel>Address line 1</FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="123 Main St" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="123 Main St" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -62,7 +63,7 @@ export const InvoicingAddressFields: React.FC = () => {
                             <FormItem>
                                 <FormLabel>Address line 2</FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="Suite 100" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="Suite 100" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -75,7 +76,7 @@ export const InvoicingAddressFields: React.FC = () => {
                             <FormItem>
                                 <FormLabel>City</FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="San Francisco" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="San Francisco" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -88,7 +89,7 @@ export const InvoicingAddressFields: React.FC = () => {
                             <FormItem>
                                 <FormLabel>State</FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="CA" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="CA" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -101,7 +102,7 @@ export const InvoicingAddressFields: React.FC = () => {
                             <FormItem>
                                 <FormLabel>Postal code</FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder="94105" {...field} value={field.value ?? ''} />
+                                    <Input placeholder="94105" {...field} value={field.value ?? ''} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

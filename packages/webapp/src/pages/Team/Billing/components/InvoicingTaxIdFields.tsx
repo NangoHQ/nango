@@ -3,10 +3,11 @@ import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
-import { InvoicingInput, OptionalTag } from './InvoicingDetailsForm';
+import { OptionalTag } from './InvoicingDetailsForm';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
+import { Input } from '@/components-v2/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
@@ -132,7 +133,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                     Value <span className="text-alert-400">*</span>
                                 </FormLabel>
                                 <FormControl>
-                                    <InvoicingInput placeholder={`e.g. ${valuePlaceholder}`} {...field} />
+                                    <Input placeholder={`e.g. ${valuePlaceholder}`} {...field} />
                                 </FormControl>
                                 {docType && docFormat && (
                                     <p className={`text-body-small-regular ${taxIdValue ? 'text-text-tertiary' : 'text-alert-400'}`}>

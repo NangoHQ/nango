@@ -17,10 +17,6 @@ import { useStore } from '@/store';
 
 import type { BillingCustomer } from '@nangohq/types';
 
-export const InvoicingInput = (props: React.ComponentProps<typeof Input>) => (
-    <Input className="data-[filled=true]:not-aria-invalid:border-border-muted" {...props} />
-);
-
 export const OptionalTag = () => (
     <span className="bg-bg-elevated border border-border-strong rounded px-2 py-0.5 text-body-small-regular text-text-muted">Optional</span>
 );
@@ -113,7 +109,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                                         Legal entity name <span className="text-alert-400">*</span>
                                     </FormLabel>
                                     <FormControl>
-                                        <InvoicingInput placeholder="Acme Inc." {...field} />
+                                        <Input placeholder="Acme Inc." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -128,7 +124,7 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                                         Billing email <span className="text-alert-400">*</span>
                                     </FormLabel>
                                     <FormControl>
-                                        <InvoicingInput type="email" placeholder="billing@company.com" {...field} />
+                                        <Input type="email" placeholder="billing@company.com" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
