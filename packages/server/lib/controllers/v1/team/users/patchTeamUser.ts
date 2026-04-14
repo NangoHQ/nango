@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { userService } from '@nangohq/shared';
 import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PatchTeamUser } from '@nangohq/types';
@@ -42,7 +43,7 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
     const params: PatchTeamUser['Params'] = paramVal.data;
     const body: PatchTeamUser['Body'] = bodyVal.data;
 
-    if (!plan?.has_rbac && body.role !== 'administrator') {
+    if (!plan?.has_rbac && body.role !== envs.DEFAULT_USER_ROLE) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
         return;
     }

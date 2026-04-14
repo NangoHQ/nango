@@ -1,8 +1,10 @@
 import * as z from 'zod';
 
-import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { acceptInvitation, getInvitation, getPlan, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { AcceptInvite } from '@nangohq/types';
@@ -36,8 +38,16 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
         return;
     }
 
+    const plan = await getPlan(db.knex, { accountId: invitation.account_id });
+    if (plan.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
+        return;
+    }
+
+    const role = plan.value.has_rbac ? invitation.role : envs.DEFAULT_USER_ROLE;
+
     await acceptInvitation(data.id);
-    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role: invitation.role });
+    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role });
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;

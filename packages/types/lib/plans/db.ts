@@ -128,7 +128,7 @@ export interface DBPlan extends Timestamps {
 
     /**
      * Enable role-based access control (non-administrator roles)
-     * When false, all users/invites must be 'administrator'
+     * When false, all users/invites must use the default user role
      * @default false
      */
     has_rbac: boolean;

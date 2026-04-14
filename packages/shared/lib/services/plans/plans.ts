@@ -1,15 +1,16 @@
 import ms from 'ms';
 
-import { Err, Ok } from '@nangohq/utils';
+import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
 
 import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
 import { productTracking } from '../../utils/productTracking.js';
 
-import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, DBTeam, DBUser, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
+const envs = parseEnvs(ENVS);
 
 export async function getPlan(
     db: Knex,
@@ -91,6 +92,19 @@ export async function updatePlanByTeam(
     }
 }
 
+async function resetNonDefaultUserRoles(db: Knex, accountId: DBPlan['account_id']): Promise<Result<boolean>> {
+    try {
+        await db
+            .from<DBUser>('_nango_users')
+            .where('account_id', accountId)
+            .whereNot('role', envs.DEFAULT_USER_ROLE)
+            .update({ role: envs.DEFAULT_USER_ROLE, updated_at: db.fn.now() });
+        return Ok(true);
+    } catch (err) {
+        return Err(new Error('failed_to_reset_non_default_user_roles', { cause: err }));
+    }
+}
+
 export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
     return await updatePlan(db, {
         id: plan.id,
@@ -168,6 +182,13 @@ export async function handlePlanChanged(
 
     if (updated.isErr()) {
         return Err(new Error('Failed to updated plan', { cause: updated.error }));
+    }
+
+    if (isDowngrade && !mergedFlags.has_rbac) {
+        const resetRoles = await resetNonDefaultUserRoles(db, team.id);
+        if (resetRoles.isErr()) {
+            return Err(new Error('Failed to reset user roles after RBAC downgrade', { cause: resetRoles.error }));
+        }
     }
 
     productTracking.track({

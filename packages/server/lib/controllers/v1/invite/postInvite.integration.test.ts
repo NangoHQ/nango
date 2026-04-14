@@ -2,12 +2,20 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { seeders, updatePlan } from '@nangohq/shared';
+import { roles } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../utils/tests.js';
 
 import type { DBInvitation } from '@nangohq/types';
 
 const route = '/api/v1/invite';
+const nonDefaultRole = roles.find((role) => role !== envs.DEFAULT_USER_ROLE);
+
+if (!nonDefaultRole) {
+    throw new Error('Expected a non-default role for invite tests');
+}
+
 let api: Awaited<ReturnType<typeof runServer>>;
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
@@ -84,7 +92,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            body: { emails: [email], role: 'production_support' },
+            body: { emails: [email], role: nonDefaultRole },
             session
         });
 
@@ -96,17 +104,17 @@ describe(`POST ${route}`, () => {
             .from<DBInvitation>('_nango_invited_users')
             .where({ email, account_id: account.id, accepted: false })
             .first();
-        expect(invitation?.role).toBe('production_support');
+        expect(invitation?.role).toBe(nonDefaultRole);
     });
 
-    it('should reject invite with non-administrator role when has_rbac is false', async () => {
+    it('should reject invite with a non-default role when has_rbac is false', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            body: { emails: ['blocked@example.com'], role: 'production_support' },
+            body: { emails: ['blocked@example.com'], role: nonDefaultRole },
             session
         });
 
@@ -114,7 +122,7 @@ describe(`POST ${route}`, () => {
         expect((res.json as any).error.code).toBe('feature_disabled');
     });
 
-    it('should allow invite without role when has_rbac is false (defaults to administrator)', async () => {
+    it('should allow invite without role when has_rbac is false (defaults to DEFAULT_USER_ROLE)', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -134,6 +142,6 @@ describe(`POST ${route}`, () => {
             .from<DBInvitation>('_nango_invited_users')
             .where({ email, account_id: account.id, accepted: false })
             .first();
-        expect(invitation?.role).toBe('administrator');
+        expect(invitation?.role).toBe(envs.DEFAULT_USER_ROLE);
     });
 });

@@ -36,7 +36,7 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
     const body = val.data;
     const effectiveRole = body.role ?? envs.DEFAULT_USER_ROLE;
 
-    if (!plan?.has_rbac && effectiveRole !== 'administrator') {
+    if (!plan?.has_rbac && effectiveRole !== envs.DEFAULT_USER_ROLE) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
         return;
     }

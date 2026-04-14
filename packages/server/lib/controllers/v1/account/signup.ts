@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
+import { acceptInvitation, accountService, getInvitation, getPlan, pbkdf2, userService } from '@nangohq/shared';
 import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
@@ -78,13 +78,20 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
+        const plan = await getPlan(db.knex, { accountId: validToken.account_id });
+        if (plan.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
+            return;
+        }
+
         account = await accountService.getAccountById(db.knex, validToken.account_id);
         if (!account) {
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to get team' } });
             return;
         }
-
-        invitationRole = validToken.role;
+        if (plan.value.has_rbac) {
+            invitationRole = validToken.role;
+        }
         await acceptInvitation(token);
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
