@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.69.49] - 2026-04-14
+
+### Added
+
+- *(providers)* Add Halo PSA integration (#5805) by @justonf
+- Ingest usage events to clickhouse (#5798) by @TBonnin
+- *(usage)* Add clickhouse materialized views for metrics (#5804) by @TBonnin
+- *(integrations)* Add support for freepik (#5808) by @hassan254-prog
+- *(integrations)* Add support for clickhouse (#5802) by @hassan254-prog
+- *(integrations)* Add support for perk (#5803) by @hassan254-prog
+- *(proxy)* Add deny list for base url override in proxy (#5775) by @rossmcewan
+- *(clickhouse)* Add missing connection_id column in some materialized views (#5816) by @TBonnin
+- *(providers)* Add Zorus integration (#5818) by @praneeth-oai
+- *(integrations)* Add support for workday adaptive planning (#5823) by @hassan254-prog
+- *(providers)* Add pendo-oauth (OAuth2 client credentials) (#5811) by @omar-inkeep
+- *(integrations)* Add support for listrak (#5824) by @hassan254-prog
+- *(integrations)* Add support for stay-ai (#5825) by @hassan254-prog
+- *(integrations)* Add support for bing-webmasters (#5817) by @naorhaziz
+- *(integrations)* Add support for shopify client credentials (#5830) by @hassan254-prog
+- Update claude code skill to run and test nango (#5851) by @pfreixes
+
+### Changed
+
+- New docs design (#5819) by @mintlify[bot]
+- Fix type in google security review guide (#5826) by @rguldener
+- Fix latex escapes (#5827) by @rguldener
+- Update version in manifest by @actions-user
+- Align docs on minimum sync frequency (30 seconds) (#5844) by @mintlify[bot]
+
+### Fixed
+
+- *(locks)* Fix kv locks (#5760) by @rossmcewan
+- *(webapp)* Allow clearing webhook urls in settings (#5800) by @hassan254-prog
+- *(webapp)* Correct RBAC docs link anchor fragment (#5813) by @kaposke
+- Fix microsoft teams bot docs (#5807) by @hassan254-prog
+- *(vulns)* Nodemailer (#5821) by @rossmcewan
+- *(webapp)* Don't allow toggling `prod` environment production status (#5812) by @kaposke
+- *(docs)* Restore search and Ask AI functionality by fixing z-index stacking (#5828) by @mintlify[bot]
+- *(vulns)* Upgrade axios (#5829) by @rossmcewan
+- *(orch)* Paginate query that expires tasks (#5840) by @TBonnin
+- *(orchestrator)* Disable max concurrency backpressure query (#5841) by @pfreixes
+- *(logger)* Replace logger.warn with logger.warning for syslog (#5843) by @hassan254-prog
+- Handle WorkOS email verification during managed sign-in (#5814) by @marcindobry
+- *(orchestrator)* Enable max concurrency backpressure query (#5850) by @pfreixes
+
 ## [v0.69.48] - 2026-04-08
 
 ### Added
@@ -6335,6 +6380,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.69.49]: https://github.com/NangoHQ/nango/compare/v0.69.48..v0.69.49
 [v0.69.48]: https://github.com/NangoHQ/nango/compare/v0.69.47..v0.69.48
 [v0.69.47]: https://github.com/NangoHQ/nango/compare/v0.69.46..v0.69.47
 [v0.69.46]: https://github.com/NangoHQ/nango/compare/v0.69.45..v0.69.46

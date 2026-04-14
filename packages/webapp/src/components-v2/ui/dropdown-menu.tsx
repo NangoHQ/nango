@@ -72,7 +72,7 @@ function DropdownMenuCheckboxItem({ className, children, checked, ...props }: Re
         >
             <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
                 <DropdownMenuPrimitive.ItemIndicator>
-                    <CheckIcon className="size-4" />
+                    <CheckIcon className="size-4 fill-current" />
                 </DropdownMenuPrimitive.ItemIndicator>
             </span>
             {children}
