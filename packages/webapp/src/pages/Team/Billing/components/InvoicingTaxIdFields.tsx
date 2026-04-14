@@ -57,11 +57,11 @@ export const InvoicingTaxIdFields: React.FC = () => {
                 </CardTitle>
                 {taxId ? (
                     <Button type="button" variant="ghost" size="icon" onClick={handleRemove}>
-                        <Trash2 className="size-4 text-text-tertiary" />
+                        <Trash2 />
                     </Button>
                 ) : (
                     <Button type="button" variant="ghost" size="icon" onClick={handleAdd}>
-                        <ChevronDown className="size-4 text-text-tertiary" />
+                        <ChevronDown />
                     </Button>
                 )}
             </CardHeader>
