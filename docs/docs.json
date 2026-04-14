@@ -398,7 +398,7 @@
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
-              "integrations/all/datadog",
+              "api-integrations/datadog",
               "integrations/all/datev",
               "api-integrations/dayforce",
               "integrations/all/datto-rmm",

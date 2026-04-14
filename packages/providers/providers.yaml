@@ -4772,28 +4772,29 @@ datadog:
         retry:
             after:
                 - 'x-ratelimit-reset'
-    docs: https://nango.dev/docs/integrations/all/datadog
-    docs_connect: https://nango.dev/docs/integrations/all/datadog/connect
+    docs: https://nango.dev/docs/api-integrations/datadog
+    docs_connect: https://nango.dev/docs/api-integrations/datadog/connect
     connection_config:
         siteParameter:
             type: string
             title: Site Parameter
-            description: The site parameter to datadog
+            description: The site parameter to datadog.
             pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
             example: 'us5.datadoghq.com'
+            order: 1
             doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
             type: string
             title: Application Key
-            description: The application key required for read data access
-            pattern: '^[a-f0-9]{40}$'
+            description: The application key required for read data access.
+            pattern: '^([a-f0-9]{40}|ddapp_[A-Za-z0-9]+)$'
             example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
             doc_section: '#step-3-datadog-application-key'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Datadog account
+            description: The API key for your Datadog account.
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
             doc_section: '#step-2-datadog-api-key'
