@@ -1,17 +1,14 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, flagHasUsage, getLogger, nanoid, report } from '@nangohq/utils';
+import { basePublicUrl, getLogger } from '@nangohq/utils';
 
+import { finalizeManagedAuthentication, getManagedAuthEmailVerificationFromError, setManagedAuthEmailVerification } from './auth.js';
 import { getWorkOSClient } from '../../../../clients/workos.client.js';
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 
-import type { InviteAccountState } from './postSignup.js';
-import type { DBInvitation, DBTeam, GetManagedCallback } from '@nangohq/types';
+import type { GetManagedCallback } from '@nangohq/types';
 
 const logger = getLogger('Server.AuthManaged');
 
@@ -22,23 +19,11 @@ const validation = z
     })
     .strict();
 
-function parseState(state: string): InviteAccountState | null {
-    try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
-            return null;
-        }
-        return res as InviteAccountState;
-    } catch {
-        return null;
-    }
-}
-
 export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, res) => {
     const val = validation.safeParse(req.query);
     if (!val.success) {
         logger.error('Invalid payload received from WorkOS');
-        res.redirect(`${basePublicUrl}/signup`);
+        res.redirect(`${basePublicUrl}/signin?error=sso_session_expired`);
         return;
     }
 
@@ -62,7 +47,27 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
             return;
         }
 
-        const workosErr = err as { rawData?: { code?: string; message?: string }; requestID?: string };
+        const verification = getManagedAuthEmailVerificationFromError(err);
+        if (verification) {
+            const span = tracer.scope().active();
+            if (span) {
+                span.setTag('workos.flow', 'email_verification');
+            }
+            await setManagedAuthEmailVerification(req, verification, query.state);
+            res.redirect(`${basePublicUrl}/signin/verify`);
+            return;
+        }
+
+        const workosErr = err as {
+            rawData?: {
+                code?: string;
+                message?: string;
+                pending_authentication_token?: string;
+                email?: string;
+                email_verification_id?: string;
+            };
+            requestID?: string;
+        };
         const span = tracer.scope().active();
         if (span) {
             if (workosErr.requestID) {
@@ -73,121 +78,17 @@ export const getManagedCallback = asyncWrapper<GetManagedCallback>(async (req, r
                 span.setTag('workos.error_message', workosErr.rawData.message);
             }
         }
+
         throw err;
     }
 
-    // Parse optional state that can contains invitation
-    const state = parseState(query.state || '');
-    let invitation: DBInvitation | null = null;
-    if (state?.token) {
-        // Joined from an invitation
-        invitation = await getInvitation(state.token);
-        if (!invitation || invitation.email !== authorizedUser.email) {
-            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
-            return;
-        }
-    }
-
-    let isNewTeam = true;
-    let isNewUser = false;
-    let user = await userService.getUserByEmail(authorizedUser.email);
-    if (!user) {
-        isNewUser = true;
-        let account: DBTeam;
-        // Create organization and user name
-        let name =
-            authorizedUser.firstName || authorizedUser.lastName
-                ? `${authorizedUser.firstName || ''} ${authorizedUser.lastName || ''}`
-                : authorizedUser.email.split('@')[0];
-        if (!name) {
-            name = nanoid();
-        }
-
-        if (organizationId) {
-            // in this case we have a pre registered organization with WorkOS
-            // let's make sure it exists in our system
-            const organization = await workos.organizations.getOrganization(organizationId);
-
-            const resAccount = await accountService.getOrCreateAccount(organization.name);
-            if (!resAccount) {
-                res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
-                return;
-            }
-
-            account = resAccount;
-
-            if (!invitation) {
-                // We are not coming from an invitation but we could have one anyway
-                await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
-            }
-        } else if (invitation) {
-            // Invited but not in a custom WorkOS org
-            isNewTeam = false;
-            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
-        } else {
-            // Regular signup
-            if (!envs.AUTH_ALLOW_SIGNUP) {
-                res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
-                return;
-            }
-            const resAccount = await accountService.createAccount({ name, email: authorizedUser.email });
-            if (!resAccount) {
-                res.status(500).send({ error: { code: 'error_creating_account', message: 'Failed to create account' } });
-                return;
-            }
-            account = resAccount;
-        }
-
-        // Create a user
-        user = await userService.createUser({
-            email: authorizedUser.email,
-            name,
-            account_id: account.id,
-            email_verified: true,
-            role: invitation ? invitation.role : envs.DEFAULT_USER_ROLE
-        });
-        if (!user) {
-            res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });
-            return;
-        }
-
-        if (isNewTeam && flagHasUsage) {
-            const linkOrbCustomerRes = await linkBillingCustomer(account, user);
-            if (linkOrbCustomerRes.isErr()) {
-                report(linkOrbCustomerRes.error);
-            } else {
-                const linkOrbSubscriptionRes = await linkBillingFreeSubscription(account);
-                if (linkOrbSubscriptionRes.isErr()) {
-                    report(linkOrbSubscriptionRes.error);
-                }
-            }
-        }
-    }
-
-    // Finally, we login the user
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    req.login(user, async function (err) {
-        if (err) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
-            return;
-        }
-
-        if (invitation) {
-            // If we came from an invitation we need to accept it and transfer the team
-            await acceptInvitation(invitation.token);
-            const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
-            if (!updated) {
-                res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
-                return;
-            }
-
-            // @ts-expect-error you got to love passport
-            req.session.passport.user.account_id = invitation.account_id;
-            res.redirect(`${basePublicUrl}/`);
-        } else if (isNewUser) {
-            res.redirect(`${basePublicUrl}/onboarding/hear-about-us`);
-        } else {
-            res.redirect(`${basePublicUrl}/`);
-        }
+    await finalizeManagedAuthentication({
+        req,
+        res,
+        authorizedUser,
+        organizationId,
+        workos,
+        state: query.state,
+        responseMode: 'redirect'
     });
 });

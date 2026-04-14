@@ -24,7 +24,9 @@ import {
     validateEmailAndLogin
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
+import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
+import { postManagedEmailVerification } from './controllers/v1/account/managed/postVerification.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -150,6 +152,8 @@ if (flagHasAuth) {
 
 if (flagHasManagedAuth) {
     web.route('/account/managed/signup').post(rateLimiterMiddleware, postManagedSignup);
+    web.route('/account/managed/verification').get(rateLimiterMiddleware, getManagedEmailVerification);
+    web.route('/account/managed/verification').post(rateLimiterMiddleware, postManagedEmailVerification);
     web.route('/account/managed/callback').get(rateLimiterMiddleware, getManagedCallback);
     // TODO: drop this one
     web.route('/login/callback').get(rateLimiterMiddleware, getManagedCallback);
