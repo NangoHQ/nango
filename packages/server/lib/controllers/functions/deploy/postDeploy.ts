@@ -3,7 +3,7 @@ import { configService, getApiUrl, getSyncConfigRaw, secretService } from '@nang
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
-import { sendStepError } from '../../../services/remote-function/helpers.js';
+import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDeployBodySchema } from '../validation.js';
 
@@ -71,6 +71,6 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             output: result.output
         });
     } catch (err) {
-        sendStepError({ res, step: 'deployment', status: 500, error: err });
+        sendStepError({ res, step: 'deployment', error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
     }
 });

@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
-import { CommandExitError, Sandbox } from 'e2b';
+import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
 import { buildDryrunArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
+import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
@@ -64,7 +65,10 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
             });
         } catch (err) {
             if (err instanceof CommandExitError) {
-                return { output: err.stderr || err.stdout || 'Compilation failed' };
+                throw new RemoteFunctionError({ code: 'compilation_error', message: err.stderr || err.stdout || 'Compilation failed', status: 400 });
+            }
+            if (err instanceof TimeoutError) {
+                throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
             }
             throw err;
         }
@@ -95,7 +99,10 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
             return { output: result.stdout };
         } catch (err) {
             if (err instanceof CommandExitError) {
-                return { output: err.stdout || err.stderr || JSON.stringify(err) };
+                throw new RemoteFunctionError({ code: 'dryrun_error', message: err.stdout || err.stderr || JSON.stringify(err), status: 400 });
+            }
+            if (err instanceof TimeoutError) {
+                throw new RemoteFunctionError({ code: 'timeout', message: 'Dry run timed out', status: 504 });
             }
             throw err;
         }

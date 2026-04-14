@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
-import { execDockerFileAsync, getExecErrorOutput, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
+import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { buildDeployArgs } from '../remote-function/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
+import { RemoteFunctionError } from '../remote-function/helpers.js';
 import { remoteFunctionLocalImage, remoteFunctionProjectPath } from '../remote-function/runtime.js';
 
 import type { DeployRequest, DeployResult } from '../remote-function/deploy-client.js';
@@ -15,7 +16,6 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
 
     try {
         await execDockerFileAsync(
-            'docker',
             [
                 'run',
                 '-d',
@@ -45,15 +45,18 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
 
         try {
             const { stdout, stderr } = await execDockerFileAsync(
-                'docker',
                 ['exec', '-w', remoteFunctionProjectPath, containerName, 'nango', ...buildDeployArgs(request)],
                 { timeout: deployTimeoutMs }
             );
             return { output: stdout || stderr };
         } catch (err) {
-            return { output: getExecErrorOutput(err) };
+            throw new RemoteFunctionError({
+                code: isExecTimeoutError(err) ? 'timeout' : 'deployment_error',
+                message: isExecTimeoutError(err) ? 'Deployment timed out' : getExecErrorOutput(err),
+                status: isExecTimeoutError(err) ? 504 : 400
+            });
         }
     } finally {
-        await execDockerFileAsync('docker', ['rm', '-f', containerName]).catch(() => {});
+        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => {});
     }
 }

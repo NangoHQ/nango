@@ -1,11 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
-import { CommandExitError, Sandbox } from 'e2b';
+import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
 import { buildDeployArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
+import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
@@ -67,7 +68,10 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             return { output: result.stdout };
         } catch (err) {
             if (err instanceof CommandExitError) {
-                return { output: err.stdout || err.stderr || JSON.stringify(err) };
+                throw new RemoteFunctionError({ code: 'deployment_error', message: err.stdout || err.stderr || JSON.stringify(err), status: 400 });
+            }
+            if (err instanceof TimeoutError) {
+                throw new RemoteFunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
             }
             throw err;
         }

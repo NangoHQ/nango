@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
-import { CommandExitError, Sandbox } from 'e2b';
+import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
+import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate, remoteFunctionProjectPath } from './runtime.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
@@ -20,11 +21,11 @@ export interface CompileResult {
     bundleSizeBytes: number;
 }
 
-export class CompilerError extends Error {
+export class CompilerError extends RemoteFunctionError {
     public readonly step: 'validation' | 'compilation';
 
     constructor(message: string, step: 'validation' | 'compilation', remoteStack?: string) {
-        super(message);
+        super({ code: step === 'validation' ? 'validation_error' : 'compilation_error', message, status: 400 });
         this.name = 'CompilerError';
         this.step = step;
         if (remoteStack !== undefined) {
@@ -68,6 +69,9 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         } catch (err) {
             if (err instanceof CommandExitError) {
                 throw new CompilerError(err.stderr || err.stdout || 'Compilation failed', 'compilation');
+            }
+            if (err instanceof TimeoutError) {
+                throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
             }
             throw err;
         }

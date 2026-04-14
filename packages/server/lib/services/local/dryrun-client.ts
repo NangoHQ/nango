@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 
-import { execDockerFileAsync, getExecErrorOutput, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
+import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { buildDryrunArgs } from '../remote-function/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
+import { RemoteFunctionError } from '../remote-function/helpers.js';
 import { remoteFunctionLocalImage, remoteFunctionProjectPath } from '../remote-function/runtime.js';
 
 import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-client.js';
@@ -16,7 +17,6 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 
     try {
         await execDockerFileAsync(
-            'docker',
             [
                 'run',
                 '-d',
@@ -43,11 +43,15 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
         await writeContainerFile(containerName, `${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
 
         try {
-            await execDockerFileAsync('docker', ['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
+            await execDockerFileAsync(['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
                 timeout: compileTimeoutMs
             });
         } catch (err) {
-            return { output: getExecErrorOutput(err) };
+            throw new RemoteFunctionError({
+                code: isExecTimeoutError(err) ? 'timeout' : 'compilation_error',
+                message: isExecTimeoutError(err) ? 'Compilation timed out' : getExecErrorOutput(err),
+                status: isExecTimeoutError(err) ? 504 : 400
+            });
         }
 
         if (request.input !== undefined) {
@@ -62,15 +66,18 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 
         try {
             const { stdout, stderr } = await execDockerFileAsync(
-                'docker',
                 ['exec', '-w', remoteFunctionProjectPath, containerName, 'nango', ...buildDryrunArgs(request)],
                 { timeout: dryrunTimeoutMs }
             );
             return { output: stdout || stderr };
         } catch (err) {
-            return { output: getExecErrorOutput(err) };
+            throw new RemoteFunctionError({
+                code: isExecTimeoutError(err) ? 'timeout' : 'dryrun_error',
+                message: isExecTimeoutError(err) ? 'Dry run timed out' : getExecErrorOutput(err),
+                status: isExecTimeoutError(err) ? 504 : 400
+            });
         }
     } finally {
-        await execDockerFileAsync('docker', ['rm', '-f', containerName]).catch(() => {});
+        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => {});
     }
 }

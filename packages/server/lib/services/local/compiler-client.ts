@@ -12,7 +12,7 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
     const containerName = `nango-compiler-${randomUUID().slice(0, 8)}`;
 
     try {
-        await execDockerFileAsync('docker', ['run', '-d', '--name', containerName, remoteFunctionLocalImage, 'sleep', '300'], { timeout: 10_000 });
+        await execDockerFileAsync(['run', '-d', '--name', containerName, remoteFunctionLocalImage, 'sleep', '300'], { timeout: 10_000 });
 
         const { tsFilePath, cjsFilePath } = getFilePaths(request);
 
@@ -20,7 +20,7 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
         await writeContainerFile(containerName, `${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
 
         try {
-            await execDockerFileAsync('docker', ['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
+            await execDockerFileAsync(['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {
                 timeout: compilerTimeoutMs
             });
         } catch (err) {
@@ -34,6 +34,6 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
             bundleSizeBytes: Buffer.byteLength(bundledJs, 'utf8')
         };
     } finally {
-        await execDockerFileAsync('docker', ['rm', '-f', containerName]).catch(() => {});
+        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => {});
     }
 }

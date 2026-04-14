@@ -1,8 +1,8 @@
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { CompilerError, invokeCompiler } from '../../../services/remote-function/compiler-client.js';
-import { sendStepError } from '../../../services/remote-function/helpers.js';
+import { invokeCompiler } from '../../../services/remote-function/compiler-client.js';
+import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionCompileBodySchema } from '../validation.js';
 
@@ -51,7 +51,7 @@ export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>
             res,
             step: 'compilation',
             error: err,
-            status: err instanceof CompilerError ? 400 : 500
+            ...(err instanceof RemoteFunctionError ? {} : { status: 500 })
         });
     }
 });
