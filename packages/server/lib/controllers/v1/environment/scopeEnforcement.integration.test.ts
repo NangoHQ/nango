@@ -22,6 +22,11 @@ let api: Awaited<ReturnType<typeof runServer>>;
 const WRONG_SCOPE = 'environment:mcp'; // unlikely to match any route except /mcp
 
 async function createKeyWithScopes(scopes: string[]): Promise<string> {
+    const result = await createKeyWithScopesAndEnv(scopes);
+    return result.secret;
+}
+
+async function createKeyWithScopesAndEnv(scopes: string[]) {
     const { env, user } = await seeders.seedAccountEnvAndUser();
     const session = await authenticateUser(api, user);
     const res = await api.fetch('/api/v1/environment/api-keys', {
@@ -32,7 +37,7 @@ async function createKeyWithScopes(scopes: string[]): Promise<string> {
         session
     });
     isSuccess(res.json);
-    return res.json.data.secret;
+    return { secret: res.json.data.secret, env };
 }
 
 describe('Scope enforcement on public API routes', () => {
@@ -241,6 +246,110 @@ describe('Scope enforcement on public API routes', () => {
             const res = await api.fetch(
                 '/action/trigger' as any,
                 { method: 'POST', token, body: { action_name: 'test', input: {} }, headers: { 'provider-config-key': 'test', 'connection-id': 'test' } } as any
+            );
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── V1 passthrough (deprecated) ───────────────────────────────────
+    // These tests need real connections and sync configs because the scope check
+    // happens after the connection lookup and action/model resolution.
+
+    describe('POST /v1/* (action via legacy passthrough)', () => {
+        it('should allow with actions:execute scope', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv(['environment:actions:execute']);
+            const config = await seeders.createConfigSeed(env, 'github', 'github');
+            const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-allow' });
+            await seeders.createSyncSeeds({
+                connectionId: conn.id,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'my-action',
+                type: 'action',
+                endpoints: [{ method: 'POST', path: '/my-action' }]
+            });
+            const res = await api.fetch(
+                '/v1/my-action' as any,
+                {
+                    method: 'POST',
+                    token: secret,
+                    body: {},
+                    headers: { 'provider-config-key': 'github', 'connection-id': 'v1-action-allow' }
+                } as any
+            );
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without actions:execute scope', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv([WRONG_SCOPE]);
+            const config = await seeders.createConfigSeed(env, 'github', 'github');
+            const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-action-deny' });
+            await seeders.createSyncSeeds({
+                connectionId: conn.id,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'my-action',
+                type: 'action',
+                endpoints: [{ method: 'POST', path: '/my-action' }]
+            });
+            const res = await api.fetch(
+                '/v1/my-action' as any,
+                {
+                    method: 'POST',
+                    token: secret,
+                    body: {},
+                    headers: { 'provider-config-key': 'github', 'connection-id': 'v1-action-deny' }
+                } as any
+            );
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    describe('GET /v1/* (records via legacy passthrough)', () => {
+        it('should allow with records:read scope', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv(['environment:records:read']);
+            const config = await seeders.createConfigSeed(env, 'github', 'github');
+            const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-records-allow' });
+            await seeders.createSyncSeeds({
+                connectionId: conn.id,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'my-sync',
+                type: 'sync',
+                models: ['MyModel'],
+                endpoints: [{ method: 'GET', path: '/my-model', model: 'MyModel' }]
+            });
+            const res = await api.fetch(
+                '/v1/my-model' as any,
+                {
+                    method: 'GET',
+                    token: secret,
+                    headers: { 'provider-config-key': 'github', 'connection-id': 'v1-records-allow' }
+                } as any
+            );
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without records:read scope', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv([WRONG_SCOPE]);
+            const config = await seeders.createConfigSeed(env, 'github', 'github');
+            const conn = await seeders.createConnectionSeed({ env, provider: 'github', connectionId: 'v1-records-deny' });
+            await seeders.createSyncSeeds({
+                connectionId: conn.id,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'my-sync',
+                type: 'sync',
+                models: ['MyModel'],
+                endpoints: [{ method: 'GET', path: '/my-model', model: 'MyModel' }]
+            });
+            const res = await api.fetch(
+                '/v1/my-model' as any,
+                {
+                    method: 'GET',
+                    token: secret,
+                    headers: { 'provider-config-key': 'github', 'connection-id': 'v1-records-deny' }
+                } as any
             );
             expect(res.res.status).toBe(403);
         });
