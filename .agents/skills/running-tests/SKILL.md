@@ -7,7 +7,7 @@ description: Use when running tests in the Nango monorepo - knows unit vs integr
 
 ## Overview
 
-Nango uses Vitest with three separate configs for unit, integration, and CLI tests. Getting the config wrong silently runs zero tests.
+Nango uses Vitest with separate configs for unit, integration, CLI, and benchmark tests. Getting the config wrong silently runs zero tests.
 
 ## Quick Reference
 
@@ -16,7 +16,8 @@ Nango uses Vitest with three separate configs for unit, integration, and CLI tes
 | Unit | `npm run test:unit` | `*.unit.test.ts` |
 | Integration | `npm run test:integration` | `*.integration.test.ts` |
 | CLI | `npm run test:cli` | `*.unit.cli-test.ts` |
-| All | `npm run test` | all patterns |
+| Benchmark | `npm run test:benchmark` | `*.benchmark.test.ts` |
+| All (excl. benchmark) | `npm run test` | all patterns except benchmark |
 
 ## Running Specific Tests
 
@@ -92,3 +93,19 @@ Available in all tests via `tests/setupFiles.ts`:
 | Running from package dir | Config not found | Always run from repo root |
 | Docker not running | Connection refused | Integration tests need Docker for testcontainers |
 | Missing `query: { env: 'dev' }` | 400 invalid query | Most endpoints require env query param |
+
+## Benchmark Tests
+
+Benchmark tests measure performance characteristics (throughput, latency, serialization effects) rather than correctness. They live in `*.benchmark.test.ts` files and run via a dedicated config with a longer timeout (60s).
+
+```bash
+# Run all benchmarks
+npm run test:benchmark
+
+# Run benchmarks for a specific package
+npm run test:benchmark -- --dir packages/scheduler
+```
+
+Benchmarks are **not** included in `npm run test` and must be run explicitly. They require Docker (same global setup as integration tests).
+
+**After running unit/integration tests, ask the user if they also want to run benchmarks** — they are useful for validating performance-sensitive changes but take extra time.
