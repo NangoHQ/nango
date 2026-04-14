@@ -10172,7 +10172,7 @@ looker:
             prefix: https://
             example: mycompany.looker.com
             order: 1
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
             doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
@@ -10222,7 +10222,7 @@ looker-oauth:
             type: string
             title: Looker API Hostname
             description: Your Looker API hostname including port.
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
             prefix: https://
             example: mycompany.looker.com:19999
             order: 2
