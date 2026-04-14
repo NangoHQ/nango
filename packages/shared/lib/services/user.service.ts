@@ -9,8 +9,13 @@ import type { Result } from '@nangohq/utils';
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
 
 class UserService {
-    async getUserById(id: number): Promise<DBUser | null> {
-        const result = await db.knex.select<DBUser>('*').from<DBUser>(`_nango_users`).where({ id, suspended: false }).first();
+    async getUserById(id: number, includeSuspended = false): Promise<DBUser | null> {
+        const result = await db.knex
+            .select<DBUser>('*')
+            .from<DBUser>(`_nango_users`)
+            .where({ id })
+            .andWhere(includeSuspended ? {} : { suspended: false })
+            .first();
 
         return result || null;
     }

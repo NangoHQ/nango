@@ -34,6 +34,12 @@ export const signin = asyncWrapper<PostSignin>(async (req, res) => {
     const getUser = await getUserFromSession(req);
 
     if (getUser.isErr()) {
+        if (getUser.error.type === 'user_suspended') {
+            req.session.destroy(() => {
+                res.status(400).send({ error: { code: 'user_suspended' } });
+            });
+            return;
+        }
         res.status(401).send({ error: { code: 'unauthorized', message: getUser.error.message } });
         return;
     }
