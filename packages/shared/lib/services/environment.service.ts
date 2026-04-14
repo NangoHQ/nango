@@ -115,11 +115,14 @@ class EnvironmentService {
                 throw apiKey.error;
             }
 
-            await customerKeyService.createWebhookSigningKey(trx, {
+            const webhookKey = await customerKeyService.createWebhookSigningKey(trx, {
                 accountId: accountId,
                 environmentId: environment.id,
                 secret: secret.secret
             });
+            if (webhookKey.isErr()) {
+                throw webhookKey.error;
+            }
 
             return environment;
         });
