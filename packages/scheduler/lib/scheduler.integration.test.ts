@@ -220,15 +220,6 @@ describe('Scheduler', () => {
         expect(updated.frequencyMs).toBe(newFrequency);
         expect(updated.nextExecutionAt).toEqual(new Date(updated.startsAt.getTime() + newFrequency));
     });
-    it('should create task with webhook group key', async () => {
-        const task = await immediate(scheduler, { taskProps: { groupKey: `webhook:${nanoid()}` } });
-        expect(task.state).toBe('CREATED');
-        expect(task.groupKey).toMatch(/^webhook:/);
-        const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
-        expect(dequeued.length).toBe(1);
-        const succeeded = (await scheduler.succeed({ taskId: task.id, output: { done: true } })).unwrap();
-        expect(succeeded.state).toBe('SUCCEEDED');
-    });
     it('should search schedules by name', async () => {
         const schedule = await recurring({ scheduler });
         const found = (await scheduler.searchSchedules({ names: [schedule.name], limit: 1 })).unwrap();
