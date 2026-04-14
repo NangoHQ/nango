@@ -1971,7 +1971,7 @@ aws:
             title: API Subdomain
             description: The API subdomain to the API you want to connect to
             example: idp.us-east-2
-            pattern: '^[a-z.-]+$'
+            pattern: '^[a-z0-9.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
 
@@ -10292,6 +10292,31 @@ listmonk:
             description: The token to your Listmonk account
             secret: true
 
+listrak:
+    display_name: Listrak
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.listrak.com/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.listrak.com/email
+    docs: https://nango.dev/docs/api-integrations/listrak
+    docs_connect: https://nango.dev/docs/api-integrations/listrak/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Listrak API Client ID
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Listrak API Client Secret
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
 make:
     display_name: Make
     categories:
@@ -12733,6 +12758,34 @@ pendo:
             title: API Key
             description: The API key for your Pendo account
             doc_section: '#step-1-finding-pendo-api-key'
+
+pendo-oauth:
+    display_name: Pendo (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://app.pendo.io/oauth/v1/token
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - read:me
+    body_format: form
+    proxy:
+        base_url: https://app.pendo.io
+    docs: https://nango.dev/docs/api-integrations/pendo-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/pendo-oauth/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Pendo OAuth client ID
+            doc_section: '#step-1-finding-your-pendo-oauth-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Pendo OAuth client secret
+            secret: true
+            doc_section: '#step-1-finding-your-pendo-oauth-credentials'
 
 pennylane:
     display_name: Pennylane
@@ -16579,6 +16632,26 @@ statista:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+stay-ai:
+    display_name: Stay AI
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retextion.com/api
+        headers:
+            x-retextion-access-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/stay-ai
+    docs_connect: https://nango.dev/docs/api-integrations/stay-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stay AI API key.
+            example: 7k9***f-***da3e-***hjtb-***22cy
+            pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
+            doc_section: '#step-1-create-a-new-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -18818,6 +18891,28 @@ workday:
             description: Workday API Password
             doc_section: '#step-5-finding-your-password'
 
+workday-adaptive-planning-basic:
+    display_name: Workday Adaptive Planning (Basic Auth)
+    categories:
+        - accounting
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.adaptiveplanning.com/api/rest
+    docs: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic
+    docs_connect: https://nango.dev/docs/api-integrations/workday-adaptive-planning-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Workday Adaptive Planning username.
+            doc_section: '#step-1-find-your-username-and-password'
+        password:
+            type: string
+            title: Password
+            description: Your Workday Adaptive Planning password.
+            secret: true
+            doc_section: '#step-1-find-your-username-and-password'
+
 workday-oauth:
     display_name: Workday (OAuth)
     categories:
@@ -19669,6 +19764,34 @@ snipe-it:
             prefix: https://
             doc_section: '#step-2-finding-your-domain'
             order: 1
+
+zorus:
+    display_name: Zorus
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://developer.zorustech.com
+        headers:
+            authorization: Impersonation ${apiKey}
+            zorus-api-version: '1.0'
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/customers/search
+            data: { 'page': 1, 'pageSize': 1 }
+    docs: https://nango.dev/docs/api-integrations/zorus
+    docs_connect: https://nango.dev/docs/api-integrations/zorus/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from the Zorus Portal.
+            doc_section: '#step-1-generating-your-api-token'
+            example: 1_a1b2c3d4-e5f6-7890-abcd-1234567890ab
+            pattern: '^[0-9]+_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 zuora:
     display_name: Zuora

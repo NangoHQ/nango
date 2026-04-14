@@ -607,6 +607,7 @@
               "api-integrations/linkedin",
               "integrations/all/linkhut",
               "integrations/all/listmonk",
+              "api-integrations/listrak",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
               "integrations/all/loop-returns",
@@ -706,6 +707,7 @@
               "integrations/all/paycor",
               "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
+              "api-integrations/pendo-oauth",
               "integrations/all/pennylane",
               "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
@@ -852,6 +854,7 @@
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
               "integrations/all/statista",
+              "api-integrations/stay-ai",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "integrations/all/streak",
@@ -934,6 +937,7 @@
               "integrations/all/workable",
               "integrations/all/workable-oauth",
               "api-integrations/workday-adaptive-planning",
+              "api-integrations/workday-adaptive-planning-basic",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",
@@ -966,6 +970,7 @@
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
               "integrations/all/zoominfo",
+              "api-integrations/zorus",
               "integrations/all/zuora"
             ]
           }

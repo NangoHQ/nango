@@ -409,6 +409,7 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
                        )
                     )
                 FOR UPDATE SKIP LOCKED
+                LIMIT ${envs.ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE}
             )
             UPDATE ${TASKS_TABLE} t
             SET state = 'EXPIRED',
