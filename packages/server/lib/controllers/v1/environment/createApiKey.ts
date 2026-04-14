@@ -11,7 +11,7 @@ import type { CreateApiKey } from '@nangohq/types';
 const validationBody = z
     .object({
         display_name: z.string().min(1).max(255),
-        scopes: z.array(z.string()).optional()
+        scopes: z.array(z.string()).nonempty('At least one scope is required when scopes are provided').optional()
     })
     .strict();
 

@@ -243,15 +243,21 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
     const { toast } = useToast();
     const { mutateAsync: createApiKey, isPending } = useCreateApiKey(env);
 
+    const hasNoScopes = selectedScopes.length === 0;
+
     const handleCreate = async () => {
         if (!displayName.trim()) {
             toast({ title: 'Display name is required', variant: 'error' });
             return;
         }
+        if (hasNoScopes) {
+            toast({ title: 'Select at least one scope or choose Full access', variant: 'error' });
+            return;
+        }
         try {
             await createApiKey({
                 display_name: displayName.trim(),
-                scopes: selectedScopes.length > 0 ? selectedScopes : undefined
+                scopes: selectedScopes
             });
             setOpen(false);
             setDisplayName('');
@@ -292,7 +298,7 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
                     <Button variant="tertiary" onClick={() => setOpen(false)}>
                         Cancel
                     </Button>
-                    <Button onClick={handleCreate} loading={isPending}>
+                    <Button onClick={handleCreate} loading={isPending} disabled={hasNoScopes}>
                         Create API Key
                     </Button>
                 </DialogFooter>
@@ -322,10 +328,14 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSec
     const hasChanges = scopesChanged || nameChanged;
 
     const handleSave = async () => {
+        if (editedScopes.length === 0) {
+            toast({ title: 'Select at least one scope or choose Full access', variant: 'error' });
+            return;
+        }
         try {
             const updates: { keyId: number; scopes?: string[]; display_name?: string } = { keyId: apiKey.id };
             if (scopesChanged) {
-                updates.scopes = editedScopes.length > 0 ? editedScopes : ['environment:*'];
+                updates.scopes = editedScopes;
             }
             if (nameChanged) {
                 updates.display_name = editedName.trim();
