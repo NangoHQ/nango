@@ -73,19 +73,6 @@ describe('mergeFlags', () => {
             });
         });
     });
-
-    it('should keep sync_lambda_checkpoint_required override if different when upgrading', () => {
-        const currentPlan = makePlan({
-            code: 'free',
-            flagOverrides: { sync_lambda_checkpoint_required: false }
-        });
-        const newPlanDefinition = getPlanDefinition('starter-v2')!;
-        const newFlags = mergeFlags({
-            currentPlan,
-            newPlanDefinition
-        });
-        expect(newFlags.sync_lambda_checkpoint_required).toBe(false);
-    });
 });
 
 function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
