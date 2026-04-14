@@ -10317,6 +10317,35 @@ listrak:
             secret: true
             doc_section: '#step-1-create-api-credentials'
 
+lob:
+    display_name: Lob
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lob.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/addresses
+    docs: https://nango.dev/docs/api-integrations/lob
+    docs_connect: https://nango.dev/docs/api-integrations/lob/connect
+    credentials:
+        username:
+            type: string
+            title: Secret API Key
+            description: Your Lob Secret API Key.
+            secret: true
+            example: 'test_0dc8d***************************5b0cc'
+            pattern: '^(test|live)_[a-f0-9]{35}$'
+            doc_section: '#step-1-getting-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 make:
     display_name: Make
     categories:
