@@ -10187,6 +10187,47 @@ looker:
             secret: true
             doc_section: '#step-2-obtaining-your-client-credentials'
 
+looker-oauth:
+    display_name: Looker (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/auth
+    token_url: https://${connectionConfig.apiHostname}/api/token
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - cors_api
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiHostname}/api
+    docs: https://nango.dev/docs/api-integrations/looker-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/looker-oauth/how-to-register-your-own-looker-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/looker-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Looker UI Hostname
+            description: Your Looker instance UI hostname.
+            format: hostname
+            prefix: https://
+            example: mycompany.looker.com
+            order: 1
+            doc_section: '#step-1-finding-your-looker-ui-hostname'
+        apiHostname:
+            type: string
+            title: Looker API Hostname
+            description: Your Looker API hostname including port.
+            format: hostname
+            prefix: https://
+            example: mycompany.looker.com:19999
+            order: 2
+            doc_section: '#step-2-finding-your-looker-api-hostname'
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:
