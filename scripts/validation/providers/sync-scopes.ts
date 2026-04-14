@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createOpencode } from '@opencode-ai/sdk';
 import { config } from 'dotenv';
-import { load } from 'js-yaml';
+import { dump, load } from 'js-yaml';
 
 import type { Provider, ProviderAlias } from '@nangohq/types';
 import type { AssistantMessage, Message, OpencodeClient, Part, Session, SessionStatus } from '@opencode-ai/sdk';
@@ -384,7 +384,7 @@ function renderScopesYaml(scopes: ProviderScopesMap, comments?: Record<string, s
 
         lines.push(`${key}:`);
         for (const value of values) {
-            lines.push(`  - ${value}`);
+            lines.push(`  - ${dump(value).trimEnd()}`);
         }
         lines.push('');
     }
@@ -497,7 +497,7 @@ function runGit(gitArgs: string[]): { ok: true; stdout: string; stderr: string }
 }
 
 function shellEscape(value: string): string {
-    return `'${value.replaceAll("'", `'\\''`)}'`;
+    return `'${value.split("'").join(`'\\''`)}'`;
 }
 
 async function runAgentMode(): Promise<void> {
