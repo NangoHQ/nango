@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
@@ -66,7 +66,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                     </Button>
                 ) : (
                     <Button type="button" variant="ghost" size="icon" onClick={handleAdd}>
-                        <ChevronDown />
+                        <Plus />
                     </Button>
                 )}
             </CardHeader>

@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes } from '../invoicingConstants';
@@ -37,7 +37,7 @@ export const InvoicingAddressFields: React.FC = () => {
                     </Button>
                 ) : (
                     <Button type="button" variant="ghost" size="icon" onClick={handleAdd}>
-                        <ChevronDown />
+                        <Plus />
                     </Button>
                 )}
             </CardHeader>
