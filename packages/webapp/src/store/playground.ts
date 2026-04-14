@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { LocalStorageKeys } from '@/utils/local-storage';
+import { LocalStorageKeys } from '../utils/local-storage';
 
 export type PlaygroundFunctionType = 'action' | 'sync' | null;
 
