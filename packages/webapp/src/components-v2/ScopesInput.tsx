@@ -128,7 +128,16 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </span>
                 ))}
                 <div className="ml-auto flex items-center gap-1 shrink-0">
-                    {scopes.length > 0 && <CopyButton text={scopes.join(',')} />}
+                    {scopes.length > 0 && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <CopyButton text={scopes.join(',')} />
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Copy all</TooltipContent>
+                        </Tooltip>
+                    )}
                     {isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}
                 </div>
             </div>
