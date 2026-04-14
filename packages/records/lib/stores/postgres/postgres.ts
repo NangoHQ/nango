@@ -150,7 +150,9 @@ export class PostgresStore implements RecordsStore {
         limit,
         filter,
         cursor,
-        externalIds
+        externalIds,
+        metadataOnly,
+        sort
     }: {
         connectionId: number;
         model: string;
@@ -159,6 +161,8 @@ export class PostgresStore implements RecordsStore {
         filter?: CombinedFilterAction | LastAction | undefined;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        metadataOnly?: boolean | undefined;
+        sort?: 'asc' | 'desc' | undefined;
     }): Promise<Result<GetRecordsResponse>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.getRecords', {
@@ -172,13 +176,16 @@ export class PostgresStore implements RecordsStore {
                 return Err(error);
             }
 
+            const sortOrder = sort ?? 'asc';
+            const isDesc = sortOrder === 'desc';
+
             let query = this.dbRead
                 .from<FormattedRecord>(RECORDS_TABLE)
                 .timeout(60000) // timeout after 1 minute
                 .where({ connection_id: connectionId, model })
                 .orderBy([
-                    { column: 'updated_at', order: 'asc' },
-                    { column: 'id', order: 'asc' }
+                    { column: 'updated_at', order: isDesc ? 'desc' : 'asc' },
+                    { column: 'id', order: isDesc ? 'desc' : 'asc' }
                 ]);
 
             if (cursor) {
@@ -188,8 +195,8 @@ export class PostgresStore implements RecordsStore {
                     return Err(error);
                 }
 
-                // Tuple comparison for efficient index usage
-                query = query.whereRaw(`(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
+                // Tuple comparison for efficient index usage (ASC/DESC reuse same index)
+                query = query.whereRaw(isDesc ? `(updated_at, id) < (?, ?)` : `(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
             }
 
             if (externalIds) {
@@ -318,36 +325,10 @@ export class PostgresStore implements RecordsStore {
                 }
             }
 
-            const recordIds = recordsMetadata.map((r) => r.id);
-            const dataById = new Map<string, FormattedRecord['json']>();
-            {
-                // Drain the result rows into the Map and let the array go out of scope.
-                // Keeping both the array and the Map doubles the reference count on each
-                // encrypted blob, which prevents `dataById.delete()` below from making
-                // them eligible for GC during the loop.
-                const rows = await this.dbRead
-                    .from(RECORDS_DATA_TABLE)
-                    .where({ connection_id: connectionId, model })
-                    .whereIn('id', recordIds)
-                    .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-                while (rows.length > 0) {
-                    const r = rows.pop()!;
-                    dataById.set(r.id, r.data);
-                }
-            }
-
-            const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
-            try {
-                // TODO: decrypt in batch
+            if (metadataOnly) {
                 for (const item of recordsMetadata) {
-                    const data = dataById.get(item.id) ?? item.json ?? {};
-                    // Drop the only remaining reference to the encrypted blob so V8 can
-                    // reclaim it when GC fires under heap pressure.
-                    dataById.delete(item.id);
-                    const decryptedData = await decryptRecordData({ ...item, json: data });
                     results.push({
-                        ...decryptedData,
-                        id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                        id: item.external_id,
                         _nango_metadata: {
                             first_seen_at: item.first_seen_at,
                             last_modified_at: item.last_modified_at,
@@ -358,8 +339,50 @@ export class PostgresStore implements RecordsStore {
                         }
                     });
                 }
-            } finally {
-                decryptSpan.finish();
+            } else {
+                const recordIds = recordsMetadata.map((r) => r.id);
+                const dataById = new Map<string, FormattedRecord['json']>();
+                {
+                    // Drain the result rows into the Map and let the array go out of scope.
+                    // Keeping both the array and the Map doubles the reference count on each
+                    // encrypted blob, which prevents `dataById.delete()` below from making
+                    // them eligible for GC during the loop.
+                    const rows = await this.dbRead
+                        .from(RECORDS_DATA_TABLE)
+                        .where({ connection_id: connectionId, model })
+                        .whereIn('id', recordIds)
+                        .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+                    while (rows.length > 0) {
+                        const r = rows.pop()!;
+                        dataById.set(r.id, r.data);
+                    }
+                }
+
+                const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+                try {
+                    // TODO: decrypt in batch
+                    for (const item of recordsMetadata) {
+                        const data = dataById.get(item.id) ?? item.json ?? {};
+                        // Drop the only remaining reference to the encrypted blob so V8 can
+                        // reclaim it when GC fires under heap pressure.
+                        dataById.delete(item.id);
+                        const decryptedData = await decryptRecordData({ ...item, json: data });
+                        results.push({
+                            ...decryptedData,
+                            id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                            _nango_metadata: {
+                                first_seen_at: item.first_seen_at,
+                                last_modified_at: item.last_modified_at,
+                                last_action: item.last_action,
+                                deleted_at: item.deleted_at,
+                                pruned_at: item.pruned_at,
+                                cursor: Cursor.new(item)
+                            }
+                        });
+                    }
+                } finally {
+                    decryptSpan.finish();
+                }
             }
 
             // all records for the same connection/model are in the same partition
