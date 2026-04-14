@@ -107,7 +107,7 @@ ORCHESTRATOR_SERVICE_URL="http://localhost:3008"
 When testing signup/email flows, the verification URL is logged to the server output. `concurrently` (used by `dev:watch:apps`) buffers child process output, so redirecting to a file doesn't reliably capture `[srv]` lines from a non-interactive shell. Two approaches:
 
 **Option A — Run the server separately with a Python PTY wrapper (autonomous):**
-Run the server process directly with a pseudo-TTY to avoid buffering, while running other services normally:
+Run the server process directly with a pseudo-TTY to avoid buffering, while running other services normally. The `--watch` flag is required so the server auto-restarts when files change (without it, code changes require a manual restart):
 ```bash
 # Server with PTY log capture
 python3 -c "
@@ -116,7 +116,7 @@ pid, fd = pty.fork()
 if pid == 0:
     os.chdir('packages/server')
     os.environ['DOTENV_CONFIG_PATH'] = './../../.env'
-    os.execvp('npx', ['npx', 'tsx', '-r', 'dotenv/config', 'lib/server.ts'])
+    os.execvp('npx', ['npx', 'tsx', '--watch', '-r', 'dotenv/config', 'lib/server.ts'])
 else:
     with open('/tmp/nango-srv.log', 'wb') as f:
         while True:
