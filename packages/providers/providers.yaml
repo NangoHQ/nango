@@ -16706,8 +16706,9 @@ streak:
             headers:
                 content-type: application/json
                 accept: application/json
-    docs: https://nango.dev/docs/integrations/all/streak
-    docs_connect: https://nango.dev/docs/integrations/all/streak/connect
+    webhook_routing_script: streakWebhookRouting
+    docs: https://nango.dev/docs/api-integrations/streak
+    docs_connect: https://nango.dev/docs/api-integrations/streak/connect
     credentials:
         username:
             type: string
