@@ -23,6 +23,11 @@ import { ConnectionCreate } from './pages/Connection/Create';
 import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
 import { ConnectionList } from './pages/Connection/List';
 import { ConnectionShow } from './pages/Connection/Show';
+import { ShowRecordModel } from './pages/Connection/ShowRecordModel';
+import { AuthTab } from './pages/Connection/components/AuthTab';
+import { RecordsTab } from './pages/Connection/components/RecordsTab';
+import { SettingsTab } from './pages/Connection/components/SettingsTab';
+import { SyncsTab } from './pages/Connection/components/SyncsTab';
 import { EnvironmentSettings } from './pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from './pages/GettingStarted/Show';
@@ -229,8 +234,46 @@ const router = sentryCreateBrowserRouter([
                             },
                             {
                                 path: ':providerConfigKey/:connectionId',
+                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle,
                                 element: <ConnectionShow />,
-                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <Navigate to="auth" replace />
+                                    },
+                                    {
+                                        path: 'auth',
+                                        element: <AuthTab />,
+                                        handle: { breadcrumb: 'Auth' } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'syncs',
+                                        element: <SyncsTab />,
+                                        handle: { breadcrumb: 'Syncs' } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'records',
+                                        handle: { breadcrumb: 'Records' } as BreadcrumbHandle,
+                                        children: [
+                                            {
+                                                index: true,
+                                                element: <RecordsTab />
+                                            },
+                                            {
+                                                path: ':model',
+                                                element: <ShowRecordModel />,
+                                                handle: {
+                                                    breadcrumb: (params) => params.model || 'Model'
+                                                } as BreadcrumbHandle
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        path: 'settings',
+                                        element: <SettingsTab />,
+                                        handle: { breadcrumb: 'Settings' } as BreadcrumbHandle
+                                    }
+                                ]
                             }
                         ]
                     },

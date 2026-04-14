@@ -77,7 +77,9 @@ export async function getRecords({
     limit,
     filter,
     cursor,
-    externalIds
+    externalIds,
+    metadataOnly,
+    sort
 }: {
     connectionId: number;
     model: string;
@@ -86,6 +88,8 @@ export async function getRecords({
     filter?: CombinedFilterAction | LastAction | undefined;
     cursor?: string | undefined;
     externalIds?: string[] | undefined;
+    metadataOnly?: boolean | undefined;
+    sort?: 'asc' | 'desc' | undefined;
 }): Promise<Result<GetRecordsResponse>> {
     const activeSpan = tracer.scope().active();
     const span = tracer.startSpan('nango.records.getRecords', {
@@ -98,13 +102,16 @@ export async function getRecords({
             return Err(error);
         }
 
+        const sortOrder = sort ?? 'asc';
+        const isDesc = sortOrder === 'desc';
+
         let query = dbRead
             .from<FormattedRecord>(RECORDS_TABLE)
             .timeout(60000) // timeout after 1 minute
             .where({ connection_id: connectionId, model })
             .orderBy([
-                { column: 'updated_at', order: 'asc' },
-                { column: 'id', order: 'asc' }
+                { column: 'updated_at', order: isDesc ? 'desc' : 'asc' },
+                { column: 'id', order: isDesc ? 'desc' : 'asc' }
             ]);
 
         if (cursor) {
@@ -114,8 +121,8 @@ export async function getRecords({
                 return Err(error);
             }
 
-            // Tuple comparison for efficient index usage
-            query = query.whereRaw(`(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
+            // Tuple comparison for efficient index usage (ASC/DESC reuse same index)
+            query = query.whereRaw(isDesc ? `(updated_at, id) < (?, ?)` : `(updated_at, id) > (?, ?)`, [decodedCursor.sort, decodedCursor.id]);
         }
 
         if (externalIds) {
@@ -202,32 +209,48 @@ export async function getRecords({
             return Ok({ records: [], next_cursor: null });
         }
 
-        const recordIds = recordsMetadata.map((r) => r.id);
-        const recordsData = await dbRead
-            .from(RECORDS_DATA_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', recordIds)
-            .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-        const dataById = new Map(recordsData.map((r) => [r.id, r.data]));
-
         const results: ReturnedRecord[] = [];
 
-        // TODO: decrypt in batch
-        for (const item of recordsMetadata) {
-            const data = dataById.get(item.id) ?? item.json ?? {};
-            const decryptedData = await decryptRecordData({ ...item, json: data });
-            results.push({
-                ...decryptedData,
-                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                _nango_metadata: {
-                    first_seen_at: item.first_seen_at,
-                    last_modified_at: item.last_modified_at,
-                    last_action: item.last_action,
-                    deleted_at: item.deleted_at,
-                    pruned_at: item.pruned_at,
-                    cursor: Cursor.new(item)
-                }
-            });
+        if (metadataOnly) {
+            for (const item of recordsMetadata) {
+                results.push({
+                    id: item.external_id,
+                    _nango_metadata: {
+                        first_seen_at: item.first_seen_at,
+                        last_modified_at: item.last_modified_at,
+                        last_action: item.last_action,
+                        deleted_at: item.deleted_at,
+                        pruned_at: item.pruned_at,
+                        cursor: Cursor.new(item)
+                    }
+                });
+            }
+        } else {
+            const recordIds = recordsMetadata.map((r) => r.id);
+            const recordsData = await dbRead
+                .from(RECORDS_DATA_TABLE)
+                .where({ connection_id: connectionId, model })
+                .whereIn('id', recordIds)
+                .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+            const dataById = new Map(recordsData.map((r) => [r.id, r.data]));
+
+            // TODO: decrypt in batch
+            for (const item of recordsMetadata) {
+                const data = dataById.get(item.id) ?? item.json ?? {};
+                const decryptedData = await decryptRecordData({ ...item, json: data });
+                results.push({
+                    ...decryptedData,
+                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                    _nango_metadata: {
+                        first_seen_at: item.first_seen_at,
+                        last_modified_at: item.last_modified_at,
+                        last_action: item.last_action,
+                        deleted_at: item.deleted_at,
+                        pruned_at: item.pruned_at,
+                        cursor: Cursor.new(item)
+                    }
+                });
+            }
         }
 
         // all records for the same connection/model are in the same partition

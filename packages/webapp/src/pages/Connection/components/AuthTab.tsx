@@ -3,22 +3,22 @@ import { Link } from 'react-router-dom';
 
 import { AuthCredentials } from './AuthCredentials/AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
-import { ConnectionSideInfo } from './ConnectionSideInfo';
+import { ConnectionTabLayout } from './ConnectionTabLayout';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/alert';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData: GetConnection['Success']['data']; providerConfigKey: string }) => {
+export const AuthTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
 
     const { connection, errorLog } = connectionData;
     const { credentials } = connection;
 
     return (
-        <div className="flex w-full gap-11 justify-between">
+        <ConnectionTabLayout connectionData={connectionData}>
             <div className="flex flex-col gap-8 w-full max-w-2xl">
                 {errorLog && (
                     <Alert variant="error">
@@ -66,8 +66,6 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                     rawTokenResponse={'raw' in credentials ? credentials.raw : null}
                 />
             </div>
-
-            <ConnectionSideInfo connectionData={connectionData} />
-        </div>
+        </ConnectionTabLayout>
     );
 };

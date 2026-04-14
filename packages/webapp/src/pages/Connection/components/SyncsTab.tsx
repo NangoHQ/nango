@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
@@ -23,16 +24,11 @@ import { getLogsUrl } from '@/utils/logs';
 import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 
-export const SyncsTab = ({
-    connectionData,
-    integrationData
-}: {
-    connectionData: GetConnection['Success']['data'];
-    integrationData: GetIntegration['Success']['data'];
-}) => {
+export const SyncsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, integrationData } = useConnectionContext();
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
     const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });

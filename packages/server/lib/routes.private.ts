@@ -38,6 +38,8 @@ import { putConnectUISettings } from './controllers/v1/connectUISettings/putConn
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
+import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
+import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { createApiKey } from './controllers/v1/environment/createApiKey.js';
@@ -235,6 +237,12 @@ web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);
 web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionsCount);
 web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
+web.route('/connections/:connectionId/records/models').get(
+    webAuth,
+    can({ action: 'read', resource: 'connection', scopedBy: envScope }),
+    getConnectionRecordModels
+);
+web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
 web.route('/connections/:connectionId/refresh').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), getConnectionRefresh);
 web.route('/connections/:connectionId').delete(webAuth, can({ action: 'delete', resource: 'connection', scopedBy: envScope }), deleteConnection);
 web.route('/connections/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));

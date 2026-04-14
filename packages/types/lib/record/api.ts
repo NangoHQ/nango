@@ -65,3 +65,51 @@ export type PatchPublicPruneRecords = Endpoint<{
         has_more: boolean;
     };
 }>;
+
+export interface ConnectionRecordModel {
+    model: string;
+    variant: string | null;
+    count: number;
+    size_bytes: number;
+    updated_at: string;
+}
+
+export type GetConnectionRecordModels = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/connections/:connectionId/records/models';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Success: {
+        data: ConnectionRecordModel[];
+    };
+}>;
+
+export type GetConnectionRecords = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/connections/:connectionId/records';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+        model: string;
+        variant?: string | undefined;
+        limit?: number | undefined;
+        cursor?: string | undefined;
+        metadata_only?: boolean | undefined;
+        /** When set, return at most one full record for this external id (for lazy payload fetch). metadata_only is ignored */
+        record_id?: string | undefined;
+    };
+    Success: {
+        data: {
+            next_cursor: string | null;
+            records: NangoRecord[];
+        };
+    };
+}>;
