@@ -186,7 +186,7 @@ export async function create(
 const inflightQueueSizes = new Map<string, Promise<Result<Map<string, number>>>>();
 
 export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
-    const cacheKey = opts.groupKeys ? opts.groupKeys.sort().join(',') : '*';
+    const cacheKey = opts.groupKeys ? JSON.stringify([...opts.groupKeys].sort()) : '*';
     const inflight = inflightQueueSizes.get(cacheKey);
     if (inflight) {
         return inflight;
