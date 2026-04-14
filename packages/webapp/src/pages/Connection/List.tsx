@@ -314,6 +314,8 @@ export const ConnectionList = () => {
                                 <ComboboxSelect
                                     allowMultiple
                                     label={selectedIntegrations && selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
+                                    dropdownTitle="All integrations"
+                                    onClearAll={() => setSelectedIntegrations([])}
                                     options={integrationsOptions}
                                     loading={integrationsLoading}
                                     selected={selectedIntegrations || []}
@@ -341,6 +343,8 @@ export const ConnectionList = () => {
                                 <ComboboxSelect
                                     allowMultiple
                                     label="Status"
+                                    dropdownTitle="Select statuses"
+                                    onClearAll={() => setSelectedStatusFilters([])}
                                     options={statusOptions}
                                     selected={selectedStatusFilters}
                                     onSelectedChange={setSelectedStatusFilters}

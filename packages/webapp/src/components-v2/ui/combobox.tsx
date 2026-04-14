@@ -1,5 +1,5 @@
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
-import { Check, CheckIcon, ChevronsUpDown, Minus, Search, XIcon } from 'lucide-react';
+import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
 import { Button } from './button';
@@ -53,6 +53,8 @@ interface MultiProps<T extends string = string> extends ComboboxBaseProps<T> {
     selected: T[];
     onSelectedChange: (selected: T[]) => void;
     label: string;
+    dropdownTitle?: string;
+    onClearAll?: () => void;
     defaultSelect?: T[];
     loading?: boolean;
     reorderOnSelect?: boolean;
@@ -96,6 +98,8 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
     const multiDefaultSelect = props.allowMultiple ? props.defaultSelect : undefined;
     const multiOnSelectedChange = props.allowMultiple ? props.onSelectedChange : undefined;
     const multiReorderOnSelect = props.allowMultiple ? (props.reorderOnSelect ?? true) : undefined;
+    const multiOnClearAll = props.allowMultiple ? props.onClearAll : undefined;
+    const multiDropdownTitle = props.allowMultiple ? props.dropdownTitle : undefined;
     const singleValue = props.allowMultiple ? undefined : props.value;
     const singleOnValueChange = props.allowMultiple ? undefined : props.onValueChange;
     const singleControlledSearch = props.allowMultiple ? undefined : props.searchValue;
@@ -224,8 +228,28 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
         >
             {props.label}{' '}
             {props.selected.length > 0 && (
-                <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center px-2">
+                <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center gap-1 px-2">
                     {props.selected.length}
+                    {multiOnClearAll && (
+                        <span
+                            role="button"
+                            aria-label="Clear filter"
+                            className="flex items-center justify-center text-text-tertiary hover:text-text-primary"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                multiOnClearAll();
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    multiOnClearAll();
+                                }
+                            }}
+                        >
+                            <X className="size-3" />
+                        </span>
+                    )}
                 </span>
             )}
         </Button>
@@ -325,6 +349,20 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     contentClassName
                 )}
             >
+                {(multiDropdownTitle || multiOnClearAll) && (
+                    <div className="flex w-full items-center justify-between px-1 py-1.5">
+                        {multiDropdownTitle && <span className="text-text-secondary text-body-small-regular">{multiDropdownTitle}</span>}
+                        {multiOnClearAll && multiSelected && multiSelected.length > 0 && (
+                            <button
+                                type="button"
+                                className="ml-auto text-text-tertiary hover:text-text-primary text-body-small-regular"
+                                onClick={multiOnClearAll}
+                            >
+                                Clear all
+                            </button>
+                        )}
+                    </div>
+                )}
                 {showSearch && (
                     <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
                         <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
