@@ -39,6 +39,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         created_at: new Date(),
         updated_at: new Date(),
         sync_function_runtime: 'runner',
+        sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',

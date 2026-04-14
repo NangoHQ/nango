@@ -151,6 +151,12 @@ export interface DBPlan extends Timestamps {
     sync_function_runtime: FunctionRuntime;
 
     /**
+     * When true, syncs routed to the Lambda fleet require the checkpoints feature or they run on the runner fleet.
+     * @default true
+     */
+    sync_lambda_checkpoint_required: boolean;
+
+    /**
      * Action Function Runtime
      * @default "runner"
      */

@@ -232,6 +232,11 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
                 break;
             }
+            // BOOLEAN FLAGS - keep override if different
+            case 'sync_lambda_checkpoint_required': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
+                break;
+            }
             // NUMBER FLAGS - keep override if higher, null means unlimited
             case 'webhook_forwards_max':
             case 'monthly_actions_max':

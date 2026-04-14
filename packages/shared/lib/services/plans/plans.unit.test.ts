@@ -73,6 +73,19 @@ describe('mergeFlags', () => {
             });
         });
     });
+
+    it('should keep sync_lambda_checkpoint_required override if different when upgrading', () => {
+        const currentPlan = makePlan({
+            code: 'free',
+            flagOverrides: { sync_lambda_checkpoint_required: false }
+        });
+        const newPlanDefinition = getPlanDefinition('starter-v2')!;
+        const newFlags = mergeFlags({
+            currentPlan,
+            newPlanDefinition
+        });
+        expect(newFlags.sync_lambda_checkpoint_required).toBe(false);
+    });
 });
 
 function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
@@ -115,6 +128,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         webhook_forwards_max: null,
         function_logs_max: null,
         sync_function_runtime: 'runner',
+        sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
