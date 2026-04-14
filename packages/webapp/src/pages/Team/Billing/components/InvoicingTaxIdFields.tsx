@@ -127,7 +127,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                     <FormField
                         control={control}
                         name="taxId.value"
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                             <FormItem>
                                 <FormLabel className="flex gap-1 items-center">
                                     Value <span className="text-alert-400">*</span>
@@ -135,10 +135,15 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                 <FormControl>
                                     <Input placeholder={`e.g. ${valuePlaceholder}`} {...field} />
                                 </FormControl>
-                                {docType && docFormat && (
-                                    <p className={`text-body-small-regular ${taxIdValue ? 'text-text-tertiary' : 'text-alert-400'}`}>
-                                        Enter your {docType} in the format {docFormat}
-                                    </p>
+                                {fieldState.error ? (
+                                    <FormMessage />
+                                ) : (
+                                    docType &&
+                                    docFormat && (
+                                        <p className={`text-body-small-regular ${taxIdValue ? 'text-text-tertiary' : 'text-alert-400'}`}>
+                                            Enter your {docType} in the format {docFormat}
+                                        </p>
+                                    )
                                 )}
                             </FormItem>
                         )}

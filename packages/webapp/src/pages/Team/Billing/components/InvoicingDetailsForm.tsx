@@ -36,7 +36,7 @@ const addressSchema = z.object({
 const taxIdSchema = z.object({
     country: z.enum(countryValues, { message: 'Valid country required' }),
     type: z.enum(taxIdTypeValues, { message: 'Valid tax ID type required' }),
-    value: z.string()
+    value: z.string().min(1, 'Required')
 });
 
 const schema = z.object({
