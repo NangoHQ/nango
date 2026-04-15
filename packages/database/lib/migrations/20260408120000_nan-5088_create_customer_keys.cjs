@@ -7,7 +7,7 @@ exports.up = async function (knex) {
     await knex.raw(`
         CREATE TABLE IF NOT EXISTS customer_keys (
             id              SERIAL PRIMARY KEY,
-            account_id      INTEGER NOT NULL REFERENCES _nango_accounts(id),
+            account_id      INTEGER NOT NULL REFERENCES _nango_accounts(id) ON DELETE CASCADE,
             key_type        VARCHAR(50) NOT NULL
                             CONSTRAINT check_customer_keys_key_type CHECK (key_type IN ('api', 'webhook_signing')),
             display_name    VARCHAR(255) NOT NULL,
