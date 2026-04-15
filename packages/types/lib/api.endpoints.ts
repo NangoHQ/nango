@@ -2,8 +2,10 @@ import type {
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
+    GetManagedEmailVerification,
     PostForgotPassword,
     PostLogout,
+    PostManagedEmailVerification,
     PostManagedSignup,
     PostSignin,
     PostSignup,
@@ -174,11 +176,13 @@ export type PrivateApiEndpoints =
     | GetEmailByExpiredToken
     | GetEmailByUuid
     | GetManagedCallback
+    | GetManagedEmailVerification
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
+    | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy
     | PostEnvironment

@@ -30,7 +30,7 @@
         "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
-        "axios": "1.13.5",
+        "axios": "1.15.0",
         "braintree": "3.15.0",
         "dayjs": "1.11.19",
         "dd-trace": "5.52.0",

@@ -346,7 +346,7 @@ export async function handleWebhookSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -547,7 +547,7 @@ async function onFailure({
                     functionName: syncName,
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });
