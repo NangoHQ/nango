@@ -115,3 +115,15 @@ export type DeleteApiKey = Endpoint<{
     Params: { keyId: number };
     Success: { success: true };
 }>;
+
+export type PatchApiKey = Endpoint<{
+    Method: 'PATCH';
+    Path: '/api/v1/environment/api-keys/:keyId';
+    Params: { keyId: number };
+    Body: {
+        scopes?: string[];
+        display_name?: string;
+    };
+    Success: { success: true };
+    Error: ApiError<'conflict' | 'not_found'>;
+}>;

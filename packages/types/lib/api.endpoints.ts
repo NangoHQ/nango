@@ -53,6 +53,7 @@ import type {
     GetEnvironment,
     GetEnvironments,
     ListApiKeys,
+    PatchApiKey,
     PatchEnvironment,
     PostEnvironment
 } from './environment/api/index.js';
@@ -188,6 +189,7 @@ export type PrivateApiEndpoints =
     | ListApiKeys
     | CreateApiKey
     | DeleteApiKey
+    | PatchApiKey
     | PatchWebhook
     | PostEnvironmentVariables
     | PostImpersonate

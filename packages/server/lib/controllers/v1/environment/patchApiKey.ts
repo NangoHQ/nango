@@ -2,30 +2,36 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
 
-import type { RequestLocals } from '../../../utils/express.js';
-import type { Request, Response } from 'express';
+import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-const bodySchema = z
+import type { PatchApiKey } from '@nangohq/types';
+
+const validationParams = z.object({
+    keyId: z.coerce.number().int().positive()
+});
+
+const validationBody = z
     .object({
         scopes: z.array(z.string().min(1)).min(1).optional(),
         display_name: z.string().min(1).max(255).optional()
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });
 
-export const patchApiKey = async (req: Request, res: Response<any, RequestLocals>) => {
-    const keyId = parseInt(req.params['keyId'] || '', 10);
-    if (!keyId) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Missing keyId parameter' } });
+export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valParams.error) } });
         return;
     }
 
-    const environment = res.locals['environment']!;
-    const account = res.locals['account']!;
+    const { keyId } = valParams.data;
+    const { environment, account } = res.locals;
 
-    const parsed = bodySchema.safeParse(req.body);
+    const parsed = validationBody.safeParse(req.body);
     if (!parsed.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: parsed.error.issues } });
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(parsed.error) } });
         return;
     }
 
@@ -51,4 +57,4 @@ export const patchApiKey = async (req: Request, res: Response<any, RequestLocals
     }
 
     res.status(200).send({ success: true });
-};
+});
