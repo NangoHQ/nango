@@ -321,6 +321,46 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     return url.toString();
 }
 
+// builds the canonical parameter string as required by the Duo API request signing spec.
+// https://duo.com/docs/authapi#authentication
+export function buildCanonicalParams(method: string, data: unknown, queryString: string): string {
+    const encode = (s: string) =>
+        encodeURIComponent(s)
+            .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+            .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
+
+    const fromQueryString = (qs: string) =>
+        qs
+            .split('&')
+            .filter(Boolean)
+            .map((pair) => {
+                const i = pair.indexOf('=');
+                return {
+                    k: decodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
+                    v: decodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
+                };
+            })
+            .sort((a, b) => a.k.localeCompare(b.k))
+            .map(({ k, v }) => `${encode(k)}=${encode(v)}`)
+            .join('&');
+
+    const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+
+    if (isBodyMethod) {
+        if (!data) return '';
+        if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
+        if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
+        if (data instanceof URLSearchParams) return fromQueryString(data.toString());
+        if (typeof data !== 'object' || data instanceof FormData) return '';
+        return Object.entries(data as Record<string, unknown>)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => `${encode(k)}=${encode(String(v))}`)
+            .join('&');
+    }
+
+    return queryString ? fromQueryString(queryString) : '';
+}
+
 /**
  * Build Headers for proxy
  */
@@ -452,11 +492,25 @@ export function buildProxyHeaders({
         const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
         const stableReplacers = getStableInterpolationReplacers(headerValues);
 
-        const baseReplacers = { endpoint: config.endpoint };
+        const parsedUrl = new URL(url);
+        const endpointPath = parsedUrl.pathname;
+        const endpointQuery = parsedUrl.search.slice(1);
+        const baseReplacers = {
+            endpoint: config.endpoint,
+            path: endpointPath,
+            params: buildCanonicalParams(config.method, config.data, endpointQuery)
+        };
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
+                headers[key] = interpolateIfNeeded(value, {
+                    connectionConfig: connection.connection_config,
+                    credentials: connection.credentials,
+                    ...(connection.credentials as Record<string, string>),
+                    method: config.method,
+                    ...stableReplacers,
+                    ...baseReplacers
+                });
                 continue;
             }
 
@@ -483,7 +537,13 @@ export function buildProxyHeaders({
                     break;
                 }
                 default:
-                    headers[key] = interpolateIfNeeded(value, connection.credentials as Record<string, string>);
+                    headers[key] = interpolateIfNeeded(value, {
+                        credentials: connection.credentials,
+                        ...(connection.credentials as Record<string, string>),
+                        method: config.method,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
             }
         }

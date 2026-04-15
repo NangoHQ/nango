@@ -16,6 +16,12 @@ declare global {
 declare module 'express-session' {
     interface SessionData {
         debugMode?: boolean;
+        managedAuthEmailVerification?: {
+            email: string;
+            emailVerificationId: string;
+            pendingAuthenticationToken: string;
+            state?: string | undefined;
+        };
     }
 }
 

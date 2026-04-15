@@ -33,6 +33,20 @@ export type PostPublicTriggerAction = Endpoint<{
     Success: any;
 }>;
 
+export type PostInternalTriggerFunction = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/trigger/function';
+    Body: {
+        type: 'action' | 'sync';
+        function_name: string;
+        provider_config_key: string;
+        connection_id: string;
+        input?: unknown;
+    };
+    Querystring: { env: string };
+    Success: any;
+}>;
+
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
 export type GetPublicV1 = Endpoint<{
     Method: 'GET';

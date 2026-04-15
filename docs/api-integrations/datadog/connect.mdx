@@ -11,7 +11,6 @@ To authenticate with Datadog, you need three key pieces of information:
 2. **Site Parameter** - Location of your datadog host
 3. **Application Key** - Keys are associated with the user account that created
 
-
 This guide will walk you through finding or creating those credentials within Datadog.
 
 
@@ -38,10 +37,10 @@ This guide will walk you through finding or creating those credentials within Da
 
 #### Step 2: Datadog API Key
 1. To add a Datadog API key, Navigate to **Organization settings**, then click the **API keys** tab.
-- Click the **New Key** or **New Client Token** button, depending on which you’re creating
+- Click the **New Key** or **New Client Token** button, depending on which you're creating
 - Enter a name for your key and then click **Create API key**
 
-<img src="/integrations/all/datadog/datadog-1.png" />
+<img src="/api-integrations/datadog/datadog-1.png" />
 
 Note:
 - Your org must have at least one API key and at most 50 API keys.
@@ -51,7 +50,7 @@ Note:
 #### Step 3: Datadog Application Key
 1. To create a new application key, navigate to **Organization Settings** > **Application Keys**. If you have the permission to create application keys, click **New Key**.
 
-<img src="/integrations/all/datadog/datadog-2.avif" />
+<img src="/api-integrations/datadog/datadog-2.avif" />
 
 
 2. Enter an alias for the API Key for easy identification.
@@ -66,12 +65,12 @@ Note:
 
 #### Step 4: Connect Your Datadog Account
 
-<img src="/integrations/all/datadog/nango_connect_ui.png" />
+Once you have your **Site Parameter**, **API Key** and **Application Key** :
 
-To authenticate using your API credentials, navigate to the Datadog authentication form.
-Enter your credentials as follows:
-- API Key: Your API key
-- Site Parameter: Your datadog host
-- Application Key: Your application key
+1. Open the form where you need to authenticate with Datadog.
+2. Enter your **Site Parameter**, **API Key** and **Application Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-Click "Connect" to complete the authentication.
+<img src="/api-integrations/datadog/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Datadog.

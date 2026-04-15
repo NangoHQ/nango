@@ -4,8 +4,10 @@ import { APIError, apiFetch } from '@/utils/api';
 
 import type {
     GetEmailByUuid,
+    GetManagedEmailVerification,
     GetOnboardingHearAboutUs,
     PostForgotPassword,
+    PostManagedEmailVerification,
     PostOnboardingHearAboutUs,
     PostSignin,
     PostSignup,
@@ -90,6 +92,61 @@ export function useResendVerificationEmailByUuid() {
 
             if (res.status === 200) {
                 return (await res.json()) as ResendVerificationEmailByUuid['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useManagedEmailVerification() {
+    return useQuery<GetManagedEmailVerification['Success'], APIError>({
+        queryKey: ['account', 'managed', 'verification'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/v1/account/managed/verification');
+
+            if (res.status === 200) {
+                return (await res.json()) as GetManagedEmailVerification['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useManagedEmailVerificationAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostManagedEmailVerification['Success'];
+          }
+        | {
+              status: 400 | 404;
+              json: PostManagedEmailVerification['Errors'];
+          },
+        APIError,
+        { code: string }
+    >({
+        mutationFn: async ({ code }) => {
+            const res = await apiFetch('/api/v1/account/managed/verification', {
+                method: 'POST',
+                body: JSON.stringify({ code })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostManagedEmailVerification['Success']
+                };
+            }
+
+            if (res.status === 400 || res.status === 404) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostManagedEmailVerification['Errors']
+                };
             }
 
             const json = (await res.json()) as Record<string, unknown>;

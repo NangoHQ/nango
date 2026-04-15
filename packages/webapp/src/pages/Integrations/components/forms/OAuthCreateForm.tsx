@@ -159,7 +159,12 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                         <FormItem>
                                             <FormLabel>Scopes</FormLabel>
                                             <FormControl>
-                                                <ScopesInput scopesString={field.value} onChange={(scopes) => Promise.resolve(field.onChange(scopes))} />
+                                                <ScopesInput
+                                                    scopesString={field.value}
+                                                    onChange={(scopes) => Promise.resolve(field.onChange(scopes))}
+                                                    availableScopes={provider.availableScopes}
+                                                    showAvailableScopesDropdown={true}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}

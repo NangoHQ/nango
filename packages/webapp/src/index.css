@@ -583,9 +583,21 @@
     font-weight: 600;
 }
 
+@utility text-label-large {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
 @utility text-heading-large {
     font-size: 24px;
     line-height: 32px;
+    font-weight: 500;
+}
+
+@utility text-heading-medium {
+    font-size: 20px;
+    line-height: 28px;
     font-weight: 500;
 }
 
@@ -719,4 +731,33 @@
 .mantine-Prism-code {
     font-family: 'Geist Mono';
     background-color: var(--color-bg-surface) !important;
+}
+
+.scrollbar-app {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-400) transparent;
+}
+.scrollbar-app::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scrollbar-app::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-app::-webkit-scrollbar-thumb {
+    background: var(--color-gray-400);
+    border-radius: 3px;
+}
+.scrollbar-app::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-500);
+}
+.dark .scrollbar-app {
+    scrollbar-color: var(--color-gray-600) transparent;
+}
+.dark .scrollbar-app::-webkit-scrollbar-thumb {
+    background: var(--color-gray-600);
+}
+.dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-550);
 }
