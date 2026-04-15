@@ -48,7 +48,7 @@ export default createOnEvent({
         const payloadTemplate = `{"triggerEvent":"{{triggerEvent}}","createdAt":"{{createdAt}}","nangoConnectionId":"${connectionId}","payload":{"type":"{{type}}","title":"{{title}}","startTime":"{{startTime}}","endTime":"{{endTime}}","organizer":{{organizer}},"attendees":{{attendees}},"uid":"{{uid}}"}}`;
 
         const response = await nango.post({
-            endpoint: '/v2/webhooks',
+            endpoint: '/organizations/<ORG-ID>/webhooks',
             data: {
                 active: true,
                 subscriberUrl: webhookUrl,
@@ -68,7 +68,7 @@ You can also register the subscription manually via the [Nango proxy](/reference
 
 ```bash
 curl --request POST \
-  --url https://api.nango.dev/proxy/v2/webhooks \
+  --url https://api.nango.dev/proxy/organizations/<ORG-ID>/webhooks \
   --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
   --header 'Provider-Config-Key: cal-com-v2' \
   --header 'Connection-Id: <CONNECTION-ID>' \
@@ -85,6 +85,7 @@ curl --request POST \
 Replace:
 
 - **&lt;NANGO-SECRET-KEY&gt;** — your Nango secret key
+- **&lt;ORG-ID&gt;** — your Cal.com organization ID
 - **&lt;CONNECTION-ID&gt;** — the Nango connection ID for this Cal.com account
 - **&lt;REPLACE_WITH_NANGO_WEBHOOK_URL&gt;** — your Nango webhook URL from the dashboard (step 1)
 - **&lt;YOUR-WEBHOOK-SECRET&gt;** — the webhook secret configured on your Cal.com (v2) integration in Nango
@@ -116,7 +117,7 @@ export default createOnEvent({
         try {
           // https://cal.com/docs/api-reference/v2/orgs-webhooks/delete-a-webhook
             await nango.delete({
-                endpoint: `/v2/webhooks/${webhookId}`,
+                endpoint: `/organizations/<ORG-ID>/webhooks/${webhookId}`,
             });
         } catch (err) {
             // Avoid blocking connection deletion if the webhook is already gone

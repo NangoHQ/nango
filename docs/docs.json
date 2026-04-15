@@ -332,7 +332,6 @@
               "integrations/all/bullhorn",
               "integrations/all/builtwith",
               "integrations/all/cal-com-v1",
-              "integrations/all/cal-com-v2",
               "api-integrations/cal-com-v2",
               "api-integrations/cal-com-oauth",
               "api-integrations/calendly",
