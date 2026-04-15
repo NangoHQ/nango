@@ -13855,6 +13855,7 @@ railway:
     token_url: https://backboard.railway.com/oauth/token
     authorization_params:
         response_type: code
+        prompt: consent
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -13862,6 +13863,7 @@ railway:
     default_scopes:
         - openid
         - offline_access
+        - workspace:admin
     scope_separator: ' '
     proxy:
         base_url: https://backboard.railway.com
