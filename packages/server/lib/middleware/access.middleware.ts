@@ -101,7 +101,7 @@ export class AccessMiddleware {
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
-            res.locals['apiKeyScopes'] = result.value.auth?.scopes ?? [];
+            res.locals['apiKeyScopes'] = result.value.auth?.scopes;
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                 auth_source: result.value.auth?.source ?? 'env_var'
             });
@@ -372,7 +372,7 @@ export class AccessMiddleware {
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
                 res.locals['plan'] = secretKeyResult.value.plan;
-                res.locals['apiKeyScopes'] = secretKeyResult.value.auth?.scopes ?? [];
+                res.locals['apiKeyScopes'] = secretKeyResult.value.auth?.scopes;
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                     auth_source: secretKeyResult.value.auth?.source ?? 'env_var'
                 });
