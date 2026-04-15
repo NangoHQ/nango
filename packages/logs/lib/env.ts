@@ -1,9 +1,15 @@
 import { ENVS, MAX_ACTION_DURATION, MAX_SYNC_DURATION, MAX_WEBHOOK_DURATION, parseEnvs } from '@nangohq/utils';
 
+import type { z } from 'zod';
+
 // Do not require in community and enterprise right now
 const required = process.env['NANGO_LOGS_ENABLED'] === 'true';
 
-export const envs = parseEnvs(required ? ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_USER: true, NANGO_LOGS_ES_PWD: true }) : ENVS);
+export const envs = parseEnvs(required ? ENVS.required({ NANGO_LOGS_ES_URL: true, NANGO_LOGS_ES_USER: true, NANGO_LOGS_ES_PWD: true }) : ENVS) as z.infer<
+    typeof ENVS
+> & {
+    NANGO_LOGS_PROVIDER: 'elasticsearch' | 'opensearch';
+};
 
 envs.NANGO_LOGS_ENABLED = Boolean(envs.NANGO_LOGS_ENABLED && envs.NANGO_LOGS_ES_URL);
 

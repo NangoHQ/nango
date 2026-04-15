@@ -1,19 +1,31 @@
-import { Client } from '@elastic/elasticsearch';
+import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
+import { Client as OpenSearchClient } from '@opensearch-project/opensearch';
 
 import { envs } from '../env.js';
 import { CircuitBreaker } from './circuitBreaker.js';
 
-const rawClient = new Client({
-    nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
-    requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
-    maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
-    auth: {
-        username: envs.NANGO_LOGS_ES_USER!, // ggignore
-        password: envs.NANGO_LOGS_ES_PWD! // ggignore
-    }
-});
+/** Typed as Elasticsearch client; OpenSearch client is API-compatible for our usage. */
+export type LogsStorageClient = ElasticsearchClient;
 
-function withCircuitBreaker(target: Client): Client {
+function createRawClient(): ElasticsearchClient {
+    const common = {
+        nodes: envs.NANGO_LOGS_ES_URL || 'http://localhost:0',
+        requestTimeout: envs.NANGO_LOGS_ES_REQUEST_TIMEOUT_MS,
+        maxRetries: envs.NANGO_LOGS_ES_MAX_RETRIES,
+        auth: {
+            username: envs.NANGO_LOGS_ES_USER!, // ggignore
+            password: envs.NANGO_LOGS_ES_PWD! // ggignore
+        }
+    };
+
+    if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
+        return new OpenSearchClient(common) as unknown as ElasticsearchClient;
+    }
+
+    return new ElasticsearchClient(common);
+}
+
+function withCircuitBreaker(target: ElasticsearchClient): ElasticsearchClient {
     const circuitBreaker = new CircuitBreaker({
         healthCheck: async () => {
             try {
@@ -37,7 +49,7 @@ function withCircuitBreaker(target: Client): Client {
 
             return async function (...args: any[]) {
                 if (circuitBreaker.isUnhealthy()) {
-                    throw new Error('Elasticsearch circuit breaker is unhealthy  - failing fast');
+                    throw new Error('Logs storage circuit breaker is unhealthy - failing fast');
                 }
 
                 if (prop === 'close') {
@@ -50,4 +62,4 @@ function withCircuitBreaker(target: Client): Client {
     });
 }
 
-export const client = withCircuitBreaker(rawClient);
+export const client = withCircuitBreaker(createRawClient());

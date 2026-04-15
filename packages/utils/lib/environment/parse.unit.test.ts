@@ -115,6 +115,11 @@ describe('parse', () => {
         });
     });
 
+    it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
+    });
+
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to empty array', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);

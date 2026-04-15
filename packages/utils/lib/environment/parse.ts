@@ -307,7 +307,8 @@ export const ENVS = z.object({
     DD_TRACE_AGENT_URL: z.string().optional(),
     DD_API_KEY_SECRET_ARN: z.string().optional(),
 
-    // Elasticsearch
+    // Elasticsearch / OpenSearch (logs)
+    NANGO_LOGS_PROVIDER: z.enum(['elasticsearch', 'opensearch']).optional().default('elasticsearch'),
     NANGO_LOGS_ES_URL: z.url().optional(),
     NANGO_LOGS_ES_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(5000),
     NANGO_LOGS_ES_MAX_RETRIES: z.coerce.number().optional().default(1),

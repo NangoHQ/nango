@@ -1,9 +1,9 @@
 import { isTest } from '@nangohq/utils';
 
 import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
-import { client } from '../es/client.js';
 import { indexOperations } from '../es/schema.js';
-import { ResponseError } from '../utils.js';
+import { client } from '../storage/client.js';
+import { throwLogsNotFound } from '../utils.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type {
@@ -177,7 +177,7 @@ export async function getOperation(opts: { id: OperationRow['id']; indexName?: s
         }
     });
     if (res.hits.hits.length <= 0) {
-        throw new ResponseError({ statusCode: 404, warnings: [], meta: {} as any });
+        throwLogsNotFound();
     }
     return res.hits.hits[0]!._source!;
 }

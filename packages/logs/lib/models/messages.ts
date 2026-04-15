@@ -1,8 +1,8 @@
 import { isTest } from '@nangohq/utils';
 
 import { createCursor, parseCursor } from './helpers.js';
-import { client } from '../es/client.js';
 import { indexMessages } from '../es/schema.js';
+import { client } from '../storage/client.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type { MessageRow, OperationRow, SearchOperationsState, SearchPeriod } from '@nangohq/types';
