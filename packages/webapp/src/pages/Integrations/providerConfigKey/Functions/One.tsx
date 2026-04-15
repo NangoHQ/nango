@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { APIError } from '@/utils/api';
 
 import type { JSONSchema7 } from 'json-schema';
@@ -75,6 +76,10 @@ export const FunctionsOne: React.FC = () => {
     }, [func]);
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
+
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
+    const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
+    const setPlaygroundFunction = usePlaygroundStore((s) => s.setFunction);
 
     const isLoading = integrationLoading || flowsLoading;
 
@@ -158,6 +163,17 @@ export const FunctionsOne: React.FC = () => {
                                     <Download />
                                 </Button>
                             )}
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                    setPlaygroundIntegration(integrationData.integration.unique_key);
+                                    setPlaygroundFunction(func.name, func.type as 'action' | 'sync');
+                                    setPlaygroundOpen(true);
+                                }}
+                            >
+                                Playground <ExternalLink className="size-4" />
+                            </Button>
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
                     </div>

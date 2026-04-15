@@ -20,10 +20,13 @@ import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
+    const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
     const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
@@ -108,6 +111,15 @@ export const ShowIntegration: React.FC = () => {
                                 Connections <ExternalLink className="size-4" />
                             </Link>
                         </TabsTrigger>
+                        <button
+                            onClick={() => {
+                                setPlaygroundIntegration(integration.integration.unique_key);
+                                setPlaygroundOpen(true);
+                            }}
+                            className="w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary"
+                        >
+                            Playground <ExternalLink className="size-4" />
+                        </button>
                     </TabsList>
                     <TabsContent value="functions">
                         <div className="flex w-full gap-11 justify-between">

@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
@@ -13,11 +14,15 @@ import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { usePlaygroundStore } from '@/store/playground';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 
 export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
+    const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
+    const setPlaygroundIntegration = usePlaygroundStore((s) => s.setIntegration);
+    const setPlaygroundConnection = usePlaygroundStore((s) => s.setConnection);
 
     const {
         data: connectionResponse,
@@ -99,6 +104,16 @@ export const ConnectionShow = () => {
                         <TabsTrigger value="auth">Auth</TabsTrigger>
                         <TabsTrigger value="syncs">Syncs</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <button
+                            onClick={() => {
+                                setPlaygroundIntegration(integrationData.integration.unique_key);
+                                setPlaygroundConnection(connectionResponse.connection.connection_id);
+                                setPlaygroundOpen(true);
+                            }}
+                            className="w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary"
+                        >
+                            Playground <ExternalLink className="size-4" />
+                        </button>
                     </TabsList>
                     <TabsContent value="auth">
                         <AuthTab connectionData={connectionResponse} providerConfigKey={integrationData.integration.unique_key} />
