@@ -8,6 +8,6 @@ export * as modelInsights from './models/insights.js';
 export * from './otlp/otlp.js';
 export { OtlpSpan } from './otlp/otlpSpan.js';
 export { defaultOperationExpiration, envs } from './env.js';
-export { ResponseError, destroy } from './utils.js';
+export { ResponseError, destroy, isLogsNotFoundError } from './utils.js';
 export * from './formatters.js';
 export * from './transport.js';

@@ -17,6 +17,7 @@
         "@elastic/elasticsearch": "8.17.0",
         "@nangohq/utils": "file:../utils",
         "@opentelemetry/api": "1.9.1",
+        "@opensearch-project/opensearch": "2.13.0",
         "@opentelemetry/core": "1.27.0",
         "@opentelemetry/exporter-trace-otlp-http": "0.54.0",
         "@opentelemetry/resources": "1.27.0",
