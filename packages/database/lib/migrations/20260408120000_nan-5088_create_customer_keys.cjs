@@ -51,9 +51,16 @@ exports.up = async function (knex) {
         END;
         $$ LANGUAGE plpgsql;
 
-        CREATE TRIGGER trg_env_delete_customer_key_relations
-            BEFORE DELETE ON _nango_environments
-            FOR EACH ROW EXECUTE FUNCTION cleanup_customer_key_relations('environment');
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_trigger WHERE tgname = 'trg_env_delete_customer_key_relations'
+            ) THEN
+                CREATE TRIGGER trg_env_delete_customer_key_relations
+                    BEFORE DELETE ON _nango_environments
+                    FOR EACH ROW EXECUTE FUNCTION cleanup_customer_key_relations('environment');
+            END IF;
+        END $$;
     `);
 };
 
