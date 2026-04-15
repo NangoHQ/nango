@@ -236,6 +236,39 @@ class AccountService {
         return this.getAccountContext({ secretKey });
     }
 
+    /**
+     * Resolve account context using only api_secrets (no customer_keys lookup).
+     * Used by internal services (persist) that authenticate with the
+     * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
+     */
+    async getAccountContextByInternalSecretKey(secretKey: string): Promise<AccountContext | null> {
+        if (!isCloud) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
+            for (const environmentVariable of environmentVariables) {
+                const envSecretKey = process.env[environmentVariable] as string;
+                if (envSecretKey !== secretKey) {
+                    continue;
+                }
+                const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                const env = await db.knex
+                    .select<Pick<DBEnvironment, 'account_id'>>('account_id')
+                    .from<DBEnvironment>('_nango_environments')
+                    .where({ name: envName, deleted: false })
+                    .first();
+                if (!env) {
+                    return null;
+                }
+                const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
+                if (!accountContext) {
+                    return null;
+                }
+                return accountContext;
+            }
+        }
+
+        return this.getAccountContext({ internalSecretKey: secretKey });
+    }
+
     async getAccountContextByPublicKey(publicKey: string): Promise<AccountContext | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
@@ -270,6 +303,7 @@ class AccountService {
         opts:
             | { publicKey: string }
             | { secretKey: string }
+            | { internalSecretKey: string }
             | { accountId: number; envName: string }
             | { environmentId: number }
             | { environmentUuid: string }
@@ -277,6 +311,9 @@ class AccountService {
     ): Promise<AccountContext | null> {
         if ('secretKey' in opts) {
             return this.getAccountContextByAnySecret(opts.secretKey);
+        }
+        if ('internalSecretKey' in opts) {
+            return this.getAccountContextByInternalSecret(opts.internalSecretKey);
         }
 
         const q = db.readOnly
@@ -490,6 +527,83 @@ class AccountService {
                 scopes: row.auth_source === 'api_secret' ? ['environment:*'] : (row.auth_scopes ?? []),
                 ...(row.auth_api_key_id ? { apiKeyId: row.auth_api_key_id } : {})
             }
+        };
+    }
+
+    /**
+     * Resolve account context using only api_secrets (no customer_keys lookup).
+     * Used by internal services (persist, runners) that authenticate with the
+     * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
+     */
+    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+        const hashed = await secretService.hashSecret(secretKey);
+        if (hashed.isErr()) {
+            throw hashed.error;
+        }
+
+        const row = await db.readOnly
+            .select<{
+                account: DBTeam;
+                environment: DBEnvironment;
+                plan: DBPlan | null;
+                default_secret: DBAPISecret;
+                pending_secret: DBAPISecret | null;
+            }>(
+                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan'),
+                db.knex.raw('row_to_json(default_secret.*) as default_secret'),
+                db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
+            )
+            .from<DBAPISecret>('api_secrets')
+            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .join({ default_secret: 'api_secrets' }, (j) =>
+                j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
+            )
+            .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
+                j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
+            )
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('api_secrets.hashed', hashed.value)
+            .where('api_secrets.is_default', true)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!row) {
+            return null;
+        }
+
+        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+
+        return {
+            account: {
+                ...row.account,
+                created_at: new Date(row.account.created_at),
+                updated_at: new Date(row.account.updated_at)
+            },
+            environment: {
+                ...row.environment,
+                secret_key: defaultSecret.secret,
+                pending_secret_key: pendingKey?.secret || null,
+                created_at: new Date(row.environment.created_at),
+                updated_at: new Date(row.environment.updated_at),
+                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+            },
+            plan: row.plan
+                ? {
+                      ...row.plan,
+                      created_at: new Date(row.plan.created_at),
+                      updated_at: new Date(row.plan.updated_at),
+                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
+                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
+                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
+                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
+                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
+                  }
+                : null,
+            secret: defaultSecret
         };
     }
 }
