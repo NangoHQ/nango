@@ -45,8 +45,11 @@ exports.up = async function (knex) {
         CREATE OR REPLACE FUNCTION cleanup_customer_key_relations()
         RETURNS TRIGGER AS $$
         BEGIN
-            DELETE FROM customer_keys_relations
-            WHERE entity_type = TG_ARGV[0] AND entity_id = OLD.id;
+            DELETE FROM customer_keys
+            WHERE id IN (
+                SELECT customer_key_id FROM customer_keys_relations
+                WHERE entity_type = TG_ARGV[0] AND entity_id = OLD.id
+            );
             RETURN OLD;
         END;
         $$ LANGUAGE plpgsql;
