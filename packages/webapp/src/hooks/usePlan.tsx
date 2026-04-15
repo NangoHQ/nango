@@ -2,6 +2,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/r
 import { useMemo } from 'react';
 
 import { APIError, apiFetch } from '../utils/api';
+import { globalEnv } from '../utils/env';
 
 import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from '@nangohq/types';
 
@@ -23,6 +24,11 @@ export function currentPlanQueryOptions(env: string) {
 export function useApiGetCurrentPlan(env: string) {
     return useQuery(currentPlanQueryOptions(env));
 }
+
+export function planHasRbac(plan?: ApiPlan | null): boolean {
+    return !globalEnv.features.plan || plan?.has_rbac === true;
+}
+
 export async function apiPostPlanExtendTrial(env: string) {
     const res = await apiFetch(`/api/v1/plans/trial/extension?env=${env}`, {
         method: 'POST'

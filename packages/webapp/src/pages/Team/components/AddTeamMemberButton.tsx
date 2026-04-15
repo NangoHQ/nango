@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
 import { usePostInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetCurrentPlan } from '@/hooks/usePlan';
+import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -33,7 +33,7 @@ export const AddTeamMemberButton = () => {
     const { can } = usePermissions();
     const canManageTeam = can(permissions.canManageTeam);
     const { data: currentPlan } = useApiGetCurrentPlan(env);
-    const hasRBAC = !globalEnv.features.plan || currentPlan?.data.has_rbac === true;
+    const hasRBAC = planHasRbac(currentPlan?.data);
 
     const [isOpen, setIsOpen] = useState(false);
 
