@@ -3064,8 +3064,10 @@ cal-com-v2:
                 content-type: application/json
             endpoints:
                 - /me
-    docs: https://nango.dev/docs/integrations/all/cal-com-v2
-    docs_connect: https://nango.dev/docs/integrations/all/cal-com-v2/connect
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
+    docs: https://nango.dev/docs/api-integrations/cal-com-v2
+    docs_connect: https://nango.dev/docs/api-integrations/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
