@@ -88,7 +88,6 @@ export class Clickhouse {
                     case 'webhook_forwards': {
                         const sql = `
                             SELECT
-                                account_id,
                                 ${quantityForMetric(metric)} AS quantity,
                                 ${startSelect(query)}
                                 ${dimensionSelect} AS dimension
@@ -101,10 +100,10 @@ export class Clickhouse {
                         `;
                         const res = await this.client?.query({ query: sql, format: 'JSONEachRow' });
                         return {
+                            accountId: query.accountId,
                             metric,
                             dimension,
                             rows: (await res?.json()) as {
-                                account_id: number;
                                 quantity: number;
                                 start: string;
                                 end: string;
