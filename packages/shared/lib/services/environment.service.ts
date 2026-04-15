@@ -319,7 +319,7 @@ class EnvironmentService {
                 environment_id: environment.id,
                 is_default: false
             });
-            return secretService.getDefaultSecretForEnv(trx, envId);
+            return secretService.getInternalSecretForEnv(trx, envId);
         });
         if (defaultSecret === null) {
             return null;
