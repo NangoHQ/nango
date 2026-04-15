@@ -107,7 +107,7 @@ export function quantityForMetric(metric: UsageMetric): string {
         case 'function_logs':
             return `SUM(custom_logs)`;
         case 'function_compute_gbms':
-            return `SUM(duration_ms * memory_gb)`;
+            return `SUM(compute_gbms)`;
         case 'records':
         case 'connections':
             // not implemented yet
