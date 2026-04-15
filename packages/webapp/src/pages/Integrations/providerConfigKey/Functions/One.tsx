@@ -27,6 +27,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
 
@@ -158,6 +159,19 @@ export const FunctionsOne: React.FC = () => {
                                     <Download />
                                 </Button>
                             )}
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                    openPlaygroundWithContext({
+                                        integration: integrationData.integration.unique_key,
+                                        functionName: func.name,
+                                        functionType: func.type as 'action' | 'sync'
+                                    });
+                                }}
+                            >
+                                Playground <ExternalLink />
+                            </Button>
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
                     </div>
