@@ -45,6 +45,16 @@ class LocalFileService {
         }
     }
 
+    public fetchIntegrationFile({ filePath }: { filePath: string }) {
+        try {
+            const integrationFileContents = fs.readFileSync(filePath, 'utf8');
+            return integrationFileContents;
+        } catch (err) {
+            console.log(err);
+            return null;
+        }
+    }
+
     public putIntegrationFile({ filePath, fileContent }: { filePath: string; fileContent: string }) {
         try {
             const fp = path.join(basePath, filePath);
