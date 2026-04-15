@@ -5,8 +5,8 @@ import { hasScope } from './scope.middleware.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
 describe('hasScope', () => {
-    it('returns true when grantedScopes is undefined (legacy key)', () => {
-        expect(hasScope({ grantedScopes: undefined, requiredScope: 'environment:deploy' })).toBe(true);
+    it('returns false when grantedScopes is undefined', () => {
+        expect(hasScope({ grantedScopes: undefined, requiredScope: 'environment:deploy' })).toBe(false);
     });
 
     it('exact match', () => {
