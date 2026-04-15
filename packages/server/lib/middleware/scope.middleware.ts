@@ -3,7 +3,12 @@ import type { ApiKeyScope } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 export function hasScope({ grantedScopes, requiredScope }: { grantedScopes: string[] | undefined; requiredScope: ApiKeyScope }): boolean {
-    // No scopes means legacy auth (api_secrets fallback) — allow access
+    // No scopes (undefined) means connect session auth via connectSessionOrSecretKeyAuth,
+    // which doesn't set apiKeyScopes on res.locals.
+    // Note: the api_secrets fallback in the dual-read already hardcodes ['environment:*'],
+    // so secret key auth always has scopes set.
+    // This fallback CANNOT be removed until connectSessionOrSecretKeyAuth explicitly sets
+    // apiKeyScopes for session-based auth.
     if (!grantedScopes) {
         return true;
     }
