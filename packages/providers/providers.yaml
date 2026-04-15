@@ -4787,7 +4787,7 @@ datadog:
             type: string
             title: Application Key
             description: The application key required for read data access.
-            pattern: '^([a-f0-9]{40}|ddapp_[A-Za-z0-9]+)$'
+            pattern: '^[A-Za-z0-9_]+$'
             example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
             doc_section: '#step-3-datadog-application-key'
     credentials:
