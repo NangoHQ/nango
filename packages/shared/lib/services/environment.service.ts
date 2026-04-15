@@ -115,12 +115,14 @@ class EnvironmentService {
                 throw apiKey.error;
             }
 
-            // TODO: propagate webhook key creation errors once we understand why it fails in CI
-            await customerKeyService.createWebhookSigningKey(trx, {
+            const webhookKey = await customerKeyService.createWebhookSigningKey(trx, {
                 accountId: accountId,
                 environmentId: environment.id,
                 secret: secret.secret
             });
+            if (webhookKey.isErr()) {
+                throw webhookKey.error;
+            }
 
             return environment;
         });
