@@ -281,7 +281,7 @@ export class EncryptionManager extends Encryption {
             await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ id: environmentVariable.id }).update(environmentVariable);
         }
 
-        const customerKeys = await db.knex.select('*').from<DBCustomerKey>('customer_keys').whereNull('deleted_at');
+        const customerKeys = await db.knex.select('*').from<DBCustomerKey>('customer_keys');
         for (const key of customerKeys) {
             if (key.iv && key.tag) {
                 continue;
