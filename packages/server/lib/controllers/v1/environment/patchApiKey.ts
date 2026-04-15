@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { apiKeyScopes, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -14,7 +14,7 @@ const validationParams = z.object({
 
 const validationBody = z
     .object({
-        scopes: z.array(z.string().min(1)).min(1).optional(),
+        scopes: z.array(z.enum(apiKeyScopes)).min(1).optional(),
         display_name: z.string().min(1).max(255).optional()
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });

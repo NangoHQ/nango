@@ -1,4 +1,6 @@
-export const API_KEY_SCOPES = [
+import type { ApiKeyScope } from '@nangohq/types';
+
+export const apiKeyScopes = [
     'environment:*',
     // Integrations
     'environment:integrations:list',
@@ -37,8 +39,4 @@ export const API_KEY_SCOPES = [
     'environment:config:*',
     // MCP
     'environment:mcp'
-] as const;
-
-export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
-
-export const ALL_SCOPES: string[] = [...API_KEY_SCOPES];
+] as const satisfies readonly ApiKeyScope[];

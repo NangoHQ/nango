@@ -2,16 +2,16 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { CreateApiKey } from '@nangohq/types';
+import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
         display_name: z.string().min(1).max(255),
-        scopes: z.array(z.string()).nonempty('At least one scope is required when scopes are provided').optional()
+        scopes: z.array(z.enum(apiKeyScopes)).nonempty('At least one scope is required when scopes are provided').optional()
     })
     .strict();
 
@@ -55,7 +55,7 @@ export const createApiKey = asyncWrapper<CreateApiKey>(async (req, res) => {
         data: {
             id: key.id,
             display_name: key.display_name,
-            scopes: key.scopes ?? [],
+            scopes: (key.scopes ?? []) as ApiKeyScope[],
             secret: key.secret,
             created_at: key.created_at.toISOString()
         }

@@ -1,3 +1,4 @@
+import type { ApiKeyScope } from '../../api-keys/scopes.js';
 import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
@@ -82,7 +83,7 @@ export type ListApiKeys = Endpoint<{
         data: {
             id: number;
             display_name: string;
-            scopes: string[];
+            scopes: ApiKeyScope[];
             secret: string;
             last_used_at: string | null;
             created_at: string;
@@ -95,13 +96,13 @@ export type CreateApiKey = Endpoint<{
     Path: '/api/v1/environment/api-keys';
     Body: {
         display_name: string;
-        scopes?: string[];
+        scopes?: ApiKeyScope[];
     };
     Success: {
         data: {
             id: number;
             display_name: string;
-            scopes: string[];
+            scopes: ApiKeyScope[];
             secret: string;
             created_at: string;
         };
@@ -121,7 +122,7 @@ export type PatchApiKey = Endpoint<{
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
     Body: {
-        scopes?: string[];
+        scopes?: ApiKeyScope[];
         display_name?: string;
     };
     Success: { success: true };

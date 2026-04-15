@@ -5,7 +5,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { canReadProdSecret } from '../../../authz/resolve.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
-import type { ListApiKeys } from '@nangohq/types';
+import type { ApiKeyScope, ListApiKeys } from '@nangohq/types';
 
 export const listApiKeys = asyncWrapper<ListApiKeys>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -29,7 +29,7 @@ export const listApiKeys = asyncWrapper<ListApiKeys>(async (req, res) => {
         return {
             id: key.id,
             display_name: key.display_name,
-            scopes: key.scopes ?? [],
+            scopes: (key.scopes ?? []) as ApiKeyScope[],
             secret,
             last_used_at: key.last_used_at ? key.last_used_at.toISOString() : null,
             created_at: key.created_at.toISOString(),
