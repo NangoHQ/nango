@@ -6,7 +6,7 @@ import { logger } from '../utils/logger.js';
 import type knex from 'knex';
 
 export async function migrate(db: knex.Knex, migrationSchema: string = 'migrations'): Promise<void> {
-    logger.info('[keystore] migration starting');
+    logger.info('[keystore] migration');
 
     const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
     const isJS = !runningMigrationOnly;
@@ -22,21 +22,13 @@ export async function migrate(db: knex.Knex, migrationSchema: string = 'migratio
     const dirname = path.dirname(path.join(filename, '../../'));
     const dir = path.join(dirname, 'dist/db/migrations');
 
-    logger.info(`[keystore] isJS=${isJS}, dir=${dir}, filename=${filename}`);
-
-    try {
-        await db.raw(`CREATE SCHEMA IF NOT EXISTS ${migrationSchema}`);
-        const [, pendingMigrations] = (await db.migrate.list({ ...migrationsConfig, directory: dir })) as [unknown, string[]];
-        logger.info(`[keystore] pending migrations: ${pendingMigrations.length}`);
-        if (pendingMigrations.length === 0) {
-            logger.info('[keystore] nothing to do');
-            return;
-        }
-
-        await db.migrate.latest({ ...migrationsConfig, directory: dir });
-        logger.info('[keystore] migrations completed.');
-    } catch (err) {
-        logger.error(`[keystore] migration failed: ${err instanceof Error ? err.message : String(err)}`);
-        throw err;
+    await db.raw(`CREATE SCHEMA IF NOT EXISTS ${migrationSchema}`);
+    const [, pendingMigrations] = (await db.migrate.list({ ...migrationsConfig, directory: dir })) as [unknown, string[]];
+    if (pendingMigrations.length === 0) {
+        logger.info('[keystore] nothing to do');
+        return;
     }
+
+    await db.migrate.latest({ ...migrationsConfig, directory: dir });
+    logger.info('[keystore] migrations completed.');
 }

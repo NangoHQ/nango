@@ -2,9 +2,6 @@ import * as uuid from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { getLogger } from '@nangohq/utils';
-
-const logger = getLogger('environment.service');
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -124,11 +121,6 @@ class EnvironmentService {
                 secret: secret.secret
             });
             if (webhookKey.isErr()) {
-                logger.error('Failed to create webhook signing key during environment setup', {
-                    accountId,
-                    environmentId: environment.id,
-                    error: webhookKey.error
-                });
                 throw webhookKey.error;
             }
 

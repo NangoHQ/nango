@@ -155,14 +155,7 @@ export function shouldRequireQueryEnv({ res, json }: { res: Response; json: any 
 export async function runServer(): Promise<{ server: Server; url: string; fetch: ReturnType<typeof apiFetch> }> {
     await multipleMigrations();
     await migrateLogsMapping();
-    try {
-        await migrateKeystore(db.knex);
-        const result = await db.knex.raw(`SELECT to_regclass('private_keys') as exists`);
-        console.log(`[DEBUG] migrateKeystore done, private_keys exists: ${result.rows[0]?.exists}`);
-    } catch (err) {
-        console.error(`[DEBUG] migrateKeystore failed:`, err);
-        throw err;
-    }
+    await migrateKeystore(db.knex);
 
     const app = express();
     app.set('query parser', 'extended');
