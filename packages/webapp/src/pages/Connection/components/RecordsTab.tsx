@@ -11,6 +11,7 @@ import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components-v2/ui/dialog';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
@@ -188,11 +189,16 @@ export const ConnectionRecordTable = ({
 
     return (
         <div className="flex flex-col gap-5">
-            <div className="flex items-center gap-3">
-                <div className="flex flex-col">
-                    <span className="text-body-large-semi text-text-primary">{formatModelLabel(model)}</span>
-                    <span className="text-body-medium-regular text-text-secondary">{formatCount(model.count)} records</span>
-                </div>
+            <div className="flex items-center justify-between gap-3">
+                <span className="text-body-large-semi text-text-primary">{formatModelLabel(model)}</span>
+                {model.count > 0 && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="text-body-small-regular text-text-tertiary cursor-default">{formatCountCompact(model.count)} records found</span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">{formatCount(model.count)} records</TooltipContent>
+                    </Tooltip>
+                )}
             </div>
 
             {error && <CriticalErrorAlert message="Failed to load records for this model" />}
@@ -389,6 +395,10 @@ function formatModelLabel(model: ConnectionRecordModel) {
 
 function formatCount(count: number) {
     return count.toLocaleString('en-US');
+}
+
+function formatCountCompact(count: number) {
+    return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(count).toLowerCase();
 }
 
 function formatRecordAction(action: string) {
