@@ -1,6 +1,4 @@
-import { EyeSlashIcon } from '@heroicons/react/24/outline';
-import { IconKey, IconPencil, IconTrash } from '@tabler/icons-react';
-import { EyeIcon } from 'lucide-react';
+import { IconCopy, IconEye, IconEyeOff, IconPencil, IconTrash } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -9,7 +7,6 @@ import SettingsContent from './components/SettingsContent';
 import {
     SCOPE_GROUPS,
     allGroupScopes,
-    expandScopes,
     groupWildcard,
     isScopeSelected,
     toggleCredential as toggleCredentialFn,
@@ -27,14 +24,13 @@ import { Badge } from '@/components-v2/ui/badge';
 import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Input } from '@/components-v2/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
 import type { ScopeGroup } from './scope-logic';
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
-
-const MAX_VISIBLE_SCOPES = 3;
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) return 'Never';
@@ -66,37 +62,35 @@ function formatDate(dateStr: string | null): string {
     return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-// ── Secret field with masked preview ─────────────────────────────────
+function countSelectedScopes(scopes: string[]): number {
+    if (scopes.includes('environment:*')) {
+        return SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).length, 0);
+    }
+    let count = 0;
+    for (const scope of scopes) {
+        if (scope.endsWith(':*')) {
+            const prefix = scope.slice(0, -1);
+            count += SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).filter((s) => s.startsWith(prefix)).length, 0);
+        } else {
+            count++;
+        }
+    }
+    return count;
+}
 
-const KeySecretField: React.FC<{ secret: string; canRead: boolean }> = ({ secret, canRead }) => {
-    const [revealed, setRevealed] = useState(false);
-    const toggle = useCallback(() => setRevealed((r) => !r), []);
-    const masked = `····${secret.slice(-4)}`;
-
-    return (
-        <div className="flex items-center gap-2 rounded border border-border-muted bg-bg-surface px-3 py-1.5">
-            <span className="flex-1 font-mono text-body-small-regular text-text-primary">{revealed && canRead ? secret : masked}</span>
-            {canRead && (
-                <Button type="button" variant="ghost" size="icon" onClick={toggle}>
-                    {revealed ? <EyeIcon size={16} /> : <EyeSlashIcon className="h-4 w-4" />}
-                </Button>
-            )}
-            {canRead && <CopyButton text={secret} />}
-        </div>
-    );
-};
-
-// ── Scope selector (used in create dialog) ──────────────────────────
+// ── Scope selector with dropdown + collapsible groups ───────────────
 
 interface ScopeSelectorProps {
     selectedScopes: string[];
     onChange: (scopes: string[]) => void;
+    disabled?: boolean;
+    hideLabel?: boolean;
 }
 
-const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange }) => {
+const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange, disabled, hideLabel }) => {
     const hasFullAccess = selectedScopes.includes('environment:*');
     const isCustom = !hasFullAccess && selectedScopes.length > 0;
-    const [showCustom, setShowCustom] = useState(isCustom);
+    const permissionMode = hasFullAccess && !isCustom ? 'full' : 'custom';
 
     const isGroupWildcardSelected = (group: ScopeGroup) => {
         const wc = groupWildcard(group);
@@ -110,118 +104,130 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange 
 
     const hasAnyChildSelected = (group: ScopeGroup) => allGroupScopes(group).some((s) => selectedScopes.includes(s));
 
+    const countGroupTotal = (group: ScopeGroup): number => {
+        return group.items.reduce((acc, item) => acc + (item.credentials ? 2 : 1), 0);
+    };
+
+    const countGroupSelected = (group: ScopeGroup): number => {
+        if (isGroupWildcardSelected(group)) return countGroupTotal(group);
+        return group.items.reduce((acc, item) => {
+            const baseSelected = isScopeSelected(item.value, selectedScopes) || (!!item.credentials && isScopeSelected(item.credentials, selectedScopes));
+            const credSelected = !!item.credentials && isScopeSelected(item.credentials, selectedScopes);
+            return acc + (baseSelected ? 1 : 0) + (credSelected ? 1 : 0);
+        }, 0);
+    };
+
     return (
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                    <label className="text-body-medium-semi text-text-primary">Permissions</label>
-                    <a
-                        href="https://nango.dev/docs/reference/api-keys#scopes"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-body-small-regular text-text-brand hover:underline"
-                    >
-                        Learn more about scopes
-                    </a>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setShowCustom(false);
+                {!hideLabel && (
+                    <div className="flex items-center justify-between">
+                        <label className="text-body-medium-semi text-text-primary">Permission</label>
+                        <a
+                            href="https://nango.dev/docs/reference/api-keys#scopes"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-body-small-regular text-text-brand hover:underline"
+                        >
+                            Learn more about scopes
+                        </a>
+                    </div>
+                )}
+                <Select
+                    value={permissionMode}
+                    onValueChange={(v) => {
+                        if (v === 'full') {
                             onChange(['environment:*']);
-                        }}
-                        className={`px-3 py-1.5 rounded text-body-small-regular border transition-colors cursor-pointer ${
-                            hasFullAccess && !showCustom
-                                ? 'bg-bg-accent text-text-brand border-transparent'
-                                : 'bg-bg-surface text-text-secondary border-border-muted hover:border-border-default'
-                        }`}
-                    >
-                        Full access
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setShowCustom(true);
-                            if (hasFullAccess) {
-                                onChange([]);
-                            }
-                        }}
-                        className={`px-3 py-1.5 rounded text-body-small-regular border transition-colors cursor-pointer ${
-                            showCustom || isCustom
-                                ? 'bg-bg-accent text-text-brand border-transparent'
-                                : 'bg-bg-surface text-text-secondary border-border-muted hover:border-border-default'
-                        }`}
-                    >
-                        Custom
-                    </button>
-                </div>
+                        } else {
+                            onChange([]);
+                        }
+                    }}
+                    disabled={disabled}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="full">Full access</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
-            {(showCustom || isCustom) && (
+            {permissionMode === 'custom' && (
                 <div className="flex flex-col gap-1.5">
-                    <div className="max-h-[280px] overflow-y-auto border border-border-muted rounded p-3 flex flex-col gap-3">
+                    <div className="flex items-center gap-1.5">
+                        <label className="text-body-medium-semi text-text-primary">Selected scopes</label>
+                        <span className="text-body-small-regular text-text-tertiary">*</span>
+                    </div>
+                    <div className="max-h-[320px] overflow-y-auto flex flex-col">
                         {SCOPE_GROUPS.map((group) => {
                             const groupSelected = isGroupAllSelected(group);
                             const wildcardSelected = isGroupWildcardSelected(group);
-                            const childrenDisabled = hasFullAccess || wildcardSelected;
+
                             return (
-                                <div key={group.group} className="flex flex-col gap-1">
-                                    <label className={`flex items-center gap-2 ${hasFullAccess ? '' : 'cursor-pointer'}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={groupSelected || isScopeSelected(group.items[0].value, selectedScopes)}
-                                            disabled={hasFullAccess}
-                                            ref={(el) => {
-                                                if (el) el.indeterminate = !hasFullAccess && !groupSelected && hasAnyChildSelected(group);
-                                            }}
-                                            onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
-                                            className="accent-brand"
-                                        />
-                                        <span className="text-body-small-semi text-text-secondary">{group.group}</span>
-                                        {wildcardSelected && <span className="text-body-small-regular text-text-tertiary">— all</span>}
-                                    </label>
-                                    {group.items.map((item) => (
-                                        <div key={item.value} className="flex flex-col gap-1">
-                                            <label className={`flex items-center gap-2 pl-5 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={
-                                                        isScopeSelected(item.value, selectedScopes) ||
-                                                        (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
-                                                    }
-                                                    disabled={childrenDisabled}
-                                                    onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
-                                                    className="accent-brand"
-                                                />
-                                                <span className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}>
-                                                    {item.label}
-                                                </span>
-                                            </label>
-                                            {item.credentials && (
-                                                <label className={`flex items-center gap-2 pl-10 ${childrenDisabled ? '' : 'cursor-pointer'}`}>
+                                <div key={group.group} className="flex flex-col border-b border-border-muted last:border-b-0">
+                                    <div className="flex items-center gap-2 py-2">
+                                        <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={groupSelected}
+                                                disabled={disabled}
+                                                ref={(el) => {
+                                                    if (el) el.indeterminate = !groupSelected && hasAnyChildSelected(group);
+                                                }}
+                                                onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
+                                                className="accent-brand"
+                                            />
+                                            <span className="text-body-small-semi text-text-primary">{group.group}</span>
+                                        </label>
+                                        <span className="text-body-small-regular text-text-tertiary">
+                                            {countGroupSelected(group)}/{countGroupTotal(group)}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col pb-2">
+                                        {group.items.map((item) => (
+                                            <div key={item.value} className="flex flex-col">
+                                                <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
                                                     <input
                                                         type="checkbox"
-                                                        checked={isScopeSelected(item.credentials, selectedScopes)}
-                                                        disabled={childrenDisabled}
-                                                        onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                        checked={
+                                                            isScopeSelected(item.value, selectedScopes) ||
+                                                            (!!item.credentials && isScopeSelected(item.credentials, selectedScopes))
+                                                        }
+                                                        disabled={disabled || wildcardSelected}
+                                                        onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
                                                         className="accent-brand"
                                                     />
                                                     <span
-                                                        className={`text-body-small-regular ${childrenDisabled ? 'text-text-tertiary' : 'text-text-primary'}`}
+                                                        className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
                                                     >
-                                                        with credentials
+                                                        {item.label}
                                                     </span>
                                                 </label>
-                                            )}
-                                        </div>
-                                    ))}
+                                                {item.credentials && (
+                                                    <label className="flex items-center gap-2 pl-7 cursor-pointer py-1">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isScopeSelected(item.credentials, selectedScopes)}
+                                                            disabled={disabled || wildcardSelected}
+                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                            className="accent-brand"
+                                                        />
+                                                        <span
+                                                            className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
+                                                        >
+                                                            {item.label}:with_credentials
+                                                        </span>
+                                                    </label>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             );
                         })}
                     </div>
-                    {selectedScopes.length === 0 && (
-                        <p className="text-body-small-regular text-text-tertiary">No scopes selected — select at least one scope</p>
-                    )}
+                    {selectedScopes.length === 0 && <p className="text-body-small-regular text-feedback-error-fg">Select at least one scope to continue</p>}
                 </div>
             )}
         </div>
@@ -239,7 +245,7 @@ interface CreateApiKeyDialogProps {
 const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated, disabled }) => {
     const [open, setOpen] = useState(false);
     const [displayName, setDisplayName] = useState('');
-    const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
+    const [selectedScopes, setSelectedScopes] = useState<string[]>(['environment:*']);
     const { toast } = useToast();
     const { mutateAsync: createApiKey, isPending } = useCreateApiKey(env);
 
@@ -261,8 +267,8 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
             });
             setOpen(false);
             setDisplayName('');
-            setSelectedScopes([]);
-            toast({ title: 'API key created', variant: 'success' });
+            setSelectedScopes(['environment:*']);
+            toast({ title: 'API Key successfully created.', variant: 'success' });
             onCreated();
         } catch (err) {
             if (err instanceof APIError) {
@@ -276,19 +282,19 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="secondary" disabled={disabled}>
-                    <IconKey stroke={1} size={18} />
-                    Create API Key
+                <Button variant="primary" disabled={disabled}>
+                    <IconPencil stroke={1} size={16} />
+                    Create new API key
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Create API Key</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
                         <label htmlFor="api-key-name" className="text-body-medium-semi text-text-primary">
-                            Display name
+                            Display name<span className="text-feedback-error-fg">*</span>
                         </label>
                         <Input id="api-key-name" placeholder="e.g. Production backend" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                     </div>
@@ -307,28 +313,32 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
     );
 };
 
-// ── Key detail view ─────────────────────────────────────────────────
+// ── Key configuration page ──────────────────────────────────────────
 
-interface KeyDetailProps {
+interface KeyConfigProps {
     apiKey: ApiKeyListItem;
     env: string;
-    onDelete: (keyId: number) => void;
+    onBack: () => void;
     canReadSecret: boolean;
     canManageKeys: boolean;
 }
 
-const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSecret, canManageKeys }) => {
+const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecret, canManageKeys }) => {
     const [editedScopes, setEditedScopes] = useState<string[]>(apiKey.scopes);
     const [editedName, setEditedName] = useState<string>(apiKey.display_name);
+    const [secretRevealed, setSecretRevealed] = useState(false);
     const { mutateAsync: updateApiKey, isPending } = useUpdateApiKey(env);
     const { toast } = useToast();
 
     const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
+    const hasNoScopes = editedScopes.length === 0;
+
+    const masked = `····${apiKey.secret.slice(-4)}`;
 
     const handleSave = async () => {
-        if (editedScopes.length === 0) {
+        if (hasNoScopes) {
             toast({ title: 'Select at least one scope or choose Full access', variant: 'error' });
             return;
         }
@@ -341,7 +351,7 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSec
                 updates.display_name = editedName.trim();
             }
             await updateApiKey(updates);
-            toast({ title: 'API key updated', variant: 'success' });
+            toast({ title: 'API Key successfully updated.', variant: 'success' });
         } catch (err) {
             if (err instanceof APIError) {
                 toast({ title: (err.json as any)?.error?.message ?? 'Failed to update API key', variant: 'error' });
@@ -352,90 +362,74 @@ const KeyDetail: React.FC<KeyDetailProps> = ({ apiKey, env, onDelete, canReadSec
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex gap-6">
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-body-small-semi text-text-secondary">Created</span>
-                    <span className="text-body-small-regular text-text-primary">{formatDate(apiKey.created_at)}</span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-body-small-semi text-text-secondary">Modified</span>
-                    <span className="text-body-small-regular text-text-primary">{formatDate(apiKey.updated_at)}</span>
-                </div>
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-body-small-semi text-text-secondary">Last used</span>
-                    <span className="text-body-small-regular text-text-primary" title={formatFullDate(apiKey.last_used_at)}>
-                        {formatRelativeTime(apiKey.last_used_at)}
-                    </span>
-                </div>
-            </div>
+        <SettingsContent title="Key configuration">
+            <div className="flex flex-col gap-6">
+                <div className="grid grid-cols-[200px_1fr] items-center gap-y-6">
+                    <label className="text-body-medium-semi text-text-secondary">Name</label>
+                    {canManageKeys ? (
+                        <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
+                    ) : (
+                        <span className="text-body-medium-regular text-text-primary">{apiKey.display_name}</span>
+                    )}
 
-            <div className="flex flex-col gap-1.5">
-                <label className="text-body-small-semi text-text-secondary">Name</label>
-                {canManageKeys ? (
-                    <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
-                ) : (
-                    <span className="text-body-medium-semi text-text-primary">{apiKey.display_name}</span>
-                )}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-                <label className="text-body-small-semi text-text-secondary">Secret</label>
-                <KeySecretField secret={apiKey.secret} canRead={canReadSecret} />
-            </div>
-
-            {canManageKeys ? (
-                <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} />
-            ) : (
-                <div className="flex flex-col gap-1.5">
-                    <label className="text-body-small-semi text-text-secondary">Scopes</label>
-                    <div className="border border-border-muted rounded p-3 flex flex-wrap gap-1 opacity-60">
-                        {expandScopes(apiKey.scopes).map((scope) => (
-                            <Badge key={scope} variant="secondary">
-                                {scope}
-                            </Badge>
-                        ))}
+                    <label className="text-body-medium-semi text-text-secondary">Secret</label>
+                    <div className="relative">
+                        <Input
+                            value={secretRevealed && canReadSecret ? apiKey.secret : masked}
+                            disabled
+                            className="font-mono bg-bg-surface text-text-tertiary pr-20"
+                        />
+                        {canReadSecret && (
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setSecretRevealed((r) => !r)}
+                                    className="text-text-tertiary hover:text-text-primary h-7 w-7"
+                                >
+                                    {secretRevealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                                </Button>
+                                <CopyButton text={apiKey.secret} />
+                            </div>
+                        )}
                     </div>
-                    <p className="text-body-small-regular text-text-tertiary">You do not have permission to edit scopes on this environment.</p>
-                </div>
-            )}
 
-            <div className="flex justify-between pt-2 border-t border-border-muted">
-                {canManageKeys ? <DeleteApiKeyButton displayName={apiKey.display_name} onDelete={() => onDelete(apiKey.id)} /> : <div />}
-                {hasChanges && canManageKeys && (
-                    <Button size="sm" onClick={handleSave} loading={isPending}>
-                        Save changes
-                    </Button>
+                    <label className="text-body-medium-semi text-text-secondary self-start pt-2">Permission</label>
+                    <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} disabled={!canManageKeys} hideLabel />
+                </div>
+
+                {canManageKeys && (
+                    <div className="flex gap-2 pt-2">
+                        <Button variant="tertiary" onClick={onBack}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSave} loading={isPending} disabled={!hasChanges || hasNoScopes}>
+                            Save
+                        </Button>
+                    </div>
                 )}
             </div>
-        </div>
+        </SettingsContent>
     );
 };
 
-// ── Delete button with name confirmation ────────────────────────────
+// ── Delete button with self-managed open state ─────────────────────
 
-const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void; iconOnly?: boolean }> = ({ displayName, onDelete, iconOnly }) => {
+const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }> = ({ displayName, onDelete }) => {
     const [open, setOpen] = useState(false);
-
-    const trigger = iconOnly ? (
-        <Button variant="ghost" size="icon" className="text-text-tertiary hover:text-feedback-error-fg">
-            <IconTrash stroke={1} size={16} />
-        </Button>
-    ) : (
-        <Button variant="destructive" size="sm">
-            <IconTrash stroke={1} size={16} />
-            Delete key
-        </Button>
-    );
 
     return (
         <DestructiveActionModal
             title="Delete API Key"
             description={`This action is irreversible. Any services using the key "${displayName}" will lose access immediately.`}
-            inputLabel={`To confirm, type the key name (${displayName}) below:`}
+            inputLabel="To confirm, type the key name below:"
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"
-            trigger={trigger}
+            trigger={
+                <Button variant="ghost" size="icon" className="text-text-tertiary hover:text-feedback-error-fg">
+                    <IconTrash stroke={1} size={16} />
+                </Button>
+            }
             onConfirm={onDelete}
             open={open}
             onOpenChange={setOpen}
@@ -475,94 +469,88 @@ export const ApiKeys: React.FC = () => {
         }
     };
 
+    const copySecret = useCallback(
+        (secret: string) => {
+            void navigator.clipboard.writeText(secret);
+            toast({ title: 'Secret copied to clipboard', variant: 'success' });
+        },
+        [toast]
+    );
+
     if (selectedKey) {
-        return (
-            <SettingsContent title="API Keys">
-                <KeyDetail
-                    apiKey={selectedKey}
-                    env={env}
-                    onDelete={(keyId) => void handleDelete(keyId)}
-                    canReadSecret={canReadSecret}
-                    canManageKeys={canManageKeys}
-                />
-            </SettingsContent>
-        );
+        return <KeyConfig apiKey={selectedKey} env={env} onBack={() => setSelectedKeyId(null)} canReadSecret={canReadSecret} canManageKeys={canManageKeys} />;
     }
 
     return (
-        <SettingsContent title="API Keys">
-            <div className="flex items-center justify-between">
-                <p className="text-body-small-regular text-text-secondary">API keys allow programmatic access to this Nango environment.</p>
+        <SettingsContent
+            title="API Keys"
+            action={
                 <PermissionGate condition={canManageKeys}>
                     {(allowed) => <CreateApiKeyDialog env={env} onCreated={() => void 0} disabled={!allowed} />}
                 </PermissionGate>
-            </div>
-
+            }
+        >
             {isLoading ? (
                 <div className="text-body-small-regular text-text-tertiary py-4">Loading API keys...</div>
             ) : apiKeys.length === 0 ? (
                 <div className="text-body-small-regular text-text-tertiary py-4">No API keys yet. Create one to get started.</div>
             ) : (
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Key</TableHead>
-                            <TableHead>Scopes</TableHead>
-                            <TableHead>Last used</TableHead>
-                            <TableHead></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {apiKeys.map((key) => (
-                            <TableRow key={key.id}>
-                                <TableCell>
-                                    <span className="text-body-small-semi text-text-primary">{key.display_name}</span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className="font-mono text-body-small-regular text-text-tertiary">····{key.secret.slice(-4)}</span>
-                                </TableCell>
-                                <TableCell>
-                                    {(() => {
-                                        const expanded = expandScopes(key.scopes);
-                                        return (
-                                            <div className="flex flex-wrap gap-1">
-                                                {expanded.slice(0, MAX_VISIBLE_SCOPES).map((scope) => (
-                                                    <Badge key={scope} variant="secondary">
-                                                        {scope}
-                                                    </Badge>
-                                                ))}
-                                                {expanded.length > MAX_VISIBLE_SCOPES && (
-                                                    <Badge variant="gray">+{expanded.length - MAX_VISIBLE_SCOPES} more</Badge>
-                                                )}
-                                            </div>
-                                        );
-                                    })()}
-                                </TableCell>
-                                <TableCell>
-                                    <span className="text-text-secondary" title={formatFullDate(key.last_used_at)}>
-                                        {formatRelativeTime(key.last_used_at)}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => setSelectedKeyId(key.id)}
-                                            className="text-text-tertiary hover:text-text-primary"
-                                        >
-                                            <IconPencil stroke={1} size={16} />
-                                        </Button>
-                                        {canManageKeys && (
-                                            <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} iconOnly />
-                                        )}
-                                    </div>
-                                </TableCell>
+                <div className="[&_[data-slot=table-container]]:border-0 [&_[data-slot=table-container]]:rounded-none">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Scopes</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead>Last used</TableHead>
+                                <TableHead>Action</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {apiKeys.map((key) => (
+                                <TableRow key={key.id}>
+                                    <TableCell>
+                                        <span className="text-body-small-semi text-text-primary">{key.display_name}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">{countSelectedScopes(key.scopes)}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-text-secondary">{formatDate(key.created_at)}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-text-secondary" title={formatFullDate(key.last_used_at)}>
+                                            {formatRelativeTime(key.last_used_at)}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-1">
+                                            {canReadSecret && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => copySecret(key.secret)}
+                                                    className="text-text-tertiary hover:text-text-primary"
+                                                >
+                                                    <IconCopy stroke={1} size={16} />
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setSelectedKeyId(key.id)}
+                                                className="text-text-tertiary hover:text-text-primary"
+                                            >
+                                                <IconPencil stroke={1} size={16} />
+                                            </Button>
+                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             )}
         </SettingsContent>
     );
