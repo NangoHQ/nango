@@ -18,7 +18,7 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection with sessionToken', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seeders.seedAccountEnvAndUserV2();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
