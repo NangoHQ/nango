@@ -66,6 +66,7 @@ export enum Types {
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
+    ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',

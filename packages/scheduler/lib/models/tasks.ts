@@ -1,6 +1,6 @@
 import { uuidv4, uuidv7 } from 'uuidv7';
 
-import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
 
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
@@ -141,7 +141,7 @@ export async function create(
 
         const now = new Date();
         const toInsertPerGroup = new Map<string, Task[]>();
-        const cappedGroupKeys = new Set<string>();
+        const cappedGroupCounts = new Map<string, number>();
         for (const props of taskProps) {
             if (!toInsertPerGroup.has(props.groupKey)) {
                 toInsertPerGroup.set(props.groupKey, []);
@@ -160,8 +160,16 @@ export async function create(
                     retryKey: props.retryKey || uuidv4()
                 });
             } else {
-                cappedGroupKeys.add(props.groupKey);
+                cappedGroupCounts.set(props.groupKey, (cappedGroupCounts.get(props.groupKey) ?? 0) + 1);
             }
+        }
+        const droppedCountPerPrimitive = new Map<string, number>();
+        for (const [groupKey, droppedCount] of cappedGroupCounts.entries()) {
+            const primitive = groupKey.split(':')[0] || 'unknown';
+            droppedCountPerPrimitive.set(primitive, (droppedCountPerPrimitive.get(primitive) ?? 0) + droppedCount);
+        }
+        for (const [primitive, droppedCount] of droppedCountPerPrimitive.entries()) {
+            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
         }
         const toInsert = Array.from(toInsertPerGroup.values()).flat();
         const inserted: Task[] = [];
@@ -172,7 +180,7 @@ export async function create(
         }
         return Ok({
             tasks: inserted,
-            cappedGroupKeys: Array.from(cappedGroupKeys)
+            cappedGroupKeys: Array.from(cappedGroupCounts.keys())
         });
     } catch (err) {
         return Err(new Error(`Error creating tasks: ${stringifyError(err)}`));
