@@ -1954,23 +1954,25 @@ aws:
     connection_config:
         subdomain:
             type: string
-            title: AWS Domain
-            description: The subdomain of your AWS account
+            title: Cognito Domain Prefix
+            description: The prefix of your Cognito User Pool domain.
             pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .amazoncognito.com
+            example: my-app-pool
             prefix: https://
+            suffix: .auth
         extension:
             type: string
-            title: Domain Extension
-            description: The domain extension of your AWS account
-            example: com
-            pattern: '^[a-z.]+$'
+            title: Cognito Region
+            description: The AWS region where your Cognito User Pool is hosted.
+            example: eu-north-1
+            pattern: '^[a-z0-9-]+$'
+            prefix: auth.
+            suffix: .amazoncognito.com
         apiSubdomain:
             type: string
-            title: API Subdomain
-            description: The API subdomain to the API you want to connect to
-            example: idp.us-east-2
+            title: Cognito API Subdomain
+            description: The Cognito API subdomain.
+            example: idp.eu-north-1
             pattern: '^[a-z0-9.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
