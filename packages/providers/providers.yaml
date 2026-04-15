@@ -16989,6 +16989,39 @@ supabase-mcp:
             pattern: '^sbp_[A-Za-z0-9]{40}$'
             doc_section: '#step-2-obtaining-your-personal-access-token'
 
+supabase-mcp-oauth:
+    display_name: Supabase (MCP OAuth)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    registration_url: https://api.supabase.com/platform/oauth/apps/register
+    authorization_url: https://api.supabase.com/v1/oauth/authorize
+    token_url: https://api.supabase.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            accept: application/json,text/event-stream
+        connection_config:
+            projectRef: ${connectionConfig.projectRef}
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project Reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
+
 survey-monkey:
     display_name: SurveyMonkey
     categories:

@@ -868,6 +868,7 @@
               "integrations/all/stripe-express",
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",
+              "api-integrations/supabase-mcp-oauth",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
