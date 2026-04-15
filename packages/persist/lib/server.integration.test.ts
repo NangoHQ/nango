@@ -711,6 +711,10 @@ const initDb = async () => {
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
     await db.knex.raw(`CREATE SCHEMA nango`);
+    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
+    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
+    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
+    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {
