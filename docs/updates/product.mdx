@@ -7,7 +7,7 @@ description: "Product updates and improvements."
 <Update label="April 14, 2026">
   ## Playground
 
-  We added a Playground to the Nango dashboard. You can now trigger [actions](/guides/primitives/functions#actions) and [syncs](/guides/primitives/functions#syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions/implement-an-action#implement-an-action) and [syncs](/implementation-guides/use-cases/syncs/implement-a-sync#implement-a-sync) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
 
   {/* 📸 Suggested: GIF showing the full flow — open Playground from the header, select integration/connection/function, fill inputs, run, view result, then click through to logs */}
 
@@ -16,7 +16,7 @@ description: "Product updates and improvements."
   - **Enabled functions only:** The function dropdown shows only functions that are enabled for the selected integration.
   - **Input validation:** Required fields are validated before execution. Missing inputs are flagged immediately without triggering a run.
   - **Inline results and errors:** Execution results, timing, and error codes (e.g., invalid credentials) are displayed directly in the panel.
-  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/logging) view for any execution directly from the result.
+  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#observability) view for any execution directly from the result.
   - **Permission-gated:** Playground access in production environments respects your team's [roles](/guides/platform/security#team-and-roles).
 </Update>
 ---
