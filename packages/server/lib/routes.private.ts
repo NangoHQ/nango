@@ -24,7 +24,9 @@ import {
     validateEmailAndLogin
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
+import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
 import { postManagedSignup } from './controllers/v1/account/managed/postSignup.js';
+import { postManagedEmailVerification } from './controllers/v1/account/managed/postVerification.js';
 import { postForgotPassword } from './controllers/v1/account/postForgotPassword.js';
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
@@ -86,6 +88,7 @@ import { getTeam } from './controllers/v1/team/getTeam.js';
 import { putTeam } from './controllers/v1/team/putTeam.js';
 import { deleteTeamUser } from './controllers/v1/team/users/deleteTeamUser.js';
 import { patchTeamUser } from './controllers/v1/team/users/patchTeamUser.js';
+import { postTriggerFunction } from './controllers/v1/trigger/postTriggerFunction.js';
 import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
@@ -150,6 +153,8 @@ if (flagHasAuth) {
 
 if (flagHasManagedAuth) {
     web.route('/account/managed/signup').post(rateLimiterMiddleware, postManagedSignup);
+    web.route('/account/managed/verification').get(rateLimiterMiddleware, getManagedEmailVerification);
+    web.route('/account/managed/verification').post(rateLimiterMiddleware, postManagedEmailVerification);
     web.route('/account/managed/callback').get(rateLimiterMiddleware, getManagedCallback);
     // TODO: drop this one
     web.route('/login/callback').get(rateLimiterMiddleware, getManagedCallback);
@@ -254,6 +259,8 @@ web.route('/flows/:id/enable').patch(webAuth, can({ action: 'update', resource: 
 web.route('/flows/:id/frequency').patch(webAuth, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowFrequency);
 web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
 web.route('/flow/:flowName').get(webAuth, flowController.getFlow.bind(syncController));
+
+web.route('/trigger/function').post(webAuth, can({ action: 'update', resource: 'sync_command', scopedBy: envScope }), postTriggerFunction);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
