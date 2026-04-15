@@ -33,7 +33,7 @@ export const AddTeamMemberButton = () => {
     const { can } = usePermissions();
     const canManageTeam = can(permissions.canManageTeam);
     const { data: currentPlan } = useApiGetCurrentPlan(env);
-    const hasRBAC = currentPlan?.data.has_rbac ?? false;
+    const hasRBAC = !globalEnv.features.plan || currentPlan?.data.has_rbac === true;
 
     const [isOpen, setIsOpen] = useState(false);
 

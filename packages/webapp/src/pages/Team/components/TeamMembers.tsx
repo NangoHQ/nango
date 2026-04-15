@@ -21,6 +21,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
+import { globalEnv } from '@/utils/env';
 
 import type { ApiInvitation, ApiUser, Role } from '@nangohq/types';
 
@@ -30,7 +31,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
     const [role, setRole] = useState<Role>(user.role);
     const { mutateAsync: patchTeamUser, isPending } = usePatchTeamUser(env);
     const { data: currentPlan } = useApiGetCurrentPlan(env);
-    const hasRBAC = currentPlan?.data.has_rbac ?? false;
+    const hasRBAC = !globalEnv.features.plan || currentPlan?.data.has_rbac === true;
 
     const onSubmit = async () => {
         if (role === user.role) {
