@@ -710,6 +710,7 @@ const initDb = async () => {
 
 const clearDb = async () => {
     await db.knex.raw(`DROP SCHEMA nango CASCADE`);
+    await db.knex.raw(`CREATE SCHEMA nango`);
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {
