@@ -1,5 +1,5 @@
-import { IconCopy, IconEye, IconEyeOff, IconPencil, IconTrash } from '@tabler/icons-react';
-import { useCallback, useState } from 'react';
+import { IconEdit, IconExternalLink, IconEye, IconEyeOff, IconPencil, IconTrash } from '@tabler/icons-react';
+import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
@@ -20,7 +20,6 @@ import { useStore } from '../../../store';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
 import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Badge } from '@/components-v2/ui/badge';
 import { Button } from '@/components-v2/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Input } from '@/components-v2/ui/input';
@@ -55,11 +54,6 @@ function formatRelativeTime(dateStr: string | null): string {
 function formatFullDate(dateStr: string | null): string {
     if (!dateStr) return 'Never';
     return new Date(dateStr).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
-
-function formatDate(dateStr: string | null): string {
-    if (!dateStr) return 'Never';
-    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function countSelectedScopes(scopes: string[]): number {
@@ -121,15 +115,15 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
                 {!hideLabel && (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
                         <label className="text-body-medium-semi text-text-primary">Permission</label>
                         <a
                             href="https://nango.dev/docs/reference/api-keys#scopes"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-body-small-regular text-text-brand hover:underline"
+                            className="text-text-tertiary hover:text-text-primary"
                         >
-                            Learn more about scopes
+                            <IconExternalLink stroke={1} size={14} />
                         </a>
                     </div>
                 )}
@@ -155,11 +149,10 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
             </div>
             {permissionMode === 'custom' && (
                 <div className="flex flex-col gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                        <label className="text-body-medium-semi text-text-primary">Selected scopes</label>
-                        <span className="text-body-small-regular text-text-tertiary">*</span>
-                    </div>
-                    <div className="max-h-[320px] overflow-y-auto flex flex-col">
+                    <label className="text-body-medium-semi text-text-primary">
+                        Selected scopes<span className="text-feedback-error-fg">*</span>
+                    </label>
+                    <div className="max-h-[320px] overflow-y-auto flex flex-col px-1">
                         {SCOPE_GROUPS.map((group) => {
                             const groupSelected = isGroupAllSelected(group);
                             const wildcardSelected = isGroupWildcardSelected(group);
@@ -176,7 +169,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                     if (el) el.indeterminate = !groupSelected && hasAnyChildSelected(group);
                                                 }}
                                                 onChange={() => onChange(toggleGroupFn(group, selectedScopes))}
-                                                className="accent-brand"
+                                                className="accent-brand shrink-0"
                                             />
                                             <span className="text-body-small-semi text-text-primary">{group.group}</span>
                                         </label>
@@ -196,7 +189,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                         }
                                                         disabled={disabled || wildcardSelected}
                                                         onChange={() => onChange(toggleScopeFn(item.value, item.credentials, selectedScopes))}
-                                                        className="accent-brand"
+                                                        className="accent-brand shrink-0"
                                                     />
                                                     <span
                                                         className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
@@ -211,7 +204,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                             checked={isScopeSelected(item.credentials, selectedScopes)}
                                                             disabled={disabled || wildcardSelected}
                                                             onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
-                                                            className="accent-brand"
+                                                            className="accent-brand shrink-0"
                                                         />
                                                         <span
                                                             className={`text-body-small-regular ${wildcardSelected ? 'text-text-tertiary' : 'text-text-primary'}`}
@@ -469,14 +462,6 @@ export const ApiKeys: React.FC = () => {
         }
     };
 
-    const copySecret = useCallback(
-        (secret: string) => {
-            void navigator.clipboard.writeText(secret);
-            toast({ title: 'Secret copied to clipboard', variant: 'success' });
-        },
-        [toast]
-    );
-
     if (selectedKey) {
         return <KeyConfig apiKey={selectedKey} env={env} onBack={() => setSelectedKeyId(null)} canReadSecret={canReadSecret} canManageKeys={canManageKeys} />;
     }
@@ -513,35 +498,27 @@ export const ApiKeys: React.FC = () => {
                                         <span className="text-body-small-semi text-text-primary">{key.display_name}</span>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">{countSelectedScopes(key.scopes)}</Badge>
+                                        <span className="text-body-small-regular text-text-secondary">{countSelectedScopes(key.scopes)}</span>
                                     </TableCell>
                                     <TableCell>
-                                        <span className="text-text-secondary">{formatDate(key.created_at)}</span>
+                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.created_at)}>
+                                            {formatRelativeTime(key.created_at)}
+                                        </span>
                                     </TableCell>
                                     <TableCell>
-                                        <span className="text-text-secondary" title={formatFullDate(key.last_used_at)}>
+                                        <span className="text-text-secondary cursor-default" title={formatFullDate(key.last_used_at)}>
                                             {formatRelativeTime(key.last_used_at)}
                                         </span>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1">
-                                            {canReadSecret && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => copySecret(key.secret)}
-                                                    className="text-text-tertiary hover:text-text-primary"
-                                                >
-                                                    <IconCopy stroke={1} size={16} />
-                                                </Button>
-                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => setSelectedKeyId(key.id)}
                                                 className="text-text-tertiary hover:text-text-primary"
                                             >
-                                                <IconPencil stroke={1} size={16} />
+                                                <IconEdit stroke={1} size={16} />
                                             </Button>
                                             {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
                                         </div>
