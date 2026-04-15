@@ -56,5 +56,9 @@ router.use((err: any, req: Request, res: Response<ApiError<'invalid_json'>>, _: 
         return;
     }
 
+    console.error(
+        `[GLOBAL_ERROR] ${req.method} ${req.path}`,
+        err instanceof Error ? { message: err.message, stack: err.stack?.split('\n').slice(0, 5).join('\n') } : err
+    );
     errorManager.handleGenericError(err, req, res);
 });
