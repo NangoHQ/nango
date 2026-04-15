@@ -63,7 +63,7 @@ describe('Clickhouse', () => {
                     day: dayFromNow(1),
                     type: 'usage.function_executions',
                     accountId,
-                    properties: { type: 'action', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 1 } }
+                    properties: { type: 'action', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 0.5 } }
                 }),
                 // webhook_forwards
                 ...genEventsN({ n: 3, day: dayFromNow(), type: 'usage.webhook_forward', accountId, properties: { success: true } }),
@@ -281,12 +281,12 @@ describe('Clickhouse', () => {
                                 {
                                     dataPoints: [
                                         { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 30 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 3300 }
+                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 3250 }
                                     ],
-                                    total: 3330
+                                    total: 3280
                                 }
                             ],
-                            total: 3330,
+                            total: 3280,
                             view_mode: 'periodic'
                         },
 

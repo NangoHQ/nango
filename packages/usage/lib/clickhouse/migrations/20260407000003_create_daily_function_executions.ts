@@ -13,7 +13,7 @@ export const sql = [
         runtime          LowCardinality(String),
         value            Int64,
         duration_ms      UInt64,
-        memory_gb        UInt64,
+        memory_gb        Float64,
         custom_logs      UInt64,
         proxy_calls      UInt64
     )
@@ -37,7 +37,7 @@ export const sql = [
         attributes.runtime::String                                              AS runtime,
         sum(value)                                                              AS value,
         sum(coalesce(attributes.telemetryBag.durationMs::Nullable(UInt64), 0))  AS duration_ms,
-        sum(coalesce(attributes.telemetryBag.memoryGb::Nullable(UInt64), 0))    AS memory_gb,
+        sum(coalesce(attributes.telemetryBag.memoryGb::Nullable(Float64), 0.0))    AS memory_gb,
         sum(coalesce(attributes.telemetryBag.customLogs::Nullable(UInt64), 0))  AS custom_logs,
         sum(coalesce(attributes.telemetryBag.proxyCalls::Nullable(UInt64), 0))  AS proxy_calls
     FROM {database:Identifier}.raw_events
