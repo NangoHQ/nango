@@ -13,6 +13,7 @@ import { useUser } from './hooks/useUser';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import { InviteSignup } from './pages/Account/InviteSignup';
+import { ManagedEmailVerification } from './pages/Account/ManagedEmailVerification';
 import ResetPassword from './pages/Account/ResetPassword';
 import { Signin } from './pages/Account/Signin';
 import { Signup } from './pages/Account/Signup';
@@ -73,6 +74,61 @@ const RedirectWithEnv = ({ path }: { path: string }) => {
 
     return <Navigate to={`/${env}/${pathWithParams}`} replace />;
 };
+
+const publicAuthRoutes = (() => {
+    if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
+        return [];
+    }
+
+    const routes = [
+        {
+            path: '/signin',
+            element: <Signin />
+        }
+    ];
+
+    if (globalEnv.features.managedAuth) {
+        routes.push({
+            path: '/signin/verify',
+            element: <ManagedEmailVerification />
+        });
+    }
+
+    if (globalEnv.features.auth) {
+        routes.push(
+            {
+                path: '/signup/:token',
+                element: <InviteSignup />
+            },
+            {
+                path: '/forgot-password',
+                element: <ForgotPassword />
+            },
+            {
+                path: '/reset-password/:token',
+                element: <ResetPassword />
+            },
+            {
+                path: '/verify-email/:uuid',
+                element: <VerifyEmail />
+            },
+            {
+                path: '/verify-email/expired/:token',
+                element: <VerifyEmailByExpiredToken />
+            },
+            {
+                path: '/signup/verification/:token',
+                element: <EmailVerified />
+            },
+            {
+                path: '/signup',
+                element: <Signup />
+            }
+        );
+    }
+
+    return routes;
+})();
 
 const router = sentryCreateBrowserRouter([
     {
@@ -240,42 +296,7 @@ const router = sentryCreateBrowserRouter([
         path: '/hn-demo',
         element: <Navigate to={'/signup'} />
     },
-    ...(globalEnv.features.auth
-        ? [
-              {
-                  path: '/signin',
-                  element: <Signin />
-              },
-              {
-                  path: '/signup/:token',
-                  element: <InviteSignup />
-              },
-              {
-                  path: '/forgot-password',
-                  element: <ForgotPassword />
-              },
-              {
-                  path: '/reset-password/:token',
-                  element: <ResetPassword />
-              },
-              {
-                  path: '/verify-email/:uuid',
-                  element: <VerifyEmail />
-              },
-              {
-                  path: '/verify-email/expired/:token',
-                  element: <VerifyEmailByExpiredToken />
-              },
-              {
-                  path: '/signup/verification/:token',
-                  element: <EmailVerified />
-              },
-              {
-                  path: '/signup',
-                  element: <Signup />
-              }
-          ]
-        : []),
+    ...publicAuthRoutes,
     {
         path: '*',
         element: <NotFound />

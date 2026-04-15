@@ -2389,6 +2389,25 @@ bill:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://nango.dev/docs/integrations/all/bill
 
+bing-webmasters:
+    display_name: Bing Webmasters
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://www.bing.com/webmasters/oauth/authorize
+    token_url: https://www.bing.com/webmasters/oauth/token
+    refresh_url: https://www.bing.com/webmasters/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_token_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.bing.com/webmaster/api.svc/json
+    docs: https://nango.dev/docs/api-integrations/bing-webmasters
+    setup_guide_url: https://nango.dev/docs/api-integrations/bing-webmasters/how-to-register-your-own-bing-webmasters-api-oauth-app
+
 bitbucket:
     display_name: Bitbucket
     categories:
@@ -16016,6 +16035,44 @@ shopify:
             suffix: .myshopify.com
             prefix: https://
             doc_section: '#step-1-finding-your-shopify-domain'
+
+shopify-cc:
+    display_name: Shopify (Client Credentials)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            x-shopify-access-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/shopify-cc
+    docs_connect: https://nango.dev/docs/api-integrations/shopify-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Shopify Store Domain
+            description: The subdomain of the Shopify store the app is installed in.
+            pattern: '^[a-z0-9_-]+$'
+            example: my-store
+            suffix: .myshopify.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-shopify-store-domain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID for your Shopify app.
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret for your Shopify app.
+            secret: true
+            doc_section: '#step-1-generating-your-client-credentials'
 
 shopify-api-key:
     display_name: Shopify (API Key)
