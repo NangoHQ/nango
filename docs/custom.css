@@ -11,8 +11,8 @@
 /* Native elements */
 pre, code, kbd, input, select, textarea, button { border-radius: 4px !important; }
 
-/* ══ GRID — behind everything, dark mode only ════════════════════ */
-.dark [class*="background-decoration"] {
+/* ══ GRID — behind everything, both modes ════════════════════════ */
+[class*="background-decoration"] {
   opacity: 0.02 !important;
   z-index: 0 !important;
   pointer-events: none;
@@ -27,7 +27,22 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
   a[href="https://github.com/NangoHQ/nango"] { display: none !important; }
 }
 
+/* ══ SEARCH / ASK AI DIALOGS — always on top ════════════════════ */
+/*
+ * Mintlify renders search and Ask AI via headlessui portals (z-40).
+ * The navbar's backdrop-blur creates a stacking context quirk where
+ * its z-10 tab children can paint over the z-40 dialog panel.
+ * Fix: raise the headlessui dialog above the navbar entirely.
+ */
+[id^="headlessui-dialog-"]:not([id*="panel"]) {
+  z-index: 200 !important;
+}
+
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
+/*
+ * z-index: 30 matches Mintlify's native z-30 class so it stays
+ * below the headlessui dialog portals (now at z-200 above).
+ */
 @media (min-width: 768px) {
   #navbar {
     position: fixed !important;
@@ -35,7 +50,7 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    z-index: 100 !important;
+    z-index: 30 !important;
   }
 }
 .dark #navbar {
@@ -52,7 +67,7 @@ html:not(.dark) #navbar {
 }
 
 /* ══ SIDEBAR ═════════════════════════════════════════════════════ */
-.dark #sidebar-content { background-color: #0b0b0c !important; z-index: 50; }
+.dark #sidebar-content { background-color: #0b0b0c !important; }
 .dark :has(> #sidebar-content) { border-right: 1px solid rgba(255, 255, 255, 0.08) !important; }
 html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
@@ -252,12 +267,12 @@ html:not(.dark) [class*="TableOfContents"] a:hover,
 html:not(.dark) nav[aria-label*="page"] a:hover,
 html:not(.dark) nav[aria-label*="Table"] a:hover { background-color: rgba(0, 0, 0, 0.05) !important; }
 
-/* ══ HIDE AI CHAT ASSISTANT ══════════════════════════════════════ */
-#chat-assistant-textarea,
-.chat-assistant-input,
-[id*="chat-assistant"],
-[class*="chat-assistant"] { display: none !important; }
-:has(> #chat-assistant-textarea) { display: none !important; }
+/* ══ CHAT ASSISTANT ══════════════════════════════════════════════ */
+/*
+ * No hiding applied — the Ask AI bar (chat-assistant-floating-input) must
+ * remain visible for the Ask AI feature in the navbar to work. Previously,
+ * broad [class*="chat-assistant"] rules were suppressing this entire UI.
+ */
 
 /* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
 [data-component-part="callout-icon"] { flex-shrink: 0 !important; }

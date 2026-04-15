@@ -20,13 +20,26 @@ export type CodeBlockProps = {
     highlightedLines?: number[];
     secret?: boolean;
     onExecute?: () => MaybePromise<void>;
+    /** When false, code area has no max-height/scroll; parent should scroll (e.g. in Playground). Default true. */
+    constrainHeight?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
 const highlight = {
     color: ''
 };
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, icon, displayLanguage, highlightedLines, secret, onExecute, ...props }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({
+    title,
+    code,
+    language,
+    icon,
+    displayLanguage,
+    highlightedLines,
+    secret,
+    onExecute,
+    constrainHeight = true,
+    ...props
+}) => {
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
@@ -80,7 +93,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, ico
                     <CopyButton text={code} />
                 </div>
             </header>
-            <div className="max-h-128 overflow-auto">
+            <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>
                 <div className={'relative'}>
                     {!isSecretVisible && <div className="absolute z-10 w-full h-full backdrop-blur-xs    bg-black/0"></div>}
                     <Prism
@@ -88,6 +101,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, ico
                         language={language}
                         colorScheme="dark"
                         noCopy={true}
+                        styles={{ code: { fontSize: '12px' } }}
                         highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
                     >
                         {code}

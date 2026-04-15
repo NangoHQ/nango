@@ -145,6 +145,31 @@ export type PostManagedSignup = Endpoint<{
     };
 }>;
 
+export type GetManagedEmailVerification = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/account/managed/verification';
+    Error: ApiError<'not_found'>;
+    Success: {
+        data: {
+            email: string;
+        };
+    };
+}>;
+
+export type PostManagedEmailVerification = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/managed/verification';
+    Body: {
+        code: string;
+    };
+    Error: ApiError<'invalid_verification_code'> | ApiError<'not_found'>;
+    Success: {
+        data: {
+            url: string;
+        };
+    };
+}>;
+
 export type GetManagedCallback = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/login/callback';

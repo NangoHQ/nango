@@ -2,14 +2,16 @@ import type {
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
+    GetManagedEmailVerification,
     PostForgotPassword,
     PostLogout,
+    PostManagedEmailVerification,
     PostManagedSignup,
     PostSignin,
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
 import type {
@@ -164,11 +166,13 @@ export type PrivateApiEndpoints =
     | GetEmailByExpiredToken
     | GetEmailByUuid
     | GetManagedCallback
+    | GetManagedEmailVerification
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
+    | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy
     | PostEnvironment
@@ -188,7 +192,8 @@ export type PrivateApiEndpoints =
     | GetConnectUISettings
     | PutConnectUISettings
     | GetProviders
-    | GetProvider;
+    | GetProvider
+    | PostInternalTriggerFunction;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

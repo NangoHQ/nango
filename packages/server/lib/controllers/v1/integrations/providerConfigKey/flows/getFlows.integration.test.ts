@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { flowService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
@@ -123,5 +123,77 @@ describe(`GET ${route}`, () => {
         // Should not dedup the sync with the same endpoint path
         const scriptListFile = res.json.data.flows.find((value) => value.name === 'list-files');
         expect(scriptListFile).not.toBeUndefined();
+    });
+
+    it('should keep renamed templates visible when an older sync with the same model name exists', async () => {
+        const getAllAvailableFlowsAsStandardConfigSpy = vi.spyOn(flowService, 'getAllAvailableFlowsAsStandardConfig').mockReturnValue([
+            {
+                providerConfigKey: 'hubspot',
+                actions: [],
+                syncs: [
+                    seeders.getTestStdSyncConfig({
+                        name: 'sync-users',
+                        type: 'sync',
+                        returns: ['User'],
+                        description: 'Sync provisioned users',
+                        auto_start: true,
+                        sync_type: 'full',
+                        version: '1.0.0',
+                        enabled: false,
+                        is_public: true,
+                        pre_built: true,
+                        endpoints: [{ group: 'Users', method: 'GET', path: '/syncs/sync-users' }],
+                        runs: 'every hour'
+                    })
+                ],
+                ['on-events']: []
+            }
+        ]);
+
+        try {
+            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const config = await seeders.createConfigSeed(env, 'hubspot', 'hubspot');
+            const connection = await seeders.createConnectionSeed({ env, provider: 'hubspot' });
+
+            await seeders.createSyncSeeds({
+                connectionId: connection.id,
+                environment_id: env.id,
+                nango_config_id: config.id!,
+                sync_name: 'users',
+                type: 'sync',
+                models: ['User'],
+                endpoints: [{ group: 'Users', method: 'GET', path: '/users' }]
+            });
+
+            const res = await api.fetch(route, {
+                method: 'GET',
+                query: { env: 'dev' },
+                params: { providerConfigKey: 'hubspot' },
+                token: secret.secret
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+
+            const oldFlow = res.json.data.flows.find((value) => value.name === 'users');
+            const newTemplate = res.json.data.flows.find((value) => value.name === 'sync-users');
+
+            expect(oldFlow).toMatchObject({
+                name: 'users',
+                returns: ['User'],
+                type: 'sync'
+            });
+            expect(newTemplate).not.toBeUndefined();
+            expect(newTemplate).toMatchObject({
+                enabled: false,
+                is_public: true,
+                name: 'sync-users',
+                pre_built: true,
+                returns: ['User'],
+                type: 'sync'
+            });
+        } finally {
+            getAllAvailableFlowsAsStandardConfigSpy.mockRestore();
+        }
     });
 });
