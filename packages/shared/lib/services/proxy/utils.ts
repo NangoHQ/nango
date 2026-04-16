@@ -519,6 +519,8 @@ export function buildProxyHeaders({
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.access_token });
                     break;
                 }
+                case 'JWT':
+                case 'OAUTH2_CC':
                 case 'SIGNATURE': {
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
@@ -530,10 +532,6 @@ export function buildProxyHeaders({
                         ...stableReplacers,
                         ...baseReplacers
                     });
-                    break;
-                }
-                case 'JWT': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }
                 default:
