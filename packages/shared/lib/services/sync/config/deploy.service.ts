@@ -1,7 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { env, filterJsonSchemaForModels } from '@nangohq/utils';
-import { Types, increment as metricsIncrement } from '@nangohq/utils/lib/telemetry/metrics.js';
+import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
@@ -301,7 +300,7 @@ async function compileDeployInfo({
     const scanResult = scanCompiledDeployScript(jsFile);
     if (!scanResult.ok && scanResult.rule !== 'parse_error') {
         const rule = scanResult.rule;
-        metricsIncrement(Types.DEPLOY_SECURITY_SCAN, 1, {
+        metrics.increment(metrics.Types.DEPLOY_SECURITY_SCAN, 1, {
             result: 'rejected',
             rule,
             syncName,
