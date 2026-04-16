@@ -14515,6 +14515,26 @@ ring-central-sandbox:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/ring-central-sandbox
 
+ringover:
+    display_name: Ringover
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.ringover.com
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/ringover
+    docs_connect: https://nango.dev/docs/api-integrations/ringover/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ringover API key.
+            example: 'a3f9e2***************************d8e9f0'
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 rippling:
     display_name: Rippling
     categories:

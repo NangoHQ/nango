@@ -773,6 +773,7 @@
               "integrations/all/retell-ai",
               "integrations/all/ring-central",
               "integrations/all/ring-central-sandbox",
+              "api-integrations/ringover",
               "integrations/all/rippling",
               "integrations/all/rippling-shop-app",
               "integrations/all/rocketlane",
