@@ -92,9 +92,9 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'webhook_forwards':
             return `daily_webhook_forwards`;
         case 'records':
+            return `daily_records`;
         case 'connections':
-            // not implemented yet
-            return '';
+            return `daily_connections`;
     }
 }
 
@@ -110,7 +110,6 @@ export function quantityForMetric(metric: UsageMetric): string {
             return `SUM(duration_ms * memory_gb)`;
         case 'records':
         case 'connections':
-            // not implemented yet
-            return '';
+            return `avgMerge(value)`;
     }
 }
