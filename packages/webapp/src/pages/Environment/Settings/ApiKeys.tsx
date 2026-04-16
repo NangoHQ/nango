@@ -1,4 +1,4 @@
-import { IconEdit, IconExternalLink, IconEye, IconEyeOff, IconPencil, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconExternalLink, IconEye, IconEyeOff, IconKey, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -276,7 +276,7 @@ const CreateApiKeyDialog: React.FC<CreateApiKeyDialogProps> = ({ env, onCreated,
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="primary" disabled={disabled}>
-                    <IconPencil stroke={1} size={16} />
+                    <IconKey stroke={1} size={16} />
                     Create new API key
                 </Button>
             </DialogTrigger>
@@ -386,10 +386,9 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                             </div>
                         )}
                     </div>
-
-                    <label className="text-body-medium-semi text-text-secondary self-start pt-2">Permission</label>
-                    <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} disabled={!canManageKeys} hideLabel />
                 </div>
+
+                <ScopeSelector selectedScopes={editedScopes} onChange={setEditedScopes} disabled={!canManageKeys} />
 
                 {canManageKeys && (
                     <div className="flex gap-2 pt-2">
