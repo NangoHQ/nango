@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { envs } from '../../env.js';
@@ -7,6 +8,12 @@ import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 const originalNodeEnv = envs.NODE_ENV;
+
+async function seedAccountWithRemoteFunctions() {
+    const seed = await seeders.seedAccountEnvAndUser();
+    await db.knex('plans').where('id', seed.plan.id).update({ remote_functions: true });
+    return seed;
+}
 
 describe('remote-function public API', () => {
     beforeAll(async () => {
@@ -35,8 +42,31 @@ describe('remote-function public API', () => {
         shouldBeProtected(res);
     });
 
-    it('rejects unsafe function names on POST /remote-function/compile', async () => {
+    it('rejects valid secret keys without remote functions plan flag', async () => {
         const { secret } = await seeders.seedAccountEnvAndUser();
+
+        const res = await api.fetch('/remote-function/compile', {
+            method: 'POST',
+            token: secret.secret,
+            body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Remote functions are not enabled for this account'
+            }
+        });
+    });
+
+    it('rejects unsafe function names on POST /remote-function/compile', async () => {
+        const { secret } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
@@ -55,7 +85,7 @@ describe('remote-function public API', () => {
     });
 
     it('returns integration_not_found on POST /remote-function/compile', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
@@ -80,7 +110,7 @@ describe('remote-function public API', () => {
     it('allows valid secret keys in production', async () => {
         envs.NODE_ENV = 'production';
 
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
@@ -103,7 +133,7 @@ describe('remote-function public API', () => {
     });
 
     it('returns connection_not_found on POST /remote-function/dryrun', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, secret } = await seedAccountWithRemoteFunctions();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch('/remote-function/dryrun', {
@@ -128,7 +158,7 @@ describe('remote-function public API', () => {
     });
 
     it('returns integration_not_found on POST /remote-function/deploy', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { secret } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/deploy', {
             method: 'POST',

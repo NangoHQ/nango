@@ -36,6 +36,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        remote_functions: false,
         created_at: new Date(),
         updated_at: new Date(),
         sync_function_runtime: 'runner',

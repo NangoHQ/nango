@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion, flagHasPlan } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
@@ -71,6 +71,7 @@ import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { DBPlan } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -79,6 +80,19 @@ const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionA
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const remoteFunctionAuth: RequestHandler[] = [
+    ...apiAuth,
+    (_req, res, next) => {
+        const plan = res.locals['plan'] as DBPlan | null | undefined;
+
+        if (flagHasPlan && !plan?.remote_functions) {
+            res.status(403).send({ error: { code: 'forbidden', message: 'Remote functions are not enabled for this account' } });
+            return;
+        }
+
+        next();
+    }
+];
 
 export const publicAPI = express.Router();
 
@@ -232,9 +246,9 @@ publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSess
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
 publicAPI.use('/remote-function', jsonContentTypeMiddleware);
-publicAPI.route('/remote-function/compile').post(apiAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(apiAuth, postRemoteFunctionDryrun);
-publicAPI.route('/remote-function/deploy').post(apiAuth, postRemoteFunctionDeploy);
+publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
+publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);

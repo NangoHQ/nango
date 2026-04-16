@@ -106,6 +106,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
+        remote_functions: false,
         environments_max: 2,
         connections_max: null,
         records_max: null,

@@ -145,6 +145,12 @@ export interface DBPlan extends Timestamps {
     can_disable_connect_ui_watermark: boolean;
 
     /**
+     * Enable or disable remote function compile, dry-run, and deploy endpoints
+     * @default false
+     */
+    remote_functions: boolean;
+
+    /**
      * Sync Function Runtime
      * @default "runner"
      */
