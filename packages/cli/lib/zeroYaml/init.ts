@@ -111,14 +111,23 @@ export async function initZero({
         spinner.warn('Skipping dependency install (--no-dependency-update)');
     }
 
-    {
+    if (await hasEntryPoints(absolutePath)) {
         const res = await compileAllFunctions({ fullPath: absolutePath, debug, interactive });
         if (res.isErr()) {
             return false;
         }
+    } else {
+        const spinner = spinnerFactory.start('Compile integration files');
+        spinner.warn('Skipping compilation: no integration imports found in index.ts');
     }
 
     return true;
+}
+
+async function hasEntryPoints(absolutePath: string): Promise<boolean> {
+    const indexPath = path.join(absolutePath, 'index.ts');
+    const content = await fs.promises.readFile(indexPath, 'utf-8');
+    return /^import ['"]\.\//gm.test(content);
 }
 
 async function copyRecursive(src: string, dest: string) {
