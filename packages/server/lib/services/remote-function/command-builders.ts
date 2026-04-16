@@ -34,6 +34,8 @@ export function buildDeployArgs(request: DeployRequest): string[] {
     return [
         'deploy',
         request.environment_name,
+        '--integration',
+        request.integration_id,
         request.function_type === 'action' ? '--action' : '--sync',
         request.function_name,
         '--auto-confirm',
