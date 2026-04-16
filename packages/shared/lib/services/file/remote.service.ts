@@ -136,10 +136,6 @@ class RemoteFileService {
         }
     }
 
-    async getPublicTemplateJsonSchemaFile(integrationName: string): Promise<string | null> {
-        return await this.getFile(`${this.publicRoute}/${integrationName}/.nango/schema.json`);
-    }
-
     getFile(fileName: string): Promise<string> {
         return new Promise((resolve, reject) => {
             const getObjectCommand = new GetObjectCommand({

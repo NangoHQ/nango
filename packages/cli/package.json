@@ -70,7 +70,6 @@
         "promptly": "3.2.0",
         "semver": "7.5.4",
         "serialize-error": "11.0.3",
-        "ts-json-schema-generator": "2.4.0",
         "ts-node": "10.9.2",
         "tsup": "8.5.1",
         "typescript": "5.8.3",
