@@ -19,6 +19,11 @@ export interface BillingClient {
          * Stripe PaymentIntent ID, used to cross-reference the payment in Orb.
          */
         paymentExternalId?: string;
+        /**
+         * Amount collected via Stripe in dollars (e.g. "25.00"), stored as a
+         * note on the Orb invoice for audit purposes.
+         */
+        amountCollected?: string;
     }) => Promise<Result<BillingSubscription>>;
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
