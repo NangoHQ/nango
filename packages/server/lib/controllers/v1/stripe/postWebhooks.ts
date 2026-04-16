@@ -171,7 +171,7 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             // Finally, we apply the pending change to confirm the card and the plan
             const resApply = await billing.client.applyPendingChanges({
                 pendingChangeId: sub.pendingChangeId,
-                amount: (data.amount / 100).toFixed(2)
+                paymentExternalId: data.id
             });
             if (resApply.isErr()) {
                 return Err(resApply.error);
