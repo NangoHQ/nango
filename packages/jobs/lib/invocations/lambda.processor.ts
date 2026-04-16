@@ -79,7 +79,7 @@ export class LambdaInvocationsProcessor {
 }
 
 function getDurationMsFromErrorType(errorType: 'function_runtime_out_of_memory' | 'function_runtime_timed_out' | 'function_runtime_other'): number {
-    if (errorType === 'function_runtime_out_of_memory') return envs.LAMBDA_EXECUTION_TIMEOUT_SECS * 1000;
-    if (errorType === 'function_runtime_timed_out') return envs.LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS * 1000;
+    if (errorType === 'function_runtime_timed_out') return envs.LAMBDA_EXECUTION_TIMEOUT_SECS * 1000;
+    if (errorType === 'function_runtime_out_of_memory') return envs.LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS * 1000;
     return 0;
 }
