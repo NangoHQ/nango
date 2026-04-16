@@ -1,6 +1,6 @@
 import { usePlaygroundStore } from '@/store/playground';
 
-import type { PlaygroundFunctionType, PlaygroundState } from '@/store/playground';
+import type { PlaygroundFunctionType } from '@/store/playground';
 
 export interface PlaygroundContextOverride {
     integration?: string | null;
@@ -17,7 +17,13 @@ export interface PlaygroundContextOverride {
  * integration/connection/sync/action pages
  */
 export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
-    const next: PlaygroundState = {
+    const store = usePlaygroundStore.getState();
+
+    // Abort any in-flight run before replacing state, so the handleRun callback
+    // can't write pendingOperationId / setResult on top of the new context.
+    store.abortActiveRun?.();
+
+    store.setState({
         isOpen: true,
         integration: override.integration ?? null,
         connection: override.connection ?? null,
@@ -27,9 +33,8 @@ export function openPlaygroundWithContext(override: PlaygroundContextOverride) {
         result: null,
         pendingOperationId: null,
         running: false,
+        starting: false,
         inputErrors: {},
         connectionSearch: ''
-    };
-
-    usePlaygroundStore.getState().setState(next);
+    });
 }

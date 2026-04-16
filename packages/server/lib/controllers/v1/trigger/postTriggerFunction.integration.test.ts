@@ -127,7 +127,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     describe('sync', () => {
-        it('should call syncManager.runSyncCommand with RUN and correct identifiers', async () => {
+        it('should call syncManager.runSyncCommand with RUN and correct identifiers and return operationId', async () => {
             const { user } = await seeders.seedAccountEnvAndUser();
             const session = await authenticateUser(api, user);
 
@@ -139,12 +139,14 @@ describe(`POST ${endpoint}`, () => {
             });
 
             expect(res.res.status).toBe(200);
+            expect(res.json).toMatchObject({ success: true, operationId: expect.stringMatching(/^\d+_[a-zA-Z0-9_-]+$/) });
             expect(mockRunSyncCommand).toHaveBeenCalledWith(
                 expect.objectContaining({
                     command: 'RUN',
                     providerConfigKey: 'test-key',
                     connectionId: 'conn1',
-                    syncIdentifiers: [{ syncName: 'my-sync', syncVariant: 'base' }]
+                    syncIdentifiers: [{ syncName: 'my-sync', syncVariant: 'base' }],
+                    operationId: expect.stringMatching(/^\d+_[a-zA-Z0-9_-]+$/)
                 })
             );
         });

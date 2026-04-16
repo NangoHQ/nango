@@ -25,6 +25,7 @@ export interface PlaygroundState {
     pendingOperationId: string | null;
     // Transient — not persisted to localStorage
     running: boolean;
+    starting: boolean;
     inputErrors: Record<string, string>;
     connectionSearch: string;
 }
@@ -40,6 +41,7 @@ interface PlaygroundStore extends PlaygroundState {
     setResult: (result: PlaygroundResult | null) => void;
     setPendingOperationId: (operationId: string | null) => void;
     setRunning: (running: boolean) => void;
+    setStarting: (starting: boolean) => void;
     setInputErrors: (errors: Record<string, string>) => void;
     setInputError: (name: string, message: string) => void;
     clearInputError: (name: string) => void;
@@ -59,6 +61,7 @@ export const defaultPlaygroundState: PlaygroundState = {
     result: null,
     pendingOperationId: null,
     running: false,
+    starting: false,
     inputErrors: {},
     connectionSearch: ''
 };
@@ -86,6 +89,8 @@ export const usePlaygroundStore = create<PlaygroundStore>()(
             setPendingOperationId: (pendingOperationId) => set({ pendingOperationId }),
 
             setRunning: (running) => set({ running }),
+
+            setStarting: (starting) => set({ starting }),
 
             setInputErrors: (inputErrors) => set({ inputErrors }),
 

@@ -440,7 +440,7 @@ export function buildTagsFromEndUser(
             issues_cap: MAX_LOG_KEYS,
             issues
         });
-    };
+    }
 
     const result = connectionTagsSchema.safeParse(generatedTags);
     if (result.success) {

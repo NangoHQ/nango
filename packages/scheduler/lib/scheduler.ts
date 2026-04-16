@@ -154,7 +154,7 @@ export class Scheduler {
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
-    public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
+    public async immediate(props: ImmediateProps | { scheduleName: string; payloadOverride?: JsonObject }): Promise<Result<Task>> {
         return this.db.transaction(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
@@ -182,7 +182,7 @@ export class Scheduler {
                 }
                 taskProps = {
                     name: `${schedule.name}:${uuidv7()}`,
-                    payload: schedule.payload,
+                    payload: props.payloadOverride ? ({ ...(schedule.payload as JsonObject), ...props.payloadOverride } as JsonValue) : schedule.payload,
                     groupKey: schedule.groupKey,
                     groupMaxConcurrency: 0,
                     retryMax: schedule.retryMax,

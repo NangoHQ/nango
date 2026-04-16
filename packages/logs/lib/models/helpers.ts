@@ -10,6 +10,10 @@ import type { SetRequired } from 'type-fest';
 
 export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
 
+export function generateOperationId(createdAt: Date = new Date()): string {
+    return `${createdAt.getTime()}_${nanoid(8)}`;
+}
+
 export interface AdditionalOperationData {
     account?: { id: number; name: string };
     user?: { id: number } | undefined;
@@ -28,7 +32,7 @@ export function getFormattedOperation(
     const createdAt = data.createdAt ? new Date(data.createdAt) : now;
     return {
         message: operationTypeToMessage[`${data.operation.type}:${data.operation.action}` as ConcatOperationList],
-        id: data.id || `${createdAt.getTime()}_${nanoid(8)}`,
+        id: data.id || generateOperationId(createdAt),
         operation: data.operation,
         state: data.state || 'waiting',
         source: 'internal',

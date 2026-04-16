@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import { logContextGetter } from '@nangohq/logs';
+import { generateOperationId, logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
@@ -77,6 +77,7 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
         });
     } else {
         const syncIdentifiers = normalizeSyncParams([function_name]);
+        const operationId = generateOperationId();
 
         const { success, error } = await syncManager.runSyncCommand({
             recordsService,
@@ -87,7 +88,8 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
             command: SyncCommand.RUN,
             logContextGetter,
             connectionId: connection_id,
-            initiator: 'UI'
+            initiator: 'UI',
+            operationId
         });
 
         if (!success) {
@@ -95,6 +97,6 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
             return;
         }
 
-        res.status(200).send({ success: true });
+        res.status(200).send({ success: true, operationId });
     }
 });

@@ -38,6 +38,10 @@ export const syncArgsSchema = z.object({
     ...commonSchemaArgsFields
 });
 
+export const syncPayloadSchema = syncArgsSchema.extend({
+    operationId: z.string().optional()
+});
+
 export const syncAbortArgsSchema = z
     .object({
         syncId: z.string().min(1),
@@ -91,7 +95,7 @@ const abortSchema = z.object({
 });
 const syncSchema = z.object({
     ...commonSchemaFields,
-    payload: syncArgsSchema
+    payload: syncPayloadSchema
 });
 const syncAbortSchema = z.object({
     ...commonSchemaFields,
@@ -129,6 +133,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 retryKey: sync.data.retryKey,
                 ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug,
+                ...(sync.data.payload.operationId !== undefined ? { operationId: sync.data.payload.operationId } : {}),
                 heartbeatTimeoutSecs: sync.data.heartbeatTimeoutSecs
             })
         );

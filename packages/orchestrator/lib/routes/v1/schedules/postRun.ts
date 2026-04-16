@@ -9,26 +9,34 @@ import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@na
 const path = '/v1/schedules/run';
 const method = 'POST';
 
+const bodySchema = z
+    .object({
+        scheduleName: z.string().min(1),
+        operationId: z
+            .string()
+            .regex(/^[a-zA-Z0-9_]{20,25}$/)
+            .optional()
+    })
+    .strict();
+
 export type PostScheduleRun = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Body: {
-        scheduleName: string;
-    };
+    Body: z.output<typeof bodySchema>;
     Error: ApiError<'recurring_run_failed'>;
     Success: { scheduleId: string };
 }>;
 
-const bodySchema = z.object({ scheduleName: z.string().min(1) }).strict();
-
 const validate = validateRequest<PostScheduleRun>({
-    parseBody: (data: any) => bodySchema.parse(data)
+    parseBody: (data) => bodySchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostScheduleRun>) => {
+        const { scheduleName, operationId } = res.locals.parsedBody;
         const schedule = await scheduler.immediate({
-            scheduleName: res.locals.parsedBody.scheduleName
+            scheduleName,
+            ...(operationId !== undefined ? { payloadOverride: { operationId } } : {})
         });
         if (schedule.isErr()) {
             res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });

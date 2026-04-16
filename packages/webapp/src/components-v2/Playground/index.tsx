@@ -30,6 +30,7 @@ export const Playground: React.FC = () => {
     const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const result = usePlaygroundStore((s) => s.result);
     const running = usePlaygroundStore((s) => s.running);
+    const starting = usePlaygroundStore((s) => s.starting);
     const inputErrors = usePlaygroundStore((s) => s.inputErrors);
     const setPlaygroundOpen = usePlaygroundStore((s) => s.setOpen);
     const clearPlaygroundInputError = usePlaygroundStore((s) => s.clearInputError);
@@ -146,7 +147,7 @@ export const Playground: React.FC = () => {
                                     {running ? (
                                         <>
                                             <Button variant="primary" disabled loading={true} size="sm">
-                                                Running
+                                                {starting ? 'Starting' : 'Running'}
                                             </Button>
                                             {isSync && (
                                                 <Button variant="destructive" size="sm" onClick={handleCancel}>

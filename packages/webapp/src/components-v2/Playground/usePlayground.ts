@@ -11,6 +11,7 @@ import type { SyncResponse } from '@/types';
 
 const FIND_OP_POLL_INTERVAL_MS = 500;
 const STATUS_POLL_INTERVAL_MS = 1500;
+const OPERATION_DISCOVERY_TIMEOUT_MS = 60_000;
 
 export function usePlayground(inputFields: InputField[]) {
     const env = useStore((s) => s.env);
@@ -24,23 +25,59 @@ export function usePlayground(inputFields: InputField[]) {
     const setResult = usePlaygroundStore((s) => s.setResult);
     const setPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setRunning = usePlaygroundStore((s) => s.setRunning);
+    const setStarting = usePlaygroundStore((s) => s.setStarting);
     const setInputErrors = usePlaygroundStore((s) => s.setInputErrors);
     const setAbortActiveRun = usePlaygroundStore((s) => s.setAbortActiveRun);
 
     const runAbortRef = useRef<AbortController | null>(null);
+    // Tracks whether we've seen a non-null response for the current pendingOperationId.
+    // Used by the discovery timeout to distinguish "not yet appeared" from "appeared".
+    const operationFoundRef = useRef(false);
 
     useEffect(() => {
         setAbortActiveRun(() => {
             runAbortRef.current?.abort();
             setPendingOperationId(null);
             setRunning(false);
+            setStarting(false);
             setResult(null);
         });
 
         return () => {
             setAbortActiveRun(null);
         };
-    }, [setAbortActiveRun, setPendingOperationId, setResult, setRunning]);
+    }, [setAbortActiveRun, setPendingOperationId, setResult, setRunning, setStarting]);
+
+    // --- On mount: restore running/starting if rehydrating with a pending operation ---
+    // pendingOperationId is persisted to sessionStorage; running/starting are transient.
+    // Without this, a refresh leaves the Run button enabled during the first poll cycle.
+    useEffect(() => {
+        if (pendingOperationId) {
+            setRunning(true);
+            setStarting(true);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // intentionally run only on mount
+
+    // --- Discovery timeout: fire operation_not_found if record never appears within 60s ---
+    // Depends on isOpen so the timer resets (rather than fires) when the sheet is closed
+    // and reopened — preventing false negatives when polling was suspended.
+    useEffect(() => {
+        operationFoundRef.current = false;
+        if (!pendingOperationId || !isOpen) return;
+
+        const capturedOperationId = pendingOperationId;
+        const timer = setTimeout(() => {
+            if (!operationFoundRef.current) {
+                setPendingOperationId(null);
+                setResult({ success: true, state: 'operation_not_found', data: null, durationMs: 0, operationId: capturedOperationId });
+                setRunning(false);
+                setStarting(false);
+            }
+        }, OPERATION_DISCOVERY_TIMEOUT_MS);
+
+        return () => clearTimeout(timer);
+    }, [pendingOperationId, isOpen, setPendingOperationId, setResult, setRunning, setStarting]);
 
     // --- useQuery: poll operation status when pendingOperationId is set ---
     const { data: operationData } = useQuery({
@@ -61,6 +98,14 @@ export function usePlayground(inputFields: InputField[]) {
             return STATUS_POLL_INTERVAL_MS;
         }
     });
+
+    // --- Mark operation as found (and transition Starting → Running) when data first appears ---
+    useEffect(() => {
+        if (operationData) {
+            operationFoundRef.current = true;
+            setStarting(false);
+        }
+    }, [operationData, setStarting]);
 
     // --- Process terminal state from useQuery ---
     useEffect(() => {
@@ -155,7 +200,22 @@ export function usePlayground(inputFields: InputField[]) {
                 return;
             }
 
-            // Poll until we find the matching operation in logs.
+            // If the trigger returned an operationId, use it directly — no search needed.
+            const returnedOperationId =
+                triggerData && typeof triggerData === 'object' && 'operationId' in triggerData && typeof triggerData.operationId === 'string'
+                    ? triggerData.operationId
+                    : null;
+
+            if (returnedOperationId) {
+                // Syncs: hand off to useQuery for status polling.
+                // running stays true — useQuery's useEffect will set it to false on terminal state.
+                // starting = true until the operation record first appears.
+                setStarting(true);
+                setPendingOperationId(returnedOperationId);
+                return;
+            }
+
+            // Fallback: poll until we find the matching operation in logs.
             const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
             const findStart = Date.now();
             let operation = null as Awaited<ReturnType<typeof findOperation>>;
@@ -208,6 +268,7 @@ export function usePlayground(inputFields: InputField[]) {
         setResult,
         setPendingOperationId,
         setRunning,
+        setStarting,
         setInputErrors
     ]);
 
@@ -216,6 +277,7 @@ export function usePlayground(inputFields: InputField[]) {
         runAbortRef.current?.abort();
         setPendingOperationId(null);
         setRunning(false);
+        setStarting(false);
         setResult(null);
 
         // For syncs, also cancel the backend operation (best-effort)
@@ -246,7 +308,17 @@ export function usePlayground(inputFields: InputField[]) {
                 // Best-effort: local state already cleared
             }
         }
-    }, [env, playgroundIntegration, playgroundConnection, playgroundFunction, playgroundFunctionType, setPendingOperationId, setRunning, setResult]);
+    }, [
+        env,
+        playgroundIntegration,
+        playgroundConnection,
+        playgroundFunction,
+        playgroundFunctionType,
+        setPendingOperationId,
+        setRunning,
+        setStarting,
+        setResult
+    ]);
 
     return { handleRun, handleCancel };
 }

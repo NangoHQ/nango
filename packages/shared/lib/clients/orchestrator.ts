@@ -548,7 +548,8 @@ export class Orchestrator {
         logCtx,
         recordsService,
         initiator,
-        delete_records
+        delete_records,
+        operationId
     }: {
         connectionId: number;
         syncId: string;
@@ -560,6 +561,7 @@ export class Orchestrator {
         recordsService: RecordsServiceInterface;
         initiator: string;
         delete_records?: boolean | undefined;
+        operationId?: string | undefined;
     }): Promise<Result<void>> {
         try {
             const cancelling = async (syncId: string): Promise<Result<void>> => {
@@ -586,7 +588,7 @@ export class Orchestrator {
                     res = await this.client.unpauseSync({ scheduleName });
                     break;
                 case SyncCommand.RUN:
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, ...(operationId !== undefined ? { operationId } : {}) });
                     break;
                 case SyncCommand.RUN_FULL: {
                     await cancelling(syncId);
@@ -617,7 +619,7 @@ export class Orchestrator {
                         }
                     }
 
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, ...(operationId !== undefined ? { operationId } : {}) });
                     break;
                 }
             }
