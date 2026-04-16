@@ -4,6 +4,7 @@ import { env, filterJsonSchemaForModels } from '@nangohq/utils';
 
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { NangoError } from '../../../utils/error.js';
+import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -305,7 +306,7 @@ async function compileDeployInfo({
         await remoteFileService.upload({
             content: fileBody.ts,
             destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalPath: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+            destinationLocalPath: resolveLocalFileName({ syncName, providerConfigKey })
         });
     }
 
