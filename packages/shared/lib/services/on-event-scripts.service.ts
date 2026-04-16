@@ -107,7 +107,7 @@ export const onEventScriptService = {
                     const file_location = await remoteFileService.upload({
                         content: fileBody.js,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
-                        destinationLocalPath: `${name}-${providerConfigKey}.js`
+                        destinationLocalFileName: `${name}-${providerConfigKey}.js`
                     });
 
                     if (!file_location) {
@@ -117,7 +117,7 @@ export const onEventScriptService = {
                     await remoteFileService.upload({
                         content: fileBody.ts,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
-                        destinationLocalPath: `${providerConfigKey}/on-events/${name}.ts`
+                        destinationLocalFileName: `${providerConfigKey}/on-events/${name}.ts`
                     });
 
                     onEventInserts.push({
