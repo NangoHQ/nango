@@ -71,6 +71,7 @@ import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -79,6 +80,19 @@ const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionA
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const remoteFunctionAuth: RequestHandler[] = [
+    ...apiAuth,
+    (_req, res, next) => {
+        const account = res.locals['account'] as RequestLocals['account'] | undefined;
+
+        if (envs.NODE_ENV === 'production' && account?.uuid !== envs.NANGO_ADMIN_UUID) {
+            res.status(401).send({ error: { code: 'unauthorized', message: 'Unauthorized' } });
+            return;
+        }
+
+        next();
+    }
+];
 
 export const publicAPI = express.Router();
 
@@ -231,12 +245,10 @@ publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
 
-if (envs.NODE_ENV !== 'production') {
-    publicAPI.use('/remote-function', jsonContentTypeMiddleware);
-    publicAPI.route('/remote-function/compile').post(apiAuth, postRemoteFunctionCompile);
-    publicAPI.route('/remote-function/dryrun').post(apiAuth, postRemoteFunctionDryrun);
-    publicAPI.route('/remote-function/deploy').post(apiAuth, postRemoteFunctionDeploy);
-}
+publicAPI.use('/remote-function', jsonContentTypeMiddleware);
+publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
+publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
