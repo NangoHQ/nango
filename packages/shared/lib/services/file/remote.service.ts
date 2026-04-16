@@ -58,14 +58,14 @@ class RemoteFileService {
     async upload({
         content,
         destinationPath,
-        destinationLocalPath
+        destinationLocalFileName
     }: {
         content: string;
         destinationPath: string;
-        destinationLocalPath: string;
+        destinationLocalFileName: string;
     }): Promise<string | null> {
         if (isEnterprise && !this.useS3) {
-            localFileService.putIntegrationFile({ filePath: destinationLocalPath, fileContent: content });
+            localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent: content });
 
             return '_LOCAL_FILE_';
         }
@@ -98,7 +98,7 @@ class RemoteFileService {
     async copy({
         sourcePath,
         destinationPath,
-        destinationLocalPath
+        destinationLocalFileName
     }: {
         sourcePath: string;
         destinationPath: string;
@@ -108,7 +108,7 @@ class RemoteFileService {
          * This method handles when S3 is not enabled (like locally)
          * TODO: We probably need to do it outside but until now it's like this
          */
-        destinationLocalPath: string;
+        destinationLocalFileName: string;
     }): Promise<string | null> {
         const s3FilePath = `${this.publicZeroYamlRoute}/${sourcePath}`;
         try {
@@ -125,7 +125,7 @@ class RemoteFileService {
             } else {
                 const fileContent = await this.getFile(s3FilePath);
                 if (fileContent) {
-                    localFileService.putIntegrationFile({ filePath: destinationLocalPath, fileContent });
+                    localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent });
                 }
                 return '_LOCAL_FILE_';
             }

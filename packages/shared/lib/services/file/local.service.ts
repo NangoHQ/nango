@@ -32,9 +32,9 @@ class LocalFileService {
         }
     }
 
-    public putIntegrationFile({ filePath, fileContent }: { filePath: string; fileContent: string }) {
+    public putIntegrationFile({ fileName, fileContent }: { fileName: string; fileContent: string }) {
         try {
-            const fp = resolveLocalFilePath({ fileName: filePath });
+            const fp = resolveLocalFilePath({ fileName });
             fs.mkdirSync(fp.replace(path.basename(fp), ''), { recursive: true });
             fs.writeFileSync(fp, fileContent, 'utf8');
 
