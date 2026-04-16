@@ -7,7 +7,6 @@ import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 const originalNodeEnv = envs.NODE_ENV;
-const originalAdminUUID = envs.NANGO_ADMIN_UUID;
 
 describe('remote-function public API', () => {
     beforeAll(async () => {
@@ -20,7 +19,6 @@ describe('remote-function public API', () => {
 
     afterEach(() => {
         envs.NODE_ENV = originalNodeEnv;
-        envs.NANGO_ADMIN_UUID = originalAdminUUID;
     });
 
     it('protects POST /remote-function/compile', async () => {
@@ -79,36 +77,10 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('rejects non-admin org secret keys in production', async () => {
+    it('allows valid secret keys in production', async () => {
         envs.NODE_ENV = 'production';
-        envs.NANGO_ADMIN_UUID = 'e1e8fee9-a459-46fe-9e82-15c93dae2406';
 
         const { secret } = await seeders.seedAccountEnvAndUser();
-
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            token: secret.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(401);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'unauthorized',
-                message: 'Unauthorized'
-            }
-        });
-    });
-
-    it('allows admin org secret keys in production', async () => {
-        envs.NODE_ENV = 'production';
-        const { account, secret } = await seeders.seedAccountEnvAndUser();
-        envs.NANGO_ADMIN_UUID = account.uuid;
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
