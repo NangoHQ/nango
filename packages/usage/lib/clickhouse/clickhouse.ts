@@ -152,7 +152,7 @@ export class Clickhouse {
                         const quantityExpr = (() => {
                             switch (query.granularity) {
                                 case 'none':
-                                    return `ROUND(SUM(avg_val) / dateDiff('day', toDate('${startDate}'), toDate('${endDate}')))`;
+                                    return `ROUND(SUM(avg_val) / GREATEST(1, dateDiff('day', toDate('${startDate}'), toDate('${endDate}'))))`;
                                 case 'day':
                                     return `ROUND(SUM(avg_val))`;
                             }
@@ -219,7 +219,9 @@ export class Clickhouse {
                     }
 
                     const shouldProrate = viewMode === 'cumulative' && query.granularity === 'day';
-                    const timeframeDays = shouldProrate ? (query.timeframe.end.getTime() - query.timeframe.start.getTime()) / (1000 * 60 * 60 * 24) : 1;
+                    const timeframeDays = shouldProrate
+                        ? Math.max(1, (query.timeframe.end.getTime() - query.timeframe.start.getTime()) / (1000 * 60 * 60 * 24))
+                        : 1;
 
                     // sort series by dimension value for consistent ordering
                     const series = Object.entries(seriesMap)
