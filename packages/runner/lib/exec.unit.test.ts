@@ -81,6 +81,27 @@ describe('Exec', () => {
         });
     });
 
+    it('should not allow escaping the VM via constructor constructor', async () => {
+        const nangoProps = getNangoProps();
+        const code = `
+        fn = async () => {
+            globalThis.__proto__.constructor.constructor('return this.process')().env
+            globalThis.constructor.constructor('return this.process')().env
+        };
+        exports.default = fn
+        `;
+        const res = await exec({ nangoProps, code });
+        expect(res.isErr()).toEqual(true);
+        if (res.isOk()) {
+            throw new Error('Expected an error');
+        }
+
+        expect(res.error.toJSON()).toMatchObject({
+            status: 500,
+            type: 'script_internal_error'
+        });
+    });
+
     it('should return a formatted error when receiving an ActionError', async () => {
         const nangoProps = getNangoProps();
         const code = `

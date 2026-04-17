@@ -13,11 +13,11 @@ export const sql = [
         runtime          LowCardinality(String),
         value            Int64,
         duration_ms      UInt64,
-        memory_gb        Float64,
+        compute_gbms     Float64,
         custom_logs      UInt64,
         proxy_calls      UInt64
     )
-    ENGINE = SummingMergeTree((value, duration_ms, memory_gb, custom_logs, proxy_calls))
+    ENGINE = SummingMergeTree((value, duration_ms, compute_gbms, custom_logs, proxy_calls))
     PARTITION BY toYYYYMM(day)
     ORDER BY (account_id, day, environment_id, integration_id, connection_id, function_type, function_name, success, runtime)
     TTL day + INTERVAL 24 MONTH
@@ -37,7 +37,7 @@ export const sql = [
         attributes.runtime::String                                              AS runtime,
         sum(value)                                                              AS value,
         sum(coalesce(attributes.telemetryBag.durationMs::Nullable(UInt64), 0))  AS duration_ms,
-        sum(coalesce(attributes.telemetryBag.memoryGb::Nullable(Float64), 0.0))    AS memory_gb,
+        sum(coalesce(attributes.telemetryBag.durationMs::Nullable(UInt64), 0) * coalesce(attributes.telemetryBag.memoryGb::Nullable(Float64), 0.0)) AS compute_gbms,
         sum(coalesce(attributes.telemetryBag.customLogs::Nullable(UInt64), 0))  AS custom_logs,
         sum(coalesce(attributes.telemetryBag.proxyCalls::Nullable(UInt64), 0))  AS proxy_calls
     FROM {database:Identifier}.raw_events

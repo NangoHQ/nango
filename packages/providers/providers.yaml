@@ -3066,8 +3066,10 @@ cal-com-v2:
                 content-type: application/json
             endpoints:
                 - /me
-    docs: https://nango.dev/docs/integrations/all/cal-com-v2
-    docs_connect: https://nango.dev/docs/integrations/all/cal-com-v2/connect
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
+    docs: https://nango.dev/docs/api-integrations/cal-com-v2
+    docs_connect: https://nango.dev/docs/api-integrations/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
@@ -10231,7 +10233,7 @@ looker:
             prefix: https://
             example: mycompany.looker.com
             order: 1
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
             doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
@@ -10245,6 +10247,47 @@ looker:
             description: Your Looker Client Secret
             secret: true
             doc_section: '#step-2-obtaining-your-client-credentials'
+
+looker-oauth:
+    display_name: Looker (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/auth
+    token_url: https://${connectionConfig.apiHostname}/api/token
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - cors_api
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiHostname}/api
+    docs: https://nango.dev/docs/api-integrations/looker-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/looker-oauth/how-to-register-your-own-looker-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/looker-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Looker UI Hostname
+            description: Your Looker instance UI hostname.
+            format: hostname
+            prefix: https://
+            example: mycompany.looker.com
+            order: 1
+            doc_section: '#step-1-finding-your-looker-ui-hostname'
+        apiHostname:
+            type: string
+            title: Looker API Hostname
+            description: Your Looker API hostname including port.
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            example: mycompany.looker.com:19999
+            order: 2
+            doc_section: '#step-2-finding-your-looker-api-hostname'
 
 lucid-scim:
     display_name: Lucid (SCIM)
@@ -13860,6 +13903,37 @@ quickbase:
             example: bb_aa_xxxxxx_xxxxxxxxxxxxxxxxx
             doc_section: '#step-2-finding-your-user-token'
 
+qualia:
+    display_name: Qualia
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.qualia.io/api
+    docs: https://nango.dev/docs/api-integrations/qualia
+    docs_connect: https://nango.dev/docs/api-integrations/qualia/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the Qualia platform you want to connect to.
+            pattern: '^[a-z0-9-]+$'
+            example: connect
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Qualia organization username.
+            doc_section: '#step-2-finding-your-api-key'
+        password:
+            type: string
+            title: Password
+            description: Your Qualia API password.
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
+
 quickbooks:
     display_name: Quickbooks
     categories:
@@ -14483,6 +14557,26 @@ ring-central-sandbox:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/ring-central-sandbox
+
+ringover:
+    display_name: Ringover
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.ringover.com
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/ringover
+    docs_connect: https://nango.dev/docs/api-integrations/ringover/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ringover API key.
+            example: 'a3f9e2***************************d8e9f0'
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 rippling:
     display_name: Rippling
@@ -17021,6 +17115,39 @@ supabase-mcp:
             example: sbp_*******************************23d
             pattern: '^sbp_[A-Za-z0-9]{40}$'
             doc_section: '#step-2-obtaining-your-personal-access-token'
+
+supabase-mcp-oauth:
+    display_name: Supabase (MCP OAuth)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    registration_url: https://api.supabase.com/platform/oauth/apps/register
+    authorization_url: https://api.supabase.com/v1/oauth/authorize
+    token_url: https://api.supabase.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            accept: application/json,text/event-stream
+        connection_config:
+            projectRef: ${connectionConfig.projectRef}
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project Reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
 
 survey-monkey:
     display_name: SurveyMonkey

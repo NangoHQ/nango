@@ -21,7 +21,8 @@ import {
     resendVerificationEmailByUuid,
     signin,
     signup,
-    validateEmailAndLogin
+    validateEmailAndLogin,
+    validateSigninRequest
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
@@ -94,6 +95,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
@@ -142,7 +144,7 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, signup);
     web.route('/account/logout').post(rateLimiterMiddleware, postLogout);
-    web.route('/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
+    web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
     web.route('/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);

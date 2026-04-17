@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.1] - 2026-04-17
+
+### Added
+
+- *(orchestrator)* Add dropped task metric for capped groups (#5865) by @pfreixes
+
+### Fixed
+
+- *(vulns)* Fix vulns (#5888) by @rossmcewan
+
+## [v0.70.0] - 2026-04-16
+
+### Added
+
+- *(server)* Add client IP tags to Datadog traces (#5860) by @marcindobry
+- *(proxy)* Resolve `accessToken` in custom headers for OAUTH2_CC (#5881) by @hassan254-prog
+- Add `has_rbac` feature flag (#5847) by @kaposke
+- *(server)* Add remote function public API (#5836) by @marcindobry
+- Stop generating schema.ts / schema.json and stop accepting top-level json-schema (#5874) by @kaposke
+
+### Fixed
+
+- *(clickhouse)* Compute_gbms to be calculated in mv (#5872) by @TBonnin
+- *(lambda)* New plan flag to control lambda rollout (#5858) by @rossmcewan
+- *(lambda)* Track memory and duration correctly (#5875) by @rossmcewan
+- *(security)* Security fixes (#5876) by @rossmcewan
+- *(shared)* Missing types (#5884) by @rossmcewan
+- *(shared)* Fix metrics call (#5885) by @rossmcewan
+
+## [v0.69.50] - 2026-04-16
+
+### Added
+
+- *(playground)* NAN-4846: Create playground (#5581) by @agusayerza
+- *(orchestrator)* Serialize webhooks admision (#5855) by @pfreixes
+- *(providers)* Agent-powered oauth2 scope discovery (#5701) by @hassan254-prog
+- *(integrations)* Add support for cisco duo admin (#5820) by @hassan254-prog
+- Add more data for function template observability (#5698) by @marcindobry
+- Allow customers to update invoicing details (#5834) by @ErickRDev
+- *(integrations)* Add support for lob (#5853) by @hassan254-prog
+- *(webhooks)* Add webhook support for streak (#5859) by @hassan254-prog
+- *(usage)* Add usage metric querying from clickhouse (#5861) by @TBonnin
+- *(integrations)* Add support for qualia (#5854) by @hassan254-prog
+
+### Changed
+
+- Product chnagelog update for Playground (#5868) by @sapnesh-nango
+
+### Fixed
+
+- Fix not being able to see some templates (#5705) by @marcindobry
+- *(providers)* Fix salesforce jwt to use authorization_url in connection config (#5846) by @hassan254-prog
+- *(providers)* Update datadog application key regex pattern (#5852) by @hassan254-prog
+- *(cli)* Remove --ai variant from nango init command (#5867) by @rguldener
+
 ## [v0.69.49] - 2026-04-14
 
 ### Added
@@ -6380,6 +6435,9 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
+[v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
+[v0.69.50]: https://github.com/NangoHQ/nango/compare/v0.69.49..v0.69.50
 [v0.69.49]: https://github.com/NangoHQ/nango/compare/v0.69.48..v0.69.49
 [v0.69.48]: https://github.com/NangoHQ/nango/compare/v0.69.47..v0.69.48
 [v0.69.47]: https://github.com/NangoHQ/nango/compare/v0.69.46..v0.69.47

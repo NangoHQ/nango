@@ -83,6 +83,7 @@ export async function exec({
             });
             const sandbox: vm.Context = {
                 // disable console in the sandboxed code
+                constructor: undefined,
                 console: new Proxy(
                     {},
                     {
@@ -113,8 +114,14 @@ export async function exec({
                 URL,
                 URLSearchParams
             };
+            Object.setPrototypeOf(sandbox, null);
 
-            const context = vm.createContext(sandbox);
+            const context = vm.createContext(sandbox, {
+                codeGeneration: {
+                    strings: false,
+                    wasm: false
+                }
+            });
             const scriptExports = script.runInContext(context) as ScriptExports;
 
             const def = scriptExports.default;

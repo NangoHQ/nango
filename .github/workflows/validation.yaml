@@ -72,10 +72,6 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:providers
 
-            - name: Validate Provider Scopes
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run test:providers:scopes
-
             - name: Validate OpenAPI
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:openapi

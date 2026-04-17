@@ -77,6 +77,11 @@ export function setupAuth(app: express.Router) {
                     return;
                 }
 
+                if (!user.email_verified) {
+                    cb(null, false, { code: 'email_not_verified', message: 'Email not verified.' });
+                    return;
+                }
+
                 cb(null, user);
             })
         );
