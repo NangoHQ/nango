@@ -6,7 +6,7 @@ import { useDebounce } from 'react-use';
 import { IntegrationLogo } from '../IntegrationLogo';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Combobox } from '../ui/combobox';
+import { ComboboxSelect } from '../ui/combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
 import { usePlaygroundStore } from '@/store/playground';
@@ -135,7 +135,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
     return (
         <div className="grid grid-cols-[110px_1fr] items-center gap-x-4 gap-y-6">
             <label className="text-text-primary text-label-large">Integration</label>
-            <Combobox
+            <ComboboxSelect
                 value={playgroundIntegration || ''}
                 onValueChange={handleIntegrationChange}
                 placeholder="Pick integration"
@@ -164,7 +164,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
             />
 
             <label className="text-text-primary text-label-large">Connection</label>
-            <Combobox
+            <ComboboxSelect
                 value={playgroundConnection || ''}
                 onValueChange={handleConnectionChange}
                 placeholder="Select connection"
@@ -195,7 +195,7 @@ export const PlaygroundSelectors: React.FC<Props> = ({ env, queryEnv }) => {
             />
 
             <label className="text-text-primary text-label-large">Function</label>
-            <Combobox
+            <ComboboxSelect
                 value={playgroundFunction || ''}
                 onValueChange={handleFunctionChange}
                 placeholder="Select function"

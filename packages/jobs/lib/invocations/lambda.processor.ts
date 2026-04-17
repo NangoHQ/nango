@@ -56,18 +56,30 @@ export class LambdaInvocationsProcessor {
 
         if (parsedMessage.responseContext.functionError === 'Unhandled') {
             const errorMessage = parsedMessage.responsePayload.errorMessage;
+            const errorType = lambdaErrorTypeFromMessage(errorMessage);
             await handle({
                 taskId: parsedMessage.requestPayload.taskId,
                 nangoProps: parsedMessage.requestPayload.nangoProps as unknown as NangoProps,
                 error: {
-                    type: lambdaErrorTypeFromMessage(errorMessage),
+                    type: errorType,
                     payload: { errorMessage },
                     status: parsedMessage.responseContext.statusCode
                 },
-                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0 },
+                telemetryBag: {
+                    customLogs: 0,
+                    proxyCalls: 0,
+                    durationMs: getDurationMsFromErrorType(errorType),
+                    memoryGb: envs.LAMBDA_DEFAULT_MEMORY_MB / 1024
+                },
                 functionRuntime: 'lambda',
                 checkpoints: null
             });
         }
     }
+}
+
+function getDurationMsFromErrorType(errorType: 'function_runtime_out_of_memory' | 'function_runtime_timed_out' | 'function_runtime_other'): number {
+    if (errorType === 'function_runtime_timed_out') return envs.LAMBDA_EXECUTION_TIMEOUT_SECS * 1000;
+    if (errorType === 'function_runtime_out_of_memory') return envs.LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS * 1000;
+    return 0;
 }

@@ -26,7 +26,7 @@ export async function getFleetId({
         case 'lambda':
             // syncs that are not checkpointed are still run on runner fleet
             // making sure that only syncs that can be safely interrupted/resumed are run on lambda fleet
-            if (nangoProps.scriptType === 'sync' && !routingContext.features.includes('checkpoints')) {
+            if (nangoProps.scriptType === 'sync' && routingContext.plan.sync_lambda_checkpoint_required && !routingContext.features.includes('checkpoints')) {
                 return Promise.resolve(Ok(envs.RUNNER_FLEET_ID));
             }
             return Promise.resolve(Ok(envs.RUNNER_LAMBDA_FLEET_ID));

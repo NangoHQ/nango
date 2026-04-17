@@ -179,7 +179,27 @@ export async function create(
     }
 }
 
+// Coalesce concurrent queueSizes queries for the same group keys.
+// When multiple immediate() calls target the same group key concurrently,
+// they share a single DB query instead of each running their own count.
+// The result may be slightly stale but the cap is a safeguard, not a strict limit.
+const inflightQueueSizes = new Map<string, Promise<Result<Map<string, number>>>>();
+
 export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
+    const cacheKey = opts.groupKeys ? JSON.stringify([...opts.groupKeys].sort()) : '*';
+    const inflight = inflightQueueSizes.get(cacheKey);
+    if (inflight) {
+        return inflight;
+    }
+
+    const promise = queueSizesQuery(db, opts).finally(() => {
+        inflightQueueSizes.delete(cacheKey);
+    });
+    inflightQueueSizes.set(cacheKey, promise);
+    return promise;
+}
+
+async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
     try {
         const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
         if (opts.groupKeys && opts.groupKeys.length > 0) {

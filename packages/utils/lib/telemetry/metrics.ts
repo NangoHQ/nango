@@ -92,6 +92,7 @@ export enum Types {
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
+    DEPLOY_SECURITY_SCAN = 'nango.server.deploy.security.scan',
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 

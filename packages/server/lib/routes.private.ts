@@ -21,7 +21,8 @@ import {
     resendVerificationEmailByUuid,
     signin,
     signup,
-    validateEmailAndLogin
+    validateEmailAndLogin,
+    validateSigninRequest
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
@@ -72,6 +73,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
@@ -93,6 +95,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
@@ -141,7 +144,7 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, signup);
     web.route('/account/logout').post(rateLimiterMiddleware, postLogout);
-    web.route('/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
+    web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
     web.route('/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
@@ -184,6 +187,7 @@ web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, can(p.canChangePlan), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
+web.route('/plans/billing/invoicing').put(webAuth, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/change').post(webAuth, can(p.canChangePlan), postPlanChange);
 
 // Environments
