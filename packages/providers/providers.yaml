@@ -12482,14 +12482,14 @@ paligo:
             suffix: .paligoapp.com
             prefix: https://
             order: 1
-            doc_section: '#step-1-finding-your-instance-name'
+            doc_section: '#step-1-find-your-paligo-instance-name'
     credentials:
         username:
             type: string
             title: Username
             description: Your Paligo account username (email address).
             example: name@example.com
-            doc_section: '#step-1-find-your-paligo-username'
+            doc_section: '#step-3-enter-credentials-in-the-connect-ui'
         password:
             type: string
             title: API Key
