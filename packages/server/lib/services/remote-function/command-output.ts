@@ -15,6 +15,11 @@ export function getCommandOutput(error: unknown, fallback: string): string {
     return typeof err['message'] === 'string' && err['message'] ? err['message'] : fallback;
 }
 
+/**
+ * Builds a readable diagnostic from command streams.
+ * This intentionally does not preserve interleaving; it keeps stdout first,
+ * appends stderr, and drops stderr when both streams are identical.
+ */
 export function combineCommandOutput({ stdout, stderr }: { stdout?: string | undefined; stderr?: string | undefined }): string {
     return [stdout, stderr]
         .filter((value): value is string => typeof value === 'string' && value.length > 0)
@@ -27,6 +32,10 @@ export function isCompilationFailureOutput(output: string): boolean {
     return /✗ Typechecking|Found \d+ errors?/i.test(output);
 }
 
+/**
+ * Detects older CLI dryrun failures that can exit 0 after writing an error.
+ * When that happens, return the combined streams so the API can surface it as a dryrun_error.
+ */
 export function getDryrunCommandErrorOutput({ stdout, stderr }: { stdout?: string | undefined; stderr?: string | undefined }): string | undefined {
     const output = combineCommandOutput({ stdout, stderr });
     if (!output) {
@@ -40,6 +49,10 @@ export function getDryrunCommandErrorOutput({ stdout, stderr }: { stdout?: strin
     return undefined;
 }
 
+/**
+ * Returns only stdout for successful dryruns because the CLI prints the action result JSON there.
+ * Successful user warnings may go to stderr, and appending them would corrupt result parsing.
+ */
 export function getDryrunCommandSuccessOutput({ stdout }: { stdout?: string | undefined; stderr?: string | undefined }): string {
     return stdout?.trimEnd() ?? '';
 }
@@ -50,6 +63,10 @@ export interface DryrunSuccessOutput {
     result?: unknown;
 }
 
+/**
+ * Extracts the action return value printed by the CLI after the final Done line.
+ * The remaining execution text is kept separately for callers that still need it.
+ */
 export function parseDryrunSuccessOutput(output: string): DryrunSuccessOutput {
     const executionOutput = stripBeforeFirst(output, /^Executing ->/);
     const lines = splitLines(executionOutput);
