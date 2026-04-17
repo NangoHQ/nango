@@ -107,10 +107,6 @@ export class DryRunService {
     }
 
     public async run(options: RunArgs, debug = false): Promise<string | undefined> {
-        if (!this.returnOutput) {
-            process.exitCode = 1;
-        }
-
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
 

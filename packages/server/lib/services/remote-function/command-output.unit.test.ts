@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { combineCommandOutput, getCommandOutput, isCompilationFailureOutput, parseDeploySuccessOutput, parseDryrunSuccessOutput } from './command-output.js';
+import {
+    combineCommandOutput,
+    getCommandOutput,
+    getDryrunCommandErrorOutput,
+    isCompilationFailureOutput,
+    parseDeploySuccessOutput,
+    parseDryrunSuccessOutput
+} from './command-output.js';
 
 describe('remote function command output helpers', () => {
     it('preserves stdout and stderr when both contain useful diagnostics', () => {
@@ -28,6 +35,25 @@ describe('remote function command output helpers', () => {
     it('detects typecheck failures in command output', () => {
         expect(isCompilationFailureOutput('err - github/actions/foo.ts:4:7\nFound 1 error')).toBe(true);
         expect(isCompilationFailureOutput('✓ Deployed\nSuccessfully deployed the functions')).toBe(false);
+    });
+
+    it('detects dryrun failures when the CLI exits successfully but writes an execution error', () => {
+        expect(
+            getDryrunCommandErrorOutput({
+                stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n',
+                stderr: 'An error occurred during execution\n{"type":"script_internal_error","payload":{"message":"boom"}}\n'
+            })
+        ).toBe(
+            'Executing -> integration:"github" script:"listRepos"\nDone\nAn error occurred during execution\n{"type":"script_internal_error","payload":{"message":"boom"}}'
+        );
+    });
+
+    it('does not treat successful dryrun output as an error', () => {
+        expect(
+            getDryrunCommandErrorOutput({
+                stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}\n'
+            })
+        ).toBeUndefined();
     });
 
     it('parses dryrun action results and removes build output from successful responses', () => {

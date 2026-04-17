@@ -612,29 +612,12 @@ async function handleConfirmation({
     return Ok(true);
 }
 
-export function getFetchError(err: unknown): string {
-    if (err instanceof Error) {
-        return getFetchErrorCause(err.cause) ?? err.message;
-    }
-
-    return 'Unknown error';
-}
-
-function getFetchErrorCause(cause: unknown): string | undefined {
-    if (cause instanceof AggregateError) {
-        const errors = cause.errors.map((error: unknown) => getFetchErrorCause(error)).filter((message): message is string => Boolean(message));
-        return errors.length > 0 ? errors.join('; ') : undefined;
-    }
-
-    if (!cause || typeof cause !== 'object') {
-        return undefined;
-    }
-
-    const maybeCause = cause as Record<string, unknown>;
-    const code = typeof maybeCause['code'] === 'string' ? maybeCause['code'] : undefined;
-    const message = typeof maybeCause['message'] === 'string' ? maybeCause['message'] : undefined;
-
-    return [code, message].filter(Boolean).join(': ') || undefined;
+function getFetchError(err: unknown): string {
+    return err instanceof TypeError && err.cause && err.cause instanceof AggregateError && 'code' in err.cause
+        ? (err.cause.code as string)
+        : err instanceof Error
+          ? err.message
+          : 'Unknown error';
 }
 
 function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { name: string; newItems: any[]; updatedItems: any[]; deleteItems: any[] }): any {

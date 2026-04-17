@@ -27,6 +27,19 @@ export function isCompilationFailureOutput(output: string): boolean {
     return /✗ Typechecking|Found \d+ errors?/i.test(output);
 }
 
+export function getDryrunCommandErrorOutput({ stdout, stderr }: { stdout?: string | undefined; stderr?: string | undefined }): string | undefined {
+    const output = combineCommandOutput({ stdout, stderr });
+    if (!output) {
+        return undefined;
+    }
+
+    if (/An error occurred during execution|Connection not found|No script matched/i.test(output)) {
+        return output;
+    }
+
+    return undefined;
+}
+
 export interface DryrunSuccessOutput {
     output: string;
     hasResult: boolean;
