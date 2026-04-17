@@ -12460,6 +12460,43 @@ pagerduty:
                 - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
+paligo:
+    display_name: Paligo
+    categories:
+        - cms
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.paligoapp.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/groups?page=1&per_page=1
+    docs: https://nango.dev/docs/api-integrations/paligo
+    docs_connect: https://nango.dev/docs/api-integrations/paligo/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Paligo Instance Name
+            description: The name of your Paligo instance
+            example: mycompany
+            suffix: .paligoapp.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-instance-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Paligo account username (email address).
+            example: name@example.com
+            doc_section: '#step-1-find-your-paligo-username'
+        password:
+            type: string
+            title: API Key
+            description: The API key token generated.
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
+
 pandadoc:
     display_name: Pandadoc
     categories:
