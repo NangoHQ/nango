@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.1] - 2026-04-17
+
+### Added
+
+- *(orchestrator)* Add dropped task metric for capped groups (#5865) by @pfreixes
+
+### Fixed
+
+- *(vulns)* Fix vulns (#5888) by @rossmcewan
+
 ## [v0.70.0] - 2026-04-16
 
 ### Added
@@ -6425,6 +6435,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
 [v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
 [v0.69.50]: https://github.com/NangoHQ/nango/compare/v0.69.49..v0.69.50
 [v0.69.49]: https://github.com/NangoHQ/nango/compare/v0.69.48..v0.69.49

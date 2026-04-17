@@ -594,3 +594,14 @@ function getNowDate(replacers: Record<string, any>): Date {
     const isoNow = replacers['now'] as string | undefined;
     return isoNow ? new Date(isoNow) : new Date();
 }
+
+const __dirname = dirname();
+const basePath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] || path.resolve(__dirname, `../nango-integrations`);
+
+export function resolveLocalFileName({ syncName, providerConfigKey }: { syncName: string; providerConfigKey: string }): string {
+    return `${syncName}-${providerConfigKey}.js`;
+}
+
+export function resolveLocalFilePath({ fileName }: { fileName: string }): string {
+    return path.resolve(basePath, fileName);
+}
