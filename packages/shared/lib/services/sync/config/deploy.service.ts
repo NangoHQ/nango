@@ -257,7 +257,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, false);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, 'repo');
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
@@ -369,8 +369,7 @@ async function compileDeployInfo({
         response: {
             idsToMarkAsInactive,
             syncConfig: {
-                is_public: false,
-                pre_built: false,
+                code_source: 'repo',
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,

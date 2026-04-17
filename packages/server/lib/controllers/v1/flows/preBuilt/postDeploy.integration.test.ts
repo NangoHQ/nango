@@ -72,7 +72,7 @@ describe(`POST ${endpoint}`, () => {
             file_location: '_LOCAL_FILE_',
             id: expect.any(Number),
             input: 'SyncMetadata_airtable_tables',
-            is_public: true,
+            code_source: 'nango',
             metadata: {
                 description: expect.any(String),
                 scopes: ['schema.bases:read']
@@ -154,7 +154,6 @@ describe(`POST ${endpoint}`, () => {
                 }
             },
             nango_config_id: integration.id!,
-            pre_built: true,
             runs: 'every day',
             sdk_version: expect.any(String),
             features: expect.any(Array),

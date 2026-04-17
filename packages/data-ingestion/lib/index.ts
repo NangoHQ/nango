@@ -22,7 +22,6 @@ interface RunScriptRow {
     syncId: string;
     syncVariant: string;
     scriptVersion?: string | undefined;
-    preBuilt?: boolean | undefined;
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
@@ -46,7 +45,6 @@ const fields = [
     { name: 'syncId', type: 'STRING' },
     { name: 'syncVariant', type: 'STRING' },
     { name: 'scriptVersion', type: 'STRING' },
-    { name: 'preBuilt', type: 'BOOLEAN' },
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
@@ -161,7 +159,6 @@ class BigQueryClient {
                 status: data.status,
                 syncId: data.syncId,
                 scriptVersion: data.scriptVersion,
-                preBuilt: data.preBuilt,
                 content: data.content,
                 runTimeInSeconds: data.runTimeInSeconds,
                 createdAt: data.createdAt,

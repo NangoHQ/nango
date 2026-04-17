@@ -45,7 +45,7 @@ export async function deployTemplate({
 
     const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
-    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, true);
+    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, 'nango');
     if (exists) {
         return Err(new NangoError('template_already_deployed'));
     }
@@ -113,8 +113,7 @@ export async function deployTemplate({
         auto_start: template.type === 'sync' ? !!template.auto_start : false,
         attributes: {},
         metadata: { description: template.description, scopes: template.scopes },
-        pre_built: true,
-        is_public: true,
+        code_source: 'nango',
         enabled: true,
         webhook_subscriptions: null,
         models_json_schema: template.json_schema,

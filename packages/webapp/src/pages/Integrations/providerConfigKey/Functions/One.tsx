@@ -179,13 +179,13 @@ export const FunctionsOne: React.FC = () => {
                             </KeyValueBadge>
                         )}
                         {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
-                        <KeyValueBadge label="Source">{func.pre_built ? 'template' : 'custom'}</KeyValueBadge>
+                        <KeyValueBadge label="Source">{func.code_source === 'nango' ? 'template' : 'custom'}</KeyValueBadge>
                         {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
                         {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
-                {func.pre_built && (
+                {func.code_source === 'nango' && (
                     <CardSubheader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col gap-1">
