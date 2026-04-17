@@ -327,6 +327,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
                 break;
 
+            case 'deploy_script_security_rejected':
+                this.status = 400;
+                this.message = 'The deployed script was rejected by a security policy.';
+                break;
+
             case 'file_upload_error':
                 this.status = 500;
                 this.message = 'Error uploading file. Please contact support with the filename and connection details';
@@ -517,6 +522,11 @@ export class NangoError extends NangoInternalError {
             case 'webhook_missing_signature':
                 this.status = 401;
                 this.message = 'Missing webhook signature';
+                break;
+
+            case 'webhook_missing_token':
+                this.status = 401;
+                this.message = 'Missing webhook token';
                 break;
 
             case 'webhook_invalid_payload':

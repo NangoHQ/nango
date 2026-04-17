@@ -16,10 +16,13 @@ interface RunScriptRow {
     scriptType: string;
     environmentId: number;
     environmentName: string;
+    provider?: string | undefined;
     providerConfigKey: string;
     status: string;
     syncId: string;
     syncVariant: string;
+    scriptVersion?: string | undefined;
+    preBuilt?: boolean | undefined;
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
@@ -37,10 +40,13 @@ const fields = [
     { name: 'scriptType', type: 'STRING' },
     { name: 'environmentId', type: 'INTEGER' },
     { name: 'environmentName', type: 'STRING' },
+    { name: 'provider', type: 'STRING' },
     { name: 'providerConfigKey', type: 'STRING' },
     { name: 'status', type: 'STRING' },
     { name: 'syncId', type: 'STRING' },
     { name: 'syncVariant', type: 'STRING' },
+    { name: 'scriptVersion', type: 'STRING' },
+    { name: 'preBuilt', type: 'BOOLEAN' },
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
@@ -54,6 +60,7 @@ interface TypeMap {
     STRING: string;
     INTEGER: number;
     FLOAT: number;
+    BOOLEAN: boolean;
 }
 
 type RecordType<T extends readonly { name: string; type: keyof TypeMap }[]> = {
@@ -149,9 +156,12 @@ class BigQueryClient {
                 scriptType: data.scriptType,
                 environmentId: data.environmentId,
                 environmentName: data.environmentName,
+                provider: data.provider,
                 providerConfigKey: data.providerConfigKey,
                 status: data.status,
                 syncId: data.syncId,
+                scriptVersion: data.scriptVersion,
+                preBuilt: data.preBuilt,
                 content: data.content,
                 runTimeInSeconds: data.runTimeInSeconds,
                 createdAt: data.createdAt,

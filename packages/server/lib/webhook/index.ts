@@ -28,4 +28,5 @@ export { default as googleCalendarWebhookRouting } from './google-calendar-webho
 export { default as googleWebhookRouting } from './google-webhook-routing.js';
 export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
 export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
+export { default as streakWebhookRouting } from './streak-webhook-routing.js';
 export type * from './types.js';

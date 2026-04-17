@@ -79,8 +79,23 @@ export async function setupRedis() {
     console.log('Redis running at', url);
 }
 
+export async function setupClickhouse() {
+    console.log('Starting Clickhouse...');
+    const clickhouse = await new GenericContainer('clickhouse/clickhouse-server:26.2')
+        .withExposedPorts(8123)
+        .withName(`clickhouse-test-${randomUUID()}`)
+        .withEnvironment({ CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1', ALLOW_EMPTY_PASSWORD: 'yes' })
+        .withWaitStrategy(Wait.forHttp('/ping', 8123))
+        .start();
+    containers.push(clickhouse);
+
+    const url = `http://${clickhouse.getHost()}:${clickhouse.getMappedPort(8123)}`;
+    process.env['CLICKHOUSE_URL'] = url;
+    console.log('Clickhouse running at', url);
+}
+
 export async function setup() {
-    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ(), setupRedis()]);
+    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ(), setupRedis(), setupClickhouse()]);
 }
 
 export const teardown = async () => {

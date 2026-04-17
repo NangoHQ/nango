@@ -4,6 +4,21 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="April 14, 2026">
+  ## Playground
+
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions/implement-an-action#implement-an-action) and [syncs](/implementation-guides/use-cases/syncs/implement-a-sync#implement-a-sync) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+
+  ![Playground](/images/changelog/playground.gif)
+
+  - ***Enabled* functions only:** The function dropdown shows only functions that are enabled for the selected integration.
+  - **Input validation:** Required fields are validated before execution. Missing inputs are flagged immediately without triggering a run.
+  - **Inline results and errors:** Execution results, timing, and error codes (e.g., invalid credentials) are displayed directly in the panel.
+  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#observability) view for any execution directly from the result.
+  - **Permission-gated:** Playground access in production environments respects your team's [roles](/guides/platform/security#team-and-roles).
+</Update>
+---
+
 <Update label="March 27, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="34 new APIs in March">
@@ -461,7 +476,7 @@ description: "Product updates and improvements."
       - [SAP Fieldglass](/integrations/all/sap-fieldglass)
       - [SAP Business One](/integrations/all/sap-business-one)
       - [Statista](/integrations/all/statista)
-      - [Streak](/integrations/all/streak)
+      - [Streak](/api-integrations/streak)
       - [Teamleader Focus](/integrations/all/teamleader)
       - [Snipe-IT](/integrations/all/snipe-it)
     </Accordion>
@@ -1279,7 +1294,7 @@ description: "Product updates and improvements."
       - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa-staging)
       - [Databricks (Account Level)](/integrations/all/databricks-account)
       - [Databricks (Workspace Level)](/integrations/all/databricks-workspace)
-      - [Datadog](/integrations/all/datadog)
+      - [Datadog](/api-integrations/datadog)
       - [Dialpad (sandbox)](/integrations/all/dialpad)
       - [Dixa](/integrations/all/dixa)
       - [Eleven Labs](/integrations/all/elevenlabs)

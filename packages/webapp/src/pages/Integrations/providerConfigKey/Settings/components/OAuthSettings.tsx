@@ -162,6 +162,8 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                         onChange={handleScopesChange}
                         isSharedCredentials={isSharedCredentials}
                         readOnly={!canEdit}
+                        availableScopes={template.available_scopes}
+                        showAvailableScopesDropdown={true}
                     />
                 </div>
             )}
