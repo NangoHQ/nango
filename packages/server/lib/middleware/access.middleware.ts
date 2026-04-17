@@ -91,6 +91,29 @@ export class AccessMiddleware {
                 return;
             }
 
+            const isScript = req.get('Nango-Is-Script') === 'true';
+
+            if (isScript) {
+                // Runner/script traffic — validate against api_secrets only (no customer_keys lookup).
+                // This prevents customer scope restrictions from breaking runner execution.
+                const accountContext = await accountService.getAccountContextByInternalSecretKey(secret);
+                if (!accountContext) {
+                    errorManager.errRes(res, 'unknown_account');
+                    return;
+                }
+                res.locals['authType'] = 'secretKey';
+                res.locals['account'] = accountContext.account;
+                res.locals['environment'] = accountContext.environment;
+                res.locals['plan'] = accountContext.plan;
+                res.locals['apiKeyScopes'] = ['environment:*'];
+                metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                    auth_source: 'internal_script'
+                });
+                tagTraceUser(accountContext);
+                next();
+                return;
+            }
+
             const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
