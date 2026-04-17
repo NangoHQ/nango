@@ -931,6 +931,7 @@
               "integrations/all/webflow",
               "integrations/all/webex",
               "api-integrations/webinarjam",
+              "api-integrations/wejam",
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
               "integrations/all/wildix-pbx",
