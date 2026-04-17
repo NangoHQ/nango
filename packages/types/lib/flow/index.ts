@@ -18,6 +18,7 @@ export interface NangoSyncConfig {
     endpoints: NangoSyncEndpointV2[];
     is_public?: boolean | null;
     pre_built?: boolean | null;
+    code_source?: 'nango' | 'repo' | null;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
