@@ -58,7 +58,8 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
                 isAsync: false,
                 retryMax: 0,
                 res,
-                span
+                span,
+                includeOperationId: true
             });
 
             const reqHeaders = getHeaders(req.headers);
@@ -77,6 +78,14 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
         });
     } else {
         const syncIdentifiers = normalizeSyncParams([function_name]);
+        const runLogCtx = await logContextGetter.create(
+            { operation: { type: 'sync', action: 'run' } },
+            {
+                account,
+                environment
+            },
+            { start: false }
+        );
 
         const { success, error } = await syncManager.runSyncCommand({
             recordsService,
@@ -87,14 +96,16 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
             command: SyncCommand.RUN,
             logContextGetter,
             connectionId: connection_id,
-            initiator: 'UI'
+            initiator: 'UI',
+            operationLogId: runLogCtx.id
         });
 
         if (!success) {
+            await runLogCtx.failed();
             errorManager.errResFromNangoErr(res, error);
             return;
         }
 
-        res.status(200).send({ success: true });
+        res.status(200).send({ success: true, operationId: runLogCtx.id });
     }
 });

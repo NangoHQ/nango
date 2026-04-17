@@ -154,7 +154,7 @@ export class Scheduler {
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
-    public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
+    public async immediate(props: ImmediateProps | { scheduleName: string; payloadMerge?: Record<string, JsonValue> }): Promise<Result<Task>> {
         return this.db.transaction(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
@@ -180,9 +180,15 @@ export class Scheduler {
                     // TODO: identify this error so we can return something else than a 500
                     return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
                 }
+
+                const mergedPayload =
+                    props.payloadMerge && schedule.payload && typeof schedule.payload === 'object' && !Array.isArray(schedule.payload)
+                        ? { ...(schedule.payload as JsonObject), ...props.payloadMerge }
+                        : schedule.payload;
+
                 taskProps = {
                     name: `${schedule.name}:${uuidv7()}`,
-                    payload: schedule.payload,
+                    payload: mergedPayload,
                     groupKey: schedule.groupKey,
                     groupMaxConcurrency: 0,
                     retryMax: schedule.retryMax,

@@ -14,6 +14,7 @@ interface SyncArgs {
     syncName: string;
     syncVariant: string;
     debug: boolean;
+    operationLogId: string | null;
     connection: ConnectionJobs;
 }
 interface AbortArgs {
@@ -125,6 +126,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         syncName: props.syncName,
         syncVariant: props.syncVariant,
         debug: props.debug,
+        operationLogId: props.operationLogId,
         connection: props.connection,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,
@@ -153,6 +155,7 @@ export function TaskSyncAbort(props: TaskCommonFields & SyncArgs & AbortArgs): T
         syncName: props.syncName,
         syncVariant: props.syncVariant,
         debug: props.debug,
+        operationLogId: props.operationLogId,
         connection: props.connection,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,

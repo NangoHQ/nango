@@ -28,7 +28,8 @@ export async function runAction({
     isAsync,
     retryMax,
     res,
-    span
+    span,
+    includeOperationId = false
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -40,6 +41,7 @@ export async function runAction({
     retryMax: number;
     res: Response;
     span: Span;
+    includeOperationId?: boolean;
 }): Promise<LogContextOrigin | undefined> {
     let logCtx: LogContextOrigin | undefined;
     try {
@@ -98,6 +100,8 @@ export async function runAction({
         if (actionResponse.isOk()) {
             if ('statusUrl' in actionResponse.value) {
                 res.status(202).location(actionResponse.value.statusUrl).json(actionResponse.value);
+            } else if (includeOperationId) {
+                res.status(200).json({ data: actionResponse.value.data, operationId: logCtx.id });
             } else {
                 res.status(200).json(actionResponse.value.data);
             }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
-import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
+import { buildResultData, computeDurationMs, fetchOperation, validateAndParseInputs } from './playground.utils';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
@@ -9,7 +9,6 @@ import { apiFetch } from '@/utils/api';
 import type { InputField } from './types';
 import type { SyncResponse } from '@/types';
 
-const FIND_OP_POLL_INTERVAL_MS = 500;
 const STATUS_POLL_INTERVAL_MS = 1500;
 
 export function usePlayground(inputFields: InputField[]) {
@@ -21,6 +20,7 @@ export function usePlayground(inputFields: InputField[]) {
     const playgroundFunctionType = usePlaygroundStore((s) => s.functionType);
     const inputValues = usePlaygroundStore((s) => s.inputValues);
     const pendingOperationId = usePlaygroundStore((s) => s.pendingOperationId);
+    const running = usePlaygroundStore((s) => s.running);
     const setResult = usePlaygroundStore((s) => s.setResult);
     const setPendingOperationId = usePlaygroundStore((s) => s.setPendingOperationId);
     const setRunning = usePlaygroundStore((s) => s.setRunning);
@@ -67,8 +67,7 @@ export function usePlayground(inputFields: InputField[]) {
         if (!operationData || !pendingOperationId) return;
         const state = operationData.state as string;
         if (state === 'running' || state === 'waiting') {
-            // Still in progress — ensure UI shows running state (handles reattach case)
-            setRunning(true);
+            if (!running) setRunning(true);
             return;
         }
 
@@ -80,7 +79,7 @@ export function usePlayground(inputFields: InputField[]) {
         setPendingOperationId(null);
         setResult({ success, state, data, durationMs, operationId: pendingOperationId });
         setRunning(false);
-    }, [operationData, pendingOperationId, setResult, setPendingOperationId, setRunning]);
+    }, [operationData, pendingOperationId, running, setResult, setPendingOperationId, setRunning]);
 
     // --- handleRun ---
     const handleRun = useCallback(async () => {
@@ -149,42 +148,27 @@ export function usePlayground(inputFields: InputField[]) {
             // For actions, the full output is already in triggerData.
             // Don't block the UI on log discovery.
             if (playgroundFunctionType === 'action') {
+                const actionResponse = triggerData as { data?: unknown; operationId?: string } | null;
                 setPendingOperationId(null);
-                setResult({ success: true, data: triggerData, durationMs: triggerDurationMs });
+                setResult({
+                    success: true,
+                    data: actionResponse?.data ?? triggerData,
+                    durationMs: triggerDurationMs,
+                    operationId: actionResponse?.operationId
+                });
                 setRunning(false);
                 return;
             }
 
-            // Poll until we find the matching operation in logs.
-            const findDeadlineMs = playgroundFunctionType === 'sync' ? 15_000 : 5_000;
-            const findStart = Date.now();
-            let operation = null as Awaited<ReturnType<typeof findOperation>>;
-            while (Date.now() - findStart < findDeadlineMs) {
-                operation = await findOperation(
-                    {
-                        env,
-                        triggerStartTime,
-                        functionType: playgroundFunctionType,
-                        integration: playgroundIntegration,
-                        connection: playgroundConnection,
-                        functionName: playgroundFunction
-                    },
-                    controller.signal
-                );
-                if (operation) break;
-                await sleepWithAbort(FIND_OP_POLL_INTERVAL_MS, controller.signal);
-            }
-
-            if (!operation) {
-                setPendingOperationId(null);
-                setResult({ success: true, state: 'operation_not_found', data: triggerData, durationMs: triggerDurationMs });
-                setRunning(false);
-                return;
-            }
-
-            // Syncs: hand off to useQuery for status polling.
+            // Backend returns the sync run operation id — hand off to useQuery for status polling.
             // running stays true — useQuery's useEffect will set it to false on terminal state.
-            setPendingOperationId(operation.id);
+            const syncData = triggerData as { operationId?: string } | null;
+            if (!syncData?.operationId) {
+                setResult({ success: false, data: { error: 'Sync triggered but no operationId returned' }, durationMs: Date.now() - runStartTime });
+                setRunning(false);
+                return;
+            }
+            setPendingOperationId(syncData.operationId);
         } catch (err: unknown) {
             if (err instanceof Error && err.name === 'AbortError') {
                 setPendingOperationId(null);

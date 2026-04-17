@@ -35,6 +35,7 @@ export const syncArgsSchema = z.object({
     syncName: z.string().min(1),
     syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
     debug: z.boolean(),
+    operationLogId: z.string().nullable().default(null),
     ...commonSchemaArgsFields
 });
 
@@ -43,7 +44,8 @@ export const syncAbortArgsSchema = z
         syncId: z.string().min(1),
         syncName: z.string().min(1),
         syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
-        debug: z.boolean()
+        debug: z.boolean(),
+        operationLogId: z.string().nullable().default(null)
     })
     .merge(abortArgsSchema);
 
@@ -123,6 +125,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncId: sync.data.payload.syncId,
                 syncName: sync.data.payload.syncName,
                 syncVariant: sync.data.payload.syncVariant,
+                operationLogId: sync.data.payload.operationLogId,
                 connection: sync.data.payload.connection,
                 groupKey: sync.data.groupKey,
                 groupMaxConcurrency: sync.data.groupMaxConcurrency,
@@ -146,6 +149,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 syncId: syncAbort.data.payload.syncId,
                 syncName: syncAbort.data.payload.syncName,
                 syncVariant: syncAbort.data.payload.syncVariant,
+                operationLogId: syncAbort.data.payload.operationLogId,
                 connection: syncAbort.data.payload.connection,
                 groupKey: syncAbort.data.groupKey,
                 groupMaxConcurrency: syncAbort.data.groupMaxConcurrency,

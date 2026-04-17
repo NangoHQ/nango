@@ -258,7 +258,8 @@ export class SyncManagerService {
         logContextGetter,
         connectionId,
         initiator,
-        deleteRecords
+        deleteRecords,
+        operationLogId
     }: {
         recordsService: RecordsServiceInterface;
         orchestrator: Orchestrator;
@@ -270,6 +271,7 @@ export class SyncManagerService {
         connectionId?: string | undefined;
         initiator: string;
         deleteRecords?: boolean;
+        operationLogId?: string;
     }): Promise<ServiceResponse<boolean>> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
         if (!provider || !provider.id) {
@@ -325,7 +327,8 @@ export class SyncManagerService {
                     logCtx,
                     recordsService,
                     initiator,
-                    delete_records: deleteRecords
+                    delete_records: deleteRecords,
+                    operationLogId
                 });
             }
         } else {
@@ -359,7 +362,8 @@ export class SyncManagerService {
                     logCtx,
                     recordsService,
                     initiator,
-                    delete_records: deleteRecords
+                    delete_records: deleteRecords,
+                    operationLogId
                 });
             }
         }

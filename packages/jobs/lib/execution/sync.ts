@@ -40,7 +40,7 @@ import { getRunnerFlags } from '../utils/flags.js';
 import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
 
-import type { LogContextOrigin } from '@nangohq/logs';
+import type { LogContext, LogContextOrigin } from '@nangohq/logs';
 import type { TaskSync, TaskSyncAbort } from '@nangohq/nango-orchestrator';
 import type { Config, Job } from '@nangohq/shared';
 import type {
@@ -60,7 +60,7 @@ import type {
 import type { Result } from '@nangohq/utils';
 
 export async function startSync(task: TaskSync, startScriptFn = startScript): Promise<Result<NangoProps>> {
-    let logCtx: LogContextOrigin | undefined;
+    let logCtx: LogContext | LogContextOrigin | undefined;
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
     let syncJob: Job | null = null;
@@ -107,18 +107,36 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
 
         syncType = syncConfig.sync_type?.toLowerCase() === 'incremental' && lastSyncDate ? 'incremental' : 'full';
 
-        logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: 'run' } },
-            {
-                account: team,
-                environment,
-                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
-                connection: { id: task.connection.id, name: task.connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+        if (task.operationLogId) {
+            logCtx = logContextGetter.get({ id: task.operationLogId, accountId: team.id });
+            await logCtx.enrichOperation({
+                environmentId: environment.id,
+                environmentName: environment.name,
+                integrationId: providerConfig.id!,
+                integrationName: providerConfig.unique_key,
+                providerName: providerConfig.provider,
+                connectionId: task.connection.id,
+                connectionName: task.connection.connection_id,
+                syncConfigId: syncConfig.id,
+                syncConfigName: syncConfig.sync_name,
                 meta: { scriptVersion: syncConfig.version }
-            }
-        );
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation, startedAt));
+            });
+            await logCtx.start();
+        } else {
+            const createdLogCtx = await logContextGetter.create(
+                { operation: { type: 'sync', action: 'run' } },
+                {
+                    account: team,
+                    environment,
+                    integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                    connection: { id: task.connection.id, name: task.connection.connection_id },
+                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
+                    meta: { scriptVersion: syncConfig.version }
+                }
+            );
+            createdLogCtx.attachSpan(new OtlpSpan(createdLogCtx.operation, startedAt));
+            logCtx = createdLogCtx;
+        }
 
         syncJob = await createSyncJob({
             sync_id: task.syncId,
@@ -250,7 +268,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncName: syncConfig?.sync_name || 'unknown',
             syncType: syncType,
             syncJobId,
-            activityLogId: logCtx?.id,
+            operationLogId: logCtx?.id,
             debug: task.debug,
             lastSyncDate: lastSyncDate || undefined,
             team: team,
@@ -400,7 +418,7 @@ export async function handleSyncSuccess({
                     syncType,
                     syncJobId: nangoProps.syncJobId,
                     debug: nangoProps.debug,
-                    activityLogId: nangoProps.activityLogId,
+                    operationLogId: nangoProps.activityLogId,
                     models: [model],
                     runTime,
                     syncConfig: nangoProps.syncConfig,
@@ -613,7 +631,7 @@ export async function handleSyncSuccess({
             syncName: nangoProps.syncConfig.sync_name,
             syncType,
             syncJobId: nangoProps.syncJobId!,
-            activityLogId: nangoProps.activityLogId,
+            operationLogId: nangoProps.activityLogId,
             syncConfig: nangoProps.syncConfig,
             debug: nangoProps.debug,
             models: nangoProps.syncConfig.models || [],
@@ -681,7 +699,7 @@ export async function handleSyncError({
         syncName: nangoProps.syncConfig.sync_name,
         syncType: nangoProps.syncConfig.sync_type!,
         syncJobId: nangoProps.syncJobId!,
-        activityLogId: nangoProps.activityLogId,
+        operationLogId: nangoProps.activityLogId,
         lastSyncDate: nangoProps.lastSyncDate,
         debug: nangoProps.debug,
         syncConfig: nangoProps.syncConfig,
@@ -755,7 +773,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             syncType: syncConfig.sync_type!,
             syncName: syncConfig.sync_name,
             syncJobId: syncJob.id,
-            activityLogId: syncJob.log_id!,
+            operationLogId: syncJob.log_id!,
             debug: task.debug,
             team,
             environment,
@@ -795,7 +813,7 @@ async function onFailure({
     syncType,
     syncJobId,
     lastSyncDate,
-    activityLogId,
+    operationLogId,
     debug,
     models,
     syncConfig,
@@ -820,7 +838,7 @@ async function onFailure({
     syncType: SyncTypeLiteral;
     syncJobId: number | undefined;
     lastSyncDate?: Date | undefined;
-    activityLogId?: string | undefined;
+    operationLogId?: string | undefined;
     debug: boolean;
     models: string[];
     runTime: number;
@@ -834,7 +852,7 @@ async function onFailure({
     functionRuntime?: FunctionRuntime | undefined;
     checkpoints?: CheckpointRange | undefined;
 }): Promise<void> {
-    const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
+    const logCtx = operationLogId && team ? logContextGetter.get({ id: operationLogId, accountId: team.id }) : null;
 
     if (team && environment) {
         if (logCtx) {

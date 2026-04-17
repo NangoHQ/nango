@@ -193,6 +193,7 @@ const runJob = async (
         attemptMax: 1,
         state: 'CREATED',
         debug: false,
+        operationLogId: null,
         connection: {
             id: connection.id,
             environment_id: connection.environment_id,

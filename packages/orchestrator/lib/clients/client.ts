@@ -143,16 +143,15 @@ export class OrchestratorClient {
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
+        const body = { scheduleName: props.scheduleName, ...(props.payloadMerge ? { payloadMerge: props.payloadMerge } : {}) };
         const res = await this.routeFetch(postScheduleRunRoute)({
-            body: {
-                scheduleName: props.scheduleName
-            }
+            body
         });
         if ('error' in res) {
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
-                payload: { ...props, response: res.error.payload as any }
+                payload: { ...body, response: res.error.payload as any }
             });
         } else {
             return Ok(undefined);

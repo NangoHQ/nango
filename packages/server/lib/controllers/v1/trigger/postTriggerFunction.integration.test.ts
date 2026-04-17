@@ -139,6 +139,12 @@ describe(`POST ${endpoint}`, () => {
             });
 
             expect(res.res.status).toBe(200);
+            expect(res.json).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    operationId: expect.any(String)
+                })
+            );
             expect(mockRunSyncCommand).toHaveBeenCalledWith(
                 expect.objectContaining({
                     command: 'RUN',
