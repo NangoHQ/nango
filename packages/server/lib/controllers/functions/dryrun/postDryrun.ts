@@ -1,9 +1,10 @@
 import db from '@nangohq/database';
-import { connectionService, getApiUrl, secretService } from '@nangohq/shared';
+import { connectionService, secretService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { invokeDryrun } from '../../../services/remote-function/dryrun-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
+import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDryrunBodySchema } from '../validation.js';
 
@@ -52,7 +53,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             environment_name: environment.name,
             connection_id: body.connection_id,
             nango_secret_key: defaultSecret.value.secret,
-            nango_host: getApiUrl(),
+            nango_host: getRemoteFunctionNangoHost(),
             ...(body.input !== undefined ? { input: body.input } : {}),
             ...(body.metadata ? { metadata: body.metadata } : {}),
             ...(body.checkpoint ? { checkpoint: body.checkpoint } : {}),

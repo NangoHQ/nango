@@ -5,6 +5,7 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 import { isLocal } from '@nangohq/utils';
 
 import { buildDryrunArgs } from './command-builders.js';
+import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
 import {
@@ -68,7 +69,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
             });
         } catch (err) {
             if (err instanceof CommandExitError) {
-                throw new RemoteFunctionError({ code: 'compilation_error', message: err.stderr || err.stdout || 'Compilation failed', status: 400 });
+                throw new RemoteFunctionError({ code: 'compilation_error', message: getCommandOutput(err, 'Compilation failed'), status: 400 });
             }
             if (err instanceof TimeoutError) {
                 throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
@@ -102,7 +103,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
             return { output: result.stdout };
         } catch (err) {
             if (err instanceof CommandExitError) {
-                throw new RemoteFunctionError({ code: 'dryrun_error', message: err.stdout || err.stderr || JSON.stringify(err), status: 400 });
+                throw new RemoteFunctionError({ code: 'dryrun_error', message: getCommandOutput(err, 'Dry run failed'), status: 400 });
             }
             if (err instanceof TimeoutError) {
                 throw new RemoteFunctionError({ code: 'timeout', message: 'Dry run timed out', status: 504 });
@@ -110,6 +111,6 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
             throw err;
         }
     } finally {
-        await sandbox.kill().catch(() => {});
+        await sandbox.kill().catch(() => undefined);
     }
 }

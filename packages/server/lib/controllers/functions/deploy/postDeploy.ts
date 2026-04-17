@@ -1,9 +1,10 @@
 import db from '@nangohq/database';
-import { configService, getApiUrl, getSyncConfigRaw, secretService } from '@nangohq/shared';
+import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
+import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDeployBodySchema } from '../validation.js';
 
@@ -61,7 +62,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             code: body.code,
             environment_name: environment.name,
             nango_secret_key: defaultSecret.value.secret,
-            nango_host: getApiUrl()
+            nango_host: getRemoteFunctionNangoHost()
         });
 
         res.status(200).send({

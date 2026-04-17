@@ -5,6 +5,8 @@ import { remoteFunctionProjectPath } from './runtime.js';
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
 
+const maxRemoteFunctionErrorMessageLength = 20_000;
+
 /**
  * Runtime allow-list for error codes exposed by the remote-function API.
  * normalizeError receives arbitrary Error-like objects, so internal codes
@@ -80,7 +82,7 @@ function sanitizeMessage(message: string): string {
         .replace(/\/[^\s"']+/g, redactAbsolutePath)
         .replace(/__REMOTE_FUNCTION_URL_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
         .replace(/\b[A-Z][A-Z0-9_]{4,}\b/g, (match) => (process.env[match] !== undefined ? '<env>' : match))
-        .slice(0, 500);
+        .slice(0, maxRemoteFunctionErrorMessageLength);
 }
 
 function removeUrlOrigin(value: string): string {
