@@ -5,7 +5,7 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 import { isLocal } from '@nangohq/utils';
 
 import { buildDryrunArgs } from './command-builders.js';
-import { combineCommandOutput, getCommandOutput, getDryrunCommandErrorOutput } from './command-output.js';
+import { getCommandOutput, getDryrunCommandErrorOutput, getDryrunCommandSuccessOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
 import {
@@ -105,7 +105,7 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
                 throw new RemoteFunctionError({ code: 'dryrun_error', message: dryrunErrorOutput, status: 400 });
             }
 
-            return { output: combineCommandOutput({ stdout: result.stdout, stderr: result.stderr }) };
+            return { output: getDryrunCommandSuccessOutput({ stdout: result.stdout, stderr: result.stderr }) };
         } catch (err) {
             if (err instanceof CommandExitError) {
                 throw new RemoteFunctionError({ code: 'dryrun_error', message: getCommandOutput(err, 'Dry run failed'), status: 400 });

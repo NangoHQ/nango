@@ -4,6 +4,7 @@ import {
     combineCommandOutput,
     getCommandOutput,
     getDryrunCommandErrorOutput,
+    getDryrunCommandSuccessOutput,
     isCompilationFailureOutput,
     parseDeploySuccessOutput,
     parseDryrunSuccessOutput
@@ -54,6 +55,19 @@ describe('remote function command output helpers', () => {
                 stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}\n'
             })
         ).toBeUndefined();
+    });
+
+    it('uses stdout only for successful dryrun result parsing', () => {
+        const output = getDryrunCommandSuccessOutput({
+            stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}\n',
+            stderr: 'warn: this should not be appended after JSON\n'
+        });
+
+        expect(parseDryrunSuccessOutput(output)).toStrictEqual({
+            output: 'Executing -> integration:"github" script:"listRepos"\nDone',
+            hasResult: true,
+            result: { ok: true }
+        });
     });
 
     it('parses dryrun action results and removes build output from successful responses', () => {

@@ -40,6 +40,10 @@ export function getDryrunCommandErrorOutput({ stdout, stderr }: { stdout?: strin
     return undefined;
 }
 
+export function getDryrunCommandSuccessOutput({ stdout }: { stdout?: string | undefined; stderr?: string | undefined }): string {
+    return stdout?.trimEnd() ?? '';
+}
+
 export interface DryrunSuccessOutput {
     output: string;
     hasResult: boolean;
