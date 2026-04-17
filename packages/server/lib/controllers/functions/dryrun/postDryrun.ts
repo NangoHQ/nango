@@ -62,7 +62,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         });
 
         const durationMs = Date.now() - startedAt.getTime();
-        const output = parseDryrunSuccessOutput(result.output);
+        const dryrunOutput = parseDryrunSuccessOutput(result.output);
 
         res.status(200).send({
             integration_id: body.integration_id,
@@ -70,8 +70,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             function_type: body.function_type,
             execution_timeout_at: new Date(startedAt.getTime() + 5 * 60 * 1000).toISOString(),
             duration_ms: durationMs,
-            ...(output.hasResult ? { result: output.result } : {}),
-            output: output.output
+            ...(dryrunOutput.hasResult ? { result: dryrunOutput.result } : {})
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });

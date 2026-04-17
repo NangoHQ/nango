@@ -68,7 +68,6 @@ export type PostRemoteFunctionDryrun = Endpoint<{
         execution_timeout_at: string;
         duration_ms: number;
         result?: unknown;
-        output: string;
     };
 }>;
 
