@@ -862,6 +862,7 @@
               "integrations/all/stackexchange",
               "integrations/all/statista",
               "api-integrations/stay-ai",
+              "api-integrations/stitch-mcp",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",
