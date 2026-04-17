@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { connectionService, secretService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDryrun } from '../../../services/remote-function/dryrun-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
@@ -61,6 +62,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         });
 
         const durationMs = Date.now() - startedAt.getTime();
+        const output = parseDryrunSuccessOutput(result.output);
 
         res.status(200).send({
             integration_id: body.integration_id,
@@ -68,7 +70,8 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             function_type: body.function_type,
             execution_timeout_at: new Date(startedAt.getTime() + 5 * 60 * 1000).toISOString(),
             duration_ms: durationMs,
-            output: result.output
+            ...(output.hasResult ? { result: output.result } : {}),
+            output: output.output
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });

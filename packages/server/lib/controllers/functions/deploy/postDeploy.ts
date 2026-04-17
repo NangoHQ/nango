@@ -2,6 +2,7 @@ import db from '@nangohq/database';
 import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
@@ -64,12 +65,15 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             nango_secret_key: defaultSecret.value.secret,
             nango_host: getRemoteFunctionNangoHost()
         });
+        const output = parseDeploySuccessOutput(result.output);
 
         res.status(200).send({
             integration_id: body.integration_id,
             function_name: body.function_name,
             function_type: body.function_type,
-            output: result.output
+            deployed: output.deployed,
+            deployed_functions: output.deployedFunctions,
+            output: output.output
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });

@@ -79,7 +79,7 @@ function sanitizeMessage(message: string): string {
     });
 
     return messageWithUrlPlaceholders
-        .replace(/\/[^\s"']+/g, redactAbsolutePath)
+        .replace(/(^|[\s"'(])(\/[^\s"')]+)/g, (_, prefix: string, absolutePath: string) => `${prefix}${redactAbsolutePath(absolutePath)}`)
         .replace(/__REMOTE_FUNCTION_URL_(\d+)__/g, (_, index: string) => urlReplacements[Number(index)] ?? '<url>')
         .replace(/\b[A-Z][A-Z0-9_]{4,}\b/g, (match) => (process.env[match] !== undefined ? '<env>' : match))
         .slice(0, maxRemoteFunctionErrorMessageLength);

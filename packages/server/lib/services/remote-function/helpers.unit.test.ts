@@ -61,6 +61,22 @@ describe('remote function helpers', () => {
         });
     });
 
+    it('preserves relative compiler diagnostics with line and column numbers', () => {
+        const { res, send } = mockResponse();
+
+        sendStepError({
+            res,
+            error: new Error("err - github/actions/foo.ts:4:7 \n  Type 'string' is not assignable to type 'number'.")
+        });
+
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'server_error',
+                message: "err - github/actions/foo.ts:4:7 \n  Type 'string' is not assignable to type 'number'."
+            }
+        });
+    });
+
     it('keeps long compiler diagnostics in the response message', () => {
         const { res, status, send } = mockResponse();
         const message = `Found errors\n${'x'.repeat(1000)}`;

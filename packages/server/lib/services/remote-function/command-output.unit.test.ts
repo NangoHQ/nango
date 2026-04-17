@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { combineCommandOutput, getCommandOutput } from './command-output.js';
+import { combineCommandOutput, getCommandOutput, isCompilationFailureOutput, parseDeploySuccessOutput, parseDryrunSuccessOutput } from './command-output.js';
 
 describe('remote function command output helpers', () => {
     it('preserves stdout and stderr when both contain useful diagnostics', () => {
@@ -23,5 +23,65 @@ describe('remote function command output helpers', () => {
 
     it('falls back to the error message when streams are empty', () => {
         expect(getCommandOutput({ message: 'command failed' }, 'fallback')).toBe('command failed');
+    });
+
+    it('detects typecheck failures in command output', () => {
+        expect(isCompilationFailureOutput('err - github/actions/foo.ts:4:7\nFound 1 error')).toBe(true);
+        expect(isCompilationFailureOutput('✓ Deployed\nSuccessfully deployed the functions')).toBe(false);
+    });
+
+    it('parses dryrun action results and removes build output from successful responses', () => {
+        const output = parseDryrunSuccessOutput(`✓ Typechecking
+  Building 1 file(s) - ./github/actions/listRepos.js
+✓ Compiled
+Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default.
+Executing -> integration:"github" script:"listRepos"
+Done
+{
+  "ok": true,
+  "source": "test"
+}
+`);
+
+        expect(output).toStrictEqual({
+            output: 'Executing -> integration:"github" script:"listRepos"\nDone',
+            hasResult: true,
+            result: { ok: true, source: 'test' }
+        });
+    });
+
+    it('keeps dryrun execution output when there is no parseable result', () => {
+        const output = parseDryrunSuccessOutput(`✓ Typechecking
+✓ Compiled
+Executing -> integration:"github" script:"listRepos"
+Done
+not json
+`);
+
+        expect(output).toStrictEqual({
+            output: 'Executing -> integration:"github" script:"listRepos"\nDone\nnot json',
+            hasResult: false
+        });
+    });
+
+    it('parses deploy success details and removes build output from successful responses', () => {
+        const output = parseDeploySuccessOutput(`✓ Typechecking
+✓ Compiled
+✓ Packaging
+✓ Acquiring remote state (https://api-staging.nango.dev)
+✓ Deployed
+Successfully deployed the functions:
+- listRepos@v2.0.0
+`);
+
+        expect(output).toStrictEqual({
+            output: `✓ Packaging
+✓ Acquiring remote state (https://api-staging.nango.dev)
+✓ Deployed
+Successfully deployed the functions:
+- listRepos@v2.0.0`,
+            deployed: true,
+            deployedFunctions: [{ name: 'listRepos', version: 'v2.0.0' }]
+        });
     });
 });
