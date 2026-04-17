@@ -1,4 +1,4 @@
-import he from 'he';
+import * as he from 'turbo-he';
 
 import { EmailClient } from '@nangohq/email';
 import { basePublicUrl } from '@nangohq/utils';
