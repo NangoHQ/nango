@@ -10127,6 +10127,24 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+lokalise:
+    display_name: Lokalise
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.lokalise.com/oauth2/auth
+    token_url: https://app.lokalise.com/oauth2/token
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    proxy:
+        base_url: https://api.lokalise.com/api2
+    docs: https://nango.dev/docs/api-integrations/lokalise
+    setup_guide_url: https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app
+
 loom-scim:
     display_name: Loom (SCIM)
     categories:
