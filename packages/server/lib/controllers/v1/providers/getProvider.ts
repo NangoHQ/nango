@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { getProviderScopes } from '@nangohq/providers';
 import { getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -43,7 +44,14 @@ export const getProviderItem = asyncWrapper<GetProvider>(async (req, res) => {
         const isPreConfigured = preConfiguredInfo ? preConfiguredInfo.preConfigured : false;
         const preConfiguredScopes = preConfiguredInfo ? preConfiguredInfo.scopes : [];
 
-        const providerListItem = providerListItemToAPI(params.providerConfigKey, provider, isPreConfigured, preConfiguredScopes);
+        const allScopes = getProviderScopes();
+        const providerListItem = providerListItemToAPI(
+            params.providerConfigKey,
+            provider,
+            isPreConfigured,
+            preConfiguredScopes,
+            allScopes?.[params.providerConfigKey]
+        );
         res.status(200).send({ data: providerListItem });
     } catch (err) {
         report(err);

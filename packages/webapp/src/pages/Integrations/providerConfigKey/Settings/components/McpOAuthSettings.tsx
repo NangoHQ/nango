@@ -93,8 +93,8 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                 )}
             </div>
 
-            {/* Client Secret (only when user provides credentials) */}
-            {useUserCredentials && (
+            {/* Client Secret */}
+            {useUserCredentials ? (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="client_secret">Client Secret</Label>
                     <EditableInput
@@ -105,7 +105,17 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                         placeholder="Enter your OAuth Client Secret"
                     />
                 </div>
-            )}
+            ) : integration.oauth_client_secret ? (
+                <div className="flex flex-col gap-2">
+                    <Label htmlFor="client_secret">Client Secret</Label>
+                    <InputGroup>
+                        <InputGroupInput disabled readOnly type="password" value={integration.oauth_client_secret} />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton text={integration.oauth_client_secret} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                </div>
+            ) : null}
 
             {/* Scopes */}
             <div className="flex flex-col gap-2">

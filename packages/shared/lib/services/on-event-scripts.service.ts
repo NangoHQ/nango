@@ -3,6 +3,7 @@ import { env } from '@nangohq/utils';
 
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
+import { resolveLocalFileName } from '../utils/utils.js';
 import { increment } from './sync/config/config.service.js';
 
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
@@ -107,7 +108,7 @@ export const onEventScriptService = {
                     const file_location = await remoteFileService.upload({
                         content: fileBody.js,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
-                        destinationLocalPath: `${name}-${providerConfigKey}.js`
+                        destinationLocalFileName: resolveLocalFileName({ syncName: name, providerConfigKey })
                     });
 
                     if (!file_location) {
@@ -117,7 +118,7 @@ export const onEventScriptService = {
                     await remoteFileService.upload({
                         content: fileBody.ts,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
-                        destinationLocalPath: `${providerConfigKey}/on-events/${name}.ts`
+                        destinationLocalFileName: `${providerConfigKey}/on-events/${name}.ts`
                     });
 
                     onEventInserts.push({

@@ -226,10 +226,17 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'has_otel':
             case 'has_webhooks_script':
             case 'has_webhooks_forward':
+            case 'has_rbac':
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
-            case 'can_customize_connect_ui_theme': {
+            case 'can_customize_connect_ui_theme':
+            case 'remote_functions': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
+                break;
+            }
+            // BOOLEAN FLAGS - keep override if different
+            case 'sync_lambda_checkpoint_required': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
             // NUMBER FLAGS - keep override if higher, null means unlimited

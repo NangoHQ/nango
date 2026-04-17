@@ -1,0 +1,94 @@
+---
+title: 'Supabase (MCP OAuth)'
+sidebarTitle: 'Supabase (MCP OAuth)'
+description: 'Connect your application to the Supabase MCP server using OAuth'
+---
+
+## 🚀 Quickstart
+
+Connect to the Supabase MCP server with Nango via OAuth. Nango automatically registers an OAuth client on your behalf — no manual credential setup required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) → _Configure New Integration_ → _Supabase (MCP OAuth)_.
+
+    Nango will automatically register an OAuth client with Supabase using [dynamic client registration](https://datatracker.ietf.org/doc/html/rfc7591). Your **Client ID** and **Client Secret** will appear in the integration settings once created.
+    </Step>
+    <Step title="Authorize Supabase">
+    Go to [Connections](https://app.nango.dev/dev/connections) → _Add Test Connection_ → _Authorize_, then log in to your Supabase account and grant access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Supabase MCP server">
+    Make your first MCP request (e.g. list tools). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections).
+
+    For `<PROJECT-REF>`, use the project reference you entered when creating the connection. You can find it on the [connection details page](https://app.nango.dev/dev/connections) under **Connection Config → projectRef**.
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/mcp?project_ref=<PROJECT-REF>" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/list",
+                "params": {}
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/mcp?project_ref=<PROJECT-REF>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/list',
+                params: {}
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Supabase (MCP OAuth) guides
+
+Nango-maintained guides for common use cases.
+
+- [Connect Supabase (MCP OAuth)](/api-integrations/supabase-mcp-oauth/connect) — Find your project reference and authorize via Supabase OAuth.
+
+Official docs: [Supabase MCP documentation](https://supabase.com/docs/guides/getting-started/mcp)
+
+## 🧩 Pre-built syncs & actions for Supabase (MCP OAuth)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/supabase-mcp-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

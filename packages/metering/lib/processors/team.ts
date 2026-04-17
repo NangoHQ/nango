@@ -1,4 +1,4 @@
-import { billing, getStripe } from '@nangohq/billing';
+import { getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { accountService, getPlan } from '@nangohq/shared';
@@ -58,13 +58,6 @@ async function process(event: TeamUpdatedEvent): Promise<Result<void>> {
                     }
                 }
 
-                if (plan.orb_customer_id) {
-                    try {
-                        await billing.updateCustomer(plan.orb_customer_id, team.name);
-                    } catch (err) {
-                        report(new Error('Failed to update customer name in orb', { cause: err }), { accountId: team.id });
-                    }
-                }
                 return Ok(undefined);
             }
 

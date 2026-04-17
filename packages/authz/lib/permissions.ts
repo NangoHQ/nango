@@ -28,5 +28,8 @@ export const permissions = {
 
     // production secrets/credentials
     canReadProdSecretKey: { action: 'read', resource: 'secret_key', scope: 'production' },
-    canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', scope: 'production' }
+    canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', scope: 'production' },
+
+    // playground (reuses sync_command permission — whoever can trigger syncs can use the playground)
+    canUseProdPlayground: { action: 'update', resource: 'sync_command', scope: 'production' }
 } as const satisfies Record<string, Permission>;

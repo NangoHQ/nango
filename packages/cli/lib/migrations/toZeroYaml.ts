@@ -1083,7 +1083,7 @@ async function processHelperFiles({ fullPath, parsed, spinnerFactory }: { fullPa
         }
     }
 
-    const ignored = ['/models.ts', '/.nango/schema.ts'];
+    const ignored = ['/models.ts'];
 
     // Filter out integration files from the glob list since they were already processed
     for (const absPath of files) {

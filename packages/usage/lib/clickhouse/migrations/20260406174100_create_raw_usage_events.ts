@@ -1,6 +1,6 @@
 export const sql = [
     `
-    CREATE TABLE IF NOT EXISTS usage.raw_events
+    CREATE TABLE IF NOT EXISTS {database:Identifier}.raw_events
     (
         ts               DateTime64(3),
         idempotency_key  String,

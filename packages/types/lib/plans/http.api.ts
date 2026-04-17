@@ -1,4 +1,4 @@
-import type { ApiBillingUsageMetrics, BillingCustomer } from '../billing/types.js';
+import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
@@ -68,6 +68,16 @@ export type GetBillingUsage = Endpoint<{
             customer: BillingCustomer;
             usage: ApiBillingUsageMetrics;
         };
+    };
+}>;
+
+export type PutBillingInvoicingDetails = Endpoint<{
+    Method: 'PUT';
+    Path: '/api/v1/plans/billing/invoicing';
+    Querystring: { env: string };
+    Body: BillingInvoicingDetails;
+    Success: {
+        data: BillingCustomer;
     };
 }>;
 

@@ -1954,24 +1954,26 @@ aws:
     connection_config:
         subdomain:
             type: string
-            title: AWS Domain
-            description: The subdomain of your AWS account
+            title: Cognito Domain Prefix
+            description: The prefix of your Cognito User Pool domain.
             pattern: '^[a-z0-9_-]+$'
-            example: domain
-            suffix: .amazoncognito.com
+            example: my-app-pool
             prefix: https://
+            suffix: .auth
         extension:
             type: string
-            title: Domain Extension
-            description: The domain extension of your AWS account
-            example: com
-            pattern: '^[a-z.]+$'
+            title: Cognito Region
+            description: The AWS region where your Cognito User Pool is hosted.
+            example: eu-north-1
+            pattern: '^[a-z0-9-]+$'
+            prefix: auth.
+            suffix: .amazoncognito.com
         apiSubdomain:
             type: string
-            title: API Subdomain
-            description: The API subdomain to the API you want to connect to
-            example: idp.us-east-2
-            pattern: '^[a-z.-]+$'
+            title: Cognito API Subdomain
+            description: The Cognito API subdomain.
+            example: idp.eu-north-1
+            pattern: '^[a-z0-9.-]+$'
             suffix: .amazonaws.com
             prefix: https://cognito-
 
@@ -2388,6 +2390,25 @@ bill:
     proxy:
         base_url: https://gateway.prod.bill.com/connect
     docs: https://nango.dev/docs/integrations/all/bill
+
+bing-webmasters:
+    display_name: Bing Webmasters
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://www.bing.com/webmasters/oauth/authorize
+    token_url: https://www.bing.com/webmasters/oauth/token
+    refresh_url: https://www.bing.com/webmasters/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_token_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.bing.com/webmaster/api.svc/json
+    docs: https://nango.dev/docs/api-integrations/bing-webmasters
+    setup_guide_url: https://nango.dev/docs/api-integrations/bing-webmasters/how-to-register-your-own-bing-webmasters-api-oauth-app
 
 bitbucket:
     display_name: Bitbucket
@@ -3045,8 +3066,10 @@ cal-com-v2:
                 content-type: application/json
             endpoints:
                 - /me
-    docs: https://nango.dev/docs/integrations/all/cal-com-v2
-    docs_connect: https://nango.dev/docs/integrations/all/cal-com-v2/connect
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
+    docs: https://nango.dev/docs/api-integrations/cal-com-v2
+    docs_connect: https://nango.dev/docs/api-integrations/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
@@ -4772,28 +4795,29 @@ datadog:
         retry:
             after:
                 - 'x-ratelimit-reset'
-    docs: https://nango.dev/docs/integrations/all/datadog
-    docs_connect: https://nango.dev/docs/integrations/all/datadog/connect
+    docs: https://nango.dev/docs/api-integrations/datadog
+    docs_connect: https://nango.dev/docs/api-integrations/datadog/connect
     connection_config:
         siteParameter:
             type: string
             title: Site Parameter
-            description: The site parameter to datadog
+            description: The site parameter to datadog.
             pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
             example: 'us5.datadoghq.com'
+            order: 1
             doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
             type: string
             title: Application Key
-            description: The application key required for read data access
-            pattern: '^[a-f0-9]{40}$'
+            description: The application key required for read data access.
+            pattern: '^[A-Za-z0-9_]+$'
             example: '5d8a7b3f2dc8bce1b234e7f1a1ac54728dbf9e4a7'
             doc_section: '#step-3-datadog-application-key'
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Datadog account
+            description: The API key for your Datadog account.
             pattern: '^[a-f0-9]{32}$'
             example: '4f3c12efb9659a0b5c123b568745dbf9'
             doc_section: '#step-2-datadog-api-key'
@@ -5424,6 +5448,43 @@ drata:
             type: string
             title: API Key
             description: Your Drata API key
+
+cisco-duo-admin:
+    display_name: Cisco Duo Admin API
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            date: '${now:ddd, DD MMM YYYY HH:mm:ss ZZ}'
+            authorization: "Basic ${base64(${credentials.username}:${hmacSha1Hex(${now:ddd, DD MMM YYYY HH:mm:ss ZZ}\n${method}\n${connectionConfig.hostname}\n${path}\n${params}, ${credentials.password})})}"
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/cisco-duo-admin
+    docs_connect: https://nango.dev/docs/api-integrations/cisco-duo-admin/connect
+    connection_config:
+        hostname:
+            type: string
+            title: API Hostname
+            description: Your Duo API hostname.
+            example: api-xxxxxxxx.duosecurity.com
+            pattern: 'api-[a-z0-9]+\.duosecurity\.com'
+            order: 1
+    credentials:
+        username:
+            type: string
+            title: Integration Key
+            description: Your Duo application's integration key.
+            example: DIWJ8X6**********TQ1
+            pattern: 'DI[A-Z0-9]{18}'
+        password:
+            type: string
+            title: Secret Key
+            description: Your Duo application's secret key.
+            example: Zh5eGm**************************zLJ4Ep
+            pattern: '[A-Za-z0-9]{40}'
 
 contactout:
     display_name: ContactOut
@@ -10172,7 +10233,7 @@ looker:
             prefix: https://
             example: mycompany.looker.com
             order: 1
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
             doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
@@ -10186,6 +10247,47 @@ looker:
             description: Your Looker Client Secret
             secret: true
             doc_section: '#step-2-obtaining-your-client-credentials'
+
+looker-oauth:
+    display_name: Looker (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/auth
+    token_url: https://${connectionConfig.apiHostname}/api/token
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - cors_api
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiHostname}/api
+    docs: https://nango.dev/docs/api-integrations/looker-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/looker-oauth/how-to-register-your-own-looker-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/looker-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Looker UI Hostname
+            description: Your Looker instance UI hostname.
+            format: hostname
+            prefix: https://
+            example: mycompany.looker.com
+            order: 1
+            doc_section: '#step-1-finding-your-looker-ui-hostname'
+        apiHostname:
+            type: string
+            title: Looker API Hostname
+            description: Your Looker API hostname including port.
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            example: mycompany.looker.com:19999
+            order: 2
+            doc_section: '#step-2-finding-your-looker-api-hostname'
 
 lucid-scim:
     display_name: Lucid (SCIM)
@@ -10291,6 +10393,60 @@ listmonk:
             title: Token
             description: The token to your Listmonk account
             secret: true
+
+listrak:
+    display_name: Listrak
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://auth.listrak.com/oauth2/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.listrak.com/email
+    docs: https://nango.dev/docs/api-integrations/listrak
+    docs_connect: https://nango.dev/docs/api-integrations/listrak/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Listrak API Client ID
+            doc_section: '#step-1-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Listrak API Client Secret
+            secret: true
+            doc_section: '#step-1-create-api-credentials'
+
+lob:
+    display_name: Lob
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.lob.com
+        verification:
+            method: GET
+            endpoints:
+                - /v1/addresses
+    docs: https://nango.dev/docs/api-integrations/lob
+    docs_connect: https://nango.dev/docs/api-integrations/lob/connect
+    credentials:
+        username:
+            type: string
+            title: Secret API Key
+            description: Your Lob Secret API Key.
+            secret: true
+            example: 'test_0dc8d***************************5b0cc'
+            pattern: '^(test|live)_[a-f0-9]{35}$'
+            doc_section: '#step-1-getting-your-secret-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 make:
     display_name: Make
@@ -12347,6 +12503,43 @@ pagerduty:
                 - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
+paligo:
+    display_name: Paligo
+    categories:
+        - cms
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.paligoapp.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/groups?page=1&per_page=1
+    docs: https://nango.dev/docs/api-integrations/paligo
+    docs_connect: https://nango.dev/docs/api-integrations/paligo/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Paligo Instance Name
+            description: The name of your Paligo instance
+            example: mycompany
+            suffix: .paligoapp.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-paligo-instance-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Paligo account username (email address).
+            example: name@example.com
+            doc_section: '#step-3-enter-credentials-in-the-connect-ui'
+        password:
+            type: string
+            title: API Key
+            description: The API key token generated.
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
+
 pandadoc:
     display_name: Pandadoc
     categories:
@@ -13747,6 +13940,37 @@ quickbase:
             example: bb_aa_xxxxxx_xxxxxxxxxxxxxxxxx
             doc_section: '#step-2-finding-your-user-token'
 
+qualia:
+    display_name: Qualia
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.qualia.io/api
+    docs: https://nango.dev/docs/api-integrations/qualia
+    docs_connect: https://nango.dev/docs/api-integrations/qualia/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of the Qualia platform you want to connect to.
+            pattern: '^[a-z0-9-]+$'
+            example: connect
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Qualia organization username.
+            doc_section: '#step-2-finding-your-api-key'
+        password:
+            type: string
+            title: Password
+            description: Your Qualia API password.
+            secret: true
+            doc_section: '#step-2-finding-your-api-key'
+
 quickbooks:
     display_name: Quickbooks
     categories:
@@ -14371,6 +14595,26 @@ ring-central-sandbox:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/ring-central-sandbox
 
+ringover:
+    display_name: Ringover
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.ringover.com
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/ringover
+    docs_connect: https://nango.dev/docs/api-integrations/ringover/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ringover API key.
+            example: 'a3f9e2***************************d8e9f0'
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-generating-your-api-key'
+
 rippling:
     display_name: Rippling
     categories:
@@ -14801,9 +15045,9 @@ salesforce-jwt:
             typ: JWT
         payload:
             iss: ${credentials.clientId}
-            aud: https://${credentials.authorizationUrl}
+            aud: https://${connectionConfig.authorizationUrl}
             sub: ${credentials.username}
-    token_url: https://login.salesforce.com/services/oauth2/token
+    token_url: https://${connectionConfig.authorizationUrl}/services/oauth2/token
     token_params:
         grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
         assertion: ${token}
@@ -14816,6 +15060,14 @@ salesforce-jwt:
     token_expires_in_ms: 0
     docs: https://nango.dev/docs/api-integrations/salesforce-jwt
     docs_connect: https://nango.dev/docs/api-integrations/salesforce-jwt/connect
+    connection_config:
+        authorizationUrl:
+            type: string
+            title: Authorization Server URL
+            description: Your Salesforce authorization server URL.
+            format: hostname
+            example: 'login.salesforce.com'
+            doc_section: '#step-5-finding-the-authorization-server-url'
     credentials:
         clientId:
             type: string
@@ -14843,13 +15095,6 @@ salesforce-jwt:
             description: The private key that matches the certificate you uploaded to the Connected App.
             example: '-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n-----END PRIVATE KEY-----'
             doc_section: '#step-1-create-a-private-key-and-self-signed-digital-certificate'
-        authorizationUrl:
-            type: string
-            title: Authorization Server URL
-            description: Your Salesforce authorization server URL.
-            format: hostname
-            example: 'login.salesforce.com'
-            doc_section: '#step-5-finding-the-authorization-server-url'
 
 salesforce-sandbox:
     display_name: Salesforce (Sandbox)
@@ -15991,6 +16236,44 @@ shopify:
             prefix: https://
             doc_section: '#step-1-finding-your-shopify-domain'
 
+shopify-cc:
+    display_name: Shopify (Client Credentials)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            x-shopify-access-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/shopify-cc
+    docs_connect: https://nango.dev/docs/api-integrations/shopify-cc/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Shopify Store Domain
+            description: The subdomain of the Shopify store the app is installed in.
+            pattern: '^[a-z0-9_-]+$'
+            example: my-store
+            suffix: .myshopify.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-shopify-store-domain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Client ID for your Shopify app.
+            doc_section: '#step-1-generating-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The Client Secret for your Shopify app.
+            secret: true
+            doc_section: '#step-1-generating-your-client-credentials'
+
 shopify-api-key:
     display_name: Shopify (API Key)
     categories:
@@ -16607,6 +16890,26 @@ statista:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+stay-ai:
+    display_name: Stay AI
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.retextion.com/api
+        headers:
+            x-retextion-access-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/stay-ai
+    docs_connect: https://nango.dev/docs/api-integrations/stay-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stay AI API key.
+            example: 7k9***f-***da3e-***hjtb-***22cy
+            pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
+            doc_section: '#step-1-create-a-new-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -16661,8 +16964,9 @@ streak:
             headers:
                 content-type: application/json
                 accept: application/json
-    docs: https://nango.dev/docs/integrations/all/streak
-    docs_connect: https://nango.dev/docs/integrations/all/streak/connect
+    webhook_routing_script: streakWebhookRouting
+    docs: https://nango.dev/docs/api-integrations/streak
+    docs_connect: https://nango.dev/docs/api-integrations/streak/connect
     credentials:
         username:
             type: string
@@ -16848,6 +17152,39 @@ supabase-mcp:
             example: sbp_*******************************23d
             pattern: '^sbp_[A-Za-z0-9]{40}$'
             doc_section: '#step-2-obtaining-your-personal-access-token'
+
+supabase-mcp-oauth:
+    display_name: Supabase (MCP OAuth)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    registration_url: https://api.supabase.com/platform/oauth/apps/register
+    authorization_url: https://api.supabase.com/v1/oauth/authorize
+    token_url: https://api.supabase.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            accept: application/json,text/event-stream
+        connection_config:
+            projectRef: ${connectionConfig.projectRef}
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project Reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
 
 survey-monkey:
     display_name: SurveyMonkey
