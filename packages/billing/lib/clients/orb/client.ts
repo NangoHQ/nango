@@ -279,18 +279,16 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; paymentExternalId?: string; amountCollected?: string }): Promise<Result<BillingSubscription>> {
+    async applyPendingChanges(opts: { pendingChangeId: string; amountCollected: string; paymentExternalId: string }): Promise<Result<BillingSubscription>> {
         try {
-            // We apply the pending change and mark invoices as paid directly.
-            // Using mark_as_paid instead of previously_collected_amount avoids
-            // creating a customer balance credit, which would cause invoices to
-            // net to zero (full amount charged + full amount discounted).
             const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
                 description: 'Initial payment on subscription',
                 mark_as_paid: true,
-                payment_external_id: opts.paymentExternalId ?? null,
-                payment_notes: opts.amountCollected ? `Stripe collected: $${opts.amountCollected}` : null
+                previously_collected_amount: opts.amountCollected,
+                payment_external_id: opts.paymentExternalId,
+                payment_notes: `Stripe collected: $${opts.amountCollected}`
             });
+
             if (!res.subscription) {
                 return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
             }
