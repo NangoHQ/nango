@@ -88,13 +88,13 @@ export function connectionFullToPublicApi({
     provider,
     activeLog,
     endUser,
-    includeCredentials = true
+    includeCredentials
 }: {
     data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
     activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
-    includeCredentials?: boolean;
+    includeCredentials: boolean;
 }): ApiPublicConnectionFull {
     return {
         id: data.id,
