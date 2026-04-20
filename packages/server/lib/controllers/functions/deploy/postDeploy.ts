@@ -39,7 +39,8 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         name: body.function_name,
         isAction: body.function_type === 'action'
     });
-    if (existingSyncConfig && existingSyncConfig.source === 'catalog') {
+
+    if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
         res.status(400).send({
             error: {
                 code: 'invalid_request',

@@ -64,7 +64,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         logContextGetter,
         sdkVersion: body.sdkVersion,
         orchestrator,
-        source: 'repo'
+        source: body.source ?? ('repo' as const)
     });
 
     if (plan && !plan.trial_end_at && plan.auto_idle) {
