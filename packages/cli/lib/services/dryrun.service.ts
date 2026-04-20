@@ -577,8 +577,14 @@ export class DryRunService {
                     URL,
                     URLSearchParams
                 };
+                Object.setPrototypeOf(sandbox, null);
 
-                const context = vm.createContext(sandbox);
+                const context = vm.createContext(sandbox, {
+                    codeGeneration: {
+                        strings: false,
+                        wasm: false
+                    }
+                });
                 const scriptExports: {
                     default?: ((nango: NangoActionCLI | NangoSyncCLI, payload?: object) => Promise<unknown>) | nangoScript.CreateAnyResponse;
                 } = scriptObj.runInContext(context);

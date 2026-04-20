@@ -95,6 +95,9 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+export type * from './functions/api.js';
 
 export type * from './lambda/index.js';
 export type * from './authz/types.js';
+
+export type * from './pubsub/events.js';

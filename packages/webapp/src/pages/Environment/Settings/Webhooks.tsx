@@ -61,7 +61,7 @@ export const Webhooks: React.FC = () => {
                             placeholder="https://example.com/webhooks_from_nango"
                             initialValue={environmentAndAccount.webhook_settings.primary_url || ''}
                             onSave={(value) => onSave({ primary_url: value })}
-                            validate={validateUrl}
+                            validate={(value) => validateUrl(value, true)}
                             canEdit={canWriteWebhooks}
                         />
                     </div>
@@ -72,7 +72,7 @@ export const Webhooks: React.FC = () => {
                             placeholder="https://example.com/webhooks_from_nango"
                             initialValue={environmentAndAccount.webhook_settings.secondary_url || ''}
                             onSave={(value) => onSave({ secondary_url: value })}
-                            validate={validateUrl}
+                            validate={(value) => validateUrl(value, true)}
                             canEdit={canWriteWebhooks}
                         />
                     </div>

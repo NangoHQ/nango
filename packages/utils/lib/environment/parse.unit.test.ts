@@ -19,6 +19,11 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
+    it('should parse the sandbox compiler template', () => {
+        const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
+        expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
+    });
+
     it('should coerce boolean and number', () => {
         const res = parseEnvs(ENVS, { NANGO_DB_SSL: 'true', NANGO_LOGS_ENABLED: 'false', NANGO_PERSIST_PORT: '3008' });
         expect(res).toMatchObject({ NANGO_DB_SSL: true, NANGO_PERSIST_PORT: 3008, NANGO_LOGS_ENABLED: false, NANGO_CLOUD: false, NANGO_CACHE_ENV_KEYS: false });
@@ -113,5 +118,29 @@ describe('parse', () => {
                 { groupKeyPattern: 'on-event', maxConcurrency: 50 }
             ]
         });
+    });
+
+    it('should default NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST to empty array', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual([]);
+    });
+
+    it('should parse NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON array and trim entries', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([' 169.254.169.254 ', 'localhost', ''])
+        });
+        expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST).toEqual(['169.254.169.254', 'localhost']);
+    });
+
+    it('should throw on invalid NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST JSON', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: 'not-json' });
+        }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
+    });
+
+    it('should throw when NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST is not a string array', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([1, 2]) });
+        }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
     });
 });

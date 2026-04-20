@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
-import { buildNangoModelsForAction, buildNangoModelsForSync, parseAction, parseSync } from './definitions.js';
+import { parseAction, parseSync } from './definitions.js';
 
 const syncParams = {
     type: 'sync' as const,
@@ -96,29 +96,6 @@ describe('parseSync', () => {
     });
 });
 
-describe('buildNangoModelsForSync', () => {
-    it('should build nango models', () => {
-        const models = buildNangoModelsForSync(syncParams, 'github', 'fetchIssues');
-
-        expect(Array.from(models.values())).toStrictEqual([
-            {
-                fields: [
-                    { name: 'id', optional: false, tsType: true, value: 'string', description: undefined },
-                    { name: 'foobar', optional: false, tsType: true, value: 'string', description: undefined }
-                ],
-                name: 'Model',
-                description: undefined
-            },
-            {
-                fields: [{ name: 'metadata', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'SyncMetadata_github_fetchIssues',
-                description: undefined
-            }
-        ]);
-    });
-});
-
 describe('parseAction', () => {
     it('should return the parsed action without endpoint', () => {
         const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
@@ -162,26 +139,5 @@ describe('parseAction', () => {
                 }
             }
         });
-    });
-});
-
-describe('buildNangoModelsForAction', () => {
-    it('should build nango models', () => {
-        const models = buildNangoModelsForAction(actionParams, 'github', 'createIssue');
-
-        expect(Array.from(models.values())).toStrictEqual([
-            {
-                fields: [{ name: 'input', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'ActionInput_github_createIssue',
-                description: undefined
-            },
-            {
-                fields: [{ name: 'output', optional: false, tsType: true, value: 'number', description: undefined }],
-                isAnon: true,
-                name: 'ActionOutput_github_createIssue',
-                description: undefined
-            }
-        ]);
     });
 });

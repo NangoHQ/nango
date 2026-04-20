@@ -288,10 +288,13 @@ export async function handleActionSuccess({
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
         environmentName: nangoProps.environmentName || 'unknown',
+        provider: nangoProps.provider,
         providerConfigKey: nangoProps.providerConfigKey,
         status: 'success',
         syncId: null as unknown as string,
         syncVariant: null as unknown as string,
+        scriptVersion: nangoProps.syncConfig.version,
+        preBuilt: nangoProps.syncConfig.pre_built,
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
@@ -314,7 +317,7 @@ export async function handleActionSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -474,10 +477,13 @@ function onFailure({
             scriptType: 'action',
             environmentId: environment.id,
             environmentName: environment.name,
+            provider,
             providerConfigKey: providerConfigKey,
             status: 'failed',
             syncId: null as unknown as string,
             syncVariant: null as unknown as string,
+            scriptVersion: syncConfig?.version,
+            preBuilt: syncConfig?.pre_built,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
@@ -500,7 +506,7 @@ function onFailure({
                     type: 'action',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });

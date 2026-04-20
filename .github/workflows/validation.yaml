@@ -27,6 +27,7 @@ jobs:
                       docs:
                           - 'docs/**'
                           - 'packages/providers/providers.yaml'
+                          - 'packages/providers/providers.scopes.yaml'
             - name: Determine if should skip
               id: check
               run: |

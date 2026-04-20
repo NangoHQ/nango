@@ -1,12 +1,14 @@
 import * as z from 'zod';
 
+import { NangoError, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getUserFromSession } from '../../../utils/utils.js';
 
+import type { RequestLocals } from '../../../utils/express.js';
 import type { PostSignin } from '@nangohq/types';
+import type { RequestHandler, Response } from 'express';
 
 const validation = z
     .object({
@@ -15,7 +17,7 @@ const validation = z
     })
     .strict();
 
-export const signin = asyncWrapper<PostSignin>(async (req, res) => {
+export const validateSigninRequest: RequestHandler = (req, res, next) => {
     const emptyQuery = requireEmptyQuery(req);
 
     if (emptyQuery) {
@@ -31,24 +33,34 @@ export const signin = asyncWrapper<PostSignin>(async (req, res) => {
         return;
     }
 
-    const getUser = await getUserFromSession(req);
+    next();
+};
 
-    if (getUser.isErr()) {
-        res.status(401).send({ error: { code: 'unauthorized', message: getUser.error.message } });
+export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, RequestLocals>, next) => {
+    const candidate = res.locals.user;
+    if (!candidate) {
+        next(new Error('signin: expected authenticated user on res.locals'));
         return;
     }
 
-    const user = getUser.value;
-
-    if (!user.email_verified) {
-        // since a session is created to get the user info we need to destroy it
-        // since the user is not verified even if they exist and the credentials
-        // are correct
-        req.session.destroy(() => {
-            res.status(400).send({ error: { code: 'email_not_verified' } });
+    // Same gate as legacy getUserFromSession: excludes suspended users and matches DB truth (not stale passport user).
+    const user = await userService.getUserById(candidate.id);
+    if (!user) {
+        res.status(401).send({
+            error: { code: 'unauthorized', message: new NangoError('user_not_found').message }
         });
         return;
     }
+
+    await new Promise<void>((resolve, reject) => {
+        req.logIn(user as Express.User, (err) => {
+            if (err) {
+                reject(err instanceof Error ? err : new Error(String(err)));
+            } else {
+                resolve();
+            }
+        });
+    });
 
     res.status(200).send({ user: userToAPI(user) });
 });

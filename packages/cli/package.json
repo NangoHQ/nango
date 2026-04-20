@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.69.48",
+    "version": "0.70.1",
     "description": "Nango's CLI tool.",
     "type": "module",
     "bin": {
@@ -40,15 +40,15 @@
         "@babel/preset-typescript": "7.27.1",
         "@babel/traverse": "7.28.0",
         "@babel/types": "7.28.2",
-        "@nangohq/nango-yaml": "0.69.48",
-        "@nangohq/node": "0.69.48",
-        "@nangohq/providers": "0.69.48",
-        "@nangohq/runner-sdk": "0.69.48",
+        "@nangohq/nango-yaml": "0.70.1",
+        "@nangohq/node": "0.70.1",
+        "@nangohq/providers": "0.70.1",
+        "@nangohq/runner-sdk": "0.70.1",
         "@swc/core": "1.13.2",
         "@types/unzipper": "0.10.11",
         "ajv": "8.18.0",
         "ajv-errors": "3.0.0",
-        "axios": "1.13.5",
+        "axios": "1.15.0",
         "chalk": "5.4.1",
         "chokidar": "3.5.3",
         "columnify": "1.6.0",
@@ -70,7 +70,6 @@
         "promptly": "3.2.0",
         "semver": "7.5.4",
         "serialize-error": "11.0.3",
-        "ts-json-schema-generator": "2.4.0",
         "ts-node": "10.9.2",
         "tsup": "8.5.1",
         "typescript": "5.8.3",
@@ -78,7 +77,7 @@
         "zod": "4.3.6"
     },
     "devDependencies": {
-        "@nangohq/types": "0.69.48",
+        "@nangohq/types": "0.70.1",
         "@types/babel__core": "7.20.5",
         "@types/babel__traverse": "7.20.7",
         "@types/columnify": "1.5.4",
@@ -105,7 +104,6 @@
         "example/**/*",
         "lib/nango.yaml.schema.v1.json",
         "lib/nango.yaml.schema.v2.json",
-        "lib/ai/instructions/*",
         "scripts/v1-v2.js",
         "tsconfig.dev.json",
         "README.md"

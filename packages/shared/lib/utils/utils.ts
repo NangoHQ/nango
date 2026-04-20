@@ -206,6 +206,16 @@ function replaceSha256HexExpression(str: string, resolveInner: (inner: string) =
     return str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => crypto.createHash('sha256').update(resolveInner(inner), 'utf8').digest('hex'));
 }
 
+function replaceHmacSha1HexExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${hmacSha1Hex\(([\s\S]*?)\)}/g, (match, inner) => {
+        const lastComma = inner.lastIndexOf(',');
+        if (lastComma === -1) return match;
+        const message = resolveInner(inner.slice(0, lastComma));
+        const key = resolveInner(inner.slice(lastComma + 1).trim());
+        return crypto.createHmac('sha1', key).update(message, 'utf8').digest('hex');
+    });
+}
+
 /**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
@@ -217,6 +227,8 @@ function replaceSha256HexExpression(str: string, resolveInner: (inner: string) =
  */
 export function interpolateString(str: string, replacers: Record<string, any>, optionalReplacers?: Record<string, any>): string {
     const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
+
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
 
     str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
 
@@ -266,6 +278,7 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
     return value;
 }
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
 
@@ -580,4 +593,15 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
 function getNowDate(replacers: Record<string, any>): Date {
     const isoNow = replacers['now'] as string | undefined;
     return isoNow ? new Date(isoNow) : new Date();
+}
+
+const __dirname = dirname();
+const basePath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] || path.resolve(__dirname, `../nango-integrations`);
+
+export function resolveLocalFileName({ syncName, providerConfigKey }: { syncName: string; providerConfigKey: string }): string {
+    return `${syncName}-${providerConfigKey}.js`;
+}
+
+export function resolveLocalFilePath({ fileName }: { fileName: string }): string {
+    return path.resolve(basePath, fileName);
 }

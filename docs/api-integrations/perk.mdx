@@ -1,0 +1,82 @@
+---
+title: 'Perk'
+sidebarTitle: 'Perk'
+description: 'Integrate your application with the Perk API'
+---
+
+## 🚀 Quickstart
+
+Connect to Perk with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Perk_.
+    </Step>
+    <Step title="Authorize Perk">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Perk. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Perk API">
+    Let's make your first request to the Perk API (fetch a list of all invoices). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/invoices" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/invoices',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Perk Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own Perk OAuth app](/api-integrations/perk/how-to-register-your-own-perk-api-oauth-app)  
+Register an OAuth app with Perk and obtain credentials to connect it to Nango
+
+Official docs: [Perk API documentation](https://developers.perk.com/reference)
+
+## 🧩 Pre-built syncs & actions for Perk
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/perk/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

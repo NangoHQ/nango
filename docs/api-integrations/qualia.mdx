@@ -1,0 +1,100 @@
+---
+title: 'Qualia'
+sidebarTitle: 'Qualia'
+description: 'Integrate your application with the Qualia API'
+---
+
+## 🚀 Quickstart
+
+Connect to Qualia with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Qualia_.
+    </Step>
+    <Step title="Authorize Qualia">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Connect_, then enter your subdomain, username, and password. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Qualia API">
+    Let's make your first GraphQL request. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            # Partner API
+            curl -X POST "https://api.nango.dev/proxy/partner/graphql" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "{ usersInOrganization { id email } }"}'
+
+            # Platform API
+            curl -X POST "https://api.nango.dev/proxy/platform/graphql" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "{ users { id email } }"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        // Partner API
+        const res = await nango.post({
+            endpoint: '/partner/graphql',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { query: '{ usersInOrganization { id email } }' }
+        });
+
+        // Platform API
+        const res = await nango.post({
+            endpoint: '/platform/graphql',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: { query: '{ users { id email } }' }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Qualia Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Qualia API credentials](/api-integrations/qualia/connect)  
+Find your subdomain and API key for the Partner or Platform API
+
+Official docs: [Qualia API documentation](https://docs.qualia.io)
+
+## 🧩 Pre-built syncs & actions for Qualia
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/qualia/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
