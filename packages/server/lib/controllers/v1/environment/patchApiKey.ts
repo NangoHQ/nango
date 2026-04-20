@@ -39,7 +39,7 @@ export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
         const result = await customerKeyService.renameApiKey(db.knex, keyId, parsed.data.display_name, environment.id, account.id);
         if (result.isErr()) {
             const { type: errType = '', message: errMsg = '' } = result.error as { type?: string; message?: string };
-            if (errType === 'duplicate_api_secret' || errMsg.includes('duplicate_api_secret')) {
+            if (errType === 'duplicate_api_key' || errMsg.includes('duplicate_api_key')) {
                 res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
             } else {
                 res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });

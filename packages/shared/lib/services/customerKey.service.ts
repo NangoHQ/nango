@@ -58,7 +58,7 @@ class CustomerKeyService {
                     .first();
 
                 if (existing) {
-                    throw new NangoError('duplicate_api_secret', { display_name: displayName });
+                    throw new NangoError('duplicate_api_key', { display_name: displayName });
                 }
 
                 // Check max keys per environment
@@ -225,7 +225,7 @@ class CustomerKeyService {
                     .first();
 
                 if (existing) {
-                    throw new NangoError('duplicate_api_secret', { display_name: displayName });
+                    throw new NangoError('duplicate_api_key', { display_name: displayName });
                 }
 
                 const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
