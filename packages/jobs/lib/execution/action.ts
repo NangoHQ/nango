@@ -298,7 +298,8 @@ export async function handleActionSuccess({
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
 
     void pubsub.publisher.publish({
@@ -486,7 +487,8 @@ function onFailure({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({

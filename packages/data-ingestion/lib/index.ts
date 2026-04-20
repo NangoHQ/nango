@@ -27,6 +27,7 @@ interface RunScriptRow {
     createdAt: number;
     internalIntegrationId: number | null;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
+    source?: string | undefined;
 }
 
 const fields = [
@@ -51,7 +52,8 @@ const fields = [
     { name: 'internalIntegrationId', type: 'INTEGER' },
     { name: 'endUserId', type: 'INTEGER' },
     { name: 'endUserUserId', type: 'STRING' },
-    { name: 'endUserOrgId', type: 'STRING' }
+    { name: 'endUserOrgId', type: 'STRING' },
+    { name: 'source', type: 'STRING' }
 ] as const;
 
 interface TypeMap {
@@ -165,7 +167,8 @@ class BigQueryClient {
                 internalIntegrationId: data.internalIntegrationId,
                 endUserId: data.endUser?.id,
                 endUserOrgId: data.endUser?.orgId,
-                endUserUserId: data.endUser?.endUserId
+                endUserUserId: data.endUser?.endUserId,
+                source: data.source
             };
             await this.client.dataset(this.datasetName).table(table).insert(insertData);
         } catch (err) {

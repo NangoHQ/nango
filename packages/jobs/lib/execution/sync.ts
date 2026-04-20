@@ -560,7 +560,8 @@ export async function handleSyncSuccess({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-            endUser: nangoProps.endUser
+            endUser: nangoProps.endUser,
+            source: nangoProps.syncConfig.source
         });
 
         const sync = await getSyncById(nangoProps.syncId);
@@ -883,7 +884,8 @@ async function onFailure({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
     }
 
