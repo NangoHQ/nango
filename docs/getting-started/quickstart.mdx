@@ -22,7 +22,7 @@ description: 'Authorize any API in minutes'
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' }); // Find in your Environment Settings
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' }); // Find in Environment Settings > API Keys
 
         const connection = await nango.getConnection(
             '<INTEGRATION-ID>', // Find in your Integrations
@@ -36,7 +36,7 @@ description: 'Authorize any API in minutes'
         <Tab title="cURL">
 
         ```bash
-        # <NANGO-SECRET-KEY>: Find in your Environment Settings
+        # <NANGO-SECRET-KEY>: Find in Environment Settings > API Keys
         # <INTEGRATION-ID>: Find in your Integrations
         # <CONNECTION-ID>: Find in your Connections
         curl -X GET \
