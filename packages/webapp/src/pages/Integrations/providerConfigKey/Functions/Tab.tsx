@@ -1,4 +1,4 @@
-import { Box, Code, ExternalLink, Info } from 'lucide-react';
+import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -120,7 +120,7 @@ const GroupedFunctionsTable: React.FC<{
                     <TableHeader className="h-8">
                         <TableRow className="h-8">
                             <TableHead className="h-8">{groupName}</TableHead>
-                            <TableHead className="h-8">{index === 0 && 'Type'}</TableHead>
+                            <TableHead className="h-8">{index === 0 && 'Source code'}</TableHead>
                             <TableHead className="h-8 text-center">{index === 0 && 'Enabled'}</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -140,14 +140,14 @@ const GroupedFunctionsTable: React.FC<{
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {func.source === 'catalog' ? (
+                                    {func.source === 'repo' ? (
                                         <Badge variant="gray" className="uppercase">
-                                            <Box />
-                                            Template
+                                            <FolderGit2 /> Your repo
                                         </Badge>
                                     ) : (
                                         <Badge variant="gray" className="uppercase">
-                                            <Code /> Custom
+                                            <Cloud />
+                                            Nango
                                         </Badge>
                                     )}
                                 </TableCell>

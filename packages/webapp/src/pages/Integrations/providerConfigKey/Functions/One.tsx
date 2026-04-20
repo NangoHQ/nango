@@ -186,6 +186,7 @@ export const FunctionsOne: React.FC = () => {
                         <KeyValueBadge label="Type">
                             <span>{func.type}</span>
                         </KeyValueBadge>
+                        <KeyValueBadge label="Source code">{func.source === 'repo' ? 'your repo' : 'Nango'}</KeyValueBadge>
                         {func.sync_type && (
                             <KeyValueBadge label="Sync type">
                                 <span>{func.sync_type}</span>
@@ -197,7 +198,6 @@ export const FunctionsOne: React.FC = () => {
                             </KeyValueBadge>
                         )}
                         {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
-                        <KeyValueBadge label="Source">{func.source === 'catalog' ? 'template' : 'custom'}</KeyValueBadge>
                         {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
                         {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
                     </div>
