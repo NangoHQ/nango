@@ -59,7 +59,7 @@ const syncConfig: DBSyncConfig = {
     type: 'sync',
     auto_start: false,
     attributes: {},
-    code_source: 'nango',
+    source: 'catalog',
     metadata: {},
     model_schema: null,
     input: null,

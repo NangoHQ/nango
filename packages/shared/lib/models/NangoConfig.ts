@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 import type { SyncJobsType } from './Sync.js';
-import type { CodeSource, NangoConfigMetadata, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
+import type { NangoConfigMetadata, NangoSyncEndpointV2, ScriptTypeLiteral } from '@nangohq/types';
 
 export interface NangoIntegrationDataV1 {
     type?: ScriptTypeLiteral;
@@ -14,7 +14,6 @@ export interface NangoIntegrationDataV1 {
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
-    code_source?: CodeSource;
     endpoint?: NangoSyncEndpointV2 | NangoSyncEndpointV2[];
     enabled?: boolean;
 }

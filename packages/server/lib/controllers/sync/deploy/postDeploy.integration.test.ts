@@ -214,7 +214,7 @@ describe(`POST ${endpoint}`, () => {
                             endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: 'Input',
                             sdk_version: expect.any(String),
-                            code_source: 'repo',
+                            source: 'repo',
                             last_deployed: expect.toBeIsoDate(),
                             returns: ['Output'],
                             scopes: [],

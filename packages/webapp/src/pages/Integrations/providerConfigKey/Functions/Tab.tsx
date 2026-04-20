@@ -140,7 +140,7 @@ const GroupedFunctionsTable: React.FC<{
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {func.code_source === 'nango' ? (
+                                    {func.source === 'catalog' ? (
                                         <Badge variant="gray" className="uppercase">
                                             <Box />
                                             Template

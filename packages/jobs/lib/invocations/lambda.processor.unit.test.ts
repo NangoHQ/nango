@@ -60,7 +60,7 @@ function minimalNangoProps() {
             updated_at: new Date(),
             version: '1',
             attributes: {},
-            code_source: 'repo',
+            source: 'repo',
             input: null,
             sync_type: null,
             metadata: {},

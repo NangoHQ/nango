@@ -317,7 +317,7 @@ export class DryRunService {
                 created_at: new Date(),
                 updated_at: new Date(),
                 attributes: {},
-                code_source: 'repo',
+                source: 'repo',
                 metadata: {},
                 sdk_version: null,
                 features: [],

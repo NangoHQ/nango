@@ -7,8 +7,9 @@ exports.up = async function (knex) {
     // Create enum type
     await knex.raw(`DO $$
         BEGIN
-            CREATE TYPE sync_config_code_source AS ENUM (
-                'nango',
+            CREATE TYPE sync_config_source AS ENUM (
+                'catalog',
+                'standalone',
                 'repo'
             );
         EXCEPTION
@@ -16,18 +17,18 @@ exports.up = async function (knex) {
                 NULL;
         END
         $$`);
-    // Add column
-    await knex.raw(`ALTER TABLE _nango_sync_configs ADD COLUMN IF NOT EXISTS code_source sync_config_code_source NOT NULL DEFAULT 'repo'`);
-    // Backfill
-    await knex.raw(`UPDATE _nango_sync_configs SET code_source = 'nango' WHERE pre_built = true OR is_public = true`);
-    // Drop default value
-    await knex.raw(`ALTER TABLE _nango_sync_configs ALTER COLUMN code_source DROP DEFAULT`);
+    // Add column with default so the backfill step works without requiring existing rows to be touched first
+    await knex.raw(`ALTER TABLE _nango_sync_configs ADD COLUMN IF NOT EXISTS source sync_config_source NOT NULL DEFAULT 'repo'`);
+    // Backfill: rows deployed from the Nango catalog get 'catalog'; everything else keeps 'repo'
+    await knex.raw(`UPDATE _nango_sync_configs SET source = 'catalog' WHERE pre_built = true OR is_public = true`);
+    // Drop default — every insert path now sets source explicitly
+    await knex.raw(`ALTER TABLE _nango_sync_configs ALTER COLUMN source DROP DEFAULT`);
 };
 
 /**
  * @param {import('knex').Knex} knex
  */
 exports.down = async function (knex) {
-    await knex.raw(`ALTER TABLE _nango_sync_configs DROP COLUMN IF EXISTS code_source`);
-    await knex.raw(`DROP TYPE IF EXISTS sync_config_code_source`);
+    await knex.raw(`ALTER TABLE _nango_sync_configs DROP COLUMN IF EXISTS source`);
+    await knex.raw(`DROP TYPE IF EXISTS sync_config_source`);
 };

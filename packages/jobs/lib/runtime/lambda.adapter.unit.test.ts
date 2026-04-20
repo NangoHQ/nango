@@ -45,7 +45,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
 
-import type { CodeSource } from '@nangohq/types';
+import type { FunctionSource } from '@nangohq/types';
 
 function minimalNangoProps(overrides: { environmentId?: number } = {}) {
     return {
@@ -79,7 +79,7 @@ function minimalNangoProps(overrides: { environmentId?: number } = {}) {
             updated_at: new Date(),
             version: '1',
             attributes: {},
-            code_source: 'repo' as CodeSource,
+            source: 'repo' as FunctionSource,
             input: null,
             sync_type: null,
             metadata: {},

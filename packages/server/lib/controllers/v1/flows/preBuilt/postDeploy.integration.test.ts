@@ -72,7 +72,7 @@ describe(`POST ${endpoint}`, () => {
             file_location: '_LOCAL_FILE_',
             id: expect.any(Number),
             input: 'SyncMetadata_airtable_tables',
-            code_source: 'nango',
+            source: 'catalog',
             metadata: {
                 description: expect.any(String),
                 scopes: ['schema.bases:read']

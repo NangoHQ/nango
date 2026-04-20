@@ -664,7 +664,7 @@ const initDb = async () => {
             updated_at: now,
             models: ['model'],
             sync_type: 'full',
-            code_source: 'repo'
+            source: 'repo'
         })
         .returning('*');
     if (!syncConfig) throw new Error('Sync config not created');

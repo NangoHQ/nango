@@ -90,7 +90,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             webhook_subscriptions: [],
             attributes: {},
             input: null,
-            code_source: 'repo',
+            source: 'repo',
             metadata: {},
             models_json_schema: null,
             sync_type: null,

@@ -68,7 +68,7 @@ describe(`GET ${route}`, () => {
             enabled: false,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
             input: 'ActionInput_github_writefile',
-            code_source: 'nango',
+            source: 'catalog',
             json_schema: expect.any(Object),
             last_deployed: null,
             name: 'write-file',
@@ -110,7 +110,7 @@ describe(`GET ${route}`, () => {
         expect(scriptWriteFile).toMatchObject({
             enabled: true,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-            code_source: 'repo',
+            source: 'repo',
             name: 'write-file',
             type: 'action'
         });

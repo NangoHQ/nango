@@ -63,7 +63,8 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         aggregatedJsonSchema: body.jsonSchema,
         logContextGetter,
         sdkVersion: body.sdkVersion,
-        orchestrator
+        orchestrator,
+        source: 'repo'
     });
 
     if (plan && !plan.trial_end_at && plan.auto_idle) {

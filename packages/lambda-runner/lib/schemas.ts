@@ -45,7 +45,7 @@ export const nangoPropsSchema = z.object({
         type: z.enum(['sync', 'action', 'on-event']),
         auto_start: z.boolean(),
         attributes: z.record(z.string(), z.any()),
-        code_source: z.enum(['nango', 'repo']),
+        source: z.enum(['catalog', 'standalone', 'repo']),
         metadata: z.record(z.string(), z.any()),
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),
