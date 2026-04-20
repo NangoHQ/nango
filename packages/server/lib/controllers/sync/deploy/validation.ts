@@ -152,7 +152,6 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        source: z.enum(['catalog', 'standalone', 'repo']),
         deployMode: z.enum(['all', 'single', 'integration']).optional(),
         // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
         singleDeployMode: z.boolean().optional(),
