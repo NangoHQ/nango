@@ -80,6 +80,10 @@ RUN npm install -g npm@11.10.1
 # ------------------
 FROM public.ecr.aws/lambda/nodejs:22-arm64
 
+ENV DENO_INSTALL=/usr/local/deno
+RUN curl -fsSL https://deno.land/install.sh | sh -s -- v2.1.9
+ENV PATH="${DENO_INSTALL}/bin:${PATH}"
+
 # Do not use root to run the app
 # BUT it does not work with secret mount (could not find a solution yet)
 # TODO: fix this
@@ -93,6 +97,7 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 # Code
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
+RUN deno cache ${LAMBDA_TASK_ROOT}/packages/runner/deno/bootstrap.ts
 ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
 RUN rm node_modules/datadog-lambda-js/dist/handler.js
 CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]

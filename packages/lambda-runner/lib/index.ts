@@ -3,7 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { DeleteObjectCommand, GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import { getKVStore, getLocking } from '@nangohq/kvstore';
-import { KVLocks, abortCheckIntervalMs, exec, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
+import { KVLocks, abortCheckIntervalMs, exec, execSubprocess, heartbeatIntervalMs, jobsClient } from '@nangohq/runner';
 import { loadProviders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
@@ -177,7 +177,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             locks,
             abortController: abortController
         };
-        const execRes = await exec(payload);
+        const execRes = process.env['NANGO_RUNNER_ISOLATION'] === 'subprocess-deno' ? await execSubprocess(payload) : await exec(payload);
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
         const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
         telemetryBag.durationMs = Date.now() - startTime;
