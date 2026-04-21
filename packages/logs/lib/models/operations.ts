@@ -1,10 +1,12 @@
 import { isTest } from '@nangohq/utils';
 
 import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
+import { envs } from '../env.js';
 import { indexOperations } from '../es/schema.js';
 import { client } from '../storage/client.js';
 import { throwLogsNotFound } from '../utils.js';
 
+import type { LogsStorageClient } from '../storage/client.js';
 import type { estypes } from '@elastic/elasticsearch';
 import type {
     OperationRow,
@@ -290,11 +292,36 @@ export async function listFilters(opts: {
     };
 }
 
-export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
-    await client.updateByQuery({
+/** OpenSearch’s JS client sends top-level `query`/`script` as URL params (empty body); ES expects them on the request object. */
+async function updateOperationsByQuery(params: { wait?: boolean; query: estypes.QueryDslQueryContainer; script: { source: string } }): Promise<void> {
+    const wait = params.wait === true;
+    const base = {
         index: indexOperations.index,
-        wait_for_completion: opts.wait === true,
-        refresh: opts.wait === true,
+        wait_for_completion: wait,
+        refresh: wait
+    };
+
+    if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
+        await client.updateByQuery({
+            ...base,
+            body: {
+                query: params.query,
+                script: params.script
+            }
+        } as Parameters<LogsStorageClient['updateByQuery']>[0]);
+        return;
+    }
+
+    await client.updateByQuery({
+        ...base,
+        query: params.query,
+        script: params.script
+    });
+}
+
+export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promise<void> {
+    await updateOperationsByQuery({
+        ...(opts.wait !== undefined ? { wait: opts.wait } : {}),
         query: {
             bool: {
                 filter: [
@@ -317,10 +344,8 @@ export async function setCancelledForAuth(opts: { wait?: boolean } = {}): Promis
 }
 
 export async function setTimeoutForAll(opts: { wait?: boolean } = {}): Promise<void> {
-    await client.updateByQuery({
-        index: indexOperations.index,
-        wait_for_completion: opts.wait === true,
-        refresh: opts.wait === true,
+    await updateOperationsByQuery({
+        ...(opts.wait !== undefined ? { wait: opts.wait } : {}),
         query: {
             bool: {
                 filter: [
