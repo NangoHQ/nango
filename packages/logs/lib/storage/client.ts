@@ -25,6 +25,55 @@ function createRawClient(): ElasticsearchClient {
     return new ElasticsearchClient(common);
 }
 
+/** Fields that must live in the JSON body for POST /_search (not in the query string). */
+const OPENSEARCH_SEARCH_BODY_FIELDS = new Set([
+    'query',
+    'aggs',
+    'aggregations',
+    'sort',
+    'search_after',
+    'track_total_hits',
+    'post_filter',
+    'collapse',
+    'pit',
+    'suggest',
+    'highlight',
+    'rescore',
+    'script_fields',
+    'stored_fields',
+    'docvalue_fields',
+    '_source',
+    'fields',
+    'runtime_mappings',
+    'indices_boost',
+    'min_score',
+    'seq_no_primary_term',
+    'explain',
+    'version'
+]);
+
+/**
+ * OpenSearch `search` puts unknown params on the query string; ES v8 sends DSL fields on the
+ * request object (which becomes the body). Move DSL fields into `body` so the query runs.
+ */
+function mapSearchArgsForOpenSearch(first: Record<string, unknown>): Record<string, unknown> {
+    const body: Record<string, unknown> = {};
+    const rest: Record<string, unknown> = {};
+
+    for (const key of Object.keys(first)) {
+        const val = first[key];
+        if (OPENSEARCH_SEARCH_BODY_FIELDS.has(key) && val !== undefined) {
+            body[key] = val;
+        } else {
+            rest[key] = val;
+        }
+    }
+    if (Object.keys(body).length === 0) {
+        return first;
+    }
+    return { ...rest, body };
+}
+
 /**
  * OpenSearch JS expects indexed documents in `body`; Elasticsearch v8 accepts `document`
  * and maps it. Normalize here so call sites can keep the ES8 shape.
@@ -34,7 +83,13 @@ function mapArgsForOpenSearch(methodName: string | symbol, args: any[]): any[] {
         return args;
     }
     const first = args[0];
-    if (!first || typeof first !== 'object' || first.body !== undefined) {
+    if (!first || typeof first !== 'object') {
+        return args;
+    }
+    if (methodName === 'search' && first.body === undefined) {
+        return [{ ...mapSearchArgsForOpenSearch(first as Record<string, unknown>) }, ...args.slice(1)];
+    }
+    if (first.body !== undefined) {
         return args;
     }
     if ((methodName === 'create' || methodName === 'index') && 'document' in first) {
