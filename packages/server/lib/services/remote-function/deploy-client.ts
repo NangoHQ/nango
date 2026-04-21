@@ -5,6 +5,7 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 import { isLocal } from '@nangohq/utils';
 
 import { buildDeployArgs } from './command-builders.js';
+import { getCommandOutput, isCompilationFailureOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate, remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
@@ -66,7 +67,12 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             return { output: result.stdout };
         } catch (err) {
             if (err instanceof CommandExitError) {
-                throw new RemoteFunctionError({ code: 'deployment_error', message: err.stdout || err.stderr || JSON.stringify(err), status: 400 });
+                const output = getCommandOutput(err, 'Deployment failed');
+                throw new RemoteFunctionError({
+                    code: isCompilationFailureOutput(output) ? 'compilation_error' : 'deployment_error',
+                    message: output,
+                    status: 400
+                });
             }
             if (err instanceof TimeoutError) {
                 throw new RemoteFunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
@@ -74,6 +80,6 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             throw err;
         }
     } finally {
-        await sandbox.kill().catch(() => {});
+        await sandbox.kill().catch(() => undefined);
     }
 }

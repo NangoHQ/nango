@@ -3097,6 +3097,8 @@ cal-com-oauth:
         retry:
             at:
                 - 'x-ratelimit-reset'
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/cal-com-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
 
@@ -7654,7 +7656,8 @@ google-chat:
         - productivity
     proxy:
         base_url: https://chat.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-chat
+    docs: https://nango.dev/docs/api-integrations/google-chat
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-chat/how-to-register-your-own-google-chat-api-oauth-app
 
 google-docs:
     display_name: Google Docs
@@ -7726,7 +7729,8 @@ google-slides:
     alias: google
     proxy:
         base_url: https://slides.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-slides
+    docs: https://nango.dev/docs/api-integrations/google-slides
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-slides/how-to-register-your-own-google-slides-api-oauth-app
 
 google-drive:
     display_name: Google Drive
@@ -7810,7 +7814,8 @@ google-cloud-storage:
     alias: google
     categories:
         - storage
-    docs: https://nango.dev/docs/integrations/all/google-cloud-storage
+    docs: https://nango.dev/docs/api-integrations/google-cloud-storage
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-cloud-storage/how-to-register-your-own-google-cloud-storage-api-oauth-app
 
 google-workspace-admin:
     display_name: Google Workspace Admin
@@ -7819,7 +7824,8 @@ google-workspace-admin:
         - productivity
     proxy:
         base_url: https://admin.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-workspace-admin
+    docs: https://nango.dev/docs/api-integrations/google-workspace-admin
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-workspace-admin/how-to-register-your-own-google-workspace-admin-api-oauth-app
 
 google-service-account:
     display_name: Google Service Account
@@ -10129,6 +10135,24 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+lokalise:
+    display_name: Lokalise
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.lokalise.com/oauth2/auth
+    token_url: https://app.lokalise.com/oauth2/token
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    proxy:
+        base_url: https://api.lokalise.com/api2
+    docs: https://nango.dev/docs/api-integrations/lokalise
+    setup_guide_url: https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app
+
 loom-scim:
     display_name: Loom (SCIM)
     categories:
@@ -10438,7 +10462,7 @@ lob:
             title: Secret API Key
             description: Your Lob Secret API Key.
             secret: true
-            example: 'test_0dc8d***************************5b0cc'
+            example: 'live_0dc8d***************************5b0cc'
             pattern: '^(test|live)_[a-f0-9]{35}$'
             doc_section: '#step-1-getting-your-secret-api-key'
         password:
@@ -12502,6 +12526,43 @@ pagerduty:
             after:
                 - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
+
+paligo:
+    display_name: Paligo
+    categories:
+        - cms
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.paligoapp.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/groups?page=1&per_page=1
+    docs: https://nango.dev/docs/api-integrations/paligo
+    docs_connect: https://nango.dev/docs/api-integrations/paligo/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Paligo Instance Name
+            description: The name of your Paligo instance
+            example: mycompany
+            suffix: .paligoapp.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-paligo-instance-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Paligo account username (email address).
+            example: name@example.com
+            doc_section: '#step-3-enter-credentials-in-the-connect-ui'
+        password:
+            type: string
+            title: API Key
+            description: The API key token generated.
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
 
 pandadoc:
     display_name: Pandadoc

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { buildDeployArgs } from '../remote-function/command-builders.js';
+import { isCompilationFailureOutput } from '../remote-function/command-output.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 import { RemoteFunctionError } from '../remote-function/helpers.js';
 import {
@@ -53,13 +54,14 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
             );
             return { output: stdout || stderr };
         } catch (err) {
+            const output = getExecErrorOutput(err);
             throw new RemoteFunctionError({
-                code: isExecTimeoutError(err) ? 'timeout' : 'deployment_error',
-                message: isExecTimeoutError(err) ? 'Deployment timed out' : getExecErrorOutput(err),
+                code: isExecTimeoutError(err) ? 'timeout' : isCompilationFailureOutput(output) ? 'compilation_error' : 'deployment_error',
+                message: isExecTimeoutError(err) ? 'Deployment timed out' : output,
                 status: isExecTimeoutError(err) ? 504 : 400
             });
         }
     } finally {
-        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => {});
+        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => undefined);
     }
 }
