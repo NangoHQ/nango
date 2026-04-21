@@ -99,6 +99,17 @@ function mapArgsForOpenSearch(methodName: string | symbol, args: any[]): any[] {
     return args;
 }
 
+/**
+ * OpenSearch JS returns the legacy transport envelope `{ body, statusCode, headers, meta }`.
+ * Elasticsearch v8 returns the deserialized API body directly — our models expect that shape.
+ */
+function unwrapOpenSearchResult<T>(result: unknown): T {
+    if (result === null || typeof result !== 'object' || !('body' in result) || !('statusCode' in result) || !('meta' in result)) {
+        return result as T;
+    }
+    return (result as { body: T }).body;
+}
+
 function withCircuitBreaker(target: ElasticsearchClient): ElasticsearchClient {
     const circuitBreaker = new CircuitBreaker({
         healthCheck: async () => {
@@ -131,7 +142,11 @@ function withCircuitBreaker(target: ElasticsearchClient): ElasticsearchClient {
                 }
 
                 const mappedArgs = mapArgsForOpenSearch(prop, args);
-                return await originalMethod.apply(targetClient, mappedArgs);
+                const result = await originalMethod.apply(targetClient, mappedArgs);
+                if (envs.NANGO_LOGS_PROVIDER === 'opensearch' && prop !== 'close') {
+                    return unwrapOpenSearchResult(result);
+                }
+                return result;
             };
         }
     });
