@@ -286,7 +286,10 @@ class AccountService {
             // Hashing is slow by design so it's very slow to recompute this hash all the time
             // We keep the hash in-memory to not compromise on security if the db leak
             hash = hashLocalCache.get(opts.secretKey);
-            if (!hash) {
+            if (hash) {
+                metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
+            } else {
+                metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
                 const hashed = await secretService.hashSecret(opts.secretKey);
                 if (hashed.isErr()) {
                     throw hashed.error;
