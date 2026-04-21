@@ -10440,7 +10440,7 @@ lob:
             title: Secret API Key
             description: Your Lob Secret API Key.
             secret: true
-            example: 'test_0dc8d***************************5b0cc'
+            example: 'live_0dc8d***************************5b0cc'
             pattern: '^(test|live)_[a-f0-9]{35}$'
             doc_section: '#step-1-getting-your-secret-api-key'
         password:
