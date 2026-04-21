@@ -3097,6 +3097,8 @@ cal-com-oauth:
         retry:
             at:
                 - 'x-ratelimit-reset'
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/cal-com-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
 
