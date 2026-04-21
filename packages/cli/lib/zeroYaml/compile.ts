@@ -10,7 +10,7 @@ import ts from 'typescript';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
 import { parseIntegrationDefinitions } from './definitions.js';
 import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
-import { generateAdditionalExports } from '../services/model.service.js';
+import { generateNangoJson } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
@@ -88,7 +88,7 @@ export async function compileAllFunctions({
         spinner.text = `Building ${entryPoints.length} file(s)`;
         spinner.succeed();
 
-        // Build and export the definitions
+        // Build definitions and export the artifacts (.nango/nango.json)
         spinner = spinnerFactory.start('Generating artifacts');
         const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
@@ -110,7 +110,7 @@ export async function compileAllFunctions({
             }
         }
 
-        generateAdditionalExports({ parsed: def.value, fullPath, debug });
+        generateNangoJson({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {

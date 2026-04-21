@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion, flagHasPlan } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
@@ -34,6 +34,9 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -68,6 +71,7 @@ import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { DBPlan } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
@@ -76,6 +80,19 @@ const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionA
 const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const remoteFunctionAuth: RequestHandler[] = [
+    ...apiAuth,
+    (_req, res, next) => {
+        const plan = res.locals['plan'] as DBPlan | null | undefined;
+
+        if (flagHasPlan && !plan?.remote_functions) {
+            res.status(403).send({ error: { code: 'forbidden', message: 'Remote functions are not enabled for this account' } });
+            return;
+        }
+
+        next();
+    }
+];
 
 export const publicAPI = express.Router();
 
@@ -227,6 +244,11 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, postConnectSessions
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
+
+publicAPI.use('/remote-function', jsonContentTypeMiddleware);
+publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
+publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
 
 publicAPI.use('/v1', jsonContentTypeMiddleware);
 publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);

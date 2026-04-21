@@ -74,4 +74,27 @@ describe(`POST ${route}`, () => {
         const newPlan = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
         expect(newPlan.trial_end_at?.getTime()).toBeGreaterThan(endDate.getTime());
     });
+
+    it('should reject extending trial when auto idling is disabled even if trial fields are still set', async () => {
+        const { plan, secret } = await seeders.seedAccountEnvAndUser();
+
+        const endDate = new Date(Date.now() + TRIAL_DURATION);
+        await updatePlan(db.knex, {
+            id: plan.id,
+            auto_idle: false,
+            trial_start_at: new Date(),
+            trial_end_at: endDate
+        });
+
+        const res = await api.fetch(route, {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: secret.secret
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: { code: 'conflict', message: 'No active trial' }
+        });
+    });
 });

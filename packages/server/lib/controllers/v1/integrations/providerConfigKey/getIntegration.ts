@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import * as z from 'zod';
 
 import { permissions } from '@nangohq/authz';
+import { getProviderScopes } from '@nangohq/providers';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -47,6 +48,11 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
     if (!provider) {
         res.status(400).send({ error: { code: 'not_found', message: `Provider "${integration.provider}" does not exist` } });
         return;
+    }
+
+    const providerScopes = getProviderScopes()?.[integration.provider];
+    if (providerScopes) {
+        provider.available_scopes = providerScopes;
     }
 
     let webhookSecret: string | null = null;

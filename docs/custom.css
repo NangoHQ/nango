@@ -269,10 +269,20 @@ html:not(.dark) nav[aria-label*="Table"] a:hover { background-color: rgba(0, 0, 
 
 /* ══ CHAT ASSISTANT ══════════════════════════════════════════════ */
 /*
- * No hiding applied — the Ask AI bar (chat-assistant-floating-input) must
- * remain visible for the Ask AI feature in the navbar to work. Previously,
- * broad [class*="chat-assistant"] rules were suppressing this entire UI.
+ * Hide ONLY the floating "Ask a question" input bar that sticks to the
+ * bottom of the content area. The navbar Ask AI trigger and its dialog
+ * render via headlessui portals and DO NOT use this class, so they
+ * remain fully functional.
+ *
+ * Note: `chat-assistant-floating-input` is a CLASS on a div, not an id.
+ * We hide both the element itself and its sticky wrapper so no empty
+ * space is left at the bottom of the page.
  */
+.chat-assistant-floating-input,
+.chat-assistant-floating-input-container,
+#content-area > div.sticky.bottom-0:has(.chat-assistant-floating-input) {
+  display: none !important;
+}
 
 /* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
 [data-component-part="callout-icon"] { flex-shrink: 0 !important; }

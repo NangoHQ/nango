@@ -1347,7 +1347,7 @@ class ConnectionService {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials
+                dynamicCredentials: { ...dynamicCredentials, connectionConfig }
             });
 
             if (create.isErr()) {

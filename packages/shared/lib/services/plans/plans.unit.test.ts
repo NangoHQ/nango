@@ -6,6 +6,18 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('should only enable RBAC by default on growth, growth-v2, and enterprise', () => {
+        expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('growth-v2')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('enterprise')?.flags.has_rbac).toBe(true);
+    });
+
     describe('when downgrading', () => {
         it('should reset all flags to new plan default values, including overrides', () => {
             const currentPlan = makePlan({
@@ -103,9 +115,11 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,
+        has_rbac: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
+        remote_functions: false,
         environments_max: 2,
         connections_max: null,
         records_max: null,
@@ -115,6 +129,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         webhook_forwards_max: null,
         function_logs_max: null,
         sync_function_runtime: 'runner',
+        sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',

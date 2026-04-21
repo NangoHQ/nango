@@ -217,7 +217,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                                       } catch {
                                           redirectHostForLog = 'unparseable';
                                       }
-                                      logger.warn('Proxy redirect to denylisted host blocked', {
+                                      logger.warning('Proxy redirect to denylisted host blocked', {
                                           accountId: account.id,
                                           providerConfigKey: parsedHeaders['provider-config-key'],
                                           connectionId: parsedHeaders['connection-id'],

@@ -64,7 +64,7 @@ export async function deployTemplate({
     const copyJs = await remoteFileService.copy({
         sourcePath: `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${version}.js`,
-        destinationLocalPath: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
+        destinationLocalFileName: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -77,7 +77,7 @@ export async function deployTemplate({
     const copyTs = await remoteFileService.copy({
         sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalPath: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
+        destinationLocalFileName: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
     });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');
@@ -216,7 +216,7 @@ export async function upgradeTemplate({
     const copyJs = await remoteFileService.copy({
         sourcePath: `${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`,
         destinationPath: `${remoteBasePathConfig}/${template.name}-v${template.version}.js`,
-        destinationLocalPath: `build/${provider}-${template.type}s-${template.name}.cjs`
+        destinationLocalFileName: `build/${provider}-${template.type}s-${template.name}.cjs`
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -229,7 +229,7 @@ export async function upgradeTemplate({
     const copyTs = await remoteFileService.copy({
         sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
         destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalPath: `${provider_config_key}/${template.type}s/${template.name}.ts`
+        destinationLocalFileName: `${provider_config_key}/${template.type}s/${template.name}.ts`
     });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');
