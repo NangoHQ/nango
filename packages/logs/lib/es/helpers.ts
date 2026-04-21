@@ -16,7 +16,23 @@ import type { Result } from '@nangohq/utils';
 import type { Client as OpenSearchClient } from '@opensearch-project/opensearch';
 
 function isConnectionError(err: unknown): boolean {
-    return err instanceof esErrors.ConnectionError || err instanceof osErrors.ConnectionError;
+    return err instanceof esErrors.ConnectionError || err instanceof osErrors.ConnectionError || err instanceof osErrors.NoLivingConnectionsError;
+}
+
+/** Best-effort details for OpenSearch/Elasticsearch API errors (logged; not returned to callers). */
+function formatLogsStorageInitError(err: unknown): string {
+    if (err instanceof osErrors.ResponseError) {
+        const body = typeof err.body === 'object' && err.body !== null ? err.body : err.meta?.body;
+        return `HTTP ${err.statusCode}: ${JSON.stringify(body)}`;
+    }
+    if (err instanceof esErrors.ResponseError) {
+        const body = typeof err.body === 'object' && err.body !== null ? err.body : err.meta?.body;
+        return `HTTP ${err.statusCode}: ${JSON.stringify(body)}`;
+    }
+    if (err instanceof Error) {
+        return err.message;
+    }
+    return String(err);
 }
 
 export async function start() {
@@ -51,7 +67,7 @@ export async function migrateMapping(): Promise<Result<void>> {
         return Ok(undefined);
     } catch (err) {
         const errMsg = isConnectionError(err) ? 'failed_to_connect_logs_storage' : 'failed_to_init_logs_storage';
-        logger.error(errMsg);
+        logger.error(`${errMsg}: ${formatLogsStorageInitError(err)}`, err);
         return Err(errMsg);
     }
 }
@@ -102,9 +118,11 @@ async function migrateMappingOpenSearch(): Promise<void> {
         const existsTemplate = await client.indices.existsIndexTemplate({ name: `${index.index}-template` });
         logger.info(`  ${existsTemplate ? 'updating' : 'creating'} index template "${index.index}"...`);
 
+        // OpenSearch requires index_patterns as a string array (Elasticsearch often accepts a single string).
+        const pattern = `${index.index}.*`;
         await client.indices.putIndexTemplate({
             name: `${index.index}-template`,
-            index_patterns: `${index.index}.*`,
+            index_patterns: [pattern],
             template: {
                 settings: index.settings!,
                 mappings: index.mappings!,
