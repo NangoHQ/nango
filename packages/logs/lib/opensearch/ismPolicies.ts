@@ -1,4 +1,7 @@
+import { errors as osErrors } from '@opensearch-project/opensearch';
+
 import { policyMessages, policyOperations } from '../es/schema.js';
+import { logger } from '../utils.js';
 
 import type { Client as OpenSearchClient } from '@opensearch-project/opensearch';
 
@@ -9,15 +12,28 @@ import type { Client as OpenSearchClient } from '@opensearch-project/opensearch'
  * Messages and operations policies both use a simple hot → delete (15d) flow. Warm/shrink/readonly
  * from Elasticsearch ILM are not replicated here because ISM action shapes differ by OpenSearch
  * version and often fail on managed clusters; advanced tuning can be done via custom policies in-cluster.
+ *
+ * PUT returns 409 when the policy document already exists (e.g. restart or rolling deploy). That is
+ * treated as success; use the ISM API with seq_no/primary_term if you need to change an existing policy.
  */
 export async function putIsmPolicies(client: OpenSearchClient): Promise<void> {
     const policies = [buildRetentionIsmPolicy(policyOperations.name), buildRetentionIsmPolicy(policyMessages.name)];
     for (const { id, body } of policies) {
-        await client.transport.request({
-            method: 'PUT',
-            path: `/_plugins/_ism/policies/${encodeURIComponent(id)}`,
-            body
-        });
+        try {
+            await client.transport.request({
+                method: 'PUT',
+                path: `/_plugins/_ism/policies/${encodeURIComponent(id)}`,
+                body
+            });
+        } catch (err: unknown) {
+            if (err instanceof osErrors.ResponseError) {
+                if (err.statusCode === 409) {
+                    logger.info(`ISM policy "${id}" already exists (409), skipping create`);
+                    continue;
+                }
+            }
+            throw err;
+        }
     }
 }
 
