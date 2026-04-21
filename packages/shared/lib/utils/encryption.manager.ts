@@ -8,7 +8,7 @@ import { isConnectionJsonRow } from '../services/connections/utils.js';
 import secretService from '../services/secret.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBCustomerKey, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
@@ -279,21 +279,6 @@ export class EncryptionManager extends Encryption {
             environmentVariable.value_tag = authTag;
 
             await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ id: environmentVariable.id }).update(environmentVariable);
-        }
-
-        const customerKeys = await db.knex.select('*').from<DBCustomerKey>('customer_keys');
-        for (const key of customerKeys) {
-            if (key.iv && key.tag) {
-                continue;
-            }
-            const encrypted = this.encryptAPISecret(key);
-            const hashed = await secretService.hashSecret(key.secret);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            encrypted.hashed = hashed.value;
-            encrypted.updated_at = new Date();
-            await db.knex<DBCustomerKey>('customer_keys').where({ id: key.id }).update(encrypted);
         }
 
         logger.info('🔐✅ Encryption of database complete!');

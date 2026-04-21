@@ -1000,7 +1000,6 @@
                 "group": "HTTP API",
                 "icon": "cloud",
                 "pages": [
-                  "reference/api-keys",
                   "reference/api/authentication",
                   "reference/api/rate-limits",
                   {

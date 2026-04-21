@@ -11,7 +11,7 @@ import type { Knex } from 'knex';
 const API_SECRETS_TABLE = 'api_secrets';
 
 class SecretService {
-    public async getInternalSecretForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret>> {
+    public async getDefaultSecretForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret>> {
         try {
             const [secret] = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').where({
                 environment_id: envId,

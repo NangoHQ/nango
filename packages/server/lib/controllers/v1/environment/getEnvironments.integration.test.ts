@@ -28,7 +28,7 @@ describe(`GET ${route}`, () => {
         const env = await seeders.createEnvironmentSeed(account.id, 'test');
         await seeders.createEnvironmentSeed(account.id, 'prod');
 
-        const secret = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
+        const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
 
         const res = await api.fetch(route, {
             method: 'GET',

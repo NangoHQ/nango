@@ -35,16 +35,16 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger>{trigger}</DialogTrigger>}
-            <DialogContent className="gap-6">
+            <DialogContent>
                 <DialogTitle>{title}</DialogTitle>
-                <DialogDescription className="-mt-3">{description}</DialogDescription>
+                <DialogDescription>{description}</DialogDescription>
 
-                <div className="flex flex-col gap-2">
+                <div className="mt-4 flex flex-col gap-4">
                     <p className="text-sm text-white break-words">{inputLabel}</p>
                     <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" className="w-full" />
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="mt-4">
                     <DialogClose asChild>
                         <Button variant="secondary">{cancelButtonText}</Button>
                     </DialogClose>

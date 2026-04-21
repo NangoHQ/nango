@@ -137,7 +137,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -278,7 +278,7 @@ export async function handleWebhookSuccess({
     const environment = accountAndEnv.environment;
 
     if (environment) {
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             throw defaultSecret.error;
         }
@@ -474,7 +474,7 @@ async function onFailure({
             if (team && environment && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
-                        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+                        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
                         if (defaultSecret.isErr()) {
                             throw defaultSecret.error;
                         }

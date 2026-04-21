@@ -61,28 +61,6 @@ describe(`GET ${route}`, () => {
                 slack_notifications_channel: ''
             }
         });
-        // NAN-5088: webhook signing key should be present
-        expect(res.json.environmentAndAccount.webhook_signing_key).toBeTruthy();
-    });
-
-    it('should redact webhook_signing_key for production_support on prod environment', async () => {
-        const { env, user } = await seeders.seedAccountEnvAndUser();
-        // Make it a production environment
-        await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
-        // Change user role to production_support
-        await db.knex('_nango_users').where({ id: user.id }).update({ role: 'production_support' });
-
-        const session = await authenticateUser(api, user);
-        const res = await api.fetch(route, {
-            method: 'GET',
-            // @ts-expect-error query params are required
-            query: { env: env.name },
-            session
-        });
-
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-        expect(res.json.environmentAndAccount.webhook_signing_key).toBeNull();
     });
 
     describe('slack_notifications_channel', () => {

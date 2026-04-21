@@ -87,14 +87,12 @@ export function connectionFullToPublicApi({
     data,
     provider,
     activeLog,
-    endUser,
-    includeCredentials
+    endUser
 }: {
     data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
     activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
-    includeCredentials: boolean;
 }): ApiPublicConnectionFull {
     return {
         id: data.id,
@@ -113,7 +111,7 @@ export function connectionFullToPublicApi({
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
-        credentials: includeCredentials ? data.credentials : ({} as DBConnectionDecrypted['credentials'])
+        credentials: data.credentials
     };
 }
 

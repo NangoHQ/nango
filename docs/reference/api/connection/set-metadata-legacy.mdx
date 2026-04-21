@@ -3,10 +3,6 @@ title: 'Set connection metadata (Deprecated)'
 openapi: 'POST /connection/{connectionId}/metadata'
 ---
 
-<Info>
-  Requires an API key with the `environment:connections:write` scope. [Learn more about API key scopes](/reference/api-keys#scopes).
-</Info>
-
 ## Set _connection metadata_
 
 Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides any existing metadata.

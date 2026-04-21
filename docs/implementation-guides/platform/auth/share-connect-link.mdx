@@ -15,7 +15,7 @@ Create a connect session and return the `connect_link` to your frontend or inter
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
 
     api.post('/connectLink', async (req, res) => {
       const { data } = await nango.createConnectSession({
@@ -38,7 +38,7 @@ Create a connect session and return the `connect_link` to your frontend or inter
     ```bash
     curl --request POST \
       --url https://api.nango.dev/connect/sessions \
-      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "tags": {

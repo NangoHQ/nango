@@ -61,7 +61,7 @@ This will also be used to attribute webhooks to the correct end user.
   ```ts
   import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
  await nango.patchConnection({
      connectionId: '<CONNECTION-ID>',
      provider_config_key: '<INTEGRATION-ID>',
@@ -77,7 +77,7 @@ const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
   <Tab title="cURL">
 ```bash
 curl -X PATCH https://api.nango.dev/v1/connections/<CONNECTION-ID> \
--H "Authorization: Bearer <NANGO-API-KEY>" \
+-H "Authorization: Bearer <NANGO-SECRET-KEY>" \
 -H "Content-Type: application/json" \
  -d '{
      "tags": {

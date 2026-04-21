@@ -34,7 +34,7 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
 
     try {
         const accountContext = await tracer.trace('persist.middleware.auth.getAccountAndEnvironmentBySecretKey', async () => {
-            return await accountService.getAccountContextByInternalSecretKey(secret);
+            return await accountService.getAccountContextBySecretKey(secret);
         });
         if (!accountContext) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Account not found` } });
