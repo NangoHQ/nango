@@ -10722,7 +10722,7 @@ metabase:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.domain}.com
         headers:
             x-api-key: ${apiKey}
         verification:
@@ -10731,21 +10731,30 @@ metabase:
                 content-type: application/json
             endpoints:
                 - /api/database
-    docs: https://nango.dev/docs/integrations/all/metabase
-    docs_connect: https://nango.dev/docs/integrations/all/metabase/connect
+    docs: https://nango.dev/docs/api-integrations/metabase
+    docs_connect: https://nango.dev/docs/api-integrations/metabase/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Metabase hostname
+            example: acme.metabaseapp.com
+            format: hostname
+            prefix: https://
+            order: 1
         domain:
             type: string
-            title: Metabase Domain
-            description: The domain (without the extension) of your Metabase account
-            pattern: '^[a-z0-9.-]+$'
-            example: metabase
-            doc_section: '#step-2-finding-your-metabase-domain'
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
+            example: mb_**************************kR9mZw=
+            pattern: '^mb_[A-Za-z0-9+/]+=*$'
             doc_section: '#step-1-generating-an-api-key'
 
 mercury:
