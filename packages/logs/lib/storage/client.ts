@@ -25,6 +25,25 @@ function createRawClient(): ElasticsearchClient {
     return new ElasticsearchClient(common);
 }
 
+/**
+ * OpenSearch JS expects indexed documents in `body`; Elasticsearch v8 accepts `document`
+ * and maps it. Normalize here so call sites can keep the ES8 shape.
+ */
+function mapArgsForOpenSearch(methodName: string | symbol, args: any[]): any[] {
+    if (envs.NANGO_LOGS_PROVIDER !== 'opensearch' || args.length === 0) {
+        return args;
+    }
+    const first = args[0];
+    if (!first || typeof first !== 'object' || first.body !== undefined) {
+        return args;
+    }
+    if ((methodName === 'create' || methodName === 'index') && 'document' in first) {
+        const { document, ...rest } = first;
+        return [{ ...rest, body: document }, ...args.slice(1)];
+    }
+    return args;
+}
+
 function withCircuitBreaker(target: ElasticsearchClient): ElasticsearchClient {
     const circuitBreaker = new CircuitBreaker({
         healthCheck: async () => {
@@ -56,7 +75,8 @@ function withCircuitBreaker(target: ElasticsearchClient): ElasticsearchClient {
                     circuitBreaker.destroy();
                 }
 
-                return await originalMethod.apply(targetClient, args);
+                const mappedArgs = mapArgsForOpenSearch(prop, args);
+                return await originalMethod.apply(targetClient, mappedArgs);
             };
         }
     });
