@@ -25,7 +25,7 @@ const route: WebhookHandler<NotionWebhook | NotionWebhookVerification> = async (
     const verificationToken = nango.integration.custom?.['webhookSecret'];
 
     if ('verification_token' in body) {
-        logger.info('Received verification request, skipping signature validation', { configId: nango.integration.id });
+        logger.info('Received verification request, skipping signature validation', { configId: nango.integration.id, body });
     } else if (verificationToken) {
         if (!signature) {
             logger.error('missing signature', { configId: nango.integration.id });
