@@ -437,6 +437,7 @@
               "integrations/all/employment-hero",
               "integrations/all/entrata",
               "integrations/all/envoy",
+              "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
