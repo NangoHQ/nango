@@ -540,6 +540,13 @@ export const ENVS = z.object({
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
 
+    // Feature Flags
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_UNLEASH_URL: z.url().optional(),
+    NANGO_UNLEASH_API_TOKEN: z.string().optional(),
+    NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
+    NANGO_UNLEASH_REFRESH_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
     NANGO_CLOUD: z.stringbool().optional().default(false),
