@@ -20,6 +20,9 @@
             "path": "packages/kvstore"
         },
         {
+            "path": "packages/feature-flags"
+        },
+        {
             "path": "packages/logs"
         },
         {
