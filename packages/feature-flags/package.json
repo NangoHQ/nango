@@ -1,0 +1,27 @@
+{
+    "name": "@nangohq/feature-flags",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.js",
+    "private": true,
+    "scripts": {
+        "build": "rimraf ./dist && tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/feature-flags"
+    },
+    "dependencies": {
+        "@nangohq/utils": "file:../utils",
+        "@openfeature/server-sdk": "~1.18.0",
+        "unleash-client": "6.6.0"
+    },
+    "devDependencies": {
+        "vitest": "3.2.4"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}
