@@ -118,20 +118,29 @@ async function migrateMappingOpenSearch(): Promise<void> {
         const existsTemplate = await client.indices.existsIndexTemplate({ name: `${index.index}-template` });
         logger.info(`  ${existsTemplate ? 'updating' : 'creating'} index template "${index.index}"...`);
 
-        // OpenSearch requires index_patterns as a string array (Elasticsearch often accepts a single string).
+        // OpenSearch JS client requires `name` + `body` (body holds index_patterns + template). Elasticsearch-style flat params are rejected.
         const pattern = `${index.index}.*`;
         await client.indices.putIndexTemplate({
             name: `${index.index}-template`,
-            index_patterns: [pattern],
-            template: {
-                settings: index.settings!,
-                mappings: index.mappings!,
-                aliases: { [index.index]: {} }
+            body: {
+                index_patterns: [pattern],
+                template: {
+                    settings: index.settings!,
+                    mappings: index.mappings!,
+                    aliases: { [index.index]: {} }
+                }
             }
         });
 
         logger.info(`  Updating pipeline`);
-        await client.ingest.putPipeline(getDailyIndexPipeline(index.index));
+        const pipeline = getDailyIndexPipeline(index.index);
+        await client.ingest.putPipeline({
+            id: pipeline.id,
+            body: {
+                description: pipeline.description ?? 'Daily index',
+                processors: pipeline.processors ?? []
+            }
+        });
 
         const existsAlias = await client.indices.exists({ index: index.index });
         if (!existsAlias) {
