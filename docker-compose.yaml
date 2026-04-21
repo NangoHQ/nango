@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: ghcr.io/ziraloop/integrations:latest
+        image: ghcr.io/usehiveloop/integrations:latest
         container_name: nango-server
         platform: linux/amd64
         environment:

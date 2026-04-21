@@ -18,7 +18,7 @@ fi
 # Move to here no matter where the file was executed
 cd "$(dirname "$0")"
 
-SELF_HOSTED_IMAGE="ghcr.io/ziraloop/integrations:latest"
+SELF_HOSTED_IMAGE="ghcr.io/usehiveloop/integrations:latest"
 
 echo ""
 echo -e "Building self-hosted $SELF_HOSTED_IMAGE"
