@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { catalogFileService, getSyncConfigRaw, seeders, updatePlan } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
@@ -18,7 +18,7 @@ describe('PATCH /api/v1/flows/:id/enable', () => {
     });
 
     it('should allow re-enabling a flow for non-auto-idling plans with stale expired trial fields', async () => {
-        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        vi.spyOn(catalogFileService, 'copyFunction').mockResolvedValue({ jsLocation: '_LOCAL_FILE_', tsLocation: '_LOCAL_FILE_' });
         const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable-enable', 'airtable');
         await updatePlan(db.knex, {

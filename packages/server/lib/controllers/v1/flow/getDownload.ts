@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { configService, getSyncConfigById, remoteFileService } from '@nangohq/shared';
+import { configService, fileService, getSyncConfigById } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -49,5 +49,5 @@ export const getFlowDownload = asyncWrapper<GetFlowDownload>(async (req, res) =>
         return;
     }
 
-    await remoteFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
+    await fileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
 });

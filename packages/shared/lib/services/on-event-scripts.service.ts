@@ -2,8 +2,7 @@ import db from '@nangohq/database';
 import { env } from '@nangohq/utils';
 
 import configService from './config.service.js';
-import remoteFileService from './file/remote.service.js';
-import { resolveLocalFileName } from '../utils/utils.js';
+import { fileService } from './file/index.js';
 import { increment } from './sync/config/config.service.js';
 
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
@@ -105,20 +104,27 @@ export const onEventScriptService = {
                     const previousScriptVersion = previousScriptVersions.find((p) => p.config_id === config.id && p.name === name && p.event === event);
                     const version = previousScriptVersion ? increment(previousScriptVersion.version) : '0.0.1';
 
-                    const file_location = await remoteFileService.upload({
+                    const coords = {
+                        env,
+                        accountId: account.id,
+                        environmentId: environment.id,
+                        configId: config.id,
+                        providerConfigKey
+                    };
+                    const file_location = await fileService.uploadCompiledJs({
                         content: fileBody.js,
-                        destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
-                        destinationLocalFileName: resolveLocalFileName({ syncName: name, providerConfigKey })
+                        coords,
+                        script: { scriptName: name, scriptType: 'on-event', version: String(version) }
                     });
 
                     if (!file_location) {
                         throw new Error(`Failed to upload the onEvent script file: ${name}`);
                     }
 
-                    await remoteFileService.upload({
+                    await fileService.uploadSourceTs({
                         content: fileBody.ts,
-                        destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
-                        destinationLocalFileName: `${providerConfigKey}/on-events/${name}.ts`
+                        coords,
+                        script: { scriptName: name, scriptType: 'on-event' }
                     });
 
                     onEventInserts.push({

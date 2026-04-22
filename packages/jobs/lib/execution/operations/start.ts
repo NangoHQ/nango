@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
-import { connectionService, localFileService, remoteFileService } from '@nangohq/shared';
-import { Err, Ok, integrationFilesAreRemote, isCloud, stringifyError } from '@nangohq/utils';
+import { connectionService, fileService } from '@nangohq/shared';
+import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { getRuntimeAdapter } from '../../runtime/runtimes.js';
 
@@ -33,14 +33,10 @@ export async function startScript({
         .setTag('syncName', nangoProps.syncConfig.sync_name);
 
     try {
-        const integrationData = { fileLocation: nangoProps.syncConfig.file_location };
-        const script: string | null =
-            isCloud || integrationFilesAreRemote
-                ? await remoteFileService.getFile(integrationData.fileLocation)
-                : localFileService.getIntegrationFile({
-                      syncConfig: nangoProps.syncConfig,
-                      providerConfigKey: nangoProps.providerConfigKey
-                  });
+        const script: string | null = await fileService.getCompiledJs({
+            syncConfig: nangoProps.syncConfig,
+            providerConfigKey: nangoProps.providerConfigKey
+        });
 
         if (!script) {
             throw new Error(`Unable to find integration file`);

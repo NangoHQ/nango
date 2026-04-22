@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
@@ -10,7 +10,7 @@ import { getTestTeam } from '../../../seeders/account.seeder.js';
 import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
 import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
-import remoteFileService from '../../file/remote.service.js';
+import { fileService } from '../../file/index.js';
 import * as SyncService from '../sync.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
@@ -33,6 +33,13 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     getOutput: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
+
+// Prevent any real filesystem writes from deploy flows that don't set their own spies.
+beforeEach(() => {
+    vi.spyOn(fileService, 'uploadCompiledJs').mockResolvedValue('https://example.com/file.js');
+    vi.spyOn(fileService, 'uploadSourceTs').mockResolvedValue('https://example.com/file.ts');
+    vi.spyOn(fileService, 'uploadNangoYaml').mockResolvedValue('https://example.com/nango.yaml');
+});
 
 describe('Sync config create', () => {
     const environment = getTestEnvironment();
@@ -298,7 +305,9 @@ describe('Sync config models_json_schema handling', () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigsBySyncNameAndConfigId').mockResolvedValue([]);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(fileService, 'uploadCompiledJs').mockResolvedValue('https://example.com/file.js');
+        vi.spyOn(fileService, 'uploadSourceTs').mockResolvedValue('https://example.com/file.ts');
+        vi.spyOn(fileService, 'uploadNangoYaml').mockResolvedValue('https://example.com/nango.yaml');
         // Mock the transaction to capture the sync config being inserted into the database
         vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
             const mockTrx = {

@@ -3,7 +3,7 @@ import { Err, Ok, env } from '@nangohq/utils';
 
 import { switchActiveSyncConfig } from './utils.js';
 import { NangoError } from '../../utils/error.js';
-import remoteFileService from '../file/remote.service.js';
+import { catalogFileService } from '../file/catalog.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
 
 import type { Config } from '../../models/Provider.js';
@@ -40,10 +40,6 @@ export async function deployTemplate({
     logCtx: LogContext;
 }): Promise<Result<{ result: SyncDeploymentResult; logCtx: LogContext }>> {
     const idsToMarkAsInactive: number[] = [];
-    const publicRoute = deployInfo.provider;
-    const remoteBasePath = `${env}/account/${team.id}/environment/${environment.id}`;
-
-    const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
     const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, true);
     if (exists) {
@@ -60,11 +56,16 @@ export async function deployTemplate({
 
     void logCtx.info(`Uploading ${deployInfo.integrationId} -> ${template.name}@${version}`);
 
-    // Copy the main js file
-    const copyJs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/build/${deployInfo.provider}_${template.type}s_${template.name}.cjs`,
-        destinationPath: `${remoteBasePathConfig}/${template.name}-v${version}.js`,
-        destinationLocalFileName: `build/${deployInfo.provider}-${template.type}s-${template.name}.cjs`
+    const { jsLocation: copyJs, tsLocation: copyTs } = await catalogFileService.copyFunction({
+        provider: deployInfo.provider,
+        script: { scriptName: template.name, scriptType: template.type!, version },
+        coords: {
+            env,
+            accountId: team.id,
+            environmentId: environment.id,
+            configId: integration.id!,
+            providerConfigKey: deployInfo.integrationId
+        }
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -72,13 +73,6 @@ export async function deployTemplate({
 
         return Err(new NangoError('file_upload_error'));
     }
-
-    // Copy the typescript source file
-    const copyTs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
-        destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalFileName: `${deployInfo.integrationId}/${template.type}s/${template.name}.ts`
-    });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');
         await logCtx.failed();
@@ -206,17 +200,19 @@ export async function upgradeTemplate({
     logCtx: LogContext;
 }): Promise<Result<boolean | null>> {
     const { unique_key: provider_config_key, provider } = integration;
-    const publicRoute = provider;
-    const remoteBasePath = `${env}/account/${team.id}/environment/${environment.id}`;
-    const remoteBasePathConfig = `${remoteBasePath}/config/${syncConfig.nango_config_id}`;
 
     void logCtx.info(`Upgrading ${syncConfig.type} -> ${syncConfig.sync_name} version ${syncConfig.version} to version ${template.version}`);
 
-    // Copy the main js file
-    const copyJs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/build/${provider}_${template.type}s_${template.name}.cjs`,
-        destinationPath: `${remoteBasePathConfig}/${template.name}-v${template.version}.js`,
-        destinationLocalFileName: `build/${provider}-${template.type}s-${template.name}.cjs`
+    const { jsLocation: copyJs, tsLocation: copyTs } = await catalogFileService.copyFunction({
+        provider,
+        script: { scriptName: template.name, scriptType: template.type!, version: template.version! },
+        coords: {
+            env,
+            accountId: team.id,
+            environmentId: environment.id,
+            configId: syncConfig.nango_config_id,
+            providerConfigKey: provider_config_key
+        }
     });
     if (!copyJs) {
         void logCtx.error('There was an error uploading the main js file');
@@ -224,13 +220,6 @@ export async function upgradeTemplate({
 
         return Err(new NangoError('file_upload_error'));
     }
-
-    // Copy the typescript source file
-    const copyTs = await remoteFileService.copy({
-        sourcePath: `${publicRoute}/${template.type}s/${template.name}.ts`,
-        destinationPath: `${remoteBasePathConfig}/${template.name}.ts`,
-        destinationLocalFileName: `${provider_config_key}/${template.type}s/${template.name}.ts`
-    });
     if (!copyTs) {
         void logCtx.error('There was an error uploading the source file');
         await logCtx.failed();

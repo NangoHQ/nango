@@ -1,14 +1,12 @@
 import db, { dbNamespace } from '@nangohq/database';
-import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
-import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
-import remoteFileService from '../../file/remote.service.js';
+import { fileService } from '../../file/index.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
 import { getSyncsByProviderConfigKey } from '../sync.service.js';
 
@@ -91,10 +89,9 @@ export async function deploy({
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
     if (nangoYamlBody) {
-        await remoteFileService.upload({
+        await fileService.uploadNangoYaml({
             content: nangoYamlBody,
-            destinationPath: `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-            destinationLocalFileName: nangoConfigFile
+            coords: { env, accountId: account.id, environmentId: environment.id }
         });
     }
 
@@ -318,17 +315,18 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const file_location = (await remoteFileService.upload({
+    const coords = { env, accountId: account.id, environmentId: environment_id, configId: config.id as number, providerConfigKey };
+    const file_location = await fileService.uploadCompiledJs({
         content: jsFile,
-        destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-        destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
-    })) as string;
+        coords,
+        script: { scriptName: syncName, scriptType: flow.type, version }
+    });
 
     if (typeof fileBody === 'object' && fileBody.ts) {
-        await remoteFileService.upload({
+        await fileService.uploadSourceTs({
             content: fileBody.ts,
-            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+            coords,
+            script: { scriptName: syncName, scriptType: flow.type }
         });
     }
 

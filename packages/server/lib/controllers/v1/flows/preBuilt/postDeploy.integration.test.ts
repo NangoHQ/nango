@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { catalogFileService, getSyncConfigRaw, seeders, updatePlan } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
@@ -44,7 +44,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should deploy a template', async () => {
-        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        vi.spyOn(catalogFileService, 'copyFunction').mockResolvedValue({ jsLocation: '_LOCAL_FILE_', tsLocation: '_LOCAL_FILE_' });
         const { env, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable', 'airtable');
         const res = await api.fetch(endpoint, {
@@ -168,7 +168,7 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should ignore stale expired trial fields for non-auto-idling plans', async () => {
-        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        vi.spyOn(catalogFileService, 'copyFunction').mockResolvedValue({ jsLocation: '_LOCAL_FILE_', tsLocation: '_LOCAL_FILE_' });
         const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable-paid', 'airtable');
         await updatePlan(db.knex, {

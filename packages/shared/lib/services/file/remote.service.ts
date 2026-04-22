@@ -1,15 +1,17 @@
 import { Readable } from 'stream';
 
-import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { isCloud, isEnterprise, isLocal, isTest, report, useS3 } from '@nangohq/utils';
+import { env, isCloud, isEnterprise, isLocal, isTest, report, useS3 } from '@nangohq/utils';
 
-import localFileService from './local.service.js';
+import { deployedPaths } from './paths.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 
+import type { FileService } from './index.js';
+import type { DeploymentCoords, ScriptIdentity, YamlCoords } from './paths.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';
 import type { DBSyncConfig } from '@nangohq/types';
@@ -35,13 +37,11 @@ function getBucketName() {
     return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || process.env['AWS_BUCKET_NAME'] || 'nangodev-customer-integrations';
 }
 
-class RemoteFileService {
+class RemoteFileService implements FileService {
     private client: S3Client;
     private useS3: boolean;
 
     bucket = getBucketName();
-    publicRoute = 'integration-templates';
-    publicZeroYamlRoute = 'templates-zero';
 
     constructor() {
         const region = getRegion();
@@ -55,24 +55,7 @@ class RemoteFileService {
         this.client = new S3Client(config);
     }
 
-    async upload({
-        content,
-        destinationPath,
-        destinationLocalFileName
-    }: {
-        content: string;
-        destinationPath: string;
-        destinationLocalFileName: string;
-    }): Promise<string | null> {
-        if (isEnterprise && !this.useS3) {
-            localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent: content });
-
-            return '_LOCAL_FILE_';
-        }
-        if (!this.useS3) {
-            return '_LOCAL_FILE_';
-        }
-
+    private async upload({ content, destinationPath }: { content: string; destinationPath: string }): Promise<string | null> {
         try {
             await this.client.send(
                 new PutObjectCommand({
@@ -85,52 +68,6 @@ class RemoteFileService {
             return destinationPath;
         } catch (err) {
             report(err);
-
-            return null;
-        }
-    }
-
-    /**
-     * Copy
-     * @desc copy an existing public integration file to user's location in s3,
-     * on local copy to the set local destination
-     */
-    async copy({
-        sourcePath,
-        destinationPath,
-        destinationLocalFileName
-    }: {
-        sourcePath: string;
-        destinationPath: string;
-        /**
-         * sic
-         * Destination when not uploading to S3
-         * This method handles when S3 is not enabled (like locally)
-         * TODO: We probably need to do it outside but until now it's like this
-         */
-        destinationLocalFileName: string;
-    }): Promise<string | null> {
-        const s3FilePath = `${this.publicZeroYamlRoute}/${sourcePath}`;
-        try {
-            if (isCloud) {
-                await this.client.send(
-                    new CopyObjectCommand({
-                        Bucket: this.bucket,
-                        Key: destinationPath,
-                        CopySource: `${this.bucket}/${s3FilePath}`
-                    })
-                );
-
-                return destinationPath;
-            } else {
-                const fileContent = await this.getFile(s3FilePath);
-                if (fileContent) {
-                    localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent });
-                }
-                return '_LOCAL_FILE_';
-            }
-        } catch (err) {
-            report(err, { filePath: s3FilePath });
 
             return null;
         }
@@ -198,76 +135,97 @@ class RemoteFileService {
         await this.client.send(deleteObjectsCommand);
     }
 
-    async zipAndSendPublicFiles({
-        res,
-        scriptName,
-        providerPath,
-        flowType
-    }: {
-        res: Response;
-        scriptName: string;
-        providerPath: string;
-        flowType: string;
-    }): Promise<void> {
-        // TODO: handle zero yaml here
-
+    async zipAndSendFlow({ res, syncConfig }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<void> {
         const files: { name: string; content: Readable }[] = [];
-        const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
-        if (!success || nangoYaml === null) {
-            errorManager.errResFromNangoErr(res, error);
+        if (!syncConfig.sdk_version?.includes('-zero')) {
+            const nangoConfigLocation = deployedPaths.envRootOf(syncConfig.file_location);
+            const resGet = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
+            if (!resGet.success || !resGet.response) {
+                errorManager.errResFromNangoErr(res, resGet.error);
+                return;
+            }
+            files.push({ name: 'nango.yaml', content: resGet.response });
+        }
+
+        const scriptName = syncConfig.sync_name;
+
+        const jsFileLocation = syncConfig.file_location;
+        const { success: jsSuccess, error: jsError, response: jsFile } = await this.getStream(jsFileLocation);
+        if (!jsSuccess || jsFile === null) {
+            errorManager.errResFromNangoErr(res, jsError);
             return;
         }
-        files.push({ name: 'nango.yaml', content: nangoYaml });
+        files.push({ name: `${scriptName}.js`, content: jsFile });
 
-        const {
-            success: tsSuccess,
-            error: tsError,
-            response: tsFile
-        } = await this.getStream(`${this.publicRoute}/${providerPath}/${flowType}s/${scriptName}.ts`);
+        const tsFileLocation = deployedPaths.dirOf(syncConfig.file_location);
+        const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${tsFileLocation}/${scriptName}.ts`);
         if (!tsSuccess || tsFile === null) {
             errorManager.errResFromNangoErr(res, tsError);
             return;
         }
         files.push({ name: `${scriptName}.ts`, content: tsFile });
 
-        await this.zipAndSend({ res, files });
+        await this.zipAndSend({ res, files, nangoConfigId: syncConfig.nango_config_id });
     }
 
-    async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<void> {
-        if (!isCloud && !this.useS3) {
-            return localFileService.zipAndSendFlow({ res, syncConfig, providerConfigKey });
-        } else {
-            const files: { name: string; content: Readable }[] = [];
-            if (!syncConfig.sdk_version?.includes('-zero')) {
-                const nangoConfigLocation = syncConfig.file_location.split('/').slice(0, -3).join('/');
-                const resGet = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
-                if (!resGet.success || !resGet.response) {
-                    errorManager.errResFromNangoErr(res, resGet.error);
-                    return;
-                }
-                files.push({ name: 'nango.yaml', content: resGet.response });
-            }
+    // Domain-level API (matches FileService interface)
 
-            const scriptName = syncConfig.sync_name;
-
-            const jsFileLocation = syncConfig.file_location;
-            const { success: jsSuccess, error: jsError, response: jsFile } = await this.getStream(jsFileLocation);
-            if (!jsSuccess || jsFile === null) {
-                errorManager.errResFromNangoErr(res, jsError);
-                return;
-            }
-            files.push({ name: `${scriptName}.js`, content: jsFile });
-
-            const tsFileLocation = syncConfig.file_location.split('/').slice(0, -1).join('/');
-            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${tsFileLocation}/${scriptName}.ts`);
-            if (!tsSuccess || tsFile === null) {
-                errorManager.errResFromNangoErr(res, tsError);
-                return;
-            }
-            files.push({ name: `${scriptName}.ts`, content: tsFile });
-
-            await this.zipAndSend({ res, files, nangoConfigId: syncConfig.nango_config_id });
+    async getCompiledJs({ syncConfig }: { syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<string | null> {
+        try {
+            return await this.getFile(syncConfig.file_location);
+        } catch {
+            return null;
         }
+    }
+
+    async getSourceTs({ syncConfig }: { syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<string | null> {
+        const dir = deployedPaths.dirOf(syncConfig.file_location);
+        const tsKey = `${dir}/${syncConfig.sync_name}.ts`;
+        try {
+            return await this.getFile(tsKey);
+        } catch {
+            return null;
+        }
+    }
+
+    async uploadCompiledJs({ content, coords, script }: { content: string; coords: DeploymentCoords; script: ScriptIdentity }): Promise<string | null> {
+        const key = deployedPaths.js({
+            env,
+            accountId: coords.accountId,
+            environmentId: coords.environmentId,
+            configId: coords.configId,
+            scriptName: script.scriptName,
+            version: script.version
+        });
+        return await this.upload({ content, destinationPath: key });
+    }
+
+    async uploadSourceTs({
+        content,
+        coords,
+        script
+    }: {
+        content: string;
+        coords: DeploymentCoords;
+        script: Pick<ScriptIdentity, 'scriptName' | 'scriptType'>;
+    }): Promise<string | null> {
+        const key = deployedPaths.ts({
+            env,
+            accountId: coords.accountId,
+            environmentId: coords.environmentId,
+            configId: coords.configId,
+            scriptName: script.scriptName
+        });
+        return await this.upload({ content, destinationPath: key });
+    }
+
+    async uploadNangoYaml({ content, coords }: { content: string; coords: YamlCoords }): Promise<string | null> {
+        const key = deployedPaths.nangoYaml({ env, accountId: coords.accountId, environmentId: coords.environmentId });
+        return await this.upload({ content, destinationPath: key });
+    }
+
+    async deleteDeployedFiles(fileLocations: string[]): Promise<void> {
+        await this.deleteFiles(fileLocations);
     }
 
     async zipAndSend({ res, files, nangoConfigId }: { res: Response; files: { name: string; content: Readable }[]; nangoConfigId?: number }) {

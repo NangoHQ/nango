@@ -5,7 +5,7 @@ import db, { dbNamespace, schema } from '@nangohq/database';
 import { LogActionEnum } from '../../../models/Telemetry.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 import configService from '../../config.service.js';
-import remoteFileService from '../../file/remote.service.js';
+import { fileService } from '../../file/index.js';
 
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
@@ -392,7 +392,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
         const files = await schema().from<DBSyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
         if (files.length > 0) {
-            await remoteFileService.deleteFiles(files);
+            await fileService.deleteDeployedFiles(files);
         }
     } catch (err) {
         errorManager.report(err, {

@@ -7,8 +7,8 @@ import connectionService from './services/connection.service.js';
 import customerKeyService from './services/customerKey.service.js';
 import environmentService from './services/environment.service.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
-import localFileService from './services/file/local.service.js';
-import remoteFileService from './services/file/remote.service.js';
+import { catalogFileService } from './services/file/catalog.service.js';
+import { fileService } from './services/file/index.js';
 import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
@@ -66,6 +66,7 @@ export {
     Orchestrator,
     SlackService,
     accountService,
+    catalogFileService,
     configService,
     connectionService,
     customerKeyService,
@@ -74,13 +75,12 @@ export {
     errorManager,
     errorNotificationService,
     externalWebhookService,
+    fileService,
     flowService,
     generateSlackConnectionId,
     hmacService,
-    localFileService,
     pbkdf2,
     providerClientManager,
-    remoteFileService,
     secretService,
     seeders,
     sharedCredentialsService,
