@@ -11788,6 +11788,48 @@ nocrm:
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
 
+northbeam:
+    display_name: Northbeam
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.northbeam.io
+        headers:
+            authorization: ${apiKey}
+            data-client-id: ${connectionConfig.dataClientId}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/orders
+    docs: https://nango.dev/docs/integrations/all/northbeam
+    docs_connect: https://nango.dev/docs/integrations/all/northbeam/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: Use 'api' for production or 'api-uat' for testing/development.
+            pattern: '^api(-uat)?$'
+            example: api
+            order: 1
+            doc_section: '#step-1-getting-authentication-credentials'
+        dataClientId:
+            type: string
+            title: Data Client ID
+            description: Your Northbeam Data Client ID (UUID).
+            format: uuid
+            example: '123e4567-e89b-12d3-a456-426614174000'
+            doc_section: '#step-1-getting-authentication-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Northbeam API Key.
+            format: uuid
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            doc_section: '#step-1-getting-authentication-credentials'
+
 notion:
     display_name: Notion
     categories:
