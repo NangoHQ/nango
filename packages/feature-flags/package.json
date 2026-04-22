@@ -15,7 +15,8 @@
     },
     "dependencies": {
         "@nangohq/utils": "file:../utils",
-        "@openfeature/server-sdk": "~1.18.0",
+        "@openfeature/core": "1.9.1",
+        "@openfeature/server-sdk": "1.18.0",
         "unleash-client": "6.6.0"
     },
     "devDependencies": {
