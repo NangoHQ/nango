@@ -1,3 +1,5 @@
+import * as crypto from 'node:crypto';
+
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
@@ -116,6 +118,52 @@ describe('buildProxyHeaders', () => {
             authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
             'x-test': 'test'
         });
+    });
+
+    it('should use the final URL host for signed proxy header interpolation', () => {
+        const requestDate = 'Tue, 21 Apr 2026 12:34:56 +0000';
+        const username = 'DIABCDEFGHIJKLMNOPQR';
+        const password = 'secret';
+        const authorizationTemplate =
+            'Basic ${base64(${credentials.username}:${hmacSha1Hex(' + requestDate + '\n${method}\n${host}\n${path}\n${params}, ${credentials.password})})}';
+        const expectedAuthorization = (host: string) => {
+            const canonical = `${requestDate}\nGET\n${host}\n/admin/v1/users\naccount_id=DA123`;
+            const signature = crypto.createHmac('sha1', password).update(canonical, 'utf8').digest('hex');
+            return 'Basic ' + Buffer.from(`${username}:${signature}`).toString('base64');
+        };
+
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: {
+                    base_url: 'https://${connectionConfig.hostname}',
+                    headers: {
+                        authorization: authorizationTemplate
+                    }
+                }
+            },
+            endpoint: '/admin/v1/users',
+            method: 'GET'
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'BASIC', username, password },
+            connection_config: { hostname: 'api-parent.duosecurity.com' }
+        });
+
+        const childHeaders = buildProxyHeaders({
+            config,
+            url: 'https://api-child.duosecurity.com/admin/v1/users?account_id=DA123',
+            connection
+        });
+        const parentHeaders = buildProxyHeaders({
+            config,
+            url: 'https://api-parent.duosecurity.com/admin/v1/users?account_id=DA123',
+            connection
+        });
+
+        expect(childHeaders['authorization']).toBe(expectedAuthorization('api-child.duosecurity.com'));
+        expect(childHeaders['authorization']).not.toBe(expectedAuthorization('api-parent.duosecurity.com'));
+        expect(parentHeaders['authorization']).toBe(expectedAuthorization('api-parent.duosecurity.com'));
     });
 
     it('should correctly construct headers with an authorization override', () => {
