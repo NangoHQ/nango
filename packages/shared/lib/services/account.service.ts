@@ -536,9 +536,16 @@ class AccountService {
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
     private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
-        const hashed = await secretService.hashSecret(secretKey);
-        if (hashed.isErr()) {
-            throw hashed.error;
+        let hash = hashLocalCache.get(secretKey);
+        if (hash) {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
+        } else {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
+            const hashed = await secretService.hashSecret(secretKey);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+            hash = hashed.value;
         }
 
         const row = await db.readOnly
@@ -565,7 +572,7 @@ class AccountService {
                 j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
             )
             .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
-            .where('api_secrets.hashed', hashed.value)
+            .where('api_secrets.hashed', hash)
             .where('api_secrets.is_default', true)
             .where('_nango_environments.deleted', false)
             .first();
@@ -573,6 +580,9 @@ class AccountService {
         if (!row) {
             return null;
         }
+
+        // Store only successful lookups to avoid polluting the cache
+        hashLocalCache.set(secretKey, hash);
 
         const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
         const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
