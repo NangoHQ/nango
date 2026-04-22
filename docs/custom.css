@@ -87,6 +87,25 @@ a[href="https://www.nango.dev"] svg {
   #content-area > div:first-child { margin-top: 1.5rem !important; }
 }
 
+/* ══ API REFERENCE — right column sticky fix ════════════════════ */
+/*
+ * #content-side-layout (right-hand sticky column: cURL example on API
+ * reference pages, "On this page" TOC elsewhere) has height
+ * calc(100vh - 9.5rem) and top: 152px. On API reference pages, its
+ * flex containing block is only ~navbar-to-footer tall, so
+ * parent.height - sticky.height yields ~80px of travel — less than the
+ * navbar height. The sticky clamps and its header ends up painted
+ * behind our fixed navbar.
+ *
+ * margin-top on the flex item pushes its natural start below the
+ * navbar AND grows the containing block, giving the sticky enough
+ * slack to settle at or below 152px. On pages with tall main columns
+ * (regular docs) this is a no-op — the sticky still engages at 152.
+ */
+@media (min-width: 768px) {
+  #content-side-layout { margin-top: 6rem !important; }
+}
+
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
 .dark #navigation-items > ul {
   padding-bottom: 20px !important;
@@ -201,91 +220,4 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   text-decoration: none !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
-}
-
-/* Log In — light */
-html:not(.dark) #navbar a[href="https://app.nango.dev"] {
-  display: inline-flex !important;
-  align-items: center !important;
-  background-color: transparent !important;
-  color: #0b0b0c !important;
-  border: 1px solid rgba(0, 0, 0, 0.2) !important;
-  text-decoration: none !important;
-}
-html:not(.dark) #navbar a[href="https://app.nango.dev"]:hover {
-  background-color: rgba(0, 0, 0, 0.04) !important;
-  border-color: rgba(0, 0, 0, 0.35) !important;
-}
-
-/* Sign Up — dark: white bg, dark text */
-.dark a[href="https://app.nango.dev/signup"] span[class*="bg-primary"],
-.dark a[href="https://app.nango.dev/signup"] span[class*="inset-0"] {
-  background-color: #ffffff !important;
-}
-.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] { color: #0b0b0c !important; }
-.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg,
-.dark a[href="https://app.nango.dev/signup"] span[class*="z-10"] svg path {
-  color: #0b0b0c !important;
-  stroke: #0b0b0c !important;
-  fill: #0b0b0c !important;
-}
-/* Chevron SVG (sibling of text span) */
-.dark a[href="https://app.nango.dev/signup"] svg { color: #0b0b0c !important; }
-.dark a[href="https://app.nango.dev/signup"] svg path { stroke: #0b0b0c !important; }
-.dark a[href="https://app.nango.dev/signup"]:hover span[class*="bg-primary"],
-.dark a[href="https://app.nango.dev/signup"]:hover span[class*="inset-0"] {
-  background-color: rgba(255, 255, 255, 0.88) !important;
-  opacity: 1 !important;
-}
-
-/* Sign Up — light: brand blue */
-html:not(.dark) a[href="https://app.nango.dev/signup"] span[class*="bg-primary"],
-html:not(.dark) a[href="https://app.nango.dev/signup"] span[class*="inset-0"] {
-  background-color: #2aabe2 !important;
-}
-html:not(.dark) a[href="https://app.nango.dev/signup"]:hover span[class*="bg-primary"],
-html:not(.dark) a[href="https://app.nango.dev/signup"]:hover span[class*="inset-0"] {
-  background-color: #1e96cc !important;
-  opacity: 1 !important;
-}
-
-/* ══ RIGHT TOC ("On this page") ══════════════════════════════════ */
-[class*="TableOfContents"] a,
-[class*="toc"] a,
-nav[aria-label*="page"] a,
-nav[aria-label*="Table"] a {
-  padding: 3px 8px !important;
-  border-radius: 4px !important;
-  display: block !important;
-}
-.dark [class*="TableOfContents"] a:hover,
-.dark nav[aria-label*="page"] a:hover,
-.dark nav[aria-label*="Table"] a:hover { background-color: rgba(255, 255, 255, 0.06) !important; }
-html:not(.dark) [class*="TableOfContents"] a:hover,
-html:not(.dark) nav[aria-label*="page"] a:hover,
-html:not(.dark) nav[aria-label*="Table"] a:hover { background-color: rgba(0, 0, 0, 0.05) !important; }
-
-/* ══ CHAT ASSISTANT ══════════════════════════════════════════════ */
-/*
- * Hide ONLY the floating "Ask a question" input bar that sticks to the
- * bottom of the content area. The navbar Ask AI trigger and its dialog
- * render via headlessui portals and DO NOT use this class, so they
- * remain fully functional.
- *
- * Note: `chat-assistant-floating-input` is a CLASS on a div, not an id.
- * We hide both the element itself and its sticky wrapper so no empty
- * space is left at the bottom of the page.
- */
-.chat-assistant-floating-input,
-.chat-assistant-floating-input-container,
-#content-area > div.sticky.bottom-0:has(.chat-assistant-floating-input) {
-  display: none !important;
-}
-
-/* ══ CALLOUT RESET ═══════════════════════════════════════════════ */
-[data-component-part="callout-icon"] { flex-shrink: 0 !important; }
-[data-component-part="callout-content"],
-[data-component-part="callout-content"] p,
-[data-component-part="callout-content"] span { color: inherit !important; }
+  background-
