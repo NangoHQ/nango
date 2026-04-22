@@ -30,4 +30,5 @@ export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
 export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
 export { default as calComWebhookRouting } from './cal-com-webhook-routing.js';
 export { default as streakWebhookRouting } from './streak-webhook-routing.js';
+export { default as haloPsaWebhookRouting } from './halo-psa-webhook-routing.js';
 export type * from './types.js';

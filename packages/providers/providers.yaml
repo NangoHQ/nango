@@ -8448,6 +8448,11 @@ halo-psa:
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
+    webhook_routing_script: haloPsaWebhookRouting
+    webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - connectionId
+        - webhookType
     proxy:
         base_url: https://${connectionConfig.hostname}/api
     docs: https://nango.dev/docs/api-integrations/halo-psa
