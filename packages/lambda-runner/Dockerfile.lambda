@@ -101,10 +101,13 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 # Code
 # COPY --from=build --chown=node:node /app/tmp /app/nango
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
-# Run deno cache from inside the runner package so Deno doesn't try to treat the repo root
-# as an npm workspace (root package.json lists `scripts` as a workspace member).
-RUN cd ${LAMBDA_TASK_ROOT}/packages/runner \
-  && deno cache --config ./deno/deno.json ./deno/bootstrap.ts
+# Isolate the Deno bootstrap away from /var/task to avoid npm workspace detection from the repo root.
+# This also keeps the subprocess runtime boundary self-contained.
+RUN mkdir -p /opt/nango-deno \
+  && cp ${LAMBDA_TASK_ROOT}/packages/runner/deno/bootstrap.ts /opt/nango-deno/bootstrap.ts \
+  && cp ${LAMBDA_TASK_ROOT}/packages/runner/deno/deno.json /opt/nango-deno/deno.json \
+  && deno cache --config /opt/nango-deno/deno.json /opt/nango-deno/bootstrap.ts
+ENV NANGO_DENO_BOOTSTRAP_PATH="/opt/nango-deno/bootstrap.ts"
 ENV DD_LAMBDA_HANDLER="packages/lambda-runner/dist/index.handler"
 RUN rm node_modules/datadog-lambda-js/dist/handler.js
 CMD ["node_modules/datadog-lambda-js/dist/handler.handler"]
