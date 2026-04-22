@@ -1,4 +1,5 @@
 export * from './roles.js';
+export * from './api-key-scopes.js';
 export * from './environment/constants.js';
 export * from './environment/detection.js';
 export * from './environment/parse.js';

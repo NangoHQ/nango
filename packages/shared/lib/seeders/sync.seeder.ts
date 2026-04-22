@@ -12,7 +12,7 @@ export async function createSyncSeeds({
     ...syncData
 }: SetRequired<Partial<DBSyncConfig>, 'environment_id' | 'nango_config_id' | 'sync_name'> & {
     connectionId: number;
-    endpoints?: NangoSyncEndpointV2[];
+    endpoints?: (NangoSyncEndpointV2 & { model?: string })[];
 }): Promise<{
     syncConfig: DBSyncConfig;
     sync: Sync;
@@ -54,6 +54,7 @@ export async function createSyncSeeds({
                 return {
                     method: endpoint.method,
                     path: endpoint.path,
+                    model: endpoint.model || null,
                     group_name: endpoint.group || null,
                     sync_config_id: syncConfig.id
                 };

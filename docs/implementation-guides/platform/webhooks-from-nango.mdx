@@ -39,7 +39,7 @@ To test webhooks locally, use a webhook forwarding service like [ngrok](https://
 
 Validate webhooks from Nango by looking at the `X-Nango-Hmac-Sha256` header.
 
-It's an HMAC-SHA256 hash of the webhook payload, using the secret key found in the _Environment Settings_ in the Nango UI.
+It's an HMAC-SHA256 hash of the webhook payload, using the webhook signing key found in **Environment Settings > Webhooks > Signing key** in the Nango UI.
 
 <Warning>
 Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verification. A legacy `X-Nango-Signature` header (using plain SHA-256) is also sent for backwards compatibility but should not be used. If you're currently using `X-Nango-Signature`, migrate to `X-Nango-Hmac-Sha256` for improved security.

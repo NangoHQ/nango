@@ -37,7 +37,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         return;
     }
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
     if (defaultSecret.isErr()) {
         sendStepError({ res, status: 500, error: defaultSecret.error });
         return;
