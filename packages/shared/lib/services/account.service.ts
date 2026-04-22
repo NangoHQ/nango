@@ -15,6 +15,18 @@ import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types'
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 
+interface AccountContext {
+    account: DBTeam;
+    environment: DBEnvironment;
+    secret: DBAPISecret;
+    plan: DBPlan | null;
+    auth?: {
+        source: 'customer_key' | 'api_secret';
+        scopes?: string[];
+        apiKeyId?: number;
+    };
+}
+
 const freeEmailDomains = new Set([
     'gmail.com',
     'duck.com',
@@ -181,9 +193,7 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextBySecretKey(
-        secretKey: string
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    async getAccountContextBySecretKey(secretKey: string): Promise<AccountContext | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
             if (environmentVariables.length > 0) {
@@ -206,7 +216,19 @@ class AccountService {
                         return null;
                     }
 
-                    return this.getAccountContext({ accountId: env.account_id, envName });
+                    const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
+
+                    if (!accountContext) {
+                        return null;
+                    }
+
+                    return {
+                        ...accountContext,
+                        auth: {
+                            source: 'api_secret',
+                            scopes: ['environment:*']
+                        }
+                    };
                 }
             }
         }
@@ -214,9 +236,40 @@ class AccountService {
         return this.getAccountContext({ secretKey });
     }
 
-    async getAccountContextByPublicKey(
-        publicKey: string
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    /**
+     * Resolve account context using only api_secrets (no customer_keys lookup).
+     * Used by internal services (persist) that authenticate with the
+     * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
+     */
+    async getAccountContextByInternalSecretKey(secretKey: string): Promise<AccountContext | null> {
+        if (!isCloud) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
+            for (const environmentVariable of environmentVariables) {
+                const envSecretKey = process.env[environmentVariable] as string;
+                if (envSecretKey !== secretKey) {
+                    continue;
+                }
+                const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                const env = await db.knex
+                    .select<Pick<DBEnvironment, 'account_id'>>('account_id')
+                    .from<DBEnvironment>('_nango_environments')
+                    .where({ name: envName, deleted: false })
+                    .first();
+                if (!env) {
+                    return null;
+                }
+                const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
+                if (!accountContext) {
+                    return null;
+                }
+                return accountContext;
+            }
+        }
+
+        return this.getAccountContext({ internalSecretKey: secretKey });
+    }
+
+    async getAccountContextByPublicKey(publicKey: string): Promise<AccountContext | null> {
         if (!isCloud) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_'));
             if (environmentVariables.length > 0) {
@@ -250,11 +303,19 @@ class AccountService {
         opts:
             | { publicKey: string }
             | { secretKey: string }
+            | { internalSecretKey: string }
             | { accountId: number; envName: string }
             | { environmentId: number }
             | { environmentUuid: string }
             | { accountUuid: string; envName: string }
-    ): Promise<{ account: DBTeam; environment: DBEnvironment; secret: DBAPISecret; plan: DBPlan | null } | null> {
+    ): Promise<AccountContext | null> {
+        if ('secretKey' in opts) {
+            return this.getAccountContextByAnySecret(opts.secretKey);
+        }
+        if ('internalSecretKey' in opts) {
+            return this.getAccountContextByInternalSecret(opts.internalSecretKey);
+        }
+
         const q = db.readOnly
             .select<{
                 account: DBTeam;
@@ -281,23 +342,7 @@ class AccountService {
             .where('_nango_environments.deleted', false)
             .first();
 
-        let hash: string | undefined;
-        if ('secretKey' in opts) {
-            // Hashing is slow by design so it's very slow to recompute this hash all the time
-            // We keep the hash in-memory to not compromise on security if the db leak
-            hash = hashLocalCache.get(opts.secretKey);
-            if (hash) {
-                metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
-            } else {
-                metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
-                const hashed = await secretService.hashSecret(opts.secretKey);
-                if (hashed.isErr()) {
-                    throw hashed.error;
-                }
-                hash = hashed.value;
-            }
-            q.where('default_secret.hashed', hash);
-        } else if ('publicKey' in opts) {
+        if ('publicKey' in opts) {
             q.where('_nango_environments.public_key', opts.publicKey);
         } else if ('environmentUuid' in opts) {
             q.where('_nango_environments.uuid', opts.environmentUuid);
@@ -314,11 +359,6 @@ class AccountService {
         const res = await q;
         if (!res) {
             return null;
-        }
-
-        if (hash && 'secretKey' in opts) {
-            // store only successful attempt to not pollute the memory
-            hashLocalCache.set(opts.secretKey, hash);
         }
 
         const defaultSecret = encryptionManager.decryptAPISecret(res.default_secret);
@@ -349,6 +389,228 @@ class AccountService {
                       trial_end_notified_at: res.plan.trial_end_notified_at ? new Date(res.plan.trial_end_notified_at) : res.plan.trial_end_notified_at,
                       orb_subscribed_at: res.plan.orb_subscribed_at ? new Date(res.plan.orb_subscribed_at) : res.plan.orb_subscribed_at,
                       orb_future_plan_at: res.plan.orb_future_plan_at ? new Date(res.plan.orb_future_plan_at) : res.plan.orb_future_plan_at
+                  }
+                : null,
+            secret: defaultSecret
+        };
+    }
+
+    private async getAccountContextByAnySecret(secretKey: string): Promise<AccountContext | null> {
+        const cachedHash = hashLocalCache.get(secretKey);
+        let hash: string;
+        if (!cachedHash) {
+            const hashed = await secretService.hashSecret(secretKey);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+            hash = hashed.value;
+        } else {
+            hash = cachedHash;
+        }
+
+        // This query debounces last_used_at in the same statement, so it must run on the primary.
+        // If we later introduce real read replicas for auth lookups, split this into:
+        // 1. read auth context from replica, 2. best-effort debounced update on primary.
+        const {
+            rows: [row]
+        } = await db.knex.raw<{
+            rows: {
+                account: DBTeam;
+                environment: DBEnvironment;
+                plan: DBPlan | null;
+                default_secret: DBAPISecret;
+                pending_secret: DBAPISecret | null;
+                auth_source: 'customer_key' | 'api_secret';
+                auth_scopes: string[] | null;
+                auth_api_key_id: number | null;
+            }[];
+        }>(
+            `
+                WITH matched_customer_key AS (
+                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes
+                    FROM customer_keys ck
+                    JOIN customer_keys_relations ckr ON ckr.customer_key_id = ck.id
+                    WHERE ck.hashed = ?
+                      AND ck.key_type = 'api'
+                      AND ck.deleted_at IS NULL
+                      AND ckr.entity_type = 'environment'
+                    LIMIT 1
+                ),
+                updated_customer_key AS (
+                    UPDATE customer_keys ck
+                    SET last_used_at = NOW()
+                    FROM matched_customer_key mck
+                    WHERE ck.id = mck.id
+                      AND (ck.last_used_at IS NULL OR ck.last_used_at < NOW() - INTERVAL '1 minute')
+                    RETURNING ck.id
+                ),
+                matched_auth AS (
+                    SELECT
+                        mck.environment_id,
+                        'customer_key'::text AS auth_source,
+                        mck.scopes AS auth_scopes,
+                        mck.id AS auth_api_key_id
+                    FROM matched_customer_key mck
+                    UNION ALL
+                    SELECT
+                        legacy.environment_id,
+                        'api_secret'::text AS auth_source,
+                        NULL::text[] AS auth_scopes,
+                        NULL::integer AS auth_api_key_id
+                    FROM api_secrets legacy
+                    WHERE legacy.hashed = ?
+                      AND legacy.is_default = true
+                      AND NOT EXISTS (SELECT 1 FROM matched_customer_key)
+                )
+                SELECT
+                    row_to_json(_nango_environments.*) AS environment,
+                    row_to_json(_nango_accounts.*) AS account,
+                    row_to_json(plans.*) AS plan,
+                    row_to_json(default_secret.*) AS default_secret,
+                    row_to_json(pending_secret.*) AS pending_secret,
+                    matched_auth.auth_source,
+                    matched_auth.auth_scopes,
+                    matched_auth.auth_api_key_id
+                FROM matched_auth
+                JOIN _nango_environments ON _nango_environments.id = matched_auth.environment_id
+                JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
+                JOIN api_secrets AS default_secret
+                    ON default_secret.environment_id = _nango_environments.id
+                   AND default_secret.is_default = true
+                LEFT JOIN api_secrets AS pending_secret
+                    ON pending_secret.environment_id = _nango_environments.id
+                   AND pending_secret.is_default = false
+                LEFT JOIN plans ON plans.account_id = _nango_accounts.id
+                WHERE _nango_environments.deleted = false
+                LIMIT 1;
+            `,
+            [hash, hash]
+        );
+        if (!row) {
+            return null;
+        }
+
+        hashLocalCache.set(secretKey, hash);
+
+        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+
+        return {
+            account: {
+                ...row.account,
+                created_at: new Date(row.account.created_at),
+                updated_at: new Date(row.account.updated_at)
+            },
+            environment: {
+                ...row.environment,
+                secret_key: defaultSecret.secret,
+                pending_secret_key: pendingKey?.secret || null,
+                created_at: new Date(row.environment.created_at),
+                updated_at: new Date(row.environment.updated_at),
+                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+            },
+            plan: row.plan
+                ? {
+                      ...row.plan,
+                      created_at: new Date(row.plan.created_at),
+                      updated_at: new Date(row.plan.updated_at),
+                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
+                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
+                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
+                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
+                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
+                  }
+                : null,
+            secret: defaultSecret,
+            auth: {
+                source: row.auth_source,
+                scopes: row.auth_source === 'api_secret' ? ['environment:*'] : (row.auth_scopes ?? []),
+                ...(row.auth_api_key_id ? { apiKeyId: row.auth_api_key_id } : {})
+            }
+        };
+    }
+
+    /**
+     * Resolve account context using only api_secrets (no customer_keys lookup).
+     * Used by internal services (persist, runners) that authenticate with the
+     * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
+     */
+    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+        let hash = hashLocalCache.get(secretKey);
+        if (hash) {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
+        } else {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
+            const hashed = await secretService.hashSecret(secretKey);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+            hash = hashed.value;
+        }
+
+        const row = await db.readOnly
+            .select<{
+                account: DBTeam;
+                environment: DBEnvironment;
+                plan: DBPlan | null;
+                default_secret: DBAPISecret;
+                pending_secret: DBAPISecret | null;
+            }>(
+                db.knex.raw('row_to_json(_nango_environments.*) as environment'),
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('row_to_json(plans.*) as plan'),
+                db.knex.raw('row_to_json(default_secret.*) as default_secret'),
+                db.knex.raw('row_to_json(pending_secret.*) as pending_secret')
+            )
+            .from<DBAPISecret>('api_secrets')
+            .join('_nango_environments', '_nango_environments.id', 'api_secrets.environment_id')
+            .join('_nango_accounts', '_nango_accounts.id', '_nango_environments.account_id')
+            .join({ default_secret: 'api_secrets' }, (j) =>
+                j.on('default_secret.environment_id', '_nango_environments.id').andOn('default_secret.is_default', db.knex.raw('true'))
+            )
+            .leftJoin({ pending_secret: 'api_secrets' }, (j) =>
+                j.on('pending_secret.environment_id', '_nango_environments.id').andOn('pending_secret.is_default', db.knex.raw('false'))
+            )
+            .leftJoin('plans', 'plans.account_id', '_nango_accounts.id')
+            .where('api_secrets.hashed', hash)
+            .where('api_secrets.is_default', true)
+            .where('_nango_environments.deleted', false)
+            .first();
+
+        if (!row) {
+            return null;
+        }
+
+        // Store only successful lookups to avoid polluting the cache
+        hashLocalCache.set(secretKey, hash);
+
+        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
+
+        return {
+            account: {
+                ...row.account,
+                created_at: new Date(row.account.created_at),
+                updated_at: new Date(row.account.updated_at)
+            },
+            environment: {
+                ...row.environment,
+                secret_key: defaultSecret.secret,
+                pending_secret_key: pendingKey?.secret || null,
+                created_at: new Date(row.environment.created_at),
+                updated_at: new Date(row.environment.updated_at),
+                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+            },
+            plan: row.plan
+                ? {
+                      ...row.plan,
+                      created_at: new Date(row.plan.created_at),
+                      updated_at: new Date(row.plan.updated_at),
+                      trial_start_at: row.plan.trial_start_at ? new Date(row.plan.trial_start_at) : row.plan.trial_start_at,
+                      trial_end_at: row.plan.trial_end_at ? new Date(row.plan.trial_end_at) : row.plan.trial_end_at,
+                      trial_end_notified_at: row.plan.trial_end_notified_at ? new Date(row.plan.trial_end_notified_at) : row.plan.trial_end_notified_at,
+                      orb_subscribed_at: row.plan.orb_subscribed_at ? new Date(row.plan.orb_subscribed_at) : row.plan.orb_subscribed_at,
+                      orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
                   }
                 : null,
             secret: defaultSecret

@@ -8,6 +8,7 @@ import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
 import { useStore } from '../../../store.js';
 import { EditableInput } from '@/components-v2/EditableInput.js';
+import { SecretInput } from '@/components-v2/SecretInput.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';
 import { Label } from '@/components-v2/ui/label.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
@@ -26,6 +27,7 @@ export const Webhooks: React.FC = () => {
 
     const { can } = usePermissions();
     const canWriteWebhooks = can(permissions.canWriteProdWebhooks) || !environment?.is_production;
+    const canReadSigningKey = can(permissions.canReadProdSecretKey) || !environment?.is_production;
 
     const onSave = async (body: PatchWebhook['Body']) => {
         try {
@@ -76,6 +78,22 @@ export const Webhooks: React.FC = () => {
                             canEdit={canWriteWebhooks}
                         />
                     </div>
+                </div>
+            </SettingsGroup>
+            <SettingsGroup label="Signing key">
+                <div className="flex flex-col gap-2">
+                    <p className="text-body-small-regular text-text-secondary">
+                        Use this key to verify that webhook payloads are from Nango.{' '}
+                        <a
+                            href="https://nango.dev/docs/implementation-guides/platform/webhooks-from-nango#verifying-webhooks-from-nango"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-text-brand hover:underline"
+                        >
+                            Learn more
+                        </a>
+                    </p>
+                    <SecretInput value={environmentAndAccount.webhook_signing_key ?? ''} copy={canReadSigningKey} canRead={canReadSigningKey} readOnly />
                 </div>
             </SettingsGroup>
             <SettingsGroup label="Subscriptions">

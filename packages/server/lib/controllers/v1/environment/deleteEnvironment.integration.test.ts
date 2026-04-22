@@ -38,7 +38,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create prod environment');
         }
 
-        const prodSecret = (await secretService.getDefaultSecretForEnv(db.knex, prodEnv.id)).unwrap();
+        const prodSecret = (await secretService.getInternalSecretForEnv(db.knex, prodEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
@@ -64,7 +64,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testSecret = (await secretService.getDefaultSecretForEnv(db.knex, testEnv.id)).unwrap();
+        const testSecret = (await secretService.getInternalSecretForEnv(db.knex, testEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
@@ -88,7 +88,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testSecret = (await secretService.getDefaultSecretForEnv(db.knex, testEnv.id)).unwrap();
+        const testSecret = (await secretService.getInternalSecretForEnv(db.knex, testEnv.id)).unwrap();
 
         // Create a provider config for this environment
         const providerName = 'github';
