@@ -4,6 +4,7 @@ import { connectionService, getActionOrModelByEndpoint } from '@nangohq/shared';
 import { baseUrl, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { hasScope } from '../../middleware/scope.middleware.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { postPublicTriggerAction } from '../action/postTriggerAction.js';
 import { getPublicRecords } from '../records/getRecords.js';
@@ -40,12 +41,20 @@ export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
 
     const { action, model } = await getActionOrModelByEndpoint(connection, req.method as HTTP_METHOD, path);
     if (action) {
+        if (!hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:actions:execute' })) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:actions:execute' } });
+            return;
+        }
         const input = req.body || req.params[1];
         req.body = {};
         req.body['action_name'] = action;
         req.body['input'] = input;
         await postPublicTriggerAction(req, res, next);
     } else if (model) {
+        if (!hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:records:read' })) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:records:read' } });
+            return;
+        }
         Object.defineProperty(req, 'query', { ...Object.getOwnPropertyDescriptor(req, 'query'), value: req.query, writable: true });
         req.query['model'] = model;
         await getPublicRecords(req, res, next);

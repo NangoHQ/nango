@@ -47,6 +47,11 @@ export class AccessMiddleware {
             environment: DBEnvironment;
             secret: DBAPISecret;
             plan: DBPlan | null;
+            auth?: {
+                source: 'customer_key' | 'api_secret';
+                scopes?: string[];
+                apiKeyId?: number;
+            };
         }>
     > {
         if (!keyRegex.test(secret)) {
@@ -86,6 +91,29 @@ export class AccessMiddleware {
                 return;
             }
 
+            const isScript = req.get('Nango-Is-Script') === 'true';
+
+            if (isScript) {
+                // Runner/script traffic — validate against api_secrets only (no customer_keys lookup).
+                // This prevents customer scope restrictions from breaking runner execution.
+                const accountContext = await accountService.getAccountContextByInternalSecretKey(secret);
+                if (!accountContext) {
+                    errorManager.errRes(res, 'unknown_account');
+                    return;
+                }
+                res.locals['authType'] = 'secretKey';
+                res.locals['account'] = accountContext.account;
+                res.locals['environment'] = accountContext.environment;
+                res.locals['plan'] = accountContext.plan;
+                res.locals['apiKeyScopes'] = ['environment:*'];
+                metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                    auth_source: 'internal_script'
+                });
+                tagTraceUser(accountContext);
+                next();
+                return;
+            }
+
             const result = await this.validateSecretKey(secret);
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
@@ -96,6 +124,12 @@ export class AccessMiddleware {
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
+            if (result.value.auth?.scopes) {
+                res.locals['apiKeyScopes'] = result.value.auth.scopes;
+            }
+            metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                auth_source: result.value.auth?.source ?? 'env_var'
+            });
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -359,12 +393,16 @@ export class AccessMiddleware {
                     errorManager.errRes(res, secretKeyResult.error.message);
                     return;
                 }
-
                 res.locals['authType'] = 'secretKey';
                 res.locals['account'] = secretKeyResult.value.account;
                 res.locals['environment'] = secretKeyResult.value.environment;
                 res.locals['plan'] = secretKeyResult.value.plan;
-
+                if (secretKeyResult.value.auth?.scopes) {
+                    res.locals['apiKeyScopes'] = secretKeyResult.value.auth.scopes;
+                }
+                metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                    auth_source: secretKeyResult.value.auth?.source ?? 'env_var'
+                });
                 tagTraceUser(secretKeyResult.value);
             } else {
                 res.locals['authType'] = 'connectSession';
@@ -372,6 +410,7 @@ export class AccessMiddleware {
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['apiKeyScopes'] = ['environment:integrations:list', 'environment:integrations:list_credentials'];
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }

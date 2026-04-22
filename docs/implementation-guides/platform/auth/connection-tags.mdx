@@ -49,7 +49,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
     ```ts
     import { Nango } from '@nangohq/node';
     
-    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
     
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
@@ -69,7 +69,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
     ```bash
     curl --request POST \
       --url https://api.nango.dev/connect/sessions \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "tags": {
@@ -115,7 +115,7 @@ Nango also stores these tags on the connection itself.
     ```ts
     import { Nango } from '@nangohq/node';
     
-    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
     console.log(connection.tags);
@@ -125,7 +125,7 @@ Nango also stores these tags on the connection itself.
     ```bash
     curl --request GET \
       --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
     ```
   </Tab>
@@ -140,7 +140,7 @@ You can filter connections by tags when listing connections:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
     const { connections } = await nango.listConnections({
       tags: {
@@ -158,7 +158,7 @@ You can filter connections by tags when listing connections:
     ```bash
     curl --request GET \
       --url 'https://api.nango.dev/connections?tags[end_user_id]=<END-USER-ID>&tags[end_user_email]=<END-USER-EMAIL>&tags[organization_id]=<ORGANIZATION-ID>' \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json'
     ```
   </Tab>
@@ -198,7 +198,7 @@ If you need to update tags after a connection is created, patch the connection:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
     await nango.patchConnection(
       {
@@ -220,7 +220,7 @@ If you need to update tags after a connection is created, patch the connection:
     ```bash
     curl --request PATCH \
       --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "tags": {
