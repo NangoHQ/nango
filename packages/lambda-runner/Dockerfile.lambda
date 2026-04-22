@@ -7,6 +7,11 @@ COPY packages/lambda-runner/tsconfig.build.json /tsconfig.build.json
 RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build.json > tsconfig.docker.json
 
 # ------------------
+# Deno binary source (multi-arch)
+# ------------------
+FROM denoland/deno:bin-2.1.9 AS deno_bin
+
+# ------------------
 # New tmp image
 # ------------------
 FROM public.ecr.aws/lambda/nodejs:22-arm64 AS build
@@ -80,9 +85,8 @@ RUN npm install -g npm@11.10.1
 # ------------------
 FROM public.ecr.aws/lambda/nodejs:22-arm64
 
-ENV DENO_INSTALL=/usr/local/deno
-RUN curl -fsSL https://deno.land/install.sh | sh -s -- v2.1.9
-ENV PATH="${DENO_INSTALL}/bin:${PATH}"
+# Install Deno (copy pinned binary from denoland/deno)
+COPY --from=deno_bin /deno /usr/local/bin/deno
 
 # Do not use root to run the app
 # BUT it does not work with secret mount (could not find a solution yet)
