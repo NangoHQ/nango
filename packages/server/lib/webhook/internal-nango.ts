@@ -146,7 +146,7 @@ export class InternalNango {
         // use webhookTypeValue if provided (direct value from headers), otherwise extract from body
         const type = webhookTypeValue || (webhookType ? get(body, webhookType) : undefined);
 
-        const publisher = envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE ? getDispatchQueuePublisher() : null;
+        const publisher = getDispatchQueuePublisher();
 
         if (publisher) {
             await this.dispatchViaQueue({
