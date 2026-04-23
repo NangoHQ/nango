@@ -176,7 +176,10 @@ export const ConnectionList = () => {
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
     const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
-    const selectedStatusFilters = (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s));
+    const selectedStatusFilters = useMemo(
+        () => (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s)),
+        [rawStatusFilters]
+    );
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
@@ -248,10 +251,11 @@ export const ConnectionList = () => {
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
     const showEmptyStateWithFilters = !loading && !isFetchingNextPage && connectionCount === 0 && hasFiltered && !hasNextPage;
 
+    const coreRowModel = useMemo(() => getCoreRowModel(), []);
     const table = useReactTable({
         data: displayedConnections,
         columns,
-        getCoreRowModel: getCoreRowModel()
+        getCoreRowModel: coreRowModel
     });
 
     const integrationsOptions = useMemo(() => {
