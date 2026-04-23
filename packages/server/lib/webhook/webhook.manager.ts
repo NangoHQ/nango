@@ -111,7 +111,7 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             throw defaultSecret.error;
         }

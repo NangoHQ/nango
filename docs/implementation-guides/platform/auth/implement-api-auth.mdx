@@ -23,14 +23,16 @@ description: "Guide to letting your users authorize an external API from your ap
 
 In **your backend**, set up an API endpoint that your frontend will call before each authorization attempt to retrieve a session token from Nango.
 
-Here's an example of how your backend can retrieve a session token from Nango ([API](/reference/api/connect/sessions/create) / [Node SDK](/reference/sdks/node#create-a-connect-session) references):
+Here's an example of how your backend can retrieve a session token from Nango ([API](/reference/api/connect/sessions/create) / [Node SDK](/reference/sdks/node#create-a-connect-session) references).
+
+You'll need an [API key](/reference/api-keys) with the `environment:connect_sessions:write` scope. You can find your API keys in **Environment Settings > API Keys** in the Nango UI.
 
 <Tabs>
   <Tab title="Node">
     ```ts
     import { Nango } from '@nangohq/node';
     
-    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
     
     api.post('/sessionToken', async (req, res) => {
       // Ask Nango for a secure token
@@ -52,7 +54,7 @@ Here's an example of how your backend can retrieve a session token from Nango ([
     ```bash
     curl --request POST \
       --url https://api.nango.dev/connect/sessions \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "tags": {
@@ -231,7 +233,7 @@ Before displaying integration settings, check if the connection is still valid u
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
 
 // Check connection status
 try {
@@ -252,7 +254,7 @@ try {
 ```bash
 curl --request GET \
   --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>'
+  --header 'Authorization: Bearer <NANGO-API-KEY>'
 ```
 
 </Tab>
@@ -284,7 +286,7 @@ The flow is very similar to the flow for new connections:
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
 
 api.post('/sessionToken', async (req, res) => {
   // Ask Nango for a secure token to reconnect
@@ -304,7 +306,7 @@ api.post('/sessionToken', async (req, res) => {
 ```bash
 curl --request POST \
   --url https://api.nango.dev/connect/sessions/reconnect \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
   --header 'Content-Type: application/json' \
   --data '{
     "connection_id": "<CONNECTION-ID>",

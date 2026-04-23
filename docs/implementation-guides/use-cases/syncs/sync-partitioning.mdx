@@ -49,7 +49,7 @@ To create a sync variant, use the Nango API or SDK. The variant must have a uniq
     ```bash
     curl --request POST \
       --url https://api.nango.dev/sync/sync-orders/variant/high-value-orders \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "provider_config_key": "my-integration",
@@ -104,7 +104,7 @@ Use the variant query parameter when retrieving records from the Nango API.
     ```bash
     curl --request GET \
       --url "https://api.nango.dev/records?model=Order&variant=high-value-orders" \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>'
+      --header 'Authorization: Bearer <NANGO-API-KEY>'
     ```
   </Tab>
 </Tabs>
@@ -138,7 +138,7 @@ Storing metadata:
     ```bash
     curl --request POST \
       --url https://api.nango.dev/metadata \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "connection_id": "customer-123",
