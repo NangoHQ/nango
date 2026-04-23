@@ -22,7 +22,8 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     type: ScriptTypeLiteral;
     auto_start: boolean;
     attributes: object;
-    source: FunctionSource;
+    // TODO: make required at second release for smooth rollout
+    source?: FunctionSource | undefined;
     metadata: NangoConfigMetadata;
     input: string | null;
     /** @deprecated **/

@@ -16,7 +16,8 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     endpoints: NangoSyncEndpointV2[];
-    source: FunctionSource;
+    // TODO: make required at second release for smooth rollout
+    source?: FunctionSource | undefined;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;
