@@ -5,11 +5,11 @@ import {
     NangoError,
     ProxyRequest,
     connectionService,
+    customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
     productTracking,
-    secretService,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
@@ -150,15 +150,15 @@ export const connectionCreated = async (
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
+    const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+    if (webhookSigningKey.isErr()) {
+        throw webhookSigningKey.error;
     }
 
     void sendAuthWebhook({
         connection,
         environment,
-        secret: defaultSecret.value.secret,
+        secret: webhookSigningKey.value.secret,
         webhookSettings,
         auth_mode,
         endUser,
@@ -194,15 +194,15 @@ export const connectionCreationFailed = async (
     if (error) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
         }
 
         void sendAuthWebhook({
             connection,
             environment,
-            secret: defaultSecret.value.secret,
+            secret: webhookSigningKey.value.secret,
             webhookSettings,
             auth_mode,
             success: false,
@@ -275,15 +275,15 @@ export const connectionRefreshFailed = async ({
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
+    const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+    if (webhookSigningKey.isErr()) {
+        throw webhookSigningKey.error;
     }
 
     void sendAuthWebhook({
         connection,
         environment,
-        secret: defaultSecret.value.secret,
+        secret: webhookSigningKey.value.secret,
         webhookSettings,
         auth_mode: provider.auth_mode,
         operation: 'refresh',

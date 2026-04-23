@@ -12,6 +12,7 @@ import {
     accountService,
     configService,
     createSyncJob,
+    customerKeyService,
     environmentService,
     errorManager,
     errorNotificationService,
@@ -447,11 +448,15 @@ export async function handleSyncSuccess({
                 void tracer.scope().activate(span, async () => {
                     try {
                         if (team && environment && providerConfig) {
+                            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                            if (webhookSigningKey.isErr()) {
+                                throw webhookSigningKey.error;
+                            }
                             const res = await sendSyncWebhook({
                                 account: team,
                                 connection: connection,
                                 environment: environment,
-                                secret: nangoProps.secretKey,
+                                secret: webhookSigningKey.value.secret,
                                 syncConfig: nangoProps.syncConfig,
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
@@ -926,9 +931,9 @@ async function onFailure({
         if (team && environment && syncConfig && providerConfig) {
             void tracer.scope().activate(span, async () => {
                 try {
-                    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-                    if (defaultSecret.isErr()) {
-                        throw defaultSecret.error;
+                    const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                    if (webhookSigningKey.isErr()) {
+                        throw webhookSigningKey.error;
                     }
 
                     const res = await sendSyncWebhook({
@@ -938,7 +943,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
-                        secret: defaultSecret.value.secret,
+                        secret: webhookSigningKey.value.secret,
                         webhookSettings,
                         model: models.join(','),
                         success: false,
