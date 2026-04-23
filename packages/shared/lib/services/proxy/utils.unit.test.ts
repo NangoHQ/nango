@@ -141,6 +141,102 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    describe('authorization header precedence', () => {
+        it('level 1: BASIC auto-sets authorization as Basic base64', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: { base_url: '' }
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'user', password: 'pass' }
+                })
+            });
+            expect(result['authorization']).toBe('Basic ' + Buffer.from('user:pass').toString('base64'));
+        });
+
+        it('level 2: provider proxy.headers authorization overrides the BASIC auto-header', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'my-api-key', password: 'ignored' }
+                })
+            });
+            // Provider config wins over the automatic Basic header
+            expect(result['authorization']).toBe('ApiKey my-api-key');
+        });
+
+        it('level 3: script config.headers authorization overrides provider proxy.headers', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                },
+                headers: {
+                    authorization: 'Bearer script-token'
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'my-api-key', password: 'ignored' }
+                })
+            });
+            // Script header wins over both provider config and BASIC auto-header
+            expect(result['authorization']).toBe('Bearer script-token');
+        });
+
+        it('all three: script > provider config > BASIC auto — final winner is the script header', () => {
+            const basicEncoded = Buffer.from('user:pass').toString('base64');
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                },
+                headers: {
+                    authorization: 'Bearer script-token'
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'user', password: 'pass' }
+                })
+            });
+            expect(result['authorization']).not.toBe(`Basic ${basicEncoded}`); // BASIC auto-header lost
+            expect(result['authorization']).not.toBe('ApiKey user'); // provider config lost
+            expect(result['authorization']).toBe('Bearer script-token'); // script won
+        });
+    });
+
     it('should correctly insert headers with dynamic values for oauth', () => {
         const config = getDefaultProxy({
             provider: {
