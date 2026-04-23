@@ -11107,7 +11107,7 @@ maxio:
             type: string
             title: API Key
             description: Your Maxio API Key.
-            doc_section: '#step-1-retrieve-your-api-key'
+            doc_section: '#step-2-retrieving-your-api-key'
         password:
             type: string
             title: ''
@@ -11123,7 +11123,7 @@ maxio:
             example: acme.chargify.com
             prefix: https://
             order: 1
-            doc_section: '#step-2-finding-your-hostname'
+            doc_section: '#step-1-finding-your-hostname'
 
 mindbody:
     display_name: Mindbody
