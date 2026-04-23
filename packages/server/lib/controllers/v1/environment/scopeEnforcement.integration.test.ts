@@ -590,30 +590,53 @@ describe('Scope enforcement on public API routes', () => {
             expect(res.json.data.credentials).toBeDefined();
         });
 
-        it('legacy api_secrets key should include credentials (backward compatible)', async () => {
+        it('api_secrets key with Nango-Is-Script header should include credentials (internal key path)', async () => {
             const { env, secret } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             await seeders.createConnectionSeed({
                 env,
                 provider: 'github',
-                connectionId: 'test-conn-legacy',
-                rawCredentials: { type: 'OAUTH2', access_token: 'legacy-token', raw: {} } as any
+                connectionId: 'test-conn-internal',
+                rawCredentials: { type: 'OAUTH2', access_token: 'internal-token', raw: {} } as any
             });
 
-            const res = await api.fetch(
-                '/connections/:connectionId' as any,
-                {
-                    method: 'GET',
-                    token: secret.secret,
-                    params: { connectionId: 'test-conn-legacy' },
-                    query: { provider_config_key: 'github' }
-                } as any
-            );
+            const res = await fetch(`${api.url}/connections/test-conn-internal?provider_config_key=github`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${secret.secret}`,
+                    'Nango-Is-Script': 'true'
+                }
+            });
+            const json = await res.json();
 
-            expect(res.res.status).toBe(200);
-            // Legacy keys have no scope restriction — credentials included
-            expect(res.json.credentials).toBeDefined();
-            expect(res.json.credentials.access_token).toBeTruthy();
+            expect(res.status).toBe(200);
+            // Internal keys get environment:* scopes — credentials included
+            expect(json.credentials).toBeDefined();
+            expect(json.credentials.access_token).toBeTruthy();
+        });
+    });
+
+    // ── Internal script key (Nango-Is-Script header) ────────────────
+
+    describe('internal script key access', () => {
+        it('should allow access to scoped routes with Nango-Is-Script header', async () => {
+            const { secret } = await seeders.seedAccountEnvAndUser();
+
+            // Use raw fetch to send custom Nango-Is-Script header
+            const res = await fetch(`${api.url}/integrations`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${secret.secret}`,
+                    'Nango-Is-Script': 'true'
+                }
+            });
+            expect(res.status).toBe(200);
+        });
+
+        it('should deny access without Nango-Is-Script header when using restricted customer key', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/integrations', { method: 'GET', token } as any);
+            expect(res.res.status).toBe(403);
         });
     });
 });
