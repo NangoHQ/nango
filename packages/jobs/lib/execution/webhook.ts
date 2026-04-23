@@ -278,7 +278,7 @@ export async function handleWebhookSuccess({
     const team = accountAndEnv.account;
     const environment = accountAndEnv.environment;
 
-    if (environment) {
+    if (environment && webhookSettings) {
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
             throw webhookSigningKey.error;
@@ -472,7 +472,7 @@ async function onFailure({
                 }
             });
 
-            if (team && environment && syncConfig && providerConfig) {
+            if (team && environment && syncConfig && providerConfig && webhookSettings) {
                 void tracer.scope().activate(span, async () => {
                     try {
                         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);

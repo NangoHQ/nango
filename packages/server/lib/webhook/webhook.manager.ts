@@ -110,6 +110,9 @@ export async function routeWebhook({
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
         const webhookSettings = await externalWebhookService.get(environment.id);
+        if (!webhookSettings) {
+            return { content: res.content || {}, statusCode: res.statusCode };
+        }
 
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
