@@ -15,6 +15,7 @@ export class InternalNango {
     readonly plan?: DBPlan | undefined;
     readonly integration: DBIntegrationDecrypted;
     readonly logContextGetter: LogContextGetter;
+    readonly ingressRequestId: string;
 
     constructor(opts: {
         team: DBTeam;
@@ -22,12 +23,14 @@ export class InternalNango {
         plan?: DBPlan | undefined;
         integration: DBIntegrationDecrypted;
         logContextGetter: LogContextGetter;
+        ingressRequestId: string;
     }) {
         this.team = opts.team;
         this.environment = opts.environment;
         this.plan = opts.plan;
         this.integration = opts.integration;
         this.logContextGetter = opts.logContextGetter;
+        this.ingressRequestId = opts.ingressRequestId;
     }
 
     async getWebhooks() {
