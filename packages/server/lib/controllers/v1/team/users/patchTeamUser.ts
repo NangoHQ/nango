@@ -3,7 +3,6 @@ import * as z from 'zod';
 import { userService } from '@nangohq/shared';
 import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { hasRbac } from '../../../../utils/rbac.js';
 
@@ -46,11 +45,11 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
 
     const hasRbacRes = await hasRbac({ accountId: account.id, plan });
     if (hasRbacRes.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to load team plan' } });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to check RBAC' } });
         return;
     }
 
-    if (!hasRbacRes.value && body.role !== envs.DEFAULT_USER_ROLE) {
+    if (!hasRbacRes.value && body.role !== 'administrator') {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
         return;
     }

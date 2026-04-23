@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { roles } from '@nangohq/utils';
 
 import { postInvite } from './postInvite.js';
-import { envs } from '../../../env.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';
@@ -43,10 +42,10 @@ vi.mock('../../../helpers/email.js', () => ({
     sendInviteEmail: mockSendInviteEmail
 }));
 
-const nonDefaultRole = roles.find((role) => role !== envs.DEFAULT_USER_ROLE);
+const nonAdminRole = roles.find((role) => role !== 'administrator');
 
-if (!nonDefaultRole) {
-    throw new Error('Expected a non-default role for invite tests');
+if (!nonAdminRole) {
+    throw new Error('Expected a non-administrator role for invite tests');
 }
 
 function createResponse() {
@@ -79,9 +78,9 @@ describe('postInvite', () => {
         mockSendInviteEmail.mockResolvedValue(undefined);
     });
 
-    it('allows non-default invite roles when plan mode is disabled', async () => {
+    it('allows non-administrator invite roles when plan mode is disabled', async () => {
         const req = {
-            body: { emails: ['invitee@example.com'], role: nonDefaultRole },
+            body: { emails: ['invitee@example.com'], role: nonAdminRole },
             query: { env: 'dev' },
             route: { path: '/api/v1/invite' },
             originalUrl: '/api/v1/invite',
@@ -94,7 +93,7 @@ describe('postInvite', () => {
         expect(mockInviteEmail).toHaveBeenCalledWith(
             expect.objectContaining({
                 email: 'invitee@example.com',
-                role: nonDefaultRole
+                role: nonAdminRole
             })
         );
         expect(status).toHaveBeenCalledWith(200);

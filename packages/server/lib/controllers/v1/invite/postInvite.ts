@@ -39,11 +39,11 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
 
     const hasRbacRes = await hasRbac({ accountId: account.id, plan });
     if (hasRbacRes.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to load team plan' } });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to check RBAC' } });
         return;
     }
 
-    if (!hasRbacRes.value && effectiveRole !== envs.DEFAULT_USER_ROLE) {
+    if (!hasRbacRes.value && effectiveRole !== 'administrator') {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
         return;
     }
