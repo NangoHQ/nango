@@ -181,6 +181,42 @@ describe('Account service', () => {
         expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
     });
 
+    it('should return environment:* scopes for internalSecretKey (api_secret path)', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+
+        const result = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+
+        expect(result?.auth).toStrictEqual({
+            source: 'api_secret',
+            scopes: ['environment:*']
+        });
+    });
+
+    it('should return environment:* scopes for env var key (env_var path)', async () => {
+        const account = await createTestAccount();
+        const envName = uuid();
+        await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+        const envVarKey = `nango_secret_key_${uuid()}`;
+        process.env[envVarName] = envVarKey;
+        try {
+            const result = await accountService.getAccountContextByApiKey({ secretKey: envVarKey });
+
+            expect(result?.auth).toStrictEqual({
+                source: 'env_var',
+                scopes: ['environment:*']
+            });
+        } finally {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete process.env[envVarName];
+        }
+    });
+
     it('should retrieve account context by publicKey', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
