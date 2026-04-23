@@ -920,17 +920,16 @@ async function onFailure({
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const span = tracer.startSpan('jobs.sync.webhook', {
-            tags: {
-                environmentId: environment.id,
-                connectionId: connection.id,
-                syncId: syncId,
-                syncJobId: syncJobId,
-                syncSuccess: false
-            }
-        });
-
         if (team && syncConfig && providerConfig && webhookSettings) {
+            const span = tracer.startSpan('jobs.sync.webhook', {
+                tags: {
+                    environmentId: environment.id,
+                    connectionId: connection.id,
+                    syncId: syncId,
+                    syncJobId: syncJobId,
+                    syncSuccess: false
+                }
+            });
             const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
             if (webhookSigningKey.isErr()) {
                 throw webhookSigningKey.error;

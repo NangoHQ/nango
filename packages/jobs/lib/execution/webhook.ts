@@ -472,7 +472,7 @@ async function onFailure({
                 }
             });
 
-            if (team && environment && syncConfig && providerConfig && webhookSettings) {
+            if (team && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
                         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
