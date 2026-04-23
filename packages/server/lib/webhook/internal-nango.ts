@@ -148,7 +148,7 @@ export class InternalNango {
 
         const publisher = getDispatchQueuePublisher();
 
-        if (publisher && envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE) {
+        if (publisher) {
             await this.dispatchViaQueue({
                 publisher,
                 connections,
