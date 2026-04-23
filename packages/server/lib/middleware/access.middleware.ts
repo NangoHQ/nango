@@ -69,7 +69,7 @@ export class AccessMiddleware {
             return Err('plan_not_found');
         }
 
-        return Ok(accountContext);
+        return Ok({ ...accountContext });
     }
 
     async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
