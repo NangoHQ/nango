@@ -110,14 +110,13 @@ export async function routeWebhook({
         const connectionIds = 'connectionIds' in res ? res.connectionIds : [];
 
         const webhookSettings = await externalWebhookService.get(environment.id);
-        if (!webhookSettings) {
-            return { content: res.content || {}, statusCode: res.statusCode };
-        }
 
-        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
-        if (webhookSigningKey.isErr()) {
-            throw webhookSigningKey.error;
-        }
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value.secret;
+              })
+            : '';
 
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
@@ -127,7 +126,7 @@ export async function routeWebhook({
             integration,
             account,
             environment,
-            secret: webhookSigningKey.value.secret,
+            secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
             payload: webhookBodyToForward,
