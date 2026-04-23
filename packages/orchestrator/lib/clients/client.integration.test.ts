@@ -163,6 +163,46 @@ describe('OrchestratorClient', async () => {
         });
     });
 
+    describe('immediate', () => {
+        it('should return a structured duplicate-name error when task name already exists', async () => {
+            const name = nanoid();
+            const groupKey = nanoid();
+            const request = {
+                name,
+                group: { key: groupKey, maxConcurrency: 0 },
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'action' as const,
+                    actionName: nanoid(),
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    activityLogId: '789',
+                    input: { foo: 'bar' }
+                }
+            };
+
+            const first = await client.immediate(request);
+            expect(first.isOk()).toBe(true);
+
+            const duplicate = await client.immediate(request);
+            expect(duplicate.isErr()).toBe(true);
+            if (duplicate.isErr()) {
+                expect(duplicate.error.name).toBe('fetch_failed');
+                const response = (duplicate.error.payload as { response?: { error?: { code?: string; payload?: unknown } } } | null)?.response;
+                expect(response?.error?.code).toBe('immediate_failed');
+                expect(response?.error?.payload).toMatchObject({
+                    reason: 'duplicate_task_name',
+                    taskName: name
+                });
+            }
+        });
+    });
+
     describe('executeAction', () => {
         it('should be successful when action task succeed', async () => {
             const groupKey = nanoid();

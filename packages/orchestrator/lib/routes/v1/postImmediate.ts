@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { isDuplicateTaskNameError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
@@ -12,6 +13,11 @@ import type { JsonValue } from 'type-fest';
 
 const path = '/v1/immediate';
 const method = 'POST';
+
+interface ImmediateFailedPayload {
+    reason?: 'duplicate_task_name';
+    taskName?: string;
+}
 
 export type PostImmediate = Endpoint<{
     Method: typeof method;
@@ -34,7 +40,7 @@ export type PostImmediate = Endpoint<{
         };
         args: JsonValue & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed'>;
+    Error: ApiError<'immediate_failed', undefined, ImmediateFailedPayload>;
     Success: { taskId: string; retryKey: string };
 }>;
 
@@ -111,6 +117,20 @@ const handler = (scheduler: Scheduler) => {
             heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
+            if (isDuplicateTaskNameError(task.error)) {
+                res.status(500).json({
+                    error: {
+                        code: 'immediate_failed',
+                        message: task.error.message,
+                        payload: {
+                            reason: 'duplicate_task_name',
+                            ...(task.error.taskName ? { taskName: task.error.taskName } : {})
+                        }
+                    }
+                });
+                return;
+            }
+
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
             return;
         }
