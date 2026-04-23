@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
@@ -94,6 +96,9 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             const query = Object.keys(queryFiltered).length > 0 ? queryFiltered : undefined;
 
+            const ingressRequestId = randomUUID();
+            span.setTag('nango.ingressRequestId', ingressRequestId);
+
             const response = await routeWebhook({
                 environment,
                 account,
@@ -103,7 +108,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 body: req.body,
                 rawBody: req.rawBody!,
                 ...(query !== undefined ? { query } : {}),
-                logContextGetter
+                logContextGetter,
+                ingressRequestId
             });
 
             if (!response) {

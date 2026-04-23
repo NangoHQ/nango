@@ -29,7 +29,8 @@ export async function routeWebhook({
     body,
     rawBody,
     query,
-    logContextGetter
+    logContextGetter,
+    ingressRequestId
 }: {
     environment: DBEnvironment;
     account: DBTeam;
@@ -40,6 +41,7 @@ export async function routeWebhook({
     rawBody: string;
     query?: Record<string, string>;
     logContextGetter: LogContextGetter;
+    ingressRequestId: string;
 }): Promise<WebhookResponse> {
     // Check if both body and headers are empty
     const hasBody = body && (typeof body === 'object' ? Object.keys(body).length > 0 : true);
@@ -74,7 +76,8 @@ export async function routeWebhook({
         environment,
         plan,
         integration,
-        logContextGetter
+        logContextGetter,
+        ingressRequestId
     });
 
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
