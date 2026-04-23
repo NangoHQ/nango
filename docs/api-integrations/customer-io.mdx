@@ -1,0 +1,88 @@
+---
+title: 'Customer.io Pipelines'
+sidebarTitle: 'Customer.io Pipelines'
+description: 'Integrate your application with the Customer.io Pipelines API'
+---
+
+## 🚀 Quickstart
+
+Connect to Customer.io Pipelines with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Customer.io Pipelines_.
+    </Step>
+    <Step title="Authorize Customer.io Pipelines">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your subdomain (`cdp` for US or `cdp-eu` for EU) and API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Customer.io Pipelines API">
+    Let's make your first request to identify a user. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl --request POST \
+              "https://api.nango.dev/proxy/identify" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "content-type: application/json" \
+              -d '{"userId":"97980cfea0067","traits":{"name":"Cool Person","email":"cool.person@example.com"}}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/identify',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                userId: '97980cfea0067',
+                traits: { name: 'Cool Person', email: 'cool.person@example.com' }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Customer.io Pipelines Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to connect your Customer.io Pipelines account](/api-integrations/customer-io/connect)  
+Get your API key to connect Customer.io Pipelines to Nango
+
+Official docs: [Customer.io Pipelines API](https://customer.io/docs/api/cdp/)
+
+## 🧩 Pre-built syncs & actions for Customer.io Pipelines
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/customer-io/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,0 +1,51 @@
+---
+title: Customer.io - How do I link my account?
+sidebarTitle: Customer.io
+---
+
+# Overview
+
+To authenticate with Customer.io, you will need:
+1. **Subdomain** – Enter `cdp` for the US region or `cdp-eu` for the EU region.
+2. **API Key** – A key generated from the Customer.io integration settings.
+
+This guide walks you through creating a Customer.io API key.
+
+### Prerequisites
+
+- You must have a Customer.io account with access to **Data & Integrations**.
+
+### Instructions
+
+#### Step 1: Getting authentication credentials
+
+1. In Customer.io, go to **Data & Integrations** > **Integrations** and click **Add Integration**.
+
+<img src="/api-integrations/customer-io/create_integrations.png"/>
+
+2. Find and select the **Customer.io API** integration.
+3. Give the integration a name.
+4. Send a successful test call using the provided API key before saving.
+
+<img src="/api-integrations/customer-io/send_request.png"/>
+
+5. Click **Complete Setup** to save your credentials.
+
+<img src="/api-integrations/customer-io/api_key.png"/>
+
+#### Step 2: Choose your subdomain
+
+- Enter `cdp` for the **US** endpoint (`https://cdp.customer.io`).
+- Enter `cdp-eu` for the **EU** endpoint (`https://cdp-eu.customer.io`).
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API key** and know your **subdomain**:
+
+1. Open the form where you need to authenticate with Customer.io.
+2. Enter your **Subdomain** (`cdp` or `cdp-eu`) and **API key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/customer-io/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Customer.io.

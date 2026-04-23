@@ -4616,6 +4616,40 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+customer-io:
+    display_name: Customer.io
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.customer.io
+        headers:
+            authorization: Basic ${apiKey}
+        verification:
+            method: POST
+            endpoint: /v1/identify
+            headers:
+                content-type: application/json
+            body: '{"userId":"nango-test"}'
+    docs: https://nango.dev/docs/api-integrations/customer-io
+    docs_connect: https://nango.dev/docs/api-integrations/customer-io/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Use 'cdp' for the US region or 'cdp-eu' for the EU region.
+            pattern: '^cdp(-eu)?$'
+            doc_section: '#step-2-choose-your-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Customer.io Pipelines API key.
+            pattern: '^[a-f0-9]{20}$'
+            example: 36c7a4***********ab022a3
+            doc_section: '#step-1-getting-authentication-credentials'
+
 cursor:
     display_name: Cursor
     categories:
@@ -11088,6 +11122,42 @@ maximizer-on-premise:
             description: The hostname of your Maximizer on premise instance.
             example: maximizer.mycompany.com
             format: hostname
+
+maxio:
+    display_name: Maxio
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /subscriptions.json
+    docs: https://nango.dev/docs/api-integrations/maxio
+    docs_connect: https://nango.dev/docs/api-integrations/maxio/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Maxio API Key
+            example: abc123xyz
+            doc_section: '#step-2-retrieve-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'X'
+            hidden: true
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Maxio site hostname. US sites use <site>.chargify.com, EU sites use <site>.ebilling.maxio.com.
+            pattern: '^[a-zA-Z0-9-]+\.(chargify\.com|ebilling\.maxio\.com)$'
+            example: acme.chargify.com
+            prefix: 'https://'
+            doc_section: '#step-1-find-your-hostname'
 
 mindbody:
     display_name: Mindbody
