@@ -610,6 +610,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/lokalise",
               "api-integrations/lob",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
@@ -1001,6 +1002,7 @@
                 "group": "HTTP API",
                 "icon": "cloud",
                 "pages": [
+                  "reference/api-keys",
                   "reference/api/authentication",
                   "reference/api/rate-limits",
                   {

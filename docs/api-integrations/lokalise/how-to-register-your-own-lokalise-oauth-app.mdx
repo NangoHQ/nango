@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Lokalise OAuth app'
+sidebarTitle: 'Lokalise Setup'
+description: 'Register an OAuth app with Lokalise and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Lokalise to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Lokalise account.
+
+<Steps>
+  <Step title="Contact Lokalise support">
+    Lokalise OAuth apps are registered by contacting the Lokalise support team. Reach out to them with the following information:
+
+    | Field | Details |
+    |-------|---------|
+    | **Title** | The name of your application |
+    | **Logo** | Your app logo (150×150px, PNG or JPG format) |
+    | **Description** | A short description of your application _(optional)_ |
+    | **Website / documentation link** | A link to your app's website or docs _(optional)_ |
+    | **Required scopes** | The OAuth scopes your app needs — refer to the [Lokalise API reference](https://developers.lokalise.com/reference/lokalise-rest-api) for the scopes required by each endpoint |
+    | **Callback URL** | `https://api.nango.dev/oauth/callback` |
+  </Step>
+  <Step title="Receive your OAuth credentials">
+    Once Lokalise processes your request, they will provide you with a **Client ID** and **Client Secret**. Keep these safe — you'll need them to configure your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details on Lokalise's OAuth implementation, see [Lokalise's OAuth documentation](https://developers.lokalise.com/docs/oauth-2-flow).
+
+---

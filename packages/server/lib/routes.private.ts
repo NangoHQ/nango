@@ -40,9 +40,13 @@ import { getConnection as getConnectionWeb } from './controllers/v1/connections/
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { createApiKey } from './controllers/v1/environment/createApiKey.js';
+import { deleteApiKey } from './controllers/v1/environment/deleteApiKey.js';
 import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
 import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
 import { getEnvironments } from './controllers/v1/environment/getEnvironments.js';
+import { listApiKeys } from './controllers/v1/environment/listApiKeys.js';
+import { patchApiKey } from './controllers/v1/environment/patchApiKey.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
@@ -199,22 +203,17 @@ web.route('/environments/current').get(webAuth, can({ action: 'read', resource: 
 web.route('/environments/webhook').patch(webAuth, can({ action: 'update', resource: 'webhook', scopedBy: envScope }), patchWebhook);
 web.route('/environments/variables').post(webAuth, can({ action: 'update', resource: 'environment_variable', scopedBy: envScope }), postEnvironmentVariables);
 
+// API Key management
+web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
+web.route('/environment/api-keys').post(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
+web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), patchApiKey);
+web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
+
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/rotate-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.rotateKey.bind(environmentController)
-);
-web.route('/environment/revert-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.revertKey.bind(environmentController)
-);
-web.route('/environment/activate-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.activateKey.bind(environmentController)
-);
+// Legacy key rotation endpoints — disabled, replaced by customer_keys API (NAN-5088)
+// web.route('/environment/rotate-key').post(webAuth, can(...), environmentController.rotateKey)
+// web.route('/environment/revert-key').post(webAuth, can(...), environmentController.revertKey)
+// web.route('/environment/activate-key').post(webAuth, can(...), environmentController.activateKey)
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 // Connect

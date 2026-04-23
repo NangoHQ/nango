@@ -7,6 +7,7 @@ import { Err, Ok, metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
+import { hasScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
@@ -70,7 +71,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         return;
     }
 
-    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}): Promise<Result<ApiPublicConnectionFull>> => {
+    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}, includeCredentials = true): Promise<Result<ApiPublicConnectionFull>> => {
         // We are using listConnections because it has everything we need, but this is a bit wrong
         const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
         if (finalConnections.length !== 1 || !finalConnections[0]) {
@@ -85,7 +86,8 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
                 },
                 activeLog: finalConnections[0].active_logs,
                 endUser: finalConnections[0].end_user,
-                provider: finalConnections[0].provider
+                provider: finalConnections[0].provider,
+                includeCredentials
             })
         );
     };
@@ -132,7 +134,11 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    const response = await getApiPublicConnection(connection.credentials);
+    const includeCredentials = hasScope({
+        grantedScopes: res.locals['apiKeyScopes'] as string[] | undefined,
+        requiredScope: 'environment:connections:read_credentials'
+    });
+    const response = await getApiPublicConnection(connection.credentials, includeCredentials);
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
         return;
