@@ -20,6 +20,7 @@ import { usePathNavigation } from '@/hooks/usePathNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { openPlaygroundWithContext } from '@/utils/playground';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -86,7 +87,16 @@ export const ShowIntegration: React.FC = () => {
                         )}
                     </PermissionGate>
                 </div>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(value) => {
+                        if (value === 'playground') {
+                            openPlaygroundWithContext({ integration: integration.integration.unique_key });
+                        } else {
+                            setActiveTab(value);
+                        }
+                    }}
+                >
                     <TabsList>
                         <TabsTrigger value="functions">Functions</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -107,6 +117,9 @@ export const ShowIntegration: React.FC = () => {
                             >
                                 Connections <ExternalLink className="size-4" />
                             </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="playground">
+                            Playground <ExternalLink className="size-4" />
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="functions">
