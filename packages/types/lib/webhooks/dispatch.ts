@@ -28,6 +28,9 @@ export interface WebhookDispatchMessage {
     provider: string;
     providerConfigKey: string;
     parentSyncName: string;
+    /** Log context id created by the server before publishing; threaded through to the webhook runner. */
+    activityLogId: string;
+    webhookName: string;
     connection: {
         id: number;
         connection_id: string;

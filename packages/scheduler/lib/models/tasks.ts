@@ -126,9 +126,9 @@ export async function create(
     db: knex.Knex,
     taskProps: TaskProps[],
     opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
-): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[] }>> {
+): Promise<Result<{ tasks: Task[]; newlyInsertedTaskIds: Set<string>; cappedGroupKeys: string[] }>> {
     if (taskProps.length === 0) {
-        return Ok({ tasks: [], cappedGroupKeys: [] });
+        return Ok({ tasks: [], newlyInsertedTaskIds: new Set(), cappedGroupKeys: [] });
     }
     try {
         // safeguard to prevent creating an unbounded number of tasks for the same group
@@ -172,14 +172,32 @@ export async function create(
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
         }
         const toInsert = Array.from(toInsertPerGroup.values()).flat();
-        const inserted: Task[] = [];
+        const tasks: Task[] = [];
+        const newlyInsertedTaskIds = new Set<string>();
         while (toInsert.length) {
             const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
-            const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
-            inserted.push(...batch.map(DbTask.from));
+            // Idempotent insert: on unique-name conflict, return the existing row instead of erroring.
+            // Lets callers (e.g., webhook dispatch consumer) treat re-delivery of the same task name
+            // as a no-op instead of a hard error.
+            const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).onConflict('name').ignore().returning('*');
+            const insertedNames = new Set<string>();
+            for (const dbt of batch) {
+                const t = DbTask.from(dbt);
+                tasks.push(t);
+                insertedNames.add(t.name);
+                newlyInsertedTaskIds.add(t.id);
+            }
+            const missingNames = chunk.map((t) => t.name).filter((n) => !insertedNames.has(n));
+            if (missingNames.length > 0) {
+                const existing = await db.from<DBTask>(TASKS_TABLE).whereIn('name', missingNames).select<DBTask[]>('*');
+                for (const dbt of existing) {
+                    tasks.push(DbTask.from(dbt));
+                }
+            }
         }
         return Ok({
-            tasks: inserted,
+            tasks,
+            newlyInsertedTaskIds,
             cappedGroupKeys: Array.from(cappedGroupCounts.keys())
         });
     } catch (err) {

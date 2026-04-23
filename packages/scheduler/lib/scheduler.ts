@@ -210,13 +210,19 @@ export class Scheduler {
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
-            if (task.scheduleId) {
+            const wasNewlyInserted = created.value.newlyInsertedTaskIds.has(task.id);
+            if (wasNewlyInserted && task.scheduleId) {
                 const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
                 }
             }
-            this.onCallbacks[task.state](task);
+            // Only fire the CREATED callback for genuinely new tasks.
+            // On a name collision we return the pre-existing task so the caller sees
+            // an idempotent success, but the callback already fired at original insert time.
+            if (wasNewlyInserted) {
+                this.onCallbacks[task.state](task);
+            }
             return Ok(task);
         });
     }
