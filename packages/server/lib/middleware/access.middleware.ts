@@ -51,7 +51,7 @@ export class AccessMiddleware {
             secret: DBAPISecret;
             plan: DBPlan | null;
             auth?: {
-                source: string;
+                source: 'customer_key' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
             };
