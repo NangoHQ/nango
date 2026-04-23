@@ -52,7 +52,7 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         providerConfigKey: 'github-dev',
         parentSyncName: 'sync-1',
         activityLogId: 'log-1',
-        webhookName: 'sync-1',
+        webhookName: 'push',
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
         payload: { hello: 'world' },
         ...overrides

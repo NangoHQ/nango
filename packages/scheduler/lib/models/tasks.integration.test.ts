@@ -84,6 +84,37 @@ describe('Task', () => {
         expect(res.tasks[1]?.name).toBe('Also not capped');
         expect(res.cappedGroupKeys).toEqual([props.groupKey]);
     });
+    it('should return the existing task on unique-name collision instead of erroring', async () => {
+        const name = `dup-${nanoid()}`;
+        const first = (await tasks.create(db, [{ ...props, name }])).unwrap();
+        expect(first.tasks).toHaveLength(1);
+        expect(first.newlyInsertedTaskIds.size).toBe(1);
+        const originalId = first.tasks[0]!.id;
+
+        const second = (await tasks.create(db, [{ ...props, name }])).unwrap();
+        expect(second.tasks).toHaveLength(1);
+        expect(second.tasks[0]!.id).toBe(originalId);
+        expect(second.newlyInsertedTaskIds.size).toBe(0);
+    });
+    it('should handle a mixed batch where some names already exist', async () => {
+        const existingName = `dup-${nanoid()}`;
+        const newName = `new-${nanoid()}`;
+        const first = (await tasks.create(db, [{ ...props, name: existingName }])).unwrap();
+        const existingId = first.tasks[0]!.id;
+
+        const mixed = (
+            await tasks.create(db, [
+                { ...props, name: existingName },
+                { ...props, name: newName }
+            ])
+        ).unwrap();
+        expect(mixed.tasks).toHaveLength(2);
+        const byName = new Map(mixed.tasks.map((t) => [t.name, t]));
+        expect(byName.get(existingName)!.id).toBe(existingId);
+        expect(byName.get(newName)!.id).not.toBe(existingId);
+        expect(mixed.newlyInsertedTaskIds.has(byName.get(newName)!.id)).toBe(true);
+        expect(mixed.newlyInsertedTaskIds.has(existingId)).toBe(false);
+    });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
         await new Promise((resolve) => void setTimeout(resolve, 20));
