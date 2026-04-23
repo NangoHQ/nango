@@ -28,7 +28,10 @@ export function useApiGetCurrentPlan(env: string) {
 }
 
 export function planHasRbac(plan?: ApiPlan | null): boolean {
-    return !globalEnv.features.plan || plan?.has_rbac === true;
+    if (!globalEnv.features.plan || !plan) {
+        return true;
+    }
+    return plan.has_rbac;
 }
 
 export async function apiPostPlanExtendTrial(env: string) {
