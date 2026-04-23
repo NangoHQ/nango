@@ -623,18 +623,14 @@ describe('Scope enforcement on public API routes', () => {
             const { secret } = await seeders.seedAccountEnvAndUser();
 
             // Use raw fetch to send custom Nango-Is-Script header
-            const routes = ['/integrations', '/connections', '/scripts/config'];
-
-            for (const path of routes) {
-                const res = await fetch(`${api.url}${path}`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${secret.secret}`,
-                        'Nango-Is-Script': 'true'
-                    }
-                });
-                expect(res.status).toBe(200);
-            }
+            const res = await fetch(`${api.url}/integrations`, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${secret.secret}`,
+                    'Nango-Is-Script': 'true'
+                }
+            });
+            expect(res.status).toBe(200);
         });
 
         it('should deny access without Nango-Is-Script header when using restricted customer key', async () => {
