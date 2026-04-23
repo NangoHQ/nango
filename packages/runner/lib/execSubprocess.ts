@@ -89,6 +89,7 @@ export async function execSubprocess({
     const denoBin = process.env['DENO_PATH'] || 'deno';
     const bootstrapPath = process.env['NANGO_DENO_BOOTSTRAP_PATH'] || resolveBootstrapPath();
     const allowRoot = process.env['LAMBDA_TASK_ROOT'] || process.cwd();
+    const denoDir = process.env['DENO_DIR'] || path.join(os.tmpdir(), 'deno-cache');
 
     return await tracer.trace('nango.runner.execSubprocess', async (span) => {
         span.setTag('execMode', 'subprocess-deno')
@@ -97,6 +98,8 @@ export async function execSubprocess({
             .setTag('connectionId', nangoProps.connectionId)
             .setTag('providerConfigKey', nangoProps.providerConfigKey)
             .setTag('syncId', nangoProps.syncId);
+
+        await fs.promises.mkdir(denoDir, { recursive: true });
 
         const tmpFile = path.join(os.tmpdir(), `nango-user-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.cjs`);
         await fs.promises.writeFile(tmpFile, code, 'utf8');
@@ -112,12 +115,26 @@ export async function execSubprocess({
             userCodePath: tmpFile
         });
 
-        const args = ['run', '--no-prompt', '--quiet', `--allow-read=${allowRoot}`, `--allow-read=${os.tmpdir()}`, bootstrapPath, tmpFile];
+        const cachedOnly = process.env['NANGO_DENO_CACHED_ONLY'] === 'true';
+        const args = [
+            'run',
+            '--no-prompt',
+            '--quiet',
+            ...(cachedOnly ? (['--cached-only'] as const) : []),
+            `--allow-read=${allowRoot}`,
+            `--allow-read=${os.tmpdir()}`,
+            `--allow-read=/opt/nango-deno`,
+            `--allow-read=${denoDir}`,
+            `--allow-write=${denoDir}`,
+            bootstrapPath,
+            tmpFile
+        ];
 
         const child = childProcess.spawn(denoBin, args, {
             stdio: ['pipe', 'pipe', 'pipe'],
             env: {
                 ...process.env,
+                DENO_DIR: denoDir,
                 NANGO_SUBPROCESS_CHILD: '1'
             }
         });
@@ -136,12 +153,20 @@ export async function execSubprocess({
         };
         abortController.signal.addEventListener('abort', abortHandler, { once: true });
 
+        const stderrChunks: Buffer[] = [];
         child.stderr?.on('data', (chunk: Buffer) => {
+            stderrChunks.push(chunk);
             logger.info(`deno stderr: ${chunk.toString().slice(0, 2000)}`);
         });
 
         try {
-            const loopPromise = runHarnessRpcLoop(child, nango);
+            const loopPromise = runHarnessRpcLoop(child, nango, {
+                onEarlyExit: ({ code, signal }) => {
+                    const tail = Buffer.concat(stderrChunks).toString('utf8').trimEnd();
+                    const suffix = tail ? `\n--- deno stderr (tail) ---\n${tail.slice(-8000)}` : '';
+                    return new Error(`Deno subprocess exited before sending result (code=${code ?? 'null'}, signal=${signal ?? 'null'})${suffix}`);
+                }
+            });
             sendInit(child, initPayload);
 
             const done = await loopPromise;

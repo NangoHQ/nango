@@ -103,7 +103,8 @@ COPY --from=public.ecr.aws/datadog/lambda-extension:89 /opt/. /opt/
 COPY --from=build /app/tmp ${LAMBDA_TASK_ROOT}
 # Isolate the Deno bootstrap away from /var/task to avoid npm workspace detection from the repo root.
 # This also keeps the subprocess runtime boundary self-contained.
-RUN mkdir -p /opt/nango-deno \
+ENV DENO_DIR=/opt/deno-cache
+RUN mkdir -p /opt/nango-deno /opt/deno-cache \
   && cp ${LAMBDA_TASK_ROOT}/packages/runner/deno/bootstrap.ts /opt/nango-deno/bootstrap.ts \
   && cp ${LAMBDA_TASK_ROOT}/packages/runner/deno/deno.json /opt/nango-deno/deno.json \
   && deno cache --config /opt/nango-deno/deno.json /opt/nango-deno/bootstrap.ts

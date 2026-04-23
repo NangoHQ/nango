@@ -5,32 +5,60 @@
 import { Buffer } from 'node:buffer';
 import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
+import { createRequire } from 'node:module';
+import * as path from 'node:path';
 import { stdin, stdout } from 'node:process';
 import * as readline from 'node:readline';
 import * as url from 'node:url';
 
-import * as botbuilder from 'npm:botbuilder@4.23.2';
-import * as soap from 'npm:soap@1.2.1';
-import * as unzipper from 'npm:unzipper@0.12.3';
-import * as zod from 'npm:zod@4.0.5';
-import SuperJSON from 'superjson';
+import type * as BotbuilderModule from 'botbuilder';
+import type * as SoapModule from 'soap';
+import type * as SuperJsonModule from 'superjson';
+import type * as UnzipperModule from 'unzipper';
+import type * as ZodModule from 'zod';
+
+type SerializedSuperJson = ReturnType<SuperJsonModule.serialize>;
+
+let SuperJSON: SuperJsonModule;
+let zod: typeof ZodModule;
+let botbuilder: typeof BotbuilderModule;
+let soap: typeof SoapModule;
+let unzipper: typeof UnzipperModule;
+
+let nodeRequire: ReturnType<typeof createRequire>;
+
+function initNodeRequireFromLambdaTaskRoot(): void {
+    const lambdaRoot = Deno.env.get('LAMBDA_TASK_ROOT');
+    if (!lambdaRoot) {
+        throw new Error('LAMBDA_TASK_ROOT is required for Deno subprocess bootstrap (expected Lambda runtime)');
+    }
+
+    const pkgJson = path.join(lambdaRoot, 'package.json');
+    nodeRequire = createRequire(pkgJson);
+
+    SuperJSON = nodeRequire('superjson') as SuperJsonModule;
+    zod = nodeRequire('zod') as typeof ZodModule;
+    botbuilder = nodeRequire('botbuilder') as typeof BotbuilderModule;
+    soap = nodeRequire('soap') as typeof SoapModule;
+    unzipper = nodeRequire('unzipper') as typeof UnzipperModule;
+}
 
 interface RpcMsg {
     v: 1;
     id: number;
-    call: { path: string[]; args: ReturnType<typeof SuperJSON.serialize> } | { iterNext: string };
+    call: { path: string[]; args: SerializedSuperJson } | { iterNext: string };
 }
 
 interface RpcResp {
     v: 1;
     id: number;
-    result?: ReturnType<typeof SuperJSON.serialize>;
+    result?: SerializedSuperJson;
     error?: { message: string; stack?: string; name?: string };
 }
 
 interface InitMsg {
     v: 1;
-    init: ReturnType<typeof SuperJSON.serialize>;
+    init: SerializedSuperJson;
 }
 
 /** Mirrors @nangohq/runner-sdk ActionError enough for user scripts */
@@ -344,6 +372,8 @@ async function main() {
     if (!userPath) {
         throw new Error('Missing user script path argument');
     }
+
+    initNodeRequireFromLambdaTaskRoot();
 
     const rl = readline.createInterface({ input: stdin, crlfDelay: Infinity });
     const initLine: string = await new Promise((resolve) => {

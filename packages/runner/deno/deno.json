@@ -1,6 +1,3 @@
 {
-    "nodeModulesDir": "auto",
-    "imports": {
-        "superjson": "npm:superjson@2.2.2"
-    }
+    "nodeModulesDir": "none"
 }

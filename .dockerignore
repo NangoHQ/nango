@@ -19,7 +19,6 @@ assets/
 vite*.ts
 packages/cli/
 scripts/
-!scripts/package.json
 cliff.toml
 .DS_Store
 **/*.unit.test.ts

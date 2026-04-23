@@ -60,7 +60,10 @@ function getIteratorFromResult(value: unknown): AsyncIterator<unknown> | null {
 
 export async function runHarnessRpcLoop(
     child: ChildProcessWithoutNullStreams,
-    nango: NangoActionRunner | NangoSyncRunner
+    nango: NangoActionRunner | NangoSyncRunner,
+    opts?: {
+        onEarlyExit?: (ctx: { code: number | null; signal: NodeJS.Signals | null }) => Error;
+    }
 ): Promise<{ ok: true; result: SuperJsonPayload } | { ok: false; error: SuperJsonPayload }> {
     const iterators = new Map<string, AsyncIterator<unknown>>();
     let nextIteratorId = 0;
@@ -180,7 +183,10 @@ export async function runHarnessRpcLoop(
 
         child.on('close', (code, signal) => {
             if (!finished) {
-                fail(new Error(`Deno subprocess exited before sending result (code=${code ?? 'null'}, signal=${signal ?? 'null'})`));
+                const err =
+                    opts?.onEarlyExit?.({ code, signal }) ??
+                    new Error(`Deno subprocess exited before sending result (code=${code ?? 'null'}, signal=${signal ?? 'null'})`);
+                fail(err);
             }
         });
     });
