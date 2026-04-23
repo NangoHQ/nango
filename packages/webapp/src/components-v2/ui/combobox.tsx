@@ -160,9 +160,12 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
 
     const handleSelect = React.useCallback(
         (val: T) => {
+            // Multi-select: three shapes — grouped parent+children, a lone child row, or a flat option.
             if (multiOnSelectedChange && multiSelected !== undefined) {
                 const def = multiDefaultSelect ?? [];
+                const commit = (next: T[]) => multiOnSelectedChange(next.length === 0 ? [...def] : next);
 
+                // Parent row: selecting toggles the parent value and all child values together.
                 const clickedOpt = options.find((o) => o.value === val);
                 if (clickedOpt?.children?.length) {
                     const childValues = clickedOpt.children.map((c) => c.value);
@@ -173,10 +176,11 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     } else {
                         next = Array.from(new Set([...multiSelected, val, ...childValues]));
                     }
-                    multiOnSelectedChange(next.length === 0 ? [...def] : next);
+                    commit(next);
                     return;
                 }
 
+                // Child row: toggle this child; drop the parent if any child is cleared; add the parent once every sibling is selected.
                 const parentOpt = options.find((o) => o.children?.some((c) => c.value === val));
                 if (parentOpt) {
                     const siblingValues = parentOpt.children!.map((c) => c.value);
@@ -190,13 +194,14 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                             next = Array.from(new Set([...next, parentOpt.value]));
                         }
                     }
-                    multiOnSelectedChange(next.length === 0 ? [...def] : next);
+                    commit(next);
                     return;
                 }
 
+                // Flat option: simple add/remove.
                 const isSelected = multiSelected.includes(val);
                 const next = isSelected ? multiSelected.filter((s) => s !== val) : [...multiSelected, val];
-                multiOnSelectedChange(next.length === 0 ? [...def] : next);
+                commit(next);
             } else if (singleOnValueChange) {
                 singleOnValueChange(val);
                 setOpen(false);
