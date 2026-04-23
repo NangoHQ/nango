@@ -48,13 +48,16 @@ function redactAwsSigV4Secrets(custom: IntegrationConfig['custom'], integrationS
                 parsed.stsEndpoint = { ...parsed.stsEndpoint, auth: { type: 'basic', username: stsAuth['username'] || '', password: '***' } };
             }
         } else if (parsed.stsEndpoint?.auth) {
-            // Legacy: redact secrets in custom blob
+            // Legacy: auth lives in custom blob. Redact known secret fields; for unknown types or
+            // missing required secrets, strip the auth block entirely rather than returning the
+            // raw value (which could leak unvetted secret structure).
             if (parsed.stsEndpoint.auth.type === 'api_key' && parsed.stsEndpoint.auth.value) {
                 parsed.stsEndpoint.auth.value = '***';
             } else if (parsed.stsEndpoint.auth.type === 'basic' && parsed.stsEndpoint.auth.password) {
                 parsed.stsEndpoint.auth.password = '***';
             } else {
-                return custom;
+                parsed.stsEndpoint = { ...parsed.stsEndpoint };
+                delete parsed.stsEndpoint.auth;
             }
         } else {
             return custom;

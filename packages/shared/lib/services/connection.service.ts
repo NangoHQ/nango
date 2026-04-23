@@ -1750,7 +1750,13 @@ class ConnectionService {
             const region =
                 (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
 
-            if (!roleArn || !externalId || !region) {
+            if (!roleArn) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_role_arn'), response: null };
+            }
+            if (!externalId) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_external_id'), response: null };
+            }
+            if (!region) {
                 return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
             }
 

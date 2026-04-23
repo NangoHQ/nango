@@ -198,6 +198,16 @@ export class NangoError extends NangoInternalError {
                 this.message = `AWS SigV4 requests require a region.`;
                 break;
 
+            case 'missing_aws_sigv4_role_arn':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the IAM role ARN.`;
+                break;
+
+            case 'missing_aws_sigv4_external_id':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the external ID.`;
+                break;
+
             case 'aws_sigv4_sts_request_failed':
                 this.status = 502;
                 this.message = `Failed to retrieve AWS credentials from the configured STS endpoint.`;

@@ -1,7 +1,9 @@
+import crypto from 'node:crypto';
+
 import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
 
-import { NangoError } from '../utils/error.js';
 import { signAwsSigV4Request } from '../services/proxy/aws-sigv4.js';
+import { NangoError } from '../utils/error.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { AwsSigV4Credentials } from '@nangohq/types';
@@ -121,39 +123,42 @@ function getBuiltinCredentialsFromConfig(config: ProviderConfig): BuiltinAwsCred
  * Read STS auth from integration_secrets (new column) with fallback to legacy custom blob.
  */
 function getStsAuthFromConfig(config: ProviderConfig, parsed: Record<string, any>): StsAuth | undefined {
-    // New path: read from decrypted integration_secrets
+    // New path: read from decrypted integration_secrets.
+    // If a structured sts_auth record exists, trust it exclusively — a missing value
+    // means the secret wasn't migrated, not a hint to fall back to the raw blob.
     const secrets = config.integration_secrets as Record<string, any> | undefined | null;
     const stsAuthSecret = secrets?.['aws_sigv4']?.['sts_auth'];
     if (stsAuthSecret) {
-        if (stsAuthSecret['type'] === 'api_key' && stsAuthSecret['value']) {
+        if (stsAuthSecret['type'] === 'api_key') {
+            if (!stsAuthSecret['value']) {
+                return undefined;
+            }
             return { type: 'api_key', header: stsAuthSecret['header'] || 'x-api-key', value: stsAuthSecret['value'] };
         }
-        if (stsAuthSecret['type'] === 'basic' && stsAuthSecret['password']) {
+        if (stsAuthSecret['type'] === 'basic') {
+            if (!stsAuthSecret['password']) {
+                return undefined;
+            }
             return { type: 'basic', username: stsAuthSecret['username'] || '', password: stsAuthSecret['password'] };
         }
+        // Unknown type — do not silently proceed
+        return undefined;
     }
 
-    // Legacy fallback: read auth from custom blob
+    // Legacy fallback: read auth from custom blob (pre-migration configs only)
     return parsed['stsEndpoint']?.['auth'];
 }
 
 /**
- * Extract secrets from raw aws_sigv4_config JSON.
+ * Extract secrets from a parsed aws_sigv4_config object.
  * Returns the cleaned JSON (secrets removed), extracted StsAuth, and extracted builtin credentials.
- * Used by the write path to separate secrets from config.
+ * Callers are responsible for JSON-parsing and validation before calling this.
  */
-export function extractSecretsFromConfig(rawJson: string): {
+export function extractSecretsFromConfig(parsed: Record<string, any>): {
     cleanedJson: string;
     stsAuth: StsAuth | null;
     builtinCredentials: { aws_access_key_id: string; aws_secret_access_key: string } | null;
 } {
-    let parsed: Record<string, any>;
-    try {
-        parsed = JSON.parse(rawJson);
-    } catch {
-        return { cleanedJson: rawJson, stsAuth: null, builtinCredentials: null };
-    }
-
     const cleaned = { ...parsed };
 
     // Extract builtin AWS credentials
@@ -182,14 +187,6 @@ export function extractSecretsFromConfig(rawJson: string): {
     }
 
     return { cleanedJson: JSON.stringify(cleaned), stsAuth, builtinCredentials };
-}
-
-/**
- * @deprecated Use extractSecretsFromConfig instead
- */
-export function extractStsAuthFromConfig(rawJson: string): { cleanedJson: string; stsAuth: StsAuth | null } {
-    const { cleanedJson, stsAuth } = extractSecretsFromConfig(rawJson);
-    return { cleanedJson, stsAuth };
 }
 
 export async function fetchAwsTemporaryCredentials({
@@ -222,11 +219,12 @@ async function fetchAwsTemporaryCredentialsBuiltin({
     }
 
     const stsUrl = `https://sts.${region}.amazonaws.com/`;
+    const sessionName = `nango-${crypto.randomBytes(8).toString('hex')}`;
     const body = [
         'Action=AssumeRole',
         `RoleArn=${encodeURIComponent(input.roleArn)}`,
         `ExternalId=${encodeURIComponent(input.externalId)}`,
-        `RoleSessionName=${encodeURIComponent('nango-' + Date.now())}`,
+        `RoleSessionName=${encodeURIComponent(sessionName)}`,
         'DurationSeconds=3600',
         'Version=2011-06-15'
     ].join('&');
@@ -311,7 +309,9 @@ async function fetchAwsTemporaryCredentialsCustom({
         const creds = normalizeStsResponse(response.data);
         if (!creds) {
             logger.error('STS endpoint returned invalid payload', response.data);
-            return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'Custom STS endpoint returned a response but credentials could not be parsed' }));
+            return Err(
+                new NangoError('aws_sigv4_sts_request_failed', { message: 'Custom STS endpoint returned a response but credentials could not be parsed' })
+            );
         }
         return Ok(creds);
     } catch (err) {
@@ -336,7 +336,16 @@ function normalizeStsResponse(data: any): AwsSigV4TemporaryCredentials | null {
         return null;
     }
 
-    const expiresAt = expiresAtRaw ? new Date(expiresAtRaw) : new Date(Date.now() + 60 * 60 * 1000);
+    let expiresAt: Date;
+    if (expiresAtRaw == null) {
+        expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    } else if (typeof expiresAtRaw === 'number') {
+        // Custom STS endpoints vary: some return Unix seconds, others milliseconds.
+        // Anything below 1e12 (Sept 2001 if treated as ms) must be seconds.
+        expiresAt = new Date(expiresAtRaw < 1e12 ? expiresAtRaw * 1000 : expiresAtRaw);
+    } else {
+        expiresAt = new Date(expiresAtRaw);
+    }
 
     return {
         accessKeyId,

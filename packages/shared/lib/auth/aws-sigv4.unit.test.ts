@@ -173,15 +173,15 @@ describe('getAwsSigV4Settings', () => {
 });
 
 describe('extractSecretsFromConfig', () => {
-    it('extracts builtin credentials from config JSON', () => {
-        const raw = JSON.stringify({
+    it('extracts builtin credentials from config', () => {
+        const parsed = {
             service: 's3',
             stsMode: 'builtin',
             awsAccessKeyId: 'AKIATEST',
             awsSecretAccessKey: 'secret123'
-        });
+        };
 
-        const { cleanedJson, stsAuth, builtinCredentials } = extractSecretsFromConfig(raw);
+        const { cleanedJson, stsAuth, builtinCredentials } = extractSecretsFromConfig(parsed);
         const cleaned = JSON.parse(cleanedJson);
 
         expect(cleaned.awsAccessKeyId).toBeUndefined();
@@ -195,28 +195,21 @@ describe('extractSecretsFromConfig', () => {
         });
     });
 
-    it('extracts STS auth from custom mode config JSON', () => {
-        const raw = JSON.stringify({
+    it('extracts STS auth from custom mode config', () => {
+        const parsed = {
             service: 's3',
             stsEndpoint: {
                 url: 'https://example.com',
                 auth: { type: 'api_key', header: 'x-api-key', value: 'secret-key' }
             }
-        });
+        };
 
-        const { cleanedJson, stsAuth, builtinCredentials } = extractSecretsFromConfig(raw);
+        const { cleanedJson, stsAuth, builtinCredentials } = extractSecretsFromConfig(parsed);
         const cleaned = JSON.parse(cleanedJson);
 
         expect(cleaned.stsEndpoint.auth).toBeUndefined();
         expect(cleaned.stsEndpoint.url).toBe('https://example.com');
         expect(stsAuth).toEqual({ type: 'api_key', header: 'x-api-key', value: 'secret-key' });
-        expect(builtinCredentials).toBeNull();
-    });
-
-    it('handles invalid JSON gracefully', () => {
-        const { cleanedJson, stsAuth, builtinCredentials } = extractSecretsFromConfig('not-json');
-        expect(cleanedJson).toBe('not-json');
-        expect(stsAuth).toBeNull();
         expect(builtinCredentials).toBeNull();
     });
 });

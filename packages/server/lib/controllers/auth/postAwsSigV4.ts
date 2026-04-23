@@ -28,7 +28,7 @@ import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { Config as ProviderConfig } from '@nangohq/shared';
-import type { AwsSigV4Credentials, PostPublicAwsSigV4Authorization } from '@nangohq/types';
+import type { AuthOperationType, AwsSigV4Credentials, PostPublicAwsSigV4Authorization } from '@nangohq/types';
 import type { NextFunction } from 'express';
 
 const bodyValidation = z
@@ -88,6 +88,11 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
 
     let logCtx: LogContext | undefined;
     let config: ProviderConfig | null = null;
+    // Track the operation so the failure hook reports 'override' for reconnect attempts rather than
+    // mislabelling them as 'creation'. Starts as 'unknown' (pre-existing-connection lookup), becomes
+    // 'creation' or 'override' once we know whether a connection already exists, and is refined to
+    // storedConnection.operation after a successful upsert.
+    let attemptedOperation: AuthOperationType = 'unknown';
 
     try {
         logCtx =
@@ -169,16 +174,20 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
         // Determine ExternalId: reuse stored value on reconnection, honor client-provided value, or generate new.
         // The external ID must be stable so users can configure AWS trust policies with sts:ExternalId.
         let externalId: string;
+        let hasExistingConnection = false;
         if (isConnectSession && connectSession.connectionId) {
             const existingConn = await connectionService.getConnectionById(connectSession.connectionId);
+            hasExistingConnection = Boolean(existingConn);
             externalId = (existingConn?.connection_config?.['external_id'] as string) || uuidv4();
         } else {
             // For non-connect-session flows, check if a connection already exists (reconnection via API)
             const existingResult = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
+            hasExistingConnection = Boolean(existingResult.response);
             const storedExternalId = existingResult.response?.connection_config?.['external_id'] as string | undefined;
             const clientExternalId = typeof connectionConfig['external_id'] === 'string' ? connectionConfig['external_id'].trim() : '';
             externalId = storedExternalId || clientExternalId || uuidv4();
         }
+        attemptedOperation = hasExistingConnection ? 'override' : 'creation';
 
         if (!isValidAwsExternalId(externalId)) {
             void logCtx.error('Invalid external ID format', { externalId });
@@ -246,6 +255,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             await logCtx.failed();
             return;
         }
+        attemptedOperation = storedConnection.operation;
 
         const customValidationResponse = await validateConnection({
             connection: storedConnection.connection,
@@ -297,7 +307,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
                 account,
                 auth_mode: 'AWS_SIGV4',
                 error: { type: 'server_error', description: 'Error creating AWS SigV4 connection' },
-                operation: 'creation'
+                operation: attemptedOperation
             },
             account,
             config ?? undefined

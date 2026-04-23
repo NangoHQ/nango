@@ -7,9 +7,6 @@ import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
 
-
-
-
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
@@ -79,31 +76,35 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     if ('custom' in body && body.custom) {
         let nextCustom: Record<string, string> = { ...(integration.custom || {}) };
+        let nextSecrets: Record<string, unknown> | null = integration.integration_secrets ? { ...integration.integration_secrets } : null;
+        let secretsTouched = false;
         for (const [key, value] of Object.entries(body.custom)) {
             if (value === null || value === '') {
                 const { [key]: _removed, ...rest } = nextCustom;
                 nextCustom = rest;
-                // Clear integration_secrets when aws_sigv4_config is removed
+                // Clear aws_sigv4 secrets when aws_sigv4_config is removed
                 if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
-                    const existingSecrets = (integration.integration_secrets as Record<string, unknown>) || {};
+                    const existingSecrets = nextSecrets || {};
                     const { aws_sigv4: _removedSecrets, ...restSecrets } = existingSecrets;
-                    integration.integration_secrets = Object.keys(restSecrets).length > 0 ? restSecrets : null;
+                    nextSecrets = Object.keys(restSecrets).length > 0 ? restSecrets : null;
+                    secretsTouched = true;
                 }
                 continue;
             }
             if (key === awsSigV4Client.AWS_SIGV4_CUSTOM_KEY) {
+                let parsedConfig: Record<string, any>;
                 try {
-                    JSON.parse(value);
+                    parsedConfig = JSON.parse(value);
                 } catch {
                     res.status(400).send({ error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' } });
                     return;
                 }
 
                 // Extract all secrets from the config blob
-                const { cleanedJson, stsAuth, builtinCredentials } = awsSigV4Client.extractSecretsFromConfig(value);
+                const { cleanedJson, stsAuth, builtinCredentials } = awsSigV4Client.extractSecretsFromConfig(parsedConfig);
 
                 // Validate using the cleaned config (secrets aren't required for validation since they're in integration_secrets)
-                const existingSecrets = (integration.integration_secrets as Record<string, unknown>) || {};
+                const existingSecrets = nextSecrets || {};
                 const existingAwsSigV4 = (existingSecrets['aws_sigv4'] as Record<string, unknown>) || {};
 
                 // For builtin mode validation, temporarily inject credentials so getAwsSigV4Settings can verify them
@@ -119,41 +120,37 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                     return;
                 }
 
-                // Update integration_secrets based on mode
-                let parsedConfig: Record<string, any> = {};
-                try {
-                    parsedConfig = JSON.parse(value);
-                } catch {
-                    // already validated above
-                }
                 const stsMode = parsedConfig['stsMode'];
 
                 if (stsMode === 'builtin') {
                     // Store builtin AWS credentials; clean up custom endpoint auth
                     if (builtinCredentials) {
-                        integration.integration_secrets = {
+                        nextSecrets = {
                             ...existingSecrets,
                             aws_sigv4: { sts_credentials: builtinCredentials }
                         };
+                        secretsTouched = true;
                     } else {
                         // No new credentials — preserve existing builtin credentials, remove sts_auth
                         const existingStsCredentials = existingAwsSigV4['sts_credentials'];
                         if (existingStsCredentials) {
-                            integration.integration_secrets = {
+                            nextSecrets = {
                                 ...existingSecrets,
                                 aws_sigv4: { sts_credentials: existingStsCredentials }
                             };
+                            secretsTouched = true;
                         }
                     }
                 } else {
                     // Custom mode: store STS auth, always clean up builtin credentials
                     if (stsAuth) {
-                        integration.integration_secrets = { ...existingSecrets, aws_sigv4: { sts_auth: stsAuth } };
+                        nextSecrets = { ...existingSecrets, aws_sigv4: { sts_auth: stsAuth } };
+                        secretsTouched = true;
                     } else {
                         const authBlock = parsedConfig['stsEndpoint']?.['auth'];
                         const existingStsAuth = existingAwsSigV4['sts_auth'] as Record<string, string> | undefined;
                         if (authBlock?.['type'] === 'api_key') {
-                            integration.integration_secrets = {
+                            nextSecrets = {
                                 ...existingSecrets,
                                 aws_sigv4: {
                                     sts_auth: {
@@ -164,7 +161,7 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                                 }
                             };
                         } else if (authBlock?.['type'] === 'basic') {
-                            integration.integration_secrets = {
+                            nextSecrets = {
                                 ...existingSecrets,
                                 aws_sigv4: {
                                     sts_auth: {
@@ -176,11 +173,12 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                             };
                         } else {
                             // No auth block — clear all aws_sigv4 secrets (removes stale builtin credentials and STS auth)
-                            integration.integration_secrets = {
+                            nextSecrets = {
                                 ...existingSecrets,
                                 aws_sigv4: {}
                             };
                         }
+                        secretsTouched = true;
                     }
                 }
 
@@ -190,6 +188,9 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
             nextCustom[key] = value;
         }
         integration.custom = Object.keys(nextCustom).length > 0 ? nextCustom : null;
+        if (secretsTouched) {
+            integration.integration_secrets = nextSecrets;
+        }
     }
 
     // Credentials

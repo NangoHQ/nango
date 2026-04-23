@@ -35,14 +35,15 @@ export function signAwsSigV4Request({ url, method, headers, body, credentials, n
         .sort()
         .map((key) => {
             const value = normalizedHeaders[key] ?? '';
-            return `${key}:${value.trim()}\n`;
+            // SigV4 requires sequential whitespace within a header value to be collapsed to a single space.
+            return `${key}:${value.trim().replace(/\s+/g, ' ')}\n`;
         })
         .join('');
     const signedHeaders = Object.keys(normalizedHeaders).sort().join(';');
 
     const canonicalRequest = [
         method.toUpperCase(),
-        buildCanonicalUri(target.pathname),
+        buildCanonicalUri(target.pathname, credentials.service),
         buildCanonicalQuerystring(target.searchParams),
         canonicalHeaders,
         signedHeaders,
@@ -63,9 +64,16 @@ export function signAwsSigV4Request({ url, method, headers, body, credentials, n
     };
 }
 
-function buildCanonicalUri(pathname: string): string {
+function buildCanonicalUri(pathname: string, service: string): string {
     if (!pathname) {
         return '/';
+    }
+    // AWS SigV4 requires the canonical URI to be URI-encoded once for S3 and twice for every other service.
+    // The WHATWG URL parser already encodes `target.pathname` once, so S3 uses the pathname as-is and
+    // all other services apply a second encoding pass. Re-encoding an already-encoded S3 path would
+    // turn legitimate `%2F` sequences in object keys into `%252F`, changing the object identity.
+    if (service === 's3') {
+        return pathname.startsWith('/') ? pathname : `/${pathname}`;
     }
     const canonical = pathname
         .split('/')
@@ -98,8 +106,11 @@ function hashPayload(body: string | Buffer | null | undefined, service: string):
     if (Buffer.isBuffer(body)) {
         return crypto.createHash('sha256').update(body).digest('hex');
     }
-    // S3 supports UNSIGNED-PAYLOAD for requests without a body (e.g. GET/HEAD);
-    // other services (STS, API Gateway, etc.) require a real hash.
+    // For S3 we fall back to UNSIGNED-PAYLOAD when the body can't be hashed up-front.
+    // This covers legitimate GET/HEAD requests without a body, but also FormData payloads
+    // which resolveSigV4Payload returns as `null`. Signed FormData uploads to S3 are not
+    // currently supported — callers needing signed multipart uploads must serialize to a
+    // Buffer before signing.
     if (service === 's3') {
         return 'UNSIGNED-PAYLOAD';
     }

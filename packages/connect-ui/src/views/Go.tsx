@@ -618,7 +618,7 @@ export const Go: React.FC = () => {
                             <Button
                                 className="border border-subtle bg-white text-text-primary hover:bg-elevated"
                                 type="button"
-                                onClick={() => window.open(awsSigV4Instructions.url, '_blank')}
+                                onClick={() => window.open(awsSigV4Instructions.url, '_blank', 'noopener,noreferrer')}
                             >
                                 {awsSigV4Instructions.label || 'Open setup instructions'}
                             </Button>
@@ -637,7 +637,7 @@ export const Go: React.FC = () => {
                                             <p className="text-sm font-semibold text-text-primary">{template.label || template.id}</p>
                                             {template.description && <p className="text-xs text-text-secondary mt-1">{template.description}</p>}
                                         </div>
-                                        <Button type="button" onClick={() => window.open(launchUrl, '_blank')}>
+                                        <Button type="button" onClick={() => window.open(launchUrl, '_blank', 'noopener,noreferrer')}>
                                             Deploy in AWS Console
                                         </Button>
                                     </div>

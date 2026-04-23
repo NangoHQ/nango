@@ -60,6 +60,31 @@ function defaultAwsSigV4Config() {
 
 type AwsSigV4Config = ReturnType<typeof defaultAwsSigV4Config>;
 
+// Best-effort client-side SSRF guard for literal private/loopback addresses. DNS resolution can
+// still bypass this (hostname pointing at a private IP) — server-side processing must not trust
+// fetched template bodies.
+function isPrivateOrLocalHost(hostname: string): boolean {
+    const h = hostname.toLowerCase();
+    if (h === 'localhost' || h === '0.0.0.0' || h === '[::1]' || h === '::1') {
+        return true;
+    }
+    const ipv4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipv4) {
+        const [, a, b] = ipv4.map(Number) as [number, number, number, number, number];
+        if (a === 10) return true;
+        if (a === 127) return true;
+        if (a === 169 && b === 254) return true; // link-local, includes 169.254.169.254 (AWS metadata)
+        if (a === 172 && b >= 16 && b <= 31) return true;
+        if (a === 192 && b === 168) return true;
+        if (a === 100 && b >= 64 && b <= 127) return true; // carrier-grade NAT
+    }
+    // IPv6 unique-local (fc00::/7) and link-local (fe80::/10)
+    if (/^\[?(fc|fd|fe[89ab])/.test(h)) {
+        return true;
+    }
+    return false;
+}
+
 const validateAwsSigV4Templates = (templates: AwsSigV4Template[]): string | null => {
     for (let i = 0; i < templates.length; i += 1) {
         const template = templates[i];
@@ -121,11 +146,11 @@ const deserializeAwsSigV4Config = (raw?: string | null) => {
                 base.stsEndpoint.authType = 'api_key';
                 base.stsEndpoint.header = parsed.stsEndpoint.auth.header || 'x-api-key';
                 // "***" means the secret is configured but redacted — show as empty so the user can leave it unchanged
-                base.stsEndpoint.value = parsed.stsEndpoint.auth.value === '***' ? '' : (parsed.stsEndpoint.auth.value || '');
+                base.stsEndpoint.value = parsed.stsEndpoint.auth.value === '***' ? '' : parsed.stsEndpoint.auth.value || '';
             } else if (parsed.stsEndpoint.auth?.type === 'basic') {
                 base.stsEndpoint.authType = 'basic';
                 base.stsEndpoint.username = parsed.stsEndpoint.auth.username || '';
-                base.stsEndpoint.password = parsed.stsEndpoint.auth.password === '***' ? '' : (parsed.stsEndpoint.auth.password || '');
+                base.stsEndpoint.password = parsed.stsEndpoint.auth.password === '***' ? '' : parsed.stsEndpoint.auth.password || '';
             }
         }
         if (Array.isArray(parsed.templates)) {
@@ -385,6 +410,21 @@ export const AwsSigV4Settings: React.FC<{
             toast({ title: 'Template URL is required', variant: 'error' });
             return;
         }
+        let parsedUrl: URL;
+        try {
+            parsedUrl = new URL(url);
+        } catch {
+            toast({ title: 'Invalid template URL', variant: 'error' });
+            return;
+        }
+        if (parsedUrl.protocol !== 'https:') {
+            toast({ title: 'Template URL must use HTTPS', variant: 'error' });
+            return;
+        }
+        if (isPrivateOrLocalHost(parsedUrl.hostname)) {
+            toast({ title: 'Template URL cannot point to private or local addresses', variant: 'error' });
+            return;
+        }
         setLoadingTemplateIndex(index);
         try {
             const response = await fetch(url);
@@ -609,8 +649,8 @@ export const AwsSigV4Settings: React.FC<{
                         <div>
                             <label className="text-xs text-white font-semibold">CloudFormation Templates (optional)</label>
                             <p className="text-xs text-text-soft">
-                                Store one or more named templates for this integration. They will appear in Connect as one-click deployment buttons for
-                                your customers.
+                                Store one or more named templates for this integration. They will appear in Connect as one-click deployment buttons for your
+                                customers.
                             </p>
                         </div>
                         <div className="flex flex-col gap-4">
@@ -690,9 +730,7 @@ export const AwsSigV4Settings: React.FC<{
                                         <div className="flex flex-col gap-2">
                                             <label className="text-xs text-text-soft font-semibold">Default Parameters</label>
                                             <div className="flex flex-col gap-2">
-                                                {template.parameters.length === 0 && (
-                                                    <p className="text-[11px] text-text-soft">No parameters configured.</p>
-                                                )}
+                                                {template.parameters.length === 0 && <p className="text-[11px] text-text-soft">No parameters configured.</p>}
                                                 {template.parameters.map((param, paramIndex) => (
                                                     <div key={`${template.id}-param-${paramIndex}`} className="grid grid-cols-[1fr_auto] gap-2">
                                                         <div className="grid grid-cols-2 gap-2">
@@ -704,9 +742,7 @@ export const AwsSigV4Settings: React.FC<{
                                                             />
                                                             <Input
                                                                 value={param.value}
-                                                                onChange={(e) =>
-                                                                    updateAwsSigV4TemplateParam(index, paramIndex, 'value', e.target.value)
-                                                                }
+                                                                onChange={(e) => updateAwsSigV4TemplateParam(index, paramIndex, 'value', e.target.value)}
                                                                 placeholder=""
                                                                 variant="flat"
                                                             />

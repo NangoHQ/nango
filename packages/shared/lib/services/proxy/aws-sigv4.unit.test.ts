@@ -65,4 +65,34 @@ describe('signAwsSigV4Request', () => {
         expect(signed['x-amz-content-sha256']).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
         expect(signed['authorization']).toContain('/us-east-1/sts/aws4_request');
     });
+
+    it('does not double-encode S3 paths containing percent-encoded sequences', () => {
+        // S3 object keys can legitimately contain "/" as part of the key name (not a delimiter),
+        // encoded as %2F in the URL. AWS SigV4 requires S3 canonical URIs to be encoded once,
+        // so %2F must be preserved in the signature rather than re-encoded to %252F.
+        const sharedArgs = {
+            url: 'https://bucket.s3.amazonaws.com/key%2Fwith%2Fslashes',
+            method: 'GET' as const,
+            headers: {},
+            now: new Date('2025-01-02T03:04:05.000Z')
+        };
+
+        const s3Signed = signAwsSigV4Request({
+            ...sharedArgs,
+            credentials: { ...baseCredentials, region: 'us-east-1', service: 's3' }
+        });
+        const nonS3Signed = signAwsSigV4Request({
+            ...sharedArgs,
+            credentials: { ...baseCredentials, region: 'us-east-1', service: 'execute-api' }
+        });
+
+        // S3 signs the path as-is (encoded once); a non-S3 service applies a second encoding pass.
+        // The signatures must therefore differ — if they match, the S3 branch is double-encoding.
+        expect(s3Signed['authorization']).not.toBe(nonS3Signed['authorization']);
+
+        // Lock in the S3 signature so future regressions (e.g. reintroduced double-encoding) fail here.
+        expect(s3Signed['authorization']).toBe(
+            'AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20250102/us-east-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date;x-amz-security-token, Signature=a5dcabbbf8c402583c348e54fd45d043e2098148cdbdd57a3ff19b81216a9b72'
+        );
+    });
 });
