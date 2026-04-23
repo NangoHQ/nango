@@ -22,7 +22,6 @@ export const getEnvJs: RequestHandler = (_, res) => {
         apiUrl: baseUrl,
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
-        defaultUserRole: envs.DEFAULT_USER_ROLE,
         gitHash: envs.GIT_HASH,
         publicSentryKey: envs.PUBLIC_SENTRY_KEY || '',
         publicPosthogKey: envs.PUBLIC_POSTHOG_KEY || '',

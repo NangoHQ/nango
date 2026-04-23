@@ -1,19 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
-import { inviteEmail, seeders, userService } from '@nangohq/shared';
-import { nanoid, roles } from '@nangohq/utils';
+import { nanoid } from '@nangohq/utils';
 
-import { envs } from '../../../env.js';
 import { isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
-const nonDefaultRole = roles.find((role) => role !== envs.DEFAULT_USER_ROLE);
-
-if (!nonDefaultRole) {
-    throw new Error('Expected a non-default role for signup tests');
-}
-
 let api: Awaited<ReturnType<typeof runServer>>;
 describe('POST /api/v1/account/signup', () => {
     beforeAll(async () => {
@@ -81,37 +72,5 @@ describe('POST /api/v1/account/signup', () => {
         isSuccess(res.json);
         expect(res.json.data.verified).toBe(false);
         expect(typeof res.json.data.uuid).toBe('string');
-    });
-
-    it('should overwrite the invited role when RBAC is disabled at signup time', async () => {
-        const inviter = await seeders.seedAccountEnvAndUser();
-        const email = `${nanoid()}@example.com`;
-
-        const invitation = await db.knex.transaction(async (trx) => {
-            return await inviteEmail({
-                email,
-                name: 'Invited User',
-                accountId: inviter.account.id,
-                invitedByUserId: inviter.user.id,
-                role: nonDefaultRole,
-                trx
-            });
-        });
-
-        if (!invitation) {
-            throw new Error('Failed to create invitation');
-        }
-
-        const res = await api.fetch(route, {
-            method: 'POST',
-            body: { email, name: 'Invited User', password: 'aZ1-foobar!', token: invitation.token }
-        });
-
-        expect(res.res.status).toBe(200);
-        isSuccess(res.json);
-
-        const user = await userService.getUserByEmail(email);
-        expect(user?.account_id).toBe(inviter.account.id);
-        expect(user?.role).toBe(envs.DEFAULT_USER_ROLE);
     });
 });

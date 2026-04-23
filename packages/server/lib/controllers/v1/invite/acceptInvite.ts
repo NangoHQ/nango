@@ -3,9 +3,7 @@ import * as z from 'zod';
 import { acceptInvitation, getInvitation, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { hasRbac } from '../../../utils/rbac.js';
 
 import type { AcceptInvite } from '@nangohq/types';
 
@@ -38,16 +36,8 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
         return;
     }
 
-    const hasRbacRes = await hasRbac({ accountId: invitation.account_id });
-    if (hasRbacRes.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
-        return;
-    }
-
-    const role = hasRbacRes.value ? invitation.role : envs.DEFAULT_USER_ROLE;
-
     await acceptInvitation(data.id);
-    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role });
+    const updated = await userService.update({ id: user.id, account_id: invitation.account_id, role: invitation.role });
     if (!updated) {
         res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
         return;

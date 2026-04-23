@@ -18,7 +18,6 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
-import { globalEnv } from '@/utils/env';
 
 const inviteSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -41,7 +40,7 @@ export const AddTeamMemberButton = () => {
 
     const form = useForm<InviteFormData>({
         resolver: zodResolver(inviteSchema),
-        defaultValues: { email: '', role: globalEnv.defaultUserRole },
+        defaultValues: { email: '', role: 'administrator' },
         mode: 'onTouched'
     });
 

@@ -21,7 +21,7 @@ const statusCircleVariants = cva('size-4.5 rounded-full flex items-center justif
 interface StatusCircleWithIconProps extends VariantProps<typeof statusCircleVariants> {
     children: React.ReactNode;
     className?: string;
-    tooltipContent?: string;
+    tooltipContent?: React.ReactNode;
 }
 
 export const StatusCircleWithIcon: React.FC<StatusCircleWithIconProps> = ({ variant, className, children, tooltipContent, ...props }) => {
@@ -35,7 +35,7 @@ export const StatusCircleWithIcon: React.FC<StatusCircleWithIconProps> = ({ vari
         return (
             <Tooltip>
                 <TooltipTrigger asChild>{circle}</TooltipTrigger>
-                <TooltipContent side="top" align="center">
+                <TooltipContent side="top" align="center" className="pointer-events-auto">
                     {tooltipContent}
                 </TooltipContent>
             </Tooltip>

@@ -1,10 +1,7 @@
-import type { Role } from '../user/db.js';
-
 export interface WindowEnv {
     apiUrl: string;
     publicUrl: string;
     connectUrl: string;
-    defaultUserRole: Role;
     gitHash: string | undefined;
     publicSentryKey: string;
     publicPosthogKey: string;

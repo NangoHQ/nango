@@ -2,7 +2,6 @@ import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
 import { useStore } from '@/store';
-import { globalEnv } from '@/utils/env';
 
 import type { Role } from '@nangohq/types';
 
@@ -30,7 +29,7 @@ export const RoleSelect: React.FC<{
             </SelectTrigger>
             <SelectContent align="end" className="p-0 max-w-71">
                 {roles.map(({ value: v, label, description }) => {
-                    const locked = !hasRBAC && v !== globalEnv.defaultUserRole;
+                    const locked = !hasRBAC && v !== 'administrator';
                     return (
                         <ConditionalTooltip
                             key={v}

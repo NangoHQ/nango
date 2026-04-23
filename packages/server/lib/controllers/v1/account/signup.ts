@@ -10,7 +10,6 @@ import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
-import { hasRbac } from '../../../utils/rbac.js';
 
 import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
@@ -85,15 +84,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
-        const hasRbacRes = await hasRbac({ accountId: validToken.account_id });
-        if (hasRbacRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'failed to load invitation plan' } });
-            return;
-        }
-
-        if (hasRbacRes.value) {
-            invitationRole = validToken.role;
-        }
+        invitationRole = validToken.role;
         await acceptInvitation(token);
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
