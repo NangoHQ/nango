@@ -355,18 +355,22 @@ class AccountService {
         };
     }
 
-    private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
-        const cachedHash = hashLocalCache.get(secretKey);
-        let hash: string;
-        if (!cachedHash) {
-            const hashed = await secretService.hashSecret(secretKey);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            hash = hashed.value;
-        } else {
-            hash = cachedHash;
+    private async hashSecretWithCache(secretKey: string): Promise<string> {
+        const cached = hashLocalCache.get(secretKey);
+        if (cached) {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
+            return cached;
         }
+        metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
+        const hashed = await secretService.hashSecret(secretKey);
+        if (hashed.isErr()) {
+            throw hashed.error;
+        }
+        return hashed.value;
+    }
+
+    private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
+        const hash = await this.hashSecretWithCache(secretKey);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
@@ -476,17 +480,7 @@ class AccountService {
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
     private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
-        let hash = hashLocalCache.get(secretKey);
-        if (hash) {
-            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
-        } else {
-            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
-            const hashed = await secretService.hashSecret(secretKey);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            hash = hashed.value;
-        }
+        const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly
             .select<{
