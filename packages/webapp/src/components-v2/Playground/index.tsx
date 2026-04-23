@@ -9,6 +9,7 @@ import { PlaygroundResult } from './PlaygroundResult';
 import { PlaygroundSelectors } from './PlaygroundSelectors';
 import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
+import { ConditionalTooltip } from '../ConditionalTooltip';
 import { PermissionGate } from '../PermissionGate';
 import { Button } from '../ui/button';
 import { Sheet, SheetContent } from '../ui/sheet';
@@ -81,7 +82,8 @@ export const Playground: React.FC = () => {
     const clearInputError = useCallback((name: string) => clearPlaygroundInputError(name), [clearPlaygroundInputError]);
 
     const playgroundConnection = usePlaygroundStore((s) => s.connection);
-    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName && playgroundFunctionType);
+    const isFunctionDisabled = Boolean(playgroundFunction && playgroundFunction.enabled === false);
+    const canRun = Boolean(playgroundIntegration && playgroundConnection && playgroundFunctionName && playgroundFunctionType) && !isFunctionDisabled;
     const isSync = playgroundFunctionType === 'sync';
     const showInputs = Boolean(playgroundFunction && (isSync || inputFields.length > 0));
 
@@ -156,23 +158,27 @@ export const Playground: React.FC = () => {
                                             )}
                                         </>
                                     ) : result ? (
-                                        <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
-                                            {(allowed) => (
-                                                <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
-                                                    <RotateCcw />
-                                                    Run again
-                                                </Button>
-                                            )}
-                                        </PermissionGate>
+                                        <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
+                                            <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
+                                                {(allowed) => (
+                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                        <RotateCcw />
+                                                        Run again
+                                                    </Button>
+                                                )}
+                                            </PermissionGate>
+                                        </ConditionalTooltip>
                                     ) : (
-                                        <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
-                                            {(allowed) => (
-                                                <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
-                                                    <Play />
-                                                    Run
-                                                </Button>
-                                            )}
-                                        </PermissionGate>
+                                        <ConditionalTooltip condition={isFunctionDisabled} content="Enable this function to run it from the Playground.">
+                                            <PermissionGate condition={canUsePlayground} message="Your role does not have permission to use the playground.">
+                                                {(allowed) => (
+                                                    <Button variant="primary" size="sm" onClick={handleRun} disabled={!canRun || !allowed}>
+                                                        <Play />
+                                                        Run
+                                                    </Button>
+                                                )}
+                                            </PermissionGate>
+                                        </ConditionalTooltip>
                                     )}
                                 </div>
                             </div>

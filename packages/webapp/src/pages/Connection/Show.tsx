@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
@@ -14,11 +15,11 @@ import { useGetIntegration } from '@/hooks/useIntegration';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
+import { openPlaygroundWithContext } from '@/utils/playground';
 
 export const ConnectionShow = () => {
     const env = useStore((state) => state.env);
     const { connectionId, providerConfigKey } = useParams();
-
     const {
         data: connectionResponse,
         error: connectionError,
@@ -94,11 +95,26 @@ export const ConnectionShow = () => {
                     </div>
                 </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(value) => {
+                        if (value === 'playground') {
+                            openPlaygroundWithContext({
+                                integration: integrationData.integration.unique_key,
+                                connection: connectionResponse.connection.connection_id
+                            });
+                        } else {
+                            setActiveTab(value);
+                        }
+                    }}
+                >
                     <TabsList>
                         <TabsTrigger value="auth">Auth</TabsTrigger>
                         <TabsTrigger value="syncs">Syncs</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
+                        <TabsTrigger value="playground">
+                            Playground <ExternalLink className="size-4" />
+                        </TabsTrigger>
                     </TabsList>
                     <TabsContent value="auth">
                         <AuthTab connectionData={connectionResponse} providerConfigKey={integrationData.integration.unique_key} />
