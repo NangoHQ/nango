@@ -11802,7 +11802,7 @@ northbeam:
         verification:
             method: GET
             endpoints:
-                - /v1/orders
+                - /v2/orders
     docs: https://nango.dev/docs/integrations/all/northbeam
     docs_connect: https://nango.dev/docs/integrations/all/northbeam/connect
     connection_config:
