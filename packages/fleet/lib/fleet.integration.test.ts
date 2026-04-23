@@ -69,6 +69,7 @@ describe('fleet', () => {
                 executionTimeoutSecs: props.executionTimeoutSecs,
                 provisionedConcurrency: props.provisionedConcurrency,
                 replicas: props.replicas,
+                isolationMode: null,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
