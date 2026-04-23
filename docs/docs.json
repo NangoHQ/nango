@@ -751,6 +751,7 @@
               "integrations/all/quickbase",
               "api-integrations/quickbooks",
               "api-integrations/quickbooks-sandbox",
+              "api-integrations/quipteams",
               "integrations/all/ragieai",
               "integrations/all/ramp",
               "integrations/all/ramp-sandbox",

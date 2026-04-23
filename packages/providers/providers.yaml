@@ -14044,6 +14044,31 @@ quickbooks-sandbox:
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
 
+quipteams:
+    display_name: Quipteams
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.quipteams.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/quotes
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/quipteams
+    docs_connect: https://nango.dev/docs/api-integrations/quipteams/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quipteams API key.
+            doc_section: '#step-1-finding-your-api-key'
+
 ragieai:
     display_name: Ragie AI
     categories:
