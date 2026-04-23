@@ -21,8 +21,6 @@ exports.up = async function (knex) {
     await knex.raw(`ALTER TABLE _nango_sync_configs ADD COLUMN IF NOT EXISTS source sync_config_source NOT NULL DEFAULT 'repo'`);
     // Backfill: rows deployed from the Nango catalog get 'catalog'; everything else keeps 'repo'
     await knex.raw(`UPDATE _nango_sync_configs SET source = 'catalog' WHERE pre_built = true OR is_public = true`);
-    // Drop default — every insert path now sets source explicitly
-    await knex.raw(`ALTER TABLE _nango_sync_configs ALTER COLUMN source DROP DEFAULT`);
 };
 
 /**
