@@ -33,7 +33,8 @@ export const renderNodeProvider: NodeProvider = {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1,
-        replicas: 1
+        replicas: 1,
+        isolationMode: 'sandbox'
     },
     waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });

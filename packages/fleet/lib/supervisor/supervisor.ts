@@ -368,7 +368,8 @@ export class Supervisor {
                 idleMaxDurationMs: nodeConfigOverrideValue.idleMaxDurationMs || newNodeConfig.idleMaxDurationMs,
                 executionTimeoutSecs: nodeConfigOverrideValue.executionTimeoutSecs || newNodeConfig.executionTimeoutSecs,
                 provisionedConcurrency: nodeConfigOverrideValue.provisionedConcurrency || newNodeConfig.provisionedConcurrency,
-                replicas: nodeConfigOverrideValue.replicas || newNodeConfig.replicas
+                replicas: nodeConfigOverrideValue.replicas || newNodeConfig.replicas,
+                isolationMode: nodeConfigOverrideValue.isolationMode || newNodeConfig.isolationMode
             };
         }
 
@@ -385,7 +386,8 @@ export class Supervisor {
             idleMaxDurationMs: newNodeConfig.idleMaxDurationMs,
             executionTimeoutSecs: newNodeConfig.executionTimeoutSecs,
             provisionedConcurrency: newNodeConfig.provisionedConcurrency,
-            replicas: newNodeConfig.replicas
+            replicas: newNodeConfig.replicas,
+            isolationMode: newNodeConfig.isolationMode
         });
     }
 

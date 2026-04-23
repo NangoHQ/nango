@@ -25,7 +25,8 @@ export const localNodeProvider: NodeProvider = {
         idleMaxDurationMs: 0, // No auto-shutdown for local runners
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1,
-        replicas: 1
+        replicas: 1,
+        isolationMode: 'sandbox'
     },
     start: async (node) => {
         try {

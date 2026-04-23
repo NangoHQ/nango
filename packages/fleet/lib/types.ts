@@ -20,6 +20,7 @@ export interface Node {
     readonly executionTimeoutSecs: NodeConfig['executionTimeoutSecs'] | null;
     readonly provisionedConcurrency: NodeConfig['provisionedConcurrency'] | null;
     readonly replicas: NodeConfig['replicas'];
+    readonly isolationMode: NodeConfig['isolationMode'];
     readonly error: string | null;
     readonly createdAt: Date;
     readonly lastStateTransitionAt: Date;
@@ -38,6 +39,7 @@ export interface NodeConfigOverride {
     readonly executionTimeoutSecs: NodeConfig['executionTimeoutSecs'] | null;
     readonly provisionedConcurrency: NodeConfig['provisionedConcurrency'] | null;
     readonly replicas: NodeConfig['replicas'] | null;
+    readonly isolationMode: NodeConfig['isolationMode'] | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

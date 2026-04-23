@@ -134,7 +134,8 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -150,6 +151,7 @@ describe('fleet', () => {
                 executionTimeoutSecs: props.executionTimeoutSecs,
                 provisionedConcurrency: props.provisionedConcurrency,
                 replicas: props.replicas,
+                isolationMode: props.isolationMode,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -166,7 +168,8 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -195,6 +198,7 @@ describe('fleet', () => {
                 executionTimeoutSecs: updatedProps.executionTimeoutSecs,
                 provisionedConcurrency: updatedProps.provisionedConcurrency,
                 replicas: updatedProps.replicas,
+                isolationMode: updatedProps.isolationMode,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -211,7 +215,8 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             };
             await fleet.overrideNodeConfig(props);
 
@@ -237,7 +242,8 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             };
             await fleet.overrideNodeConfig(props);
 
@@ -252,7 +258,8 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             };
             await fleet.overrideNodeConfig(defaultProps);
 
@@ -270,6 +277,7 @@ describe('fleet', () => {
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
                 replicas: null,
+                isolationMode: null,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });

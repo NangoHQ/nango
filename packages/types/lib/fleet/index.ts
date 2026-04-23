@@ -9,6 +9,8 @@ export type RoutingId = string;
 
 export type ImageType = 'docker' | 'ecr';
 
+export type IsolationMode = 'sandbox' | 'subprocess';
+
 export interface NodeConfig {
     readonly image: string;
     readonly cpuMilli: number;
@@ -20,4 +22,5 @@ export interface NodeConfig {
     readonly executionTimeoutSecs: number;
     readonly provisionedConcurrency: number;
     readonly replicas: number;
+    readonly isolationMode: IsolationMode;
 }

@@ -58,6 +58,7 @@ interface DBNode {
     readonly execution_timeout_secs: number | null;
     readonly provisioned_concurrency: number | null;
     readonly replicas: number;
+    readonly isolation_mode: Node['isolationMode'];
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -82,6 +83,7 @@ const DBNode = {
             execution_timeout_secs: node.executionTimeoutSecs,
             provisioned_concurrency: node.provisionedConcurrency,
             replicas: node.replicas,
+            isolation_mode: node.isolationMode,
             error: node.error,
             created_at: node.createdAt,
             last_state_transition_at: node.lastStateTransitionAt
@@ -105,6 +107,7 @@ const DBNode = {
             executionTimeoutSecs: dbNode.execution_timeout_secs,
             provisionedConcurrency: dbNode.provisioned_concurrency,
             replicas: dbNode.replicas,
+            isolationMode: dbNode.isolation_mode,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at
@@ -132,6 +135,7 @@ export async function create(
         execution_timeout_secs: nodeProps.executionTimeoutSecs,
         provisioned_concurrency: nodeProps.provisionedConcurrency,
         replicas: nodeProps.replicas,
+        isolation_mode: nodeProps.isolationMode,
         error: null,
         created_at: now,
         last_state_transition_at: now

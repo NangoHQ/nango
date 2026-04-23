@@ -25,7 +25,8 @@ describe('NodeConfgOverrides', () => {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1,
-        replicas: 3
+        replicas: 3,
+        isolationMode: null
     };
 
     it('should be successfully created', async () => {
@@ -43,6 +44,7 @@ describe('NodeConfgOverrides', () => {
             executionTimeoutSecs: props.executionTimeoutSecs,
             provisionedConcurrency: props.provisionedConcurrency,
             replicas: props.replicas,
+            isolationMode: props.isolationMode,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -61,7 +63,8 @@ describe('NodeConfgOverrides', () => {
                 idleMaxDurationMs: null,
                 executionTimeoutSecs: null,
                 provisionedConcurrency: null,
-                replicas: null
+                replicas: null,
+                isolationMode: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -77,6 +80,7 @@ describe('NodeConfgOverrides', () => {
             executionTimeoutSecs: null,
             provisionedConcurrency: null,
             replicas: null,
+            isolationMode: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
