@@ -3066,8 +3066,10 @@ cal-com-v2:
                 content-type: application/json
             endpoints:
                 - /me
-    docs: https://nango.dev/docs/integrations/all/cal-com-v2
-    docs_connect: https://nango.dev/docs/integrations/all/cal-com-v2/connect
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
+    docs: https://nango.dev/docs/api-integrations/cal-com-v2
+    docs_connect: https://nango.dev/docs/api-integrations/cal-com-v2/connect
     credentials:
         apiKey:
             type: string
@@ -3095,6 +3097,8 @@ cal-com-oauth:
         retry:
             at:
                 - 'x-ratelimit-reset'
+    webhook_routing_script: calComWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/cal-com-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
 
@@ -7652,7 +7656,8 @@ google-chat:
         - productivity
     proxy:
         base_url: https://chat.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-chat
+    docs: https://nango.dev/docs/api-integrations/google-chat
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-chat/how-to-register-your-own-google-chat-api-oauth-app
 
 google-docs:
     display_name: Google Docs
@@ -7724,7 +7729,8 @@ google-slides:
     alias: google
     proxy:
         base_url: https://slides.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-slides
+    docs: https://nango.dev/docs/api-integrations/google-slides
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-slides/how-to-register-your-own-google-slides-api-oauth-app
 
 google-drive:
     display_name: Google Drive
@@ -7808,7 +7814,8 @@ google-cloud-storage:
     alias: google
     categories:
         - storage
-    docs: https://nango.dev/docs/integrations/all/google-cloud-storage
+    docs: https://nango.dev/docs/api-integrations/google-cloud-storage
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-cloud-storage/how-to-register-your-own-google-cloud-storage-api-oauth-app
 
 google-workspace-admin:
     display_name: Google Workspace Admin
@@ -7817,7 +7824,8 @@ google-workspace-admin:
         - productivity
     proxy:
         base_url: https://admin.googleapis.com
-    docs: https://nango.dev/docs/integrations/all/google-workspace-admin
+    docs: https://nango.dev/docs/api-integrations/google-workspace-admin
+    setup_guide_url: https://nango.dev/docs/api-integrations/google-workspace-admin/how-to-register-your-own-google-workspace-admin-api-oauth-app
 
 google-service-account:
     display_name: Google Service Account
@@ -10127,6 +10135,24 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+lokalise:
+    display_name: Lokalise
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://app.lokalise.com/oauth2/auth
+    token_url: https://app.lokalise.com/oauth2/token
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    proxy:
+        base_url: https://api.lokalise.com/api2
+    docs: https://nango.dev/docs/api-integrations/lokalise
+    setup_guide_url: https://nango.dev/docs/api-integrations/lokalise/how-to-register-your-own-lokalise-oauth-app
+
 loom-scim:
     display_name: Loom (SCIM)
     categories:
@@ -10231,7 +10257,7 @@ looker:
             prefix: https://
             example: mycompany.looker.com
             order: 1
-            format: hostname
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
             doc_section: '#step-1-finding-your-looker-hostname'
     credentials:
         clientId:
@@ -10245,6 +10271,47 @@ looker:
             description: Your Looker Client Secret
             secret: true
             doc_section: '#step-2-obtaining-your-client-credentials'
+
+looker-oauth:
+    display_name: Looker (OAuth)
+    categories:
+        - analytics
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/auth
+    token_url: https://${connectionConfig.apiHostname}/api/token
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - cors_api
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.apiHostname}/api
+    docs: https://nango.dev/docs/api-integrations/looker-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/looker-oauth/how-to-register-your-own-looker-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/looker-oauth/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Looker UI Hostname
+            description: Your Looker instance UI hostname.
+            format: hostname
+            prefix: https://
+            example: mycompany.looker.com
+            order: 1
+            doc_section: '#step-1-finding-your-looker-ui-hostname'
+        apiHostname:
+            type: string
+            title: Looker API Hostname
+            description: Your Looker API hostname including port.
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            prefix: https://
+            example: mycompany.looker.com:19999
+            order: 2
+            doc_section: '#step-2-finding-your-looker-api-hostname'
 
 lucid-scim:
     display_name: Lucid (SCIM)
@@ -10395,7 +10462,7 @@ lob:
             title: Secret API Key
             description: Your Lob Secret API Key.
             secret: true
-            example: 'test_0dc8d***************************5b0cc'
+            example: 'live_0dc8d***************************5b0cc'
             pattern: '^(test|live)_[a-f0-9]{35}$'
             doc_section: '#step-1-getting-your-secret-api-key'
         password:
@@ -12460,6 +12527,43 @@ pagerduty:
                 - 'ratelimit-reset'
     docs: https://nango.dev/docs/integrations/all/pagerduty
 
+paligo:
+    display_name: Paligo
+    categories:
+        - cms
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.paligoapp.com
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/groups?page=1&per_page=1
+    docs: https://nango.dev/docs/api-integrations/paligo
+    docs_connect: https://nango.dev/docs/api-integrations/paligo/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Paligo Instance Name
+            description: The name of your Paligo instance
+            example: mycompany
+            suffix: .paligoapp.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-paligo-instance-name'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Paligo account username (email address).
+            example: name@example.com
+            doc_section: '#step-3-enter-credentials-in-the-connect-ui'
+        password:
+            type: string
+            title: API Key
+            description: The API key token generated.
+            secret: true
+            doc_section: '#step-2-create-an-api-key'
+
 pandadoc:
     display_name: Pandadoc
     categories:
@@ -14514,6 +14618,26 @@ ring-central-sandbox:
             after:
                 - 'retry-after'
     docs: https://nango.dev/docs/integrations/all/ring-central-sandbox
+
+ringover:
+    display_name: Ringover
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://public-api.ringover.com
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/ringover
+    docs_connect: https://nango.dev/docs/api-integrations/ringover/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Ringover API key.
+            example: 'a3f9e2***************************d8e9f0'
+            pattern: '^[a-f0-9]{40}$'
+            doc_section: '#step-1-generating-your-api-key'
 
 rippling:
     display_name: Rippling
@@ -17052,6 +17176,39 @@ supabase-mcp:
             example: sbp_*******************************23d
             pattern: '^sbp_[A-Za-z0-9]{40}$'
             doc_section: '#step-2-obtaining-your-personal-access-token'
+
+supabase-mcp-oauth:
+    display_name: Supabase (MCP OAuth)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    registration_url: https://api.supabase.com/platform/oauth/apps/register
+    authorization_url: https://api.supabase.com/v1/oauth/authorize
+    token_url: https://api.supabase.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.supabase.com
+        headers:
+            accept: application/json,text/event-stream
+        connection_config:
+            projectRef: ${connectionConfig.projectRef}
+    docs: https://nango.dev/docs/api-integrations/supabase-mcp-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect
+    connection_config:
+        projectRef:
+            type: string
+            title: Project Reference
+            description: Your Supabase project reference ID.
+            example: bvzzcafzoysezumrdvif
+            pattern: '^[a-z0-9]{20}$'
+            doc_section: '#step-1-finding-your-project-reference'
 
 survey-monkey:
     display_name: SurveyMonkey

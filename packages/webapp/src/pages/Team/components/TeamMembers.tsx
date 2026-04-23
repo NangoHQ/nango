@@ -8,7 +8,7 @@ import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/use
 import { useStore } from '../../../store';
 import { Dot } from '@/components-v2/Dot';
 import { PermissionGate } from '@/components-v2/PermissionGate';
-import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
+import { StatusWithIcon } from '@/components-v2/StatusWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
@@ -150,7 +150,7 @@ export const TeamMembers: React.FC = () => {
                             <TableCell>
                                 <div className="inline-flex items-center gap-2">
                                     {!hasRBAC && user.role !== 'administrator' && (
-                                        <StatusCircleWithIcon
+                                        <StatusWithIcon
                                             variant="warning"
                                             tooltipContent={
                                                 <span>
@@ -163,7 +163,7 @@ export const TeamMembers: React.FC = () => {
                                             }
                                         >
                                             <TriangleAlert />
-                                        </StatusCircleWithIcon>
+                                        </StatusWithIcon>
                                     )}
                                     <RoleBadge role={user.role} />
                                 </div>

@@ -534,6 +534,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Invalid webhook payload';
                 break;
 
+            case 'webhook_missing_connection_id':
+                this.status = 400;
+                this.message = 'Webhook payload is missing nangoConnectionId';
+                break;
+
             case 'webhook_no_connection_or_existing_installation_id':
                 this.status = 400;
                 this.message = 'No connection or existing installation_id';

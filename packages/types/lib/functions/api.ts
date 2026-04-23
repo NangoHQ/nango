@@ -67,7 +67,7 @@ export type PostRemoteFunctionDryrun = Endpoint<{
         function_type: FunctionType;
         execution_timeout_at: string;
         duration_ms: number;
-        output: string;
+        result?: unknown;
     };
 }>;
 
@@ -85,6 +85,8 @@ export type PostRemoteFunctionDeploy = Endpoint<{
         integration_id: string;
         function_name: string;
         function_type: FunctionType;
+        deployed: boolean;
+        deployed_functions: { name: string; version: string }[];
         output: string;
     };
 }>;

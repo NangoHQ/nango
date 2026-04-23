@@ -5,8 +5,10 @@ export enum Types {
 
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
+    AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
+    AUTH_GET_ENV_BY_SECRET_KEY_SOURCE = 'nango.auth.getEnvBySecretKey.source',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_SECRET_KEY = 'nango.auth.getEnvByConnectSessionOrSecretKey',
     AUTH_GET_ENV_BY_CONNECT_SESSION_OR_PUBLIC_KEY = 'nango.auth.getEnvByConnectSessionOrPublicKey',
     AUTH_WITH_PUBLIC_KEY = 'nango.auth.withPublicKey',
@@ -66,6 +68,7 @@ export enum Types {
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
+    ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',

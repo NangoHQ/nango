@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.1] - 2026-04-17
+
+### Added
+
+- *(orchestrator)* Add dropped task metric for capped groups (#5865) by @pfreixes
+
+### Fixed
+
+- *(vulns)* Fix vulns (#5888) by @rossmcewan
+
+## [v0.70.0] - 2026-04-16
+
+### Added
+
+- *(server)* Add client IP tags to Datadog traces (#5860) by @marcindobry
+- *(proxy)* Resolve `accessToken` in custom headers for OAUTH2_CC (#5881) by @hassan254-prog
+- Add `has_rbac` feature flag (#5847) by @kaposke
+- *(server)* Add remote function public API (#5836) by @marcindobry
+- Stop generating schema.ts / schema.json and stop accepting top-level json-schema (#5874) by @kaposke
+
+### Fixed
+
+- *(clickhouse)* Compute_gbms to be calculated in mv (#5872) by @TBonnin
+- *(lambda)* New plan flag to control lambda rollout (#5858) by @rossmcewan
+- *(lambda)* Track memory and duration correctly (#5875) by @rossmcewan
+- *(security)* Security fixes (#5876) by @rossmcewan
+- *(shared)* Missing types (#5884) by @rossmcewan
+- *(shared)* Fix metrics call (#5885) by @rossmcewan
+
 ## [v0.69.50] - 2026-04-16
 
 ### Added
@@ -6406,6 +6435,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
+[v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
 [v0.69.50]: https://github.com/NangoHQ/nango/compare/v0.69.49..v0.69.50
 [v0.69.49]: https://github.com/NangoHQ/nango/compare/v0.69.48..v0.69.49
 [v0.69.48]: https://github.com/NangoHQ/nango/compare/v0.69.47..v0.69.48

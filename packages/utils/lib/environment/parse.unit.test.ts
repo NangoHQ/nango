@@ -143,4 +143,100 @@ describe('parse', () => {
             parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([1, 2]) });
         }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
     });
+
+    describe('WEBHOOK_INGRESS_USE_DISPATCH_QUEUE', () => {
+        it('should default to false', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE).toBe(false);
+        });
+
+        it('should coerce "true"/"false" strings', () => {
+            expect(parseEnvs(ENVS, { WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: 'true' }).WEBHOOK_INGRESS_USE_DISPATCH_QUEUE).toBe(true);
+            expect(parseEnvs(ENVS, { WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: 'false' }).WEBHOOK_INGRESS_USE_DISPATCH_QUEUE).toBe(false);
+        });
+    });
+
+    describe('NANGO_TASK_DISPATCH_*', () => {
+        it('should apply defaults when task-dispatch vars are absent', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res).toMatchObject({
+                NANGO_TASK_DISPATCH_MAX_MESSAGES: 10,
+                NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: 20,
+                NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 30,
+                NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 50,
+                NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 5
+            });
+            expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
+            expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();
+        });
+
+        it('should accept valid SQS URLs for queue and DLQ', () => {
+            const res = parseEnvs(ENVS, {
+                NANGO_TASK_DISPATCH_QUEUE_URL: 'https://sqs.us-west-2.amazonaws.com/123456789012/nango-task-dispatch-development',
+                NANGO_TASK_DISPATCH_DLQ_URL: 'https://sqs.us-west-2.amazonaws.com/123456789012/nango-task-dispatch-dlq-development'
+            });
+            expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBe('https://sqs.us-west-2.amazonaws.com/123456789012/nango-task-dispatch-development');
+            expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBe('https://sqs.us-west-2.amazonaws.com/123456789012/nango-task-dispatch-dlq-development');
+        });
+
+        it('should throw on invalid NANGO_TASK_DISPATCH_QUEUE_URL', () => {
+            expect(() => {
+                parseEnvs(ENVS, { NANGO_TASK_DISPATCH_QUEUE_URL: 'not-a-url' });
+            }).toThrow();
+        });
+
+        it('should throw on invalid NANGO_TASK_DISPATCH_DLQ_URL', () => {
+            expect(() => {
+                parseEnvs(ENVS, { NANGO_TASK_DISPATCH_DLQ_URL: 'not-a-url' });
+            }).toThrow();
+        });
+
+        it('should coerce numeric vars from strings', () => {
+            const res = parseEnvs(ENVS, {
+                NANGO_TASK_DISPATCH_MAX_MESSAGES: '5',
+                NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: '10',
+                NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '60',
+                NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: '100',
+                NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: '8',
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: '3'
+            });
+            expect(res).toMatchObject({
+                NANGO_TASK_DISPATCH_MAX_MESSAGES: 5,
+                NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: 10,
+                NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 60,
+                NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 100,
+                NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 8,
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 3
+            });
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_MAX_MESSAGES outside [1,10]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_MAX_MESSAGES: '0' })).toThrow();
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_MAX_MESSAGES: '11' })).toThrow();
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS outside [0,20]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: '-1' })).toThrow();
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: '21' })).toThrow();
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS outside [0,43200]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '-1' })).toThrow();
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: '43201' })).toThrow();
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE outside [1,10]', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: '0' })).toThrow();
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: '11' })).toThrow();
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY below 1', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: '0' })).toThrow();
+        });
+
+        it('should reject NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY below 1', () => {
+            expect(() => parseEnvs(ENVS, { NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: '0' })).toThrow();
+        });
+    });
 });

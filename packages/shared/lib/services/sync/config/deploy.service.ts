@@ -5,6 +5,7 @@ import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
+import { resolveLocalFileName } from '../../../utils/utils.js';
 import configService from '../../config.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
 import remoteFileService from '../../file/remote.service.js';
@@ -93,7 +94,7 @@ export async function deploy({
         await remoteFileService.upload({
             content: nangoYamlBody,
             destinationPath: `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-            destinationLocalPath: nangoConfigFile
+            destinationLocalFileName: nangoConfigFile
         });
     }
 
@@ -320,14 +321,14 @@ async function compileDeployInfo({
     const file_location = (await remoteFileService.upload({
         content: jsFile,
         destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-        destinationLocalPath: `${syncName}-${providerConfigKey}.js`
+        destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
     })) as string;
 
     if (typeof fileBody === 'object' && fileBody.ts) {
         await remoteFileService.upload({
             content: fileBody.ts,
             destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalPath: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+            destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
         });
     }
 

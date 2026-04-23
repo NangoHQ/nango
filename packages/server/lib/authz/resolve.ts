@@ -18,6 +18,17 @@ export async function resolve(locals: { user?: { role: Role }; plan?: { has_rbac
     return evaluator.evaluate(user.role, permission);
 }
 
+/**
+ * Check if the current user can read production secrets for the given environment.
+ * Non-production environments always allow reading secrets.
+ */
+export async function canReadProdSecret(
+    locals: { user?: { role: Role }; plan?: { has_rbac: boolean } | null },
+    environment: { is_production: boolean }
+): Promise<boolean> {
+    return !environment.is_production || (await resolve(locals, permissions.canReadProdSecretKey));
+}
+
 export async function buildPermissions(role: Role, plan?: { has_rbac: boolean } | null): Promise<AllowedPermissions> {
     const result: AllowedPermissions = {};
     const bypass = !flags.hasAuthRoles || (flagHasPlan && (!plan || !plan.has_rbac));
