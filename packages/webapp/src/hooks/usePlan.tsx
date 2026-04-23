@@ -17,7 +17,7 @@ export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']>
 
 export function currentPlanQueryOptions(env: string) {
     return queryOptions<GetPlan['Success'], APIError>({
-        enabled: Boolean(env),
+        enabled: Boolean(env) && globalEnv.features.plan,
         queryKey: ['plans', 'current', env],
         queryFn: () => fetchCurrentPlan(env)
     });
