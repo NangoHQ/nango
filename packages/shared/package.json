@@ -29,7 +29,7 @@
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
         "@nangohq/utils": "file:../utils",
-        "@xmldom/xmldom": "0.8.12",
+        "@xmldom/xmldom": "0.8.13",
         "ajv": "8.18.0",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
