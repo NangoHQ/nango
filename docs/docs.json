@@ -835,6 +835,7 @@
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
               "api-integrations/simpro",
+              "api-integrations/simpro/connect",
               "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/slack-mcp",

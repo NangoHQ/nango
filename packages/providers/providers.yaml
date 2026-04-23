@@ -16498,16 +16498,18 @@ simpro:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/simpro
+    docs: https://nango.dev/docs/api-integrations/simpro
+    docs_connect: https://nango.dev/docs/api-integrations/simpro/connect
     connection_config:
         build:
             type: string
             title: simPRO Build Name
-            description: The subdomain part of your simPRO URL (enter "trainar" for trainar.simprosuite.com)
+            description: The subdomain part of your simPRO URL.
             pattern: '^[a-z0-9_-]+$'
             example: yourcompany
             suffix: .simprosuite.com
             prefix: https://
+            doc_section: '#step-1-find-your-simpro-build-name'
 
 slack:
     display_name: Slack
