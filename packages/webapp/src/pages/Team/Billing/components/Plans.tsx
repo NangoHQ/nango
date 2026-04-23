@@ -15,7 +15,7 @@ import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { currentPlanQueryOptions, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
+import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
@@ -305,7 +305,7 @@ const PlanChangeDialog: React.FC<{
         }
 
         refInterval.current = setInterval(async () => {
-            const json = await queryClient.fetchQuery(currentPlanQueryOptions(env)).catch(() => null);
+            const json = await fetchCurrentPlan(env).catch(() => null);
             if (!json) {
                 return;
             }
@@ -345,7 +345,7 @@ const PlanChangeDialog: React.FC<{
         }
 
         refInterval.current = setInterval(async () => {
-            const json = await queryClient.fetchQuery(currentPlanQueryOptions(env)).catch(() => null);
+            const json = await fetchCurrentPlan(env).catch(() => null);
             if (!json) {
                 return;
             }
