@@ -60,9 +60,7 @@ export class AccessMiddleware {
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-        const accountContext = await accountService.getAccountContextByApiKey(
-            opts.isScript ? { internalSecretKey: secret } : { secretKey: secret }
-        );
+        const accountContext = await accountService.getAccountContextByApiKey(opts.isScript ? { internalSecretKey: secret } : { secretKey: secret });
         if (!accountContext) {
             return Err('unknown_account');
         }
