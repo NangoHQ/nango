@@ -108,8 +108,7 @@ class EnvironmentService {
             const apiKey = await customerKeyService.createApiKey(trx, {
                 accountId: accountId,
                 environmentId: environment.id,
-                displayName: 'Default - Full access',
-                secret: secret.secret
+                displayName: 'Default - Full access'
             });
             if (apiKey.isErr()) {
                 throw apiKey.error;
@@ -117,8 +116,7 @@ class EnvironmentService {
 
             const webhookKey = await customerKeyService.createWebhookSigningKey(trx, {
                 accountId: accountId,
-                environmentId: environment.id,
-                secret: secret.secret
+                environmentId: environment.id
             });
             if (webhookKey.isErr()) {
                 throw webhookKey.error;

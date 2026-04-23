@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import accountService from './account.service.js';
+import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
 import secretService from './secret.service.js';
@@ -49,8 +50,9 @@ describe('Account service', () => {
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
         const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
 
         expect(bySecretKey).toStrictEqual({
             account: {
@@ -98,6 +100,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
 
         await db
             .knex('customer_keys')
@@ -105,7 +108,7 @@ describe('Account service', () => {
             .where({ account_id: account.id, key_type: 'api' })
             .whereNull('deleted_at');
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
 
         expect(bySecretKey?.auth).toStrictEqual({
             source: 'customer_key',
@@ -157,8 +160,10 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const customerKeySecret = apiKeys[0]!.secret;
 
-        const initial = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const initial = await accountService.getAccountContext({ secretKey: customerKeySecret });
         expect(initial?.auth?.source).toBe('customer_key');
         const apiKeyId = initial?.auth?.apiKeyId;
         expect(apiKeyId).toBeDefined();
@@ -169,14 +174,14 @@ describe('Account service', () => {
         const recentTimestamp = new Date(Date.now() - 5 * 1000);
         await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: recentTimestamp });
 
-        await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
         const secondLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
         expect(new Date(secondLastUsedAt).toISOString()).toBe(recentTimestamp.toISOString());
 
         const staleTimestamp = new Date(Date.now() - 2 * 60 * 1000);
         await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: staleTimestamp });
 
-        await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
         const thirdLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
         expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
     });

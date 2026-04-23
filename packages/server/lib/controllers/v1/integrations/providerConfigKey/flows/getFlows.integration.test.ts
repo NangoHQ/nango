@@ -21,24 +21,24 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { method: 'GET', token: secret.secret, params: { providerConfigKey: 'test' } }
+            { method: 'GET', token: apiKey.secret, params: { providerConfigKey: 'test' } }
         );
 
         shouldRequireQueryEnv(res);
     });
 
     it('should get 404', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'test' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isError(res.json);
@@ -49,14 +49,14 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get github templates', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'github' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -83,7 +83,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should create same template and deduplicate correctly', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -101,7 +101,7 @@ describe(`GET ${route}`, () => {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'github' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -151,7 +151,7 @@ describe(`GET ${route}`, () => {
         ]);
 
         try {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             const config = await seeders.createConfigSeed(env, 'hubspot', 'hubspot');
             const connection = await seeders.createConnectionSeed({ env, provider: 'hubspot' });
 
@@ -169,7 +169,7 @@ describe(`GET ${route}`, () => {
                 method: 'GET',
                 query: { env: 'dev' },
                 params: { providerConfigKey: 'hubspot' },
-                token: secret.secret
+                token: apiKey.secret
             });
 
             expect(res.res.status).toBe(200);

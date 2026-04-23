@@ -59,10 +59,10 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should enforce env query param', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'PUT',
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error missing env on purpose
                 query: {},
                 body: validBody
@@ -74,13 +74,13 @@ describe(`PUT ${route}`, () => {
 
     describe('Input Validation', () => {
         it('should reject extra fields', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error extra field on purpose
                 body: { ...validBody, unknownField: true }
             });
@@ -91,13 +91,13 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should reject invalid email', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { ...validBody, email: 'not-an-email' }
             });
 
@@ -107,12 +107,12 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should reject extra params in query', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'PUT',
                 // @ts-expect-error extra query param on purpose
                 query: { env: 'dev', extra: 'param' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: validBody
             });
 
@@ -122,13 +122,13 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should reject a body with missing required fields', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error partial body on purpose
                 body: { legalEntityName: 'Acme Corp' }
             });
@@ -141,7 +141,7 @@ describe(`PUT ${route}`, () => {
 
     describe('Success Cases', () => {
         it('should replace all invoicing details', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             const body: BillingInvoicingDetails = {
@@ -153,7 +153,7 @@ describe(`PUT ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body
             });
 
@@ -163,13 +163,13 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should allow null address and taxId', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: validBody
             });
 
@@ -181,13 +181,13 @@ describe(`PUT ${route}`, () => {
 
     describe('Error Handling', () => {
         it('should return 400 if invalid tax id data is provided', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: null });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { ...validBody, taxId: { type: 'foobar', value: '', country: 'baz' } }
             });
 
@@ -197,13 +197,13 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should return 400 if team has no orb_customer_id', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: null });
 
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: validBody
             });
 
@@ -213,7 +213,7 @@ describe(`PUT ${route}`, () => {
         });
 
         it('should return 500 if billing.putCustomer fails', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
             putCustomerSpy.mockResolvedValue(Err(new Error('Orb API error')));
@@ -221,7 +221,7 @@ describe(`PUT ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'PUT',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: validBody
             });
 

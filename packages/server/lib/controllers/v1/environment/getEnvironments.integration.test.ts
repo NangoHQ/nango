@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
-import { secretService, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -24,15 +23,13 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return user environments', async () => {
-        const { account } = await seeders.seedAccountEnvAndUser();
-        const env = await seeders.createEnvironmentSeed(account.id, 'test');
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createEnvironmentSeed(account.id, 'test');
         await seeders.createEnvironmentSeed(account.id, 'prod');
-
-        const secret = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -56,7 +53,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should not return result from an other account', async () => {
-        const { account: account, secret } = await seeders.seedAccountEnvAndUser();
+        const { account: account, apiKey } = await seeders.seedAccountEnvAndUser();
         const { account: account2 } = await seeders.seedAccountEnvAndUser();
 
         await seeders.createEnvironmentSeed(account.id, 'test');
@@ -65,7 +62,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
