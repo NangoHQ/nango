@@ -81,43 +81,17 @@ describe('Account service', () => {
         });
     });
 
-    it('should retrieve account context by legacy secretKey when customer key is missing', async () => {
+    it('should return null when customer key is missing (no fallback to api_secrets)', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
 
         await db.knex('customer_keys_relations').where({ entity_type: 'environment', entity_id: environment!.id }).delete();
         await db.knex('customer_keys').where({ account_id: account.id, key_type: 'api' }).delete();
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
 
-        expect(bySecretKey).toStrictEqual({
-            account: {
-                ...account,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
-            },
-            environment: {
-                ...environment,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
-            },
-            plan: {
-                ...plan,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
-            },
-            secret: {
-                ...secret,
-                created_at: expect.toBeIsoDateTimezone(),
-                updated_at: expect.toBeIsoDateTimezone()
-            },
-            auth: {
-                source: 'api_secret',
-                scopes: ['environment:*']
-            }
-        });
+        expect(bySecretKey).toBeNull();
     });
 
     it('should prefer customer key scopes when both tables match the same secret', async () => {
@@ -140,7 +114,7 @@ describe('Account service', () => {
         });
     });
 
-    it('should fall back to legacy secret when matching customer key is soft-deleted', async () => {
+    it('should return null when matching customer key is soft-deleted (no fallback to api_secrets)', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
@@ -149,13 +123,10 @@ describe('Account service', () => {
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
 
-        expect(bySecretKey?.auth).toStrictEqual({
-            source: 'api_secret',
-            scopes: ['environment:*']
-        });
+        expect(bySecretKey).toBeNull();
     });
 
-    it('should fall back to legacy secret when matching customer key relation is not environment-scoped', async () => {
+    it('should return null when matching customer key relation is not environment-scoped (no fallback to api_secrets)', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
@@ -173,10 +144,7 @@ describe('Account service', () => {
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
 
-        expect(bySecretKey?.auth).toStrictEqual({
-            source: 'api_secret',
-            scopes: ['environment:*']
-        });
+        expect(bySecretKey).toBeNull();
     });
 
     it('should return null when secretKey does not match either table', async () => {
