@@ -696,7 +696,7 @@ export class Orchestrator {
                 environmentId: nangoConnection.environment_id,
                 config_id: providerConfig.id!,
                 name: syncName,
-                isAction: false
+                type: 'sync'
             });
             if (!syncConfig) {
                 throw new Error(`Sync not found: ${sync.id}`);

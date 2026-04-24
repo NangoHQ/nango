@@ -79,7 +79,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
             name: task.parentSyncName,
-            isAction: false
+            type: 'sync'
         });
         if (!syncConfig) {
             throw new Error(`Webhook config not found: ${task.id}`);
