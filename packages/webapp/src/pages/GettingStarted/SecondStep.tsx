@@ -3,7 +3,7 @@ import { CodeXml, Loader } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { MultiLanguageCodeBlock } from '../../components-v2/MultiLanguageCodeBlock';
-import { useEnvironment } from '../../hooks/useEnvironment';
+import { useApiKeys } from '../../hooks/useApiKeys';
 import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
@@ -49,8 +49,8 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { data } = useEnvironment(env);
-    const environmentAndAccount = data?.environmentAndAccount;
+    const { data: apiKeysData } = useApiKeys(env);
+    const defaultApiKey = apiKeysData?.data?.[0];
 
     const [isExecuting, setIsExecuting] = useState(false);
     const [isTooltipOpen, setIsTooltipOpen] = useState(false);
@@ -64,7 +64,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
     }, [connectionId, providerConfigKey]);
 
     const onExecute = async () => {
-        if (!connectionId || !providerConfigKey || !environmentAndAccount) {
+        if (!connectionId || !providerConfigKey || !defaultApiKey) {
             return;
         }
 
@@ -75,7 +75,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                 {
                     connectionId: connectionId,
                     providerConfigKey: providerConfigKey,
-                    secretKey: environmentAndAccount?.environment.secret_key
+                    secretKey: defaultApiKey.secret
                 },
                 {
                     method: 'PUT'
