@@ -35,7 +35,7 @@ Automatically deploy to a shared Nango dev environment. This gives the team a st
 
 **Promoting to production**
 
-Use a manual `workflow_dispatch` trigger (see the GitHub Actions example below) to promote to `prod`. This keeps production deploys intentional and avoids the risk of an engineer forgetting to configure the prod Nango account — all prod deployments happen through CI using the prod secret key, never from a local machine.
+Use a manual `workflow_dispatch` trigger (see the GitHub Actions example below) to promote to `prod`. This keeps production deploys intentional and avoids the risk of an engineer forgetting to configure the prod Nango account — all prod deployments happen through CI using the prod API key, never from a local machine.
 
 <Info>
 Add your build output folder (`.nango/dist` or equivalent) to `.gitignore` so compiled artifacts are never committed to the repository.
@@ -51,10 +51,10 @@ If you don't specify a stage, it defaults to `dev`.
 
 ### Authentication
 
-To deploy from a CI script, you need to authenticate using a secret key for each stage.
+To deploy from a CI script, you need an API key for each environment.
 
-1.  **Generate Secret Keys**: In the Nango UI, go to **Settings > Secret Keys** and generate a secret key for each stage (e.g., `dev` and `prod`).
-2.  **Store the Secret Keys**: Store these keys as secrets in your CI/CD provider. We recommend naming them based on the stage, for example:
+1.  **Create API Keys**: In the Nango UI, go to **Environment Settings > API Keys** and create a key for each environment (e.g., `dev` and `prod`). For CI/CD pipelines, use a key scoped to `environment:deploy` only — see the [CI/CD Deploy profile](/reference/api-keys#cicd-deploy).
+2.  **Store the API Keys**: Store these keys as secrets in your CI/CD provider. The Nango CLI reads them from the following environment variables:
     *   `NANGO_SECRET_KEY_DEV`
     *   `NANGO_SECRET_KEY_PROD`
 
@@ -94,7 +94,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Set secrets as environment variables
+    # Set API keys as environment variables
     env:
       NANGO_SECRET_KEY_DEV: ${{ secrets.NANGO_SECRET_KEY_DEV }}
       NANGO_SECRET_KEY_PROD: ${{ secrets.NANGO_SECRET_KEY_PROD }}
@@ -125,12 +125,12 @@ jobs:
             exit 0
           fi
 
-          # Select the appropriate secret key
+          # Select the appropriate API key
           secret_key_var="NANGO_SECRET_KEY_$(echo "$stage" | tr '[:lower:]' '[:upper:]')"
           secret_key="${!secret_key_var}"
 
           if [ -z "$secret_key" ]; then
-            echo "Error: ${secret_key_var} secret is not set"
+            echo "Error: ${secret_key_var} is not set"
             exit 1
           fi
 
@@ -193,7 +193,9 @@ In CI environments, Nango automatically disables dependency updates to prevent t
 
 If you use ephemeral preview environments — such as Vercel preview deployments — as your staging layer, you'll run into a challenge: each preview has a unique URL, but Nango webhook URLs must be registered in advance and point to a stable destination.
 
-There is no native Nango support for per-preview environments yet. Programmatic environment creation is on the roadmap, which will make this pattern much cleaner.
+<Info>
+Nango doesn't currently support creating environments programmatically. This is on the roadmap and will make ephemeral environment setups much cleaner when available.
+</Info>
 
 **Current workaround: webhook proxy**
 
