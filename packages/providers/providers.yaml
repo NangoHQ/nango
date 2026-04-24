@@ -18785,25 +18785,16 @@ wejam:
         base_url: https://api.wejam.ai
         headers:
             x-api-key: ${apiKey}
-            authorization: Bearer ${connectionConfig.token}
-        verification:
-            method: GET
-            endpoints:
-                - /api/v1/whoami
     docs: https://nango.dev/docs/api-integrations/wejam
     docs_connect: https://nango.dev/docs/api-integrations/wejam/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your WeJam account
+            description: The API key for your WeJam account.
             doc_section: '#step-1-getting-your-api-key'
-    connection_config:
-        token:
-            type: string
-            title: Bearer Token
-            description: The bearer token for your WeJam account
-            doc_section: '#step-2-getting-your-bearer-token'
+            pattern: '^[a-f0-9]+$'
+            example: c0c1fc3f****************************************************************************************
 
 whatsapp-business:
     display_name: WhatsApp Business

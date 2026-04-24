@@ -7,30 +7,28 @@ sidebarTitle: 'WeJam AI'
 
 To authenticate with WeJam AI, you need:
 
-1. **API Key** - Sent as the `X-API-KEY` header on every request.
-2. **Bearer Token** - Sent as the `Authorization: Bearer` header on every request.
+1. **API Key** - A personal or organization key used to authenticate your requests to the WeJam AI API.
 
-This guide will walk you through obtaining both credentials from WeJam AI.
+This guide will walk you through obtaining your API key from WeJam AI.
 
 ### Instructions
 
 #### Step 1: Getting Your API Key
 
-1. Log in to your [WeJam AI](https://app.wejam.ai) account.
-2. Navigate to your account settings or developer section.
-3. Copy your **API Key**.
+1. Log in and navigate to your [WeJam AI API Keys dashboard](https://auth.wejam.ai/org/api_keys/).
+2. Choose the appropriate key type for your use case:
+    - **Personal API Key** — for individual access tied to your user account.
+    - **Organization API Key** — for shared access across your organization.
+3. Click **New API Key** and submit the form.
 
-#### Step 2: Getting Your Bearer Token
+<img src="/api-integrations/wejam/generate_api_key.png"/>
 
-1. In the same settings area, locate your **Bearer Token** (sometimes called an access token or personal token).
-2. Copy the token value.
+4. Copy your API key and store it securely, you won't be able to view it again.
 
-#### Step 3: Enter credentials in the Connect UI
-
-Once you have both credentials:
+#### Step 2: Enter credentials in the Connect UI
 
 1. Open the form where you need to authenticate with WeJam AI.
-2. Enter your **API Key** and **Bearer Token** in their respective fields.
+2. Enter your **API Key** in its respective field.
 3. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/wejam/form.png" style={{maxWidth: "450px" }}/>
