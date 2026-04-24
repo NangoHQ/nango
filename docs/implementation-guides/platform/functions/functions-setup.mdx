@@ -73,7 +73,7 @@ When multiple engineers work on Functions, give each engineer their own Nango en
 Each engineer adds their own environment's API key to their local `.env`:
 
 ```bash
-NANGO_SECRET_KEY_DEV='<your-personal-dev-key>'
+NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
 ```
 
 A shared `dev` or `staging` environment is still useful as a stable baseline — but it should be written to only by CI, not by individual engineers directly. See the [CI/CD guide](/implementation-guides/platform/functions/ci-cd) for how to wire this up.
