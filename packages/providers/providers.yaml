@@ -9785,6 +9785,32 @@ klicktipp:
     docs: https://nango.dev/docs/api-integrations/klicktipp
     docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
 
+kno-commerce:
+    display_name: Kno Commerce
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://app-api.knocommerce.com/api/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app-api.knocommerce.com
+    docs: https://nango.dev/docs/api-integrations/kno-commerce
+    docs_connect: https://nango.dev/docs/api-integrations/kno-commerce/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Kno Commerce API client ID
+            doc_section: '#step-1-creating-an-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Kno Commerce API client secret
+            secret: true
+            doc_section: '#step-1-creating-an-api-client'
+
 kustomer:
     display_name: Kustomer
     categories:
