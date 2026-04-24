@@ -48,7 +48,7 @@ export const patchFlowEnable = asyncWrapper<PatchFlowEnable>(async (req, res) =>
         return;
     }
 
-    if (plan && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
+    if (plan && plan.auto_idle && plan.trial_end_at && plan.trial_end_at.getTime() < Date.now()) {
         res.status(400).send({ error: { code: 'plan_limit', message: "Can't enable more scripts, upgrade or extend your auto idling period" } });
         return;
     }

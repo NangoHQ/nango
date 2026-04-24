@@ -39,7 +39,7 @@ Add a `tags` object when creating a Connect session token in your backend:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-SECRET-KEY>'] });
+    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
 
     const { data } = await nango.createConnectSession({
       // Recommended
@@ -57,7 +57,7 @@ Add a `tags` object when creating a Connect session token in your backend:
     ```bash
     curl --request POST \
       --url https://api.nango.dev/connect/sessions \
-      --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
       --header 'Content-Type: application/json' \
       --data '{
         "tags": {

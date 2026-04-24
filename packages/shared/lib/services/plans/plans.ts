@@ -111,7 +111,8 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .select<DBPlan[]>('plans.*')
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
-            .whereNull('trial_end_notified_at');
+            .whereNull('trial_end_notified_at')
+            .where('plans.auto_idle', true);
         return Ok(res);
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
@@ -123,7 +124,8 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .from('plans')
         .select<DBPlan[]>('*')
         .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
+        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
+        .where('plans.auto_idle', true);
 }
 
 export async function handlePlanChanged(
@@ -163,6 +165,15 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
+        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+            ? {
+                  trial_start_at: null,
+                  trial_end_at: null,
+                  trial_end_notified_at: null,
+                  trial_extension_count: 0,
+                  trial_expired: null
+              }
+            : {}),
         ...mergedFlags
     });
 

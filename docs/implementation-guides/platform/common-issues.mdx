@@ -70,7 +70,7 @@ Revoked refresh tokens are a normal part of integrations. Ensure your app provid
 APIs may revoke tokens for unpredictable reasons. Only investigate if you observe an unusual increase of connection revocations for an API. Achieving a 0% revocation rate is not realistic.
 
 Known API-specific behaviors:
-- Google: All tokens are revoked after 7 days if your OAuth app is in test mode ([detailed guide](https://www.nango.dev/blog/google-oauth-invalid-grant-token-has-been-expired-or-revoked)). To go to production, read our [guide for Google's OAuth app review](/integrations/google-security-review).
+- Google: All tokens are revoked after 7 days if your OAuth app is in test mode ([detailed guide](https://www.nango.dev/blog/google-oauth-invalid-grant-token-has-been-expired-or-revoked)). To go to production, read our [guide for Google's OAuth app review](/api-integrations/google-shared/google-security-review).
 - Salesforce: See [Salesforce refresh token issues](https://www.nango.dev/blog/salesforce-refresh-token-invalid-grant).
 
 
@@ -100,7 +100,7 @@ Indications of the error:
 
 1. Confirm the environment and secret key
    - The `secretKey` in the API or SDK is specific to the environment. Make sure you pass the key that corresponds to the environment you are using (e.g., dev vs prod).
-   - Open [Environment Settings](https://app.nango.dev/dev/environment-settings) and verify the key matches.
+   - Open [Environment Settings > API Keys](https://app.nango.dev/dev/environment-settings#api-keys) and verify the key matches.
 
 2. Verify the Integration ID (aka `providerConfigKey`)
    - Go to [Integrations](https://app.nango.dev/dev/integrations), open the integration, and copy the `Integration ID` exactly.

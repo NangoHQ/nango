@@ -1,7 +1,8 @@
-import { permissions } from '@nangohq/authz';
+import db from '@nangohq/database';
 import {
     accountService,
     connectionService,
+    customerKeyService,
     environmentService,
     externalWebhookService,
     generateSlackConnectionId,
@@ -10,7 +11,7 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../authz/resolve.js';
+import { canReadProdSecret } from '../../../authz/resolve.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
@@ -42,7 +43,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
     }
 
     // Remove secret key if user doesn't have permission to read production secrets
-    if (environment.is_production && !(await resolve(res.locals, permissions.canReadProdSecretKey))) {
+    if (!(await canReadProdSecret(res.locals, environment))) {
         delete (environment as any).secret_key;
         delete (environment as any).pending_secret_key;
     }
@@ -72,6 +73,14 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
+    let webhookSigningKey: string | null = null;
+    if (await canReadProdSecret(res.locals, environment)) {
+        const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (signingKeyResult.isOk()) {
+            webhookSigningKey = signingKeyResult.value.secret;
+        }
+    }
+
     res.status(200).send({
         plan: plan ? planToApi(plan) : null,
         environmentAndAccount: {
@@ -98,7 +107,8 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             uuid: account.uuid,
             name: account.name,
             email: user.email,
-            slack_notifications_channel
+            slack_notifications_channel,
+            webhook_signing_key: webhookSigningKey
         }
     });
 });

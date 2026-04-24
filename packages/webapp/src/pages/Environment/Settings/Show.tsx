@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { ApiKeys } from './ApiKeys';
 import { BackendSettings } from './Backend';
 import { ConnectUISettings } from './ConnectUISettings';
 import { DeprecatedSettings } from './Deprecated';
@@ -35,6 +37,7 @@ export const EnvironmentSettings: React.FC = () => {
     const environmentAndAccount = data?.environmentAndAccount;
     const isProd = environmentAndAccount?.environment?.is_production || false;
     const [activeTab, setActiveTab] = useHashNavigation('general');
+    const [apiKeysResetKey, setApiKeysResetKey] = useState(0);
 
     if (!environmentAndAccount || !team) {
         return (
@@ -78,6 +81,9 @@ export const EnvironmentSettings: React.FC = () => {
                 <Navigation value={activeTab} onValueChange={setActiveTab}>
                     <NavigationList className="w-[209px]">
                         <NavigationTrigger value="general">General</NavigationTrigger>
+                        <NavigationTrigger value="api-keys" onClick={() => setApiKeysResetKey((k) => k + 1)}>
+                            API Keys
+                        </NavigationTrigger>
                         <NavigationTrigger value="backend">Backend</NavigationTrigger>
                         <NavigationTrigger value="connect-ui">Connect UI</NavigationTrigger>
                         <NavigationTrigger value="webhooks">Webhooks</NavigationTrigger>
@@ -88,6 +94,9 @@ export const EnvironmentSettings: React.FC = () => {
                     </NavigationList>
                     <EnvironmentSettingsContent value={'general'}>
                         <General />
+                    </EnvironmentSettingsContent>
+                    <EnvironmentSettingsContent value={'api-keys'}>
+                        <ApiKeys key={apiKeysResetKey} />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'backend'}>
                         <BackendSettings />
