@@ -1985,7 +1985,7 @@ aws-iam:
     proxy:
         base_url: https://iam.amazonaws.com
         headers:
-            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, ${connectionConfig.region}, iam)}'
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, us-east-1, iam)}'
             x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
         connection_config:
             region: ${connectionConfig.region}
