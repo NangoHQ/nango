@@ -218,6 +218,9 @@ export class Supervisor {
                     if (configOverride.provisionedConcurrency !== null && configOverride.provisionedConcurrency !== node.provisionedConcurrency) {
                         return true;
                     }
+                    if (configOverride.isolationMode !== null && configOverride.isolationMode !== node.isolationMode) {
+                        return true;
+                    }
                     return false;
                 };
                 plan.push(
