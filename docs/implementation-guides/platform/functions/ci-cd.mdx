@@ -45,8 +45,7 @@ Add your build output folder (`.nango/dist` or equivalent) to `.gitignore` so co
 
 Here is an example workflow that implements the pipeline above.
 
-You can find a complete example in the [Nango GitHub Actions repository](https://github.com/NangoHQ/github-actions).
-
+<Accordion title="View GitHub Actions workflow">
 ```yaml
 # .github/workflows/nango-deploy.yml
 name: Deploy Nango Functions
@@ -124,6 +123,7 @@ jobs:
 
           npx nango@latest deploy "$stage" --secret-key "$secret_key" $destructive_flag
 ```
+</Accordion>
 
 <Warning>
   **Destructive Changes**
@@ -174,5 +174,4 @@ In CI environments, Nango automatically disables dependency updates to prevent m
 ## Related resources
 
 - [Testing integrations](/implementation-guides/platform/functions/testing) - A comprehensive guide to testing your Nango Functions.
-- [Nango GitHub Actions](https://github.com/NangoHQ/github-actions) - A complete, reusable GitHub Action for deploying Nango Functions.
 - [API Keys reference](/reference/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.
