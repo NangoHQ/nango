@@ -134,6 +134,9 @@ export async function execSubprocess({
 
         const child = childProcess.spawn(denoBin, args, {
             stdio: ['pipe', 'pipe', 'pipe'],
+            // Deno resolves npm bare specifiers (e.g. superjson → copy-anything) from cwd + node_modules;
+            // bootstrap lives under /opt/nango-deno but dependencies live under LAMBDA_TASK_ROOT.
+            cwd: allowRoot,
             env: {
                 ...process.env,
                 DENO_DIR: denoDir,
