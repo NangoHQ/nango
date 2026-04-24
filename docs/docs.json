@@ -752,6 +752,7 @@
               "integrations/all/quickbase",
               "api-integrations/quickbooks",
               "api-integrations/quickbooks-sandbox",
+              "api-integrations/quipteams",
               "integrations/all/ragieai",
               "api-integrations/railway",
               "integrations/all/ramp",
