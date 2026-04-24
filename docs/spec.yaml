@@ -126,9 +126,7 @@ paths:
                                     - data
                                 properties:
                                     data:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Integration'
+                                        $ref: '#/components/schemas/Integration'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
