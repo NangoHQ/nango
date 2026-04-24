@@ -80,7 +80,7 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             token: secret.secret,
-            body: { provider: 'github', unique_key: 'github-quickstart' }
+            body: { provider: 'docusign-sandbox', unique_key: 'docusign-quickstart' }
         });
 
         isError(res.json);
