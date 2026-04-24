@@ -37,6 +37,7 @@
   "navbar": {
     "links": [
       {
+        "label": "GitHub",
         "type": "github",
         "href": "https://github.com/NangoHQ/nango"
       },
