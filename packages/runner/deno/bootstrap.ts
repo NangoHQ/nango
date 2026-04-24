@@ -27,6 +27,43 @@ let unzipper: typeof UnzipperModule;
 
 let nodeRequire: ReturnType<typeof createRequire>;
 
+function isSuperJsonApi(x: unknown): x is SuperJsonModule {
+    return (
+        x !== null &&
+        typeof x === 'object' &&
+        typeof (x as { serialize?: unknown }).serialize === 'function' &&
+        typeof (x as { deserialize?: unknown }).deserialize === 'function'
+    );
+}
+
+/** `createRequire('superjson')` may return the namespace `{ default: SuperJSON }` on Lambda / ESM packages. */
+function requireSuperJson(req: ReturnType<typeof createRequire>): SuperJsonModule {
+    const mod = req('superjson') as unknown;
+    if (isSuperJsonApi(mod)) {
+        return mod;
+    }
+    if (mod !== null && typeof mod === 'object' && 'default' in mod) {
+        const d = (mod as { default: unknown }).default;
+        if (isSuperJsonApi(d)) {
+            return d;
+        }
+    }
+    throw new Error('Failed to load superjson: missing serialize/deserialize (check ESM/CJS interop)');
+}
+
+/** Serialize for the final `done` line; safe before `SuperJSON` is initialized (e.g. init failures). */
+function serializeDonePayload(value: unknown): SerializedSuperJson {
+    if (typeof SuperJSON?.serialize === 'function') {
+        return SuperJSON.serialize(value as never);
+    }
+    try {
+        const json = typeof value === 'object' && value !== null ? (JSON.parse(JSON.stringify(value)) as Record<string, unknown>) : { message: String(value) };
+        return { json };
+    } catch {
+        return { json: { message: String(value) } };
+    }
+}
+
 function initNodeRequireFromLambdaTaskRoot(): void {
     const lambdaRoot = Deno.env.get('LAMBDA_TASK_ROOT');
     if (!lambdaRoot) {
@@ -36,7 +73,7 @@ function initNodeRequireFromLambdaTaskRoot(): void {
     const pkgJson = path.join(lambdaRoot, 'package.json');
     nodeRequire = createRequire(pkgJson);
 
-    SuperJSON = nodeRequire('superjson') as SuperJsonModule;
+    SuperJSON = requireSuperJson(nodeRequire);
     zod = nodeRequire('zod') as typeof ZodModule;
     botbuilder = nodeRequire('botbuilder') as typeof BotbuilderModule;
     soap = nodeRequire('soap') as typeof SoapModule;
@@ -428,18 +465,18 @@ async function main() {
 main().catch((err: unknown) => {
     const payload =
         err instanceof ActionError
-            ? SuperJSON.serialize({
+            ? serializeDonePayload({
                   __crossProcessActionError: true,
                   type: err.type,
                   payload: err.payload
               })
             : err instanceof Error
-              ? SuperJSON.serialize({
+              ? serializeDonePayload({
                     message: err.message,
                     stack: err.stack,
                     name: err.name
                 })
-              : SuperJSON.serialize({ message: String(err) });
+              : serializeDonePayload({ message: String(err) });
     writeLine({
         v: 1,
         done: {
