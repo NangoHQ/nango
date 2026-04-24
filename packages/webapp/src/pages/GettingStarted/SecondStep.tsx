@@ -50,7 +50,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
 
     const env = useStore((state) => state.env);
     const { data: apiKeysData } = useApiKeys(env);
-    const defaultApiKey = apiKeysData?.data?.[0];
+    const defaultApiKey = apiKeysData?.data?.find((key) => key.display_name === 'Default - Full access') ?? apiKeysData?.data?.[0];
 
     const [isExecuting, setIsExecuting] = useState(false);
     const [isTooltipOpen, setIsTooltipOpen] = useState(false);
