@@ -8554,6 +8554,37 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+hex:
+    display_name: Hex
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.hex.tech/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/hex
+    docs_connect: https://nango.dev/docs/api-integrations/hex/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Hex API Token.
+            example: hxtp_a1b2c3d4e5f6***
+            pattern: '^hxt[pw]_[a-f0-9]+$'
+            doc_section: '#step-1-creating-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Hex subdomain.
+            pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+            example: app
+            doc_section: '#step-2-finding-your-subdomain'
+
 heyreach:
     display_name: HeyReach
     categories:
