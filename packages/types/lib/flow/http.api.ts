@@ -1,6 +1,19 @@
 import type { ApiError, Endpoint } from '../api.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
+export type GetFunctionPull = Endpoint<{
+    Method: 'GET';
+    Path: '/functions/pull';
+    Querystring: {
+        integrationId: string;
+        type: 'syncs' | 'actions' | 'on-events';
+        name: string;
+        env?: string | undefined;
+    };
+    Success: never;
+    Error: ApiError<'not_found'>;
+}>;
+
 export type PutUpgradePreBuiltFlow = Endpoint<{
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';

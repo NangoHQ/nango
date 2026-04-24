@@ -37,6 +37,7 @@ import { getPublicEnvironmentVariables } from './controllers/environment/getVari
 import { postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
 import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
+import { getFunctionPull } from './controllers/functions/pull/getPull.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -282,6 +283,9 @@ publicAPI.use('/remote-function', jsonContentTypeMiddleware);
 publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
 publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
 publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
+
+publicAPI.use('/functions', jsonContentTypeMiddleware);
+publicAPI.route('/functions/pull').get(apiAuth, getFunctionPull);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);

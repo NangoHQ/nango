@@ -95,7 +95,7 @@ class SyncController {
                 return;
             }
 
-            const syncConfig = await getSyncConfigRaw({ environmentId: config.environment_id, config_id: config.id!, name: sync_name, isAction: false });
+            const syncConfig = await getSyncConfigRaw({ environmentId: config.environment_id, config_id: config.id!, name: sync_name, type: 'sync' });
             if (!syncConfig) {
                 res.status(404).json({ error: { code: 'not_found' } });
                 return;

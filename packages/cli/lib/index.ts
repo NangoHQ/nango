@@ -20,6 +20,7 @@ import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
+import { pullFunction } from './services/pull.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { MissingArgumentError } from './utils/errors.js';
@@ -584,6 +585,51 @@ program
             process.exitCode = 1;
         }
     });
+program
+    .command('pull')
+    .description("Pull a function's TypeScript source into your local integrations folder")
+    .argument('<path>', 'Function path: <provider>/<type>/<name> (catalog) or <integration-id>/<type>/<name> with --env (deployed)')
+    .option('--env <environment>', 'Environment to pull deployed function from (e.g. dev, prod)')
+    .option('-f, --force', 'Overwrite existing files without prompting', false)
+    .action(async function (this: Command, functionPath: string) {
+        const { debug, autoConfirm, force, env, interactive } = this.opts<GlobalOptions & { env?: string; force: boolean }>();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
+        if (!precheck) return;
+
+        const parts = functionPath.split('/');
+        if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+            console.error(chalk.red('Invalid path. Expected format: <provider-or-integration-id>/<type>/<name>'));
+            console.error(chalk.gray('Example: google-drive/actions/get-files'));
+            process.exitCode = 1;
+            return;
+        }
+
+        const [integrationId, type, name] = parts as [string, string, string];
+
+        if (!['syncs', 'actions', 'on-events'].includes(type)) {
+            console.error(chalk.red(`Invalid type '${type}'. Must be one of: syncs, actions, on-events`));
+            process.exitCode = 1;
+            return;
+        }
+
+        const success = await pullFunction({
+            fullPath,
+            integrationId,
+            type: type as 'syncs' | 'actions' | 'on-events',
+            name,
+            environmentName: env,
+            debug,
+            force,
+            autoConfirm,
+            interactive
+        });
+        if (!success) {
+            process.exitCode = 1;
+        }
+    });
+
 program
     .command('cli-location', { hidden: true })
     .alias('cli')

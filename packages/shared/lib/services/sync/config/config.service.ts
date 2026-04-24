@@ -17,6 +17,7 @@ import type {
     NangoModel,
     NangoSyncConfig,
     NangoSyncEndpointV2,
+    ScriptTypeLiteral,
     SlimSync,
     StandardNangoConfig
 } from '@nangohq/types';
@@ -705,7 +706,12 @@ export async function getSyncConfigsByConfigIdForWebhook(environment_id: number,
     return result;
 }
 
-export async function getSyncConfigRaw(opts: { environmentId: number; config_id: number; name: string; isAction: boolean }): Promise<DBSyncConfig | null> {
+export async function getSyncConfigRaw(opts: {
+    environmentId: number;
+    config_id: number;
+    name: string;
+    type: ScriptTypeLiteral;
+}): Promise<DBSyncConfig | null> {
     const query = db.readOnly
         .select<DBSyncConfig>('*')
         .where({
@@ -713,10 +719,11 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
             sync_name: opts.name,
             nango_config_id: opts.config_id,
             active: true,
-            type: opts.isAction ? 'action' : 'sync',
+            type: opts.type,
             deleted: false
         })
         .from<DBSyncConfig>(TABLE)
+        .orderBy('created_at', 'desc')
         .first();
 
     const res = await query;
