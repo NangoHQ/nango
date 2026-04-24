@@ -16532,6 +16532,35 @@ shortcut:
             title: API Key
             description: The API key for your Shortcut account
 
+simpro:
+    display_name: simPRO
+    categories:
+        - productivity
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.build}.simprosuite.com/oauth2/login
+    token_url: https://${connectionConfig.build}.simprosuite.com/oauth2/token
+    proxy:
+        base_url: https://${connectionConfig.build}.simprosuite.com
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://nango.dev/docs/api-integrations/simpro
+    docs_connect: https://nango.dev/docs/api-integrations/simpro/connect
+    connection_config:
+        build:
+            type: string
+            title: simPRO Build Name
+            description: The subdomain part of your simPRO URL.
+            pattern: '^[a-z0-9_-]+$'
+            example: yourcompany
+            suffix: .simprosuite.com
+            prefix: https://
+            doc_section: '#step-1-find-your-simpro-build-name'
+
 slack:
     display_name: Slack
     categories:
