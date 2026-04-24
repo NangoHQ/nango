@@ -279,13 +279,16 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amount: string }): Promise<Result<BillingSubscription>> {
+    async applyPendingChanges(opts: { pendingChangeId: string; amountCollected: string; paymentExternalId: string }): Promise<Result<BillingSubscription>> {
         try {
-            // We apply the pending change to confirm the card
             const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
                 description: 'Initial payment on subscription',
-                previously_collected_amount: opts.amount
+                mark_as_paid: true,
+                previously_collected_amount: opts.amountCollected,
+                payment_external_id: opts.paymentExternalId,
+                payment_notes: `Stripe collected: $${opts.amountCollected}`
             });
+
             if (!res.subscription) {
                 return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));
             }

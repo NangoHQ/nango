@@ -5,11 +5,11 @@ import {
     NangoError,
     ProxyRequest,
     connectionService,
+    customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
     productTracking,
-    secretService,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
@@ -150,23 +150,25 @@ export const connectionCreated = async (
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
-    }
+    if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
 
-    void sendAuthWebhook({
-        connection,
-        environment,
-        secret: defaultSecret.value.secret,
-        webhookSettings,
-        auth_mode,
-        endUser,
-        success: true,
-        operation,
-        providerConfig,
-        account
-    });
+        void sendAuthWebhook({
+            connection,
+            environment,
+            secret: webhookSigningKey.value.secret,
+            webhookSettings,
+            auth_mode,
+            endUser,
+            success: true,
+            operation,
+            providerConfig,
+            account
+        });
+    }
 
     void pubsub.publisher.publish({
         subject: 'usage',
@@ -194,23 +196,25 @@ export const connectionCreationFailed = async (
     if (error) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
+        if (webhookSettings) {
+            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            if (webhookSigningKey.isErr()) {
+                throw webhookSigningKey.error;
+            }
 
-        void sendAuthWebhook({
-            connection,
-            environment,
-            secret: defaultSecret.value.secret,
-            webhookSettings,
-            auth_mode,
-            success: false,
-            error,
-            operation: 'creation',
-            providerConfig,
-            account
-        });
+            void sendAuthWebhook({
+                connection,
+                environment,
+                secret: webhookSigningKey.value.secret,
+                webhookSettings,
+                auth_mode,
+                success: false,
+                error,
+                operation: 'creation',
+                providerConfig,
+                account
+            });
+        }
     }
 };
 
@@ -275,23 +279,25 @@ export const connectionRefreshFailed = async ({
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
-    }
+    if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
 
-    void sendAuthWebhook({
-        connection,
-        environment,
-        secret: defaultSecret.value.secret,
-        webhookSettings,
-        auth_mode: provider.auth_mode,
-        operation: 'refresh',
-        error: authError,
-        success: false,
-        providerConfig: config,
-        account
-    });
+        void sendAuthWebhook({
+            connection,
+            environment,
+            secret: webhookSigningKey.value.secret,
+            webhookSettings,
+            auth_mode: provider.auth_mode,
+            operation: 'refresh',
+            error: authError,
+            success: false,
+            providerConfig: config,
+            account
+        });
+    }
 
     try {
         await slackService.reportFailure({

@@ -9816,6 +9816,32 @@ klicktipp:
     docs: https://nango.dev/docs/api-integrations/klicktipp
     docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
 
+kno-commerce:
+    display_name: Kno Commerce
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://app-api.knocommerce.com/api/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app-api.knocommerce.com
+    docs: https://nango.dev/docs/api-integrations/kno-commerce
+    docs_connect: https://nango.dev/docs/api-integrations/kno-commerce/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Kno Commerce API client ID
+            doc_section: '#step-1-creating-an-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Kno Commerce API client secret
+            secret: true
+            doc_section: '#step-1-creating-an-api-client'
+
 kustomer:
     display_name: Kustomer
     categories:
@@ -16512,6 +16538,35 @@ shortcut:
             type: string
             title: API Key
             description: The API key for your Shortcut account
+
+simpro:
+    display_name: simPRO
+    categories:
+        - productivity
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.build}.simprosuite.com/oauth2/login
+    token_url: https://${connectionConfig.build}.simprosuite.com/oauth2/token
+    proxy:
+        base_url: https://${connectionConfig.build}.simprosuite.com
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://nango.dev/docs/api-integrations/simpro
+    docs_connect: https://nango.dev/docs/api-integrations/simpro/connect
+    connection_config:
+        build:
+            type: string
+            title: simPRO Build Name
+            description: The subdomain part of your simPRO URL.
+            pattern: '^[a-z0-9_-]+$'
+            example: yourcompany
+            suffix: .simprosuite.com
+            prefix: https://
+            doc_section: '#step-1-find-your-simpro-build-name'
 
 slack:
     display_name: Slack
