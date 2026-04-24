@@ -121,6 +121,8 @@ export async function execSubprocess({
             '--no-prompt',
             '--quiet',
             ...(cachedOnly ? (['--cached-only'] as const) : []),
+            // Deno 2+: bootstrap uses Deno.env.get('LAMBDA_TASK_ROOT') for createRequire(package.json)
+            '--allow-env=LAMBDA_TASK_ROOT',
             `--allow-read=${allowRoot}`,
             `--allow-read=${os.tmpdir()}`,
             `--allow-read=/opt/nango-deno`,
