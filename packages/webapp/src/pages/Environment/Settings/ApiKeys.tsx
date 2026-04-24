@@ -443,6 +443,7 @@ export const ApiKeys: React.FC = () => {
     const isProd = envData?.environmentAndAccount?.environment?.is_production || false;
     const canReadSecret = can(permissions.canReadProdSecretKey) || !isProd;
     const canManageKeys = can(permissions.canWriteProdEnvironmentKeys) || !isProd;
+    const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 
     const apiKeys = data?.data ?? [];
     const selectedKey = selectedKeyId !== null ? apiKeys.find((k) => k.id === selectedKeyId) : null;
@@ -460,6 +461,17 @@ export const ApiKeys: React.FC = () => {
             }
         }
     };
+
+    if (managedSecretKey) {
+        return (
+            <SettingsContent title="API Keys">
+                <div className="text-body-small-regular text-text-secondary py-4">
+                    API keys are managed via the <code className="text-text-primary">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable and cannot
+                    be modified from the dashboard.
+                </div>
+            </SettingsContent>
+        );
+    }
 
     if (selectedKey) {
         return <KeyConfig apiKey={selectedKey} env={env} onBack={() => setSelectedKeyId(null)} canReadSecret={canReadSecret} canManageKeys={canManageKeys} />;

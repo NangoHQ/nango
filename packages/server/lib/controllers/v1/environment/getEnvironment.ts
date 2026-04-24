@@ -98,7 +98,8 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             name: account.name,
             email: user.email,
             slack_notifications_channel,
-            webhook_signing_key: webhookSigningKey
+            webhook_signing_key: webhookSigningKey,
+            managed_secret_key: !isCloud ? (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] ?? null) : null
         }
     });
 });
