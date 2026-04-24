@@ -17147,6 +17147,27 @@ stay-ai:
             pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
             doc_section: '#step-1-create-a-new-api-key'
 
+stitch-mcp:
+    display_name: Stitch (MCP)
+    categories:
+        - design
+        - mcp
+    alias: google
+    default_scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+    proxy:
+        base_url: https://stitch.googleapis.com
+        headers:
+            x-goog-user-project: ${connectionConfig.project_id}
+    connection_config:
+        project_id:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+    docs: https://nango.dev/docs/api-integrations/stitch-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
+
 strava:
     display_name: Strava (Mobile)
     categories:
