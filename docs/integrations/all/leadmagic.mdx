@@ -1,7 +1,7 @@
 ---
 title: 'LeadMagic'
 sidebarTitle: 'LeadMagic'
-description: 'Access the LeadMagic API in 2 minutes 💨'
+description: 'Connect LeadMagic with an API key and call the LeadMagic API (people, companies, jobs, ads, analytics, credits) through Nango.'
 ---
 
 <Tabs>
@@ -11,10 +11,10 @@ description: 'Access the LeadMagic API in 2 minutes 💨'
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _LeadMagic_.
       </Step>
       <Step title="Authorize LeadMagic">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your LeadMagic API Key. Later, you'll let your users do the same directly from your app.
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your LeadMagic API key. Nango stores it on the connection and sends it to the LeadMagic API as the `X-API-Key` header when you use the proxy (see [authentication](https://leadmagic.io/docs/v1/authentication)). Later, you can let your users connect the same way from your app.
       </Step>
       <Step title="Call the LeadMagic API">
-        Let's make your first request to the LeadMagic API (check your credits). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Make a first request to check your credit balance. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections). The example calls `GET /v1/credits` on `https://api.leadmagic.io` via the Nango proxy ([Check Credits](https://leadmagic.io/docs/v1/reference/check-credits)).
         <Tabs>
             <Tab title="cURL">
 
@@ -56,24 +56,141 @@ description: 'Access the LeadMagic API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their LeadMagic accounts.
+    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app so your users can connect their LeadMagic accounts.
     </Tip>
   </Tab>
+
+  <Tab title="📚 Endpoints & usage">
+    **Base URL (direct):** `https://api.leadmagic.io`
+
+    **Via Nango proxy:** prefix paths with `https://api.nango.dev/proxy` and send the same `Authorization`, `Provider-Config-Key`, and `Connection-Id` headers as in the quickstart.
+
+    **POST JSON example (cURL):**
+
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/v1/people/email-validation" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{"email":"you@company.com"}'
+    ```
+
+    **POST JSON example (Node SDK):**
+
+    ```typescript
+    import { Nango } from '@nangohq/node';
+
+    const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+    const res = await nango.proxy({
+      method: 'POST',
+      endpoint: '/v1/people/email-validation',
+      providerConfigKey: '<INTEGRATION-ID>',
+      connectionId: '<CONNECTION-ID>',
+      data: { email: 'you@company.com' },
+    });
+
+    console.log(res.data);
+    ```
+
+    Use `nango.get` for simple `GET` calls, or `nango.proxy({ method: 'GET', ... })`. For `POST`, `PUT`, `PATCH`, and `DELETE`, use `nango.proxy` with a `data` body when needed. Request and response bodies are JSON unless the reference says otherwise. For path parameters (for example analytics by day), substitute the segment in `endpoint` (for example `/v1/analytics/day/2026-04-12`).
+
+    ### People (`/v1/people/...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | POST | `/v1/people/email-validation` | Validate an email address |
+    | POST | `/v1/people/email-finder` | Find a work email from name + company |
+    | POST | `/v1/people/mobile-finder` | Find a mobile number from profile URL or email |
+    | POST | `/v1/people/personal-email-finder` | Find personal email from a professional profile URL |
+    | POST | `/v1/people/profile-search` | Enrich a professional profile from a profile URL |
+    | POST | `/v1/people/b2b-profile` | Resolve work or personal email to a B2B profile |
+    | POST | `/v1/people/b2b-profile-email` | Resolve a professional profile URL to a work email |
+    | POST | `/v1/people/employee-finder` | List employees at a company |
+    | POST | `/v1/people/role-finder` | Find a person in a role at a company |
+    | POST | `/v1/people/job-change-detector` | Detect job changes for a profile |
+
+    ### Companies (`/v1/companies/...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | POST | `/v1/companies/company-search` | Company intelligence from domain or name |
+    | POST | `/v1/companies/company-funding` | Funding data for a company |
+    | POST | `/v1/companies/competitors-search` | Competitors for a company |
+    | POST | `/v1/companies/technographics` | Technology stack for a domain |
+
+    ### Jobs (`/v1/jobs/...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | POST | `/v1/jobs/jobs-finder` | Search job listings |
+    | GET | `/v1/jobs/countries` | Country IDs for job filters |
+    | GET | `/v1/jobs/regions` | Region IDs for job filters |
+    | GET | `/v1/jobs/job-types` | Job type IDs for filters |
+    | GET | `/v1/jobs/industries` | Industry IDs for filters |
+    | GET | `/v1/jobs/company-types` | Company type IDs for filters |
+
+    ### Advertisements (`/v1/ads/...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | POST | `/v1/ads/google-ads-search` | Search Google Ads for a company |
+    | POST | `/v1/ads/meta-ads-search` | Search Meta Ads for a company |
+    | POST | `/v1/ads/b2b-ads-search` | Search B2B ads by company |
+    | POST | `/v1/ads/b2b-ads-details` | Details for a specific B2B ad URL |
+
+    ### Analytics (`/v1/analytics/...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | GET | `/v1/analytics/summary` | Usage summary |
+    | GET | `/v1/analytics/daily` | Daily usage |
+    | GET | `/v1/analytics/dashboard` | Dashboard metrics |
+    | GET | `/v1/analytics/usage` | Usage details |
+    | GET | `/v1/analytics/products` | Per-product usage |
+    | GET | `/v1/analytics/day/{date}` | Usage for a calendar day (`YYYY-MM-DD`) |
+    | GET | `/v1/analytics/credits` | Deprecated; prefer `/v1/credits` |
+
+    ### Credits (`/v1/credits...`)
+
+    | Method | Path | Summary |
+    | - | - | - |
+    | GET | `/v1/credits` | Current credit balance |
+    | POST | `/v1/credits` | Check credits (same resource; POST supported) |
+    | GET | `/v1/credits/health` | Credits subsystem health |
+    | POST | `/v1/credits/refresh` | Refresh balance from billing |
+
+    Full request/response schemas, examples, and per-endpoint limits are in the [API reference](https://leadmagic.io/docs/v1/reference/introduction) and the [OpenAPI file bundled with the docs site](https://leadmagic.io/docs/v1/reference/openapi.yml). LeadMagic also publishes an OpenAPI 3.1 snapshot, LLM-oriented `llms.txt` files, and a [`test-api` smoke test](https://github.com/LeadMagic/leadmagic-openapi/blob/main/test-api.ts) in the public repo **[LeadMagic/leadmagic-openapi](https://github.com/LeadMagic/leadmagic-openapi)** ([YAML](https://raw.githubusercontent.com/LeadMagic/leadmagic-openapi/main/leadmagic-openapi-3.1.yaml) · [JSON](https://raw.githubusercontent.com/LeadMagic/leadmagic-openapi/main/leadmagic-openapi-3.1.json)). When in doubt, treat **[leadmagic.io/docs](https://leadmagic.io/docs)** as the source of truth for the full live surface—the README in that repo explains how the snapshot relates to `/v1/...` routes.
+
+    <Note>Contribute corrections by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/leadmagic.mdx)</Note>
+  </Tab>
+
   <Tab title="🔗 Useful links">
     | Topic | Links |
     | - | - |
     | Authorization | [Guide to connect to LeadMagic using Connect UI](/integrations/all/leadmagic/connect) |
     | General | [Website](https://leadmagic.io/) |
-    | Developer | [API Documentation](https://leadmagic.io/docs/v1/introduction) |
-    | | [Generate an API key in your LeadMagic account](https://app.leadmagic.io/settings/api) |
-    | | [API authentication guide](https://leadmagic.io/docs/v1/authentication#using-your-api-key) |
-    | | [API Reference](https://leadmagic.io/docs/v1/reference/check-credits) |
+    | Developer | [API introduction](https://leadmagic.io/docs/v1/introduction) |
+    | | [Quickstart](https://leadmagic.io/docs/v1/quickstart) |
+    | | [Generate an API key](https://app.leadmagic.io/settings/api) |
+    | | [Authentication](https://leadmagic.io/docs/v1/authentication) |
+    | | [Credits & pricing](https://leadmagic.io/docs/v1/credits) |
+    | | [API reference (overview)](https://leadmagic.io/docs/v1/reference/introduction) |
+    | | [Check credits](https://leadmagic.io/docs/v1/reference/check-credits) |
+    | | [OpenAPI (docs site)](https://leadmagic.io/docs/v1/reference/openapi.yml) |
+    | OpenAPI snapshot | [LeadMagic/leadmagic-openapi](https://github.com/LeadMagic/leadmagic-openapi) (GitHub — spec, `llms.txt`, smoke tests) |
 
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/leadmagic.mdx)</Note>
   </Tab>
+
   <Tab title="🚨 API gotchas">
-    - Different endpoints have different rate limits. Check the specific endpoint documentation to learn more about rate limits.
-    - If you need to increase your rate limits, you can reach out to the LeadMagic team at [support@leadmagic.io](mailto:support@leadmagic.io).
+    - **Base URL**: `https://api.leadmagic.io`. Prefer documented `/v1/...` routes; legacy aliases may exist.
+    - **Authentication**: Direct calls use `X-API-Key`. With Nango, the key is stored on the connection—do not send `X-API-Key` yourself on proxied calls.
+    - **Credits**: `GET` and `POST` are available on `/v1/credits`; the quickstart uses `GET` via `nango.get`.
+    - **Rate limits**: Vary by endpoint. Responses include rate limit headers (for example `RateLimit-*`, `X-RateLimit-*`). See each endpoint in the [API reference](https://leadmagic.io/docs/v1/reference/introduction).
+    - **Response shapes**: Field casing can differ by endpoint (snake_case vs camelCase). Use the reference and OpenAPI spec for exact schemas.
+    - **Support**: [support@leadmagic.io](mailto:support@leadmagic.io)
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/leadmagic.mdx)</Note>
   </Tab>
@@ -82,4 +199,3 @@ description: 'Access the LeadMagic API in 2 minutes 💨'
 <Info>
     Questions? Join us in the [Slack community](https://nango.dev/slack).
 </Info>
-
