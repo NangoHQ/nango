@@ -11803,8 +11803,8 @@ northbeam:
             method: GET
             endpoints:
                 - /v2/orders
-    docs: https://nango.dev/docs/integrations/all/northbeam
-    docs_connect: https://nango.dev/docs/integrations/all/northbeam/connect
+    docs: https://nango.dev/docs/api-integrations/northbeam
+    docs_connect: https://nango.dev/docs/api-integrations/northbeam/connect
     connection_config:
         subdomain:
             type: string
