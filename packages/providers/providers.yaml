@@ -11140,6 +11140,42 @@ maximizer-on-premise:
             example: maximizer.mycompany.com
             format: hostname
 
+maxio:
+    display_name: Maxio
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /subscriptions.json
+    docs: https://nango.dev/docs/integrations/all/maxio
+    docs_connect: https://nango.dev/docs/integrations/all/maxio/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Maxio API Key.
+            doc_section: '#step-2-retrieving-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'X'
+            hidden: true
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Maxio site hostname.
+            pattern: '^[a-zA-Z0-9-]+\.(chargify\.com|ebilling\.maxio\.com)$'
+            example: acme.chargify.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+
 mindbody:
     display_name: Mindbody
     categories:

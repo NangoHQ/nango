@@ -645,6 +645,7 @@
               "api-integrations/microsoft-word",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
+              "api-integrations/maxio",
               "integrations/all/microsoft-tenant-specific",
               "api-integrations/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
