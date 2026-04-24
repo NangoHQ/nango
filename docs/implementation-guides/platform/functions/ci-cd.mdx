@@ -38,20 +38,53 @@ If you don't specify an environment, it defaults to `dev`.
 **If you don't have a staging environment**, wire the prod Nango deploy directly to your production release step — use a `workflow_dispatch` trigger or equivalent manual approval. This keeps production deploys intentional, and ensures they always happen through CI using the prod API key rather than from a local machine.
 
 <Info>
-Add your build output folder (`.nango/dist` or equivalent) to `.gitignore` so compiled artifacts are never committed to the repository.
+Add the `dist/` folder inside your `nango-integrations` directory to `.gitignore`. The CLI writes compiled JS artifacts there, and committing them creates noisy diffs and risks deploying stale bundles.
 </Info>
 
 ## Example: GitHub Actions
 
-Here is an example workflow that implements the pipeline above.
+Two workflow files implement the pipeline above.
 
-<Accordion title="View GitHub Actions workflow">
+<AccordionGroup>
+<Accordion title="PR validation (.github/workflows/nango-validate.yml)">
 ```yaml
-# .github/workflows/nango-deploy.yml
+name: Validate Nango Functions
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npx nango@latest compile --no-dependency-update
+
+      - name: Test
+        run: npm test
+```
+</Accordion>
+
+<Accordion title="Deploy (.github/workflows/nango-deploy.yml)">
+```yaml
 name: Deploy Nango Functions
 
 on:
-  # 1. Manual trigger to deploy to a specific environment
+  # Manual trigger to deploy to a specific environment
   workflow_dispatch:
     inputs:
       stage:
@@ -68,7 +101,7 @@ on:
         required: true
         default: false
 
-  # 2. Automatic trigger on push to main
+  # Automatic deploy to dev on merge to main
   push:
     branches:
       - main
@@ -89,24 +122,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies & Run tests
-        run: |
-          npm install
-          npm test
+      - name: Install dependencies
+        run: npm ci
 
       - name: Deploy to Nango
         run: |
-          # Determine the environment to deploy to
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             stage="${{ inputs.stage }}"
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            stage="dev"
           else
-            echo "Not a deployable event. Exiting."
-            exit 0
+            stage="dev"
           fi
 
-          # Select the appropriate API key
           secret_key_var="NANGO_SECRET_KEY_$(echo "$stage" | tr '[:lower:]' '[:upper:]')"
           secret_key="${!secret_key_var}"
 
@@ -115,15 +141,15 @@ jobs:
             exit 1
           fi
 
-          # Handle destructive changes flag
           destructive_flag=""
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.allowDestructive }}" == "true" ]; then
             destructive_flag="--allow-destructive"
           fi
 
-          npx nango@latest deploy "$stage" --secret-key "$secret_key" $destructive_flag
+          npx nango@latest deploy "$stage" --secret-key "$secret_key" --no-dependency-update $destructive_flag
 ```
 </Accordion>
+</AccordionGroup>
 
 <Warning>
   **Destructive Changes**
