@@ -19146,6 +19146,26 @@ webinarjam:
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
 
+wejam:
+    display_name: WeJam AI
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.wejam.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/wejam
+    docs_connect: https://nango.dev/docs/api-integrations/wejam/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your WeJam account.
+            doc_section: '#step-1-getting-your-api-key'
+            pattern: '^[a-f0-9]+$'
+            example: c0c1fc3f****************************************************************************************
+
 whatsapp-business:
     display_name: WhatsApp Business
     categories:
