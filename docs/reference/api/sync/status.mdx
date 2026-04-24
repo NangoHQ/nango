@@ -3,5 +3,9 @@ title: 'Sync status'
 openapi: 'GET /sync/status'
 ---
 
+<Info>
+  Requires an API key with the `environment:syncs:read` scope. [Learn more about API key scopes](/reference/api-keys#scopes).
+</Info>
+
 The response includes the current `checkpoint` for each sync, which tracks how far the sync has progressed. Learn more about [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).
 

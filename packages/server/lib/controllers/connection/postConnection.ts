@@ -461,6 +461,12 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     await logCtx.success();
 
     res.status(201).send(
-        connectionFullToPublicApi({ data: connection, provider: providerName, activeLog: [], endUser: endUser ? EndUserMapper.to(endUser) : null })
+        connectionFullToPublicApi({
+            data: connection,
+            provider: providerName,
+            activeLog: [],
+            endUser: endUser ? EndUserMapper.to(endUser) : null,
+            includeCredentials: true
+        })
     );
 });

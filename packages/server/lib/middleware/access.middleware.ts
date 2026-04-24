@@ -41,18 +41,26 @@ const ignoreEnvPaths = [
 ];
 
 export class AccessMiddleware {
-    private async validateSecretKey(secret: string): Promise<
+    private async validateApiKey(
+        secret: string,
+        opts: { isScript: boolean }
+    ): Promise<
         Result<{
             account: DBTeam;
             environment: DBEnvironment;
             secret: DBAPISecret;
             plan: DBPlan | null;
+            auth?: {
+                source: 'customer_key' | 'api_secret' | 'env_var';
+                scopes?: string[];
+                apiKeyId?: number;
+            };
         }>
     > {
         if (!keyRegex.test(secret)) {
             return Err('invalid_secret_key_format');
         }
-        const accountContext = await accountService.getAccountContextBySecretKey(secret);
+        const accountContext = await accountService.getAccountContextByApiKey(opts.isScript ? { internalSecretKey: secret } : { secretKey: secret });
         if (!accountContext) {
             return Err('unknown_account');
         }
@@ -86,7 +94,9 @@ export class AccessMiddleware {
                 return;
             }
 
-            const result = await this.validateSecretKey(secret);
+            const isScript = req.get('Nango-Is-Script') === 'true';
+
+            const result = await this.validateApiKey(secret, { isScript });
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
@@ -96,6 +106,12 @@ export class AccessMiddleware {
             res.locals['account'] = result.value.account;
             res.locals['environment'] = result.value.environment;
             res.locals['plan'] = result.value.plan;
+            if (result.value.auth?.scopes) {
+                res.locals['apiKeyScopes'] = result.value.auth.scopes;
+            }
+            metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                auth_source: isScript ? 'internal_script' : (result.value.auth?.source ?? 'env_var')
+            });
             tagTraceUser(result.value);
             next();
         } catch (err) {
@@ -354,24 +370,29 @@ export class AccessMiddleware {
                     return;
                 }
 
-                const secretKeyResult = await this.validateSecretKey(token);
-                if (secretKeyResult.isErr()) {
-                    errorManager.errRes(res, secretKeyResult.error.message);
+                const apiKeyResult = await this.validateApiKey(token, { isScript: false });
+                if (apiKeyResult.isErr()) {
+                    errorManager.errRes(res, apiKeyResult.error.message);
                     return;
                 }
-
                 res.locals['authType'] = 'secretKey';
-                res.locals['account'] = secretKeyResult.value.account;
-                res.locals['environment'] = secretKeyResult.value.environment;
-                res.locals['plan'] = secretKeyResult.value.plan;
-
-                tagTraceUser(secretKeyResult.value);
+                res.locals['account'] = apiKeyResult.value.account;
+                res.locals['environment'] = apiKeyResult.value.environment;
+                res.locals['plan'] = apiKeyResult.value.plan;
+                if (apiKeyResult.value.auth?.scopes) {
+                    res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
+                }
+                metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
+                    auth_source: apiKeyResult.value.auth?.source ?? 'env_var'
+                });
+                tagTraceUser(apiKeyResult.value);
             } else {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
+                res.locals['apiKeyScopes'] = ['environment:integrations:list', 'environment:integrations:list_credentials'];
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }
@@ -493,7 +514,7 @@ export class AccessMiddleware {
                 return;
             }
 
-            const result = await this.validateSecretKey(secret);
+            const result = await this.validateApiKey(secret, { isScript: false });
             if (result.isErr()) {
                 errorManager.errRes(res, result.error.message);
                 return;
