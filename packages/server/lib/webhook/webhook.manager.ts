@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, externalWebhookService, getProvider, secretService } from '@nangohq/shared';
+import { NangoError, customerKeyService, externalWebhookService, getProvider } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -111,10 +111,12 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value.secret;
+              })
+            : '';
 
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
@@ -124,7 +126,7 @@ export async function routeWebhook({
             integration,
             account,
             environment,
-            secret: defaultSecret.value.secret,
+            secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
             payload: webhookBodyToForward,
