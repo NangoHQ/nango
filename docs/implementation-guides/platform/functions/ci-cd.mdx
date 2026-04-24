@@ -12,6 +12,35 @@ We recommend a multi-stage deployment strategy to separate your development and 
 
 A common pattern is to automatically deploy to `dev` when changes are merged to your main branch, while using a manual approval step for deployments to `prod`.
 
+### Without a dedicated staging environment
+
+If your application doesn't have a staging step between merging to main and releasing to production, you can still protect prod with the following setup:
+
+**Local development**
+
+Give each engineer their own Nango dev environment. This lets them point their webhook URL to a local [ngrok](https://ngrok.com) tunnel without interfering with each other.
+
+**PR checks**
+
+Add `nango compile` and `npm test` as required CI checks on every pull request. Block merges if either fails.
+
+```bash
+nango compile
+npm test
+```
+
+**On merge to main**
+
+Automatically deploy to a shared Nango dev environment. This gives the team a stable, shared integration to validate against before going to prod.
+
+**Promoting to production**
+
+Use a manual `workflow_dispatch` trigger (see the GitHub Actions example below) to promote to `prod`. This keeps production deploys intentional and avoids the risk of an engineer forgetting to configure the prod Nango account — all prod deployments happen through CI using the prod secret key, never from a local machine.
+
+<Info>
+Add your build output folder (`.nango/dist` or equivalent) to `.gitignore` so compiled artifacts are never committed to the repository.
+</Info>
+
 The Nango CLI supports this via the `deploy` command, which can target a specific stage:
 
 ```bash
@@ -159,6 +188,18 @@ With `--no-dependency-update` (and in CI by default), Nango will not run depende
 <Info>
 In CI environments, Nango automatically disables dependency updates to prevent the CI pipeline from modifying the `package.json` file. Passing `--no-dependency-update` explicitly is still helpful for clarity and to silence warning messages.
 </Info>
+
+## Ephemeral preview environments (e.g. Vercel)
+
+If you use ephemeral preview environments — such as Vercel preview deployments — as your staging layer, you'll run into a challenge: each preview has a unique URL, but Nango webhook URLs must be registered in advance and point to a stable destination.
+
+There is no native Nango support for per-preview environments yet. Programmatic environment creation is on the roadmap, which will make this pattern much cleaner.
+
+**Current workaround: webhook proxy**
+
+Run a small proxy server with a stable, pre-registered URL in Nango. The proxy inspects incoming webhook requests and forwards them to the correct preview environment URL.
+
+This lets all previews share a single Nango dev environment while still receiving webhook events independently.
 
 ## Related resources
 
