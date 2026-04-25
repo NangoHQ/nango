@@ -9155,7 +9155,7 @@ jiminny:
     display_name: Jiminny
     categories:
         - productivity
-        - support
+        - communication
     auth_mode: API_KEY
     proxy:
         base_url: https://app.jiminny.${connectionConfig.region}
@@ -9180,7 +9180,7 @@ jiminny:
             type: string
             title: API Key
             description: Your Jiminny API key. Generate one in Jiminny under Org Settings → General → API Key (requires Admin or Owner role).
-            order: 2
+            order: 1
             doc_section: '#step-2-generate-an-api-key'
 
 jira:
