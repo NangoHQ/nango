@@ -9158,13 +9158,13 @@ jiminny:
         - communication
     auth_mode: API_KEY
     proxy:
-        base_url: https://app.jiminny.${connectionConfig.region}
+        base_url: https://app.jiminny.${connectionConfig.region}/customer/api/v1
         headers:
             authorization: Bearer ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /v1/activities?limit=1
+                - /me
     docs: https://nango.dev/docs/integrations/all/jiminny
     connection_config:
         region:
