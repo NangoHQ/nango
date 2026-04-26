@@ -22,6 +22,7 @@ import type {
     ApiPublicIntegration,
     AppCredentials,
     AppStoreCredentials,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CredentialsCommon,
@@ -402,6 +403,7 @@ export class Nango {
         | TwoStepCredentials
         | SignatureCredentials
         | InstallPluginCredentials
+        | AwsSigV4Credentials
     > {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 

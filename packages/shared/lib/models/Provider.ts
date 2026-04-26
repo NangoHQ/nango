@@ -12,11 +12,12 @@ export interface Config extends TimestampsAndDeleted {
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
     app_link?: string | null | undefined;
-    custom?: Record<string, string> | undefined;
+    custom?: Record<string, string> | null | undefined;
     missing_fields: string[];
     display_name: string | null;
     forward_webhooks: boolean;
     shared_credentials_id: number | null;
+    integration_secrets?: Record<string, unknown> | null | undefined;
 }
 
 export interface IntegrationWithCreds extends Integration {

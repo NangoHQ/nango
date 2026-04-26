@@ -10,6 +10,7 @@ import type {
     ApiPublicConnectionFull,
     AppCredentials,
     AppStoreCredentials,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CustomCredentials,
@@ -243,6 +244,7 @@ export abstract class NangoActionBase<
         | TwoStepCredentials
         | SignatureCredentials
         | InstallPluginCredentials
+        | AwsSigV4Credentials
     > {
         this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);

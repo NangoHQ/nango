@@ -18,6 +18,7 @@ export interface IntegrationConfig extends TimestampsAndDeleted {
     display_name: string | null;
     forward_webhooks: boolean;
     shared_credentials_id: number | null;
+    integration_secrets?: Record<string, unknown> | undefined | null;
 }
 
 export type DBIntegrationDecrypted = IntegrationConfig; // TODO: tag this

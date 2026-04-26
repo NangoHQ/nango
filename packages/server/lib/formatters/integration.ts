@@ -1,6 +1,7 @@
+import { awsSigV4Client } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
-import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
+import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, AwsSigV4TemplateSummary, IntegrationConfig, Provider } from '@nangohq/types';
 
 export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
     const hideCredentials = options?.includeCredentials === false || !!data.shared_credentials_id;
@@ -13,7 +14,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: data.app_link,
-        custom: hideCredentials ? null : data.custom,
+        custom: hideCredentials ? null : redactAwsSigV4Secrets(data.custom, data.integration_secrets),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -21,6 +22,102 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         forward_webhooks: data.forward_webhooks === undefined ? true : data.forward_webhooks,
         shared_credentials_id: data.shared_credentials_id
     };
+}
+
+/**
+ * Redact STS auth secrets from the custom blob for API responses.
+ * For legacy data (auth in custom blob): replaces secret values with "***".
+ * For migrated data (auth in integration_secrets): injects redacted auth metadata into the custom blob.
+ */
+function redactAwsSigV4Secrets(custom: IntegrationConfig['custom'], integrationSecrets: IntegrationConfig['integration_secrets']): IntegrationConfig['custom'] {
+    const raw = custom?.[awsSigV4Client.AWS_SIGV4_CUSTOM_KEY];
+    if (!raw) {
+        return custom;
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+        const secrets = integrationSecrets as Record<string, any> | undefined | null;
+        const stsAuth = secrets?.['aws_sigv4']?.['sts_auth'];
+
+        if (stsAuth) {
+            // Migrated: inject redacted auth from integration_secrets
+            if (stsAuth['type'] === 'api_key') {
+                parsed.stsEndpoint = { ...parsed.stsEndpoint, auth: { type: 'api_key', header: stsAuth['header'] || 'x-api-key', value: '***' } };
+            } else if (stsAuth['type'] === 'basic') {
+                parsed.stsEndpoint = { ...parsed.stsEndpoint, auth: { type: 'basic', username: stsAuth['username'] || '', password: '***' } };
+            }
+        } else if (parsed.stsEndpoint?.auth) {
+            // Legacy: auth lives in custom blob. Redact known secret fields; for unknown types or
+            // missing required secrets, strip the auth block entirely rather than returning the
+            // raw value (which could leak unvetted secret structure).
+            if (parsed.stsEndpoint.auth.type === 'api_key' && parsed.stsEndpoint.auth.value) {
+                parsed.stsEndpoint.auth.value = '***';
+            } else if (parsed.stsEndpoint.auth.type === 'basic' && parsed.stsEndpoint.auth.password) {
+                parsed.stsEndpoint.auth.password = '***';
+            } else {
+                parsed.stsEndpoint = { ...parsed.stsEndpoint };
+                delete parsed.stsEndpoint.auth;
+            }
+        } else {
+            return custom;
+        }
+
+        return { ...custom, [awsSigV4Client.AWS_SIGV4_CUSTOM_KEY]: JSON.stringify(parsed) };
+    } catch {
+        return custom;
+    }
+}
+
+function normalizeAwsSigV4Templates(raw: any): AwsSigV4TemplateSummary[] {
+    if (!Array.isArray(raw)) {
+        return [];
+    }
+    const templates: AwsSigV4TemplateSummary[] = [];
+    for (const template of raw) {
+        if (!template || typeof template !== 'object') {
+            continue;
+        }
+        const id = typeof template.id === 'string' ? template.id.trim() : '';
+        if (!id) {
+            continue;
+        }
+        const normalized: AwsSigV4TemplateSummary = { id };
+        if (typeof template.label === 'string') {
+            normalized.label = template.label;
+        }
+        if (typeof template.description === 'string') {
+            normalized.description = template.description;
+        }
+        if (typeof template.stackName === 'string') {
+            normalized.stack_name = template.stackName;
+        } else if (typeof template.stack_name === 'string') {
+            normalized.stack_name = template.stack_name;
+        }
+        if (typeof template.templateUrl === 'string') {
+            normalized.template_url = template.templateUrl;
+        } else if (typeof template.template_url === 'string') {
+            normalized.template_url = template.template_url;
+        }
+        if (typeof template.templateBody === 'string') {
+            normalized.template_body = template.templateBody;
+        } else if (typeof template.template_body === 'string') {
+            normalized.template_body = template.template_body;
+        }
+        if (template.parameters && typeof template.parameters === 'object') {
+            const params: Record<string, string> = {};
+            for (const [key, value] of Object.entries(template.parameters)) {
+                if (typeof key === 'string' && typeof value === 'string') {
+                    params[key] = value;
+                }
+            }
+            if (Object.keys(params).length > 0) {
+                normalized.parameters = params;
+            }
+        }
+        templates.push(normalized);
+    }
+    return templates;
 }
 
 export function integrationToPublicApi({
@@ -32,11 +129,32 @@ export function integrationToPublicApi({
     provider: Provider;
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
+    let awsSigV4: ApiPublicIntegration['aws_sigv4'];
+    const rawSigConfig = integration.custom?.[awsSigV4Client.AWS_SIGV4_CUSTOM_KEY];
+    if (rawSigConfig) {
+        try {
+            const parsed = JSON.parse(rawSigConfig);
+            if (parsed && (parsed.instructions || parsed.templates)) {
+                awsSigV4 = {};
+                if (parsed.instructions) {
+                    awsSigV4.instructions = parsed.instructions;
+                }
+                const templates = normalizeAwsSigV4Templates(parsed.templates);
+                if (templates.length > 0) {
+                    awsSigV4.templates = templates;
+                }
+            }
+        } catch {
+            // ignore malformed JSON
+        }
+    }
+
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
         display_name: integration.display_name || provider.display_name,
         logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
+        ...(awsSigV4 ? { aws_sigv4: awsSigV4 } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),

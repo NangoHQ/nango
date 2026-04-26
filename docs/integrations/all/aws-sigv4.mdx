@@ -1,0 +1,178 @@
+---
+title: AWS SigV4 Proxy
+sidebarTitle: AWS SigV4 Proxy
+---
+
+import Overview from "/snippets/overview.mdx"
+
+<Overview />
+
+## Why use the AWS SigV4 integration?
+
+-   Reuse the Nango proxy to call AWS APIs (S3, CloudWatch, etc.) without storing customer credentials.
+-   Two modes for obtaining temporary credentials:
+    -   **Built-in AWS STS** — Nango calls AWS STS `AssumeRole` directly using your AWS credentials. No external service needed.
+    -   **Custom STS endpoint** — You host your own STS-style service that exchanges a customer IAM Role ARN + ExternalId for temporary AWS credentials.
+-   Keep the open-source repo generic: CloudFormation templates, STS URLs, and instructions stay in tenant configuration.
+
+## Access requirements
+
+### Built-in AWS STS mode
+
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| AWS account with IAM permissions | ✅ Required | Your AWS Access Key ID and Secret Access Key are stored securely in Nango's encrypted secrets column. |
+| Customer AWS account | ✅ Required | Your customer deploys the CloudFormation template that trusts your AWS account. |
+| Custom STS endpoint | ❌ Not required | Nango calls AWS STS directly. |
+
+### Custom STS endpoint mode
+
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| AWS account with IAM permissions | ✅ Required | Needed to host the STS endpoint and to register a trusted role in your own account. |
+| Customer AWS account | ✅ Required | Your customer deploys the CloudFormation template that trusts your STS role. |
+| Custom STS endpoint | ✅ Required | Hosted by you (Docker container or similar). You expose the URL + auth in Nango integration settings. |
+| Customer-specific resources | ❌ Not required | Everything stays generic so any Nango customer can provide their own templates/instructions. |
+
+## Setup guide
+
+Nango supports two STS modes. Choose the one that fits your setup.
+
+### Option A: Built-in AWS STS (recommended)
+
+Nango calls AWS STS `AssumeRole` directly — no external service to host.
+
+<Steps>
+  <Step title="Create an AWS SigV4 integration in Nango">
+    1. From the Integrations page, add the **AWS SigV4 Proxy** template.
+    2. In **Settings → General**, locate the AWS SigV4 configuration card.
+    3. Select **Built-in AWS STS** as the STS mode.
+    4. Enter the AWS service identifier you plan to call (for example `s3`).
+    5. (Optional) Provide a default AWS region. End customers can override this during Connect.
+    6. Enter your **AWS Access Key ID** and **AWS Secret Access Key**. These credentials are used to call `sts:AssumeRole` on behalf of your customers. They are stored in Nango’s encrypted secrets column and never exposed in the integration config.
+    7. Click **Save**.
+  </Step>
+  <Step title="Surface customer instructions in Connect UI">
+    Use the same AWS SigV4 configuration card to provide CloudFormation (or equivalent) instructions: set a button label, destination URL, and descriptive text. This content appears above the Connect form so customers can run your template and copy the IAM Role ARN. You can update these instructions at any time without code changes.
+  </Step>
+  <Step title="Add reusable CloudFormation templates">
+    Store one or more CloudFormation templates directly on the integration. Each template includes a unique ID, display label, optional stack name, default parameters, and either a template body (JSON/YAML) or a public template URL. Connect automatically renders these templates as one-click buttons that open AWS CloudFormation’s Quick Create experience for your customer.
+  </Step>
+  <Step title="Collect Role ARN & optional region during Connect">
+    1. Create a Connect session as usual. You can optionally pre-fill credential fields via `integrations_config_defaults` (see <a href="#pre-populating-credential-values">Pre-populating credential values</a>).
+    2. The Connect UI shows your instructions, a one-click button for each template, **and a generated External ID**. Ask the customer to copy that External ID into their IAM trust policy before finishing the flow.
+    3. When the end customer submits the form, Nango calls AWS STS `AssumeRole` with your credentials, tests the result via `GetCallerIdentity`, and stores a refreshable SigV4 credential.
+  </Step>
+  <Step title="Proxy AWS service calls">
+    Call `POST /proxy` (or the SDK equivalents) exactly like other Nango connections. The proxy automatically refreshes temporary credentials through AWS STS and signs each request with SigV4 before forwarding it to AWS.
+  </Step>
+</Steps>
+
+### Option B: Custom STS endpoint
+
+You host your own STS-style service that exchanges credentials on behalf of customers.
+
+<Steps>
+  <Step title="Host or configure your STS endpoint">
+    Deploy the SigV4 STS helper service (Docker or any HTTPS service) in your infrastructure. It must accept a JSON payload that includes `role_arn`, `external_id`, `region`, and `service`, assume the requested role, and return temporary AWS credentials (see <a href="#sts-endpoint-contract">STS endpoint contract</a>). Secure the endpoint using either an API key header or HTTP basic auth so Nango can authenticate the call.
+  </Step>
+  <Step title="Create an AWS SigV4 integration in Nango">
+    1. From the Integrations page, add the **AWS SigV4 Proxy** template.
+    2. In **Settings → General**, locate the AWS SigV4 configuration card.
+    3. Select **Custom STS Endpoint** as the STS mode.
+    4. Enter the AWS service identifier you plan to call (for example `s3`).
+    5. (Optional) Provide a default AWS region. End customers can override this during Connect.
+    6. Supply the STS endpoint URL and choose how Nango should authenticate (API key header or basic auth).
+    7. Click **Save** to persist these settings. They are stored per integration (not globally) and are never committed to the repo.
+  </Step>
+  <Step title="Surface customer instructions in Connect UI">
+    Use the same AWS SigV4 configuration card to provide CloudFormation (or equivalent) instructions: set a button label, destination URL, and descriptive text. This content appears above the Connect form so customers can run your template and copy the IAM Role ARN. You can update these instructions at any time without code changes.
+  </Step>
+  <Step title="Add reusable CloudFormation templates">
+    Store one or more CloudFormation templates directly on the integration. Each template includes a unique ID, display label, optional stack name, default parameters, and either a template body (JSON/YAML) or a public template URL. Connect automatically renders these templates as one-click buttons that open AWS CloudFormation’s Quick Create experience for your customer.
+  </Step>
+  <Step title="Collect Role ARN & optional region during Connect">
+    1. Create a Connect session as usual. You can optionally pre-fill credential fields via `integrations_config_defaults` (see <a href="#pre-populating-credential-values">Pre-populating credential values</a>).
+    2. The Connect UI shows your instructions, a one-click button for each template, **and a generated External ID**. Ask the customer to copy that External ID into their IAM trust policy before finishing the flow.
+    3. When the end customer submits the form, Nango generates a unique ExternalId, calls your STS endpoint, tests the credentials via `GetCallerIdentity`, and stores a refreshable SigV4 credential.
+  </Step>
+  <Step title="Proxy AWS service calls">
+    Call `POST /proxy` (or the SDK equivalents) exactly like other Nango connections. The proxy automatically refreshes temporary credentials through your STS endpoint and signs each request with SigV4 before forwarding it to AWS.
+  </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to this guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/aws-sigv4.mdx)</Note>
+
+## CloudFormation templates
+
+AWS SigV4 integrations support a built-in template catalog to keep the onboarding experience consistent across customers.
+
+1. Navigate to **Integrations → Settings → General → AWS SigV4 Settings**.
+2. In the **CloudFormation Templates** section click **Add template**.
+3. Provide:
+   - **Template ID** – a slug you use to reference the template later.
+   - **Display label & description** – surfaced in Connect.
+   - **Stack name (optional)** – pre-fills the Quick Create form.
+   - **Template URL** – provide a public template URL (Quick Create requires a URL).
+   - *(The editor will fetch the template and auto-fill parameter keys; values remain blank.)*
+   - **Default parameters** – optional key/value pairs that map to `param_<ParameterName>` in AWS Quick Create.
+4. Save the settings.
+
+During Connect, each template becomes its own button. Nango assembles the AWS Quick Create URL so your customers can deploy the stack with a single click before pasting the resulting IAM role ARN back into Connect.
+
+## STS endpoint contract (custom mode only)
+
+<Note>This section only applies when using **Custom STS Endpoint** mode. With **Built-in AWS STS** mode, Nango calls the AWS STS `AssumeRole` API directly and handles the request/response automatically.</Note>
+
+The STS endpoint is customer-owned. Nango simply POSTs a JSON payload and expects temporary credentials in return.
+
+```json title="Example request payload"
+{
+    "role_arn": "arn:aws:iam::123456789012:role/NangoAccessRole",
+    "external_id": "1bdff5dc-1b49-4f1c-9880-4402f8cad9cb",
+    "region": "us-east-1",
+    "service": "s3"
+}
+```
+
+```json title="Example response payload"
+{
+    "accessKeyId": "<TEMP ACCESS KEY>",
+    "secretAccessKey": "<TEMP SECRET>",
+    "sessionToken": "<SESSION TOKEN>",
+    "expiresAt": "2025-01-31T17:28:00Z"
+}
+```
+
+-   You may wrap the response inside a `credentials` object; the helper accepts either shape.  
+-   `expiresAt`/`expires_at`/`expiration` are interchangeable. If omitted, Nango assumes one hour.
+
+## Pre-populating credential values
+
+You can pre-fill hidden fields such as the IAM Role ARN or a default region via `integrations_config_defaults`. This lets you provide different defaults per Connect session without exposing them in the UI.
+
+```ts
+const { data } = await nango.createConnectSession({
+    end_user: { id: 'user-123' },
+    integrations_config_defaults: {
+        'aws-sigv4': {
+            credentials: {
+                role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole',
+                region: 'us-west-2'
+            }
+        }
+    }
+});
+```
+
+Only the fields you specify are hidden; the others stay editable so the end customer can override them. This is also where you can pre-fill or persist the `external_id` that appears in the Connect UI if you want to reuse a value for reconnect flows.
+
+## Useful links
+
+-   [AWS Signature Version 4 signing process](https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
+-   [AWS STS AssumeRole documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
+-   [AWS IAM best practices for ExternalId](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/aws-sigv4.mdx)</Note>

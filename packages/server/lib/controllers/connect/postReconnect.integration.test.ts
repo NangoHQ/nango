@@ -129,6 +129,37 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should persist integrations_config_defaults credentials when reconnecting', async () => {
+        const { account, env } = await seeders.seedAccountEnvAndUser();
+        const endUser = await seeders.createEndUser({ environment: env, account });
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+        await linkConnection(db.knex, { endUserId: endUser.id, connection });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: env.secret_key,
+            body: {
+                connection_id: connection.connection_id,
+                integration_id: 'github',
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: { region: 'us-east-2' },
+                        credentials: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+                    }
+                }
+            }
+        });
+        isSuccess(res.json);
+        const session = (await getConnectSessionByToken(db.knex, res.json.data.token)).unwrap();
+        expect(session.connectSession.integrationsConfigDefaults).toEqual({
+            github: {
+                connectionConfig: { region: 'us-east-2' },
+                credentials: { role_arn: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+            }
+        });
+    });
+
     describe('docs connect url override validation', () => {
         let seed: { account: DBTeam; env: DBEnvironment; user: DBUser; plan: DBPlan; secret: DBAPISecret };
         let connection: DBConnection;
