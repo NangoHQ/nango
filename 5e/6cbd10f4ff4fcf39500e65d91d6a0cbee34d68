@@ -1,0 +1,23 @@
+packages/server/lib/controllers/integrations/postQuickstartIntegration.integration.test.ts
+  da65cc405868dd98 31,34,51,54,65,68,79,82,93,99,110,115,139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "5e6cbd10f4ff4fcf39500e65d91d6a0cbee34d68",
+  "prompts": {
+    "da65cc405868dd98": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dbadd-fa11-77e3-9629-53627cd29ddc",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Marcin Dobrowolski",
+      "messages": [],
+      "total_additions": 16813,
+      "total_deletions": 14,
+      "accepted_lines": 16813,
+      "overriden_lines": 0
+    }
+  }
+}
