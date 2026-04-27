@@ -95,7 +95,7 @@ See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
 Nango matches incoming Slack webhooks to a connection using the `team_id` field in the event payload (falling back to `team.id` for some event shapes). This is set automatically when a user authorizes the Slack integration, no extra metadata is required.
 
 <Warning>
-If Nango cannot match the incoming webhook to a connection (e.g. the workspace was connected under a different integration key), the webhook will still be forwarded but won't include a `connectionId` in the payload.
+If Nango cannot match the incoming webhook to a connection (e.g. the workspace was connected under a different integration key), the raw Slack payload is forwarded as-is — without the Nango wrapper (`from`, `providerConfigKey`, `type`, `connectionId`, or `payload` fields). Make sure your consumer handles both shapes.
 </Warning>
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
