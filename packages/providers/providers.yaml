@@ -3071,6 +3071,8 @@ cal-com-v2:
                 - /me
     webhook_routing_script: calComWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/cal-com-v2
     docs_connect: https://nango.dev/docs/api-integrations/cal-com-v2/connect
     credentials:
@@ -3102,6 +3104,8 @@ cal-com-oauth:
                 - 'x-ratelimit-reset'
     webhook_routing_script: calComWebhookRouting
     webhook_user_defined_secret: true
+    webhook_allowed_query_params:
+        - nangoConnectionId
     docs: https://nango.dev/docs/api-integrations/cal-com-oauth
     setup_guide_url: https://nango.dev/docs/api-integrations/cal-com-oauth/how-to-register-your-own-cal-com-oauth-app
 
