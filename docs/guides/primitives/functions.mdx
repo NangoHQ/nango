@@ -111,7 +111,7 @@ Your application can call functions from any language or framework.
     NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
     ```
 
-    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the key for whichever environment you pass to `nango deploy <env>` (e.g. `nango deploy dev` or `nango deploy prod`).
+    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the matching key for whichever environment you deploy to.
 
     <Note>
       Keys are matched by environment name: `NANGO_SECRET_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
@@ -283,17 +283,16 @@ Your application can call functions from any language or framework.
   </Step>
 
   <Step title="Deploy">
-    Deploy all functions in your `nango-integrations/` folder to a Nango environment by passing the environment name:
+    Deploy all functions in your `nango-integrations/` folder to Nango:
 
     ```bash
-    nango deploy dev
-    nango deploy prod
+    nango deploy
     ```
 
-    The environment is a positional argument — running plain `nango deploy` prompts for it interactively, which won't work in CI. For automated deployments alongside your application code, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+    The CLI prompts for the target environment. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
 
     <Accordion title="🤖 For agents">
-      Run `nango deploy dev` to deploy to the development environment. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
+      Run `nango deploy dev` to deploy to the development environment non-interactively. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
     </Accordion>
   </Step>
 
