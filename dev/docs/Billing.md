@@ -1,11 +1,7 @@
 # Billing, usage and plans
 
 ## 🤓 How it works?
-
-<details>
-<summary>Diagram source (d2 sequence diagram)</summary>
-
-```
+<!--
 shape: sequence_diagram
 User1 -> Nango: I want to upgrade to Starter
 Nango -> User1: Give us a credit card first
@@ -18,10 +14,7 @@ Stripe -> Nango: (webhook) Payment succeeded
 Nango -> Orb: User1 paid for SubscriptionID, apply the change
 Orb -> Nango: (webhook) Plan changed
 Nango -> User1: Success
-```
-
-</details>
-
+-->
 <img width="2096" height="2636" src="https://github.com/user-attachments/assets/a270bd2f-0522-4de6-b149-fcb0e25aa0b3" />
 
 - Payments are saved in Stripe
