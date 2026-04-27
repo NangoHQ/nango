@@ -4069,6 +4069,32 @@ codegen:
             example: 'sk-897bd628-de64-4018-8e3b-c6f717ca3e1d'
             doc_section: '#step-1-finding-your-api-key'
 
+coinmarketcap:
+    display_name: CoinMarketCap
+    categories:
+        - analytics
+        - banking
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://pro-api.coinmarketcap.com
+        headers:
+            x-cmc_pro_api_key: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/cryptocurrency/map
+    docs: https://nango.dev/docs/api-integrations/coinmarketcap
+    docs_connect: https://nango.dev/docs/api-integrations/coinmarketcap/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your CoinMarketCap API key.
+            doc_section: '#step-1-get-an-api-key'
+
 commercetools:
     display_name: Commercetools
     categories:

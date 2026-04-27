@@ -531,6 +531,7 @@
               "integrations/all/coda",
               "integrations/all/codeclimate",
               "integrations/all/codegen",
+              "api-integrations/coinmarketcap",
               "integrations/all/commercetools",
               "integrations/all/companycam",
               "api-integrations/conductorone",
