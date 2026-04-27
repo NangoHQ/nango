@@ -1,26 +1,28 @@
 ---
-title: 'Contribute support for a new API'
-sidebarTitle: 'Contribute a new API'
-description: 'Guide on how to add support for a new API to Nango'
+title: 'Contribute or request an API'
+sidebarTitle: 'Contribute or request an API'
+description: 'Add support for a new API to Nango'
 ---
 
-## Pre-requisites
+## Option 1: Request a new API (most popular)
+
+The easiest way to add a new API is to request it from the Nango team.
+
+If you have a shared Slack channel with Nango, send your request there. Otherwise, post in the `#request-a-new-api` channel of the [community](https://nango.dev/slack).
+
+We'll deliver them according to the SLAs on our [pricing page](https://www.nango.dev/pricing).
+
+## Option 2: Contribute a new API yourself
+
+To contribute a new API, follow the steps below and check out past [PRs](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Aclosed) starting with `feat(integrations)` for examples.
+
+### Pre-requisites
 
 - You have access to a test account for the API
 - The API is publicly accessible
 - The API is of type HTTP or SOAP
 
-Nango support all authorization types (OAuth, API key, basic), including custom ones.
-
-## Option 1: Ask Nango to add support for a new API
-
-The simplest way to add a new API is to ask us in the [community](https://nango.dev/slack) on the `#request-a-new-api` channel.
-
-We prioritize requests by plan. Free users can expect support for new APIs in 5-10 business days, Enterprise customers \<48h
-
-## Option 2: Contribute a new API yourself
-
-To contribute a new API, follow the steps below and check out past [PRs](https://github.com/NangoHQ/nango/pulls?q=is%3Apr+is%3Aclosed) starting with `feat(integrations)` for examples.
+Nango supports all authorization types (OAuth, API key, basic), including custom ones.
 
 ### Add an API configuration
 
@@ -63,7 +65,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 
 Add a `<api>.mdx` file (e.g. `github.mdx`) for your API to the `docs/integrations/all` folder. Check out [other examples](/integrations) to fill out the content of the documentation page.
 
-Reference the page in the `docs/mint.json` file in the `Supported APIs` group in alphabetical order.
+Reference the page in the `docs/docs.json` file in the `700+ APIs & Integrations` group in alphabetical order.
 
 ### Submit a pull request
 

@@ -72,7 +72,7 @@ export const postManagedEmailVerification = asyncWrapper<PostManagedEmailVerific
             throw err;
         }
 
-        logger.warn('Failed to authenticate WorkOS email verification code', {
+        logger.warning('Failed to authenticate WorkOS email verification code', {
             code: workosErr.rawData?.code
         });
         res.status(400).send({
