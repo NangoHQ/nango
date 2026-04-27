@@ -1018,7 +1018,6 @@
               "api-integrations/simpro/connect",
               "api-integrations/slab",
               "api-integrations/slack",
-              "api-integrations/slack/webhooks",
               "api-integrations/slack-mcp",
               "api-integrations/tally",
               "api-integrations/telegram",
