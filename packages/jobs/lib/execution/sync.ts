@@ -345,7 +345,7 @@ export async function handleSyncSuccess({
         const webhookSigningSecret = webhookSettings
             ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
                   if (r.isErr()) throw r.error;
-                  return r.value.secret;
+                  return r.value;
               })
             : null;
         for (const model of nangoProps.syncConfig.models || []) {
@@ -944,7 +944,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
-                        secret: webhookSigningKey.value.secret,
+                        secret: webhookSigningKey.value,
                         webhookSettings,
                         model: models.join(','),
                         success: false,

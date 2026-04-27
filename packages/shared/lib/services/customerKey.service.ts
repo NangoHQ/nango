@@ -183,10 +183,10 @@ class CustomerKeyService {
         }
     }
 
-    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey>> {
+    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
         if (cached) {
-            return Ok({ secret: cached } as DBCustomerKey);
+            return Ok(cached);
         }
 
         try {
@@ -205,7 +205,7 @@ class CustomerKeyService {
 
             const decrypted = encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey;
             webhookSigningKeyCache.set(envId, decrypted.secret);
-            return Ok(decrypted);
+            return Ok(decrypted.secret);
         } catch (err) {
             return Err(err);
         }
