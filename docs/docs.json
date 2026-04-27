@@ -107,6 +107,10 @@
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
       "destination": "/guides/platform/observability#opentelemetry-export"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/contribute-new-api",
+      "destination": "/integrations/contribute-or-request-api"
     }
   ],
   "navigation": {
