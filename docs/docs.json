@@ -461,6 +461,7 @@
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
               "api-integrations/aws-iam",
+              "api-integrations/aws-inspector2",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",

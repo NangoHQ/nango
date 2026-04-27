@@ -239,16 +239,16 @@ function splitTopLevelArgs(inner: string): string[] {
 function replaceAwsSigV4Expression(str: string, resolveInner: (inner: string) => string, replacers: Record<string, any>): string {
     return str.replace(/\${awsSigV4\(([\s\S]*?)\)}/g, (match, inner) => {
         const args = splitTopLevelArgs(inner);
-        if (args.length !== 4) return match;
+        if (args.length !== 4 && args.length !== 5) return match;
 
-        const [accessKeyId, secretKey, region, service] = args.map(resolveInner);
+        const [accessKeyId, secretKey, region, service, customHost] = args.map(resolveInner);
         if (!accessKeyId || !secretKey || !region || !service) return match;
 
         const date = formatAwsSigV4Date(getNowDate(replacers));
         const dateStamp = date.slice(0, 8);
         const method = (replacers['method'] as string | undefined) ?? 'GET';
         const path = (replacers['path'] as string | undefined) ?? '/';
-        const host = `${service}.amazonaws.com`;
+        const host = customHost || `${service}.amazonaws.com`;
 
         const urlCanonicalParams = (replacers['urlCanonicalParams'] as string | undefined) ?? (replacers['params'] as string | undefined) ?? '';
         const bodyCanonicalParams = (replacers['bodyCanonicalParams'] as string | undefined) ?? '';

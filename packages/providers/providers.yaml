@@ -2017,6 +2017,41 @@ aws-iam:
             pattern: '^[a-z0-9-]+$'
             doc_section: '#step-2-finding-your-region-host'
 
+aws-inspector2:
+    display_name: AWS Inspector2
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://inspector2.${connectionConfig.region}.amazonaws.com
+        headers:
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, ${connectionConfig.region}, inspector2, inspector2.${connectionConfig.region}.amazonaws.com)}'
+            x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/aws-inspector2
+    docs_connect: https://nango.dev/docs/api-integrations/aws-inspector2/connect
+    credentials:
+        username:
+            type: string
+            title: AWS Access Key ID
+            description: Your Access Key ID.
+        password:
+            type: string
+            title: AWS Secret Access Key
+            description: Your Secret Access Key.
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The AWS region where Inspector2 is enabled.
+            example: us-east-1
+            prefix: https://inspector2.
+            suffix: .amazonaws.com
+            pattern: '^[a-z0-9-]+$'
+
 aws-scim:
     display_name: AWS (SCIM)
     categories:
