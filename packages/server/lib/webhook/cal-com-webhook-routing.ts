@@ -18,7 +18,7 @@ function validateCalComSignature(secret: string, headerSignature: string, rawBod
     return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
 }
 
-const route: WebhookHandler = async (nango, headers, body, rawBody) => {
+const route: WebhookHandler = async (nango, headers, body, rawBody, query) => {
     // https://cal.com/docs/developing/guides/automation/webhooks#verifying-the-authenticity-of-the-received-payload
     const signatureHeader = headers['x-cal-signature-256'];
     const webhookSecret = nango.integration.custom?.['webhookSecret'];
@@ -33,7 +33,7 @@ const route: WebhookHandler = async (nango, headers, body, rawBody) => {
         }
     }
 
-    const connectionIdentifierValue = body.nangoConnectionId;
+    const connectionIdentifierValue = query?.['nangoConnectionId'] ?? body.nangoConnectionId;
 
     if (!connectionIdentifierValue) {
         return Err(new NangoError('webhook_missing_connection_id'));
