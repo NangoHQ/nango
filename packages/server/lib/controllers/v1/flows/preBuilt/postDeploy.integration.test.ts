@@ -57,7 +57,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({ data: { id: expect.any(Number) } });
 
-        const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', type: 'sync' });
+        const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
         expect(sync).toMatchObject({
             sync_name: 'tables',
             type: 'sync',

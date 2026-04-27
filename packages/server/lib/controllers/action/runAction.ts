@@ -55,7 +55,7 @@ export async function runAction({
             return logCtx;
         }
 
-        const syncConfig = await getSyncConfigRaw({ environmentId: environment.id, config_id: provider.id!, name: actionName, type: 'action' });
+        const syncConfig = await getSyncConfigRaw({ environmentId: environment.id, config_id: provider.id!, name: actionName, isAction: true });
         if (!syncConfig) {
             res.status(404).json({ error: { code: 'not_found', message: 'Action not found' } });
             return logCtx;

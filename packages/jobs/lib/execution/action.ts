@@ -69,7 +69,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
             name: task.actionName,
-            type: 'action'
+            isAction: true
         });
         if (!syncConfig) {
             throw new Error(`Action not found: ${task.id}`);

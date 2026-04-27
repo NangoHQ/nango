@@ -83,7 +83,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             environmentId: task.connection.environment_id,
             config_id: providerConfig.id!,
             name: task.syncName,
-            type: 'sync'
+            isAction: false
         });
         if (!syncConfig) {
             throw new Error(`Sync config not found. TaskId: ${task.id}`);
@@ -732,7 +732,7 @@ export async function abortSync(task: TaskSyncAbort): Promise<Result<void>> {
             environmentId: providerConfig.environment_id,
             config_id: providerConfig.id!,
             name: task.syncName,
-            type: 'sync'
+            isAction: false
         });
 
         if (!syncConfig) {
