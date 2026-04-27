@@ -114,7 +114,7 @@ export async function routeWebhook({
         const webhookSigningSecret = webhookSettings
             ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
                   if (r.isErr()) throw r.error;
-                  return r.value.secret;
+                  return r.value;
               })
             : '';
 
