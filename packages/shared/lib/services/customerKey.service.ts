@@ -10,6 +10,8 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
+// Cache decrypted webhook signing key per environment. No eviction needed since rotation is not supported yet.
+const webhookSigningKeyCache = new Map<number, string>();
 // Internal safety limit — not a product constraint, just prevents unbounded key creation.
 // Can be raised without migration if needed.
 export const MAX_API_KEYS_PER_ENV = 50;
@@ -186,6 +188,11 @@ class CustomerKeyService {
     }
 
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey>> {
+        const cached = webhookSigningKeyCache.get(envId);
+        if (cached) {
+            return Ok({ secret: cached } as DBCustomerKey);
+        }
+
         try {
             const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .select(`${CUSTOMER_KEYS_TABLE}.*`)
@@ -201,6 +208,7 @@ class CustomerKeyService {
             }
 
             const decrypted = encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey;
+            webhookSigningKeyCache.set(envId, decrypted.secret);
             return Ok(decrypted);
         } catch (err) {
             return Err(err);
