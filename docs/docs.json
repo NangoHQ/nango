@@ -48,7 +48,6 @@
       {
         "label": "GitHub",
         "type": "github",
-        "label": "GitHub",
         "href": "https://github.com/NangoHQ/nango"
       },
       {
@@ -108,6 +107,14 @@
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
       "destination": "/guides/platform/observability#opentelemetry-export"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/implement-api-auth",
+      "destination": "/guides/primitives/auth#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/configure-integration",
+      "destination": "/guides/primitives/auth#guide"
     }
   ],
   "navigation": {
@@ -131,17 +138,10 @@
                 "expanded": false,
                 "pages": [
                   "guides/primitives/auth",
-                  "implementation-guides/platform/auth/implement-api-auth",
-                  {
-                    "group": "Other guides",
-                    "pages": [
-                      "implementation-guides/platform/auth/configure-integration",
-                      "implementation-guides/platform/auth/share-connect-link",
-                      "implementation-guides/platform/auth/connection-tags",
-                      "implementation-guides/platform/auth/customize-connect-ui",
-                      "implementation-guides/platform/auth/contribute-new-api"
-                    ]
-                  }
+                  "implementation-guides/platform/auth/share-connect-link",
+                  "implementation-guides/platform/auth/connection-tags",
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/contribute-new-api"
                 ]
               },
               {
