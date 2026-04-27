@@ -6,12 +6,15 @@ export type GetFunctionPull = Endpoint<{
     Path: '/functions/pull';
     Querystring: {
         integrationId: string;
-        type: 'syncs' | 'actions' | 'on-events';
         name: string;
-        env?: string | undefined;
+        env: string;
+        type?: ScriptTypeLiteral | undefined;
     };
-    Success: never;
-    Error: ApiError<'not_found'>;
+    Success: {
+        type: ScriptTypeLiteral;
+        code: string;
+    };
+    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
 export type PutUpgradePreBuiltFlow = Endpoint<{

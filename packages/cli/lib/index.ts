@@ -587,12 +587,13 @@ program
     });
 program
     .command('pull')
-    .description("Pull a function's TypeScript source into your local integrations folder")
-    .argument('<path>', 'Function path: <provider>/<type>/<name> (catalog) or <integration-id>/<type>/<name> with --env (deployed)')
-    .option('--env <environment>', 'Environment to pull deployed function from (e.g. dev, prod)')
+    .description("Pull a deployed function's TypeScript source into your local integrations folder")
+    .argument('<path>', 'Function path: <env>/<integration-id>/<name>')
+    .option('--type <type>', 'Function type when the name is ambiguous: sync, action, on-event')
     .option('-f, --force', 'Overwrite existing files without prompting', false)
     .action(async function (this: Command, functionPath: string) {
-        const { debug, autoConfirm, force, env, interactive } = this.opts<GlobalOptions & { env?: string; force: boolean }>();
+        const { debug, autoConfirm, force, interactive } = this.opts<GlobalOptions & { force: boolean }>();
+        const { type } = this.opts<{ type?: string }>();
         const fullPath = process.cwd();
 
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
@@ -600,26 +601,26 @@ program
 
         const parts = functionPath.split('/');
         if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
-            console.error(chalk.red('Invalid path. Expected format: <provider-or-integration-id>/<type>/<name>'));
-            console.error(chalk.gray('Example: google-drive/actions/get-files'));
+            console.error(chalk.red('Invalid path. Expected format: <env>/<integration-id>/<name>'));
+            console.error(chalk.gray('Example: dev/google-drive/get-files'));
             process.exitCode = 1;
             return;
         }
 
-        const [integrationId, type, name] = parts as [string, string, string];
+        const [environmentName, integrationId, name] = parts as [string, string, string];
 
-        if (!['syncs', 'actions', 'on-events'].includes(type)) {
-            console.error(chalk.red(`Invalid type '${type}'. Must be one of: syncs, actions, on-events`));
+        if (type && !['sync', 'action', 'on-event'].includes(type)) {
+            console.error(chalk.red(`Invalid --type '${type}'. Must be one of: sync, action, on-event`));
             process.exitCode = 1;
             return;
         }
 
         const success = await pullFunction({
             fullPath,
+            environmentName,
             integrationId,
-            type: type as 'syncs' | 'actions' | 'on-events',
             name,
-            environmentName: env,
+            type: type as 'sync' | 'action' | 'on-event' | undefined,
             debug,
             force,
             autoConfirm,

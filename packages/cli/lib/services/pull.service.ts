@@ -4,91 +4,62 @@ import path from 'node:path';
 import chalk from 'chalk';
 
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
-import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 
-import type { Result } from '@nangohq/types';
+import type { ScriptTypeLiteral } from '@nangohq/types';
+
+const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
+    sync: 'syncs',
+    action: 'actions',
+    'on-event': 'on-events'
+};
 
 interface PullOptions {
     fullPath: string;
+    environmentName: string;
     integrationId: string;
-    type: 'syncs' | 'actions' | 'on-events';
     name: string;
-    environmentName?: string | undefined;
+    type?: ScriptTypeLiteral | undefined;
     debug: boolean;
     force: boolean;
     autoConfirm: boolean;
     interactive?: boolean;
 }
 
-function getFetchError(err: unknown): string {
-    return err instanceof TypeError && err.cause && err.cause instanceof AggregateError && 'code' in err.cause
-        ? (err.cause.code as string)
-        : err instanceof Error
-          ? err.message
-          : 'Unknown error';
-}
-
-async function fetchSource(url: URL, headers: Record<string, string>): Promise<Result<string>> {
-    try {
-        const res = await fetch(url, { headers });
-        if (!res.ok) {
-            const body: unknown = await res.json();
-            let message = 'Unknown error';
-            let code = String(res.status);
-            if (body !== null && typeof body === 'object' && 'error' in body) {
-                const err = body.error;
-                if (err !== null && typeof err === 'object') {
-                    if ('message' in err && typeof err.message === 'string') message = err.message;
-                    if ('code' in err && typeof err.code === 'string') code = err.code;
-                }
-            }
-            return Err(new Error(`${message} ${chalk.gray(`(${code})`)}`));
-        }
-        return Ok(await res.text());
-    } catch (err) {
-        return Err(new Error(getFetchError(err)));
-    }
-}
-
 export async function pullFunction(options: PullOptions): Promise<boolean> {
-    const { fullPath, integrationId, type, name, environmentName, debug, force, autoConfirm, interactive = true } = options;
-    const spinnerFactory = new Spinner({ interactive });
-
-    const spinner = spinnerFactory.start(`Pulling ${integrationId}/${type}/${name}`);
+    const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
+    const spinner = new Spinner({ interactive }).start(`Pulling ${environmentName}/${integrationId}/${name}`);
 
     try {
-        const hostport = resolveHostport();
-        const url = new URL('/functions/pull', hostport);
+        await parseSecretKey(environmentName, debug);
+
+        const url = new URL('/functions/pull', resolveHostport());
         url.searchParams.set('integrationId', integrationId);
-        url.searchParams.set('type', type);
         url.searchParams.set('name', name);
-
-        const headers: Record<string, string> = {};
-
-        if (environmentName) {
-            await parseSecretKey(environmentName, debug);
-            url.searchParams.set('env', environmentName);
-            printDebug(`Fetching deployed function from ${url}`, debug);
-            headers['authorization'] = `Bearer ${process.env['NANGO_SECRET_KEY']}`;
-        } else {
-            printDebug(`Fetching catalog function from ${url}`, debug);
-            if (process.env['NANGO_SECRET_KEY']) {
-                headers['authorization'] = `Bearer ${process.env['NANGO_SECRET_KEY']}`;
-            }
+        url.searchParams.set('env', environmentName);
+        if (type) {
+            url.searchParams.set('type', type);
         }
+        printDebug(`Fetching deployed function from ${url}`, debug);
 
-        const result = await fetchSource(url, headers);
-        if (result.isErr()) {
+        const res = await fetch(url, { headers: { authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}` } });
+        const body = (await res.json().catch(() => null)) as { type: ScriptTypeLiteral; code: string } | { error: { code: string; message?: string } } | null;
+
+        if (!res.ok || !body || 'error' in body) {
+            const errCode = body && 'error' in body ? body.error.code : String(res.status);
+            const errMessage = body && 'error' in body ? (body.error.message ?? 'Unknown error') : 'Unknown error';
             spinner.fail(`Failed to pull '${name}'`);
-            console.log(chalk.red(`\n${result.error.message}`));
+            console.log(chalk.red(`\n${errMessage} ${chalk.gray(`(${errCode})`)}`));
+            if (errCode === 'ambiguous_function') {
+                console.log(chalk.gray(`Re-run with --type sync|action|on-event to disambiguate.`));
+            }
             return false;
         }
 
         spinner.succeed(`Fetched function code`);
 
-        const relativePath = `${integrationId}/${type}/${name}.ts`;
+        const relativePath = `${integrationId}/${scriptTypeToFolder[body.type]}/${name}.ts`;
         const file = { relativePath, isScript: true };
 
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, [file], force, autoConfirm, debug);
@@ -104,7 +75,7 @@ export async function pullFunction(options: PullOptions): Promise<boolean> {
 
         const localPath = path.join(fullPath, relativePath);
         await fs.promises.mkdir(path.dirname(localPath), { recursive: true });
-        await fs.promises.writeFile(localPath, result.value, 'utf-8');
+        await fs.promises.writeFile(localPath, body.code, 'utf-8');
 
         await updateIndexFile(fullPath, [file], debug);
 
