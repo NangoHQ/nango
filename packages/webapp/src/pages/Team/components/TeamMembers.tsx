@@ -149,6 +149,7 @@ export const TeamMembers: React.FC = () => {
 
                             <TableCell>
                                 <div className="inline-flex items-center gap-2">
+                                    <RoleBadge role={user.role} />
                                     {!hasRBAC && user.role !== 'administrator' && (
                                         <StatusWithIcon
                                             variant="warning"
@@ -165,7 +166,6 @@ export const TeamMembers: React.FC = () => {
                                             <TriangleAlert />
                                         </StatusWithIcon>
                                     )}
-                                    <RoleBadge role={user.role} />
                                 </div>
                             </TableCell>
 
