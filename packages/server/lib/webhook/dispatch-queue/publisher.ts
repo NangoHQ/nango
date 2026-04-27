@@ -1,11 +1,10 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
+import tracer from 'dd-trace';
 
-import { getLogger, metrics } from '@nangohq/utils';
+import { metrics } from '@nangohq/utils';
 
 import type { SQSClient, SendMessageBatchCommandOutput, SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
-
-const logger = getLogger('DispatchQueuePublisher');
 
 const SQS_BATCH_MAX_ENTRIES = 10;
 
@@ -21,6 +20,10 @@ export interface DispatchQueuePublisherProps {
 export interface PublishResult {
     enqueued: number;
     failed: number;
+}
+
+interface BatchPublishResult extends PublishResult {
+    retriedEntries: number;
 }
 
 export class DispatchQueuePublisher {
@@ -48,52 +51,85 @@ export class DispatchQueuePublisher {
     /**
      * Publish a list of dispatch messages in batches. Batches are fired in parallel up to
      * `publishConcurrency`; failed entries within a batch are retried once inline. Any
-     * entries still failing
-     * after the retry are counted as `failed`. Never throws — the caller treats partial
-     * failure as a metric/log concern, not an HTTP 500 (provider retries are worse).
+     * entries still failing after the retry are counted as `failed`. Never throws — the
+     * caller treats partial failure as a metric/trace concern, not an HTTP 500 (provider
+     * retries are worse).
      */
     async publish(messages: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
         if (messages.length === 0) {
             return { enqueued: 0, failed: 0 };
         }
 
+        const activeSpan = tracer.scope().active();
+        const firstMessage = messages[0]!;
         const batches = chunk(messages, this.batchSize);
-
-        const results = await runWithConcurrencyLimit(batches, this.publishConcurrency, async (batch) => {
-            return await this.sendBatch(batch, messageGroupId);
+        const span = tracer.startSpan('webhook.dispatch.publish', {
+            ...(activeSpan ? { childOf: activeSpan } : {}),
+            tags: {
+                'nango.accountId': firstMessage.accountId,
+                'nango.environmentId': firstMessage.environmentId,
+                'nango.integrationId': firstMessage.integrationId,
+                'nango.provider': firstMessage.provider,
+                'nango.providerConfigKey': firstMessage.providerConfigKey,
+                'nango.messageCount': messages.length,
+                'nango.batchCount': batches.length
+            }
         });
 
-        const enqueued = results.reduce((sum, r) => sum + r.enqueued, 0);
-        const failed = results.reduce((sum, r) => sum + r.failed, 0);
+        return await tracer.scope().activate(span, async () => {
+            try {
+                const results = await runWithConcurrencyLimit(batches, this.publishConcurrency, async (batch) => {
+                    return await this.sendBatch(batch, messageGroupId);
+                });
 
-        const provider = messages[0]?.provider ?? 'unknown';
+                const enqueued = results.reduce((sum, r) => sum + r.enqueued, 0);
+                const failed = results.reduce((sum, r) => sum + r.failed, 0);
+                const retriedEntries = results.reduce((sum, r) => sum + r.retriedEntries, 0);
+                const retriedBatches = results.filter((r) => r.retriedEntries > 0).length;
 
-        if (enqueued > 0) {
-            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_MESSAGES_ENQUEUED, enqueued, { provider });
-            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS, enqueued, { provider });
-        }
-        if (failed > 0) {
-            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider });
-            logger.error(`webhook dispatch publish partial failure`, { provider, failed, enqueued, messageGroupId });
-        }
+                span.setTag('nango.enqueued', enqueued);
+                span.setTag('nango.failed', failed);
+                span.setTag('nango.retriedEntries', retriedEntries);
+                span.setTag('nango.retriedBatches', retriedBatches);
 
-        return { enqueued, failed };
+                const provider = firstMessage.provider;
+
+                if (enqueued > 0) {
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_MESSAGES_ENQUEUED, enqueued, { provider });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS, enqueued, { provider });
+                }
+                if (failed > 0) {
+                    const error = new Error(`Failed to enqueue ${failed} webhook dispatch message${failed === 1 ? '' : 's'}`);
+                    span.setTag('error', error);
+                    span.setTag('nango.partialFailure', true);
+
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider });
+                }
+
+                return { enqueued, failed };
+            } catch (err) {
+                span.setTag('error', err);
+                throw err;
+            } finally {
+                span.finish();
+            }
+        });
     }
 
-    private async sendBatch(batch: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
+    private async sendBatch(batch: WebhookDispatchMessage[], messageGroupId: string): Promise<BatchPublishResult> {
         const entries = batch.map((message, idx) => toEntry(message, idx, messageGroupId));
 
         const first = await this.trySend(entries);
         const failedIndices = first.failedIds.map((id) => entryIdToIndex(id));
         if (failedIndices.length === 0) {
-            return { enqueued: batch.length, failed: 0 };
+            return { enqueued: batch.length, failed: 0, retriedEntries: 0 };
         }
 
         const retryEntries = failedIndices.map((i) => entries[i]).filter((e): e is SendMessageBatchRequestEntry => e !== undefined);
         const second = await this.trySend(retryEntries);
 
         const enqueued = batch.length - second.failedIds.length;
-        return { enqueued, failed: second.failedIds.length };
+        return { enqueued, failed: second.failedIds.length, retriedEntries: failedIndices.length };
     }
 
     private async trySend(entries: SendMessageBatchRequestEntry[]): Promise<{ failedIds: string[] }> {
@@ -103,7 +139,7 @@ export class DispatchQueuePublisher {
             const failedIds = (response.Failed ?? []).map((f) => f.Id).filter((id): id is string => typeof id === 'string');
             return { failedIds };
         } catch (err) {
-            logger.error(`SendMessageBatchCommand threw`, { error: err });
+            tracer.scope().active()?.setTag('sqs.send.error', err);
             return { failedIds: entries.map((e) => e.Id!).filter((id): id is string => typeof id === 'string') };
         }
     }

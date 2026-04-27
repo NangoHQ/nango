@@ -1,6 +1,42 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const tracerMocks = vi.hoisted(() => {
+    const span = {
+        setTag: vi.fn().mockReturnThis(),
+        finish: vi.fn()
+    };
+    const activeSpan = {
+        traceId: 'active-trace',
+        setTag: vi.fn().mockReturnThis()
+    };
+
+    return {
+        activeSpan,
+        active: vi.fn(() => activeSpan),
+        activate: vi.fn(async (_span, callback: () => Promise<unknown>) => await callback()),
+        startSpan: vi.fn(() => span),
+        span,
+        dogstatsd: {
+            increment: vi.fn(),
+            decrement: vi.fn(),
+            gauge: vi.fn(),
+            histogram: vi.fn(),
+            distribution: vi.fn()
+        }
+    };
+});
+
+vi.mock('dd-trace', () => {
+    return {
+        default: {
+            scope: () => ({ active: tracerMocks.active, activate: tracerMocks.activate }),
+            startSpan: tracerMocks.startSpan,
+            dogstatsd: tracerMocks.dogstatsd
+        }
+    };
+});
+
 import { DispatchQueuePublisher } from './publisher.js';
 
 import type { SQSClient, SendMessageBatchCommandOutput } from '@aws-sdk/client-sqs';
@@ -19,6 +55,8 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         provider: 'github',
         providerConfigKey: 'github-dev',
         parentSyncName: 'sync-1',
+        activityLogId: 'log-1',
+        webhookName: 'sync-1',
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
         payload: { hello: 'world' },
         ...overrides
@@ -60,6 +98,17 @@ function deferred<T>() {
 describe('DispatchQueuePublisher', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        tracerMocks.active.mockClear();
+        tracerMocks.activate.mockClear();
+        tracerMocks.startSpan.mockClear();
+        tracerMocks.span.setTag.mockClear();
+        tracerMocks.span.finish.mockClear();
+        tracerMocks.activeSpan.setTag.mockClear();
+        tracerMocks.dogstatsd.increment.mockClear();
+        tracerMocks.dogstatsd.decrement.mockClear();
+        tracerMocks.dogstatsd.gauge.mockClear();
+        tracerMocks.dogstatsd.histogram.mockClear();
+        tracerMocks.dogstatsd.distribution.mockClear();
     });
 
     it('throws on invalid batchSize', () => {
@@ -90,6 +139,24 @@ describe('DispatchQueuePublisher', () => {
         expect(send.mock.calls).toHaveLength(3);
         const entryCounts = send.mock.calls.map((call) => (call[0] as SendMessageBatchCommand).input.Entries?.length);
         expect(entryCounts).toEqual([10, 10, 5]);
+        expect(tracerMocks.startSpan).toHaveBeenCalledWith('webhook.dispatch.publish', {
+            childOf: expect.objectContaining({ traceId: 'active-trace' }),
+            tags: expect.objectContaining({
+                'nango.accountId': 1,
+                'nango.environmentId': 2,
+                'nango.integrationId': 3,
+                'nango.provider': 'github',
+                'nango.providerConfigKey': 'github-dev',
+                'nango.messageCount': 25,
+                'nango.batchCount': 3
+            })
+        });
+        expect(tracerMocks.activate).toHaveBeenCalledWith(tracerMocks.span, expect.any(Function));
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.enqueued', 25);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.failed', 0);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 0);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 0);
+        expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 
     it('sets MessageGroupId on every entry', async () => {
@@ -166,6 +233,13 @@ describe('DispatchQueuePublisher', () => {
         const res = await publisher.publish([buildMessage(), buildMessage(), buildMessage()], 'account:1:env:2');
         expect(res).toEqual({ enqueued: 2, failed: 1 });
         expect(send.mock.calls).toHaveLength(2);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.enqueued', 2);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.failed', 1);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 2);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 1);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.partialFailure', true);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('error', expect.any(Error));
+        expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 
     it('treats an SDK throw as all-entries-failed and still retries', async () => {
@@ -179,5 +253,9 @@ describe('DispatchQueuePublisher', () => {
         const res = await publisher.publish([buildMessage()], 'account:1:env:2');
         expect(res).toEqual({ enqueued: 1, failed: 0 });
         expect(send.mock.calls).toHaveLength(2);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 1);
+        expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 1);
+        expect(tracerMocks.span.setTag.mock.calls.filter(([tag]) => tag === 'error')).toHaveLength(0);
+        expect(tracerMocks.activeSpan.setTag).toHaveBeenCalledWith('sqs.send.error', expect.any(Error));
     });
 });

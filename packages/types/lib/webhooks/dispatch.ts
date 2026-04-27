@@ -28,6 +28,10 @@ export interface WebhookDispatchMessage {
     provider: string;
     providerConfigKey: string;
     parentSyncName: string;
+    /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
+    webhookName: string;
+    /** Activity log id from the logCtx created at trigger time; passed to executeWebhook as args.activityLogId. */
+    activityLogId: string;
     connection: {
         id: number;
         connection_id: string;
