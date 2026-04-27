@@ -1,4 +1,3 @@
-import * as uuid from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
@@ -13,7 +12,7 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
@@ -232,155 +231,6 @@ class EnvironmentService {
         }
 
         return results;
-    }
-
-    async rotateKey(id: number, type: string): Promise<string | null> {
-        if (type === 'secret') {
-            return this.rotateSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.rotatePublicKey(id);
-        }
-
-        return null;
-    }
-
-    async revertKey(id: number, type: string): Promise<string | null> {
-        if (type === 'secret') {
-            return this.revertSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.revertPublicKey(id);
-        }
-
-        return null;
-    }
-
-    async activateKey(id: number, type: string): Promise<boolean> {
-        if (type === 'secret') {
-            return this.activateSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.activatePublicKey(id);
-        }
-
-        return false;
-    }
-
-    async rotateSecretKey(envId: number): Promise<string | null> {
-        const created = await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            // Note: For now, we enforce the invariant that only one non-default API secret
-            // can exist at a time: the 'pending' secret, during rotation.
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return secretService.createSecret(trx, {
-                environmentId: environment.id,
-                displayName: `rotated-${new Date().toISOString()}`,
-                isDefault: false
-            });
-        });
-        if (created === null) {
-            return null;
-        }
-        if (created.isErr()) {
-            throw created.error;
-        }
-        return created.value.secret;
-    }
-
-    async rotatePublicKey(id: number): Promise<string | null> {
-        const pending_public_key = uuid.v4();
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_public_key });
-
-        return pending_public_key;
-    }
-
-    async revertSecretKey(envId: number): Promise<string | null> {
-        const defaultSecret = await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return secretService.getInternalSecretForEnv(trx, envId);
-        });
-        if (defaultSecret === null) {
-            return null;
-        }
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
-        return defaultSecret.value.secret;
-    }
-
-    async revertPublicKey(id: number): Promise<string | null> {
-        const environment = await this.getById(id);
-
-        if (!environment) {
-            return null;
-        }
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_public_key: null });
-
-        return environment.public_key;
-    }
-
-    async activateSecretKey(envId: number): Promise<boolean> {
-        return await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return false;
-            }
-            // Note: For now, only one non-default secret can exist: the 'pending' secret.
-            const [secret] = await trx<DBAPISecret>('api_secrets').select('*').where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            if (!secret) {
-                trx.rollback();
-                return false;
-            }
-            await secretService.markDefault(trx, secret.id);
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return true;
-        });
-    }
-
-    async activatePublicKey(id: number): Promise<boolean> {
-        const environment = await this.getById(id);
-
-        if (!environment) {
-            return false;
-        }
-
-        await db.knex
-            .from<DBEnvironment>(TABLE)
-            .where({ id })
-            .update({
-                public_key: environment.pending_public_key as string,
-                pending_public_key: null
-            });
-
-        return true;
     }
 
     async getOauthCallbackUrl(environmentId?: number): Promise<string> {
