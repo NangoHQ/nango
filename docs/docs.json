@@ -115,6 +115,10 @@
     {
       "source": "/implementation-guides/platform/auth/configure-integration",
       "destination": "/guides/primitives/auth#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/contribute-new-api",
+      "destination": "/integrations/contribute-or-request-api"
     }
   ],
   "navigation": {
@@ -382,10 +386,16 @@
         "icon": "plug",
         "groups": [
           {
-            "group": "700+ APIs & Integrations",
+            "group": "Overview",
             "pages": [
               "integrations/overview",
               "reference/api-configuration",
+              "integrations/contribute-or-request-api"
+            ]
+          },
+          {
+            "group": "700+ APIs & Integrations",
+            "pages": [
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -450,7 +460,7 @@
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
-              "integrations/all/aws-iam",
+              "api-integrations/aws-iam",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",
@@ -1165,6 +1175,11 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Support",
+        "icon": "slack",
+        "href": "https://nango.dev/slack"
       }
     ]
   },

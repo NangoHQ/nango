@@ -1984,14 +1984,17 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
+        headers:
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, us-east-1, iam)}'
+            x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
         connection_config:
             region: ${connectionConfig.region}
         retry:
             at:
                 - 'x-ratelimit-reset'
     credentials_verification_script: awsIamCredentialsVerification
-    docs: https://nango.dev/docs/integrations/all/aws-iam
-    docs_connect: https://nango.dev/docs/integrations/all/aws-iam/connect
+    docs: https://nango.dev/docs/api-integrations/aws-iam
+    docs_connect: https://nango.dev/docs/api-integrations/aws-iam/connect
     credentials:
         username:
             type: string

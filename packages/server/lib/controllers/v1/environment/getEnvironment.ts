@@ -31,21 +31,11 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
-        if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
-            environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
-            environment.secret_key_rotatable = false;
-        }
 
         if (process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`]) {
             environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
             environment.public_key_rotatable = false;
         }
-    }
-
-    // Remove secret key if user doesn't have permission to read production secrets
-    if (!(await canReadProdSecret(res.locals, environment))) {
-        delete (environment as any).secret_key;
-        delete (environment as any).pending_secret_key;
     }
 
     environment.callback_url = await environmentService.getOauthCallbackUrl(environment.id);
@@ -108,7 +98,8 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             name: account.name,
             email: user.email,
             slack_notifications_channel,
-            webhook_signing_key: webhookSigningKey
+            webhook_signing_key: webhookSigningKey,
+            managed_secret_key: !isCloud ? (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] ?? null) : null
         }
     });
 });
