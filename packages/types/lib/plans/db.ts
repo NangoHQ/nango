@@ -204,4 +204,11 @@ export interface DBPlan extends Timestamps {
      * @default null
      */
     fleet_node_routing_override: string | null;
+
+    /**
+     * When true, Lambda invocations use a dedicated routing pool and function names ending with `-isolated`.
+     * Provisioned concurrency is not applied to tenant-isolated Lambdas.
+     * @default false
+     */
+    tenant_isolation: boolean;
 }

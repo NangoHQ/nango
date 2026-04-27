@@ -22,6 +22,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
+import { getFunctionName, isTenantIsolatedRoutingId } from '../utils/lambda.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -33,10 +34,6 @@ export const logger = getLogger('Lambda');
 const lambdaClient = new LambdaClient();
 const applicationAutoScalingClient = new ApplicationAutoScalingClient();
 const cloudwatchLogsClient = new CloudWatchLogsClient();
-
-export function getFunctionName(node: Node): string {
-    return `${node.routingId}-${node.id}`;
-}
 
 export function getFunctionQualifier(node: Node): string {
     //need to get the qualifier from the function url
@@ -131,33 +128,36 @@ class Lambda {
                         })
                     );
                 }
-                const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
-                const minCapacity = envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY;
-                const maxCapacity = Math.max(minCapacity, node.provisionedConcurrency || envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY);
-                await applicationAutoScalingClient.send(
-                    new RegisterScalableTargetCommand({
-                        ServiceNamespace: 'lambda',
-                        ScalableDimension: 'lambda:function:ProvisionedConcurrency',
-                        ResourceId: resourceId,
-                        MinCapacity: minCapacity,
-                        MaxCapacity: maxCapacity
-                    })
-                );
-                await applicationAutoScalingClient.send(
-                    new PutScalingPolicyCommand({
-                        ServiceNamespace: 'lambda',
-                        ScalableDimension: 'lambda:function:ProvisionedConcurrency',
-                        ResourceId: resourceId,
-                        PolicyName: `${pvResult.FunctionName}-scaling-policy`,
-                        PolicyType: 'TargetTrackingScaling',
-                        TargetTrackingScalingPolicyConfiguration: {
-                            TargetValue: envs.LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET,
-                            PredefinedMetricSpecification: {
-                                PredefinedMetricType: 'LambdaProvisionedConcurrencyUtilization'
+                const useProvisionedConcurrency = !isTenantIsolatedRoutingId(node.routingId);
+                if (useProvisionedConcurrency) {
+                    const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
+                    const minCapacity = envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY;
+                    const maxCapacity = Math.max(minCapacity, node.provisionedConcurrency || envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY);
+                    await applicationAutoScalingClient.send(
+                        new RegisterScalableTargetCommand({
+                            ServiceNamespace: 'lambda',
+                            ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                            ResourceId: resourceId,
+                            MinCapacity: minCapacity,
+                            MaxCapacity: maxCapacity
+                        })
+                    );
+                    await applicationAutoScalingClient.send(
+                        new PutScalingPolicyCommand({
+                            ServiceNamespace: 'lambda',
+                            ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                            ResourceId: resourceId,
+                            PolicyName: `${pvResult.FunctionName}-scaling-policy`,
+                            PolicyType: 'TargetTrackingScaling',
+                            TargetTrackingScalingPolicyConfiguration: {
+                                TargetValue: envs.LAMBDA_PROVISIONED_CONCURRENCY_SCALING_TARGET,
+                                PredefinedMetricSpecification: {
+                                    PredefinedMetricType: 'LambdaProvisionedConcurrencyUtilization'
+                                }
                             }
-                        }
-                    })
-                );
+                        })
+                    );
+                }
                 const readinessCheckRequest: LambdaReadinessCheck = {
                     type: 'readiness_check'
                 };
@@ -220,22 +220,24 @@ class Lambda {
                 FunctionName: name
             })
         );
-        const resourceId = `function:${name}:${envs.LAMBDA_FUNCTION_ALIAS}`;
-        await applicationAutoScalingClient.send(
-            new DeleteScalingPolicyCommand({
-                PolicyName: `${name}-scaling-policy`,
-                ServiceNamespace: 'lambda',
-                ScalableDimension: 'lambda:function:ProvisionedConcurrency',
-                ResourceId: resourceId
-            })
-        );
-        await applicationAutoScalingClient.send(
-            new DeregisterScalableTargetCommand({
-                ServiceNamespace: 'lambda',
-                ScalableDimension: 'lambda:function:ProvisionedConcurrency',
-                ResourceId: resourceId
-            })
-        );
+        if (!isTenantIsolatedRoutingId(node.routingId)) {
+            const resourceId = `function:${name}:${envs.LAMBDA_FUNCTION_ALIAS}`;
+            await applicationAutoScalingClient.send(
+                new DeleteScalingPolicyCommand({
+                    PolicyName: `${name}-scaling-policy`,
+                    ServiceNamespace: 'lambda',
+                    ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                    ResourceId: resourceId
+                })
+            );
+            await applicationAutoScalingClient.send(
+                new DeregisterScalableTargetCommand({
+                    ServiceNamespace: 'lambda',
+                    ScalableDimension: 'lambda:function:ProvisionedConcurrency',
+                    ResourceId: resourceId
+                })
+            );
+        }
         return Ok(undefined);
     }
 
