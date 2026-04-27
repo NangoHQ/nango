@@ -2,20 +2,14 @@ import fs from 'fs';
 
 import * as z from 'zod';
 
-import { configService, getSyncConfigRaw, localFileService, remoteFileService } from '@nangohq/shared';
+import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, remoteFileService } from '@nangohq/shared';
 import { isEnterprise, isLocal, isTest, useS3, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { DBSyncConfig, GetFunctionPull, ScriptTypeLiteral } from '@nangohq/types';
 
-const folderTypeToScriptType: Record<string, ScriptTypeLiteral> = {
-    syncs: 'sync',
-    actions: 'action',
-    'on-events': 'on-event'
-};
-
-const scriptTypeToFolder: Record<ScriptTypeLiteral, string> = {
+const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
     sync: 'syncs',
     action: 'actions',
     'on-event': 'on-events'
@@ -49,9 +43,9 @@ async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig
 const validationQuery = z
     .object({
         integrationId: z.string().min(1),
-        type: z.enum(['syncs', 'actions', 'on-events']),
         name: z.string().min(1),
-        env: z.string().optional()
+        env: z.string().min(1),
+        type: z.enum(['sync', 'action', 'on-event']).optional()
     })
     .strict();
 
@@ -62,24 +56,8 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
         return;
     }
 
-    const { integrationId, type, name, env } = valQuery.data;
+    const { integrationId, type, name } = valQuery.data;
     const { environment } = res.locals;
-
-    if (!env) {
-        // Catalog mode: fetch TS source from S3 templates-zero
-        const s3Key = `templates-zero/${integrationId}/${type}/${name}.ts`;
-        try {
-            const content = await remoteFileService.getFile(s3Key);
-            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            res.status(200).end(content);
-        } catch {
-            res.status(404).send({ error: { code: 'not_found', message: `Catalog function '${integrationId}/${type}/${name}' not found` } });
-        }
-        return;
-    }
-
-    // Deployed mode: look up in DB by providerConfigKey + name + type
-    const scriptType = folderTypeToScriptType[type]!;
 
     const providerConfig = await configService.getProviderConfig(integrationId, environment.id);
     if (!providerConfig || !providerConfig.id) {
@@ -87,23 +65,31 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
         return;
     }
 
-    const syncConfig = await getSyncConfigRaw({
-        environmentId: environment.id,
-        config_id: providerConfig.id,
-        name,
-        type: scriptType
-    });
+    const matches = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, providerConfig.id, name);
+    const filtered = type ? matches.filter((c) => c.type === type) : matches;
 
+    if (filtered.length > 1) {
+        res.status(409).send({
+            error: {
+                code: 'ambiguous_function',
+                message: `Multiple functions named '${name}' found for integration '${integrationId}'. Specify "type" to disambiguate.`,
+                payload: { matches: filtered.map((c) => ({ type: c.type, name: c.sync_name })) }
+            }
+        });
+        return;
+    }
+
+    const syncConfig = filtered[0];
     if (!syncConfig) {
         res.status(404).send({ error: { code: 'not_found', message: `Function '${name}' not found for integration '${integrationId}'` } });
         return;
     }
 
-    const content = await getFunctionTsCode({ syncConfig, providerConfigKey: integrationId });
-    if (!content) {
+    const code = await getFunctionTsCode({ syncConfig, providerConfigKey: integrationId });
+    if (!code) {
         res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
         return;
     }
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.status(200).end(content);
+
+    res.status(200).send({ type: syncConfig.type, code });
 });
