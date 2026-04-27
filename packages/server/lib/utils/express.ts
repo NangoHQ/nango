@@ -31,4 +31,5 @@ export interface RequestLocals {
     plan?: DBPlan | null;
     lang?: string;
     secret?: DBAPISecret;
+    apiKeyScopes?: string[];
 }

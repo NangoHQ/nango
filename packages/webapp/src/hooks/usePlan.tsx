@@ -96,7 +96,7 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
 
 export function useTrial(plan?: ApiPlan | null): { isTrial: boolean; isTrialOver: boolean; daysRemaining: number } {
     const res = useMemo<{ isTrial: boolean; isTrialOver: boolean; daysRemaining: number }>(() => {
-        if (!plan || !plan.trial_end_at) {
+        if (!plan || !plan.auto_idle || !plan.trial_end_at) {
             return { isTrial: false, isTrialOver: false, daysRemaining: 0 };
         }
         const days = Math.floor((new Date(plan.trial_end_at).getTime() - new Date().getTime()) / (86400 * 1000));

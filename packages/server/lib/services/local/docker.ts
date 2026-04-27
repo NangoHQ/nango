@@ -2,6 +2,8 @@ import { execFile, spawn } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { getCommandOutput } from '../remote-function/command-output.js';
+
 import type { ExecFileOptions } from 'node:child_process';
 
 const execFileAsync = promisify(execFile);
@@ -16,20 +18,7 @@ export function rewriteDockerHostForLocalhost(nangoHost: string): string {
 }
 
 export function getExecErrorOutput(error: unknown): string {
-    if (error && typeof error === 'object') {
-        const err = error as Record<string, unknown>;
-        if (typeof err['stderr'] === 'string' && err['stderr']) {
-            return err['stderr'];
-        }
-        if (typeof err['stdout'] === 'string' && err['stdout']) {
-            return err['stdout'];
-        }
-        if (typeof err['message'] === 'string' && err['message']) {
-            return err['message'];
-        }
-    }
-
-    return String(error);
+    return getCommandOutput(error, String(error));
 }
 
 export function isExecTimeoutError(error: unknown): boolean {

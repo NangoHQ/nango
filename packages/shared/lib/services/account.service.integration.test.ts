@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 
 import accountService from './account.service.js';
+import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
 import secretService from './secret.service.js';
@@ -48,9 +49,10 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
 
-        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+        const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
 
         expect(bySecretKey).toStrictEqual({
             account: {
@@ -72,15 +74,159 @@ describe('Account service', () => {
                 ...secret,
                 created_at: expect.toBeIsoDateTimezone(),
                 updated_at: expect.toBeIsoDateTimezone()
+            },
+            auth: {
+                source: 'customer_key',
+                scopes: ['environment:*'],
+                apiKeyId: expect.any(Number)
             }
         });
+    });
+
+    it('should return null when customer key is missing (no fallback to api_secrets)', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        await db.knex('customer_keys_relations').where({ entity_type: 'environment', entity_id: environment!.id }).delete();
+        await db.knex('customer_keys').where({ account_id: account.id, key_type: 'api' }).delete();
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should prefer customer key scopes when both tables match the same secret', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        await db
+            .knex('customer_keys')
+            .update({ scopes: ['environment:deploy'] })
+            .where({ account_id: account.id, key_type: 'api' })
+            .whereNull('deleted_at');
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
+
+        expect(bySecretKey?.auth).toStrictEqual({
+            source: 'customer_key',
+            scopes: ['environment:deploy'],
+            apiKeyId: expect.any(Number)
+        });
+    });
+
+    it('should return null when matching customer key is soft-deleted (no fallback to api_secrets)', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        await db.knex('customer_keys').update({ deleted_at: new Date() }).where({ account_id: account.id, key_type: 'api' });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should return null when matching customer key relation is not environment-scoped (no fallback to api_secrets)', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        const apiKey = await db.knex('customer_keys').select('id').where({ account_id: account.id, key_type: 'api' }).whereNull('deleted_at').first();
+
+        expect(apiKey).toBeDefined();
+
+        await db.knex('customer_keys_relations').where({ customer_key_id: apiKey!.id }).delete();
+        await db.knex('customer_keys_relations').insert({
+            customer_key_id: apiKey!.id,
+            entity_type: 'account',
+            entity_id: account.id
+        });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: environment!.secret_key });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should return null when secretKey does not match either table', async () => {
+        const bySecretKey = await accountService.getAccountContext({ secretKey: uuid() });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const customerKeySecret = apiKeys[0]!.secret;
+
+        const initial = await accountService.getAccountContext({ secretKey: customerKeySecret });
+        expect(initial?.auth?.source).toBe('customer_key');
+        const apiKeyId = initial?.auth?.apiKeyId;
+        expect(apiKeyId).toBeDefined();
+
+        const firstLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(firstLastUsedAt).toBeTruthy();
+
+        const recentTimestamp = new Date(Date.now() - 5 * 1000);
+        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: recentTimestamp });
+
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
+        const secondLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(new Date(secondLastUsedAt).toISOString()).toBe(recentTimestamp.toISOString());
+
+        const staleTimestamp = new Date(Date.now() - 2 * 60 * 1000);
+        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: staleTimestamp });
+
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
+        const thirdLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
+    });
+
+    it('should return environment:* scopes for internalSecretKey (api_secret path)', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+
+        const result = await accountService.getAccountContextByApiKey({ internalSecretKey: secret.secret });
+
+        expect(result?.auth).toStrictEqual({
+            source: 'api_secret',
+            scopes: ['environment:*']
+        });
+    });
+
+    it('should return environment:* scopes for env var key (env_var path)', async () => {
+        const account = await createTestAccount();
+        const envName = uuid();
+        await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        const envVarName = `NANGO_SECRET_KEY_${envName.toUpperCase()}`;
+        const envVarKey = `nango_secret_key_${uuid()}`;
+        process.env[envVarName] = envVarKey;
+        try {
+            const result = await accountService.getAccountContextByApiKey({ secretKey: envVarKey });
+
+            expect(result?.auth).toStrictEqual({
+                source: 'env_var',
+                scopes: ['environment:*']
+            });
+        } finally {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete process.env[envVarName];
+        }
     });
 
     it('should retrieve account context by publicKey', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byPublicKey = await accountService.getAccountContext({ publicKey: environment!.public_key });
 
@@ -112,7 +258,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byUuid = await accountService.getAccountContext({ environmentUuid: environment!.uuid });
 
@@ -144,7 +290,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byAccountUuid = await accountService.getAccountContext({ accountUuid: account.uuid, envName: environment!.name });
 
@@ -176,7 +322,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byAccountId = await accountService.getAccountContext({ accountId: account.id, envName: environment!.name });
 
@@ -208,7 +354,7 @@ describe('Account service', () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, environment!.id)).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
 
         const byEnvironmentId = await accountService.getAccountContext({ environmentId: environment!.id });
 

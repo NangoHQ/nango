@@ -43,11 +43,11 @@ describe('remote-function public API', () => {
     });
 
     it('rejects valid secret keys without remote functions plan flag', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'syncIssues',
@@ -66,11 +66,11 @@ describe('remote-function public API', () => {
     });
 
     it('rejects unsafe function names on POST /remote-function/compile', async () => {
-        const { secret } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'bad/name',
@@ -85,11 +85,11 @@ describe('remote-function public API', () => {
     });
 
     it('returns integration_not_found on POST /remote-function/compile', async () => {
-        const { secret } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'syncIssues',
@@ -110,11 +110,11 @@ describe('remote-function public API', () => {
     it('allows valid secret keys in production', async () => {
         envs.NODE_ENV = 'production';
 
-        const { secret } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/compile', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'syncIssues',
@@ -133,12 +133,12 @@ describe('remote-function public API', () => {
     });
 
     it('returns connection_not_found on POST /remote-function/dryrun', async () => {
-        const { env, secret } = await seedAccountWithRemoteFunctions();
+        const { env, apiKey } = await seedAccountWithRemoteFunctions();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch('/remote-function/dryrun', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'syncIssues',
@@ -158,11 +158,11 @@ describe('remote-function public API', () => {
     });
 
     it('returns integration_not_found on POST /remote-function/deploy', async () => {
-        const { secret } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccountWithRemoteFunctions();
 
         const res = await api.fetch('/remote-function/deploy', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 integration_id: 'github',
                 function_name: 'syncIssues',

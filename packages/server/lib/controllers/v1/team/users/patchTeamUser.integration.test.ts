@@ -27,10 +27,10 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { id: 1 },
             body: { role: 'production_support' },
             // @ts-expect-error missing query on purpose
@@ -41,11 +41,11 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             params: { id: 1 },
             // @ts-expect-error invalid role on purpose
             body: { role: 'invalid_role' }

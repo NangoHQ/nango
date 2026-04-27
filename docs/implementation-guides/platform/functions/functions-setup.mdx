@@ -52,7 +52,7 @@ NANGO_SECRET_KEY_PROD='<PROD-SECRET-KEY>'
 NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
 ```
 
-Get your secret keys from the **Environment Settings** tab (toggle between the `Production` and `Development` environment in the left nav bar).
+Get your secret keys from **Environment Settings > API Keys** (toggle between the `Production` and `Development` environment in the left nav bar).
 
 <Note>
   You can rename environments in the Nango UI under _Environment Settings_. 
@@ -65,6 +65,18 @@ Get your secret keys from the **Environment Settings** tab (toggle between the `
   ```
   If you rename the environment, update the variable name to match.
 </Note>
+
+## Team setup
+
+When multiple engineers work on Functions, give each engineer their own Nango environment. This prevents them from overwriting each other's deployed Functions and lets each person configure webhooks independently — for example, pointing to a local [ngrok](https://ngrok.com) tunnel during development.
+
+Each engineer adds their own environment's API key to their local `.env`:
+
+```bash
+NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
+```
+
+A shared `dev` or `staging` environment is still useful as a stable baseline — but it should be written to only by CI, not by individual engineers directly. See the [CI/CD guide](/implementation-guides/platform/functions/ci-cd) for how to wire this up.
 
 ## Next steps
 

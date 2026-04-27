@@ -1,0 +1,50 @@
+---
+title: Northbeam - How do I link my account?
+sidebarTitle: Northbeam
+---
+
+# Overview
+
+To authenticate with Northbeam, you will need:
+1. **API Subdomain** – Use `api` for production or `api-uat` for testing/development.
+2. **Data Client ID** – A UUID that identifies you as the customer.
+3. **API Key** – A private key generated from the Northbeam Dashboard.
+
+This guide walks you through finding your Data Client ID and generating an API key.
+
+### Prerequisites
+
+- You must have a Northbeam account with access to the Settings page on the Dashboard.
+
+### Instructions
+
+#### Step 1: Getting authentication credentials
+
+Northbeam uses API keys to authenticate requests. To generate one:
+
+1. Log in to your [Northbeam Dashboard](https://app.northbeam.io).
+2. Go to **Settings** -> **API Keys** -> **Create new API Key**.
+3. Copy the generated API key — store it securely as it will not be shown again.
+
+Your **Data Client ID** is a UUID assigned to your Northbeam account. You can find it alongside your API key in the **Settings** -> **API Keys** section of the Dashboard.
+
+<img src="/api-integrations/northbeam/create_api_key.png"/>
+
+#### Step 2: Choose your API subdomain
+
+- Use `api` to connect to the **production** endpoint (`https://api.northbeam.io`).
+- Use `api-uat` to connect to the **testing/development** endpoint (`https://api-uat.northbeam.io`).
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API subdomain**, **Data Client ID**, and **API key**:
+
+1. Open the form where you need to authenticate with Northbeam.
+2. Enter your **API subdomain** (e.g. `api`) in the subdomain field.
+3. Enter your **Data Client ID** (UUID) in the Data Client ID field.
+4. Enter your **API key** in the API key field.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/northbeam/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Northbeam.
