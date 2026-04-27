@@ -10,6 +10,8 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
+// Cache decrypted webhook signing key per environment. No eviction needed since rotation is not supported yet.
+const webhookSigningKeyCache = new Map<number, string>();
 // Internal safety limit — not a product constraint, just prevents unbounded key creation.
 // Can be raised without migration if needed.
 export const MAX_API_KEYS_PER_ENV = 50;
@@ -25,18 +27,16 @@ class CustomerKeyService {
             accountId,
             environmentId,
             displayName,
-            scopes = ['environment:*'],
-            secret: providedSecret
+            scopes = ['environment:*']
         }: {
             accountId: number;
             environmentId: number;
             displayName: string;
             scopes?: string[];
-            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = providedSecret ?? uuid.v4();
+            const plainText = uuid.v4();
 
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
@@ -116,16 +116,14 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId,
-            secret: providedSecret
+            environmentId
         }: {
             accountId: number;
             environmentId: number;
-            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = providedSecret ?? uuid.v4();
+            const plainText = uuid.v4();
 
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
@@ -185,7 +183,12 @@ class CustomerKeyService {
         }
     }
 
-    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey>> {
+    public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
+        const cached = webhookSigningKeyCache.get(envId);
+        if (cached) {
+            return Ok(cached);
+        }
+
         try {
             const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .select(`${CUSTOMER_KEYS_TABLE}.*`)
@@ -201,7 +204,8 @@ class CustomerKeyService {
             }
 
             const decrypted = encryptionManager.decryptAPISecret(row as Parameters<typeof encryptionManager.decryptAPISecret>[0]) as DBCustomerKey;
-            return Ok(decrypted);
+            webhookSigningKeyCache.set(envId, decrypted.secret);
+            return Ok(decrypted.secret);
         } catch (err) {
             return Err(err);
         }

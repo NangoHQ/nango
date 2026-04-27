@@ -361,9 +361,9 @@ describe('API Keys endpoints', () => {
         });
 
         it('should allow legacy api_secrets key with environment:* scope semantics', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             // Legacy key from api_secrets resolves to explicit environment:* semantics
-            const res = await api.fetch('/integrations', { method: 'GET', token: secret.secret });
+            const res = await api.fetch('/integrations', { method: 'GET', token: apiKey.secret });
             expect(res.res.status).toBe(200);
         });
     });

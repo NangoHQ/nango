@@ -5,7 +5,7 @@ import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
-import type { DBAPISecret, DBEnvironment } from '@nangohq/types';
+import type { DBCustomerKey, DBEnvironment } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -31,10 +31,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 // @ts-expect-error on purpose
                 debug: 'er'
@@ -58,10 +58,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject models_json_schema missing definitions for declared models', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 debug: false,
                 flowConfigs: [
@@ -106,10 +106,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should accept empty body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 debug: false,
                 flowConfigs: [],
@@ -129,17 +129,17 @@ describe(`POST ${endpoint}`, () => {
 
     describe('deploy', () => {
         let env: DBEnvironment;
-        let secret: DBAPISecret;
+        let apiKey: DBCustomerKey;
         // This describe must be executed in order
 
         it('should deploy', async () => {
             const seed = await seeders.seedAccountEnvAndUser();
             env = seed.env;
-            secret = seed.secret;
+            apiKey = seed.apiKey;
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     debug: false,
                     jsonSchema: {
@@ -253,7 +253,7 @@ describe(`POST ${endpoint}`, () => {
         it('should have removed syncs from DB', async () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     debug: false,
                     flowConfigs: [
@@ -300,12 +300,12 @@ describe(`POST ${endpoint}`, () => {
 
     describe('models_json_schema handling', () => {
         it('should use per-flow models_json_schema directly', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     debug: false,
                     flowConfigs: [
@@ -360,12 +360,12 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should filter top-level jsonSchema to only the models used by a flow (legacy format)', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     debug: false,
                     jsonSchema: {
