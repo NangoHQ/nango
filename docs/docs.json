@@ -48,7 +48,6 @@
       {
         "label": "GitHub",
         "type": "github",
-        "label": "GitHub",
         "href": "https://github.com/NangoHQ/nango"
       },
       {
@@ -138,8 +137,7 @@
                       "implementation-guides/platform/auth/configure-integration",
                       "implementation-guides/platform/auth/share-connect-link",
                       "implementation-guides/platform/auth/connection-tags",
-                      "implementation-guides/platform/auth/customize-connect-ui",
-                      "implementation-guides/platform/auth/contribute-new-api"
+                      "implementation-guides/platform/auth/customize-connect-ui"
                     ]
                   }
                 ]
@@ -382,10 +380,16 @@
         "icon": "plug",
         "groups": [
           {
-            "group": "700+ APIs & Integrations",
+            "group": "Overview",
             "pages": [
               "integrations/overview",
               "reference/api-configuration",
+              "integrations/contribute-or-request-api"
+            ]
+          },
+          {
+            "group": "700+ APIs & Integrations",
+            "pages": [
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
