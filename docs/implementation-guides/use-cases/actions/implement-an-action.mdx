@@ -239,12 +239,12 @@ You can trigger actions from your backend with the [REST API](/reference/api/act
 
         const nango = new Nango({ secretKey: '<ENV-SECRET-KEY>' });
 
-        const result = await nango.triggerAction({
-        connectionId: '<CONNECTION-ID>',
-        providerConfigKey: '<INTEGRATION-ID>',
-        action: '<ACTION-NAME>',
-        input: { ... }
-        });
+        const result = await nango.triggerAction(
+            '<INTEGRATION-ID>',
+            '<CONNECTION-ID>',
+            '<ACTION-NAME>',
+            { /* input */ }
+        );
         ```
     </Tab>
 </Tabs>

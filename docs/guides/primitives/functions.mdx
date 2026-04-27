@@ -38,12 +38,12 @@ nango deploy
 <Tabs>
   <Tab title="TypeScript">
   ```typescript
-  const result = await nango.triggerAction({
-      connectionId: 'user-123',
-      providerConfigKey: 'github',
-      action: 'create-issue',
-      input: { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
-  });
+  const result = await nango.triggerAction(
+      'github',
+      'user-123',
+      'create-issue',
+      { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
+  );
   ```
   </Tab>
   <Tab title="cURL">
@@ -297,12 +297,12 @@ Your application can call functions from any language or framework.
         <Tabs>
           <Tab title="TypeScript">
           ```typescript
-          const result = await nango.triggerAction({
-              connectionId: '<CONNECTION-ID>',
-              providerConfigKey: 'github',
-              action: 'create-issue',
-              input: { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
-          });
+          const result = await nango.triggerAction(
+              'github',
+              '<CONNECTION-ID>',
+              'create-issue',
+              { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
+          );
           ```
           </Tab>
           <Tab title="cURL">
