@@ -40,6 +40,7 @@ export type GetEnvironment = Endpoint<{
             email: string;
             slack_notifications_channel: string | null;
             webhook_signing_key: string | null;
+            managed_secret_key: string | null;
         };
     };
 }>;
