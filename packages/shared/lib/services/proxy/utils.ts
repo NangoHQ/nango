@@ -275,7 +275,7 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
+    const normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
@@ -319,6 +319,14 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         }
     }
     return url.toString();
+}
+
+function getRawBody(method: string, data: unknown): string {
+    if (!['POST', 'PUT', 'PATCH'].includes(method) || !data) return '';
+    if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
+    if (Buffer.isBuffer(data)) return data.toString('utf8');
+    if (data instanceof URLSearchParams) return data.toString();
+    return '';
 }
 
 // builds the canonical parameter string as required by the Duo API request signing spec.
@@ -495,10 +503,15 @@ export function buildProxyHeaders({
         const parsedUrl = new URL(url);
         const endpointPath = parsedUrl.pathname;
         const endpointQuery = parsedUrl.search.slice(1);
+        const contentTypeHeader = Object.entries(config.headers ?? {}).find(([k]) => k.toLowerCase() === 'content-type');
+        const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
         const baseReplacers = {
             endpoint: config.endpoint,
             path: endpointPath,
-            params: buildCanonicalParams(config.method, config.data, endpointQuery)
+            params: buildCanonicalParams(config.method, config.data, endpointQuery),
+            urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),
+            bodyCanonicalParams: getRawBody(config.method, config.data),
+            contentType
         };
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {

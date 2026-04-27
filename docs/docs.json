@@ -450,7 +450,7 @@
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
-              "integrations/all/aws-iam",
+              "api-integrations/aws-iam",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",
