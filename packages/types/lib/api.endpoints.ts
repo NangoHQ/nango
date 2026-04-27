@@ -2,14 +2,16 @@ import type {
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
+    GetManagedEmailVerification,
     PostForgotPassword,
     PostLogout,
+    PostManagedEmailVerification,
     PostManagedSignup,
     PostSignin,
     PostSignup,
     PutResetPassword
 } from './account/api.js';
-import type { GetAsyncActionResult, GetPublicV1, PostPublicTriggerAction } from './action/api.js';
+import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
 import type {
@@ -46,10 +48,21 @@ import type {
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
-import type { DeleteEnvironment, GetEnvironment, GetEnvironments, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
+import type {
+    CreateApiKey,
+    DeleteApiKey,
+    DeleteEnvironment,
+    GetEnvironment,
+    GetEnvironments,
+    ListApiKeys,
+    PatchApiKey,
+    PatchEnvironment,
+    PostEnvironment
+} from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
+import type { PostRemoteFunctionCompile, PostRemoteFunctionDeploy, PostRemoteFunctionDryrun } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
@@ -66,7 +79,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PostPlanChange, PostPlanExtendTrial } from './plans/http.api.js';
+import type { PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -127,6 +140,9 @@ export type PublicApiEndpoints =
     | GetPublicSyncStatus
     | GetPublicV1
     | PostPublicTriggerAction
+    | PostRemoteFunctionCompile
+    | PostRemoteFunctionDryrun
+    | PostRemoteFunctionDeploy
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -137,6 +153,7 @@ export type PrivateApiEndpoints =
     | PutTeam
     | PostPlanExtendTrial
     | PostPlanChange
+    | PutBillingInvoicingDetails
     | GetUser
     | PatchUser
     | PostInvite
@@ -164,11 +181,13 @@ export type PrivateApiEndpoints =
     | GetEmailByExpiredToken
     | GetEmailByUuid
     | GetManagedCallback
+    | GetManagedEmailVerification
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency
     | PutUpgradePreBuiltFlow
     | PostConnectionRefresh
+    | PostManagedEmailVerification
     | PostManagedSignup
     | PostPreBuiltDeploy
     | PostEnvironment
@@ -176,6 +195,10 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | GetEnvironments
     | GetEnvironment
+    | ListApiKeys
+    | CreateApiKey
+    | DeleteApiKey
+    | PatchApiKey
     | PatchWebhook
     | PostEnvironmentVariables
     | PostImpersonate
@@ -188,7 +211,8 @@ export type PrivateApiEndpoints =
     | GetConnectUISettings
     | PutConnectUISettings
     | GetProviders
-    | GetProvider;
+    | GetProvider
+    | PostInternalTriggerFunction;
 
 export type APIEndpoints = PrivateApiEndpoints | PublicApiEndpoints;
 

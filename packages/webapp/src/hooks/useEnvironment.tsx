@@ -112,66 +112,6 @@ export function usePostEnvironment() {
     });
 }
 
-export function useRotateKey(env: string) {
-    const queryClient = useQueryClient();
-    return useMutation<undefined, APIError>({
-        mutationFn: async () => {
-            const res = await apiFetch(`/api/v1/environment/rotate-key?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'secret' })
-            });
-
-            if (!res.ok) {
-                const json = (await res.json()) as Record<string, unknown>;
-                throw new APIError({ res, json });
-            }
-        },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
-        }
-    });
-}
-
-export function useRevertKey(env: string) {
-    const queryClient = useQueryClient();
-    return useMutation<undefined, APIError>({
-        mutationFn: async () => {
-            const res = await apiFetch(`/api/v1/environment/revert-key?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'secret' })
-            });
-
-            if (!res.ok) {
-                const json = (await res.json()) as Record<string, unknown>;
-                throw new APIError({ res, json });
-            }
-        },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
-        }
-    });
-}
-
-export function useActivateKey(env: string) {
-    const queryClient = useQueryClient();
-    return useMutation<undefined, APIError>({
-        mutationFn: async () => {
-            const res = await apiFetch(`/api/v1/environment/activate-key?env=${env}`, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'secret' })
-            });
-
-            if (!res.ok) {
-                const json = (await res.json()) as Record<string, unknown>;
-                throw new APIError({ res, json });
-            }
-        },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) });
-        }
-    });
-}
-
 export function useDeleteEnvironment(env: string) {
     const queryClient = useQueryClient();
     return useMutation<undefined, APIError>({

@@ -12,6 +12,7 @@ import {
     accountService,
     configService,
     createSyncJob,
+    customerKeyService,
     environmentService,
     errorManager,
     errorNotificationService,
@@ -168,7 +169,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             throw defaultSecret.error;
         }
@@ -341,6 +342,12 @@ export async function handleSyncSuccess({
             runTimeSecs: runTime
         };
         const webhookSettings = await externalWebhookService.get(nangoProps.environmentId);
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, nangoProps.environmentId).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value;
+              })
+            : null;
         for (const model of nangoProps.syncConfig.models || []) {
             let deletedKeys: string[] = [];
             if (nangoProps.syncConfig.track_deletes) {
@@ -433,7 +440,7 @@ export async function handleSyncSuccess({
 
             syncPayload.records[model] = { added, updated, deleted };
 
-            if (webhookSettings && environment) {
+            if (webhookSettings && webhookSigningSecret && environment) {
                 const span = tracer.startSpan('jobs.sync.webhook', {
                     tags: {
                         environmentId: nangoProps.environmentId,
@@ -451,7 +458,7 @@ export async function handleSyncSuccess({
                                 account: team,
                                 connection: connection,
                                 environment: environment,
-                                secret: nangoProps.secretKey,
+                                secret: webhookSigningSecret,
                                 syncConfig: nangoProps.syncConfig,
                                 syncVariant: nangoProps.syncVariant || 'base',
                                 providerConfig,
@@ -550,10 +557,13 @@ export async function handleSyncSuccess({
             scriptType: nangoProps.syncConfig.type,
             environmentId: nangoProps.environmentId,
             environmentName: nangoProps.environmentName || 'unknown',
+            provider: nangoProps.provider,
             providerConfigKey: nangoProps.providerConfigKey,
             status: 'success',
             syncId: nangoProps.syncId,
             syncVariant: nangoProps.syncVariant!,
+            scriptVersion: nangoProps.syncConfig.version,
+            preBuilt: nangoProps.syncConfig.pre_built,
             content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
@@ -871,10 +881,13 @@ async function onFailure({
             scriptType: 'sync',
             environmentId: environment.id,
             environmentName: environment.name,
+            provider,
             providerConfigKey: connection.provider_config_key,
             status: 'failed',
             syncId: syncId,
             syncVariant: syncVariant || 'base',
+            scriptVersion: syncConfig?.version,
+            preBuilt: syncConfig?.pre_built,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
@@ -907,24 +920,23 @@ async function onFailure({
     if (environment) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const span = tracer.startSpan('jobs.sync.webhook', {
-            tags: {
-                environmentId: environment.id,
-                connectionId: connection.id,
-                syncId: syncId,
-                syncJobId: syncJobId,
-                syncSuccess: false
+        if (team && syncConfig && providerConfig && webhookSettings) {
+            const span = tracer.startSpan('jobs.sync.webhook', {
+                tags: {
+                    environmentId: environment.id,
+                    connectionId: connection.id,
+                    syncId: syncId,
+                    syncJobId: syncJobId,
+                    syncSuccess: false
+                }
+            });
+            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            if (webhookSigningKey.isErr()) {
+                throw webhookSigningKey.error;
             }
-        });
 
-        if (team && environment && syncConfig && providerConfig) {
             void tracer.scope().activate(span, async () => {
                 try {
-                    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-                    if (defaultSecret.isErr()) {
-                        throw defaultSecret.error;
-                    }
-
                     const res = await sendSyncWebhook({
                         account: team,
                         providerConfig,
@@ -932,7 +944,7 @@ async function onFailure({
                         syncVariant,
                         connection: connection,
                         environment: environment,
-                        secret: defaultSecret.value.secret,
+                        secret: webhookSigningKey.value,
                         webhookSettings,
                         model: models.join(','),
                         success: false,

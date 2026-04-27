@@ -432,9 +432,7 @@ No parameters.
 
 ## Trigger action
 
-Integration functions currently do not support importing files, which limits the ability to share code between integration functions.
-
-As a temporary workaround, you can call action functions from other integration functions with:
+You can call action functions from other integration functions with:
 
 ```js
 await nango.triggerAction('<ACTION-NAME>', { 'custom_key1': 'custom_value1' });

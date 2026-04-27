@@ -12,7 +12,6 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
-import { initAI } from './ai/init.js';
 import { getVersionOutput } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
@@ -143,10 +142,9 @@ program
     .command('init')
     .argument('[path]', 'Optional: The path to initialize the Nango project in. Defaults to the current directory.')
     .description('Initialize a new Nango project')
-    .option('--ai [claude|cursor...]', 'Optional: Setup AI agent instructions files. Supported: claude code, cursor', [])
     .option('--copy', 'Optional: Only copy files, will not npm install or pre-compile', false)
     .action(async function (this: Command) {
-        const { debug, ai, copy, interactive, dependencyUpdate } = this.opts<GlobalOptions & { ai: string[]; copy: boolean }>();
+        const { debug, copy, interactive, dependencyUpdate } = this.opts<GlobalOptions & { copy: boolean }>();
         let [projectPath] = this.args;
         const currentPath = process.cwd();
 
@@ -160,16 +158,8 @@ program
 
         const absolutePath = path.resolve(currentPath, projectPath);
 
-        const setupAI = async (): Promise<void> => {
-            const ok = await initAI({ absolutePath, debug, aiOpts: ai });
-            if (ok) {
-                printDebug(`AI agent instructions files initialized in ${absolutePath}`, debug);
-            }
-        };
-
         const check = await verificationService.preCheck({ fullPath: absolutePath, debug });
         if (check.isZeroYaml) {
-            await setupAI();
             console.log(chalk.red(`The path provided is already a Nango integrations folder.`));
             return;
         }
@@ -180,7 +170,6 @@ program
             return;
         }
 
-        await setupAI();
         console.log(chalk.green(`Nango integrations initialized in ${absolutePath}`));
         return;
     });

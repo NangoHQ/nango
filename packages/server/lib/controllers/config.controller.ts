@@ -11,6 +11,8 @@ import {
 } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
+import { hasScope } from '../middleware/scope.middleware.js';
+
 import type { RequestLocals } from '../utils/express.js';
 import type { Integration as ProviderIntegration, IntegrationWithCreds } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
@@ -105,6 +107,10 @@ class ConfigController {
             }
 
             let configRes: ProviderIntegration | IntegrationWithCreds;
+            if (includeCreds && !hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:integrations:read_credentials' })) {
+                res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:integrations:read_credentials' } });
+                return;
+            }
             if (includeCreds) {
                 const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, providerConfigKey);
                 const connection_count = connections.length;

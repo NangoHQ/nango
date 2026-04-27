@@ -10,17 +10,37 @@ import { clickhouseClient, database as usageDatabase } from './config.js';
 import type { Result } from '@nangohq/utils';
 
 const migrationsDir = path.join(fileURLToPath(import.meta.url), '..', 'migrations');
+const migrationsExt = import.meta.url.endsWith('.ts') ? '.ts' : '.js';
 
-export async function migrate({ database }: { database: string } = { database: usageDatabase }): Promise<Result<void>> {
-    const client = clickhouseClient();
+// TODO: lock to prevent concurrent migrations
+
+async function createDatabaseIfNotExists({ database }: { database: string }): Promise<Result<void>> {
+    const client = clickhouseClient(); // Connect without database to create it if not exists
     if (!client) {
         logger.info('Clickhouse migration: config not set, skipping migration');
         return Ok(undefined);
     }
-
-    const migrationTable = `${database}.migrations`;
     try {
         await client.command({ query: `CREATE DATABASE IF NOT EXISTS ${database}` });
+        return Ok(undefined);
+    } finally {
+        await client.close();
+    }
+}
+
+export async function migrate({ database }: { database: string } = { database: usageDatabase }): Promise<Result<void>> {
+    const create = await createDatabaseIfNotExists({ database });
+    if (create.isErr()) {
+        logger.info('Clickhouse migration: config not set, skipping migration');
+        return Ok(undefined);
+    }
+
+    const client = clickhouseClient({ database });
+    if (!client) {
+        return Err(Error('Clickhouse client not configured'));
+    }
+    try {
+        const migrationTable = `${database}.migrations`;
         await client.command({
             query: `
                 CREATE TABLE IF NOT EXISTS ${migrationTable}
@@ -32,13 +52,12 @@ export async function migrate({ database }: { database: string } = { database: u
                 ORDER BY name
             `
         });
-
         const result = await client.query({ query: `SELECT name FROM ${migrationTable} FINAL`, format: 'JSONEachRow' });
         const rows = await result.json<{ name: string }>();
         const applied = new Set(rows.map((r) => r.name));
 
         const migrations = (await fs.readdir(migrationsDir)).sort().flatMap((f) => {
-            if (f.endsWith('.js')) {
+            if (f.endsWith(migrationsExt)) {
                 const name = path.basename(f);
                 return applied.has(name) ? [] : [name];
             }
@@ -49,7 +68,7 @@ export async function migrate({ database }: { database: string } = { database: u
             const { sql } = (await import(path.join(migrationsDir, migration))) as { sql: string[] };
             logger.info(`Clickhouse migration: applying ${migration}`);
             for (const statement of sql) {
-                await client.command({ query: statement });
+                await client.command({ query: statement, query_params: { database } });
             }
             await client.insert({ table: migrationTable, values: [{ name: migration }], format: 'JSONEachRow' });
         }

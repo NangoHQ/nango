@@ -1,0 +1,158 @@
+---
+title: 'How to receive Cal.com webhooks in Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to set up Cal.com webhooks with Nango'
+---
+
+This guide shows you how to receive real-time Cal.com webhooks in Nango. Cal.com delivers webhook events (e.g. `BOOKING_CREATED`, `BOOKING_CANCELLED`) via HTTP POST to a subscriber URL you register through their API.
+
+## How it works
+
+1. You call the Cal.com webhooks API to register a subscription, passing your Nango webhook URL and a `payloadTemplate` that embeds the Nango connection ID as a static field.
+2. When an event occurs, Cal.com sends a signed POST request to Nango with an `x-cal-signature-256` header.
+3. Nango verifies the signature and reads `nangoConnectionId` from the payload to identify the connection.
+4. Nango routes the event to that connection's webhook script and forwards the full payload to your app.
+
+## Setup
+
+### 1. Get your webhook URL and set a webhook secret
+
+Copy the webhook URL from your Cal.com (OAuth) integration page in the Nango dashboard, under the **Webhook URL** section. This is the HTTPS URL you will pass as `subscriberUrl` when creating a webhook subscription.
+
+Generate a random secret string and paste it into the **Webhook Secret** field on the same page. Nango will use this secret — shared across all connections for this integration — to verify the `x-cal-signature-256` signature on every incoming Cal.com event.
+
+```bash
+openssl rand -hex 32
+```
+
+### 2. Register the webhook subscription
+
+Create a webhook subscription for each new Cal.com connection. You can automate this with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
+
+```typescript
+import { createOnEvent } from 'nango';
+import z from 'zod';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Register a Cal.com webhook subscription for the connection',
+    metadata: z.object({
+        calComWebhookId: z.string().optional(),
+    }),
+    exec: async (nango) => {
+        const integration = await nango.getIntegration({ include: ['webhook'] });
+        const webhookUrl = integration.webhook_url;
+        const connectionId = nango.connectionId;
+        const secret = integration.webhookSecret;
+
+        const payloadTemplate = `{"triggerEvent":"{{triggerEvent}}","createdAt":"{{createdAt}}","nangoConnectionId":"${connectionId}","payload":{"type":"{{type}}","title":"{{title}}","startTime":"{{startTime}}","endTime":"{{endTime}}","organizer":{{organizer}},"attendees":{{attendees}},"uid":"{{uid}}"}}`;
+
+        const response = await nango.post({
+            endpoint: '/v2/organizations/<ORG-ID>/webhooks',
+            data: {
+                active: true,
+                subscriberUrl: webhookUrl,
+                triggers: [...], // add events to listen to
+                secret,
+                payloadTemplate,
+            },
+        });
+
+        // Store the webhook ID so it can be deleted on connection deletion
+        await nango.updateMetadata({ calComWebhookId: response.data.data.id });
+    },
+});
+```
+
+You can also register the subscription manually via the [Nango proxy](/reference/api/proxy/post):
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/proxy/v2/organizations/<ORG-ID>/webhooks \
+  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+  --header 'Provider-Config-Key: cal-com-oauth' \
+  --header 'Connection-Id: <CONNECTION-ID>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "active": true,
+    "subscriberUrl": "<REPLACE_WITH_NANGO_WEBHOOK_URL>",
+    "triggers": [...],
+    "secret": "<YOUR-WEBHOOK-SECRET>",
+    "payloadTemplate": "{\"triggerEvent\":\"{{triggerEvent}}\",\"createdAt\":\"{{createdAt}}\",\"nangoConnectionId\":\"<CONNECTION-ID>\",\"payload\":{\"type\":\"{{type}}\",\"title\":\"{{title}}\",\"startTime\":\"{{startTime}}\",\"endTime\":\"{{endTime}}\",\"organizer\":{{organizer}},\"attendees\":{{attendees}},\"uid\":\"{{uid}}\"}}"
+  }'
+```
+
+Replace:
+
+- **&lt;NANGO-SECRET-KEY&gt;** — your Nango secret key
+- **&lt;ORG-ID&gt;** — your Cal.com organization ID
+- **&lt;CONNECTION-ID&gt;** — the Nango connection ID for this Cal.com account
+- **&lt;REPLACE_WITH_NANGO_WEBHOOK_URL&gt;** — your Nango webhook URL from the dashboard (step 1)
+- **&lt;YOUR-WEBHOOK-SECRET&gt;** — the webhook secret configured on your Cal.com (OAuth) integration in Nango
+
+<Note>
+  The `nangoConnectionId` field in the payload template is a **static string** — it is the same for every event sent by this subscription. Each Cal.com user/connection needs its own subscription with its own `nangoConnectionId`.
+</Note>
+
+For the full list of available triggers, see the [Cal.com webhook documentation](https://cal.com/docs/developing/guides/automation/webhooks).
+
+### 3. Remove the webhook on connection deletion
+
+If a connection is deleted in Nango but the Cal.com subscription remains active, Cal.com will continue sending events until the subscription is removed. To clean up immediately, call the Cal.com [delete webhook endpoint](https://cal.com/docs/api-reference/v2/orgs-webhooks/delete-a-webhook) in a `pre-connection-deletion` script using the webhook ID stored in step 2:
+
+```typescript
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Delete the Cal.com webhook subscription before connection deletion',
+    exec: async (nango) => {
+        const metadata = await nango.getMetadata();
+        const webhookId = metadata['calComWebhookId'];
+
+        if (!webhookId) {
+            return;
+        }
+
+        try {
+          // https://cal.com/docs/api-reference/v2/orgs-webhooks/delete-a-webhook
+            await nango.delete({
+                endpoint: `/v2/organizations/<ORG-ID>/webhooks/${webhookId}`,
+            });
+        } catch (err) {
+            // Avoid blocking connection deletion if the webhook is already gone
+            await nango.log(`Failed to delete Cal.com webhook: ${String(err)}`, { level: 'error' });
+        }
+    },
+});
+```
+
+### 4. Handle forwarded webhooks
+
+When a Cal.com event arrives, Nango matches it to the correct connection and forwards the payload to your app. Example payload structure:
+
+```json
+{
+  "from": "cal-com-oauth",
+  "providerConfigKey": "cal-com-oauth",
+  "type": "forward",
+  "connectionId": "connection-123",
+  "payload": {
+    "type": "30min",
+    "title": "30min between Alice and Bob",
+    "startTime": "2025-01-02T14:00:00.000Z",
+    "endTime": "2025-01-02T14:30:00.000Z",
+    "organizer": { "name": "Alice", "email": "alice@example.com", "timezone": "America/New_York" },
+    "attendees": [{ "name": "Bob", "email": "bob@example.com", "timezone": "Europe/London" }],
+    "uid": "abc123"
+  }
+}
+```
+
+<Warning>
+If Nango cannot match the incoming webhook to a connection, the webhook will still be forwarded but won't include a `connectionId` in the payload.
+</Warning>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

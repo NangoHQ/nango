@@ -42,6 +42,10 @@ export function useConnections(queries: Omit<GetConnections['Querystring'], 'pag
             if (lastPage.data.length < 20) {
                 return undefined;
             }
+            // Backend rejects page > 50
+            if (allPages.length > 50) {
+                return undefined;
+            }
             // Otherwise, return next page number
             return allPages.length;
         },

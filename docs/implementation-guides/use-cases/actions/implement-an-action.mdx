@@ -38,7 +38,7 @@ This guide covers:
 
 ### Step 1 - Initial Functions setup
 
-If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/platform/functions/functions-setup) first.
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/guides/primitives/functions#guide) first.
 
 Otherwise, you can skip to the next step.
 
@@ -55,7 +55,7 @@ This command starts a process that continuously compiles your integration functi
 ### Step 3 - Create the action file
 
 <Tip>
-    If you prefer to automate this, follow the [Build with AI guide](/implementation-guides/platform/functions/leverage-ai-agents).
+    If you prefer to automate this, see [build with AI](/guides/primitives/functions#guide) in the Functions guide.
 </Tip>
 
 In your `nango-integrations` folder, create the file for your new action function.
@@ -112,7 +112,7 @@ In the `exec` method, implement the logic of your action. Edit `MyObject` to con
 The following can help you with your implementation:
 - [`nango` object reference](/reference/functions) to understand the SDK methods available in actions
 - [Our integration templates repo](https://www.nango.dev/templates) has 700+ examples of syncs and actions implemented by Nango
-- [Leveraging AI agents guide](/implementation-guides/platform/functions/leverage-ai-agents) to build actions with Claude Code, Cursor, and other AI agents
+- [Build with AI](/guides/primitives/functions#guide) to author actions with Claude Code, Cursor, and other coding agents
 
 Example implementation of the Salesforce contact fields action:
 
@@ -213,7 +213,7 @@ For common use cases, [pre-built integration templates](https://www.nango.dev/te
 
 Select your integration in the **Integrations** tab and navigate to the **Endpoints** tab. Available pre-built action integrations will appear in the endpoint list. Select the relevant one and enable it with the toggle.
 
-Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/platform/functions/customize-template) or [create your own custom action](#how-to-build-an-action).
+Integration templates are a starting point. You will likely need to [customize them](/guides/primitives/functions#guide) or [create your own custom action](#how-to-build-an-action).
 
 ### Triggering an action synchronously
 
@@ -239,12 +239,12 @@ You can trigger actions from your backend with the [REST API](/reference/api/act
 
         const nango = new Nango({ secretKey: '<ENV-SECRET-KEY>' });
 
-        const result = await nango.triggerAction({
-        connectionId: '<CONNECTION-ID>',
-        providerConfigKey: '<INTEGRATION-ID>',
-        action: '<ACTION-NAME>',
-        input: { ... }
-        });
+        const result = await nango.triggerAction(
+            '<INTEGRATION-ID>',
+            '<CONNECTION-ID>',
+            '<ACTION-NAME>',
+            { /* input */ }
+        );
         ```
     </Tab>
 </Tabs>

@@ -27,14 +27,14 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should not allow environment name to be the same as an existing environment', async () => {
-        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
         await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
         await environmentService.createEnvironment(db.knex, { accountId: env.account_id, name: 'existing' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             body: { name: 'existing' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isError(res.json);
@@ -47,13 +47,13 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should limit the number of environments based on environments_max flag', async () => {
-        const { plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
         await updatePlan(db.knex, { id: plan.id, environments_max: 1 });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             body: { name: 'dev' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isError(res.json);

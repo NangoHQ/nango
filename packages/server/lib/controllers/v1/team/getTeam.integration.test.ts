@@ -21,23 +21,23 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { token: secret.secret, params: { operationId: '1' } }
+            { token: apiKey.secret, params: { operationId: '1' } }
         );
 
         shouldRequireQueryEnv(res);
     });
 
     it('should get team', async () => {
-        const { user, account, secret } = await seeders.seedAccountEnvAndUser();
+        const { user, account, apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);

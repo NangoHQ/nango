@@ -4,6 +4,39 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="April 22, 2026">
+  ## API keys
+
+  We replaced environment secret keys with API keys. Previously, every environment had a single secret key with full access to all endpoints. You can now issue multiple keys and grant only the scopes each use case requires.
+
+  ![API keys page](/images/changelog/api-keys.jpg)
+
+  Key details:
+
+  - **Scoped permissions:** Choose **Full access** or **Custom** scopes when creating a key. Limit keys to specific operations like deploys, reading connections, or triggering actions.
+  - **Safe rotation:** Create a replacement key, swap it into your service, watch the **Last used** column to confirm the old key is no longer in use, then delete it.
+  - **RBAC-aware:** [Support role](/guides/platform/security#team-and-roles) members can only see the last four digits and scopes for troubleshooting, but cannot reveal key values.
+  - **No migration required:** Your existing secret keys continue to work as API keys without any changes.
+
+  Each endpoint in the [API reference](/reference/api/integration/list) now lists the scopes it requires. See the [API keys documentation](/reference/api-keys) for the full scope list and advised profiles.
+</Update>
+---
+
+<Update label="April 14, 2026">
+  ## Playground
+
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions/implement-an-action#implement-an-action) and [syncs](/implementation-guides/use-cases/syncs/implement-a-sync#implement-a-sync) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+
+  ![Playground](/images/changelog/playground.gif)
+
+  - ***Enabled* functions only:** The function dropdown shows only functions that are enabled for the selected integration.
+  - **Input validation:** Required fields are validated before execution. Missing inputs are flagged immediately without triggering a run.
+  - **Inline results and errors:** Execution results, timing, and error codes (e.g., invalid credentials) are displayed directly in the panel.
+  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#observability) view for any execution directly from the result.
+  - **Permission-gated:** Playground access in production environments respects your team's [roles](/guides/platform/security#team-and-roles).
+</Update>
+---
+
 <Update label="March 27, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="34 new APIs in March">
@@ -150,15 +183,15 @@ description: "Product updates and improvements."
 
   This change is at the infrastructure level; your function code and APIs are unaffected.
 
-  ## AI integration builder skill
+  ## AI skill for building integrations
 
   We released a new AI skill for writing and testing Nango [Actions](/implementation-guides/use-cases/actions/implement-an-action) & [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
 
-  The builder is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
+  The skill is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
-  ![Nango Ai Integration Builder Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
+  ![Building Nango integrations with Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
-  See the [AI integration builder guide](/implementation-guides/platform/functions/leverage-ai-agents) and [AI agents documentation](/implementation-guides/platform/functions/leverage-ai-agents).
+  See the [Functions guide](/guides/primitives/functions#guide) for instructions on building integrations with AI.
 
   ## Support for MCP Auth
 
@@ -297,12 +330,12 @@ description: "Product updates and improvements."
       - [Fanvue](/api-integrations/fanvue)
       - [Fathom (OAuth)](/api-integrations/fathom-oauth)
       - [Firstbase](/api-integrations/firstbase)
-      - [Google Search Console](/integrations/all/google-search-console)
-      - [Grist](/integrations/all/grist)
+      - [Google Search Console](/api-integrations/google-search-console)
+      - [Grist](/api-integrations/grist)
       - [Justworks](/api-integrations/justworks)
       - [Lumos](/api-integrations/lumos)
       - [Onlogist](/api-integrations/onlogist)
-      - [Oracle Cloud Identity](/integrations/all/oracle-cloud-identity)
+      - [Oracle Cloud Identity](/api-integrations/oracle-cloud-identity)
       - [Paylocity (NextGen)](/api-integrations/paylocity-nextgen)
       - [Recall.ai](/api-integrations/recall-ai)
       - [SAP S/4HANA Cloud (Client Credentials)](/api-integrations/sap-odata-oauth2-cc)
@@ -417,7 +450,7 @@ description: "Product updates and improvements."
   nango clone github/actions/list-repos
   ```
 
-  See the guide on [customizing a function template](/implementation-guides/platform/functions/customize-template).
+  See the guide on [customizing a function template](/guides/primitives/functions#guide).
 
   ## Better support for Monorepos & Package Managers
 
@@ -461,7 +494,7 @@ description: "Product updates and improvements."
       - [SAP Fieldglass](/integrations/all/sap-fieldglass)
       - [SAP Business One](/integrations/all/sap-business-one)
       - [Statista](/integrations/all/statista)
-      - [Streak](/integrations/all/streak)
+      - [Streak](/api-integrations/streak)
       - [Teamleader Focus](/integrations/all/teamleader)
       - [Snipe-IT](/integrations/all/snipe-it)
     </Accordion>
@@ -516,7 +549,7 @@ description: "Product updates and improvements."
       - [DataCandy](/integrations/all/datacandy)
       - [Fillout (API Key)](/integrations/all/fillout-api-key)
       - [Fillout (Oauth)](/integrations/all/fillout)
-      - [Google Workspace Admin](/integrations/all/google-workspace-admin)
+      - [Google Workspace Admin](/api-integrations/google-workspace-admin)
       - [Google Service Account](/integrations/all/google-service-account)
       - [Hover](/integrations/all/hover)
       - [Jobber](/integrations/all/jobber)
@@ -643,8 +676,8 @@ description: "Product updates and improvements."
       - [AWS (SCIM)](/integrations/all/aws-scim)
       - [Azure Blob Storage](/integrations/all/azure-blob-storage)
       - [Fathom](/integrations/all/fathom)
-      - [Google Chat](/integrations/all/google-chat)
-      - [Google Cloud Storage](/integrations/all/google-cloud-storage)
+      - [Google Chat](/api-integrations/google-chat)
+      - [Google Cloud Storage](/api-integrations/google-cloud-storage)
       - [KnowBe4 (Reporting)](/integrations/all/knowbe4)
       - [Paycom](/integrations/all/paycom)
       - [Setmore](/integrations/all/setmore)
@@ -683,7 +716,7 @@ description: "Product updates and improvements."
   1. Run the auth flow
   2. Make a first successful API request
 
-  All in **under 5 minutes**. Example: [Google Calendar docs](/integrations/all/google-calendar).
+  All in **under 5 minutes**. Example: [Google Calendar docs](/api-integrations/google-calendar).
 
   ---
 </Update>
@@ -706,7 +739,7 @@ description: "Product updates and improvements."
     ![Generate integrations with AI illustration](/images/changelog/generate-integrations-with-ai.png)
   </Frame>
   We published a new guide on using AI to generate integrations faster than coding them manually. You can still edit the generated code as needed.\
-  [Guide](/implementation-guides/platform/functions/leverage-ai-agents).
+  [Guide](/guides/primitives/functions#guide).
 
   ---
 
@@ -745,7 +778,7 @@ description: "Product updates and improvements."
       - [Confluence Data Center](/integrations/all/confluence-data-center/)
       - [Dropbox Sign](/integrations/all/dropbox-sign)
       - [Grammarly SCIM](/integrations/all/grammarly-scim)
-      - [Google Slides](/integrations/all/google-slides)
+      - [Google Slides](/api-integrations/google-slides)
       - [Jamf Pro (Client Credentials)](/integrations/all/jamf)
       - [Jamf Pro (Basic Auth)](/integrations/all/jamf-basic)
       - [JazzHR](/integrations/all/jazzhr)
@@ -1100,8 +1133,8 @@ description: "Product updates and improvements."
       - [Recharge](/integrations/all/recharge)
       - [Scrape.do](/integrations/all/scrapedo)
       - [SharePoint Online (v1)](/api-integrations/sharepoint-online)
-      - [Shopify (API Key)](/integrations/all/shopify)
-      - [Shopify (SCIM API)](/integrations/all/shopify)
+      - [Shopify (API Key)](/api-integrations/shopify)
+      - [Shopify (SCIM API)](/api-integrations/shopify)
     </Accordion>
   </AccordionGroup>
   ---
@@ -1257,7 +1290,7 @@ description: "Product updates and improvements."
   <Frame>
     ![User and org information screenshot](/images/changelog/user-and-org-information.png)
   </Frame>
-  Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/implementation-guides/platform/auth/implement-api-auth).
+  Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/primitives/auth).
 
   ---
 </Update>
@@ -1279,7 +1312,7 @@ description: "Product updates and improvements."
       - [ConnectWise PSA (staging)](/integrations/all/connectwise-psa-staging)
       - [Databricks (Account Level)](/integrations/all/databricks-account)
       - [Databricks (Workspace Level)](/integrations/all/databricks-workspace)
-      - [Datadog](/integrations/all/datadog)
+      - [Datadog](/api-integrations/datadog)
       - [Dialpad (sandbox)](/integrations/all/dialpad)
       - [Dixa](/integrations/all/dixa)
       - [Eleven Labs](/integrations/all/elevenlabs)
@@ -1293,7 +1326,7 @@ description: "Product updates and improvements."
       - [Loops.so](/integrations/all/loops-so)
       - [Malwarebytes](/integrations/all/malwarebytes)
       - [Miro (SCIM API)](/integrations/all/miro)
-      - [Notion (SCIM API)](/integrations/all/notion)
+      - [Notion (SCIM API)](/integrations/all/notion-scim)
       - [Perimeter81](/integrations/all/perimeter81)
       - [Perplexity](/integrations/all/perplexity)
       - [Quickbooks (sandbox)](/api-integrations/quickbooks)
@@ -1319,7 +1352,7 @@ description: "Product updates and improvements."
   <Frame>
     ![Authorization input validation screenshot](/images/changelog/authorization-input-validation.png)
   </Frame>
-  When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/implementation-guides/platform/auth/implement-api-auth).
+  When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/guides/primitives/auth).
 
   ---
 
@@ -1337,7 +1370,7 @@ description: "Product updates and improvements."
   <Frame>
     ![End-user authorization guides screenshot](/images/changelog/end-user-authorization-guides.png)
   </Frame>
-  Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/implementation-guides/platform/auth/implement-api-auth).
+  Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/guides/primitives/auth).
 
   ---
 
@@ -1355,7 +1388,7 @@ description: "Product updates and improvements."
   <Frame>
     ![Pre-built authorization UI screenshot](/images/changelog/pre-built-authorization-ui.png)
   </Frame>
-  The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/implementation-guides/platform/auth/implement-api-auth) to use it, or continue using your [custom UI](/implementation-guides/platform/auth/customize-connect-ui) without interruption.
+  The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/primitives/auth) to use it, or continue using your [custom UI](/implementation-guides/platform/auth/customize-connect-ui) without interruption.
 
   ---
 </Update>

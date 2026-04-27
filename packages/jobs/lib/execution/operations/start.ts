@@ -39,8 +39,7 @@ export async function startScript({
                 ? await remoteFileService.getFile(integrationData.fileLocation)
                 : localFileService.getIntegrationFile({
                       syncConfig: nangoProps.syncConfig,
-                      providerConfigKey: nangoProps.providerConfigKey,
-                      scriptType: nangoProps.scriptType
+                      providerConfigKey: nangoProps.providerConfigKey
                   });
 
         if (!script) {

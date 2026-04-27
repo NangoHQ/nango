@@ -1,49 +1,109 @@
-### Fields
+### Attachments
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-fields` | Introspection endpoint to fetch the fields available per a model | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/fetch-fields.ts) |
+| `create-attachment` | Create an attachment on a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-attachment.ts) |
+| `delete-attachment` | Delete an attachment from a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/delete-attachment.ts) |
+| `get-attachment` | Retrieve a Linear attachment by attachment ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-attachment.ts) |
+| `list-attachments` | List Linear attachments with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-attachments.ts) |
+
+### Comments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-comment` | Create a comment on a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-comment.ts) |
+| `delete-comment` | Delete a comment from a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/delete-comment.ts) |
+| `get-comment` | Retrieve a Linear comment by comment ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-comment.ts) |
+| `list-comments` | List Linear comments with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-comments.ts) |
+| `resolve-comment` | Resolve a Linear comment thread. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/resolve-comment.ts) |
+| `unresolve-comment` | Reopen a previously resolved Linear comment thread. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/unresolve-comment.ts) |
+| `update-comment` | Update a comment on a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-comment.ts) |
+
+### Cycles
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `archive-cycle` | Archive a Linear cycle. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/archive-cycle.ts) |
+| `create-cycle` | Create a cycle for a Linear team. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-cycle.ts) |
+| `get-cycle` | Retrieve a Linear cycle by cycle ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-cycle.ts) |
+| `list-cycles` | List Linear cycles with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-cycles.ts) |
+| `update-cycle` | Update an existing Linear cycle. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-cycle.ts) |
+
+### Issue Labels
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-issue-labels` | List Linear issue labels with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-issue-labels.ts) |
 
 ### Issues
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-issue` | Create an issue in Linear | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-issue.ts) |
-| `issues` | Fetches a list of issues from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/issues.ts) |
+| `add-issue-label` | Attach a label to a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/add-issue-label.ts) |
+| `archive-issue` | Archive a Linear issue so it is removed from active workflows. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/archive-issue.ts) |
+| `create-issue-relation` | Create a relationship between two Linear issues. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-issue-relation.ts) |
+| `create-issue` | Create a new Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-issue.ts) |
+| `delete-issue-relation` | Delete a relationship between two Linear issues. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/delete-issue-relation.ts) |
+| `delete-issue` | Delete a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/delete-issue.ts) |
+| `get-issue` | Retrieve a Linear issue by issue ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-issue.ts) |
+| `list-issues` | List Linear issues with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-issues.ts) |
+| `remove-issue-label` | Remove a label from a Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/remove-issue-label.ts) |
+| `search-issues` | Search Linear issues with full-text query support. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/search-issues.ts) |
+| `unarchive-issue` | Restore an archived Linear issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/unarchive-issue.ts) |
+| `update-issue-relation` | Update fields on an existing Linear issue relation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-issue-relation.ts) |
+| `update-issue` | Update fields on an existing Linear issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-issue.ts) |
 
-### Milestones
+### Labels
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `milestones` | Fetches a list of milesontes from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/milestones.ts) |
-
-### Models
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `fetch-models` | Introspection endpoint to fetch the models available | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/fetch-models.ts) |
+| `create-issue-label` | Create a Linear issue label. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-issue-label.ts) |
+| `delete-issue-label` | Delete a Linear issue label. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/delete-issue-label.ts) |
+| `get-issue-label` | Retrieve a Linear issue label by label ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-issue-label.ts) |
 
 ### Projects
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `projects` | Fetches a list of projects from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/projects.ts) |
-
-### Roadmaps
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `roadmaps` | Fetches a list of roadmaps from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/roadmaps.ts) |
+| `create-project` | Create a Linear project. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/create-project.ts) |
+| `get-project` | Retrieve a Linear project by project ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-project.ts) |
+| `list-projects` | List Linear projects with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-projects.ts) |
+| `unarchive-project` | Restore an archived Linear project. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/unarchive-project.ts) |
+| `update-project` | Update an existing Linear project. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-project.ts) |
 
 ### Teams
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-teams` | Fetch the teams from Linear | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/fetch-teams.ts) |
-| `teams` | Fetches a list of teams from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/teams.ts) |
+| `get-team` | Retrieve a Linear team by team ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-team.ts) |
+| `list-teams` | List Linear teams available to the authenticated user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-teams.ts) |
 
 ### Users
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `users` | Fetches a list of users from Linear | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/users.ts) |
+| `get-user` | Retrieve a Linear user by user ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-user.ts) |
+| `get-viewer` | Retrieve the currently authenticated Linear user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-viewer.ts) |
+| `list-users` | List Linear users with filtering and pagination. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-users.ts) |
+
+### Workflow States
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-workflow-states` | List Linear workflow states across teams. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/list-workflow-states.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-workflow-state` | Retrieve a Linear workflow state by state ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/get-workflow-state.ts) |
+| `update-issue-label` | Update an existing Linear issue label. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/actions/update-issue-label.ts) |
+| `cycles` | Sync Linear cycles for planning and iteration tracking. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/cycles.ts) |
+| `issue-labels` | Sync Linear issue labels across teams. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/issue-labels.ts) |
+| `issues` | Sync Linear issues with state, assignee, labels, project, and cycle data. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/issues.ts) |
+| `milestones` | Sync Linear milestones for project planning. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/milestones.ts) |
+| `projects` | Sync Linear projects with lead, status, and progress fields | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/projects.ts) |
+| `roadmaps` | Sync Linear roadmaps and their project relationships. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/roadmaps.ts) |
+| `teams` | Sync Linear teams visible to the authenticated user. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/teams.ts) |
+| `users` | Sync Linear users with profile and active state fields. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/users.ts) |
+| `workflow-states` | Sync Linear workflow states across teams. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/linear/syncs/workflow-states.ts) |

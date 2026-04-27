@@ -127,6 +127,13 @@ export interface DBPlan extends Timestamps {
     has_webhooks_forward: boolean;
 
     /**
+     * Enable role-based access control (non-administrator roles)
+     * When false, all users/invites must be 'administrator'
+     * @default false
+     */
+    has_rbac: boolean;
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */
@@ -145,10 +152,22 @@ export interface DBPlan extends Timestamps {
     can_disable_connect_ui_watermark: boolean;
 
     /**
+     * Enable or disable remote function compile, dry-run, and deploy endpoints
+     * @default false
+     */
+    remote_functions: boolean;
+
+    /**
      * Sync Function Runtime
      * @default "runner"
      */
     sync_function_runtime: FunctionRuntime;
+
+    /**
+     * When true, syncs routed to the Lambda fleet require the checkpoints feature or they run on the runner fleet.
+     * @default true
+     */
+    sync_lambda_checkpoint_required: boolean;
 
     /**
      * Action Function Runtime

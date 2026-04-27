@@ -1,0 +1,49 @@
+---
+title: 'Cisco Duo Admin API - How do I link my account?'
+sidebarTitle: 'Cisco Duo Admin API'
+description: 'Create a Duo Admin API application and connect it to Nango'
+---
+
+# Overview
+
+To authenticate with Cisco Duo Admin API, you need:
+1. **Integration Key** - The integration key for your Duo Admin API application.
+2. **Secret Key** - The secret key for your Duo Admin API application.
+3. **API Hostname** - The API hostname for your Duo Admin API application, for example `api-xxxxxxxx.duosecurity.com`.
+
+This guide walks you through creating a Duo Admin API application and connecting it to Nango.
+
+### Prerequisites
+
+- You must be a Duo administrator with the **Owner** role to create or update an Admin API application.
+
+### Instructions
+
+#### Step 1: Find your Integration Key, Secret Key, and API Hostname
+
+1. Log in to the [Duo Admin Panel](https://admin.duosecurity.com/).
+2. Go to **Applications** > **Application Catalog**.
+
+<img src="/api-integrations/cisco-duo-admin/applications_catalog.png"/>
+
+
+3. Add **Admin API** or open your existing **Admin API** application.
+
+<img src="/api-integrations/cisco-duo-admin/applications_catalog.png" alt="Duo application catalog with the Admin API application" />
+
+4. Configure the permissions your integration needs.
+5. Copy the **Integration key**, **Secret key**, and **API hostname** from the application details page.
+
+<img src="/api-integrations/cisco-duo-admin/app_settings.png" />
+
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your Duo Admin API credentials:
+1. Open the form where you need to authenticate with Cisco Duo Admin API.
+2. Enter your **Integration Key**, **Secret Key**, and **API Hostname** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+
+
+You are now connected to Cisco Duo Admin API.

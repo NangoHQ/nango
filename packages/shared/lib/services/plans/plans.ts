@@ -111,7 +111,8 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .select<DBPlan[]>('plans.*')
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
-            .whereNull('trial_end_notified_at');
+            .whereNull('trial_end_notified_at')
+            .where('plans.auto_idle', true);
         return Ok(res);
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
@@ -123,7 +124,8 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .from('plans')
         .select<DBPlan[]>('*')
         .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
+        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
+        .where('plans.auto_idle', true);
 }
 
 export async function handlePlanChanged(
@@ -163,6 +165,15 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
+        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+            ? {
+                  trial_start_at: null,
+                  trial_end_at: null,
+                  trial_end_notified_at: null,
+                  trial_extension_count: 0,
+                  trial_expired: null
+              }
+            : {}),
         ...mergedFlags
     });
 
@@ -226,10 +237,17 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'has_otel':
             case 'has_webhooks_script':
             case 'has_webhooks_forward':
+            case 'has_rbac':
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
-            case 'can_customize_connect_ui_theme': {
+            case 'can_customize_connect_ui_theme':
+            case 'remote_functions': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
+                break;
+            }
+            // BOOLEAN FLAGS - keep override if different
+            case 'sync_lambda_checkpoint_required': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
             // NUMBER FLAGS - keep override if higher, null means unlimited

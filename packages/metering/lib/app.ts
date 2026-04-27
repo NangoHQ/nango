@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import { billing } from '@nangohq/billing';
 import { DefaultTransport } from '@nangohq/pubsub';
-import { ClickhouseIngestion, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
+import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
 import { initSentry, once, report } from '@nangohq/utils';
 
 import { exportUsageCron } from './crons/usage.js';
@@ -41,7 +41,7 @@ try {
     }
 
     // Usage
-    const clickhouse = new ClickhouseIngestion();
+    const clickhouse = new Clickhouse();
     const usageTracker = await getUsageTracker(envs.NANGO_REDIS_URL);
 
     // Usage processor
