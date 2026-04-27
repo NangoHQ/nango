@@ -19,17 +19,12 @@ const useLocalFiles = isEnterprise ? !useS3 : isLocal || isTest;
 
 async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<string | null> {
     if (useLocalFiles) {
-        const nested = `${providerConfigKey}/${scriptTypeToFolder[syncConfig.type]}/${syncConfig.sync_name}.ts`;
-        const nestedCheck = localFileService.checkForIntegrationSourceFile(nested);
-        if (nestedCheck.result) {
-            return await fs.promises.readFile(nestedCheck.path, 'utf8');
+        const fileName = `${providerConfigKey}/${scriptTypeToFolder[syncConfig.type]}/${syncConfig.sync_name}.ts`;
+        const check = localFileService.checkForIntegrationSourceFile(fileName);
+        if (!check.result) {
+            return null;
         }
-        const flat = `${syncConfig.sync_name}.ts`;
-        const flatCheck = localFileService.checkForIntegrationSourceFile(flat);
-        if (flatCheck.result) {
-            return await fs.promises.readFile(flatCheck.path, 'utf8');
-        }
-        return null;
+        return await fs.promises.readFile(check.path, 'utf8');
     }
 
     const dir = syncConfig.file_location.split('/').slice(0, -1).join('/');
