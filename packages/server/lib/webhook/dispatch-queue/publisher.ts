@@ -51,9 +51,10 @@ export class DispatchQueuePublisher {
     /**
      * Publish a list of dispatch messages in batches. Batches are fired in parallel up to
      * `publishConcurrency`; failed entries within a batch are retried once inline. Any
-     * entries still failing after the retry are counted as `failed`. Never throws — the
-     * caller treats partial failure as a metric/trace concern, not an HTTP 500 (provider
-     * retries are worse).
+     * entries still failing after the retry are counted as `failed`. Regular SQS send
+     * failures and partial failures are returned in the counts instead of throwing so the
+     * caller can treat them as a metric/trace concern, not an HTTP 500 (provider retries
+     * are worse).
      */
     async publish(messages: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
         if (messages.length === 0) {
@@ -95,7 +96,6 @@ export class DispatchQueuePublisher {
                 const provider = firstMessage.provider;
 
                 if (enqueued > 0) {
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_MESSAGES_ENQUEUED, enqueued, { provider });
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS, enqueued, { provider });
                 }
                 if (failed > 0) {

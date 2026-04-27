@@ -69,7 +69,6 @@ export enum Types {
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
-    WEBHOOK_DISPATCH_MESSAGES_ENQUEUED = 'nango.webhook.dispatch_queue.messages_enqueued',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
     WEBHOOK_DISPATCH_CONSUME_SUCCESS = 'nango.webhook.dispatch_queue.consume.success',
     WEBHOOK_DISPATCH_CONSUME_FAILURE = 'nango.webhook.dispatch_queue.consume.failure',
