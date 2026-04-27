@@ -44,6 +44,8 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Guide
 
+<Tip>**Using a coding agent?** Copy the page (button top right) and paste as a prompt.</Tip>
+
 <Steps>
   <Step title="Create a Nango account">
     Sign up for free (no credit card): [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
@@ -314,7 +316,7 @@ Before showing integration settings, check the connection with `GET /connection`
   <Tab title="cURL">
   ```bash
   curl --request GET \
-    --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
+    --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
     --header 'Authorization: Bearer <NANGO-API-KEY>'
   ```
   </Tab>

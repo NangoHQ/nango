@@ -21,3 +21,7 @@ To pin an anchor to a heading, use an inline HTML anchor on the line above:
 ```
 
 Browsers honor `id` attributes for fragment scrolling identically to heading-generated IDs.
+
+## Re-run link rewrites after pulling/merging master
+
+After every pull/merge that touches `docs/`, re-run the same sed against `docs/**/*.mdx` to bring newly imported files in line with the rename. `mintlify broken-links` may not flag these as hard failures if the old paths are kept alive via `redirects` in `docs.json` — they'll resolve via the redirect, but they're stale and should point at the canonical destination.

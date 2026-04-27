@@ -102,7 +102,7 @@
     },
     {
       "source": "/guides/platform/ai-integration-builder",
-      "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
+      "destination": "/guides/primitives/functions#guide"
     },
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
@@ -119,6 +119,18 @@
     {
       "source": "/implementation-guides/platform/auth/contribute-new-api",
       "destination": "/integrations/contribute-or-request-api"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/functions-setup",
+      "destination": "/guides/primitives/functions#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/leverage-ai-agents",
+      "destination": "/guides/primitives/functions#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customize-template",
+      "destination": "/guides/primitives/functions#guide"
     }
   ],
   "navigation": {
@@ -153,19 +165,10 @@
                 "expanded": false,
                 "pages": [
                   "guides/primitives/functions",
-                  "implementation-guides/platform/functions/leverage-ai-agents",
-                  {
-                    "group": "Other guides",
-                    "pages": [
-                      "implementation-guides/platform/functions/functions-setup",
-                      "implementation-guides/platform/functions/customize-template",
-                      "implementation-guides/platform/functions/rate-limits",
-                      "implementation-guides/platform/functions/data-validation",
-                      "implementation-guides/platform/functions/testing",
-                      "implementation-guides/platform/functions/ci-cd",
-                      "implementation-guides/platform/proxy/implement-requests-proxy"
-                    ]
-                  }
+                  "implementation-guides/platform/functions/rate-limits",
+                  "implementation-guides/platform/functions/data-validation",
+                  "implementation-guides/platform/functions/testing",
+                  "implementation-guides/platform/functions/ci-cd"
                 ]
               },
               {
@@ -221,6 +224,7 @@
                   "guides/platform/limits",
                   "guides/platform/security",
                   "guides/platform/self-hosting",
+                  "implementation-guides/platform/proxy/implement-requests-proxy",
                   "implementation-guides/platform/webhooks-from-nango",
                   "implementation-guides/platform/common-issues",
                   {

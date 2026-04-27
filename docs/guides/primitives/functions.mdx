@@ -1,132 +1,386 @@
 ---
-title: 'Functions - Overview'
-sidebarTitle: 'Functions - Overview'
-description: 'Call external APIs on behalf of your users using Functions or the Proxy.'
+title: 'Functions guide'
+sidebarTitle: 'Functions guide'
+description: 'Build custom integrations with a TypeScript runtime that works with any language or framework.'
 ---
 
-## Integration Functions
+## Overview
 
-**Functions** are Nango's TypeScript runtime for building custom integrations.
+**Functions** are Nango's runtime for building custom integrations.
 
-You write integration logic in TypeScript and deploy it to Nango. Functions execute with built-in access to authenticated APIs, retries, storage, and observability.
+You write integration logic in TypeScript and deploy it to Nango. Functions execute with built-in access to authenticated APIs, retries, storage, and observability. They cover any integration use-case — from simple API actions to complex data syncs, RAG pipelines, and real-time webhook ingestion.
 
-Functions are a flexible primitive that you can use to build any [integration use-case](#use-cases), from simple API actions to complex data syncs, RAG pipelines & real-time webhook ingestion.
+## How it works
 
-Pair Functions with the [AI integration builder](/implementation-guides/platform/functions/leverage-ai-agents) to generate and maintain integration code faster: combine the speed of AI with human-reviewable code you fully control.
-
-### How it works
-
-**1. Define a function**
+**1. Write** — define integration logic in TypeScript
 
 ```typescript
-export default async function run(nango: Nango) {
-    const { owner, repo, title, body } = nango.input;
+import { createAction } from 'nango';
+import * as z from 'zod';
 
-    const response = await nango.post({
-        endpoint: `/repos/${owner}/${repo}/issues`,
-        data: { title, body }
-    });
-
-    return response.data;
-}
+export default createAction({
+    description: 'Creates a GitHub issue',
+    input: z.object({
+        owner: z.string(),
+        repo: z.string(),
+        title: z.string(),
+        body: z.string()
+    }),
+    output: z.object({ id: z.number(), url: z.string() }),
+    exec: async (nango, input) => {
+        const response = await nango.post({
+            endpoint: `/repos/${input.owner}/${input.repo}/issues`,
+            data: { title: input.title, body: input.body }
+        });
+        return { id: response.data.id, url: response.data.html_url };
+    }
+});
 ```
 
-<Tip>
-  You can find many examples of Functions in our [integration templates](https://www.nango.dev/templates) GitHub repo.
-</Tip>
-
-**2. Deploy the function**
-
-Deploy your function to Nango using the CLI:
+**2. Deploy** — push to Nango with the CLI
 
 ```bash
 nango deploy
 ```
 
-**3. Trigger the function**
-
-Call the function via Nango's API using the connection ID and function name:
+**3. Trigger** — on-demand via API, on a schedule, in response to webhooks, or as AI tools via MCP
 
 <Tabs>
-    <Tab title="Typescript">
-
-    ```typescript
-const result = await nango.trigger({
-        integrationId: 'github',
-        connectionId: connectionId,
-        functionName: 'create-issue',
-        input: {
-            owner: 'acme',
-            repo: 'my-repo',
-            title: 'Bug report',
-            body: 'Something is broken'
-        }
-    });
-    ```
-    </Tab>
-
-    <Tab title="Other languages (cURL)">
-
-    ```bash
-    curl -X POST 'https://api.nango.dev/function/trigger' \
-      -H 'Authorization: Bearer {nangoSecretKey}' \
-      -H 'Connection-Id: {connectionId}' \
-      -H 'Integration-Id: github' \
-      -d '{
-        "function_name": "create-issue",
-        "input": {
-          "owner": "acme",
-          "repo": "my-repo",
-          "title": "Bug report",
-          "body": "Something is broken"
-        }
-      }'
-    ```
-
-    </Tab>
+  <Tab title="TypeScript">
+  ```typescript
+  const result = await nango.triggerAction(
+      'github',
+      'user-123',
+      'create-issue',
+      { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
+  );
+  ```
+  </Tab>
+  <Tab title="cURL">
+  ```bash
+  curl --request POST \
+    --url https://api.nango.dev/action/trigger \
+    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+    --header 'Connection-Id: <CONNECTION-ID>' \
+    --header 'Provider-Config-Key: github' \
+    --data '{"action_name": "create-issue", "input": {...}}'
+  ```
+  </Tab>
 </Tabs>
 
-<Frame caption="Overview of Functions">
-  ![](/images/diagrams/nango-functions-diagram.png)
-</Frame>
+Your application can call functions from any language or framework.
 
-### Capabilities
+## Capabilities
 
-#### Runtime and execution
-- Runs inside Nango
-- Isolated execution per customer and per run
-- Elastic scaling & fast startup time (less than 100ms)
-- Flexible use-cases: long-running syncs, rapid-fire actions, etc.
-- Triggered by API calls, schedules, webhooks, or life-cycle events
+- **Works with any stack** — callable via HTTP API from any language, framework, or AI agent. No TypeScript required in your app.
+- **Flexible triggering** — on-demand API calls, recurring schedules, incoming webhooks, lifecycle events, or as MCP tools for AI agents
+- **Agent-ready** — expose as MCP tools or AI function calls; Nango handles auth so agents never touch credentials
+- **Local development** — dry runs against real connections, snapshot testing, and CI/CD integration
+- **Built-in infrastructure** — authenticated API access, automatic retries, rate-limit handling, data syncing & checkpointing, and per-customer key-value storage
+- **Per-customer logic** — configuration-driven branching and composable function workflows
+- **Observability** — execution logs, metrics, and OpenTelemetry export
 
-#### Developer experience
-- TypeScript-first, but compatible with any code base (HTTP API)
-- Generate & maintain integration code with your favorite AI models
-- Local development, local dry runs & testing framework
-- CLI-based workflow & CI/CD integration
-- Code lives in your own Git repository
+## Guide
 
-#### Runtime SDK
-- Authenticated API requests
-- Retries & rate-limit handling
-- Sync engine with caching & checkpointing for ETL & RAG
-- Data transformation utilities
-- Runtime and compile-time data validation & auto-completion
+<Tip>**Using a coding agent?** Copy the page (button top right) and paste as a prompt.</Tip>
 
-#### State and configuration
-- Per-customer configuration & logical branching
-- Per-customer key-value storage
-- Compose functions into workflows
+<Note>
+  To enable a pre-built function without any local setup, browse the [templates catalog](https://www.nango.dev/templates) and enable functions directly from the [Nango dashboard](https://app.nango.dev) — no CLI or code required.
+</Note>
 
-#### Observability
-- Execution & custom logs
-- Metrics and monitoring
-- Debuggable failures
-- OpenTelemetry export
+<Steps>
+  <Step title="Install the CLI & initialize">
+    Install the Nango CLI globally:
 
-### Use cases
+    ```bash
+    npm install -g nango
+    ```
 
-Functions are a powerful & flexible primitive to support any complex integration use-case:
+    Initialize your integrations folder at the root of your repo and commit it to source control:
+
+    ```bash
+    nango init nango-integrations
+    ```
+
+    This creates a `nango-integrations/` folder with example configuration. The `.nango` subdirectory must be committed — the CLI uses it to track deployed state.
+
+    **Authenticate the CLI.** Add your secret keys to a `.env` file inside `nango-integrations/`:
+
+    ```bash
+    NANGO_SECRET_KEY_PROD='<PROD-SECRET-KEY>'
+    NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
+    ```
+
+    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the matching key for whichever environment you deploy to.
+
+    <Note>
+      Keys are matched by environment name: `NANGO_SECRET_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
+    </Note>
+
+    <Accordion title="👥 Team setup">
+      Give each engineer their own Nango environment. This prevents overwriting each other's deployed functions and lets each person configure webhooks independently (e.g. pointing to a local [ngrok](https://ngrok.com) tunnel).
+
+      Each engineer adds their environment's key to their local `.env`:
+
+      ```bash
+      NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
+      ```
+
+      Use a shared `dev` or `staging` environment as a stable baseline written to only by CI. See the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+    </Accordion>
+
+    <Accordion title="🤖 For agents">
+      Run `nango init nango-integrations` to scaffold the folder. Ask the user for their secret key from **Environment Settings > API Keys** and write it to `nango-integrations/.env`.
+
+      For additional context while building, use Nango's documentation MCP: `https://nango.dev/docs/mcp`
+    </Accordion>
+  </Step>
+
+  <Step title="Build your function">
+    Pick how you want the function to be triggered:
+
+    <Tabs>
+      <Tab title="HTTP">
+        Functions triggered on-demand over HTTP from your application. This is the [action](/implementation-guides/use-cases/actions/implement-an-action) function type — useful for reads, writes, and AI tool calls.
+
+        ```typescript
+        import { createAction } from 'nango';
+        import * as z from 'zod';
+
+        export default createAction({
+            description: 'Creates a GitHub issue',
+            version: '1.0.0',
+            input: z.object({
+                owner: z.string(),
+                repo: z.string(),
+                title: z.string(),
+                body: z.string()
+            }),
+            output: z.object({ id: z.number(), url: z.string() }),
+            exec: async (nango, input) => {
+                const response = await nango.post({
+                    endpoint: `/repos/${input.owner}/${input.repo}/issues`,
+                    data: { title: input.title, body: input.body }
+                });
+                return { id: response.data.id, url: response.data.html_url };
+            }
+        });
+        ```
+
+        For async execution, pagination, error handling, and testing: [Actions guide](/implementation-guides/use-cases/actions/implement-an-action).
+
+        <Tip>
+          **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
+
+          ```
+          I want to build a Nango action that creates GitHub issues.
+          Integration ID: github
+          Inputs: owner, repo, title, body
+          Outputs: issue id, url
+          API Reference: https://docs.github.com/en/rest/issues/issues#create-an-issue
+          ```
+        </Tip>
+      </Tab>
+
+      <Tab title="Schedule">
+        Functions that run on a recurring schedule, fetch data from the external API, and cache it in Nango's records store. Your app reads from the cache rather than calling the external API directly. This is the [sync](/implementation-guides/use-cases/syncs/implement-a-sync) function type.
+
+        ```typescript
+        import { createSync } from 'nango';
+        import * as z from 'zod';
+
+        const GithubIssue = z.object({
+            id: z.number(),
+            title: z.string(),
+            state: z.string(),
+            url: z.string(),
+        });
+
+        export default createSync({
+            description: 'Syncs GitHub issues',
+            version: '1.0.0',
+            frequency: 'every hour',
+            autoStart: true,
+            models: { GithubIssue },
+            exec: async (nango) => {
+                const response = await nango.get({ endpoint: '/issues' });
+                const issues = response.data.map((issue: any) => ({
+                    id: issue.id,
+                    title: issue.title,
+                    state: issue.state,
+                    url: issue.html_url,
+                }));
+                await nango.batchSave(issues, 'GithubIssue');
+            }
+        });
+        ```
+
+        For incremental syncs, checkpointing, deletion detection, and real-time syncs: [Syncs guide](/implementation-guides/use-cases/syncs/implement-a-sync).
+
+        <Tip>
+          **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
+
+          ```
+          I want to build a Nango sync that pulls GitHub issues.
+          Integration ID: github
+          Frequency: every hour
+          Outputs: GithubIssue model with fields id, title, state, url
+          API Reference: https://docs.github.com/en/rest/issues/issues#list-repository-issues
+          ```
+        </Tip>
+      </Tab>
+
+      <Tab title="Webhook">
+        Functions triggered when the external API pushes a webhook to Nango — useful when you need immediate reaction rather than waiting for the next scheduled sync.
+
+        **Setup:**
+        1. In the Nango dashboard, go to **Integrations → [Integration] → Webhooks** to get the Nango webhook URL for that integration.
+        2. Register this URL in the external API's developer portal.
+        3. Nango attributes incoming webhooks to the right connection and forwards them to your app's Nango webhook URL (configured in **Environment Settings**).
+
+        For webhook-triggered syncs, payload transformation, and per-provider setup: [Webhooks guide](/implementation-guides/use-cases/webhooks-from-external-apis).
+      </Tab>
+
+      <Tab title="Event">
+        Functions triggered by Nango lifecycle events — useful for registering external webhooks, seeding data, or validating credentials when a connection is created. This is the [event handler](/implementation-guides/use-cases/implement-event-handler) function type.
+
+        ```typescript
+        import { createOnEvent } from 'nango';
+
+        export default createOnEvent({
+            description: 'Register webhooks on connection creation',
+            event: 'post-connection-creation',
+            exec: async (nango) => {
+                await nango.post({
+                    endpoint: '/webhooks',
+                    data: { url: 'https://api.myapp.com/webhook', events: ['push'] }
+                });
+            }
+        });
+        ```
+
+        Supported events:
+        - `post-connection-creation` — runs after a connection is successfully created
+        - `pre-connection-deletion` — runs before a connection is deleted
+        - `validate-connection` — custom credential validation; throw to reject the connection
+
+        For detailed event handler patterns: [Event guide](/implementation-guides/use-cases/implement-event-handler).
+
+        <Tip>
+          **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
+
+          ```
+          I want to build a Nango event handler that registers a GitHub webhook
+          on the customer's repo whenever a new connection is created.
+          Integration ID: github
+          Event: post-connection-creation
+          API Reference: https://docs.github.com/en/rest/webhooks/repos
+          ```
+        </Tip>
+      </Tab>
+    </Tabs>
+
+  </Step>
+
+  <Step title="Deploy">
+    Deploy all functions in your `nango-integrations/` folder to Nango:
+
+    ```bash
+    nango deploy
+    ```
+
+    The CLI prompts for the target environment. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+
+    <Accordion title="🤖 For agents">
+      Run `nango deploy dev` to deploy to the development environment non-interactively. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
+    </Accordion>
+  </Step>
+
+  <Step title="Trigger">
+    How a function is triggered depends on its type:
+
+    <Tabs>
+      <Tab title="HTTP">
+        Actions are triggered on-demand from your app via the Node SDK or the REST API:
+
+        <Tabs>
+          <Tab title="TypeScript">
+          ```typescript
+          const result = await nango.triggerAction(
+              'github',
+              '<CONNECTION-ID>',
+              'create-issue',
+              { owner: 'acme', repo: 'my-repo', title: 'Bug report', body: '...' }
+          );
+          ```
+          </Tab>
+          <Tab title="cURL">
+          ```bash
+          curl --request POST \
+            --url https://api.nango.dev/action/trigger \
+            --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+            --header 'Connection-Id: <CONNECTION-ID>' \
+            --header 'Provider-Config-Key: github' \
+            --data '{"action_name": "create-issue", "input": {...}}'
+          ```
+          </Tab>
+        </Tabs>
+
+        Actions can also be exposed as MCP tools for AI agents — see [tool calling & MCP](/implementation-guides/use-cases/tool-calling/overview).
+      </Tab>
+
+      <Tab title="Schedule">
+        Syncs run automatically on the schedule defined in `frequency`. After each run, Nango sends a webhook to your app's webhook URL with the new or updated records.
+
+        Read synced records from your app:
+
+        <Tabs>
+          <Tab title="TypeScript">
+          ```typescript
+          const records = await nango.listRecords({
+              providerConfigKey: 'github',
+              connectionId: '<CONNECTION-ID>',
+              model: 'GithubIssue',
+          });
+          ```
+          </Tab>
+          <Tab title="cURL">
+          ```bash
+          curl --request GET \
+            --url 'https://api.nango.dev/records?model=GithubIssue' \
+            --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+            --header 'Connection-Id: <CONNECTION-ID>' \
+            --header 'Provider-Config-Key: github'
+          ```
+          </Tab>
+        </Tabs>
+
+        Syncs can also be triggered manually from the dashboard or via the [trigger API](/reference/api/sync/trigger).
+      </Tab>
+
+      <Tab title="Webhook">
+        Incoming webhooks from the external API are routed by Nango to the matching connection and forwarded to your app's Nango webhook URL (configured in **Environment Settings**).
+
+        You can also configure a sync to run when a webhook arrives — see [real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs).
+      </Tab>
+
+      <Tab title="Event">
+        Event handlers run automatically when the configured lifecycle event occurs — no triggering code needed in your app.
+      </Tab>
+    </Tabs>
+
+    🎉 **Your function is live!** View execution logs in the **Logs** tab of the Nango dashboard.
+  </Step>
+</Steps>
+
+## Storage
+
+Functions have access to two storage primitives:
+
+- **Metadata** — per-connection key-value storage for custom configuration and per-customer logic. Set via the API or dashboard, read inside any function. See the [customer configuration guide](/implementation-guides/use-cases/customer-configuration).
+- **Records** — structured, queryable storage for synced data (lists of contacts, issues, files, etc.). Written inside sync functions with `nango.batchSave()` and read by your app via the [records API](/reference/api/sync/records-list). See the [records cache guide](/implementation-guides/use-cases/syncs/records-cache).
+
+## Use cases
 
 - **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling/overview)**
 - **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs/implement-a-sync)**
@@ -136,24 +390,6 @@ Functions are a powerful & flexible primitive to support any complex integration
 - **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
 - **[API unification](/implementation-guides/use-cases/unified-apis)**
 
-## Proxy
-
-The Nango Proxy is an alternative to Functions for ad-hoc, real-time API requests. Instead of deploying integration logic, you send requests directly to Nango — same HTTP method, path, parameters, and body as the target API — and Nango injects credentials and forwards the request.
-
-**When to use the Proxy:**
-- You need a quick, one-off API call without deploying a Function
-- Your integration logic lives in your application code rather than Nango
-- You want authenticated passthrough with centralized logging and retries
-
-See the [Proxy implementation guide](/implementation-guides/platform/proxy/implement-requests-proxy) for details.
-
-## Next step
-
-<CardGroup cols={2}>
-    <Card title="Set up functions" icon="function" href="/implementation-guides/platform/functions/functions-setup">
-        Learn how to set up and deploy Nango Functions.
-    </Card>
-    <Card title="Implement a proxy request" icon="network-wired" href="/implementation-guides/platform/proxy/implement-requests-proxy">
-        Learn how to implement a proxy request using Nango.
-    </Card>
-</CardGroup>
+<Tip>
+  **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
