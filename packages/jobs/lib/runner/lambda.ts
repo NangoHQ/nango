@@ -22,7 +22,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
-import { getFunctionName, isTenantIsolatedRoutingId } from '../utils/lambda.js';
+import { getLambdaFunctionName, isLambdaTenantIsolationRoutingId } from '../utils/lambda.js';
 
 import type { Environment } from '@aws-sdk/client-lambda';
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -34,6 +34,9 @@ export const logger = getLogger('Lambda');
 const lambdaClient = new LambdaClient();
 const applicationAutoScalingClient = new ApplicationAutoScalingClient();
 const cloudwatchLogsClient = new CloudWatchLogsClient();
+
+/** Synthetic tenant id for readiness checks on PER_TENANT Lambdas (see AWS tenant isolation invoke docs). */
+const READINESS_CHECK_TENANT_ID = 'nango-readiness';
 
 export function getFunctionQualifier(node: Node): string {
     //need to get the qualifier from the function url
@@ -58,7 +61,7 @@ class Lambda {
 
     async createFunction(node: Node): Promise<Result<void>> {
         setImmediate(async () => {
-            const name = getFunctionName(node);
+            const name = getLambdaFunctionName(node);
             try {
                 const logGroupName = `/aws/lambda/${name}`; //this is the default log group name for Lambda
                 const createLogGroupCommand = new CreateLogGroupCommand({
@@ -70,6 +73,7 @@ class Lambda {
                     retentionInDays: envs.LAMBDA_DEFAULT_LOG_RETENTION_DAYS
                 });
                 await cloudwatchLogsClient.send(putRetentionPolicyCommand);
+                const perTenant = isLambdaTenantIsolationRoutingId(node.routingId);
                 const createFunctionCommand = new CreateFunctionCommand({
                     FunctionName: name,
                     Role: envs.LAMBDA_EXECUTION_ROLE_ARN,
@@ -87,7 +91,12 @@ class Lambda {
                     VpcConfig: {
                         SubnetIds: envs.LAMBDA_SUBNET_IDS,
                         SecurityGroupIds: envs.LAMBDA_SECURITY_GROUP_IDS
-                    }
+                    },
+                    ...(perTenant && {
+                        TenancyConfig: {
+                            TenantIsolationMode: 'PER_TENANT'
+                        }
+                    })
                 });
                 const cfResult = await lambdaClient.send(createFunctionCommand);
                 await waitUntilFunctionActive(
@@ -128,7 +137,7 @@ class Lambda {
                         })
                     );
                 }
-                const useProvisionedConcurrency = !isTenantIsolatedRoutingId(node.routingId);
+                const useProvisionedConcurrency = !perTenant;
                 if (useProvisionedConcurrency) {
                     const resourceId = `function:${pvResult.FunctionName}:${envs.LAMBDA_FUNCTION_ALIAS}`;
                     const minCapacity = envs.LAMBDA_MINIMUM_PROVISIONED_CONCURRENCY;
@@ -164,7 +173,8 @@ class Lambda {
                 const command = new InvokeCommand({
                     FunctionName: aResult.AliasArn,
                     Payload: JSON.stringify(readinessCheckRequest),
-                    InvocationType: 'RequestResponse'
+                    InvocationType: 'RequestResponse',
+                    ...(perTenant && { TenantId: READINESS_CHECK_TENANT_ID })
                 });
                 const response = await lambdaClient.send(command);
                 if (response.FunctionError) {
@@ -214,13 +224,13 @@ class Lambda {
     }
 
     async terminateFunction(node: Node): Promise<Result<void>> {
-        const name = getFunctionName(node);
+        const name = getLambdaFunctionName(node);
         await lambdaClient.send(
             new DeleteFunctionCommand({
                 FunctionName: name
             })
         );
-        if (!isTenantIsolatedRoutingId(node.routingId)) {
+        if (!isLambdaTenantIsolationRoutingId(node.routingId)) {
             const resourceId = `function:${name}:${envs.LAMBDA_FUNCTION_ALIAS}`;
             await applicationAutoScalingClient.send(
                 new DeleteScalingPolicyCommand({

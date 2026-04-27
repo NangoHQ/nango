@@ -206,8 +206,9 @@ export interface DBPlan extends Timestamps {
     fleet_node_routing_override: string | null;
 
     /**
-     * When true, Lambda invocations use a dedicated routing pool and function names ending with `-isolated`.
-     * Provisioned concurrency is not applied to tenant-isolated Lambdas.
+     * When true, Nango uses a dedicated fleet pool: routing ids end with `-isolated`, AWS function names are
+     * `…-{nodeId}-isolated` (distinct from the shared pool), Lambdas use `TenancyConfig.TenantIsolationMode = PER_TENANT`,
+     * and invoke sends `TenantId`. Provisioned concurrency is not configured for that pool.
      * @default false
      */
     tenant_isolation: boolean;
