@@ -22,7 +22,6 @@ const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     kind: z.literal('webhook'),
     taskName: z.string().min(1),
     createdAt: z.string().min(1),
-    ingressRequestId: z.string().min(1),
     accountId: z.number(),
     environmentId: z.number(),
     integrationId: z.number(),
