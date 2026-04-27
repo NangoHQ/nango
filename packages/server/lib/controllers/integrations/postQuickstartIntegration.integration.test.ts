@@ -28,10 +28,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject credentials in the body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github-quickstart',
@@ -48,10 +48,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the provider', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'invalid', unique_key: 'foobar' }
         });
 
@@ -62,10 +62,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject providers that do not require a developer app', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'algolia', unique_key: 'algolia-quickstart' }
         });
 
@@ -76,10 +76,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject providers without a Nango-provided developer app', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'docusign-sandbox', unique_key: 'docusign-quickstart' }
         });
 
@@ -90,13 +90,13 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should reject duplicate unique keys', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github-quickstart', 'github');
         await seeders.createSharedCredentialsSeed('github');
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'github', unique_key: 'github-quickstart' }
         });
 
@@ -107,12 +107,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration with a Nango-provided developer app', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createSharedCredentialsSeed('github');
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github-quickstart',
@@ -136,7 +136,7 @@ describe(`POST ${endpoint}`, () => {
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { uniqueKey: 'github-quickstart' },
             query: { include: ['credentials'] }
         });
