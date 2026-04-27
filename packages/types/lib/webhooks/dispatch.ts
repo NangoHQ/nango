@@ -16,12 +16,6 @@ export interface WebhookDispatchMessage {
     taskName: string;
     /** ISO timestamp of when the server built the message. */
     createdAt: string;
-    /**
-     * Server-generated UUID created at the start of the inbound webhook HTTP request.
-     * Different for every request — including provider retries — because P1 does not
-     * dedupe across separate ingress requests.
-     */
-    ingressRequestId: string;
     accountId: number;
     environmentId: number;
     integrationId: number;
@@ -30,7 +24,7 @@ export interface WebhookDispatchMessage {
     parentSyncName: string;
     /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
     webhookName: string;
-    /** Activity log id from the logCtx created at trigger time; passed to executeWebhook as args.activityLogId. */
+    /** Activity log id created before enqueue; also reused as the taskName dedupe seed. */
     activityLogId: string;
     connection: {
         id: number;

@@ -48,7 +48,6 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         kind: 'webhook',
         taskName: 'webhook:abc123',
         createdAt: '2026-04-23T00:00:00.000Z',
-        ingressRequestId: 'req-1',
         accountId: 1,
         environmentId: 2,
         integrationId: 3,
