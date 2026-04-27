@@ -114,6 +114,8 @@ export async function deployTemplate({
         attributes: {},
         metadata: { description: template.description, scopes: template.scopes },
         source: 'catalog',
+        pre_built: true,
+        is_public: true,
         enabled: true,
         webhook_subscriptions: null,
         models_json_schema: template.json_schema,

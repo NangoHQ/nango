@@ -24,6 +24,10 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     attributes: object;
     // TODO: make required at second release for smooth rollout
     source?: FunctionSource | undefined;
+    /** @deprecated use `source`. Dual-written during the rollout so old readers still classify catalog rows correctly. */
+    pre_built?: boolean | undefined;
+    /** @deprecated use `source`. Dual-written during the rollout so old readers still classify catalog rows correctly. */
+    is_public?: boolean | undefined;
     metadata: NangoConfigMetadata;
     input: string | null;
     /** @deprecated **/
