@@ -822,8 +822,8 @@ paths:
                     $ref: '#/components/responses/BadRequest'
 
         post:
-            summary: Add a connection
-            description: Adds a connection for which you already have credentials.
+            summary: Upsert a connection
+            description: Upserts a connection for which you already have credentials.
             requestBody:
                 required: true
                 content:

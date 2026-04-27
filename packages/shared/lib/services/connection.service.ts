@@ -231,7 +231,7 @@ class ConnectionService {
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
                     environment_id: encryptedConnection.environment_id,
-                    metadata: encryptedConnection.connection_config,
+                    metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
                     last_refresh_success: encryptedConnection.last_refresh_success,
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
