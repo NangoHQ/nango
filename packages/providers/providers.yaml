@@ -5463,7 +5463,7 @@ cisco-duo-admin:
         base_url: https://${connectionConfig.hostname}
         headers:
             date: '${now:ddd, DD MMM YYYY HH:mm:ss ZZ}'
-            authorization: "Basic ${base64(${credentials.username}:${hmacSha1Hex(${now:ddd, DD MMM YYYY HH:mm:ss ZZ}\n${method}\n${connectionConfig.hostname}\n${path}\n${params}, ${credentials.password})})}"
+            authorization: "Basic ${base64(${credentials.username}:${hmacSha1Hex(${now:ddd, DD MMM YYYY HH:mm:ss ZZ}\n${method}\n${host}\n${path}\n${params}, ${credentials.password})})}"
         retry:
             after:
                 - 'retry-after'

@@ -507,6 +507,7 @@ export function buildProxyHeaders({
         const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
         const baseReplacers = {
             endpoint: config.endpoint,
+            host: parsedUrl.host,
             path: endpointPath,
             params: buildCanonicalParams(config.method, config.data, endpointQuery),
             urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),
