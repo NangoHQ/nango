@@ -623,7 +623,7 @@ describe('Scope enforcement on public API routes', () => {
             const { secret } = await seeders.seedAccountEnvAndUser();
 
             // Use raw fetch to send custom Nango-Is-Script header
-            const res = await fetch(`${api.url}/integrations`, {
+            const res = await fetch(`${api.url}/connections`, {
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${secret.secret}`,

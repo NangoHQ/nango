@@ -1,51 +1,95 @@
 ---
-title: 'CI/CD for Nango integrations'
+title: 'CI/CD for Nango Functions'
 sidebarTitle: 'CI/CD'
-description: 'How to set up a CI/CD pipeline to automatically test and deploy your Nango integrations to multiple stages.'
+description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-Establish a recommended workflow for integrating Nango into your Continuous Integration (CI) and Continuous Deployment (CD) processes. This enables you to automate the testing and deployment of your Nango integrations across multiple environments (e.g., development and production).
+CI/CD for Nango is about keeping your [Functions](/guides/primitives/functions) — syncs, actions, and webhook handlers — in sync with your application across environments.
 
-## Multi-Stage Deployments
+The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
-We recommend a multi-stage deployment strategy to separate your development and production environments. This allows you to test changes in a `dev` environment before promoting them to `prod`.
+## Authentication
 
-A common pattern is to automatically deploy to `dev` when changes are merged to your main branch, while using a manual approval step for deployments to `prod`.
+To deploy from CI, you need a scoped API key for each Nango environment.
 
-The Nango CLI supports this via the `deploy` command, which can target a specific stage:
+1. **Create API keys**: In the Nango UI, go to **Environment Settings > API Keys** and create a key for each environment (e.g., `dev` and `prod`). For CI/CD pipelines, use a key scoped to `environment:deploy` only — see the [CI/CD Deploy profile](/reference/api-keys#cicd-deploy).
+2. **Store the keys**: Add them as secrets in your CI/CD provider. The Nango CLI reads them from these environment variables:
+   - `NANGO_SECRET_KEY_DEV`
+   - `NANGO_SECRET_KEY_PROD`
+
+## Recommended pipeline
+
+Treat Nango Functions like application code: validate on every PR, deploy to each environment in the same step as your application.
+
+| Pipeline stage | What to do |
+|---|---|
+| **Pull request** | Run `nango compile` and `npm test` as required checks. Block merge on failure. |
+| **Merge to main** | Deploy to your dev/staging Nango environment alongside your app. |
+| **Release to production** | Deploy to your prod Nango environment in the same step as your app release. |
+
+The Nango CLI `deploy` command targets a specific environment:
 
 ```bash
-nango deploy <stage>
+nango deploy <environment>
 ```
 
-If you don't specify a stage, it defaults to `dev`.
+If you don't specify an environment, it defaults to `dev`.
 
-### Authentication
+**If you don't have a staging environment**, wire the prod Nango deploy directly to your production release step — use a `workflow_dispatch` trigger or equivalent manual approval. This keeps production deploys intentional, and ensures they always happen through CI using the prod API key rather than from a local machine.
 
-To deploy from a CI script, you need to authenticate using a secret key for each stage.
-
-1.  **Generate Secret Keys**: In the Nango UI, go to **Settings > Secret Keys** and generate a secret key for each stage (e.g., `dev` and `prod`).
-2.  **Store the Secret Keys**: Store these keys as secrets in your CI/CD provider. We recommend naming them based on the stage, for example:
-    *   `NANGO_SECRET_KEY_DEV`
-    *   `NANGO_SECRET_KEY_PROD`
+<Info>
+Add the `dist/` folder inside your `nango-integrations` directory to `.gitignore`. The CLI writes compiled JS artifacts there, and committing them creates noisy diffs and risks deploying stale bundles.
+</Info>
 
 ## Example: GitHub Actions
 
-Here is an example of a GitHub Actions workflow that implements the multi-stage deployment strategy described above.
+Two workflow files implement the pipeline above.
 
-You can find a complete example in the [Nango GitHub Actions repository](https://github.com/NangoHQ/github-actions).
-
+<AccordionGroup>
+<Accordion title="PR validation (.github/workflows/nango-validate.yml)">
 ```yaml
-# .github/workflows/nango-deploy.yml
-name: Deploy Nango Integrations
+name: Validate Nango Functions
 
 on:
-  # 1. Manual trigger to deploy to a specific stage
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npx nango@latest compile --no-dependency-update
+
+      - name: Test
+        run: npm test
+```
+</Accordion>
+
+<Accordion title="Deploy (.github/workflows/nango-deploy.yml)">
+```yaml
+name: Deploy Nango Functions
+
+on:
+  # Manual trigger to deploy to a specific environment
   workflow_dispatch:
     inputs:
       stage:
         type: choice
-        description: 'Stage to deploy to'
+        description: 'Environment to deploy to'
         required: true
         default: 'dev'
         options:
@@ -57,7 +101,7 @@ on:
         required: true
         default: false
 
-  # 2. Automatic trigger on push to main
+  # Automatic deploy to dev on merge to main
   push:
     branches:
       - main
@@ -65,7 +109,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Set secrets as environment variables
     env:
       NANGO_SECRET_KEY_DEV: ${{ secrets.NANGO_SECRET_KEY_DEV }}
       NANGO_SECRET_KEY_PROD: ${{ secrets.NANGO_SECRET_KEY_PROD }}
@@ -79,88 +122,82 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies & Run tests
-        run: |
-          npm install
-          npm test
+      - name: Install dependencies
+        run: npm ci
 
       - name: Deploy to Nango
         run: |
-          # Determine the stage to deploy to
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             stage="${{ inputs.stage }}"
-          elif [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            stage="dev" # Default to dev for pushes to main
           else
-            echo "Not a deployable event. Exiting."
-            exit 0
+            stage="dev"
           fi
 
-          # Select the appropriate secret key
           secret_key_var="NANGO_SECRET_KEY_$(echo "$stage" | tr '[:lower:]' '[:upper:]')"
           secret_key="${!secret_key_var}"
 
           if [ -z "$secret_key" ]; then
-            echo "Error: ${secret_key_var} secret is not set"
+            echo "Error: ${secret_key_var} is not set"
             exit 1
           fi
 
-          # Handle destructive changes flag
           destructive_flag=""
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ inputs.allowDestructive }}" == "true" ]; then
             destructive_flag="--allow-destructive"
           fi
 
-          # Deploy to the selected stage
-          npx nango@latest deploy "$stage" --secret-key "$secret_key" $destructive_flag
+          npx nango@latest deploy "$stage" --secret-key "$secret_key" --no-dependency-update $destructive_flag
 ```
+</Accordion>
+</AccordionGroup>
 
 <Warning>
   **Destructive Changes**
 
-  A destructive change is a modification that removes an integration, sync, or action. To prevent accidental deletions, the `nango deploy` command will prompt for confirmation if it detects a destructive change.
+  A destructive change removes an integration, sync, or action. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
 
-  In a CI environment, you can use the `--auto-confirm` or `--allow-destructive` flag to bypass this prompt. We recommend only using this with a manual trigger, as shown in the example.
+  In CI, use `--auto-confirm` or `--allow-destructive` to bypass the prompt. We recommend only doing this on a manual trigger, as shown above.
 </Warning>
 
 ## Testing in CI
 
-We strongly recommend running tests in your CI pipeline before every deployment. This is your first line of defense against regressions.
-
-Nango's testing framework uses dry runs and snapshot testing to validate your integrations without affecting production data. You can run your entire test suite with a single command:
+Run your test suite in CI before every deployment. Nango's testing framework uses dry runs and snapshot testing to validate your Functions without affecting live data:
 
 ```bash
 npm test
 ```
 
-See more in the [Testing integrations guide](/implementation-guides/platform/functions/testing).
+See the [Testing integrations guide](/implementation-guides/platform/functions/testing) for details.
+
+## Ephemeral preview environments (e.g. Vercel)
+
+If you use ephemeral preview environments — such as Vercel preview deployments — as your staging layer, you'll run into a challenge: each preview has a unique URL, but Nango webhook URLs must be registered in advance and point to a stable destination.
+
+<Info>
+Nango doesn't currently support creating environments programmatically. This is on the roadmap and will make ephemeral environment setups much cleaner when available.
+</Info>
+
+For now, the simplest approach is to designate a fixed, long-lived Nango environment (e.g., `dev`) specifically for Nango-related changes, and use that consistently across preview deployments rather than trying to create a new Nango environment per preview.
+
+If you need previews to receive live webhook events, a proxy server is the current workaround: register a stable URL in Nango, and have the proxy forward incoming webhooks to the correct preview URL.
 
 ## Dependency-safe CI and monorepos
 
-When running Nango in CI or monorepos, you often want to avoid modifying `package.json` or running extra package installs from within Nango commands.
-
-Use:
-
-- `--no-dependency-update` on CLI commands
-- or `NANGO_CLI_DEPENDENCY_UPDATE=false` as an environment variable
-
-Example:
+When running Nango in CI or monorepos, you often want to avoid modifying `package.json` or running extra installs from within Nango commands. Use `--no-dependency-update` on CLI commands, or set `NANGO_CLI_DEPENDENCY_UPDATE=false` as an environment variable:
 
 ```bash
 npx nango@latest deploy dev --no-dependency-update
 ```
 
-This is useful when dependency installation is already handled by an earlier CI step (for example at the workspace root).
-
 <Warning>
-With `--no-dependency-update` (and in CI by default), Nango will not run dependency installation. Make sure your pipeline installs dependencies first (for example with `npm ci`, `pnpm install --frozen-lockfile`, `yarn install --immutable`, or `bun install --frozen-lockfile`) before running Nango commands.
+With `--no-dependency-update`, Nango will not install dependencies. Make sure your pipeline does so first (e.g. `npm ci`, `pnpm install --frozen-lockfile`, `yarn install --immutable`, or `bun install --frozen-lockfile`).
 </Warning>
 
 <Info>
-In CI environments, Nango automatically disables dependency updates to prevent the CI pipeline from modifying the `package.json` file. Passing `--no-dependency-update` explicitly is still helpful for clarity and to silence warning messages.
+In CI environments, Nango automatically disables dependency updates to prevent modifying `package.json`. Passing `--no-dependency-update` explicitly silences the related warning.
 </Info>
 
 ## Related resources
 
-- [Testing integrations](/implementation-guides/platform/functions/testing) - A comprehensive guide to testing your Nango integrations.
-- [Nango GitHub Actions](https://github.com/NangoHQ/github-actions) - A repository with a complete, reusable GitHub Action for deploying Nango integrations.
+- [Testing integrations](/implementation-guides/platform/functions/testing) - A comprehensive guide to testing your Nango Functions.
+- [API Keys reference](/reference/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.

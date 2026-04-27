@@ -25,18 +25,16 @@ class CustomerKeyService {
             accountId,
             environmentId,
             displayName,
-            scopes = ['environment:*'],
-            secret: providedSecret
+            scopes = ['environment:*']
         }: {
             accountId: number;
             environmentId: number;
             displayName: string;
             scopes?: string[];
-            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = providedSecret ?? uuid.v4();
+            const plainText = uuid.v4();
 
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {
@@ -116,16 +114,14 @@ class CustomerKeyService {
         trx: Knex,
         {
             accountId,
-            environmentId,
-            secret: providedSecret
+            environmentId
         }: {
             accountId: number;
             environmentId: number;
-            secret?: string;
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = providedSecret ?? uuid.v4();
+            const plainText = uuid.v4();
 
             const hashed = await this.hashSecret(plainText);
             if (hashed.isErr()) {

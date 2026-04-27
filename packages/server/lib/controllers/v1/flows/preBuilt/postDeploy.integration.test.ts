@@ -28,12 +28,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if no template exists for this provider and script name', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
@@ -45,12 +45,12 @@ describe(`POST ${endpoint}`, () => {
 
     it('should deploy a template', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable', 'airtable');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
         });
 
@@ -169,7 +169,7 @@ describe(`POST ${endpoint}`, () => {
 
     it('should ignore stale expired trial fields for non-auto-idling plans', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable-paid', 'airtable');
         await updatePlan(db.knex, {
             id: plan.id,
@@ -185,7 +185,7 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
         });
 

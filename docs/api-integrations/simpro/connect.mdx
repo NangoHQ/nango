@@ -1,0 +1,39 @@
+---
+title: simPRO - How do I link my account?
+sidebarTitle: simPRO
+---
+
+# Overview
+
+To authenticate with simPRO, you will need:
+1. **simPRO Build Name** - The subdomain part of your simPRO URL (e.g. `<your-build-name>` for `<your-build-name>.simprosuite.com`).
+
+This guide will walk you through finding your **simPRO Build Name** so you can complete the OAuth connection.
+
+### Prerequisites:
+
+- You must have access to a simPRO Premium build.
+- You must have administrator access if you are connecting your own build via a single-tenant OAuth application. (Multi-tenant partner OAuth apps do not require admin access on each customer build.)
+
+### Instructions:
+
+#### Step 1: Find your simPRO Build Name
+
+1. Log in to your simPRO Premium build in a web browser.
+2. Look at the URL in your browser's address bar. It will be in the form:
+   - `https://<your-build-name>.simprosuite.com/...`
+3. Your **simPRO Build Name** is the subdomain — everything before `.simprosuite.com`.
+   - Example: for the URL `https://acme.simprosuite.com/jobs`, the Build Name is `acme`.
+4. Enter this value (without `https://` and without `.simprosuite.com`) when prompted.
+
+<Tip>If you manage multiple simPRO builds, each build has its own subdomain and requires a separate connection.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **simPRO Build Name**:
+
+1. Open the form where you need to authenticate with simPRO.
+2. Enter your **simPRO Build Name**.
+3. Click **Authorize** and sign in to simPRO to complete the OAuth flow.
+
+You are now connected to simPRO.

@@ -22,10 +22,10 @@ describe(`POST ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error missing query on purpose
             query: {}
         });
@@ -34,11 +34,11 @@ describe(`POST ${route}`, () => {
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { test: 1 }
         });
@@ -53,7 +53,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should extend trial', async () => {
-        const { plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
 
         // start trial
         const endDate = new Date(Date.now() + TRIAL_DURATION);
@@ -62,7 +62,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isSuccess(res.json);
@@ -76,7 +76,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should reject extending trial when auto idling is disabled even if trial fields are still set', async () => {
-        const { plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
 
         const endDate = new Date(Date.now() + TRIAL_DURATION);
         await updatePlan(db.knex, {
@@ -89,7 +89,7 @@ describe(`POST ${route}`, () => {
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(400);
