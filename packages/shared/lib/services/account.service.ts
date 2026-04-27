@@ -21,7 +21,7 @@ interface AccountContext {
     secret: DBAPISecret;
     plan: DBPlan | null;
     auth?: {
-        source: 'customer_key' | 'api_secret';
+        source: 'customer_key' | 'api_secret' | 'env_var';
         scopes?: string[];
         apiKeyId?: number;
     };
@@ -193,60 +193,14 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextBySecretKey(secretKey: string): Promise<AccountContext | null> {
+    async getAccountContextByApiKey(opts: { secretKey: string } | { internalSecretKey: string }): Promise<AccountContext | null> {
+        const key = 'secretKey' in opts ? opts.secretKey : opts.internalSecretKey;
+
         if (!isCloud) {
-            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
-            if (environmentVariables.length > 0) {
-                for (const environmentVariable of environmentVariables) {
-                    const envSecretKey = process.env[environmentVariable] as string;
-
-                    if (envSecretKey !== secretKey) {
-                        continue;
-                    }
-
-                    const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
-                    // This key is set dynamically and does not exist in database
-                    const env = await db.knex
-                        .select<Pick<DBEnvironment, 'account_id'>>('account_id')
-                        .from<DBEnvironment>('_nango_environments')
-                        .where({ name: envName, deleted: false })
-                        .first();
-
-                    if (!env) {
-                        return null;
-                    }
-
-                    const accountContext = await this.getAccountContext({ accountId: env.account_id, envName });
-
-                    if (!accountContext) {
-                        return null;
-                    }
-
-                    return {
-                        ...accountContext,
-                        auth: {
-                            source: 'api_secret',
-                            scopes: ['environment:*']
-                        }
-                    };
-                }
-            }
-        }
-
-        return this.getAccountContext({ secretKey });
-    }
-
-    /**
-     * Resolve account context using only api_secrets (no customer_keys lookup).
-     * Used by internal services (persist) that authenticate with the
-     * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
-     */
-    async getAccountContextByInternalSecretKey(secretKey: string): Promise<AccountContext | null> {
-        if (!isCloud) {
-            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_'));
+            const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
             for (const environmentVariable of environmentVariables) {
                 const envSecretKey = process.env[environmentVariable] as string;
-                if (envSecretKey !== secretKey) {
+                if (envSecretKey !== key) {
                     continue;
                 }
                 const envName = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
@@ -262,11 +216,17 @@ class AccountService {
                 if (!accountContext) {
                     return null;
                 }
-                return accountContext;
+                return {
+                    ...accountContext,
+                    auth: {
+                        source: 'env_var' as const,
+                        scopes: ['environment:*']
+                    }
+                };
             }
         }
 
-        return this.getAccountContext({ internalSecretKey: secretKey });
+        return this.getAccountContext(opts);
     }
 
     async getAccountContextByPublicKey(publicKey: string): Promise<AccountContext | null> {
@@ -310,7 +270,7 @@ class AccountService {
             | { accountUuid: string; envName: string }
     ): Promise<AccountContext | null> {
         if ('secretKey' in opts) {
-            return this.getAccountContextByAnySecret(opts.secretKey);
+            return this.getAccountContextByCustomerKey(opts.secretKey);
         }
         if ('internalSecretKey' in opts) {
             return this.getAccountContextByInternalSecret(opts.internalSecretKey);
@@ -395,18 +355,22 @@ class AccountService {
         };
     }
 
-    private async getAccountContextByAnySecret(secretKey: string): Promise<AccountContext | null> {
-        const cachedHash = hashLocalCache.get(secretKey);
-        let hash: string;
-        if (!cachedHash) {
-            const hashed = await secretService.hashSecret(secretKey);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            hash = hashed.value;
-        } else {
-            hash = cachedHash;
+    private async hashSecretWithCache(secretKey: string): Promise<string> {
+        const cached = hashLocalCache.get(secretKey);
+        if (cached) {
+            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
+            return cached;
         }
+        metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
+        const hashed = await secretService.hashSecret(secretKey);
+        if (hashed.isErr()) {
+            throw hashed.error;
+        }
+        return hashed.value;
+    }
+
+    private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
+        const hash = await this.hashSecretWithCache(secretKey);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
@@ -420,9 +384,8 @@ class AccountService {
                 plan: DBPlan | null;
                 default_secret: DBAPISecret;
                 pending_secret: DBAPISecret | null;
-                auth_source: 'customer_key' | 'api_secret';
                 auth_scopes: string[] | null;
-                auth_api_key_id: number | null;
+                auth_api_key_id: number;
             }[];
         }>(
             `
@@ -443,24 +406,6 @@ class AccountService {
                     WHERE ck.id = mck.id
                       AND (ck.last_used_at IS NULL OR ck.last_used_at < NOW() - INTERVAL '1 minute')
                     RETURNING ck.id
-                ),
-                matched_auth AS (
-                    SELECT
-                        mck.environment_id,
-                        'customer_key'::text AS auth_source,
-                        mck.scopes AS auth_scopes,
-                        mck.id AS auth_api_key_id
-                    FROM matched_customer_key mck
-                    UNION ALL
-                    SELECT
-                        legacy.environment_id,
-                        'api_secret'::text AS auth_source,
-                        NULL::text[] AS auth_scopes,
-                        NULL::integer AS auth_api_key_id
-                    FROM api_secrets legacy
-                    WHERE legacy.hashed = ?
-                      AND legacy.is_default = true
-                      AND NOT EXISTS (SELECT 1 FROM matched_customer_key)
                 )
                 SELECT
                     row_to_json(_nango_environments.*) AS environment,
@@ -468,11 +413,10 @@ class AccountService {
                     row_to_json(plans.*) AS plan,
                     row_to_json(default_secret.*) AS default_secret,
                     row_to_json(pending_secret.*) AS pending_secret,
-                    matched_auth.auth_source,
-                    matched_auth.auth_scopes,
-                    matched_auth.auth_api_key_id
-                FROM matched_auth
-                JOIN _nango_environments ON _nango_environments.id = matched_auth.environment_id
+                    matched_customer_key.scopes AS auth_scopes,
+                    matched_customer_key.id AS auth_api_key_id
+                FROM matched_customer_key
+                JOIN _nango_environments ON _nango_environments.id = matched_customer_key.environment_id
                 JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
                 JOIN api_secrets AS default_secret
                     ON default_secret.environment_id = _nango_environments.id
@@ -484,7 +428,7 @@ class AccountService {
                 WHERE _nango_environments.deleted = false
                 LIMIT 1;
             `,
-            [hash, hash]
+            [hash]
         );
         if (!row) {
             return null;
@@ -523,9 +467,9 @@ class AccountService {
                 : null,
             secret: defaultSecret,
             auth: {
-                source: row.auth_source,
-                scopes: row.auth_source === 'api_secret' ? ['environment:*'] : (row.auth_scopes ?? []),
-                ...(row.auth_api_key_id ? { apiKeyId: row.auth_api_key_id } : {})
+                source: 'customer_key' as const,
+                scopes: row.auth_scopes ?? [],
+                apiKeyId: row.auth_api_key_id
             }
         };
     }
@@ -536,17 +480,7 @@ class AccountService {
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
     private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
-        let hash = hashLocalCache.get(secretKey);
-        if (hash) {
-            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'hit' });
-        } else {
-            metrics.increment(metrics.Types.AUTH_SECRET_KEY_HASH_CACHE, 1, { result: 'miss' });
-            const hashed = await secretService.hashSecret(secretKey);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            hash = hashed.value;
-        }
+        const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly
             .select<{
@@ -613,7 +547,11 @@ class AccountService {
                       orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
                   }
                 : null,
-            secret: defaultSecret
+            secret: defaultSecret,
+            auth: {
+                source: 'api_secret' as const,
+                scopes: ['environment:*']
+            }
         };
     }
 }

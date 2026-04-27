@@ -614,3 +614,113 @@ describe('now formatting', () => {
         expect(output).toBe('TS: 2025-03-15T14:30:45.123');
     });
 });
+
+describe('awsSigV4 interpolation', () => {
+    const NOW = '2024-01-15T10:30:00.000Z';
+    const ACCESS_KEY = 'TEST_ACCESS_KEY_ID'; // more generic key
+    const SECRET_KEY = 'TEST_SECRET_ACCESS_KEY';
+    const REGION = 'us-east-1';
+    const SERVICE = 'iam';
+
+    function computeExpectedAuth(
+        accessKeyId: string,
+        secretKey: string,
+        region: string,
+        service: string,
+        isoNow: string,
+        method = 'GET',
+        path = '/',
+        urlCanonicalParams = '',
+        bodyCanonicalParams = '',
+        contentType = ''
+    ): string {
+        const date = isoNow.replace(/[:-]|\.\d{3}/g, '');
+        const dateStamp = date.slice(0, 8);
+        const host = `${service}.amazonaws.com`;
+        const querystring = urlCanonicalParams;
+        const payloadHash = crypto.createHash('sha256').update(bodyCanonicalParams).digest('hex');
+        const canonicalHeaders = contentType ? `content-type:${contentType}\nhost:${host}\nx-amz-date:${date}\n` : `host:${host}\nx-amz-date:${date}\n`;
+        const signedHeaders = contentType ? 'content-type;host;x-amz-date' : 'host;x-amz-date';
+        const canonicalRequest = `${method}\n${path}\n${querystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+        const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+        const stringToSign = `AWS4-HMAC-SHA256\n${date}\n${credentialScope}\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
+        const kDate = crypto.createHmac('sha256', `AWS4${secretKey}`).update(dateStamp).digest();
+        const kRegion = crypto.createHmac('sha256', kDate).update(region).digest();
+        const kService = crypto.createHmac('sha256', kRegion).update(service).digest();
+        const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest();
+        const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
+        return `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+    }
+
+    it('produces a valid AWS4-HMAC-SHA256 authorization header', () => {
+        const input = '${awsSigV4(${credentials.username}, ${credentials.password}, ${connectionConfig.region}, iam)}';
+        const result = utils.interpolateString(input, {
+            now: NOW,
+            credentials: { username: ACCESS_KEY, password: SECRET_KEY },
+            connectionConfig: { region: REGION }
+        });
+        expect(result).toBe(computeExpectedAuth(ACCESS_KEY, SECRET_KEY, REGION, SERVICE, NOW));
+    });
+
+    it('uses the now replacer for timestamp consistency', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-west-2, iam)}';
+        const result = utils.interpolateString(input, { now: '2024-06-01T00:00:00.000Z' });
+        expect(result).toContain('Credential=KEY/20240601/us-west-2/iam/aws4_request');
+    });
+
+    it('returns the expression unchanged when arg count is wrong', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-east-1)}';
+        const result = utils.interpolateString(input, { now: NOW });
+        expect(result).toBe(input);
+    });
+
+    it('GET: puts URL params in canonical query string with empty payload hash', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-east-1, iam)}';
+        const urlParams = 'Action=ListUsers&Version=2010-05-08';
+        const result = utils.interpolateString(input, { now: NOW, method: 'GET', path: '/', urlCanonicalParams: urlParams, bodyCanonicalParams: '' });
+        expect(result).toBe(computeExpectedAuth('KEY', 'SECRET', 'us-east-1', 'iam', NOW, 'GET', '/', urlParams, ''));
+    });
+
+    it('POST with URL params (IAM style): uses URL params as canonical query string and empty payload hash', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-east-1, iam)}';
+        const urlParams = 'Action=CreateUser&UserName=alice&Version=2010-05-08';
+        const result = utils.interpolateString(input, { now: NOW, method: 'POST', path: '/', urlCanonicalParams: urlParams, bodyCanonicalParams: '' });
+        expect(result).toBe(computeExpectedAuth('KEY', 'SECRET', 'us-east-1', 'iam', NOW, 'POST', '/', urlParams, ''));
+    });
+
+    it('POST with body: empty canonical query string with hashed body as payload', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-east-1, iam)}';
+        const body = 'key=value&other=data';
+        const result = utils.interpolateString(input, { now: NOW, method: 'POST', path: '/', urlCanonicalParams: '', bodyCanonicalParams: body });
+        expect(result).toBe(computeExpectedAuth('KEY', 'SECRET', 'us-east-1', 'iam', NOW, 'POST', '/', '', body));
+        // Must differ from POST with same content in URL params (different payload hash)
+        const urlParamsResult = utils.interpolateString(input, { now: NOW, method: 'POST', path: '/', urlCanonicalParams: body, bodyCanonicalParams: '' });
+        expect(result).not.toBe(urlParamsResult);
+    });
+
+    it('POST with form body: includes content-type in signed headers and hashes raw body', () => {
+        const input = '${awsSigV4(KEY, SECRET, us-east-1, iam)}';
+        const body = 'Action=CreateUser&UserName=alice&Version=2010-05-08';
+        const ct = 'application/x-www-form-urlencoded';
+        const result = utils.interpolateString(input, {
+            now: NOW,
+            method: 'POST',
+            path: '/',
+            urlCanonicalParams: '',
+            bodyCanonicalParams: body,
+            contentType: ct
+        });
+        expect(result).toBe(computeExpectedAuth('KEY', 'SECRET', 'us-east-1', 'iam', NOW, 'POST', '/', '', body, ct));
+        // Must differ from same call without content-type (different signed headers)
+        const withoutCt = utils.interpolateString(input, { now: NOW, method: 'POST', path: '/', urlCanonicalParams: '', bodyCanonicalParams: body });
+        expect(result).not.toBe(withoutCt);
+    });
+
+    it('${now:YYYYMMDDTHHmmss[Z]} produces the date format used internally for signing', () => {
+        const date = utils.interpolateString('${now:YYYYMMDDTHHmmss[Z]}', { now: NOW });
+        expect(date).toBe('20240115T103000Z');
+        // The credential scope in the auth header uses the date stamp (first 8 chars)
+        const auth = utils.interpolateString('${awsSigV4(KEY, SECRET, us-east-1, iam)}', { now: NOW });
+        expect(auth).toContain(`Credential=KEY/${date.slice(0, 8)}/`);
+    });
+});

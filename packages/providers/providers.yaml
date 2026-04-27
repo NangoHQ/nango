@@ -1984,14 +1984,17 @@ aws-iam:
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
+        headers:
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, us-east-1, iam)}'
+            x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
         connection_config:
             region: ${connectionConfig.region}
         retry:
             at:
                 - 'x-ratelimit-reset'
     credentials_verification_script: awsIamCredentialsVerification
-    docs: https://nango.dev/docs/integrations/all/aws-iam
-    docs_connect: https://nango.dev/docs/integrations/all/aws-iam/connect
+    docs: https://nango.dev/docs/api-integrations/aws-iam
+    docs_connect: https://nango.dev/docs/api-integrations/aws-iam/connect
     credentials:
         username:
             type: string
@@ -8554,6 +8557,37 @@ heap:
             format: uuid
             doc_section: '#step-1-generating-your-api-key-and-app-id'
 
+hex:
+    display_name: Hex
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.hex.tech/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/hex
+    docs_connect: https://nango.dev/docs/api-integrations/hex/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Hex API Token.
+            example: hxtp_a1b2c3d4e5f6***
+            pattern: '^hxt[pw]_[a-f0-9]+$'
+            doc_section: '#step-1-creating-your-api-token'
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: Your Hex subdomain.
+            pattern: '^[a-z0-9]([a-z0-9-]*[a-z0-9])?$'
+            example: app
+            doc_section: '#step-2-finding-your-subdomain'
+
 heyreach:
     display_name: HeyReach
     categories:
@@ -9784,6 +9818,32 @@ klicktipp:
             doc_section: '#step-1-getting-your-api-key'
     docs: https://nango.dev/docs/api-integrations/klicktipp
     docs_connect: https://nango.dev/docs/api-integrations/klicktipp/connect
+
+kno-commerce:
+    display_name: Kno Commerce
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    token_url: https://app-api.knocommerce.com/api/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://app-api.knocommerce.com
+    docs: https://nango.dev/docs/api-integrations/kno-commerce
+    docs_connect: https://nango.dev/docs/api-integrations/kno-commerce/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Kno Commerce API client ID
+            doc_section: '#step-1-creating-an-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Kno Commerce API client secret
+            secret: true
+            doc_section: '#step-1-creating-an-api-client'
 
 kustomer:
     display_name: Kustomer
@@ -11113,6 +11173,42 @@ maximizer-on-premise:
             example: maximizer.mycompany.com
             format: hostname
 
+maxio:
+    display_name: Maxio
+    categories:
+        - payment
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        verification:
+            method: GET
+            endpoints:
+                - /subscriptions.json
+    docs: https://nango.dev/docs/integrations/all/maxio
+    docs_connect: https://nango.dev/docs/integrations/all/maxio/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Maxio API Key.
+            doc_section: '#step-2-retrieving-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'X'
+            hidden: true
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Maxio site hostname.
+            pattern: '^[a-zA-Z0-9-]+\.(chargify\.com|ebilling\.maxio\.com)$'
+            example: acme.chargify.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-hostname'
+
 mindbody:
     display_name: Mindbody
     categories:
@@ -11811,6 +11907,48 @@ nocrm:
             suffix: .nocrm.io
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
+
+northbeam:
+    display_name: Northbeam
+    categories:
+        - analytics
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.northbeam.io
+        headers:
+            authorization: ${apiKey}
+            data-client-id: ${connectionConfig.dataClientId}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/orders
+    docs: https://nango.dev/docs/api-integrations/northbeam
+    docs_connect: https://nango.dev/docs/api-integrations/northbeam/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: Use 'api' for production or 'api-uat' for testing/development.
+            pattern: '^api(-uat)?$'
+            example: api
+            order: 1
+            doc_section: '#step-1-getting-authentication-credentials'
+        dataClientId:
+            type: string
+            title: Data Client ID
+            description: Your Northbeam Data Client ID (UUID).
+            format: uuid
+            example: '123e4567-e89b-12d3-a456-426614174000'
+            doc_section: '#step-1-getting-authentication-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Northbeam API Key.
+            format: uuid
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            doc_section: '#step-1-getting-authentication-credentials'
 
 notion:
     display_name: Notion
@@ -14043,6 +14181,31 @@ quickbooks-sandbox:
             pattern: '^\d{10,19}$'
             example: '9341453474484455'
             doc_section: '#step-1-finding-your-realm-id'
+
+quipteams:
+    display_name: Quipteams
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.quipteams.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/quotes
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    docs: https://nango.dev/docs/api-integrations/quipteams
+    docs_connect: https://nango.dev/docs/api-integrations/quipteams/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Quipteams API key.
+            doc_section: '#step-1-finding-your-api-key'
 
 ragieai:
     display_name: Ragie AI
@@ -16482,6 +16645,35 @@ shortcut:
             title: API Key
             description: The API key for your Shortcut account
 
+simpro:
+    display_name: simPRO
+    categories:
+        - productivity
+        - invoicing
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.build}.simprosuite.com/oauth2/login
+    token_url: https://${connectionConfig.build}.simprosuite.com/oauth2/token
+    proxy:
+        base_url: https://${connectionConfig.build}.simprosuite.com
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    docs: https://nango.dev/docs/api-integrations/simpro
+    docs_connect: https://nango.dev/docs/api-integrations/simpro/connect
+    connection_config:
+        build:
+            type: string
+            title: simPRO Build Name
+            description: The subdomain part of your simPRO URL.
+            pattern: '^[a-z0-9_-]+$'
+            example: yourcompany
+            suffix: .simprosuite.com
+            prefix: https://
+            doc_section: '#step-1-find-your-simpro-build-name'
+
 slack:
     display_name: Slack
     categories:
@@ -16933,6 +17125,27 @@ stay-ai:
             example: 7k9***f-***da3e-***hjtb-***22cy
             pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
             doc_section: '#step-1-create-a-new-api-key'
+
+stitch-mcp:
+    display_name: Stitch (MCP)
+    categories:
+        - design
+        - mcp
+    alias: google
+    default_scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+    proxy:
+        base_url: https://stitch.googleapis.com
+        headers:
+            x-goog-user-project: ${connectionConfig.project_id}
+    connection_config:
+        project_id:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+    docs: https://nango.dev/docs/api-integrations/stitch-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
 strava:
     display_name: Strava (Mobile)
@@ -18932,6 +19145,26 @@ webinarjam:
             example: b7e2d4f1-8a3c-4e6b-9d5f-1a2b3c4d5e6f
             format: uuid
             doc_section: '#step-1-getting-your-api-key'
+
+wejam:
+    display_name: WeJam AI
+    categories:
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.wejam.ai
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/wejam
+    docs_connect: https://nango.dev/docs/api-integrations/wejam/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your WeJam account.
+            doc_section: '#step-1-getting-your-api-key'
+            pattern: '^[a-f0-9]+$'
+            example: c0c1fc3f****************************************************************************************
 
 whatsapp-business:
     display_name: WhatsApp Business

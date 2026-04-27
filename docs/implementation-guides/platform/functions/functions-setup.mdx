@@ -66,6 +66,18 @@ Get your secret keys from **Environment Settings > API Keys** (toggle between th
   If you rename the environment, update the variable name to match.
 </Note>
 
+## Team setup
+
+When multiple engineers work on Functions, give each engineer their own Nango environment. This prevents them from overwriting each other's deployed Functions and lets each person configure webhooks independently — for example, pointing to a local [ngrok](https://ngrok.com) tunnel during development.
+
+Each engineer adds their own environment's API key to their local `.env`:
+
+```bash
+NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
+```
+
+A shared `dev` or `staging` environment is still useful as a stable baseline — but it should be written to only by CI, not by individual engineers directly. See the [CI/CD guide](/implementation-guides/platform/functions/ci-cd) for how to wire this up.
+
 ## Next steps
 
 Take a look at the example `github-issues-example` sync.

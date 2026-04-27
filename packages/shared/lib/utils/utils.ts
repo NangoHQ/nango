@@ -216,6 +216,63 @@ function replaceHmacSha1HexExpression(str: string, resolveInner: (inner: string)
     });
 }
 
+function formatAwsSigV4Date(date: Date): string {
+    return date.toISOString().replace(/[:-]|\.\d{3}/g, '');
+}
+
+function splitTopLevelArgs(inner: string): string[] {
+    const args: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < inner.length; i++) {
+        if (inner[i] === '(') depth++;
+        else if (inner[i] === ')') depth--;
+        else if (inner[i] === ',' && depth === 0) {
+            args.push(inner.slice(start, i).trim());
+            start = i + 1;
+        }
+    }
+    args.push(inner.slice(start).trim());
+    return args;
+}
+
+function replaceAwsSigV4Expression(str: string, resolveInner: (inner: string) => string, replacers: Record<string, any>): string {
+    return str.replace(/\${awsSigV4\(([\s\S]*?)\)}/g, (match, inner) => {
+        const args = splitTopLevelArgs(inner);
+        if (args.length !== 4) return match;
+
+        const [accessKeyId, secretKey, region, service] = args.map(resolveInner);
+        if (!accessKeyId || !secretKey || !region || !service) return match;
+
+        const date = formatAwsSigV4Date(getNowDate(replacers));
+        const dateStamp = date.slice(0, 8);
+        const method = (replacers['method'] as string | undefined) ?? 'GET';
+        const path = (replacers['path'] as string | undefined) ?? '/';
+        const host = `${service}.amazonaws.com`;
+
+        const urlCanonicalParams = (replacers['urlCanonicalParams'] as string | undefined) ?? (replacers['params'] as string | undefined) ?? '';
+        const bodyCanonicalParams = (replacers['bodyCanonicalParams'] as string | undefined) ?? '';
+        const contentType = (replacers['contentType'] as string | undefined) ?? '';
+        const querystring = urlCanonicalParams;
+        const payloadHash = crypto.createHash('sha256').update(bodyCanonicalParams).digest('hex');
+        // content-type sorts before host alphabetically
+        const canonicalHeaders = contentType ? `content-type:${contentType}\nhost:${host}\nx-amz-date:${date}\n` : `host:${host}\nx-amz-date:${date}\n`;
+        const signedHeaders = contentType ? 'content-type;host;x-amz-date' : 'host;x-amz-date';
+        const canonicalRequest = `${method}\n${path}\n${querystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+        const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+        const stringToSign = `AWS4-HMAC-SHA256\n${date}\n${credentialScope}\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
+
+        const kDate = crypto.createHmac('sha256', `AWS4${secretKey}`).update(dateStamp).digest();
+        const kRegion = crypto.createHmac('sha256', kDate).update(region).digest();
+        const kService = crypto.createHmac('sha256', kRegion).update(service).digest();
+        const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest();
+        const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
+
+        return `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+    });
+}
+
 /**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
@@ -229,6 +286,7 @@ export function interpolateString(str: string, replacers: Record<string, any>, o
     const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
 
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective), effective);
 
     str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
 
@@ -279,6 +337,7 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 }
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
     str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
 
@@ -347,10 +406,11 @@ export function interpolateObject(obj: Record<string, any>, dynamicValues: Recor
 
 export function getStableInterpolationReplacers(values: string[]): Record<string, string> {
     const has = (pattern: string) => values.some((v) => v.includes(pattern));
+    const now = new Date();
 
     return {
         ...(has('${random}') && { random: crypto.randomUUID() }),
-        ...((has('${now}') || has('${now:')) && { now: new Date().toISOString() })
+        ...((has('${now}') || has('${now:') || has('${awsSigV4(')) && { now: now.toISOString() })
     };
 }
 

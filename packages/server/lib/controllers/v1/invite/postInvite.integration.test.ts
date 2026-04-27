@@ -24,10 +24,10 @@ describe(`POST ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { emails: [] },
             // @ts-expect-error missing query on purpose
             query: {}
@@ -37,11 +37,11 @@ describe(`POST ${route}`, () => {
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { emails: 1 }
         });

@@ -4,6 +4,24 @@ sidebarTitle: "Product Updates"
 description: "Product updates and improvements."
 ---
 
+<Update label="April 22, 2026">
+  ## API keys
+
+  We replaced environment secret keys with API keys. Previously, every environment had a single secret key with full access to all endpoints. You can now issue multiple keys and grant only the scopes each use case requires.
+
+  ![API keys page](/images/changelog/api-keys.jpg)
+
+  Key details:
+
+  - **Scoped permissions:** Choose **Full access** or **Custom** scopes when creating a key. Limit keys to specific operations like deploys, reading connections, or triggering actions.
+  - **Safe rotation:** Create a replacement key, swap it into your service, watch the **Last used** column to confirm the old key is no longer in use, then delete it.
+  - **RBAC-aware:** [Support role](/guides/platform/security#team-and-roles) members can only see the last four digits and scopes for troubleshooting, but cannot reveal key values.
+  - **No migration required:** Your existing secret keys continue to work as API keys without any changes.
+
+  Each endpoint in the [API reference](/reference/api/integration/list) now lists the scopes it requires. See the [API keys documentation](/reference/api-keys) for the full scope list and advised profiles.
+</Update>
+---
+
 <Update label="April 14, 2026">
   ## Playground
 

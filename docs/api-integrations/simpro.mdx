@@ -1,0 +1,81 @@
+---
+title: 'simPRO'
+sidebarTitle: 'simPRO'
+description: 'Integrate your application with the simPRO API'
+---
+
+## 🚀 Quickstart
+
+Connect to simPRO with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _simPRO_.
+    </Step>
+    <Step title="Authorize simPRO">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, enter your simPRO build name (the subdomain part of your simPRO URL — e.g. `<your-build-name>` for `<your-build-name>.simprosuite.com`), then log in. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the simPRO API">
+    Let's make your first request to the simPRO API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1.0/companies/" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1.0/companies/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 simPRO Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own simPRO API OAuth app](/api-integrations/simpro/how-to-register-your-own-simpro-api-oauth-app)
+Register an OAuth app inside your simPRO build (or request central partner credentials from the Simpro Group partner team) and obtain credentials to connect it to Nango.
+
+Official docs: [simPRO API docs](https://developer.simprogroup.com/apidoc/)
+
+## 🧩 Pre-built syncs & actions for simPRO
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/simpro/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

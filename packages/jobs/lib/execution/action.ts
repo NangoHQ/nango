@@ -6,6 +6,7 @@ import {
     NangoError,
     accountService,
     configService,
+    customerKeyService,
     environmentService,
     errorManager,
     externalWebhookService,
@@ -30,7 +31,6 @@ import type { Config } from '@nangohq/shared';
 import type {
     CheckpointRange,
     ConnectionJobs,
-    DBAPISecret,
     DBEnvironment,
     DBSyncConfig,
     DBTeam,
@@ -271,7 +271,6 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
-        secret: nangoProps.secretKey,
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -384,7 +383,6 @@ export async function handleActionError({
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
-            secret: nangoProps.secretKey,
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -523,14 +521,12 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
 
 async function sendWebhookIfNeeded({
     environment,
-    secret,
     connectionId,
     providerConfigKey,
     task,
     logCtx
 }: {
     environment: DBEnvironment | undefined;
-    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;
@@ -544,8 +540,12 @@ async function sendWebhookIfNeeded({
     }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
         await sendAsyncActionWebhook({
-            secret,
+            secret: webhookSigningKey.value.secret,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {

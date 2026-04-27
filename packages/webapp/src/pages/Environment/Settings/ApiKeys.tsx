@@ -429,6 +429,40 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
     );
 };
 
+// ── Managed secret key (env var) ────────────────────────────────────
+
+const ManagedSecretKeyView: React.FC<{ secretKey: string; env: string }> = ({ secretKey, env }) => {
+    const [revealed, setRevealed] = useState(false);
+    const masked = `····${secretKey.slice(-4)}`;
+
+    return (
+        <SettingsContent title="API Keys">
+            <div className="flex flex-col gap-4 py-4">
+                <div className="text-body-small-regular text-text-secondary">
+                    This key is managed via the <code className="text-text-primary">NANGO_SECRET_KEY_{env.toUpperCase()}</code> environment variable.
+                </div>
+                <div>
+                    <label className="text-body-small-semi text-text-primary block mb-1.5">Secret Key</label>
+                    <div className="relative">
+                        <Input value={revealed ? secretKey : masked} disabled className="font-mono bg-bg-surface text-text-tertiary pr-20" />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setRevealed((r) => !r)}
+                                className="text-text-tertiary hover:text-text-primary h-7 w-7"
+                            >
+                                {revealed ? <IconEyeOff stroke={1} size={16} /> : <IconEye stroke={1} size={16} />}
+                            </Button>
+                            <CopyButton text={secretKey} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </SettingsContent>
+    );
+};
+
 // ── Main component ──────────────────────────────────────────────────
 
 export const ApiKeys: React.FC = () => {
@@ -443,6 +477,7 @@ export const ApiKeys: React.FC = () => {
     const isProd = envData?.environmentAndAccount?.environment?.is_production || false;
     const canReadSecret = can(permissions.canReadProdSecretKey) || !isProd;
     const canManageKeys = can(permissions.canWriteProdEnvironmentKeys) || !isProd;
+    const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 
     const apiKeys = data?.data ?? [];
     const selectedKey = selectedKeyId !== null ? apiKeys.find((k) => k.id === selectedKeyId) : null;
@@ -460,6 +495,10 @@ export const ApiKeys: React.FC = () => {
             }
         }
     };
+
+    if (managedSecretKey) {
+        return <ManagedSecretKeyView secretKey={managedSecretKey} env={env} />;
+    }
 
     if (selectedKey) {
         return <KeyConfig apiKey={selectedKey} env={env} onBack={() => setSelectedKeyId(null)} canReadSecret={canReadSecret} canManageKeys={canManageKeys} />;

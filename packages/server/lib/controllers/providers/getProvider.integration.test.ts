@@ -21,9 +21,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get one', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             params: { provider: 'hubspot' }
         });
 
@@ -40,9 +40,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return 404', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             params: { provider: 'foobar' }
         });
 

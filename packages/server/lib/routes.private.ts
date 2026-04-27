@@ -210,10 +210,6 @@ web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update',
 web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-// Legacy key rotation endpoints — disabled, replaced by customer_keys API (NAN-5088)
-// web.route('/environment/rotate-key').post(webAuth, can(...), environmentController.rotateKey)
-// web.route('/environment/revert-key').post(webAuth, can(...), environmentController.revertKey)
-// web.route('/environment/activate-key').post(webAuth, can(...), environmentController.activateKey)
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 // Connect
