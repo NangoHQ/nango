@@ -48,7 +48,6 @@
       {
         "label": "GitHub",
         "type": "github",
-        "label": "GitHub",
         "href": "https://github.com/NangoHQ/nango"
       },
       {
@@ -1166,6 +1165,11 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Support",
+        "icon": "slack",
+        "href": "https://nango.dev/slack"
       }
     ]
   },
