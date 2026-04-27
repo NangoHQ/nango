@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { PROD_ENVIRONMENT_NAME, environmentService, getProvider, secretService, seeders } from '@nangohq/shared';
+import { PROD_ENVIRONMENT_NAME, customerKeyService, environmentService, getProvider, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
 
@@ -38,13 +38,13 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create prod environment');
         }
 
-        const prodSecret = (await secretService.getInternalSecretForEnv(db.knex, prodEnv.id)).unwrap();
+        const prodApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, prodEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: PROD_ENVIRONMENT_NAME },
-            token: prodSecret.secret
+            token: prodApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(400);
@@ -64,13 +64,13 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testSecret = (await secretService.getInternalSecretForEnv(db.knex, testEnv.id)).unwrap();
+        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 
         const res = await api.fetch(endpoint, {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: testEnv.name },
-            token: testSecret.secret
+            token: testApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(204);
@@ -88,7 +88,7 @@ describe(`DELETE ${endpoint}`, () => {
             throw new Error('Failed to create test environment');
         }
 
-        const testSecret = (await secretService.getInternalSecretForEnv(db.knex, testEnv.id)).unwrap();
+        const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 
         // Create a provider config for this environment
         const providerName = 'github';
@@ -133,7 +133,7 @@ describe(`DELETE ${endpoint}`, () => {
             method: 'DELETE',
             // @ts-expect-error query params are required
             query: { env: testEnv.name },
-            token: testSecret.secret
+            token: testApiKeys[0]!.secret
         });
 
         expect(res.res.status).toBe(204);

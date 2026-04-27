@@ -28,10 +28,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider: 'invalid', unique_key: '1832_@$ùé&', display_name: false, credentials: { authType: 'INVALID' } }
         });
@@ -50,10 +50,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the provider', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'invalid', unique_key: 'foobar' }
         });
 
@@ -64,10 +64,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should create an integration', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'algolia', unique_key: 'foobar' }
         });
 
@@ -86,10 +86,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should add webhookSecret when creds.webhook_secret is present', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github',
@@ -118,7 +118,7 @@ describe(`POST ${endpoint}`, () => {
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { uniqueKey: 'github' },
             query: { include: ['credentials'] }
         });
@@ -129,10 +129,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should not add webhookSecret when creds.webhook_secret is not present', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github',
@@ -160,7 +160,7 @@ describe(`POST ${endpoint}`, () => {
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { uniqueKey: 'github' },
             query: { include: ['credentials'] }
         });

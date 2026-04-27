@@ -26,11 +26,11 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret
+            token: apiKey.secret
         });
 
         shouldRequireQueryEnv(res);
