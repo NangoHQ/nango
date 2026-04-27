@@ -37,7 +37,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         environmentId: environment.id,
         config_id: providerConfig.id,
         name: body.function_name,
-        type: body.function_type
+        isAction: body.function_type === 'action'
     });
 
     if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
