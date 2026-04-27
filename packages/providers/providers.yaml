@@ -16472,6 +16472,8 @@ shopify:
         headers:
             x-shopify-access-token: ${accessToken}
     webhook_routing_script: shopifyWebhookRouting
+    token_params:
+        expiring: 1
     docs: https://nango.dev/docs/api-integrations/shopify
     setup_guide_url: https://nango.dev/docs/api-integrations/shopify/how-to-register-your-own-shopify-api-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/shopify/connect
