@@ -326,6 +326,7 @@ function getRawBody(method: string, data: unknown): string {
     if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
     if (Buffer.isBuffer(data)) return data.toString('utf8');
     if (data instanceof URLSearchParams) return data.toString();
+    if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
     return '';
 }
 
@@ -507,6 +508,7 @@ export function buildProxyHeaders({
         const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
         const baseReplacers = {
             endpoint: config.endpoint,
+            host: parsedUrl.host,
             path: endpointPath,
             params: buildCanonicalParams(config.method, config.data, endpointQuery),
             urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),

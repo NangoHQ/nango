@@ -72,7 +72,7 @@ Follow the [real-time syncs guide](/implementation-guides/use-cases/syncs/realti
 
 ### Step 1 - Initial Functions setup
 
-If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/implementation-guides/platform/functions/functions-setup) first.
+If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/guides/primitives/functions#guide) first.
 
 Otherwise, you can skip to the next step.
 
@@ -89,7 +89,7 @@ This command starts a process that continuously compiles your integration functi
 ### Step 3 - Create the sync file
 
 <Tip>
-    If you prefer to automate this, follow the [Build with AI guide](/implementation-guides/platform/functions/leverage-ai-agents).
+    If you prefer to automate this, see [build with AI](/guides/primitives/functions#guide) in the Functions guide.
 </Tip>
 
 In your `nango-integrations` folder, create the file for your new sync function.
@@ -154,7 +154,7 @@ In the `exec` method, implement the logic of your sync. Edit `MyObject` to conta
 The following can help you with your implementation:
 - [`nango` object reference](/reference/functions) to understand the SDK methods available in syncs
 - [Our integration templates repo](https://www.nango.dev/templates) has 800+ examples of syncs & actions implemented by Nango
-- [Leveraging AI agents guide](/implementation-guides/platform/functions/leverage-ai-agents) to build syncs with claude code, cursor & other AI agents
+- [Build with AI](/guides/primitives/functions#guide) to author syncs with Claude Code, Cursor, and other coding agents
 
 Example implementation of the Salesforce contacts sync:
 
@@ -323,7 +323,7 @@ Select your integration in the _Integrations_ tab, and navigate to the _Endpoint
 
 Nango will automatically sync the corresponding data in the background for each relevant connection.
 
-Integration templates are a starting point. You will likely need to [customize them](/implementation-guides/platform/functions/customize-template) or [create your own custom sync](#how-to-build-a-sync).
+Integration templates are a starting point. You will likely need to [customize them](/guides/primitives/functions#guide) or [create your own custom sync](#how-to-build-a-sync).
 
 ### Step 1 - Setup webhooks from Nango
 

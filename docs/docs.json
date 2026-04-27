@@ -102,11 +102,35 @@
     },
     {
       "source": "/guides/platform/ai-integration-builder",
-      "destination": "/implementation-guides/platform/functions/leverage-ai-agents"
+      "destination": "/guides/primitives/functions#guide"
     },
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
       "destination": "/guides/platform/observability#opentelemetry-export"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/implement-api-auth",
+      "destination": "/guides/primitives/auth#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/configure-integration",
+      "destination": "/guides/primitives/auth#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/contribute-new-api",
+      "destination": "/integrations/contribute-or-request-api"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/functions-setup",
+      "destination": "/guides/primitives/functions#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/leverage-ai-agents",
+      "destination": "/guides/primitives/functions#guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customize-template",
+      "destination": "/guides/primitives/functions#guide"
     }
   ],
   "navigation": {
@@ -130,17 +154,10 @@
                 "expanded": false,
                 "pages": [
                   "guides/primitives/auth",
-                  "implementation-guides/platform/auth/implement-api-auth",
-                  {
-                    "group": "Other guides",
-                    "pages": [
-                      "implementation-guides/platform/auth/configure-integration",
-                      "implementation-guides/platform/auth/share-connect-link",
-                      "implementation-guides/platform/auth/connection-tags",
-                      "implementation-guides/platform/auth/customize-connect-ui",
-                      "implementation-guides/platform/auth/contribute-new-api"
-                    ]
-                  }
+                  "implementation-guides/platform/auth/share-connect-link",
+                  "implementation-guides/platform/auth/connection-tags",
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/contribute-new-api"
                 ]
               },
               {
@@ -148,19 +165,10 @@
                 "expanded": false,
                 "pages": [
                   "guides/primitives/functions",
-                  "implementation-guides/platform/functions/leverage-ai-agents",
-                  {
-                    "group": "Other guides",
-                    "pages": [
-                      "implementation-guides/platform/functions/functions-setup",
-                      "implementation-guides/platform/functions/customize-template",
-                      "implementation-guides/platform/functions/rate-limits",
-                      "implementation-guides/platform/functions/data-validation",
-                      "implementation-guides/platform/functions/testing",
-                      "implementation-guides/platform/functions/ci-cd",
-                      "implementation-guides/platform/proxy/implement-requests-proxy"
-                    ]
-                  }
+                  "implementation-guides/platform/functions/rate-limits",
+                  "implementation-guides/platform/functions/data-validation",
+                  "implementation-guides/platform/functions/testing",
+                  "implementation-guides/platform/functions/ci-cd"
                 ]
               },
               {
@@ -216,6 +224,7 @@
                   "guides/platform/limits",
                   "guides/platform/security",
                   "guides/platform/self-hosting",
+                  "implementation-guides/platform/proxy/implement-requests-proxy",
                   "implementation-guides/platform/webhooks-from-nango",
                   "implementation-guides/platform/common-issues",
                   {
@@ -381,10 +390,16 @@
         "icon": "plug",
         "groups": [
           {
-            "group": "700+ APIs & Integrations",
+            "group": "Overview",
             "pages": [
               "integrations/overview",
               "reference/api-configuration",
+              "integrations/contribute-or-request-api"
+            ]
+          },
+          {
+            "group": "700+ APIs & Integrations",
+            "pages": [
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
@@ -450,6 +465,7 @@
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
               "api-integrations/aws-iam",
+              "api-integrations/aws-inspector2",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",
@@ -1164,6 +1180,11 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Support",
+        "icon": "slack",
+        "href": "https://nango.dev/slack"
       }
     ]
   },

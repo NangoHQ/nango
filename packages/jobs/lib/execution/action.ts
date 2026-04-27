@@ -545,7 +545,7 @@ async function sendWebhookIfNeeded({
             throw webhookSigningKey.error;
         }
         await sendAsyncActionWebhook({
-            secret: webhookSigningKey.value.secret,
+            secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {

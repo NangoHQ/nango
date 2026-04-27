@@ -307,7 +307,7 @@ export async function handleWebhookSuccess({
                             provider_config_key: nangoProps.providerConfigKey
                         },
                         environment: environment,
-                        secret: webhookSigningKey.value.secret,
+                        secret: webhookSigningKey.value,
                         webhookSettings,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
@@ -483,7 +483,7 @@ async function onFailure({
                         const res = await sendSyncWebhook({
                             account: team,
                             environment,
-                            secret: webhookSigningKey.value.secret,
+                            secret: webhookSigningKey.value,
                             connection: connection,
                             webhookSettings,
                             syncConfig,
