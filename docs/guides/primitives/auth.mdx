@@ -126,6 +126,9 @@ Once you have the connection ID, fetch credentials whenever you need them:
         --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Content-Type: application/json' \
         --data '{
+          "tags": {
+            "end_user_id": "<TEST-USER-ID>"
+          },
           "allowed_integrations": ["<INTEGRATION-ID>"]
         }'
       ```
