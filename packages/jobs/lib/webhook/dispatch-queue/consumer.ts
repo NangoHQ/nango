@@ -170,13 +170,11 @@ export class DispatchQueueConsumer {
                 if (scheduleRes.isErr()) {
                     if (isDuplicateTaskNameSchedulingError(scheduleRes.error, message.taskName)) {
                         span.setTag('duplicate_task_name', true);
-                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_SCHEDULE_SUCCESS, 1, { provider: message.provider });
                         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, 1, { provider: message.provider });
                         await this.tryDeleteMessage(msg.ReceiptHandle);
                         return;
                     }
 
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_SCHEDULE_FAILURE, 1, { provider: message.provider });
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, 1, { provider: message.provider });
                     span.setTag('error', true);
                     span.setTag('error.type', scheduleRes.error.name);
@@ -191,7 +189,6 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_SCHEDULE_SUCCESS, 1, { provider: message.provider });
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, 1, { provider: message.provider });
 
                 await this.tryDeleteMessage(msg.ReceiptHandle);
