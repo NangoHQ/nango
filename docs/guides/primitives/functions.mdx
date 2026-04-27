@@ -15,16 +15,26 @@ You write integration logic in TypeScript and deploy it to Nango. Functions exec
 **1. Write** — define integration logic in TypeScript
 
 ```typescript
-export default async function run(nango: Nango) {
-    const { owner, repo, title, body } = nango.input;
+import { createAction } from 'nango';
+import * as z from 'zod';
 
-    const response = await nango.post({
-        endpoint: `/repos/${owner}/${repo}/issues`,
-        data: { title, body }
-    });
-
-    return response.data;
-}
+export default createAction({
+    description: 'Creates a GitHub issue',
+    input: z.object({
+        owner: z.string(),
+        repo: z.string(),
+        title: z.string(),
+        body: z.string()
+    }),
+    output: z.object({ id: z.number(), url: z.string() }),
+    exec: async (nango, input) => {
+        const response = await nango.post({
+            endpoint: `/repos/${input.owner}/${input.repo}/issues`,
+            data: { title: input.title, body: input.body }
+        });
+        return { id: response.data.id, url: response.data.html_url };
+    }
+});
 ```
 
 **2. Deploy** — push to Nango with the CLI
@@ -101,7 +111,7 @@ Your application can call functions from any language or framework.
     NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
     ```
 
-    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the key for whichever environment you're targeting when you run `nango deploy --env dev` (or `prod`).
+    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the key for whichever environment you pass to `nango deploy <env>` (e.g. `nango deploy dev` or `nango deploy prod`).
 
     <Note>
       Keys are matched by environment name: `NANGO_SECRET_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
@@ -273,17 +283,17 @@ Your application can call functions from any language or framework.
   </Step>
 
   <Step title="Deploy">
-    Deploy all functions in your `nango-integrations/` folder to Nango:
+    Deploy all functions in your `nango-integrations/` folder to a Nango environment by passing the environment name:
 
     ```bash
-    nango deploy           # targets the dev environment by default
-    nango deploy --env prod
+    nango deploy dev
+    nango deploy prod
     ```
 
-    For automated deployments alongside your application code, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+    The environment is a positional argument — running plain `nango deploy` prompts for it interactively, which won't work in CI. For automated deployments alongside your application code, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
 
     <Accordion title="🤖 For agents">
-      Run `nango deploy --env dev` to deploy to the development environment. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
+      Run `nango deploy dev` to deploy to the development environment. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
     </Accordion>
   </Step>
 
