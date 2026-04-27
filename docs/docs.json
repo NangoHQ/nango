@@ -102,7 +102,7 @@
     },
     {
       "source": "/guides/platform/ai-integration-builder",
-      "destination": "/guides/primitives/functions#ai-builder"
+      "destination": "/guides/primitives/functions#guide"
     },
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
@@ -122,15 +122,15 @@
     },
     {
       "source": "/implementation-guides/platform/functions/functions-setup",
-      "destination": "/guides/primitives/functions#setup"
+      "destination": "/guides/primitives/functions#guide"
     },
     {
       "source": "/implementation-guides/platform/functions/leverage-ai-agents",
-      "destination": "/guides/primitives/functions#ai-builder"
+      "destination": "/guides/primitives/functions#guide"
     },
     {
       "source": "/implementation-guides/platform/functions/customize-template",
-      "destination": "/guides/primitives/functions#customize-a-template"
+      "destination": "/guides/primitives/functions#guide"
     }
   ],
   "navigation": {
