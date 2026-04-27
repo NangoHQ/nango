@@ -126,6 +126,48 @@ paths:
                                     - data
                                 properties:
                                     data:
+                                        $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /integrations/quickstart:
+        post:
+            summary: Create a quickstart integration
+            description: Create an integration using a Nango-provided developer app for providers that require a developer app.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - unique_key
+                                - provider
+                            properties:
+                                unique_key:
+                                    type: string
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
+                                provider:
+                                    type: string
+                                    description: The provider unique name.
+                                display_name:
+                                    type: string
+                                    description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks for this integration.
+            responses:
+                '200':
+                    description: Successfully created an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Integration'

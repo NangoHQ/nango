@@ -49,6 +49,20 @@ export type PostPublicIntegration = Endpoint<{
     };
 }>;
 
+export type PostPublicQuickstartIntegration = Endpoint<{
+    Method: 'POST';
+    Path: '/integrations/quickstart';
+    Body: {
+        provider: string;
+        unique_key: string;
+        display_name?: string | undefined;
+        forward_webhooks?: boolean | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';

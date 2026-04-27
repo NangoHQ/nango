@@ -38,7 +38,7 @@ import { postRemoteFunctionCompile } from './controllers/functions/compile/postC
 import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
 import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
-import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
+import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
@@ -184,6 +184,7 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrApiAuth, withAnyScope('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(apiAuth, withScope('environment:integrations:write'), postPublicIntegration);
+publicAPI.route('/integrations/quickstart').post(apiAuth, withScope('environment:integrations:write'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, withScope('environment:integrations:write'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
