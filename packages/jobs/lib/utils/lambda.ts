@@ -25,7 +25,7 @@ export function getLambdaFunctionName(node: Node): string {
 
 /** Stable `TenantId` for AWS Lambda invoke when the plan uses tenant-isolated functions (PER_TENANT). */
 export function getLambdaTenantId(nangoProps: NangoProps): string {
-    return `team-${nangoProps.team.id}-env-${nangoProps.environmentId}`;
+    return `account-${nangoProps.team.id}-env-${nangoProps.environmentId}`;
 }
 
 export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
