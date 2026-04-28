@@ -141,7 +141,7 @@ Your application can call functions from any language or framework.
 
     <Tabs>
       <Tab title="HTTP">
-        Functions triggered on-demand over HTTP from your application. This is the [action](/implementation-guides/use-cases/actions/implement-an-action) function type — useful for reads, writes, and AI tool calls.
+        Functions triggered on-demand over HTTP from your application. This is the [action](/implementation-guides/use-cases/actions) function type — useful for reads, writes, and AI tool calls.
 
         ```typescript
         import { createAction } from 'nango';
@@ -167,7 +167,7 @@ Your application can call functions from any language or framework.
         });
         ```
 
-        For async execution, pagination, error handling, and testing: [Actions guide](/implementation-guides/use-cases/actions/implement-an-action).
+        For async execution, pagination, error handling, and testing: [Actions guide](/implementation-guides/use-cases/actions).
 
         <Tip>
           **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
@@ -183,7 +183,7 @@ Your application can call functions from any language or framework.
       </Tab>
 
       <Tab title="Schedule">
-        Functions that run on a recurring schedule, fetch data from the external API, and cache it in Nango's records store. Your app reads from the cache rather than calling the external API directly. This is the [sync](/implementation-guides/use-cases/syncs/implement-a-sync) function type.
+        Functions that run on a recurring schedule, fetch data from the external API, and cache it in Nango's records store. Your app reads from the cache rather than calling the external API directly. This is the [sync](/implementation-guides/use-cases/syncs) function type.
 
         ```typescript
         import { createSync } from 'nango';
@@ -215,7 +215,7 @@ Your application can call functions from any language or framework.
         });
         ```
 
-        For incremental syncs, checkpointing, deletion detection, and real-time syncs: [Syncs guide](/implementation-guides/use-cases/syncs/implement-a-sync).
+        For incremental syncs, checkpointing, deletion detection, and real-time syncs: [Syncs guide](/implementation-guides/use-cases/syncs).
 
         <Tip>
           **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
@@ -326,7 +326,7 @@ Your application can call functions from any language or framework.
           </Tab>
         </Tabs>
 
-        Actions can also be exposed as MCP tools for AI agents — see [tool calling & MCP](/implementation-guides/use-cases/tool-calling/overview).
+        Actions can also be exposed as MCP tools for AI agents — see [tool calling & MCP](/implementation-guides/use-cases/tool-calling).
       </Tab>
 
       <Tab title="Schedule">
@@ -361,7 +361,7 @@ Your application can call functions from any language or framework.
       <Tab title="Webhook">
         Incoming webhooks from the external API are routed by Nango to the matching connection and forwarded to your app's Nango webhook URL (configured in **Environment Settings**).
 
-        You can also configure a sync to run when a webhook arrives — see [real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs).
+        You can also configure a sync to run when a webhook arrives — see [real-time syncs](/implementation-guides/use-cases/syncs#real-time-syncs-with-webhooks).
       </Tab>
 
       <Tab title="Event">
@@ -378,14 +378,14 @@ Your application can call functions from any language or framework.
 Functions have access to two storage primitives:
 
 - **Metadata** — per-connection key-value storage for custom configuration and per-customer logic. Set via the API or dashboard, read inside any function. See the [customer configuration guide](/implementation-guides/use-cases/customer-configuration).
-- **Records** — structured, queryable storage for synced data (lists of contacts, issues, files, etc.). Written inside sync functions with `nango.batchSave()` and read by your app via the [records API](/reference/api/sync/records-list). See the [records cache guide](/implementation-guides/use-cases/syncs/records-cache).
+- **Records** — structured, queryable storage for synced data (lists of contacts, issues, files, etc.). Written inside sync functions with `nango.batchSave()` and read by your app via the [records API](/reference/api/sync/records-list). See the [records cache guide](/implementation-guides/use-cases/syncs#records-cache).
 
 ## Use cases
 
-- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling/overview)**
-- **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[Triggers and change detection](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling)**
+- **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs)**
+- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs)**
+- **[Triggers and change detection](/implementation-guides/use-cases/syncs)**
 - **[Webhook ingestion and processing](/implementation-guides/use-cases/webhooks-from-external-apis)**
 - **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
 - **[API unification](/implementation-guides/use-cases/unified-apis)**

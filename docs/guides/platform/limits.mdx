@@ -31,8 +31,8 @@ Different function types have varying execution and enqueuing time limits:
 
 | Function Type | Max Execution Time |
 | - | - |
-| [Syncs](/implementation-guides/use-cases/syncs/implement-a-sync) | 24 hours |
-| [Actions](/implementation-guides/use-cases/actions/implement-an-action) | 15 minutes |
+| [Syncs](/implementation-guides/use-cases/syncs) | 24 hours |
+| [Actions](/implementation-guides/use-cases/actions) | 15 minutes |
 | [External webhooks](/implementation-guides/use-cases/webhooks-from-external-apis) | 1 hour |
 
 ### Minimum sync frequency
@@ -41,7 +41,7 @@ The minimum sync frequency is **30 seconds**, available on all plans. You can se
 
 ### Sync variant limits
 
-Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/implementation-guides/use-cases/syncs/sync-partitioning) for more details.
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/implementation-guides/use-cases/syncs#sync-partitioning) for more details.
 
 ### Action output limits
 

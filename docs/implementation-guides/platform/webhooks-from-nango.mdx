@@ -14,7 +14,7 @@ This page covers webhooks that Nango sends to your application. To process webho
 
 The most common webhooks are:
 - **New connection created**: Sent whenever a new [connection](/guides/primitives/auth#overview) has been created
-- **Sync execution finished**: Sent whenever a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution completes
+- **Sync execution finished**: Sent whenever a [sync](/implementation-guides/use-cases/syncs) execution completes
 - **Forwarded webhook**: Sent when Nango forwards [webhooks from an external API](/implementation-guides/use-cases/webhooks-from-external-apis) to your app
 
 ## Set up webhooks from Nango
@@ -235,7 +235,7 @@ Payload received following a refresh token error:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
