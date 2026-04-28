@@ -32,7 +32,7 @@ export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: 
     const tshirtSize = getTShirtSize(params);
     const prefix = params.routingContext?.plan?.fleet_node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
     const base = `${prefix}-${tshirtSize}`;
-    if (params.routingContext?.plan?.tenant_isolation) {
+    if (params.routingContext?.plan?.lambda_tenant_isolation) {
         return `${base}${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX}`;
     }
     return base;

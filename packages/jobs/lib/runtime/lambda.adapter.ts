@@ -184,7 +184,7 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 Payload: payload.value,
                 //InvocationType is Event for async invocation, RequestResponse for sync invocation
                 InvocationType: 'Event',
-                ...(params.routingContext?.plan?.tenant_isolation && {
+                ...(params.routingContext?.plan?.lambda_tenant_isolation && {
                     TenantId: getLambdaTenantId(params.nangoProps)
                 })
             });

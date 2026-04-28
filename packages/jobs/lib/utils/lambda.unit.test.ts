@@ -53,7 +53,7 @@ function minimalNode(partial: Pick<Node, 'routingId' | 'id'>): Node {
         error: null,
         createdAt: new Date(),
         lastStateTransitionAt: new Date()
-    } as Node;
+    };
 }
 
 describe('getRoutingId', () => {

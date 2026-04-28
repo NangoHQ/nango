@@ -206,8 +206,8 @@ export interface DBPlan extends Timestamps {
     fleet_node_routing_override: string | null;
 
     /**
-     * Enable or tenant isolation for functions executions
+     * Enable or disable tenant isolation for functions executions
      * @default false
      */
-    tenant_isolation: boolean;
+    lambda_tenant_isolation: boolean;
 }

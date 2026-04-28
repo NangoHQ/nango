@@ -3,7 +3,7 @@
  */
 exports.up = async function (knex) {
     await knex.schema.alterTable('plans', (table) => {
-        table.boolean('tenant_isolation').notNullable().defaultTo(false);
+        table.boolean('lambda_tenant_isolation').notNullable().defaultTo(false);
     });
 };
 
