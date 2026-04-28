@@ -154,7 +154,7 @@ export class DispatchQueueConsumer {
 
                 const scheduleRes = await this.orchestratorClient.immediate({
                     name: message.taskName,
-                    group: { key: `webhook:environment:${environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
+                    group: { key: `webhook:environment:${message.environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
                     ...webhookTaskSchedulingSettings,
                     args: {
                         type: 'webhook',
