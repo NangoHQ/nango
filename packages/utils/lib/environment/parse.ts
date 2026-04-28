@@ -540,6 +540,7 @@ export const ENVS = z.object({
     WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
 
     // TASK DISPATCH QUEUE
+    AWS_SQS_REGION: z.string().min(1).optional(),
     NANGO_TASK_DISPATCH_QUEUE_URL: z.url().optional(),
     NANGO_TASK_DISPATCH_DLQ_URL: z.url().optional(),
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),

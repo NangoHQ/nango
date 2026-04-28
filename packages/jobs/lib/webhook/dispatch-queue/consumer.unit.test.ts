@@ -3,6 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+vi.mock('../../env.js', () => ({
+    envs: {
+        AWS_SQS_REGION: undefined
+    }
+}));
+
 import { DispatchQueueConsumer } from './consumer.js';
 
 import type { SQSClient } from '@aws-sdk/client-sqs';
@@ -147,19 +153,9 @@ describe('DispatchQueueConsumer', () => {
         const h = makeHarness({ messages: [buildMessage()] });
         h.orchestratorImmediate.mockResolvedValueOnce(
             Err({
-                name: 'fetch_failed',
+                name: 'duplicate_task_name',
                 message: 'Task with name already exists',
-                payload: {
-                    response: {
-                        error: {
-                            code: 'immediate_failed',
-                            payload: {
-                                reason: 'duplicate_task_name',
-                                taskName: 'webhook:abc123'
-                            }
-                        }
-                    }
-                }
+                payload: { taskName: 'webhook:abc123' }
             })
         );
 
@@ -187,6 +183,17 @@ describe('DispatchQueueConsumer', () => {
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
         const h = makeHarness({ badBody: 'not-json' });
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        expect(h.orchestratorImmediate).not.toHaveBeenCalled();
+        const deleteCalls = getDeleteCalls(h);
+        expect(deleteCalls).toHaveLength(1);
+    });
+
+    it('treats an empty-body message as a poison pill and deletes it', async () => {
+        const h = makeHarness({ badBody: '' });
         await runOnce(h, () => {
             expect(getDeleteCalls(h)).toHaveLength(1);
         });

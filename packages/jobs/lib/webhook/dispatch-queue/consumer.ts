@@ -2,8 +2,10 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
-import { jsonSchema, webhookTaskSchedulingSettings } from '@nangohq/nango-orchestrator';
+import { isDuplicateTaskNameClientError, jsonSchema, webhookTaskSchedulingSettings } from '@nangohq/nango-orchestrator';
 import { getLogger, metrics, report } from '@nangohq/utils';
+
+import { envs } from '../../env.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -13,10 +15,7 @@ const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
 
 type ParseMessageResult = { success: true; message: WebhookDispatchMessage } | { success: false; reason: 'invalid_schema' | 'json_parse' };
 
-const getRegion = (): string => {
-    const env = typeof process !== 'undefined' ? process.env['LAMBDA_REGION'] : undefined;
-    return env ?? 'us-west-2';
-};
+const getRegion = (): string => envs.AWS_SQS_REGION ?? 'us-west-2';
 
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
@@ -127,7 +126,7 @@ export class DispatchQueueConsumer {
 
         return await tracer.scope().activate(span, async () => {
             try {
-                if (!msg.Body || !msg.ReceiptHandle) {
+                if (msg.Body === undefined || !msg.ReceiptHandle) {
                     return;
                 }
 
@@ -154,7 +153,7 @@ export class DispatchQueueConsumer {
 
                 const scheduleRes = await this.orchestratorClient.immediate({
                     name: message.taskName,
-                    group: { key: `webhook:environment:${message.environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
+                    group: { key: `webhook:environment:${environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
                     ...webhookTaskSchedulingSettings,
                     args: {
                         type: 'webhook',
@@ -167,7 +166,7 @@ export class DispatchQueueConsumer {
                 });
 
                 if (scheduleRes.isErr()) {
-                    if (isDuplicateTaskNameSchedulingError(scheduleRes.error, message.taskName)) {
+                    if (isDuplicateTaskNameClientError(scheduleRes.error, message.taskName)) {
                         span.setTag('duplicate_task_name', true);
                         metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, 1, { provider: message.provider });
                         await this.tryDeleteMessage(msg.ReceiptHandle);
@@ -217,34 +216,6 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
-}
-
-function isDuplicateTaskNameSchedulingError(err: unknown, taskName: string): boolean {
-    if (!err || typeof err !== 'object') {
-        return false;
-    }
-
-    const error = err as {
-        name?: string;
-        payload?: {
-            response?: {
-                error?: {
-                    code?: string;
-                    payload?: {
-                        reason?: string;
-                        taskName?: string;
-                    };
-                };
-            };
-        };
-    };
-
-    return (
-        error.name === 'fetch_failed' &&
-        error.payload?.response?.error?.code === 'immediate_failed' &&
-        error.payload.response.error.payload?.reason === 'duplicate_task_name' &&
-        error.payload.response.error.payload?.taskName === taskName
-    );
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {

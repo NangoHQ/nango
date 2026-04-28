@@ -51,6 +51,10 @@ describe('OrchestratorClient retry policy', () => {
         const res = await client.immediate(buildImmediateRequest());
 
         expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.name).toBe('duplicate_task_name');
+            expect(res.error.payload).toEqual({ taskName: 'task-1' });
+        }
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 

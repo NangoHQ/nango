@@ -167,8 +167,14 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
                 NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
             });
+            expect(res.AWS_SQS_REGION).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();
+        });
+
+        it('should accept AWS_SQS_REGION when provided', () => {
+            const res = parseEnvs(ENVS, { AWS_SQS_REGION: 'eu-west-1' });
+            expect(res.AWS_SQS_REGION).toBe('eu-west-1');
         });
 
         it('should accept valid SQS URLs for queue and DLQ', () => {

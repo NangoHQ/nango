@@ -192,13 +192,8 @@ describe('OrchestratorClient', async () => {
             const duplicate = await client.immediate(request);
             expect(duplicate.isErr()).toBe(true);
             if (duplicate.isErr()) {
-                expect(duplicate.error.name).toBe('fetch_failed');
-                const response = (duplicate.error.payload as { response?: { error?: { code?: string; payload?: unknown } } } | null)?.response;
-                expect(response?.error?.code).toBe('immediate_failed');
-                expect(response?.error?.payload).toMatchObject({
-                    reason: 'duplicate_task_name',
-                    taskName: name
-                });
+                expect(duplicate.error.name).toBe('duplicate_task_name');
+                expect(duplicate.error.payload).toMatchObject({ taskName: name });
             }
         });
     });

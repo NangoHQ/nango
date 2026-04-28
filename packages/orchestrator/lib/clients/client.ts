@@ -48,6 +48,10 @@ function getRouteFetchStatusCode(message: string | undefined): number | null {
 }
 
 function shouldRetryRouteFetchResult(res: unknown): boolean {
+    // routeFetch wraps non-2xx responses as fetch_failed results, so retry policy has to
+    // look through that wrapper. Deterministic application errors like duplicate task-name
+    // conflicts should not be retried, while transport/no-status failures and transient
+    // HTTP responses still should.
     if (!res || typeof res !== 'object' || !('error' in res)) {
         return false;
     }
@@ -91,15 +95,32 @@ export class OrchestratorClient {
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
                 delayMs: 50,
-                retryIf: (res) => shouldRetryRouteFetchResult(res)
+                retryIf: (res) => 'error' in res
             };
             return retry(fetch, retryConfig);
         };
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(postImmediateRoute, {
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (reply) => shouldRetryRouteFetchResult(reply)
+            }
+        })({ body: props });
         if ('error' in res) {
+            const duplicatePayload = getDuplicateTaskNamePayload(res.error.payload);
+            if (duplicatePayload !== null) {
+                const taskName = typeof duplicatePayload['taskName'] === 'string' ? duplicatePayload['taskName'] : undefined;
+                return Err({
+                    name: 'duplicate_task_name',
+                    message: taskName ? `Task with name '${taskName}' already exists` : 'Task with this name already exists',
+                    payload: duplicatePayload,
+                    additional_properties: { response: res.error.payload as JsonValue }
+                });
+            }
+
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling immediate task`,
@@ -546,4 +567,32 @@ export class OrchestratorClient {
             }));
         }
     }
+}
+
+function getDuplicateTaskNamePayload(payload: unknown): Record<string, JsonValue> | null {
+    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+        return null;
+    }
+
+    const response = payload as {
+        error?: {
+            code?: string;
+            payload?: { reason?: string; taskName?: string };
+        };
+    };
+
+    if (response.error?.code !== 'immediate_failed' || response.error.payload?.reason !== 'duplicate_task_name') {
+        return null;
+    }
+
+    return response.error.payload.taskName ? { taskName: response.error.payload.taskName } : {};
+}
+
+export function isDuplicateTaskNameClientError(err: unknown, taskName?: string): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { name?: string; payload?: { taskName?: string } };
+    return error.name === 'duplicate_task_name' && (taskName === undefined || error.payload?.taskName === taskName);
 }

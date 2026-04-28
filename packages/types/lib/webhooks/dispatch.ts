@@ -23,7 +23,7 @@ export interface WebhookDispatchMessage {
     parentSyncName: string;
     /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
     webhookName: string;
-    /** Activity log id created before enqueue; also reused as the taskName dedupe seed. */
+    /** Activity log id created before enqueue; reused so redelivery of this published message keeps the same taskName. */
     activityLogId: string;
     connection: {
         id: number;
