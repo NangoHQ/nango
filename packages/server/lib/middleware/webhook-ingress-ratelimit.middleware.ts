@@ -120,7 +120,11 @@ async function buildLimiter(): Promise<RateLimiterAbstract> {
 
 function getDefaultLimiter(): Promise<RateLimiterAbstract> {
     if (!limiterPromise) {
-        limiterPromise = buildLimiter();
+        limiterPromise = buildLimiter().catch((err: unknown) => {
+            // Don't cache the rejection — let the next request retry the build
+            limiterPromise = null;
+            throw err;
+        });
     }
     return limiterPromise;
 }
