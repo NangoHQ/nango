@@ -16,10 +16,8 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         taskName: 'webhook:abc123',
         createdAt: '2026-04-23T00:00:00.000Z',
         accountId: 1,
-        environmentId: 2,
         integrationId: 3,
         provider: 'github',
-        providerConfigKey: 'github-dev',
         parentSyncName: 'sync-1',
         activityLogId: 'log-1',
         webhookName: 'push',
@@ -104,9 +102,13 @@ function makeHarness(
     return { consumer, sqsSend, sqsDestroy, orchestratorImmediate };
 }
 
-async function runOnce(h: Harness): Promise<void> {
+function getDeleteCalls(h: Harness) {
+    return h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+}
+
+async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise<void> {
     h.consumer.start();
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await vi.waitFor(waitFor);
     await h.consumer.stop();
 }
 
@@ -118,7 +120,9 @@ describe('DispatchQueueConsumer', () => {
     it('schedules a valid message and deletes it on success', async () => {
         const msg = buildMessage();
         const h = makeHarness({ messages: [msg] });
-        await runOnce(h);
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
 
         expect(h.orchestratorImmediate).toHaveBeenCalledTimes(1);
         const call = h.orchestratorImmediate.mock.calls[0]?.[0];
@@ -134,7 +138,7 @@ describe('DispatchQueueConsumer', () => {
                 input: msg.payload
             }
         });
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        const deleteCalls = getDeleteCalls(h);
         expect(deleteCalls).toHaveLength(1);
         expect(h.sqsDestroy).toHaveBeenCalledOnce();
     });
@@ -159,10 +163,12 @@ describe('DispatchQueueConsumer', () => {
             })
         );
 
-        await runOnce(h);
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
 
         expect(h.orchestratorImmediate).toHaveBeenCalledTimes(1);
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        const deleteCalls = getDeleteCalls(h);
         expect(deleteCalls).toHaveLength(1);
     });
 
@@ -170,29 +176,35 @@ describe('DispatchQueueConsumer', () => {
         const h = makeHarness({ messages: [buildMessage()] });
         h.orchestratorImmediate.mockResolvedValueOnce(Err({ name: 'boom', message: 'boom', payload: null }));
 
-        await runOnce(h);
+        await runOnce(h, () => {
+            expect(h.orchestratorImmediate).toHaveBeenCalledTimes(1);
+        });
 
         expect(h.orchestratorImmediate).toHaveBeenCalledTimes(1);
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        const deleteCalls = getDeleteCalls(h);
         expect(deleteCalls).toHaveLength(0);
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
         const h = makeHarness({ badBody: 'not-json' });
-        await runOnce(h);
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
 
         expect(h.orchestratorImmediate).not.toHaveBeenCalled();
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        const deleteCalls = getDeleteCalls(h);
         expect(deleteCalls).toHaveLength(1);
     });
 
     it('rejects a schema-invalid message as poison and deletes it', async () => {
         const invalid = { ...buildMessage(), kind: 'wrong' };
         const h = makeHarness({ badBody: JSON.stringify(invalid) });
-        await runOnce(h);
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
 
         expect(h.orchestratorImmediate).not.toHaveBeenCalled();
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+        const deleteCalls = getDeleteCalls(h);
         expect(deleteCalls).toHaveLength(1);
     });
 

@@ -1,3 +1,5 @@
+import type { JsonValue } from 'type-fest';
+
 /**
  * SQS message envelope for the webhook task-dispatch queue.
  *
@@ -17,7 +19,6 @@ export interface WebhookDispatchMessage {
     createdAt: string;
     accountId: number;
     integrationId: number;
-    /** Kept top-level so publish/consume metrics can tag by provider without an extra lookup. */
     provider: string;
     parentSyncName: string;
     /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
@@ -30,5 +31,5 @@ export interface WebhookDispatchMessage {
         provider_config_key: string;
         environment_id: number;
     };
-    payload: unknown;
+    payload: JsonValue;
 }

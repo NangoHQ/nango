@@ -197,11 +197,7 @@ function isTasksUniqueNameViolation(err: unknown): boolean {
     }
 
     const error = err as { code?: string; constraint?: string; message?: string };
-    return (
-        (error.code === '23505' && error.constraint === 'tasks_unique_name') ||
-        error.message?.includes('tasks_unique_name') === true ||
-        error.message?.includes('duplicate key value violates unique constraint') === true
-    );
+    return error.code === '23505' && error.constraint === 'tasks_unique_name';
 }
 
 // Coalesce concurrent queueSizes queries for the same group keys.

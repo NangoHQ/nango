@@ -1,6 +1,7 @@
 import { Err, Ok, getLogger, retry, routeFetch } from '@nangohq/utils';
 
 import { validateSchedule, validateTask } from './validate.js';
+import { webhookTaskSchedulingSettings } from '../constants.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
@@ -35,6 +36,40 @@ import type { JsonValue } from 'type-fest';
 
 const logger = getLogger('orchestrator.client');
 
+const retryableHttpStatuses = new Set([408, 425, 429]);
+
+function getRouteFetchStatusCode(message: string | undefined): number | null {
+    if (!message) {
+        return null;
+    }
+
+    const match = message.match(/status code (\d{3})\b/);
+    return match ? Number(match[1]) : null;
+}
+
+function shouldRetryRouteFetchResult(res: unknown): boolean {
+    if (!res || typeof res !== 'object' || !('error' in res)) {
+        return false;
+    }
+
+    const error = res.error;
+    if (!error || typeof error !== 'object') {
+        return false;
+    }
+
+    const fetchError = error as { code?: string; message?: string };
+    if (fetchError.code !== 'fetch_failed') {
+        return false;
+    }
+
+    const statusCode = getRouteFetchStatusCode(fetchError.message);
+    if (statusCode === null) {
+        return true;
+    }
+
+    return statusCode >= 500 || retryableHttpStatuses.has(statusCode);
+}
+
 export class OrchestratorClient {
     private baseUrl: string;
 
@@ -56,7 +91,7 @@ export class OrchestratorClient {
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
                 delayMs: 50,
-                retryIf: (res) => 'error' in res
+                retryIf: (res) => shouldRetryRouteFetchResult(res)
             };
             return retry(fetch, retryConfig);
         };
@@ -257,12 +292,7 @@ export class OrchestratorClient {
         const { args, ...rest } = props;
         const schedulingProps = {
             ...rest,
-            retry: { count: 0, max: 0 },
-            timeoutSettingsInSecs: {
-                createdToStarted: 5 * 60,
-                startedToCompleted: 60 * 60,
-                heartbeat: 5 * 60
-            },
+            ...webhookTaskSchedulingSettings,
             args: {
                 ...args,
                 type: 'webhook' as const

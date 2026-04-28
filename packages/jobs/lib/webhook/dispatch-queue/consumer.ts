@@ -2,6 +2,7 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
+import { jsonSchema, webhookTaskSchedulingSettings } from '@nangohq/nango-orchestrator';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import type { Message } from '@aws-sdk/client-sqs';
@@ -23,10 +24,8 @@ const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     taskName: z.string().min(1),
     createdAt: z.string().min(1),
     accountId: z.number(),
-    environmentId: z.number(),
     integrationId: z.number(),
     provider: z.string(),
-    providerConfigKey: z.string(),
     parentSyncName: z.string(),
     activityLogId: z.string(),
     webhookName: z.string(),
@@ -36,7 +35,7 @@ const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
         provider_config_key: z.string(),
         environment_id: z.number()
     }),
-    payload: z.unknown()
+    payload: jsonSchema
 });
 
 export interface DispatchQueueConsumerProps {
@@ -143,9 +142,10 @@ export class DispatchQueueConsumer {
                 }
 
                 const message = parsed.message;
+                const environmentId = message.connection.environment_id;
                 span.setTag('taskName', message.taskName);
                 span.setTag('provider', message.provider);
-                span.setTag('environmentId', message.environmentId);
+                span.setTag('environmentId', environmentId);
 
                 const sentTimestampMs = Number(msg.Attributes?.['SentTimestamp'] ?? '0');
                 if (sentTimestampMs > 0) {
@@ -154,16 +154,15 @@ export class DispatchQueueConsumer {
 
                 const scheduleRes = await this.orchestratorClient.immediate({
                     name: message.taskName,
-                    group: { key: `webhook:environment:${message.environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
-                    retry: { count: 0, max: 0 },
-                    timeoutSettingsInSecs: { createdToStarted: 5 * 60, startedToCompleted: 60 * 60, heartbeat: 5 * 60 },
+                    group: { key: `webhook:environment:${environmentId}`, maxConcurrency: this.webhookMaxConcurrency },
+                    ...webhookTaskSchedulingSettings,
                     args: {
                         type: 'webhook',
                         webhookName: message.webhookName,
                         parentSyncName: message.parentSyncName,
                         connection: message.connection,
                         activityLogId: message.activityLogId,
-                        input: (message.payload ?? null) as never
+                        input: message.payload
                     }
                 });
 
@@ -236,17 +235,9 @@ function isDuplicateTaskNameSchedulingError(err: unknown, taskName: string): boo
                         taskName?: string;
                     };
                 };
-                reason?: string;
-                taskName?: string;
             };
         };
     };
-
-    const directReason = error.payload?.response?.reason;
-    const directTaskName = error.payload?.response?.taskName;
-    if (error.name === 'immediate_failed' && directReason === 'duplicate_task_name' && directTaskName === taskName) {
-        return true;
-    }
 
     return (
         error.name === 'fetch_failed' &&

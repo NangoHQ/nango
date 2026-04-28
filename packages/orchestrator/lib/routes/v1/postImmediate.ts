@@ -118,7 +118,7 @@ const handler = (scheduler: Scheduler) => {
         });
         if (task.isErr()) {
             if (isDuplicateTaskNameError(task.error)) {
-                res.status(500).json({
+                res.status(409).json({
                     error: {
                         code: 'immediate_failed',
                         message: task.error.message,
