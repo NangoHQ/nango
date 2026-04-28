@@ -140,7 +140,7 @@
         "icon": "book-open",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Getting started",
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart"
@@ -172,7 +172,7 @@
                 ]
               },
               {
-                "group": "Use Cases",
+                "group": "Use cases",
                 "expanded": false,
                 "pages": [
                   {
