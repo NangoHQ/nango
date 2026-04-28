@@ -156,8 +156,7 @@
                   "guides/primitives/auth",
                   "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui",
-                  "implementation-guides/platform/auth/contribute-new-api"
+                  "implementation-guides/platform/auth/customize-connect-ui"
                 ]
               },
               {
@@ -212,7 +211,8 @@
                   "implementation-guides/use-cases/webhooks-from-external-apis",
                   "implementation-guides/use-cases/unified-apis",
                   "implementation-guides/use-cases/customer-configuration",
-                  "implementation-guides/use-cases/implement-event-handler"
+                  "implementation-guides/use-cases/implement-event-handler",
+                  "getting-started/sample-app"
                 ]
               },
               {
@@ -236,13 +236,6 @@
                       "implementation-guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Resources",
-                "expanded": false,
-                "pages": [
-                  "getting-started/sample-app"
                 ]
               }
             ]
