@@ -29,12 +29,12 @@ describe(`GET ${route}`, () => {
     });
 
     it('should require the model query parameter', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github' } as any
         });
@@ -50,7 +50,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get paginated records for a model', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -74,7 +74,7 @@ describe(`GET ${route}`, () => {
 
         const firstPage = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', limit: 2 }
         });
@@ -100,7 +100,7 @@ describe(`GET ${route}`, () => {
 
         const secondPage = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', limit: 2, cursor: firstPage.json.data.next_cursor! }
         });
@@ -128,7 +128,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should default to 20 records when limit is omitted', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -148,7 +148,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact' }
         });
@@ -160,7 +160,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get records for a variant', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -180,7 +180,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', variant: 'delta' }
         });
@@ -207,7 +207,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should list metadata only without payload fields when metadata_only=true', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -227,7 +227,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', metadata_only: 'true' } as any
         });
@@ -252,14 +252,14 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return an error for a malformed cursor', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const malformedCursor = Buffer.from('not-a-timestamp||not-a-uuid').toString('base64');
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', cursor: malformedCursor }
         });
@@ -275,7 +275,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should not return records from another connection when using a foreign cursor', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connectionA = await seeders.createConnectionSeed({ env, provider: 'github' });
         const connectionB = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -301,7 +301,7 @@ describe(`GET ${route}`, () => {
         // Obtain a cursor from connection A
         const pageA = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connectionA.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', limit: 1 }
         });
@@ -313,7 +313,7 @@ describe(`GET ${route}`, () => {
         // Use cursor from connection A to query connection B (which has no records)
         const resB = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connectionB.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Contact', cursor: cursor! }
         });
@@ -325,7 +325,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should fetch a full record by record_id', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -345,7 +345,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github', model: 'Issue', record_id: 'by-id-1' }
         });

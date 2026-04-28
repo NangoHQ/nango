@@ -29,12 +29,12 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get empty record models', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github' }
         });
@@ -45,7 +45,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get record models with counts and variants', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -83,7 +83,7 @@ describe(`GET ${route}`, () => {
 
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { connectionId: connection.connection_id },
             query: { env: env.name, provider_config_key: 'github' }
         });
