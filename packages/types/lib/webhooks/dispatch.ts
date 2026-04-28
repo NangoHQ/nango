@@ -14,13 +14,10 @@ export interface WebhookDispatchMessage {
      * idempotency key so duplicate SQS deliveries resolve to the same task.
      */
     taskName: string;
-    /** ISO timestamp of when the server built the message. */
     createdAt: string;
     accountId: number;
-    environmentId: number;
     integrationId: number;
     provider: string;
-    providerConfigKey: string;
     parentSyncName: string;
     /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
     webhookName: string;

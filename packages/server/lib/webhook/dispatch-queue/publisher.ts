@@ -68,10 +68,10 @@ export class DispatchQueuePublisher {
             ...(activeSpan ? { childOf: activeSpan } : {}),
             tags: {
                 'nango.accountId': firstMessage.accountId,
-                'nango.environmentId': firstMessage.environmentId,
+                'nango.environmentId': firstMessage.connection.environment_id,
                 'nango.integrationId': firstMessage.integrationId,
                 'nango.provider': firstMessage.provider,
-                'nango.providerConfigKey': firstMessage.providerConfigKey,
+                'nango.providerConfigKey': firstMessage.connection.provider_config_key,
                 'nango.messageCount': messages.length,
                 'nango.batchCount': batches.length
             }
