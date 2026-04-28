@@ -18917,6 +18917,37 @@ vercel:
             example: 'vcp_6ppUxFRd****r1sc53a'
             doc_section: '#step-1-finding-your-token'
 
+vercel-integration:
+    display_name: Vercel (Integration)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://vercel.com/integrations/${connectionConfig.slug}/new
+    token_url: https://api.vercel.com/v2/oauth/access_token
+    body_format: form
+    disable_pkce: true
+    redirect_uri_metadata:
+        - configurationId
+        - teamId
+        - next
+    token_response_metadata:
+        - team_id
+        - installation_id
+        - user_id
+    connection_config:
+        slug:
+            type: string
+            title: Integration Slug
+            description: The URL slug of your Vercel integration (set in Vercel Integration Console).
+            example: 'my-integration'
+    proxy:
+        base_url: https://api.vercel.com
+        verification:
+            method: GET
+            endpoints:
+                - /v2/user
+    docs: https://nango.dev/docs/api-integrations/vercel-integration
+
 vercel-mcp:
     display_name: Vercel (MCP)
     categories:
