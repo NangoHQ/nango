@@ -59,6 +59,7 @@ export enum Types {
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
+    WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
