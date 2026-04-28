@@ -54,7 +54,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -88,10 +88,10 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
     });
 
     try {
-        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length);
+        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length, { accountId: account.id });
         // using the response content-length header as the records size metric in order to avoid stringifying the response body
         const responseSize = parseInt(res.get('content-length') || '0');
-        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize);
+        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
     } catch {
         // ignore errors
     }

@@ -132,7 +132,7 @@ Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/
 
 ## Contributing
 
-We welcome contributions — anyone can [add support for a new API](https://nango.dev/docs/implementation-guides/platform/auth/contribute-new-api).
+We welcome contributions — anyone can [add support for a new API](https://nango.dev/docs/integrations/contribute-or-request-api).
 
 Thank you to all contributors ❤️
 

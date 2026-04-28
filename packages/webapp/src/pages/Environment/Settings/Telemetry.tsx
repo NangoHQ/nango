@@ -85,12 +85,7 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <ButtonLink
-                            target="_blank"
-                            to="https://nango.dev/docs/implementation-guides/platform/open-telemetry-export"
-                            variant="ghost"
-                            size="icon"
-                        >
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="icon">
                             <ExternalLink />
                         </ButtonLink>
                     </div>

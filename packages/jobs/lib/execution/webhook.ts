@@ -9,6 +9,7 @@ import {
     accountService,
     configService,
     createSyncJob,
+    customerKeyService,
     environmentService,
     externalWebhookService,
     getApiUrl,
@@ -137,7 +138,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -277,10 +278,10 @@ export async function handleWebhookSuccess({
     const team = accountAndEnv.account;
     const environment = accountAndEnv.environment;
 
-    if (environment) {
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
+    if (environment && webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
         }
 
         for (const model of nangoProps.syncConfig.models || []) {
@@ -306,7 +307,7 @@ export async function handleWebhookSuccess({
                             provider_config_key: nangoProps.providerConfigKey
                         },
                         environment: environment,
-                        secret: defaultSecret.value.secret,
+                        secret: webhookSigningKey.value,
                         webhookSettings,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
@@ -471,18 +472,18 @@ async function onFailure({
                 }
             });
 
-            if (team && environment && syncConfig && providerConfig) {
+            if (team && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
-                        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-                        if (defaultSecret.isErr()) {
-                            throw defaultSecret.error;
+                        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                        if (webhookSigningKey.isErr()) {
+                            throw webhookSigningKey.error;
                         }
 
                         const res = await sendSyncWebhook({
                             account: team,
                             environment,
-                            secret: defaultSecret.value.secret,
+                            secret: webhookSigningKey.value,
                             connection: connection,
                             webhookSettings,
                             syncConfig,

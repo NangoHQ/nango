@@ -19,7 +19,7 @@ describe('PATCH /api/v1/flows/:id/enable', () => {
 
     it('should allow re-enabling a flow for non-auto-idling plans with stale expired trial fields', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env, plan, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable-enable', 'airtable');
         await updatePlan(db.knex, {
             id: plan.id,
@@ -35,7 +35,7 @@ describe('PATCH /api/v1/flows/:id/enable', () => {
         const deployRes = await api.fetch(deployEndpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable-enable', scriptName: 'tables', type: 'sync' }
         });
 
@@ -51,7 +51,7 @@ describe('PATCH /api/v1/flows/:id/enable', () => {
             method: 'PATCH',
             params: { id: sync!.id },
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable-enable', scriptName: 'tables', type: 'sync' }
         });
 

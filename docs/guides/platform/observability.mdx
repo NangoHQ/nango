@@ -34,10 +34,33 @@ We recommend exploring the logs in your own Nango account under **Logs**.
 
 ## OpenTelemetry export
 
-Nango supports exporting OpenTelemetry traces.
+Nango supports exporting OpenTelemetry traces so you can monitor and analyze integration activity in your own observability stack.
 
-We recommend this for:
+Use this for:
 - Advanced custom metrics
 - Advanced alerting and escalation paths (e.g., segment sync errors by customer account for customized escalation paths)
 
-To set up OpenTelemetry export, follow our [OpenTelemetry export setup guide](/implementation-guides/platform/open-telemetry-export).
+### Supported operations
+
+The following operations are exported as traces:
+- Sync executions
+- Action executions
+- 3rd-party API webhooks executions
+- Proxied requests
+
+<Info>
+    If you need support for other operations please reach out. We can enable support for them.
+</Info>
+
+### Configuration
+
+<Steps>
+    <Step title="Access your Environment settings">
+        Log into the Nango dashboard and navigate to the Environment settings page.
+    </Step>
+    <Step title="Configure OpenTelemetry Export">
+        In the Environment Settings, provide the following information:
+        - OpenTelemetry endpoint: The endpoint URL of your OpenTelemetry collector. Ex: https://my.otlp.collector:4318
+        - Headers (Optional): Any authorization headers or additional headers required to access your collector.
+    </Step>
+</Steps>

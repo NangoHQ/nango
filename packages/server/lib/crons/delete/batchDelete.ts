@@ -1,13 +1,13 @@
 import { setTimeout } from 'node:timers/promises';
 
-import type { Logger } from '@nangohq/types';
+import type { StrictLogger } from '@nangohq/utils';
 
 export interface BatchDeleteOptions {
     name: string;
     deleteFn: () => Promise<number>;
     deadline: Date;
     limit: number;
-    logger: Logger;
+    logger: StrictLogger;
 }
 
 export type BatchDeleteSharedOptions = Omit<BatchDeleteOptions, 'name' | 'deleteFn'>;

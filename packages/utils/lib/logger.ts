@@ -5,7 +5,20 @@ import winston from 'winston';
 
 import { isCloud, isEnterprise, isTest } from './environment/detection.js';
 
-import type { Logform, Logger } from 'winston';
+import type { LeveledLogMethod, Logform } from 'winston';
+
+// Methods exposed by the logger. Restricted to the syslog levels actually used in the codebase
+// so callers can only invoke level methods that exist at runtime — guards against the INC-99 class
+// of bug where `logger.warn(...)` compiled (winston's Logger has a `[key: string]: any` index
+// signature) but threw at runtime because the syslog level is `warning`, not `warn`. Add other
+// syslog levels (`emerg`, `alert`, `crit`, `notice`) here intentionally if a real need arises.
+export interface StrictLogger {
+    error: LeveledLogMethod;
+    warning: LeveledLogMethod;
+    info: LeveledLogMethod;
+    debug: LeveledLogMethod;
+    close: () => void;
+}
 
 const SPLAT = Symbol.for('splat');
 const level = process.env['LOG_LEVEL'] ? process.env['LOG_LEVEL'] : isTest ? 'error' : 'info';
@@ -58,6 +71,6 @@ const defaultLogger = winston.createLogger({
     transports: [new winston.transports.Console({ level })]
 });
 
-export function getLogger(service?: string): Logger {
-    return defaultLogger.child({ service });
+export function getLogger(service?: string): StrictLogger {
+    return defaultLogger.child({ service }) as unknown as StrictLogger;
 }
