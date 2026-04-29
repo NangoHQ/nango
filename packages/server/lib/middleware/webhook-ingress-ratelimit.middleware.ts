@@ -1,10 +1,10 @@
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
-import { createClient } from 'redis';
 
 import { getRedisUrl } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { createRateLimiterRedisClient } from '../utils/rateLimiterRedisClient.js';
 
 import type { RequestHandler } from 'express';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
@@ -36,12 +36,20 @@ export function createWebhookIngressRateLimit(deps: Deps): RequestHandler {
 
         const envUuid = environmentUuid.toLowerCase();
 
+        function setXRateLimitHeaders(rateLimiterRes: RateLimiterRes) {
+            const resetEpoch = Math.floor(new Date(Date.now() + rateLimiterRes.msBeforeNext).getTime() / 1000);
+            res.setHeader('X-RateLimit-Limit', deps.limit);
+            res.setHeader('X-RateLimit-Remaining', rateLimiterRes.remainingPoints);
+            res.setHeader('X-RateLimit-Reset', resetEpoch);
+        }
+
         try {
             const limiter = await deps.getLimiter();
             const key = `${envUuid}:${providerConfigKey}`;
 
             try {
-                await limiter.consume(key, 1);
+                const resConsume = await limiter.consume(key, 1);
+                setXRateLimitHeaders(resConsume);
                 next();
                 return;
             } catch (err) {
@@ -57,6 +65,8 @@ export function createWebhookIngressRateLimit(deps: Deps): RequestHandler {
                     metrics.increment(metrics.Types.WEBHOOK_INCOMING_RATE_LIMITED, 1, {
                         enforced: deps.enforce ? 'true' : 'false'
                     });
+
+                    setXRateLimitHeaders(err);
 
                     if (deps.enforce) {
                         res.setHeader('Retry-After', retryAfterSeconds);
@@ -94,23 +104,7 @@ async function buildLimiter(): Promise<RateLimiterAbstract> {
         return new RateLimiterMemory(opts);
     }
 
-    const isExternal = url.startsWith('rediss://');
-    const socket = isExternal
-        ? {
-              reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-              connectTimeout: 10_000,
-              tls: true,
-              servername: new URL(url).hostname,
-              keepAlive: 60_000
-          }
-        : {};
-
-    const redisClient = await createClient({
-        url,
-        disableOfflineQueue: true,
-        pingInterval: 30_000,
-        socket
-    }).connect();
+    const redisClient = await createRateLimiterRedisClient(url);
     redisClient.on('error', (err) => {
         logger.error(`Redis (webhook-ingress rate-limiter) error: ${err}`);
     });
