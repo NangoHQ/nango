@@ -25,7 +25,7 @@ description: "Product updates and improvements."
 <Update label="April 14, 2026">
   ## Playground
 
-  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions#guide) and [syncs](/implementation-guides/use-cases/syncs#guide) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions) and [syncs](/implementation-guides/use-cases/syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
 
   ![Playground](/images/changelog/playground.gif)
 
@@ -171,7 +171,7 @@ description: "Product updates and improvements."
   });
   ```
 
-  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs#checkpoints).
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints).
 
   **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
 
@@ -262,7 +262,7 @@ description: "Product updates and improvements."
   - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload.
   - **Automated hard deletion:** If a sync has not executed for 60 days, we permanently delete all records belonging to that sync (payload and metadata).
 
-  These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs#records-cache).
+  These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs/records-cache).
 
   We also introduced a new endpoint to manually prune records.
 
@@ -583,7 +583,7 @@ description: "Product updates and improvements."
 
   ## Improved deletion detection when syncing data
 
-  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs#deletion-detection)).
+  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection)).
 
   Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 
@@ -1066,7 +1066,7 @@ description: "Product updates and improvements."
 
   The API and UI give you full control over these syncs, letting you create, manage, and monitor them with ease.
 
-  [Learn more in the docs](/implementation-guides/use-cases/syncs#sync-partitioning).
+  [Learn more in the docs](/implementation-guides/use-cases/syncs/sync-partitioning).
 
   ---
 

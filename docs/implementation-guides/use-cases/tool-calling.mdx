@@ -340,6 +340,7 @@ Requests must include the following headers:
 - `Authorization`: Bearer token with your Nango secret key
 - `connection-id`: The connection ID that determines available functions
 - `provider-config-key`: The integration ID
+- `Accept: application/json, text/event-stream` — required by the Streamable HTTP transport spec; clients must advertise both content types
 
 Point any MCP-compatible client at that URL with those headers and you're done. For a full chat-loop reference implementation, see the [Nango MCP Client Example repo](https://github.com/NangoHQ/nango-mcp-client-example).
 
