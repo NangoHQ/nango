@@ -16,12 +16,12 @@ Connect to Ocean.io with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Ocean.io API token. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Ocean.io API">
-    Let's make your first request to the Ocean.io API (enrich a company). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Ocean.io API (fetch your credits balance). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/v2/enrich" \
+            curl "https://api.nango.dev/proxy/v2/credits/balance" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to Ocean.io with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/v2/enrich',
+            endpoint: '/v2/credits/balance',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
