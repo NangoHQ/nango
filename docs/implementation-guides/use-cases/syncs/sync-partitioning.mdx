@@ -1,20 +1,22 @@
 ---
 title: 'Sync partitioning'
 sidebarTitle: 'Sync partitioning'
-description: 'Guide on how to use sync variants to partition data and optimize sync execution.'
+description: 'Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.'
 ---
 
-Sync partitioning enables more flexible and scalable data synchronization by allowing you to create multiple independent “variants” of the same sync. This feature is particularly useful when dealing with large datasets, multiple tenants, or different filtering requirements within the same integration.
+Sync variants let you spawn multiple independent sync processes **inside a single connection** — one per mailbox, file folder, Slack channel, repo, or any other sub-resource the end-user has access to. Each variant runs on its own schedule, with its own checkpoint and records cache, so a slow partition doesn't block a fast one.
+
+Nango is already multi-tenant by default — every sync function executes in the context of an end-user [Connection](/guides/primitives/auth#overview), and runs independently for each connection. Variants are for the next level down: fan-out *within* one connection.
 
 ## Overview
 
-Traditionally, a sync is defined once in a TypeScript file and executed for each connection. With sync partitioning, you can create multiple sync “variants” that share the same base configuration but run independently. Each variant has its own execution schedule, last sync timestamp, and data storage.
+Traditionally, a sync function is defined once and executed once per connection. With variants, you can create multiple instances of the same function that share the base configuration but run independently. Each variant has its own execution schedule, checkpoint, and data storage.
 
 Key benefits:
-- Parallel execution: Variants run independently, allowing more granular control over sync execution.
-- Custom filtering: Each variant can target different subsets of data.
-- Better resource utilization: Distribute sync load across multiple partitions instead of running a single, monolithic sync.
-- Tenant-based partitioning: Useful for multi-tenant applications where data is synced per customer.
+- **Parallel execution** — variants run independently, so a slow mailbox or folder doesn't block the others.
+- **Custom filtering** — each variant can target a different sub-resource (e.g., a specific Gmail label, a specific Drive folder).
+- **Per-partition state** — each variant has its own checkpoint and cache, so failures and re-syncs are isolated.
+- **Dynamic scale** — create or delete variants programmatically as the end-user adds/removes sub-resources.
 
 ## How sync variants work
 
@@ -59,7 +61,7 @@ To create a sync variant, use the Nango API or SDK. The variant must have a uniq
   </Tab>
 </Tabs>
 
-This creates a new variant named high-value-orders for the sync-orders sync. It will run separately from the base variant.
+This creates a new variant named `high-value-orders` for the `sync-orders` sync. It will run separately from the base variant.
 
 ## Running & managing sync variants
 
@@ -69,7 +71,7 @@ Check out the [HTTP API reference](/reference/api/sync/trigger) or [Node SDK ref
 
 ## Accessing the variant in a sync script
 
-When a sync script runs, the variant name is available via nango.variant. You can use this to customize the behavior of your sync.
+When a sync script runs, the variant name is available via `nango.variant`. You can use this to customize the behavior of your sync.
 
 ```ts example-partitioned-sync-script.ts
 export default createSync({
@@ -82,19 +84,21 @@ export default createSync({
     });
 
     // Records are saved in the context of this specific variant.
-    await nango.batchSave(res.data.orders, 'Order'); 
+    await nango.batchSave(res.data.orders, 'Order');
   },
 });
 ```
 
 ## Fetching data for a variant
 
-Use the variant query parameter when retrieving records from the Nango API.
+Use the `variant` query parameter when retrieving records from the Nango API.
 
 <Tabs>
   <Tab title="Node">
     ```ts
-    const records = await nango.getRecords({
+    const records = await nango.listRecords({
+      providerConfigKey: 'my-integration',
+      connectionId: 'customer-123',
       model: 'Order',
       variant: 'high-value-orders'
     });
@@ -109,16 +113,7 @@ Use the variant query parameter when retrieving records from the Nango API.
   </Tab>
 </Tabs>
 
-Retrieving metadata in a sync script:
-
-```ts example-partitioned-sync-script.ts
-const metadata = await nango.getMetadata();
-const threshold = metadata[`${nango.variant}.threshold`] || 100;
-
-await nango.log(`Filtering orders above ${threshold}`);
-```
-
-This fetches only the records for the high-value-orders variant.
+This fetches only the records for the `high-value-orders` variant.
 
 ## Storing variant-specific context
 
@@ -129,7 +124,7 @@ Storing metadata:
 <Tabs>
   <Tab title="Node">
     ```ts
-    await nango.setMetadata('customer-123', {
+    await nango.setMetadata('my-integration', 'customer-123', {
       'high-value-orders.threshold': 500
     });
     ```
@@ -159,14 +154,4 @@ const threshold = metadata[`${nango.variant}.threshold`] || 100;
 await nango.log(`Filtering orders above ${threshold}`);
 ```
 
-
-## Best Practices
-- Limit the number of variants per sync to avoid excessive fragmentation.
-- Ensure variants do not overlap in data scope, unless intentional.
-- Store variant-specific settings in metadata instead of hardcoding them in the sync script.
-
-Sync partitioning with variants is a powerful way to scale and optimize your integrations, ensuring efficient and flexible data synchronization.
-
-<Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+Keep variants non-overlapping in data scope (unless intentional), store variant-specific settings in connection metadata rather than hardcoding them, and avoid creating one variant per row of data — variants are best for partitioning, not row-level fan-out.

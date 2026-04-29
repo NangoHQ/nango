@@ -9,6 +9,7 @@ import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
 
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Metadata } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
@@ -99,6 +100,47 @@ describe('Connection service integration tests', () => {
             const matchedConnectionIds = (matches || []).map((c) => c.connection_id);
             expect(matchedConnectionIds).toEqual(expect.arrayContaining([scalar.connection_id, array.connection_id]));
             expect(matchedConnectionIds).not.toContain(otherIntegration.connection_id);
+        });
+    });
+
+    describe('upsertAuthConnection', () => {
+        it('on conflict merge should persist metadata from the payload, not copy connection_config into metadata', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `openai-md-${Math.random().toString(36).slice(2, 10)}`, 'openai')) as ProviderConfig;
+            const connectionId = `conn-md-${Math.random().toString(36).slice(2, 10)}`;
+            const credentials = { type: 'API_KEY' as const, apiKey: 'sk-test-import-key' };
+
+            await connectionService.upsertAuthConnection({
+                connectionId,
+                providerConfigKey: config.unique_key,
+                credentials,
+                connectionConfig: { onlyInConfig: 'config-value' },
+                metadata: { restletEndpoint: 'https://example.com/rest' },
+                config,
+                environment: env
+            });
+
+            const first = await connectionService.getConnection(connectionId, config.unique_key, env.id);
+            expect(first.success).toBe(true);
+            expect(first.response!.metadata).toEqual({ restletEndpoint: 'https://example.com/rest' });
+            expect((first.response!.connection_config as Record<string, string>)['onlyInConfig']).toBe('config-value');
+
+            await connectionService.upsertAuthConnection({
+                connectionId,
+                providerConfigKey: config.unique_key,
+                credentials,
+                connectionConfig: { onlyInConfig: 'updated', extraConfig: 'y' },
+                metadata: { otherKey: 42 },
+                config,
+                environment: env
+            });
+
+            const second = await connectionService.getConnection(connectionId, config.unique_key, env.id);
+            expect(second.success).toBe(true);
+            expect(second.response!.metadata).toEqual({ otherKey: 42 });
+            expect(second.response!.metadata).not.toHaveProperty('onlyInConfig');
+            expect((second.response!.connection_config as Record<string, unknown>)['onlyInConfig']).toBe('updated');
+            expect((second.response!.connection_config as Record<string, unknown>)['extraConfig']).toBe('y');
         });
     });
 

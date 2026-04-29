@@ -1,19 +1,19 @@
 import type { UsageEvent, UsageMetric } from '@nangohq/types';
 
 interface GetUsageQueryMetricDimensions<TDimension extends string = 'none'> {
-    dimension: 'none' | 'environment_id' | 'integration_id' | 'connection_id' | TDimension;
+    dimension: 'none' | 'environment_id' | 'integration_id' | TDimension;
 }
 
 type ValidateMetrics<T extends Record<UsageMetric, unknown> & Record<Exclude<keyof T, UsageMetric>, never>> = T;
 
 type GetUsageQueryMetrics = ValidateMetrics<{
     connections: GetUsageQueryMetricDimensions;
-    records: GetUsageQueryMetricDimensions<'model'>;
-    proxy: GetUsageQueryMetricDimensions<'success'>;
-    webhook_forwards: GetUsageQueryMetricDimensions<'success'>;
-    function_executions: GetUsageQueryMetricDimensions<'function_name' | 'function_type' | 'success'>;
-    function_logs: GetUsageQueryMetricDimensions<'function_name' | 'function_type' | 'success'>;
-    function_compute_gbms: GetUsageQueryMetricDimensions<'function_name' | 'function_type' | 'success'>;
+    records: GetUsageQueryMetricDimensions<'connection_id' | 'model'>;
+    proxy: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
+    webhook_forwards: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
+    function_executions: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
+    function_logs: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
+    function_compute_gbms: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
 }>;
 export interface GetUsageQuery {
     accountId: UsageEvent['payload']['properties']['accountId'];
@@ -92,9 +92,9 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'webhook_forwards':
             return `daily_webhook_forwards`;
         case 'records':
+            return `daily_records`;
         case 'connections':
-            // not implemented yet
-            return '';
+            return `daily_connections`;
     }
 }
 
@@ -110,7 +110,6 @@ export function quantityForMetric(metric: UsageMetric): string {
             return `SUM(compute_gbms)`;
         case 'records':
         case 'connections':
-            // not implemented yet
-            return '';
+            return `avgMerge(value)`;
     }
 }

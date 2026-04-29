@@ -6,10 +6,23 @@ import { logger } from '../logger.js';
 import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 
 import type { GetUsageQuery, GetUsageResult, GetUsageResultSeries } from './clickhouse.query.js';
-import type { UsageEvent, UsageMetric } from '@nangohq/types';
+import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageMetric, UsageRecordsEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const envs = parseEnvs(ENVS);
+
+// Exclude accountId, which is already a top-level column, and environmentName which is not needed for usage metrics
+type UsageAttrs<E extends { payload: { properties: object } }, K extends string = never> = Omit<
+    E['payload']['properties'],
+    'accountId' | 'environmentName' | K
+>;
+
+type ClickhouseRawUsageEventAttrs =
+    | UsageAttrs<UsageFunctionExecutionsEvent>
+    | UsageAttrs<UsageConnectionsEvent, 'connectionId'>
+    | UsageAttrs<UsageActionsEvent>
+    | UsageAttrs<UsageEvent>
+    | UsageAttrs<UsageRecordsEvent, 'syncId'>;
 
 export interface ClickhouseRawUsageEvent {
     ts: number; // Unix timestamp in milliseconds, matches DateTime64(3)
@@ -17,7 +30,7 @@ export interface ClickhouseRawUsageEvent {
     type: UsageEvent['type'];
     value: UsageEvent['payload']['value'];
     account_id: UsageEvent['payload']['properties']['accountId'];
-    attributes: Omit<UsageEvent['payload']['properties'], 'accountId'>;
+    attributes: ClickhouseRawUsageEventAttrs;
 }
 
 export class Clickhouse {
@@ -57,11 +70,18 @@ export class Clickhouse {
         if (!this.batcher) {
             return Ok(undefined);
         }
-        const rows = events.flatMap((event) => {
-            const row = toRow(event);
-            return row && row.value > 0 ? [row] : [];
+        const raws = events.flatMap((event) => {
+            const raw = toRaw(event);
+            return raw ? [raw] : [];
         });
-        return this.batcher.add(...rows);
+        return this.batcher.add(...raws);
+    }
+
+    addRaw(events: ClickhouseRawUsageEvent[]): Result<void> {
+        if (!this.batcher) {
+            return Ok(undefined);
+        }
+        return this.batcher.add(...events);
     }
 
     flush(): Promise<Result<void>> {
@@ -113,9 +133,62 @@ export class Clickhouse {
                         };
                     }
                     case 'records':
-                    case 'connections':
-                        // not implemented yet
-                        return undefined;
+                    case 'connections': {
+                        // Gauge metrics (ie: snapshot emitted at interval)
+                        // Quantity is considered to be the average of all snapshots for a given day
+                        // Two-level query to correctly aggregate across sub-groups:
+                        //   inner: avgMerge accross all dimensions ORDER BY key
+                        //   outer: SUM per requested dimension: avg(A)+avg(B) = avg(A+B)
+                        const innerGroupBy = (() => {
+                            switch (metric) {
+                                case 'records':
+                                    return `account_id, day, environment_id, integration_id, connection_id, model`;
+                                case 'connections':
+                                    return `account_id, day, environment_id, integration_id`;
+                            }
+                        })();
+                        const startDate = query.timeframe.start.toISOString().split('T')[0];
+                        const endDate = query.timeframe.end.toISOString().split('T')[0];
+                        const quantityExpr = (() => {
+                            switch (query.granularity) {
+                                case 'none':
+                                    return `ROUND(SUM(avg_val) / GREATEST(1, dateDiff('day', toDate('${startDate}'), toDate('${endDate}'))))`;
+                                case 'day':
+                                    return `ROUND(SUM(avg_val))`;
+                            }
+                        })();
+                        const sql = `
+                            SELECT
+                                ${quantityExpr} AS quantity,
+                                ${startSelect(query)}
+                                ${dimensionSelect} AS dimension
+                            FROM (
+                                SELECT
+                                    avgMerge(value) AS avg_val,
+                                    ${innerGroupBy}
+                                FROM ${this.database}.${tableForMetric(metric)}
+                                WHERE account_id = ${query.accountId}
+                                AND day >= toDate('${startDate}')
+                                AND day < toDate('${endDate}')
+                                GROUP BY ${innerGroupBy}
+                            )
+                            GROUP BY account_id ${granularityGroupBy(query)} ${dimensionGroupBy}
+                            ORDER BY account_id ${granularityOrderBy(query)} ${dimensionOrderBy}
+                        `;
+                        const res = await this.client?.query({ query: sql, format: 'JSONEachRow' });
+                        return {
+                            accountId: query.accountId,
+                            metric,
+                            dimension,
+                            rows: (await res?.json()) as {
+                                quantity: number;
+                                start: string;
+                                end: string;
+                                dimension: string;
+                            }[],
+                            viewMode: 'cumulative' as const
+                        };
+                    }
                 }
             });
             const results = await Promise.allSettled(qs);
@@ -145,12 +218,23 @@ export class Clickhouse {
                         });
                     }
 
+                    const shouldProrate = viewMode === 'cumulative' && query.granularity === 'day';
+                    const timeframeDays = shouldProrate
+                        ? Math.max(1, (query.timeframe.end.getTime() - query.timeframe.start.getTime()) / (1000 * 60 * 60 * 24))
+                        : 1;
+
                     // sort series by dimension value for consistent ordering
                     const series = Object.entries(seriesMap)
                         .sort(([a], [b]) => a.localeCompare(b))
-                        .map(([, value]) => value);
+                        .map(([, value]) => {
+                            if (shouldProrate) {
+                                value.total = Math.round(value.total / timeframeDays);
+                            }
+                            return value;
+                        });
 
-                    const total = rows.reduce((sum, row) => sum + row.quantity, 0);
+                    const seriesTotal = rows.reduce((sum, row) => sum + row.quantity, 0);
+                    const total = shouldProrate ? Math.round(seriesTotal / timeframeDays) : seriesTotal;
 
                     usage.metrics[metric] = {
                         series,
@@ -180,7 +264,7 @@ export class Clickhouse {
     }
 }
 
-function toRow(event: UsageEvent): ClickhouseRawUsageEvent | null {
+function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
     switch (event.type) {
         case 'usage.monthly_active_records':
         case 'usage.actions':
