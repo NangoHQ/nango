@@ -44,8 +44,8 @@ export const acceptInvite = asyncWrapper<AcceptInvite>(async (req, res) => {
     }
 
     // User is stored in session, so we need to update the DB
-    // @ts-expect-error you got to love passport
-    req.session.passport.user = updated;
+    const passportSession = (req.session as typeof req.session & { passport: { user: typeof updated } }).passport;
+    passportSession.user = updated;
     req.session.save((err) => {
         if (err) {
             res.status(500).send({ error: { code: 'server_error', message: 'failed to update session' } });

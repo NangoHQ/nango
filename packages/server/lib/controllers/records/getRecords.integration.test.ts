@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { format, migrate as migrateRecords, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
+import { getLookbackCutoff } from './getRecords.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/records';
@@ -263,6 +264,58 @@ describe(`GET ${route}`, () => {
 
         isSuccess(resMultiple.json);
         expect(resMultiple.json.records).toHaveLength(3);
+    });
+
+    it('should reject delta older than 12 months', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const tooOld = new Date(getLookbackCutoff().getTime() - 1).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', delta: tooOld },
+            headers: { 'connection-id': 't', 'provider-config-key': 'a' }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_query_params',
+                errors: [{ code: 'custom', message: 'must be within the last 12 months', path: ['delta'] }]
+            }
+        });
+    });
+
+    it('should reject modified_after older than 12 months', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const tooOld = new Date(getLookbackCutoff().getTime() - 1).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', modified_after: tooOld },
+            headers: { 'connection-id': 't', 'provider-config-key': 'a' }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_query_params',
+                errors: [{ code: 'custom', message: 'must be within the last 12 months', path: ['modified_after'] }]
+            }
+        });
+    });
+
+    it('should accept delta within 12 months', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+        const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', delta: oneHourAgo },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
     });
 
     it('should query by id', async () => {

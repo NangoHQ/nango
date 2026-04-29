@@ -1,21 +1,14 @@
 ---
 title: 'Receive webhooks from Nango'
 sidebarTitle: 'Webhooks from Nango'
-description: 'Step by step guide to receive webhooks from Nango'
+description: 'Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.'
 ---
 
-Nango uses webhooks to notify your application of important events.
+Nango POSTs webhooks to your app to notify it of important events: a new connection was created, a sync run finished, an async action completed, or an external webhook was forwarded. This page covers how to receive and verify them, and the payload for each type.
 
 <Info>
-This page covers webhooks that Nango sends to your application. To process webhooks from external APIs, please read the [Webhooks from external APIs](/implementation-guides/use-cases/webhooks-from-external-apis) guide.
+To process webhooks coming **from external APIs** (not from Nango), see [Process external webhooks](/implementation-guides/use-cases/webhooks-from-external-apis).
 </Info>
-
-## Overview of Nango webhooks
-
-The most common webhooks are:
-- **New connection created**: Sent whenever a new [connection](/guides/primitives/auth#overview) has been created
-- **Sync execution finished**: Sent whenever a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution completes
-- **Forwarded webhook**: Sent when Nango forwards [webhooks from an external API](/implementation-guides/use-cases/webhooks-from-external-apis) to your app
 
 ## Set up webhooks from Nango
 
@@ -235,7 +228,7 @@ Payload received following a refresh token error:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs/implement-a-sync) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync](/implementation-guides/use-cases/syncs) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
@@ -257,7 +250,7 @@ Payload received following a successful sync execution:
 }
 ```
 
-The `modifiedAfter` is an ISO-8601 format string (e.g. `2025-05-21T18:52:49.838Z`) that represents the start time of the last sync.  When the webhook target application receives this payload, it should store this value against the `connectionId` as a "bookmark".  On the next sync webhook event, use the stored bookmark to retrieve the changed records and store the new `modifiedAfter` as the next bookmark.  This mechanism ensures that no deltas are missed.
+`modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/implementation-guides/use-cases/syncs/records-cache#cursors-and-sync-progress).
 
 <Warning>
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and syncs not executed for 60 days will have all records deleted.

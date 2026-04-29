@@ -90,11 +90,67 @@
     },
     {
       "source": "/guides/mcp",
-      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/overview",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/any-llm",
+      "destination": "/implementation-guides/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
+      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
+      "destination": "/implementation-guides/use-cases/syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions/implement-an-action",
+      "destination": "/implementation-guides/use-cases/actions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions/async-actions",
+      "destination": "/implementation-guides/use-cases/actions#async-execution"
     },
     {
       "source": "/guides/primitives/proxy",
@@ -140,7 +196,7 @@
         "icon": "book-open",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Getting started",
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart"
@@ -156,8 +212,7 @@
                   "guides/primitives/auth",
                   "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui",
-                  "implementation-guides/platform/auth/contribute-new-api"
+                  "implementation-guides/platform/auth/customize-connect-ui"
                 ]
               },
               {
@@ -172,47 +227,27 @@
                 ]
               },
               {
-                "group": "Use Cases",
+                "group": "Use cases",
                 "expanded": false,
                 "pages": [
+                  "implementation-guides/use-cases/tool-calling",
                   {
-                    "group": "AI tool calling & MCP",
+                    "group": "Sync external API data",
                     "pages": [
-                      "implementation-guides/use-cases/tool-calling/overview",
-                      "implementation-guides/use-cases/tool-calling/openai-sdk",
-                      "implementation-guides/use-cases/tool-calling/anthropic-sdk",
-                      "implementation-guides/use-cases/tool-calling/vercel-sdk",
-                      "implementation-guides/use-cases/tool-calling/mastra-sdk",
-                      "implementation-guides/use-cases/tool-calling/google-sdk",
-                      "implementation-guides/use-cases/tool-calling/langchain-sdk",
-                      "implementation-guides/use-cases/tool-calling/llamaindex-sdk",
-                      "implementation-guides/use-cases/tool-calling/openai-agents-sdk",
-                      "implementation-guides/use-cases/tool-calling/any-llm",
-                      "implementation-guides/use-cases/tool-calling/implement-mcp-server"
-                    ]
-                  },
-                  {
-                    "group": "Syncs, RAG & triggers",
-                    "pages": [
-                      "implementation-guides/use-cases/syncs/implement-a-sync",
-                      "implementation-guides/use-cases/syncs/records-cache",
+                      "implementation-guides/use-cases/syncs",
                       "implementation-guides/use-cases/syncs/checkpoints",
                       "implementation-guides/use-cases/syncs/deletion-detection",
                       "implementation-guides/use-cases/syncs/realtime-syncs",
+                      "implementation-guides/use-cases/syncs/records-cache",
                       "implementation-guides/use-cases/syncs/sync-partitioning"
                     ]
                   },
-                  {
-                    "group": "Actions",
-                    "pages": [
-                      "implementation-guides/use-cases/actions/implement-an-action",
-                      "implementation-guides/use-cases/actions/async-actions"
-                    ]
-                  },
+                  "implementation-guides/use-cases/actions",
                   "implementation-guides/use-cases/webhooks-from-external-apis",
                   "implementation-guides/use-cases/unified-apis",
                   "implementation-guides/use-cases/customer-configuration",
-                  "implementation-guides/use-cases/implement-event-handler"
+                  "implementation-guides/use-cases/implement-event-handler",
+                  "getting-started/sample-app"
                 ]
               },
               {
@@ -236,13 +271,6 @@
                       "implementation-guides/platform/migrations/migrate-to-zero-yaml"
                     ]
                   }
-                ]
-              },
-              {
-                "group": "Resources",
-                "expanded": false,
-                "pages": [
-                  "getting-started/sample-app"
                 ]
               }
             ]

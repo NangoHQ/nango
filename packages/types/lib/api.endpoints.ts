@@ -74,7 +74,8 @@ import type {
     PatchIntegration,
     PatchPublicIntegration,
     PostIntegration,
-    PostPublicIntegration
+    PostPublicIntegration,
+    PostPublicQuickstartIntegration
 } from './integration/api.js';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
@@ -130,6 +131,7 @@ export type PublicApiEndpoints =
     | PostPublicConnectTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
+    | PostPublicQuickstartIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization

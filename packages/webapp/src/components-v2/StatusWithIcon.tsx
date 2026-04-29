@@ -22,7 +22,7 @@ const statusVariants = cva('flex items-center justify-center [&_svg]:size-4.5 [&
 interface StatusWithIconProps extends VariantProps<typeof statusVariants> {
     children: React.ReactNode;
     className?: string;
-    tooltipContent?: string;
+    tooltipContent?: React.ReactNode;
 }
 
 export const StatusWithIcon: React.FC<StatusWithIconProps> = ({ variant, className, children, tooltipContent, ...props }) => {
@@ -36,7 +36,7 @@ export const StatusWithIcon: React.FC<StatusWithIconProps> = ({ variant, classNa
         return (
             <Tooltip>
                 <TooltipTrigger asChild>{status}</TooltipTrigger>
-                <TooltipContent side="bottom" align="center">
+                <TooltipContent side="bottom" align="center" className="pointer-events-auto">
                     {tooltipContent}
                 </TooltipContent>
             </Tooltip>

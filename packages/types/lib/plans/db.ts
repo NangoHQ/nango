@@ -128,7 +128,7 @@ export interface DBPlan extends Timestamps {
 
     /**
      * Enable role-based access control (non-administrator roles)
-     * When false, all users/invites must be 'administrator'
+     * When false, all users/invites must use the default user role
      * @default false
      */
     has_rbac: boolean;
@@ -204,4 +204,10 @@ export interface DBPlan extends Timestamps {
      * @default null
      */
     fleet_node_routing_override: string | null;
+
+    /**
+     * Enable or disable tenant isolation for functions executions
+     * @default false
+     */
+    lambda_tenant_isolation: boolean;
 }

@@ -10,6 +10,7 @@ interface ConditionalTooltipProps {
     condition?: boolean;
     children: React.ReactNode;
     content: React.ReactNode;
+    contentClassName?: string;
     asChild?: boolean;
     side?: 'left' | 'right' | 'top' | 'bottom';
 }
@@ -21,6 +22,7 @@ interface ConditionalTooltipProps {
 export const ConditionalTooltip: React.FC<ConditionalTooltipProps & React.ComponentProps<typeof TooltipPrimitive.Root>> = ({
     condition,
     content,
+    contentClassName,
     asChild,
     side = 'bottom',
     children,
@@ -36,7 +38,9 @@ export const ConditionalTooltip: React.FC<ConditionalTooltipProps & React.Compon
         <TooltipSuppressedContext.Provider value={true}>
             <Tooltip {...props}>
                 <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
-                <TooltipContent side={side}>{content}</TooltipContent>
+                <TooltipContent side={side} className={contentClassName}>
+                    {content}
+                </TooltipContent>
             </Tooltip>
         </TooltipSuppressedContext.Provider>
     );
