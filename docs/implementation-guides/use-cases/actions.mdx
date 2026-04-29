@@ -26,62 +26,23 @@ Actions are ideal when you want to:
 - Actions can be used to build [unified APIs](/implementation-guides/use-cases/unified-apis)
 - All action invocations and API requests are logged in [Nango's logs](/guides/platform/observability)
 
-## Guide
+## Build an action
 
-<Note>
-  You can enable a pre-built action function directly from the dashboard, then skip to step 2.
-</Note>
-
-<Steps>
-
-<Step title="Build & deploy your action function">
-
-Follow the [Functions guide](/guides/primitives/functions#guide) — pick the **HTTP** tab to scaffold an action function, then test, and deploy it.
+Follow the [Functions guide](/guides/primitives/functions#guide) and pick the **HTTP** tab — it walks through scaffolding, dev mode, testing, deploying, and triggering from your app.
 
 <Warning>
   The output of an action cannot exceed 2 MB.
 </Warning>
 
-</Step>
+For action-specific concerns, see:
 
-<Step title="Trigger your action">
+- [Async execution](#async-execution) — fire-and-forget batch invocations with automatic retries.
+- [Actions calling actions (workflows)](#actions-calling-actions-workflows) — chain actions to compose multi-step operations.
+- [Using actions with the MCP Server](#using-actions-with-the-mcp-server) — expose actions as tools to AI agents.
 
-You can trigger actions from your backend with the [REST API](/reference/api/action/trigger) or [Node SDK](/reference/sdks/node#actions). The default behavior is synchronous execution — the response from the API/SDK is the output of your action.
-
-<Tabs>
-    <Tab title="cURL (standard endpoint)">
-        ```bash
-        curl --request POST \
-        --url https://api.nango.dev/action/trigger \
-        --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-        --header 'Connection-Id: <CONNECTION-ID>' \
-        --header 'Provider-Config-Key: <INTEGRATION-ID>' \
-        --data '{
-            "action_name": "<ACTION-NAME>",
-            "input": { ... }
-        }'
-        ```
-    </Tab>
-    <Tab title="Node SDK">
-        ```ts
-        import { Nango }  from '@nangohq/node';
-
-        const nango = new Nango({ secretKey: '<ENV-SECRET-KEY>' });
-
-        const result = await nango.triggerAction({
-        connectionId: '<CONNECTION-ID>',
-        providerConfigKey: '<INTEGRATION-ID>',
-        action: '<ACTION-NAME>',
-        input: { ... }
-        });
-        ```
-    </Tab>
-</Tabs>
-
-For bursty or bulk workloads, run actions [asynchronously](#async-execution) instead.
-
-</Step>
-</Steps>
+<Note>
+  Skipping the build entirely? Enable a [pre-built template](https://www.nango.dev/templates) from the dashboard.
+</Note>
 
 ## Async execution
 
