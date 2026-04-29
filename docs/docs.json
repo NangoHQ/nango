@@ -596,6 +596,7 @@
               "integrations/all/crisp",
               "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
+              "api-integrations/crunchbase",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",

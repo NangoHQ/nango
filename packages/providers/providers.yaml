@@ -5250,6 +5250,28 @@ crisp-plugin-install:
     docs: https://nango.dev/docs/api-integrations/crisp-plugin-install
     setup_guide_url: https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin
 
+crunchbase:
+    display_name: Crunchbase
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.crunchbase.com/
+        headers:
+            x-cb-user-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/data/entities/organizations/crunchbase
+    docs: https://nango.dev/docs/api-integrations/crunchbase
+    docs_connect: https://nango.dev/docs/api-integrations/crunchbase/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Crunchbase API key.
+            doc_section: '#step-1-get-your-api-key'
+
 dixa:
     display_name: Dixa
     categories:
