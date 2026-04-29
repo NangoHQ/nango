@@ -1,17 +1,17 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, isCloud } from '@nangohq/utils';
 
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
-import type { DBAPISecret, Result } from '@nangohq/types';
+import type { DBAPISecret, DBEnvironment, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
 const API_SECRETS_TABLE = 'api_secrets';
 
 class SecretService {
-    public async getInternalSecretForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret>> {
+    public async getDefaultSecretForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret>> {
         try {
             const [secret] = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').where({
                 environment_id: envId,
@@ -23,7 +23,21 @@ class SecretService {
                 // by throwing, and let the exception bubble up the call chain.
                 throw new NangoError('no_default_api_secret', { environment_id: envId });
             }
-            return Ok(encryptionManager.decryptAPISecret(secret)); // Callers expect unencrypted secret.
+            const decrypted = encryptionManager.decryptAPISecret(secret); // Callers expect unencrypted secret.
+
+            // Self-hosted operator override: NANGO_SECRET_KEY_<ENV_NAME> takes precedence,
+            // mirroring the override honored by account.service#getAccountContextBySecretKey
+            // and the dashboard's getEnvironment controller. Without this, webhook HMAC
+            // signing diverges from what callers expect when they configure the env var.
+            if (!isCloud) {
+                const env = await trx.select<Pick<DBEnvironment, 'name'>>('name').from<DBEnvironment>('_nango_environments').where({ id: envId }).first();
+                const override = env?.name && process.env[`NANGO_SECRET_KEY_${env.name.toUpperCase()}`];
+                if (override) {
+                    decrypted.secret = override;
+                }
+            }
+
+            return Ok(decrypted);
         } catch (err) {
             return Err(err);
         }
