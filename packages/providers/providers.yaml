@@ -5960,6 +5960,26 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://nango.dev/docs/integrations/all/eventbrite
 
+etsy:
+    display_name: Etsy
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://www.etsy.com/oauth/connect
+    token_url: https://api.etsy.com/v3/public/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.etsy.com
+        headers:
+            x-api-key: ${clientId}:${clientSecret}
+    docs: https://nango.dev/docs/api-integrations/etsy
+    setup_guide_url: https://nango.dev/docs/api-integrations/etsy/how-to-register-your-own-etsy-api-oauth-app
+
 exa:
     display_name: Exa
     categories:
@@ -12733,12 +12753,15 @@ paligo:
             title: Username
             description: Your Paligo account username (email address).
             example: name@example.com
+            format: email
             doc_section: '#step-3-enter-credentials-in-the-connect-ui'
         password:
             type: string
             title: API Key
             description: The API key token generated.
             secret: true
+            pattern: '^[A-F0-9]+$'
+            example: 74E12F****************************9C5D6F
             doc_section: '#step-2-create-an-api-key'
 
 pandadoc:
