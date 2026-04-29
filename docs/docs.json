@@ -145,26 +145,6 @@
       "destination": "/implementation-guides/use-cases/syncs"
     },
     {
-      "source": "/implementation-guides/use-cases/syncs/records-cache",
-      "destination": "/implementation-guides/use-cases/syncs#records-cache"
-    },
-    {
-      "source": "/implementation-guides/use-cases/syncs/checkpoints",
-      "destination": "/implementation-guides/use-cases/syncs#checkpoints"
-    },
-    {
-      "source": "/implementation-guides/use-cases/syncs/deletion-detection",
-      "destination": "/implementation-guides/use-cases/syncs#deletion-detection"
-    },
-    {
-      "source": "/implementation-guides/use-cases/syncs/realtime-syncs",
-      "destination": "/implementation-guides/use-cases/syncs#real-time-syncs-with-webhooks"
-    },
-    {
-      "source": "/implementation-guides/use-cases/syncs/sync-partitioning",
-      "destination": "/implementation-guides/use-cases/syncs#sync-partitioning"
-    },
-    {
       "source": "/implementation-guides/use-cases/actions/implement-an-action",
       "destination": "/implementation-guides/use-cases/actions"
     },
@@ -251,7 +231,17 @@
                 "expanded": false,
                 "pages": [
                   "implementation-guides/use-cases/tool-calling",
-                  "implementation-guides/use-cases/syncs",
+                  {
+                    "group": "Sync external API data",
+                    "pages": [
+                      "implementation-guides/use-cases/syncs",
+                      "implementation-guides/use-cases/syncs/checkpoints",
+                      "implementation-guides/use-cases/syncs/deletion-detection",
+                      "implementation-guides/use-cases/syncs/realtime-syncs",
+                      "implementation-guides/use-cases/syncs/records-cache",
+                      "implementation-guides/use-cases/syncs/sync-partitioning"
+                    ]
+                  },
                   "implementation-guides/use-cases/actions",
                   "implementation-guides/use-cases/webhooks-from-external-apis",
                   "implementation-guides/use-cases/unified-apis",
