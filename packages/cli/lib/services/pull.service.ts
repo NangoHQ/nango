@@ -3,6 +3,7 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
+import { GitHubNotFoundError, collectDependencies, fetchFileContent } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
 import { parseSecretKey, printDebug, resolveHostport } from '../utils.js';
@@ -15,9 +16,14 @@ const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-ev
     'on-event': 'on-events'
 };
 
-interface PullOptions {
+const folderToScriptType: Record<'syncs' | 'actions' | 'on-events', ScriptTypeLiteral> = {
+    syncs: 'sync',
+    actions: 'action',
+    'on-events': 'on-event'
+};
+
+interface PullOptionsBase {
     fullPath: string;
-    environmentName: string;
     integrationId: string;
     name: string;
     type?: ScriptTypeLiteral | undefined;
@@ -27,7 +33,13 @@ interface PullOptions {
     interactive?: boolean;
 }
 
-export async function pullFunction(options: PullOptions): Promise<boolean> {
+interface PullFunctionOptions extends PullOptionsBase {
+    environmentName: string;
+}
+
+type PullCatalogOptions = PullOptionsBase;
+
+export async function pullFunction(options: PullFunctionOptions): Promise<boolean> {
     const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
     const spinner = new Spinner({ interactive }).start(`Pulling ${environmentName}/${integrationId}/${name}`);
 
@@ -81,6 +93,107 @@ export async function pullFunction(options: PullOptions): Promise<boolean> {
 
         console.log('');
         console.log(chalk.green(`Successfully pulled: ${relativePath}`));
+
+        return true;
+    } catch (err) {
+        spinner.fail('Pull failed');
+        if (err instanceof Error) {
+            console.log(chalk.red(`\nError: ${err.message}`));
+        }
+        return false;
+    }
+}
+
+export async function pullFromCatalog(options: PullCatalogOptions): Promise<boolean> {
+    const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
+    const spinner = new Spinner({ interactive }).start(`Pulling catalog/${integrationId}/${name}`);
+
+    try {
+        const contentCache = new Map<string, string>();
+
+        const foldersToProbe: ('syncs' | 'actions' | 'on-events')[] = type ? [scriptTypeToFolder[type]] : ['syncs', 'actions', 'on-events'];
+
+        const probeResults = await Promise.allSettled(
+            foldersToProbe.map(async (folder) => {
+                const candidatePath = `${integrationId}/${folder}/${name}.ts`;
+                const content = await fetchFileContent(candidatePath, debug);
+                return { folder, candidatePath, content };
+            })
+        );
+
+        const matches: { folder: 'syncs' | 'actions' | 'on-events'; candidatePath: string; content: string }[] = [];
+        for (const result of probeResults) {
+            if (result.status === 'fulfilled') {
+                matches.push(result.value);
+                contentCache.set(result.value.candidatePath, result.value.content);
+            } else if (!(result.reason instanceof GitHubNotFoundError)) {
+                throw result.reason;
+            }
+        }
+
+        if (matches.length === 0) {
+            spinner.fail(`Failed to pull '${name}'`);
+            console.log(chalk.red(`\nFunction '${name}' not found in catalog for integration '${integrationId}'.`));
+            console.log(chalk.gray(`Browse available templates at https://github.com/NangoHQ/integration-templates`));
+            return false;
+        }
+
+        if (matches.length > 1) {
+            const matchedTypes = matches.map((m) => folderToScriptType[m.folder]).join(', ');
+            spinner.fail(`Failed to pull '${name}'`);
+            console.log(chalk.red(`\nMultiple functions named '${name}' exist for '${integrationId}' (${matchedTypes}).`));
+            console.log(chalk.gray(`Re-run with --type sync|action|on-event to disambiguate.`));
+            return false;
+        }
+
+        const match = matches[0]!;
+        spinner.succeed(`Fetched function code`);
+
+        const initialFiles: { relativePath: string; isScript: boolean }[] = [{ relativePath: match.candidatePath, isScript: true }];
+
+        const mdPath = `${integrationId}/${match.folder}/${name}.md`;
+        try {
+            const mdContent = await fetchFileContent(mdPath, debug);
+            contentCache.set(mdPath, mdContent);
+            initialFiles.push({ relativePath: mdPath, isScript: false });
+            printDebug(`Found companion documentation: ${mdPath}`, debug);
+        } catch (err) {
+            if (!(err instanceof GitHubNotFoundError)) {
+                throw err;
+            }
+            printDebug(`No companion documentation found for ${mdPath}`, debug);
+        }
+
+        const files = await collectDependencies(initialFiles, integrationId, debug, contentCache);
+
+        const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug);
+        if (!proceed) {
+            console.log(chalk.yellow('Pull cancelled.'));
+            return false;
+        }
+
+        let writtenCount = 0;
+        for (const file of files) {
+            if (filesToSkip.has(file.relativePath)) {
+                continue;
+            }
+
+            const content = contentCache.has(file.relativePath) ? contentCache.get(file.relativePath)! : await fetchFileContent(file.relativePath, debug);
+
+            const localPath = path.join(fullPath, file.relativePath);
+            await fs.promises.mkdir(path.dirname(localPath), { recursive: true });
+            await fs.promises.writeFile(localPath, content, 'utf-8');
+            writtenCount++;
+        }
+
+        await updateIndexFile(
+            fullPath,
+            files.filter((f) => !filesToSkip.has(f.relativePath)),
+            debug
+        );
+
+        console.log('');
+        console.log(chalk.green(`Successfully pulled '${name}' from catalog (${writtenCount} file${writtenCount === 1 ? '' : 's'})`));
 
         return true;
     } catch (err) {

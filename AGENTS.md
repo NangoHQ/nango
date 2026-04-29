@@ -9,9 +9,15 @@
 - `connection`: The end-user's connection to a provider.
 - `customer`: The Nango customer. If `user` is unqualified, it means the customer.
 - `end-user`: The customer's customer.
+  <<<<<<< HEAD
 - `pre-built function`: A function available in the functions catalog.
 - `remote function`: An active deployed catalog function whose code the customer does not own.
-- `self-managed function`: A function whose code the customer owns and deploys from a Nango integrations project.
+- # `self-managed function`: A function whose code the customer owns and deploys from a Nango integrations project.
+- `catalog function`: A function available in the functions catalog, not yet deployed.
+- `source: 'catalog'`: A deployed function that originated from the catalog. Surfaced to customers as "Source code: Nango".
+- `source: 'standalone'`: A deployed function pushed via the `/remote-function/deploy` endpoint. Surfaced to customers as "Source code: Nango".
+- `source: 'repo'`: A deployed function pushed via the Nango CLI from the customer's repo. Surfaced to customers as "Source code: your repo".
+    > > > > > > > 0313e817c (Change to flags)
 - `Nango CLI`: The tool name. Use `nango` only for specific commands.
 
 ## Core Model
@@ -27,11 +33,19 @@
 
 ## Critical Rules
 
+<<<<<<< HEAD
+
 - Use `remote function` vs `self-managed function` when contrasting ownership models.
 - Use `pre-built function` when talking about catalog availability, not ownership.
 - Enabling a pre-built function in the dashboard deploys it as a remote function.
 - `nango deploy` only diffs and reconciles self-managed functions from the Nango integrations project.
-- Remote functions are excluded from that deploy diff.
+- # Remote functions are excluded from that deploy diff.
+- Use `source: 'repo'` vs `source: 'catalog'`/`source: 'standalone'` when contrasting ownership models internally.
+- Customer-facing, ownership is either "Source code: Nango" (catalog or standalone) or "Source code: your repo" (repo).
+- `catalog function` refers only to a function browsable in the catalog that has not been deployed yet.
+- `nango deploy` only diffs and reconciles `source: 'repo'` functions from the Nango integrations folder.
+- Functions with `source: 'catalog'` or `source: 'standalone'` are excluded from that deploy diff.
+    > > > > > > > 0313e817c (Change to flags)
 - Records are persisted in Postgres but should not be described as the customer's source-of-truth database.
 - Records are scoped per connection and are not shared across connections or integrations.
 - A function run cannot fetch records from another connection.
@@ -109,14 +123,24 @@
 - Definition: The customer's customer who creates connections.
 - Relation: End-users create connections.
 
+<<<<<<< HEAD
+
 ### Pre-built Function
 
 - Definition: Function available in the functions catalog.
 - User-facing workflow: Customers enable or activate it from the dashboard.
-- Internal behavior: Enabling deploys it as a remote function.
+- # Internal behavior: Enabling deploys it as a remote function.
+
+### Catalog Function
+
+- Definition: Function available in the functions catalog that has not been deployed yet.
+- User-facing workflow: Customers browse the catalog and deploy a catalog function from the dashboard.
+    > > > > > > > 0313e817c (Change to flags)
 - Legacy naming: Some code or product surfaces may still say `templates` or `public`.
 
 ### Functions Catalog
+
+<<<<<<< HEAD
 
 - Definition: Catalog of pre-built functions in the dashboard.
 - User workflow: Customers browse it and enable pre-built functions from it.
@@ -142,13 +166,52 @@
 - Initialization: Created with `nango init`.
 - Ownership: Versioning and source control are handled by the customer.
 - Deployment behavior: `nango deploy` upserts changed self-managed functions and deletes removed ones.
-- Exclusion rule: Remote functions are not included in that diff.
+- # Exclusion rule: Remote functions are not included in that diff.
+- Definition: Catalog of catalog functions in the dashboard.
+- User workflow: Customers browse it and deploy catalog functions from it.
+
+### Function source: 'catalog'
+
+- Definition: A deployed function that originated from the functions catalog.
+- Customer-facing label: "Source code: Nango".
+- Deployment boundary: Excluded from the diff performed by `nango deploy`.
+
+### Function source: 'standalone'
+
+- Definition: A deployed function pushed directly via the `/remote-function/deploy` API endpoint.
+- Customer-facing label: "Source code: Nango".
+- Deployment boundary: Excluded from the diff performed by `nango deploy`.
+
+### Function source: 'repo'
+
+- Definition: A deployed function whose code is owned and versioned by the customer in their repo.
+- Customer-facing label: "Source code: your repo".
+- Source of truth: The Nango integrations folder.
+- Deployment path: Deployed through the Nango CLI.
+- Diff behavior: `nango deploy` reconciles these against the project contents — deleting a file and deploying removes the function from the cloud.
+
+### Nango Integrations Project
+
+- Definition: Customer-owned source project where `source: 'repo'` functions are defined and maintained.
+- Initialization: Created with `nango init`.
+- Ownership: Versioning and source control are handled by the customer.
+- Deployment behavior: `nango deploy` upserts changed `source: 'repo'` functions and deletes removed ones.
+- Exclusion rule: Functions with `source: 'catalog'` or `source: 'standalone'` are not included in that diff.
+    > > > > > > > 0313e817c (Change to flags)
 - Common setups: Separate repo or folder in a monorepo, typically deployed via CI/CD.
 
 ### Nango CLI
+
+<<<<<<< HEAD
 
 - Definition: Command-line tool for initializing, validating, running, compiling, and deploying self-managed functions.
 - Commands: `nango init`, `nango compile`, `nango dryrun`, `nango deploy`.
 - `nango compile`: Builds and validates functions, runs Nango-specific checks, and produces function metadata plus bundled JavaScript sent to the server.
 - `nango dryrun`: Compiles and runs a function locally against a provided connection id. Writes to records are emulated, not persisted.
-- `nango deploy`: Compiles functions and reconciles deployed cloud state for self-managed functions only.
+- # `nango deploy`: Compiles functions and reconciles deployed cloud state for self-managed functions only.
+- Definition: Command-line tool for initializing, validating, running, compiling, and deploying `source: 'repo'` functions.
+- Commands: `nango init`, `nango compile`, `nango dryrun`, `nango deploy`.
+- `nango compile`: Builds and validates functions, runs Nango-specific checks, and produces function metadata plus bundled JavaScript sent to the server.
+- `nango dryrun`: Compiles and runs a function locally against a provided connection id. Writes to records are emulated, not persisted.
+- `nango deploy`: Compiles functions and reconciles deployed cloud state for `source: 'repo'` functions only.
+    > > > > > > > 0313e817c (Change to flags)
