@@ -59,10 +59,10 @@ describe('GET /functions/pull', () => {
     });
 
     it('returns 404 when integration is not found', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch('/functions/pull', {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { integrationId: 'missing', name: 'get-issues', env: 'dev' }
         });
 
@@ -72,11 +72,11 @@ describe('GET /functions/pull', () => {
     });
 
     it('returns 404 when function name does not exist for the integration', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch('/functions/pull', {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { integrationId: 'github', name: 'missing-function', env: 'dev' }
         });
 
@@ -86,14 +86,14 @@ describe('GET /functions/pull', () => {
     });
 
     it('returns 409 ambiguous_function when sync and action share a name', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'sync' });
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'action' });
 
         const res = await api.fetch('/functions/pull', {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { integrationId: 'github', name: 'shared-name', env: 'dev' }
         });
 
@@ -109,7 +109,7 @@ describe('GET /functions/pull', () => {
     });
 
     it('disambiguates with --type and returns the matching function', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'sync' });
@@ -118,7 +118,7 @@ describe('GET /functions/pull', () => {
         // With --type the resolver picks the right config; the source file lookup
         // will 404 in tests (no fixture on disk), but it must NOT be 409.
         const res = await api.fetch('/functions/pull', {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { integrationId: 'github', name: 'shared-name', env: 'dev', type: 'sync' }
         });
 
