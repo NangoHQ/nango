@@ -85,7 +85,7 @@ Your application can call functions from any language or framework.
 <Tip>**Using a coding agent?** Copy the page (button top right) and paste as a prompt.</Tip>
 
 <Note>
-  You can enable pre-built functions directly from the dashboard, then skip to step 4.
+  You can enable pre-built functions directly from the dashboard, then skip to step 6.
 </Note>
 
 <Steps>
@@ -134,6 +134,35 @@ Your application can call functions from any language or framework.
 
       For additional context while building, use Nango's documentation MCP: `https://nango.dev/docs/mcp`
     </Accordion>
+
+    **Folder layout.** Each integration gets its own folder, with subfolders by function type. `index.ts` imports every function file you want deployed:
+
+    ```
+    nango-integrations/
+    ├── .nango/                        # auto-managed state, commit it
+    ├── .env                           # secret keys per environment
+    ├── index.ts                       # imports every function file
+    ├── package.json
+    └── <integration-id>/              # one folder per integration (e.g. github, salesforce)
+        ├── syncs/
+        │   └── github-issues.ts
+        ├── actions/
+        │   └── github-create-issue.ts
+        └── on-events/
+            └── post-connection-creation.ts
+    ```
+
+    Each new function file must be imported in `index.ts`, e.g. `import './github/syncs/github-issues';`.
+  </Step>
+
+  <Step title="Run dev mode">
+    Keep this running in a tab while you write code:
+
+    ```bash
+    nango dev
+    ```
+
+    `nango dev` continuously type-checks and compiles your function files, surfacing errors immediately. Leave it open for the rest of this guide.
   </Step>
 
   <Step title="Build your function">
@@ -282,14 +311,47 @@ Your application can call functions from any language or framework.
 
   </Step>
 
+  <Step title="Test locally">
+    Run your function against a real connection without persisting anything to Nango:
+
+    ```bash
+    nango dryrun <function-name> '<CONNECTION-ID>'
+    ```
+
+    The retrieved data is printed to the console. By default, `dryrun` uses connections from your `dev` environment — change with `-e <env-name>`.
+
+    For actions, pass input data with `--input`. For syncs, simulate resuming from a previous run with `--checkpoint '{"...": "..."}'` (see [Checkpoints](/implementation-guides/use-cases/syncs/checkpoints)).
+
+    Add `--diagnostics` to monitor performance:
+
+    ```bash
+    nango dryrun <function-name> '<CONNECTION-ID>' --diagnostics
+    ```
+
+    This prints average and peak memory (RSS, heap, external) and CPU utilization — useful for spotting leaks or memory pressure on large datasets.
+
+    <Warning>
+      Local diagnostics are indicative only. Performance characteristics differ between local and Nango Cloud — always validate at scale post-deploy.
+    </Warning>
+
+    Run `nango dryrun --help` for all options. For unit tests and snapshot testing, see the [testing guide](/implementation-guides/platform/functions/testing).
+  </Step>
+
   <Step title="Deploy">
     Deploy all functions in your `nango-integrations/` folder to Nango:
 
     ```bash
-    nango deploy
+    nango deploy <env-name>     # e.g. nango deploy dev
     ```
 
-    The CLI prompts for the target environment. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+    To deploy a single function instead of all:
+
+    ```bash
+    nango deploy --sync <name> <env-name>      # one sync function
+    nango deploy --action <name> <env-name>    # one action function
+    ```
+
+    Run `nango deploy -h` for the full set of flags. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
 
     <Accordion title="🤖 For agents">
       Run `nango deploy dev` to deploy to the development environment non-interactively. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.

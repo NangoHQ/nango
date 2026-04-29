@@ -4,27 +4,21 @@ sidebarTitle: 'Sync guide'
 description: 'Sync data from external APIs, feed RAG pipelines, and fire change-detection triggers.'
 ---
 
-External APIs are messy: spotty webhooks, rate limits, undetectable deletes, cursor management, memory walls on large datasets. Teams spend weeks on plumbing and still miss records.
+Syncing external APIs reliably means rate-limit-aware polling, resumable checkpoints, deletion detection (which every API does differently — or not at all), and memory-safe streaming for big datasets — rebuilt for every integration. Most teams spend weeks here and still ship gaps in production.
 
 Nango handles all of it. You define a function that fetches what you need; Nango runs it on a schedule (or on webhook), checkpoints progress, detects adds/updates/deletes, and pushes a webhook to your app when new data lands. Pick from **thousands of pre-built sync functions** or write your own.
 
 **Common patterns:**
 
-- Sync CRM records (HubSpot, Salesforce, Attio…) — contacts, companies, deals
-- Sync files from drives (Google Drive, SharePoint, Box…)
-- Sync call transcripts (Gong, Fathom, Zoom…)
+- Sync records into your DB — CRM data (HubSpot, Salesforce, Attio…), files from drives (Google Drive, SharePoint, Box…), call transcripts (Gong, Fathom, Zoom…)
 - Feed RAG pipelines with fresh customer data
-- Fire per-record triggers when something changes upstream
+- Get notified when something changes upstream (e.g., a new email arrives, a deal moves stage, a file is shared)
 
 <Tip>
 For agentic / on-demand tool calling against external APIs (no local replication needed), use [Tool calling for AI agents](/implementation-guides/use-cases/tool-calling) instead.
 </Tip>
 
 ## How Nango fits in
-
-<Frame caption="Data flows from the external API through the records cache to your application.">
-  ![](/images/diagrams/nango-syncs-diagram.png)
-</Frame>
 
 1. **You configure** an integration in Nango (e.g. Salesforce) and pick which sync functions to enable — from thousands of [pre-built templates](https://www.nango.dev/templates) or your own custom code.
 2. **Your user authorizes** via a Connect link. Nango handles OAuth, stores tokens, and refreshes them as they expire.
@@ -38,7 +32,7 @@ For agentic / on-demand tool calling against external APIs (no local replication
 - **Resilient incremental syncs via [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).** Save progress mid-run; resume from where the last execution stopped on failure or interruption — even on million-record datasets.
 - **Real-time when you need it.** Combine [webhooks from external APIs](/implementation-guides/use-cases/syncs/realtime-syncs) with periodic polling for a reliable stream of changes that's resilient to provider outages.
 - **Detect deletions** even on APIs that don't expose them, via [trackDeletes](/implementation-guides/use-cases/syncs/deletion-detection) or a recently-deleted endpoint.
-- **Multi-tenant via [variants](/implementation-guides/use-cases/syncs/sync-partitioning).** Run multiple independent instances of the same sync per connection, each with its own filter or schedule.
+- **Per-connection fan-out via [variants](/implementation-guides/use-cases/syncs/sync-partitioning).** When one end-user has many sub-resources to sync (mailboxes, drive folders, Slack channels, repos…), spawn an independent sync process for each — running in parallel with its own checkpoint and schedule.
 - **Two-way sync.** Combine sync functions with [action functions](/implementation-guides/use-cases/actions) to write changes back to the external API.
 - **Encrypted, observable, scoped per user.** Records are encrypted at rest and in transit; every run is logged; each function executes in the context of an end-user [Connection](/guides/primitives/auth#overview).
 
@@ -46,260 +40,25 @@ For agentic / on-demand tool calling against external APIs (no local replication
   Common syncs across CRMs, drives, mail, calendar, communication, ticketing, billing, and more — ready to enable in one click.
 </Card>
 
-To enable a pre-built template: open the **Integrations** tab → select your integration → **Endpoints** → toggle the sync function on. Nango starts syncing for every relevant connection in the background. Pre-built templates are a starting point; you can [customize them](/guides/primitives/functions#guide) or [write your own](#guide) using the steps below.
-
 ## Guide
+
+<Note>
+  You can enable a pre-built sync function directly from the dashboard, then skip to step 2.
+</Note>
 
 <Steps>
 
-<Step title="Initial Functions setup">
+<Step title="Build & deploy your sync function">
 
-If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/guides/primitives/functions#guide) first.
+Follow the [Functions guide](/guides/primitives/functions#guide) — pick the **Schedule** tab to scaffold a sync function, then test, and deploy it.
 
-Otherwise, you can skip to the next step.
-
-</Step>
-
-<Step title="Start dev mode">
-
-Before you plan to modify your integration functions, run:
-
-```bash
-nango dev # Keep the tab open
-```
-
-This command starts a process that continuously compiles your integration functions and prints code syntax errors.
-
-</Step>
-
-<Step title="Create the sync file">
-
-<Tip>
-    If you prefer to automate this, follow the [Build with AI guide](/guides/primitives/functions#guide).
-</Tip>
-
-In your `nango-integrations` folder, create the file for your new sync function.
-
-Sync files should be within a `syncs` folder, which is nested under the integration's folder.
-
-For example, if you want to create a new sync to sync `contacts` from `salesforce`, your structure should look like this:
-
-```
-nango-integrations/
-├── .nango
-├── .env
-├── index.ts
-├── package.json
-└── salesforce # this is the integration id and must match an integration id in your Nango dashboard
-    └── syncs/
-        └── salesforce-contacts.ts # this is the name of your sync
-```
-
-In your sync file, paste the following scaffold:
-
-```ts salesforce-contacts.ts lines
-import { createSync } from 'nango';
-import * as z from 'zod';
-
-const MyObject = z.object({
-  id: z.string(),
-  first_name: z.string(),
-  last_name: z.string(),
-  email: z.string(),
-});
-
-export default createSync({
-    description: `<Description of your sync>`,
-    version: '1.0.0', // Version, increment it when you release a new version
-    frequency: 'every hour', // Default sync interval
-    autoStart: true, // Should the sync start immediately when a new connection is created?
-    trackDeletes: true, // detect deletes? See separate implementation guide
-    // Optional: define a checkpoint schema to save progress and avoid re-fetching all data
-    checkpoint: z.object({
-        lastModifiedISO: z.string(),
-    }),
-    models: {
-        MyObject: MyObject,
-    },
-    exec: async (nango) => {
-        // Integration code goes here.
-    },
-});
-```
-
-Also import your new sync file in your `index.ts` file:
-
-```typescript index.ts
-import './salesforce/syncs/salesforce-contacts';
-```
-
-</Step>
-
-<Step title="Implement your sync">
-
-In the `exec` method, implement the logic of your sync. Edit `MyObject` to contain the properties you need.
-
-The following can help you with your implementation:
-- [`nango` object reference](/reference/functions) to understand the SDK methods available in functions
-- [Our integration templates repo](https://www.nango.dev/templates) has thousands of examples of sync and action functions implemented by Nango
-- [Leveraging AI agents guide](/guides/primitives/functions#guide) to build sync functions with Claude Code, Cursor & other AI agents
-
-Example implementation of the Salesforce contacts sync:
-
-```ts salesforce-contacts.ts lines
-import { createSync } from 'nango';
-import * as z from 'zod';
-
-const SalesforceContact = z.object({
-  id: z.string(),
-  first_name: z.string(),
-  last_name: z.string(),
-  email: z.string(),
-  account_id: z.string().nullable(),
-  last_modified_date: z.string(),
-});
-
-const sync = createSync({
-  description: `Fetches contacts from Salesforce`,
-  version: '1.0.0',
-  frequency: 'every hour',
-  autoStart: true,
-  // Define checkpoint schema to track sync progress
-  checkpoint: z.object({
-    lastModifiedISO: z.string(),
-  }),
-  models: {
-    SalesforceContact: SalesforceContact,
-  },
-  exec: async (nango) => {
-    // Get checkpoint to resume from where we left off
-    const checkpoint = await nango.getCheckpoint();
-    const query = buildQuery(checkpoint?.lastModifiedISO);
-
-    await fetchAndSaveRecords(nango, query);
-
-    await nango.log('Function run completed!');
-  },
-});
-
-export default sync;
-type NangoSyncLocal = Parameters<(typeof sync)['exec']>[0];
-
-function buildQuery(lastModifiedISO?: string): string {
-    let baseQuery = `SELECT Id, FirstName, LastName, Email, AccountId, LastModifiedDate FROM Contact`;
-
-    if (lastModifiedISO) { // Only fetch data modified since last sync
-        baseQuery += ` WHERE LastModifiedDate > ${lastModifiedISO}`;
-    }
-    baseQuery += ` ORDER BY LastModifiedDate ASC`;
-
-    return baseQuery;
-}
-
-async function fetchAndSaveRecords(nango: NangoSyncLocal, query: string) {
-    let endpoint = '/services/data/v53.0/query';
-
-    while (true) {
-        const response = await nango.get({
-            endpoint: endpoint,
-            params: endpoint === '/services/data/v53.0/query' ? { q: query } : {}
-        });
-
-        const mappedRecords = mapContacts(response.data.records);
-
-        await nango.batchSave(mappedRecords, 'SalesforceContact'); // Saves records to Nango cache.
-
-        // Save checkpoint for next run
-        await nango.saveCheckpoint({ lastModifiedISO: mappedRecords[mappedRecords.length - 1].last_modified_date });
-
-        if (response.data.done) {
-            break;
-        }
-
-        endpoint = response.data.nextRecordsUrl;
-    }
-}
-
-function mapContacts(records: any[]): SalesforceContact[] {
-    return records.map((record: any) => {
-        return {
-            id: record.Id as string,
-            first_name: record.FirstName,
-            last_name: record.LastName,
-            email: record.Email,
-            account_id: record.AccountId,
-            last_modified_date: record.LastModifiedDate
-        };
-    });
-}
-```
-
-In this integration function, the following Nango utilities are used:
-- `await nango.getCheckpoint()` retrieves the saved checkpoint (returns `null` on first run)
-- `await nango.saveCheckpoint()` saves progress to resume from on next run
-- `await nango.batchSave()` to persist external data in Nango's cache
-- `await nango.get()` to perform an API request (automatically authenticated by Nango)
-- `await nango.log()` to write custom log messages
-
-Depending on your needs, you may want to dive deeper into:
+For sync-specific concerns, dive deeper into:
 
 - [Checkpoints](/implementation-guides/use-cases/syncs/checkpoints) — make your sync incremental and resilient to failures.
 - [Deletion detection](/implementation-guides/use-cases/syncs/deletion-detection) — surface deletes from the external API.
 - [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs) — combine webhooks with polling for sub-second freshness.
 - [Records cache](/implementation-guides/use-cases/syncs/records-cache) — how Nango stores records and exposes deltas via cursors.
-- [Sync partitioning](/implementation-guides/use-cases/syncs/sync-partitioning) — run multiple variants of the same sync per connection.
-
-</Step>
-
-<Step title="Test your sync locally">
-
-Easily test your integration functions locally as you develop them with the `dryrun` function of the CLI:
-
-```bash
-nango dryrun salesforce-contacts '<CONNECTION-ID>'
-```
-
-You can also enable performance diagnostics to monitor memory usage and CPU metrics:
-
-```bash
-nango dryrun salesforce-contacts '<CONNECTION-ID>' --diagnostics
-```
-
-The `--diagnostics` flag displays detailed performance metrics including average and peak memory usage (RSS, heap, external) and CPU utilization, which is useful for performance tuning and identifying memory leaks.
-
-<Warning>
-Local diagnostics are indicative only and do not fully represent CPU/memory consumption when run by Nango Cloud. Performance characteristics may differ between local and cloud environments.
-</Warning>
-
-To learn more about all the options for the dryrun, run: `nango dryrun --help`.
-
-Because this is a dry run, the function won't persist data in Nango. Instead, the retrieved data is printed to the console.
-
-<Tip>
-    By default, `dryrun` retrieves connections from your `dev` environment. You can change this with the `-e` flag.
-</Tip>
-
-</Step>
-
-<Step title="Deploy your sync">
-
-To run your sync in Nango, you need to deploy it to an environment in your Nango account.
-
-To deploy all integrations in your `nango-integrations` folder, run:
-```bash
-nango deploy dev # dev is the name of the environment to which you are deploying
-```
-
-To only deploy a single sync, use the `--sync` parameter:
-```bash
-nango deploy --sync salesforce-contacts dev
-```
-
-Run `nango deploy -h` for more options to deploy only parts of your integrations.
-
-<Tip>
-    Most teams automate deployments to production in their CI.
-</Tip>
+- [Sync partitioning](/implementation-guides/use-cases/syncs/sync-partitioning) — fan out a sync into per-resource variants within one connection.
 
 </Step>
 

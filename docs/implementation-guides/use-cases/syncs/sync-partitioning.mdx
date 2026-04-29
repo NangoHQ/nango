@@ -1,20 +1,22 @@
 ---
 title: 'Sync partitioning'
 sidebarTitle: 'Sync partitioning'
-description: 'Run multiple independent variants of the same sync function — for multi-tenant data, different filters, or per-customer schedules.'
+description: 'Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.'
 ---
 
-Sync partitioning enables more flexible and scalable data synchronization by allowing you to create multiple independent "variants" of the same sync function. This is particularly useful when dealing with large datasets, multiple tenants, or different filtering requirements within the same integration.
+Sync variants let you spawn multiple independent sync processes **inside a single connection** — one per mailbox, file folder, Slack channel, repo, or any other sub-resource the end-user has access to. Each variant runs on its own schedule, with its own checkpoint and records cache, so a slow partition doesn't block a fast one.
+
+Nango is already multi-tenant by default — every sync function executes in the context of an end-user [Connection](/guides/primitives/auth#overview), and runs independently for each connection. Variants are for the next level down: fan-out *within* one connection.
 
 ## Overview
 
-Traditionally, a sync function is defined once in a TypeScript file and executed for each connection. With sync partitioning, you can create multiple sync "variants" that share the same base configuration but run independently. Each variant has its own execution schedule, last sync timestamp, and data storage.
+Traditionally, a sync function is defined once and executed once per connection. With variants, you can create multiple instances of the same function that share the base configuration but run independently. Each variant has its own execution schedule, checkpoint, and data storage.
 
 Key benefits:
-- Parallel execution: variants run independently, allowing more granular control over sync execution.
-- Custom filtering: each variant can target different subsets of data.
-- Better resource utilization: distribute sync load across multiple partitions instead of running a single, monolithic sync.
-- Tenant-based partitioning: useful for multi-tenant applications where data is synced per customer.
+- **Parallel execution** — variants run independently, so a slow mailbox or folder doesn't block the others.
+- **Custom filtering** — each variant can target a different sub-resource (e.g., a specific Gmail label, a specific Drive folder).
+- **Per-partition state** — each variant has its own checkpoint and cache, so failures and re-syncs are isolated.
+- **Dynamic scale** — create or delete variants programmatically as the end-user adds/removes sub-resources.
 
 ## How sync variants work
 

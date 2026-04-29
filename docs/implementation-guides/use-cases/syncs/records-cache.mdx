@@ -6,10 +6,6 @@ description: 'How Nango stores synced records, detects changes, and lets your ap
 
 Sync functions replicate records from an external API to your system continuously. To do this reliably, Nango uses a **records cache** — an intermediate store that sits between the external API and your application.
 
-<Frame caption="Data flows from the external API through the records cache to your application.">
-  ![](/images/diagrams/nango-syncs-diagram.png)
-</Frame>
-
 Every time you call [`nango.batchSave()`](/reference/functions#save-records) or [`nango.batchDelete()`](/reference/functions#delete-records) inside a sync function, you are writing to this cache. Your application then reads from the cache using the [GET /records](/reference/api/sync/records-list) endpoint or the [Node SDK](/reference/sdks/node#get-records).
 
 ## What the cache does
