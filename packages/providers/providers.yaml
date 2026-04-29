@@ -14985,7 +14985,7 @@ rocketreach:
             title: API Key
             description: Your RocketReach API key.
             example: 1e4dfd5***************************e3ca3a
-            pattern: '^[a-z0-9]+'
+            pattern: '^[a-z0-9]+$'
             doc_section: '#step-1-get-your-api-key'
 
 rootly:
