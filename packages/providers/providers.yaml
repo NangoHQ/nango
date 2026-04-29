@@ -2052,6 +2052,51 @@ aws-inspector2:
             suffix: .amazonaws.com
             pattern: '^[a-z0-9-]+$'
 
+aws-multi-service:
+    display_name: AWS Multi-Service
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.service}.${connectionConfig.region}.amazonaws.com
+        headers:
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, ${connectionConfig.region}, ${connectionConfig.service}, ${connectionConfig.service}.${connectionConfig.region}.amazonaws.com)}'
+            x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/aws-multi-service
+    docs_connect: https://nango.dev/docs/api-integrations/aws-multi-service/connect
+    credentials:
+        username:
+            type: string
+            title: AWS Access Key ID
+            description: Your Access Key ID.
+            example: AKIAI***MPLE
+            pattern: '^[A-Za-z0-9]+$'
+        password:
+            type: string
+            title: AWS Secret Access Key
+            description: Your Secret Access Key.
+            example: wJalr***EKEY
+            pattern: '^[A-Za-z0-9+/]+$'
+    connection_config:
+        service:
+            type: string
+            title: AWS Service
+            description: The AWS service you want to connect to.
+            example: athena
+            pattern: '^[a-z0-9-]+$'
+            order: 2
+        region:
+            type: string
+            title: Region
+            description: The AWS region where the service is available.
+            example: us-east-1
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+
 aws-scim:
     display_name: AWS (SCIM)
     categories:

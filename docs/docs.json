@@ -459,6 +459,7 @@
               "integrations/all/aws",
               "api-integrations/aws-iam",
               "api-integrations/aws-inspector2",
+              "api-integrations/aws-multi-service",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",
