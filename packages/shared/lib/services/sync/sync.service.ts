@@ -639,6 +639,33 @@ export async function hardDeleteSync(id: string) {
     await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();
 }
 
+export async function getSoftDeletedSyncs({
+    limit,
+    olderThan
+}: {
+    limit: number;
+    olderThan: number;
+}): Promise<Result<{ sync: Sync; syncConfig: DBSyncConfig | null }[]>> {
+    try {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        const res = await db.knex
+            .select<
+                { sync: Sync; syncConfig: DBSyncConfig | null }[]
+            >(db.knex.raw('row_to_json(_nango_syncs.*) as sync'), db.knex.raw('CASE WHEN _nango_sync_configs.id IS NULL THEN NULL ELSE row_to_json(_nango_sync_configs.*) END as "syncConfig"'))
+            .from<Sync>('_nango_syncs')
+            .leftJoin('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
+            .where('_nango_syncs.deleted', true)
+            .andWhere('_nango_syncs.deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+
+        return Ok(res);
+    } catch (err) {
+        return Err(new Error(`Failed to get soft deleted syncs: ${stringifyError(err)}`));
+    }
+}
+
 export function normalizedSyncParams(syncs: (string | { name: string; variant: string })[]): Result<{ syncName: string; syncVariant: string }[]> {
     if (!syncs) {
         return Err('Missing sync names');
