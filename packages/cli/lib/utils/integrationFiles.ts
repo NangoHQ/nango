@@ -11,7 +11,8 @@ export async function checkExistingFiles(
     files: { relativePath: string; isScript: boolean }[],
     force: boolean,
     autoConfirm: boolean,
-    debug: boolean
+    debug: boolean,
+    interactive = true
 ): Promise<{ proceed: boolean; filesToSkip: Set<string> }> {
     const existingFiles: string[] = [];
     const filesToSkip = new Set<string>();
@@ -40,6 +41,11 @@ export async function checkExistingFiles(
     if (autoConfirm) {
         console.log(chalk.yellow(`Auto-confirm enabled: overwriting files`));
         return { proceed: true, filesToSkip };
+    }
+
+    if (!interactive) {
+        console.log(chalk.red('Existing files found and not running interactively. Re-run with --force to overwrite or --auto-confirm.'));
+        return { proceed: false, filesToSkip };
     }
 
     const answer = await promptly.prompt(chalk.yellow(`\nDo you want to overwrite these files? (yes/no/skip): `), { default: 'no' });

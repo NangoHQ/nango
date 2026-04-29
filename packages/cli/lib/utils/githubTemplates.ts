@@ -161,12 +161,12 @@ export function parseLocalImports(content: string): string[] {
  * @returns The resolved path (e.g., 'hubspot/mappers/toCompany.ts') or null if outside integration
  */
 export function resolveImportPath(importPath: string, fromFilePath: string): string | null {
-    const fromDir = path.dirname(fromFilePath);
+    const fromDir = path.posix.dirname(fromFilePath);
 
     // Resolve the import path relative to the importing file's directory
     // Convert .js extension to .ts (TypeScript source)
     const tsPath = importPath.replace(/\.js$/, '.ts');
-    const resolved = path.normalize(path.join(fromDir, tsPath));
+    const resolved = path.posix.normalize(path.posix.join(fromDir, tsPath));
 
     // Ensure the resolved path stays within the integration (no leading ..)
     if (resolved.startsWith('..')) {

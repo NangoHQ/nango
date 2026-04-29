@@ -607,6 +607,13 @@ program
         }>();
         const fullPath = process.cwd();
 
+        const isInvalidSegment = (segment: string) => segment === '.' || segment === '..' || segment.includes('/') || segment.includes('\\');
+        if (isInvalidSegment(integration) || isInvalidSegment(name)) {
+            console.error(chalk.red('Invalid integration or function name. Path separators and `.`/`..` are not allowed.'));
+            process.exitCode = 1;
+            return;
+        }
+
         const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
         if (!precheck) return;
 
