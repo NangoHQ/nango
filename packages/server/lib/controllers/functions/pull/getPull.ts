@@ -39,7 +39,7 @@ const validationQuery = z
     .object({
         integrationId: z.string().min(1),
         name: z.string().min(1),
-        env: z.string().min(1),
+        env: z.string().min(1).optional(),
         type: z.enum(['sync', 'action', 'on-event']).optional()
     })
     .strict();
@@ -67,7 +67,7 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
         res.status(409).send({
             error: {
                 code: 'ambiguous_function',
-                message: `Multiple functions named '${name}' found for integration '${integrationId}'. Specify "type" to disambiguate.`,
+                message: `Multiple functions named '${name}' found for integration '${integrationId}'. Specify a type to disambiguate.`,
                 payload: { matches: filtered.map((c) => ({ type: c.type, name: c.sync_name })) }
             }
         });

@@ -133,7 +133,7 @@ export async function cloneTemplate(options: CloneOptions): Promise<boolean> {
         printDebug(`Found ${files.length} files to clone`, debug);
         spinner.succeed(`Found ${files.length} files to clone`);
 
-        const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug);
+        const { proceed, filesToSkip } = await checkExistingFiles(fullPath, files, force, autoConfirm, debug, interactive);
         if (!proceed) {
             console.log(chalk.yellow('Clone cancelled.'));
             return false;
