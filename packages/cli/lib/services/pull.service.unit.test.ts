@@ -135,6 +135,24 @@ describe('pullFromCatalog', () => {
         expect(writtenPaths).toContain('/project/github/actions/list-repos.md');
     });
 
+    it.each([
+        ['..', 'list-repos'],
+        ['github', '..'],
+        ['.', 'list-repos'],
+        ['github', '.'],
+        ['foo/bar', 'list-repos'],
+        ['github', 'foo\\bar']
+    ])('rejects path-traversal segments (%s, %s) without writing files', async (integrationId, name) => {
+        const writeSpy = mockFsForWriting();
+        const axiosSpy = vi.spyOn(axios, 'get');
+
+        const success = await pullFromCatalog({ ...baseOptions, integrationId, name });
+
+        expect(success).toBe(false);
+        expect(writeSpy).not.toHaveBeenCalled();
+        expect(axiosSpy).not.toHaveBeenCalled();
+    });
+
     it('walks transitive dependencies imported via relative paths', async () => {
         mockGitHub({
             'github/actions/list-repos.ts': "import { toRepo } from '../mappers/toRepo.js';\nexport default async () => toRepo();",

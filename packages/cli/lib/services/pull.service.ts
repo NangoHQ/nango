@@ -22,6 +22,10 @@ const folderToScriptType: Record<'syncs' | 'actions' | 'on-events', ScriptTypeLi
     'on-events': 'on-event'
 };
 
+export function isInvalidPathSegment(segment: string): boolean {
+    return segment === '.' || segment === '..' || segment.includes('/') || segment.includes('\\');
+}
+
 interface PullOptionsBase {
     fullPath: string;
     integrationId: string;
@@ -41,6 +45,12 @@ type PullCatalogOptions = PullOptionsBase;
 
 export async function pullFunction(options: PullFunctionOptions): Promise<boolean> {
     const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
+
+    if (isInvalidPathSegment(integrationId) || isInvalidPathSegment(name)) {
+        console.log(chalk.red('Invalid integration or function name. Path separators and `.`/`..` are not allowed.'));
+        return false;
+    }
+
     const spinner = new Spinner({ interactive }).start(`Pulling ${environmentName}/${integrationId}/${name}`);
 
     try {
@@ -69,9 +79,16 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
             return false;
         }
 
+        const folder = scriptTypeToFolder[body.type];
+        if (!folder) {
+            spinner.fail(`Failed to pull '${name}'`);
+            console.log(chalk.red(`\nUnexpected function type returned by server: ${String(body.type)}`));
+            return false;
+        }
+
         spinner.succeed(`Fetched function code`);
 
-        const relativePath = `${integrationId}/${scriptTypeToFolder[body.type]}/${name}.ts`;
+        const relativePath = `${integrationId}/${folder}/${name}.ts`;
         const file = { relativePath, isScript: true };
 
         const { proceed, filesToSkip } = await checkExistingFiles(fullPath, [file], force, autoConfirm, debug, interactive);
@@ -106,6 +123,12 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
 
 export async function pullFromCatalog(options: PullCatalogOptions): Promise<boolean> {
     const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
+
+    if (isInvalidPathSegment(integrationId) || isInvalidPathSegment(name)) {
+        console.log(chalk.red('Invalid integration or function name. Path separators and `.`/`..` are not allowed.'));
+        return false;
+    }
+
     const spinner = new Spinner({ interactive }).start(`Pulling catalog/${integrationId}/${name}`);
 
     try {
