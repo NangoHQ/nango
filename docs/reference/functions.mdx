@@ -358,7 +358,7 @@ Nango retries only when the failure looks **transient**. Exact rules depend on t
 | Field | Condition for Retry |
 | --- | --- |
 | **Network Error** | If code is one of:<br /> `ECONNRESET`, `ETIMEDOUT`, `ECONNABORTED`, `ECONNREFUSED`, `EHOSTUNREACH`, `EAI_AGAIN` |
-| **Transient HTTP Error**  | By default, if status is one of: <br />`401`, `429`, `5xx` <br /><br /> Or if status matches integration specific `proxy.retry.error_code` from [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml) <br /><br /> Or if status matches additional status specified in [`retryOn`](#param-retry-on) |
+| **Transient HTTP Error**  | If provider specific `proxy.retry.error_code` is configured in [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml), only matching statuses are retried.<br /><br />Otherwise, by default, status codes `401`, `429`, `5xx` are retried. <br /><br /> Additional status specified in [`retryOn`](#param-retry-on) are always retried in addition to the above statuses. |
 
 If nothing in the table applies, the error is **not** retried.
 
