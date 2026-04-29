@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
@@ -622,5 +623,135 @@ describe('listRecords', () => {
             externalIds: undefined,
             limit: undefined
         });
+    });
+});
+
+describe('proxy 401 invalid credentials', () => {
+    const stableCredentials = {
+        type: 'OAUTH2' as const,
+        access_token: 'same-token',
+        expires_at: '2099-01-01T00:00:00.000Z',
+        refresh_token: 'refresh'
+    };
+
+    const proxyProvider401TestKey = 'proxy-provider-401-test';
+
+    function baseProxyProvider(retry?: { error_code: string[] }): Provider {
+        return {
+            display_name: 'test',
+            auth_mode: 'OAUTH2',
+            authorization_url: 'https://example.com/oauth',
+            token_url: 'https://example.com/token',
+            docs: '',
+            proxy: {
+                base_url: 'https://api.example.com',
+                ...(retry ? { retry } : {})
+            }
+        };
+    }
+
+    function create401AxiosError(): AxiosError {
+        return new AxiosError(
+            'Request failed with status code 401',
+            'ERR_BAD_REQUEST',
+            {} as never,
+            {},
+            {
+                status: 401,
+                statusText: 'Unauthorized',
+                data: {},
+                headers: {},
+                config: {} as never
+            }
+        );
+    }
+
+    function expectInvalidCredentialsInLogs(persistClient: PersistClient, present: boolean): void {
+        const found = vi.mocked(persistClient.postLog).mock.calls.some((call: [{ environmentId: number; data: string }]) => {
+            const data = call[0]?.data;
+            return typeof data === 'string' && data.includes('invalid_credentials');
+        });
+        expect(found).toBe(present);
+    }
+
+    let persistClient: PersistClient;
+    let getConnectionMock: ReturnType<typeof vi.fn>;
+
+    beforeEach(async () => {
+        persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        getConnectionMock = vi.fn().mockResolvedValue({
+            credentials: stableCredentials
+        });
+        nodeClient.prototype.getConnection = getConnectionMock;
+        nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: proxyProvider401TestKey } });
+
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockRejectedValue(create401AxiosError());
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('stops retry when retry reason is provider_error_code_401 and credentials are unchanged', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider({ error_code: ['401'] }));
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        await expect(nango.proxy({ endpoint: '/x', retries: 10 })).rejects.toThrow();
+
+        expect(ProxyRequest.prototype.httpCall).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, true);
+    });
+
+    it('stops retry when retry reason is status_code_401 and credentials are unchanged', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider());
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        await expect(nango.proxy({ endpoint: '/x', retries: 10 })).rejects.toThrow();
+
+        expect(ProxyRequest.prototype.httpCall).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, true);
+    });
+
+    it('succeeds after credential refresh without invalid_credentials when the next request no longer returns 401', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider({ error_code: ['401'] }));
+
+        getConnectionMock.mockReset();
+        getConnectionMock
+            .mockResolvedValueOnce({
+                credentials: { ...stableCredentials, access_token: 'before-refresh' }
+            })
+            .mockResolvedValueOnce({
+                credentials: { ...stableCredentials, access_token: 'after-refresh' }
+            });
+
+        const httpSpy = vi.spyOn(ProxyRequest.prototype, 'httpCall');
+        httpSpy.mockReset();
+        httpSpy.mockRejectedValueOnce(create401AxiosError()).mockResolvedValueOnce({
+            status: 200,
+            statusText: 'OK',
+            data: {},
+            headers: {},
+            config: {} as never
+        } as AxiosResponse);
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        const res = await nango.proxy({ endpoint: '/x', retries: 10 });
+
+        expect(res.status).toBe(200);
+        expect(httpSpy).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, false);
     });
 });
