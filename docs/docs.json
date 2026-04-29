@@ -881,6 +881,7 @@
               "api-integrations/notion",
               "api-integrations/nyne-ai",
               "integrations/all/notion-scim",
+              "api-integrations/ocean-io",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
               "integrations/all/okta",

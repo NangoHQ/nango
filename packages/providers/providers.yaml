@@ -12106,6 +12106,33 @@ nyne-ai:
             example: '97e7********0463'
             doc_section: '#step-1-getting-your-api-credentials'
 
+ocean-io:
+    display_name: Ocean.io
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ocean.io
+        headers:
+            x-api-token: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/credits/balance
+    docs: https://nango.dev/docs/api-integrations/ocean-io
+    docs_connect: https://nango.dev/docs/api-integrations/ocean-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Ocean.io API token.
+            example: api_7Zs******_************************mhS
+            pattern: '^api_[A-Za-z0-9]+_[A-Za-z0-9]+'
+            doc_section: '#step-1-generate-your-api-token'
+
 odoo:
     display_name: Odoo (OAuth)
     categories:
