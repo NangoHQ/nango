@@ -18829,6 +18829,47 @@ veeva-vault:
             default_value: ''
             hidden: true
 
+vtex:
+    display_name: VTEX
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.accountName}.vtexcommercestable.com.br
+        headers:
+            x-vtex-api-appkey: ${connectionConfig.appKey}
+            x-vtex-api-apptoken: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/vtex
+    docs_connect: https://nango.dev/docs/api-integrations/vtex/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: Your VTEX store account name.
+            example: mystore
+            pattern: '^[a-zA-Z0-9_-]+$'
+            suffix: .vtexcommercestable.com.br
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-account-name'
+        appKey:
+            type: string
+            title: App Key
+            description: Your VTEX application key.
+            example: vtexappkey-mystore-ABCDEF
+            secret: true
+            pattern: '^vtexappkey-[a-zA-Z0-9_-]+-[A-Z0-9]+$'
+            order: 2
+            doc_section: '#step-2-generating-an-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: App Token
+            description: The application token associated with your VTEX App Key.
+            example: ZNWDC************************************LXPNX
+            pattern: '^[A-Z]+$'
+            doc_section: '#step-2-generating-an-api-key'
+
 wakatime:
     display_name: Wakatime
     categories:
