@@ -1,18 +1,14 @@
 ---
-title: "Records cache"
-sidebarTitle: "Records cache"
-description: "Understand how Nango's records cache works to reliably replicate data from external APIs to your system."
+title: 'Records cache'
+sidebarTitle: 'Records cache'
+description: 'How Nango stores synced records, detects changes, and lets your app fetch deltas via cursors.'
 ---
 
-Syncs replicate records from an external API to your system continuously. To do this reliably, Nango uses a **records cache** — an intermediate store that sits between the external API and your application.
+Sync functions replicate records from an external API to your system continuously. To do this reliably, Nango uses a **records cache** — an intermediate store that sits between the external API and your application.
 
-Every time you call [`nango.batchSave()`](/reference/functions#save-records) or [`nango.batchDelete()`](/reference/functions#delete-records) in a sync function, you are writing to this cache. Your application then reads from the cache using the [GET /records](/reference/api/sync/records-list) endpoint or the [Node SDK](/reference/sdks/node#get-records).
+Every time you call [`nango.batchSave()`](/reference/functions#save-records) or [`nango.batchDelete()`](/reference/functions#delete-records) inside a sync function, you are writing to this cache. Your application then reads from the cache using the [GET /records](/reference/api/sync/records-list) endpoint or the [Node SDK](/reference/sdks/node#get-records).
 
-<Frame caption="Data flows from the external API through the records cache to your application.">
-  ![](/images/diagrams/nango-syncs-diagram.png)
-</Frame>
-
-# What the cache does
+## What the cache does
 
 The records cache fulfils three roles:
 
@@ -22,7 +18,7 @@ The records cache fulfils three roles:
 
 **Observability** — The cache gives you visibility into the state of synced data directly from the Nango dashboard and API, including record counts, last sync times, and change history.
 
-# How records are identified and compared
+## How records are identified and compared
 
 Each record in the cache is uniquely identified by two things:
 
@@ -35,7 +31,7 @@ If the ID already exists and the hash is identical, the record is considered unc
 Be careful with fields that change on every fetch but don't represent a meaningful change to the record, such as a `fetched_at` timestamp. Including such fields in the payload will cause Nango to report spurious updates on every sync run. If possible, exclude or normalize these fields before calling `batchSave()`.
 </Info>
 
-# How records are stored
+## How records are stored
 
 The cache only keeps the **latest version** of each record — there is no versioning or history of payloads. When you call `batchSave()` with an existing ID, the previous payload is overwritten.
 
@@ -50,7 +46,7 @@ const toDelete = [{ id: 'record-123' }, { id: 'record-456' }];
 await nango.batchDelete(toDelete, 'Contact');
 ```
 
-# Fetching records: the change stream
+## Fetching records: the change stream
 
 The [GET /records](/reference/api/sync/records-list) endpoint returns a **chronologically ordered stream of record changes**. Each entry in the stream includes:
 
@@ -90,7 +86,7 @@ The [GET /records](/reference/api/sync/records-list) endpoint returns a **chrono
 
 You can filter the stream to only return records with a specific `last_action` (`added`, `updated`, or `deleted`) using the `filter` query parameter.
 
-# Cursors and sync progress
+## Cursors and sync progress
 
 Every record change in the cache has a **cursor** attached to it. Cursors are opaque, ordered strings that let you:
 
@@ -98,7 +94,7 @@ Every record change in the cache has a **cursor** attached to it. Cursors are op
 2. **Paginate through large result sets** — The same cursor is used for pagination when there are more records than the page `limit`.
 
 <Warning>
-You must persist the cursor on your side for each combination of **connection** and **sync**. This is how you keep track of your sync progress and avoid reprocessing records.
+You must persist the cursor on your side for each combination of **connection** and **sync function**. This is how you keep track of your sync progress and avoid reprocessing records.
 </Warning>
 
 <Tabs>
@@ -137,45 +133,11 @@ curl -G https://api.nango.dev/records \
 </Tab>
 </Tabs>
 
-# Re-syncing: preserve vs. clear the cache
+## Re-syncing: preserve vs. clear the cache
 
-When you [trigger a sync run](/reference/api/sync/trigger) manually (from the UI or API), you can control two options:
+See [Re-syncing: resetting checkpoints and the cache](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) in the Checkpoints guide for the `reset` / `emptyCache` options and their implications.
 
-| Option | Default | What it does |
-| --- | --- | --- |
-| `reset` | `false` | When `true`, resets the current [checkpoint](/implementation-guides/use-cases/syncs/checkpoints) and `lastSyncDate`, resulting in re-fetching all the full dataset from the external API. The cache is preserved, so Nango can still detect which records are new vs. updated. |
-| `emptyCache` | `false` | When `true`, deletes all cached records before the sync runs. The sync starts completely fresh, all synced records are reported as new. |
-
-**Leave both options off** for a standard incremental sync — only new or changed records are detected.
-
-**Use `reset: true`** when you want to re-fetch everything from the external API but still preserve the cache for accurate change detection.
-
-**Use `reset: true, emptyCache: true`** when you need to start from scratch, for example after a breaking change to your data model. Be aware of the implications:
-
-<Warning>
-Clearing the cache means:
-- Every record will be reported as `ADDED` (nothing exists in the cache to compare against, so nothing can be `UPDATED`).
-- Any cursors you previously persisted (to keep track of how far you've synced) become invalid. You must reset your stored cursors when you clear the cache.
-- You will need to reprocess the entire dataset on your side.
-</Warning>
-
-# Data retention
-
-The records cache is designed as a **transfer layer**, not a long-term data store. It has built-in retention policies:
-
-**Payload pruning (30 days)** — Record payloads that haven't been updated for 30 days are automatically emptied. The record metadata (ID, payload hash) is preserved, so Nango can still detect changes on future sync runs. However, you can no longer retrieve the payload from the cache after pruning.
-
-**Hard deletion (60 days)** — If a sync has not executed for 60 days, all records belonging to that sync are permanently deleted, including metadata and hashes. The sync itself remains configured but starts completely fresh on the next execution.
-
-<Info>
-Best practice: fetch records from Nango promptly after receiving webhook notifications and store them in your own system. Don't rely on the records cache as your primary data store.
-</Info>
-
-<Info>
-On the Growth plan and above, retention policies can be customized. Reach out to us to discuss your needs.
-</Info>
-
-# Summary
+## Cache summary
 
 | Concept | Details |
 | --- | --- |
@@ -188,7 +150,3 @@ On the Growth plan and above, retention policies can be customized. Reach out to
 | **Cursor** | Opaque ordered string for tracking sync progress and pagination |
 | **Payload TTL** | 30 days without update → payload pruned |
 | **Full record TTL** | 60 days without sync execution → all records hard-deleted |
-
-<Tip>
-  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>

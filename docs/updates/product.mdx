@@ -25,7 +25,7 @@ description: "Product updates and improvements."
 <Update label="April 14, 2026">
   ## Playground
 
-  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions/implement-an-action#implement-an-action) and [syncs](/implementation-guides/use-cases/syncs/implement-a-sync#implement-a-sync) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/implementation-guides/use-cases/actions) and [syncs](/implementation-guides/use-cases/syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
 
   ![Playground](/images/changelog/playground.gif)
 
@@ -185,7 +185,7 @@ description: "Product updates and improvements."
 
   ## AI skill for building integrations
 
-  We released a new AI skill for writing and testing Nango [Actions](/implementation-guides/use-cases/actions/implement-an-action) & [Syncs ](/implementation-guides/use-cases/syncs/implement-a-sync)using your favorite AI coding agent.
+  We released a new AI skill for writing and testing Nango [Actions](/implementation-guides/use-cases/actions) & [Syncs ](/implementation-guides/use-cases/syncs)using your favorite AI coding agent.
 
   The skill is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
 
@@ -583,7 +583,7 @@ description: "Product updates and improvements."
 
   ## Improved deletion detection when syncing data
 
-  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection#detecting-deletes-in-syncs-without-checkpoints)).
+  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection)).
 
   Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 
@@ -802,7 +802,7 @@ description: "Product updates and improvements."
 
   - Build and enable/disable tools with Nango actions.
   - Use them via the MCP protocol.\
-    [Guide](/implementation-guides/use-cases/tool-calling/overview).
+    [Guide](/implementation-guides/use-cases/tool-calling).
 
   ---
 
@@ -824,7 +824,7 @@ description: "Product updates and improvements."
   - You don’t need the response right away.
   - Actions should be retried for reliability.
   - You’re sending many actions at once.\
-    [Docs](/implementation-guides/use-cases/actions/async-actions).
+    [Docs](/implementation-guides/use-cases/actions#async-execution).
 
   ---
 
@@ -1115,7 +1115,7 @@ description: "Product updates and improvements."
   - **Most recent update wins (default)**: The latest write—whether from a webhook or a periodic sync—always updates the record.
   - **Ignore older updates**: When polling, Nango checks if a newer webhook update exists. If so, it preserves the more recent webhook data instead of overwriting it.
 
-  [Learn more in the docs](/implementation-guides/use-cases/syncs/realtime-syncs#sync-concurrency-considerations).
+  [Learn more in the docs](/implementation-guides/use-cases/syncs#sync-concurrency-considerations).
 
   ---
 </Update>

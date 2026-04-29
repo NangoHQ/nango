@@ -85,7 +85,7 @@ Your application can call functions from any language or framework.
 <Tip>**Using a coding agent?** Copy the page (button top right) and paste as a prompt.</Tip>
 
 <Note>
-  You can enable pre-built functions directly from the dashboard, then skip to step 4.
+  You can enable pre-built functions directly from the dashboard, then skip to step 6.
 </Note>
 
 <Steps>
@@ -134,6 +134,35 @@ Your application can call functions from any language or framework.
 
       For additional context while building, use Nango's documentation MCP: `https://nango.dev/docs/mcp`
     </Accordion>
+
+    **Folder layout.** Each integration gets its own folder, with subfolders by function type. `index.ts` imports every function file you want deployed:
+
+    ```
+    nango-integrations/
+    ├── .nango/                        # auto-managed state, commit it
+    ├── .env                           # secret keys per environment
+    ├── index.ts                       # imports every function file
+    ├── package.json
+    └── <integration-id>/              # one folder per integration (e.g. github, salesforce)
+        ├── syncs/
+        │   └── github-issues.ts
+        ├── actions/
+        │   └── github-create-issue.ts
+        └── on-events/
+            └── post-connection-creation.ts
+    ```
+
+    Each new function file must be imported in `index.ts`, e.g. `import './github/syncs/github-issues';`.
+  </Step>
+
+  <Step title="Run dev mode">
+    Keep this running in a tab while you write code:
+
+    ```bash
+    nango dev
+    ```
+
+    `nango dev` continuously type-checks and compiles your function files, surfacing errors immediately. Leave it open for the rest of this guide.
   </Step>
 
   <Step title="Build your function">
@@ -141,7 +170,7 @@ Your application can call functions from any language or framework.
 
     <Tabs>
       <Tab title="HTTP">
-        Functions triggered on-demand over HTTP from your application. This is the [action](/implementation-guides/use-cases/actions/implement-an-action) function type — useful for reads, writes, and AI tool calls.
+        Functions triggered on-demand over HTTP from your application. This is the [action](/implementation-guides/use-cases/actions) function type — useful for reads, writes, and AI tool calls.
 
         ```typescript
         import { createAction } from 'nango';
@@ -167,7 +196,7 @@ Your application can call functions from any language or framework.
         });
         ```
 
-        For async execution, pagination, error handling, and testing: [Actions guide](/implementation-guides/use-cases/actions/implement-an-action).
+        For async execution, pagination, error handling, and testing: [Actions guide](/implementation-guides/use-cases/actions).
 
         <Tip>
           **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
@@ -183,7 +212,7 @@ Your application can call functions from any language or framework.
       </Tab>
 
       <Tab title="Schedule">
-        Functions that run on a recurring schedule, fetch data from the external API, and cache it in Nango's records store. Your app reads from the cache rather than calling the external API directly. This is the [sync](/implementation-guides/use-cases/syncs/implement-a-sync) function type.
+        Functions that run on a recurring schedule, fetch data from the external API, and cache it in Nango's records store. Your app reads from the cache rather than calling the external API directly. This is the [sync](/implementation-guides/use-cases/syncs) function type.
 
         ```typescript
         import { createSync } from 'nango';
@@ -215,7 +244,26 @@ Your application can call functions from any language or framework.
         });
         ```
 
-        For incremental syncs, checkpointing, deletion detection, and real-time syncs: [Syncs guide](/implementation-guides/use-cases/syncs/implement-a-sync).
+        Common helpers used inside a sync function:
+
+        - `nango.getCheckpoint()` — retrieve saved progress (returns `null` on first run)
+        - `nango.saveCheckpoint(checkpoint)` — persist progress after each batch
+        - `nango.batchSave(records, modelName)` — write records to Nango's cache
+        - `nango.batchDelete(records, modelName)` — soft-delete records from the cache
+        - `nango.get({ endpoint, params })` — authenticated request to the external API
+        - `nango.log(message)` — write a log message visible in the dashboard
+
+        See the [`nango` runtime reference](/reference/functions) for the full surface.
+
+        Sync-specific patterns and deep dives:
+
+        - [Sync use case](/implementation-guides/use-cases/syncs) — pitch, when-to-use, and use-case-specific concerns
+        - [Checkpoints](/implementation-guides/use-cases/syncs/checkpoints) — incremental syncs, resumption on failure, full-sync resilience
+        - [Deletion detection](/implementation-guides/use-cases/syncs/deletion-detection) — `batchDelete` (incremental) / `trackDeletesStart` + `trackDeletesEnd` (full)
+        - [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs) — `webhookSubscriptions` + `onWebhook` handlers
+        - [Records cache](/implementation-guides/use-cases/syncs/records-cache) — how records are stored, change-stream payload, cursor mechanism
+        - [Sync partitioning](/implementation-guides/use-cases/syncs/sync-partitioning) — multiple sync variants per connection
+        - [Sync efficiency](/implementation-guides/use-cases/syncs#sync-efficiency) — full vs incremental, cadence, memory practices
 
         <Tip>
           **Build with AI:** install the Nango skill (`npx skills add NangoHQ/skills`) and prompt your agent:
@@ -228,6 +276,22 @@ Your application can call functions from any language or framework.
           API Reference: https://docs.github.com/en/rest/issues/issues#list-repository-issues
           ```
         </Tip>
+
+        <Accordion title="🤖 For agents">
+          When authoring a sync function, consult these sync-specific patterns and apply the ones that fit the API and dataset:
+
+          - [**Sync efficiency**](/implementation-guides/use-cases/syncs#sync-efficiency) — make incremental wherever possible, pick the lowest cadence the business needs, keep output models small.
+          - [**Checkpoints**](/implementation-guides/use-cases/syncs/checkpoints) — define a `checkpoint` schema for any non-trivial dataset; without it, runs that exceed the execution cap restart from scratch and never finish.
+          - [**Deletion detection**](/implementation-guides/use-cases/syncs/deletion-detection) — incremental via `batchDelete`, or full-sync via `trackDeletesStart` / `trackDeletesEnd`.
+          - [**Real-time syncs**](/implementation-guides/use-cases/syncs/realtime-syncs) — add `webhookSubscriptions` + `onWebhook` to a polling sync; combine for resilience.
+          - [**Records cache**](/implementation-guides/use-cases/syncs/records-cache) — when reading records back, always pass the cursor from `_nango_metadata.cursor` so reads are idempotent.
+          - [**Sync partitioning**](/implementation-guides/use-cases/syncs/sync-partitioning) — fan out per sub-resource within one connection (multiple inboxes, drive folders, Slack channels, repos…); create variants programmatically.
+
+          Programmatic introspection and triggering (no `nango-integrations` folder needed):
+          - [`GET /scripts/config?provider_config_key=<id>`](/reference/api/scripts/config) — list every enabled function for an integration with its spec (models, frequency, checkpoint schema).
+          - [`POST /sync/trigger`](/reference/api/sync/trigger) and [`GET /sync/status`](/reference/api/sync/status) — drive runs and inspect state / current checkpoint.
+          - [`GET /records`](/reference/api/sync/records-list) — read records cache; pass `cursor` for idempotent delta reads.
+        </Accordion>
       </Tab>
 
       <Tab title="Webhook">
@@ -282,14 +346,47 @@ Your application can call functions from any language or framework.
 
   </Step>
 
+  <Step title="Test locally">
+    Run your function against a real connection without persisting anything to Nango:
+
+    ```bash
+    nango dryrun <function-name> '<CONNECTION-ID>'
+    ```
+
+    The retrieved data is printed to the console. By default, `dryrun` uses connections from your `dev` environment — change with `-e <env-name>`.
+
+    For actions, pass input data with `--input`. For syncs, simulate resuming from a previous run with `--checkpoint '{"...": "..."}'` (see [Checkpoints](/implementation-guides/use-cases/syncs/checkpoints)).
+
+    Add `--diagnostics` to monitor performance:
+
+    ```bash
+    nango dryrun <function-name> '<CONNECTION-ID>' --diagnostics
+    ```
+
+    This prints average and peak memory (RSS, heap, external) and CPU utilization — useful for spotting leaks or memory pressure on large datasets.
+
+    <Warning>
+      Local diagnostics are indicative only. Performance characteristics differ between local and Nango Cloud — always validate at scale post-deploy.
+    </Warning>
+
+    Run `nango dryrun --help` for all options. For unit tests and snapshot testing, see the [testing guide](/implementation-guides/platform/functions/testing).
+  </Step>
+
   <Step title="Deploy">
     Deploy all functions in your `nango-integrations/` folder to Nango:
 
     ```bash
-    nango deploy
+    nango deploy <env-name>     # e.g. nango deploy dev
     ```
 
-    The CLI prompts for the target environment. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
+    To deploy a single function instead of all:
+
+    ```bash
+    nango deploy --sync <name> <env-name>      # one sync function
+    nango deploy --action <name> <env-name>    # one action function
+    ```
+
+    Run `nango deploy -h` for the full set of flags. To automate deploys, see the [CI/CD guide](/implementation-guides/platform/functions/ci-cd).
 
     <Accordion title="🤖 For agents">
       Run `nango deploy dev` to deploy to the development environment non-interactively. The CLI reads the matching secret key from `.env`. Confirm the deploy succeeded before triggering the function.
@@ -326,34 +423,64 @@ Your application can call functions from any language or framework.
           </Tab>
         </Tabs>
 
-        Actions can also be exposed as MCP tools for AI agents — see [tool calling & MCP](/implementation-guides/use-cases/tool-calling/overview).
+        Other modes:
+        - **Async / batch** — for bulk or rate-limited workloads, run actions asynchronously: see [Async execution](/implementation-guides/use-cases/actions#async-execution).
+        - **Tool for AI agents** — expose actions as MCP tools or to any LLM SDK: see [Tool calling for AI agents](/implementation-guides/use-cases/tool-calling).
       </Tab>
 
       <Tab title="Schedule">
-        Syncs run automatically on the schedule defined in `frequency`. After each run, Nango sends a webhook to your app's webhook URL with the new or updated records.
+        Syncs run automatically on the schedule defined in `frequency`. The consumer flow on your app side has three pieces:
 
-        Read synced records from your app:
+        **1. Configure the Nango webhook URL** so your app gets notified after each sync run. In **Environment Settings → Webhook URLs**, add the `POST` endpoint your app exposes. Verify the `X-Nango-Hmac-Sha256` header on incoming requests — full details (per-language signature snippets, all webhook types) on [Receive webhooks from Nango](/implementation-guides/platform/webhooks-from-nango).
+
+        **2. Receive the sync webhook.** When a run finishes, Nango POSTs:
+
+        ```json
+        {
+          "type": "sync",
+          "connectionId": "...",
+          "providerConfigKey": "...",
+          "syncName": "...",
+          "model": "...",
+          "modifiedAfter": "...",
+          "responseResults": { "added": 0, "updated": 0, "deleted": 0 }
+        }
+        ```
+
+        **3. Read records via cursor.** Persist the cursor of the last record you process; pass it back on the next fetch to receive only new changes:
 
         <Tabs>
           <Tab title="TypeScript">
           ```typescript
-          const records = await nango.listRecords({
+          const result = await nango.listRecords({
               providerConfigKey: 'github',
               connectionId: '<CONNECTION-ID>',
               model: 'GithubIssue',
+              cursor: '<your-persisted-cursor>',
           });
           ```
           </Tab>
           <Tab title="cURL">
           ```bash
-          curl --request GET \
-            --url 'https://api.nango.dev/records?model=GithubIssue' \
+          curl -G https://api.nango.dev/records \
             --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+            --header 'Provider-Config-Key: github' \
             --header 'Connection-Id: <CONNECTION-ID>' \
-            --header 'Provider-Config-Key: github'
+            --data-urlencode 'model=GithubIssue' \
+            --data-urlencode 'cursor=<your-persisted-cursor>'
           ```
           </Tab>
         </Tabs>
+
+        The full consumer loop:
+
+        1. Receive a sync webhook from Nango.
+        2. Look up the cursor of the last record you processed (per connection × sync).
+        3. Fetch records via `listRecords` with that cursor.
+        4. Process and persist the records in your system.
+        5. Save the cursor of the last record fetched, ready for the next webhook.
+
+        See [Records cache](/implementation-guides/use-cases/syncs/records-cache) for the cache mechanism, the change-stream payload, and cursor handling in detail.
 
         Syncs can also be triggered manually from the dashboard or via the [trigger API](/reference/api/sync/trigger).
       </Tab>
@@ -378,14 +505,14 @@ Your application can call functions from any language or framework.
 Functions have access to two storage primitives:
 
 - **Metadata** — per-connection key-value storage for custom configuration and per-customer logic. Set via the API or dashboard, read inside any function. See the [customer configuration guide](/implementation-guides/use-cases/customer-configuration).
-- **Records** — structured, queryable storage for synced data (lists of contacts, issues, files, etc.). Written inside sync functions with `nango.batchSave()` and read by your app via the [records API](/reference/api/sync/records-list). See the [records cache guide](/implementation-guides/use-cases/syncs/records-cache).
+- **Records** — structured, queryable storage for synced data (lists of contacts, issues, files, etc.). Written inside sync functions with `nango.batchSave()` and read by your app via the [records API](/reference/api/sync/records-list). See the [Records cache guide](/implementation-guides/use-cases/syncs/records-cache).
 
 ## Use cases
 
-- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling/overview)**
-- **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs/implement-a-sync)**
-- **[Triggers and change detection](/implementation-guides/use-cases/syncs/implement-a-sync)**
+- **[Tool calling & MCP servers](/implementation-guides/use-cases/tool-calling)**
+- **[Data syncing with checkpoints](/implementation-guides/use-cases/syncs)**
+- **[RAG pipelines and large dataset ingestion](/implementation-guides/use-cases/syncs)**
+- **[Triggers and change detection](/implementation-guides/use-cases/syncs)**
 - **[Webhook ingestion and processing](/implementation-guides/use-cases/webhooks-from-external-apis)**
 - **[Per-customer integration logic](/implementation-guides/use-cases/customer-configuration)**
 - **[API unification](/implementation-guides/use-cases/unified-apis)**
