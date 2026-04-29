@@ -101,7 +101,7 @@ describe('getRoutingId', () => {
 
     it(`appends ${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX} when plan.tenant_isolation is true`, () => {
         const routingContext: RoutingContext = {
-            plan: { fleet_node_routing_override: null, tenant_isolation: true } as unknown as RoutingContext['plan'],
+            plan: { fleet_node_routing_override: null, lambda_tenant_isolation: true } as unknown as RoutingContext['plan'],
             features: []
         };
         const result = getRoutingId({
@@ -113,7 +113,7 @@ describe('getRoutingId', () => {
 
     it('combines fleet_node_routing_override with tenant_isolation', () => {
         const routingContext: RoutingContext = {
-            plan: { fleet_node_routing_override: 'custom', tenant_isolation: true } as unknown as RoutingContext['plan'],
+            plan: { fleet_node_routing_override: 'custom', lambda_tenant_isolation: true } as unknown as RoutingContext['plan'],
             features: []
         };
         const result = getRoutingId({
