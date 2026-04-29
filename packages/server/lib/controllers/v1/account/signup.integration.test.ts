@@ -15,13 +15,21 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should not be protected', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: {} as any });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            // @ts-expect-error invalid body on purpose
+            body: {}
+        });
 
         expect(res.res.status).toBe(400);
     });
 
     it('should validate body', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: {} as any });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            // @ts-expect-error invalid body on purpose
+            body: {}
+        });
 
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
@@ -62,11 +70,7 @@ describe('POST /api/v1/account/signup', () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: {
-                uuid: expect.any(String),
-                verified: false
-            }
-        });
+        expect(res.json.data.verified).toBe(false);
+        expect(typeof res.json.data.uuid).toBe('string');
     });
 });

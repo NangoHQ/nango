@@ -246,6 +246,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 break;
             }
             // BOOLEAN FLAGS - keep override if different
+            case 'lambda_tenant_isolation':
             case 'sync_lambda_checkpoint_required': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;

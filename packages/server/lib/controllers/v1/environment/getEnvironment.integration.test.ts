@@ -66,7 +66,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should redact webhook_signing_key for production_support on prod environment', async () => {
-        const { env, user } = await seeders.seedAccountEnvAndUser();
+        const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
         // Make it a production environment
         await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
         // Change user role to production_support

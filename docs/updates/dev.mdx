@@ -78,7 +78,7 @@ description: "Updates and breaking changes for developers."
 
   ### ✨ What's new
 
-  [Sync](/implementation-guides/use-cases/syncs/realtime-syncs#real-time-syncs) functions now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync only retrieves what changed since the last checkpoint.
+  [Sync](/implementation-guides/use-cases/syncs/realtime-syncs) functions now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync only retrieves what changed since the last checkpoint.
 
   ```ts
   // Simplified Example

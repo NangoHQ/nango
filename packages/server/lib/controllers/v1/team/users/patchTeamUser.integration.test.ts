@@ -1,10 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders, userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { seeders, updatePlan, userService } from '@nangohq/shared';
+import { roles } from '@nangohq/utils';
 
+import { envs } from '../../../../env.js';
 import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';
+const nonDefaultRole = roles.find((role) => role !== envs.DEFAULT_USER_ROLE);
+
+if (!nonDefaultRole) {
+    throw new Error('Expected a non-default role for team user tests');
+}
+
 let api: Awaited<ReturnType<typeof runServer>>;
 
 describe(`PATCH ${route}`, () => {
@@ -56,7 +65,8 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should change a user role', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const { account, user, plan } = await seeders.seedAccountEnvAndUser();
+        await updatePlan(db.knex, { id: plan.id, has_rbac: true });
         const targetUser = await seeders.seedUser(account.id);
         const session = await authenticateUser(api, user);
 
@@ -64,7 +74,7 @@ describe(`PATCH ${route}`, () => {
             method: 'PATCH',
             query: { env: 'dev' },
             params: { id: targetUser.id },
-            body: { role: 'production_support' },
+            body: { role: nonDefaultRole },
             session
         });
 
@@ -72,18 +82,19 @@ describe(`PATCH ${route}`, () => {
         isSuccess(res.json);
 
         const updated = await userService.getUserById(targetUser.id);
-        expect(updated?.role).toBe('production_support');
+        expect(updated?.role).toBe(nonDefaultRole);
     });
 
     it('should prevent self-demotion', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
+        const { user, plan } = await seeders.seedAccountEnvAndUser();
+        await updatePlan(db.knex, { id: plan.id, has_rbac: true });
         const session = await authenticateUser(api, user);
 
         const res = await api.fetch(route, {
             method: 'PATCH',
             query: { env: 'dev' },
             params: { id: user.id },
-            body: { role: 'production_support' },
+            body: { role: nonDefaultRole },
             session
         });
 
@@ -92,7 +103,8 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should return user_not_found for user in different account', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser();
+        const { user, plan } = await seeders.seedAccountEnvAndUser();
+        await updatePlan(db.knex, { id: plan.id, has_rbac: true });
         const { user: otherUser } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -100,11 +112,48 @@ describe(`PATCH ${route}`, () => {
             method: 'PATCH',
             query: { env: 'dev' },
             params: { id: otherUser.id },
-            body: { role: 'production_support' },
+            body: { role: nonDefaultRole },
             session
         });
 
         expect(res.res.status).toBe(400);
         expect((res.json as any).error.code).toBe('user_not_found');
+    });
+
+    it('should reject a non-default role when has_rbac is false', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const targetUser = await seeders.seedUser(account.id);
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch(route, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            params: { id: targetUser.id },
+            body: { role: nonDefaultRole },
+            session
+        });
+
+        expect(res.res.status).toBe(403);
+        expect((res.json as any).error.code).toBe('feature_disabled');
+
+        const notUpdated = await userService.getUserById(targetUser.id);
+        expect(notUpdated?.role).toBe(envs.DEFAULT_USER_ROLE);
+    });
+
+    it('should allow setting DEFAULT_USER_ROLE even when has_rbac is false', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const targetUser = await seeders.seedUser(account.id);
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch(route, {
+            method: 'PATCH',
+            query: { env: 'dev' },
+            params: { id: targetUser.id },
+            body: { role: envs.DEFAULT_USER_ROLE },
+            session
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
     });
 });

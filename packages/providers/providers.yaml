@@ -695,6 +695,8 @@ autotask:
         - support
         - ticketing
     auth_mode: API_KEY
+    webhook_routing_script: autotaskWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://${connectionConfig.subdomain}.autotask.net/atservicesrest
         headers:

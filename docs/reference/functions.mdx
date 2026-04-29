@@ -758,7 +758,7 @@ await nango.getConnection();
 
 ## Sync-specific helper methods
 
-Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/use-cases/syncs/implement-a-sync)).
+Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/use-cases/syncs)).
 
 ### Checkpoints
 
@@ -903,7 +903,7 @@ Call `trackDeletesStart` at the beginning of your sync execution, before fetchin
 `deleteRecordsFromPreviousExecutions` is deprecated. Use `trackDeletesStart`/`trackDeletesEnd` instead.
 </Note>
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/use-cases/syncs/deletion-detection.mdx).
+For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/use-cases/syncs/deletion-detection).
 
 ### Update records
 

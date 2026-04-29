@@ -2239,8 +2239,7 @@ class OAuthController {
                     connectionId: updatedConnection.connection.id,
                     connectionName: updatedConnection.connection.connection_id
                 });
-                // syncs not support for oauth1
-                const initiateSync = false;
+                const initiateSync = true;
                 const runPostConnectionScript = true;
                 void connectionCreatedHook(
                     {
