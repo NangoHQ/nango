@@ -17188,6 +17188,27 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-leads:
+    display_name: Store Leads
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://storeleads.app/json/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            at:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/store-leads
+    docs_connect: https://nango.dev/docs/api-integrations/store-leads/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Store Leads API key.
+            doc_section: '#step-1-generate-your-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
