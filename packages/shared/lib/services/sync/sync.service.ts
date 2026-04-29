@@ -334,9 +334,57 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
     return true;
 };
 
-export const softDeleteSync = async (syncId: string): Promise<string> => {
-    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-    return syncId;
+export const softDeleteSync = async (syncId: string): Promise<Result<string>> => {
+    try {
+        await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        return Ok(syncId);
+    } catch (err) {
+        return Err(new Error(`Failed to soft delete sync with id ${syncId}: ${stringifyError(err)}`));
+    }
+};
+
+export const undeleteSync = async ({ connectionId, name, variant }: { connectionId: number; name: string; variant: string }): Promise<Result<Sync>> => {
+    try {
+        // Return existing non-deleted sync if one exists
+        const [existing] = await db.knex.from<Sync>(TABLE).where({
+            nango_connection_id: connectionId,
+            name,
+            variant,
+            deleted: false
+        });
+
+        if (existing) {
+            return Ok(existing);
+        }
+
+        // Undelete the most recently deleted one
+        const [res] = await db.knex
+            .from<Sync>(TABLE)
+            .where(
+                'id',
+                '=',
+                db.knex
+                    .from(TABLE)
+                    .select('id')
+                    .where({
+                        nango_connection_id: connectionId,
+                        name,
+                        variant,
+                        deleted: true
+                    })
+                    .orderBy('deleted_at', 'desc')
+                    .limit(1)
+            )
+            .update({ deleted: false, deleted_at: null })
+            .returning('*');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new Error(`No sync to undelete for connection ${connectionId} with name ${name} and variant ${variant}`));
+    } catch (err) {
+        return Err(new Error(`Failed to undelete sync for connection ${connectionId} with name ${name} and variant ${variant}: ${stringifyError(err)}`));
+    }
 };
 
 export const findSyncByConnections = async (connectionIds: number[], sync_name: string): Promise<Sync[]> => {
