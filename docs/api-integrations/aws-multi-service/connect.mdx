@@ -1,0 +1,47 @@
+---
+title: AWS Multi-Service - How do I link my account?
+sidebarTitle: AWS Multi-Service
+---
+
+
+# Overview
+
+To authenticate with AWS Multi-Service, you will need:
+1. **Access Key ID** - A unique identifier that specifies the IAM user or role making the request.
+2. **Secret Access Key** - A confidential key used to sign API requests made to AWS services.
+
+This guide will walk you through finding these credentials within AWS.
+
+<Note>
+**Developer settings** — the AWS **Service** (e.g. `s3`, `athena`, `inspector2`) and **Region** (e.g. `us-east-1`) are configured by the developer when setting up the integration in Nango, not by the end user. Each integration targets a single service and region. End users only need to provide their Access Key ID and Secret Access Key.
+</Note>
+
+### Prerequisites:
+
+- You must have a registered account with AWS.
+- The IAM user must have permissions for the AWS service targeted by this integration.
+
+### Instructions:
+
+#### Step 1: Finding your access keys
+1. **Log in** to your AWS IAM console.
+2. In the navigation bar on the upper right, select your user name, and then select **Security credentials**.
+<img src="/api-integrations/aws-iam/aws-profile.png" />
+
+3. In the **Access keys** section, click **Create access key**. If you already have two access keys, this button is deactivated and you must delete an access key before you can create a new one.
+
+<img src="/api-integrations/aws-iam/aws_access_key.png" />
+4. On the **Access key best practices & alternatives** page, choose your use case to learn about additional options which can help you avoid creating a long-term access key. If you determine that your use case still requires an access key, click **Other** and then click **Next**.
+5. Once you are done, a pair of both **Access** and **Secret Access** keys will be generated.
+<img src="/api-integrations/aws-iam/keys.png" />
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your keys:
+1. Open the form where you need to authenticate with AWS.
+2. Enter the **Access Key ID** and **Secret Access Key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/aws-multi-service/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to AWS Multi-Service.

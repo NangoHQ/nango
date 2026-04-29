@@ -2054,6 +2054,51 @@ aws-inspector2:
             suffix: .amazonaws.com
             pattern: '^[a-z0-9-]+$'
 
+aws-multi-service:
+    display_name: AWS Multi-Service
+    categories:
+        - dev-tools
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.service}.${connectionConfig.region}.amazonaws.com
+        headers:
+            authorization: '${awsSigV4(${credentials.username}, ${credentials.password}, ${connectionConfig.region}, ${connectionConfig.service}, ${connectionConfig.service}.${connectionConfig.region}.amazonaws.com)}'
+            x-amz-date: '${now:YYYYMMDDTHHmmss[Z]}'
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+    credentials_verification_script: awsIamCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/aws-multi-service
+    docs_connect: https://nango.dev/docs/api-integrations/aws-multi-service/connect
+    credentials:
+        username:
+            type: string
+            title: AWS Access Key ID
+            description: Your Access Key ID.
+            example: AKIAI***MPLE
+            pattern: '^[A-Za-z0-9]+$'
+        password:
+            type: string
+            title: AWS Secret Access Key
+            description: Your Secret Access Key.
+            example: wJalr***EKEY
+            pattern: '^[A-Za-z0-9+/]+$'
+    connection_config:
+        service:
+            type: string
+            title: AWS Service
+            description: The AWS service you want to connect to.
+            example: athena
+            pattern: '^[a-z0-9-]+$'
+            order: 2
+        region:
+            type: string
+            title: Region
+            description: The AWS region where the service is available.
+            example: us-east-1
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+
 aws-scim:
     display_name: AWS (SCIM)
     categories:
@@ -5251,6 +5296,28 @@ crisp-plugin-install:
                 - /v1/plugin/connect/account
     docs: https://nango.dev/docs/api-integrations/crisp-plugin-install
     setup_guide_url: https://nango.dev/docs/api-integrations/crisp-plugin-install/how-to-register-your-own-crisp-plugin
+
+crunchbase:
+    display_name: Crunchbase
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.crunchbase.com/
+        headers:
+            x-cb-user-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v4/data/entities/organizations/crunchbase
+    docs: https://nango.dev/docs/api-integrations/crunchbase
+    docs_connect: https://nango.dev/docs/api-integrations/crunchbase/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Crunchbase API key.
+            doc_section: '#step-1-get-your-api-key'
 
 dixa:
     display_name: Dixa
@@ -12133,6 +12200,33 @@ nyne-ai:
             example: '97e7********0463'
             doc_section: '#step-1-getting-your-api-credentials'
 
+ocean-io:
+    display_name: Ocean.io
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.ocean.io
+        headers:
+            x-api-token: ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v2/credits/balance
+    docs: https://nango.dev/docs/api-integrations/ocean-io
+    docs_connect: https://nango.dev/docs/api-integrations/ocean-io/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Ocean.io API token.
+            example: api_7Zs******_************************mhS
+            pattern: '^api_[A-Za-z0-9]+_[A-Za-z0-9]+'
+            doc_section: '#step-1-generate-your-api-token'
+
 odoo:
     display_name: Odoo (OAuth)
     categories:
@@ -14988,6 +15082,33 @@ roller:
 
     docs: https://nango.dev/docs/integrations/all/roller
 
+rocketreach:
+    display_name: RocketReach
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.rocketreach.co
+        headers:
+            api-key: ${apiKey}
+        retry:
+            at:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/account/
+    docs: https://nango.dev/docs/api-integrations/rocketreach
+    docs_connect: https://nango.dev/docs/api-integrations/rocketreach/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your RocketReach API key.
+            example: 1e4dfd5***************************e3ca3a
+            pattern: '^[a-z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
+
 rootly:
     display_name: Rootly
     categories:
@@ -17215,6 +17336,27 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-leads:
+    display_name: Store Leads
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://storeleads.app/json/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            at:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/store-leads
+    docs_connect: https://nango.dev/docs/api-integrations/store-leads/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Store Leads API key.
+            doc_section: '#step-1-generate-your-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -19109,6 +19251,47 @@ veeva-vault:
             description: ''
             default_value: ''
             hidden: true
+
+vtex:
+    display_name: VTEX
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.accountName}.vtexcommercestable.com.br
+        headers:
+            x-vtex-api-appkey: ${connectionConfig.appKey}
+            x-vtex-api-apptoken: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/vtex
+    docs_connect: https://nango.dev/docs/api-integrations/vtex/connect
+    connection_config:
+        accountName:
+            type: string
+            title: Account Name
+            description: Your VTEX store account name.
+            example: mystore
+            pattern: '^[a-zA-Z0-9_-]+$'
+            suffix: .vtexcommercestable.com.br
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-account-name'
+        appKey:
+            type: string
+            title: App Key
+            description: Your VTEX application key.
+            example: vtexappkey-mystore-ABCDEF
+            secret: true
+            pattern: '^vtexappkey-[a-zA-Z0-9_-]+-[A-Z0-9]+$'
+            order: 2
+            doc_section: '#step-2-generating-an-api-key'
+    credentials:
+        apiKey:
+            type: string
+            title: App Token
+            description: The application token associated with your VTEX App Key.
+            example: ZNWDC************************************LXPNX
+            pattern: '^[A-Z]+$'
+            doc_section: '#step-2-generating-an-api-key'
 
 wakatime:
     display_name: Wakatime
