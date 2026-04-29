@@ -14961,6 +14961,33 @@ roller:
 
     docs: https://nango.dev/docs/integrations/all/roller
 
+rocketreach:
+    display_name: RocketReach
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.rocketreach.co
+        headers:
+            api-key: ${apiKey}
+        retry:
+            at:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/account/
+    docs: https://nango.dev/docs/api-integrations/rocketreach
+    docs_connect: https://nango.dev/docs/api-integrations/rocketreach/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your RocketReach API key.
+            example: 1e4dfd5***************************e3ca3a
+            pattern: '^[a-z0-9]+'
+            doc_section: '#step-1-get-your-api-key'
+
 rootly:
     display_name: Rootly
     categories:
