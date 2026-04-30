@@ -90,11 +90,11 @@
     },
     {
       "source": "/guides/mcp",
-      "destination": "/guides/functions/tool-calling#mcp-server"
+      "destination": "/guides/functions/tool-calling"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/guides/functions/tool-calling#mcp-server"
+      "destination": "/guides/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/overview",
@@ -138,11 +138,11 @@
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
-      "destination": "/guides/functions/tool-calling#mcp-server"
+      "destination": "/guides/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
-      "destination": "/guides/functions/sync-functions"
+      "destination": "/guides/functions/syncs/sync-functions"
     },
     {
       "source": "/implementation-guides/use-cases/actions/implement-an-action",
@@ -150,55 +150,55 @@
     },
     {
       "source": "/implementation-guides/use-cases/actions/async-actions",
-      "destination": "/guides/functions/action-functions#trigger-asynchronously"
+      "destination": "/guides/functions/action-functions"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/checkpoints",
-      "destination": "/guides/functions/checkpoints"
+      "destination": "/guides/functions/syncs/checkpoints"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/deletion-detection",
-      "destination": "/guides/functions/deletion-detection"
+      "destination": "/guides/functions/syncs/deletion-detection"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/realtime-syncs",
-      "destination": "/guides/functions/realtime-syncs"
+      "destination": "/guides/functions/syncs/realtime-syncs"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/records-cache",
-      "destination": "/guides/functions/records-cache"
+      "destination": "/guides/functions/syncs/records-cache"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/sync-partitioning",
-      "destination": "/guides/functions/sync-partitioning"
+      "destination": "/guides/functions/syncs/sync-partitioning"
     },
     {
       "source": "/guides/primitives/proxy",
-      "destination": "/guides/platform/proxy/implement-requests-proxy"
+      "destination": "/guides/platform/proxy-requests"
     },
     {
       "source": "/guides/platform/ai-integration-builder",
-      "destination": "/guides/functions/overview#function-ai-builder"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/guides/platform/free-self-hosting/configuration",
-      "destination": "/guides/platform/self-hosting#free-self-hosting"
+      "destination": "/guides/platform/self-hosting"
     },
     {
       "source": "/implementation-guides/platform/functions/customer-configuration",
-      "destination": "/guides/functions/storage#customer-configuration-pattern"
+      "destination": "/guides/functions/storage"
     },
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
-      "destination": "/guides/platform/observability#opentelemetry-export"
+      "destination": "/guides/platform/observability"
     },
     {
       "source": "/implementation-guides/platform/auth/implement-api-auth",
-      "destination": "/guides/auth/overview#guide"
+      "destination": "/guides/auth/auth-guide"
     },
     {
       "source": "/implementation-guides/platform/auth/configure-integration",
-      "destination": "/guides/auth/overview#guide"
+      "destination": "/guides/auth/auth-guide"
     },
     {
       "source": "/implementation-guides/platform/auth/contribute-new-api",
@@ -206,19 +206,19 @@
     },
     {
       "source": "/implementation-guides/platform/functions/functions-setup",
-      "destination": "/guides/functions/overview#step-by-step-guide"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/implementation-guides/platform/functions/leverage-ai-agents",
-      "destination": "/guides/functions/overview#function-ai-builder"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/implementation-guides/platform/functions/catalog",
-      "destination": "/guides/functions/overview#template-catalog"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/implementation-guides/platform/functions/customize-template",
-      "destination": "/guides/functions/overview#template-catalog"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/implementation-guides/platform/functions/http-functions",
@@ -234,11 +234,11 @@
     },
     {
       "source": "/guides/primitives/auth",
-      "destination": "/guides/auth/overview"
+      "destination": "/guides/auth/auth-guide"
     },
     {
       "source": "/guides/primitives/functions",
-      "destination": "/guides/functions/overview"
+      "destination": "/guides/functions/functions-guide"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling",
@@ -286,31 +286,31 @@
     },
     {
       "source": "/implementation-guides/platform/functions/sync-functions",
-      "destination": "/guides/functions/sync-functions"
+      "destination": "/guides/functions/syncs/sync-functions"
     },
     {
       "source": "/implementation-guides/platform/functions/sync-efficiency",
-      "destination": "/guides/functions/sync-efficiency"
+      "destination": "/guides/functions/syncs/sync-efficiency"
     },
     {
       "source": "/implementation-guides/platform/functions/checkpoints",
-      "destination": "/guides/functions/checkpoints"
+      "destination": "/guides/functions/syncs/checkpoints"
     },
     {
       "source": "/implementation-guides/platform/functions/records-cache",
-      "destination": "/guides/functions/records-cache"
+      "destination": "/guides/functions/syncs/records-cache"
     },
     {
       "source": "/implementation-guides/platform/functions/deletion-detection",
-      "destination": "/guides/functions/deletion-detection"
+      "destination": "/guides/functions/syncs/deletion-detection"
     },
     {
       "source": "/implementation-guides/platform/functions/realtime-syncs",
-      "destination": "/guides/functions/realtime-syncs"
+      "destination": "/guides/functions/syncs/realtime-syncs"
     },
     {
       "source": "/implementation-guides/platform/functions/sync-partitioning",
-      "destination": "/guides/functions/sync-partitioning"
+      "destination": "/guides/functions/syncs/sync-partitioning"
     },
     {
       "source": "/implementation-guides/platform/functions/action-functions",
@@ -358,7 +358,7 @@
     },
     {
       "source": "/implementation-guides/platform/proxy/implement-requests-proxy",
-      "destination": "/guides/platform/proxy/implement-requests-proxy"
+      "destination": "/guides/platform/proxy-requests"
     },
     {
       "source": "/implementation-guides/platform/webhooks-from-nango",
@@ -387,6 +387,238 @@
     {
       "source": "/implementation-guides/platform/migrations/migrate-to-zero-yaml",
       "destination": "/guides/platform/migrations/migrate-to-zero-yaml"
+    },
+    {
+      "source": "/reference/sdks/frontend",
+      "destination": "/reference/frontend/frontend-sdk"
+    },
+    {
+      "source": "/reference/api-keys",
+      "destination": "/reference/backend/http-api/api-keys"
+    },
+    {
+      "source": "/reference/api-configuration",
+      "destination": "/integrations/api-configuration"
+    },
+    {
+      "source": "/reference/cli",
+      "destination": "/reference/functions/functions-cli"
+    },
+    {
+      "source": "/reference/functions",
+      "destination": "/reference/functions/functions-sdk"
+    },
+    {
+      "source": "/reference/api/connect/session/delete",
+      "destination": "/reference/backend/http-api/connect/session/delete"
+    },
+    {
+      "source": "/reference/api/connect/session/get",
+      "destination": "/reference/backend/http-api/connect/session/get"
+    },
+    {
+      "source": "/reference/api/connect/sessions/reconnect",
+      "destination": "/reference/backend/http-api/connect/sessions/reconnect"
+    },
+    {
+      "source": "/reference/api/connect/sessions/create",
+      "destination": "/reference/backend/http-api/connect/sessions/create"
+    },
+    {
+      "source": "/reference/api/sync/pause",
+      "destination": "/reference/backend/http-api/sync/pause"
+    },
+    {
+      "source": "/reference/api/sync/status",
+      "destination": "/reference/backend/http-api/sync/status"
+    },
+    {
+      "source": "/reference/api/sync/update-connection-frequency",
+      "destination": "/reference/backend/http-api/sync/update-connection-frequency"
+    },
+    {
+      "source": "/reference/api/sync/prune-records",
+      "destination": "/reference/backend/http-api/sync/prune-records"
+    },
+    {
+      "source": "/reference/api/sync/create-variant",
+      "destination": "/reference/backend/http-api/sync/create-variant"
+    },
+    {
+      "source": "/reference/api/sync/delete-variant",
+      "destination": "/reference/backend/http-api/sync/delete-variant"
+    },
+    {
+      "source": "/reference/api/sync/environment-variables",
+      "destination": "/reference/backend/http-api/sync/environment-variables"
+    },
+    {
+      "source": "/reference/api/sync/start",
+      "destination": "/reference/backend/http-api/sync/start"
+    },
+    {
+      "source": "/reference/api/sync/trigger",
+      "destination": "/reference/backend/http-api/sync/trigger"
+    },
+    {
+      "source": "/reference/api/sync/records-list",
+      "destination": "/reference/backend/http-api/sync/records-list"
+    },
+    {
+      "source": "/reference/api/api-keys",
+      "destination": "/reference/backend/http-api/api-keys"
+    },
+    {
+      "source": "/reference/api/scripts/config",
+      "destination": "/reference/backend/http-api/scripts/config"
+    },
+    {
+      "source": "/reference/api/action/trigger",
+      "destination": "/reference/backend/http-api/action/trigger"
+    },
+    {
+      "source": "/reference/api/connections/update-metadata",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/api/connections/patch",
+      "destination": "/reference/backend/http-api/connections/patch"
+    },
+    {
+      "source": "/reference/api/connections/set-metadata",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/api/connections/delete",
+      "destination": "/reference/backend/http-api/connections/delete"
+    },
+    {
+      "source": "/reference/api/connections/get",
+      "destination": "/reference/backend/http-api/connections/get"
+    },
+    {
+      "source": "/reference/api/connections/post",
+      "destination": "/reference/backend/http-api/connections/post"
+    },
+    {
+      "source": "/reference/api/connections/list",
+      "destination": "/reference/backend/http-api/connections/list"
+    },
+    {
+      "source": "/reference/api/rate-limits",
+      "destination": "/reference/backend/http-api/rate-limits"
+    },
+    {
+      "source": "/reference/api/providers/get",
+      "destination": "/reference/backend/http-api/providers/get"
+    },
+    {
+      "source": "/reference/api/providers/list",
+      "destination": "/reference/backend/http-api/providers/list"
+    },
+    {
+      "source": "/reference/api/authentication",
+      "destination": "/reference/backend/http-api/authentication"
+    },
+    {
+      "source": "/reference/api/integration/delete",
+      "destination": "/reference/backend/http-api/integration/delete"
+    },
+    {
+      "source": "/reference/api/integration/update",
+      "destination": "/reference/backend/http-api/integration/update"
+    },
+    {
+      "source": "/reference/api/integration/get",
+      "destination": "/reference/backend/http-api/integration/get"
+    },
+    {
+      "source": "/reference/api/integration/create",
+      "destination": "/reference/backend/http-api/integration/create"
+    },
+    {
+      "source": "/reference/api/integration/list",
+      "destination": "/reference/backend/http-api/integration/list"
+    },
+    {
+      "source": "/reference/api/connection/update-metadata-legacy",
+      "destination": "/reference/backend/http-api/connection/update-metadata-legacy"
+    },
+    {
+      "source": "/reference/api/connection/update-metadata",
+      "destination": "/reference/backend/http-api/connection/update-metadata"
+    },
+    {
+      "source": "/reference/api/connection/set-metadata",
+      "destination": "/reference/backend/http-api/connection/set-metadata"
+    },
+    {
+      "source": "/reference/api/connection/delete",
+      "destination": "/reference/backend/http-api/connection/delete"
+    },
+    {
+      "source": "/reference/api/connection/get",
+      "destination": "/reference/backend/http-api/connection/get"
+    },
+    {
+      "source": "/reference/api/connection/post",
+      "destination": "/reference/backend/http-api/connection/post"
+    },
+    {
+      "source": "/reference/api/connection/set-metadata-legacy",
+      "destination": "/reference/backend/http-api/connection/set-metadata-legacy"
+    },
+    {
+      "source": "/reference/api/connection/list",
+      "destination": "/reference/backend/http-api/connection/list"
+    },
+    {
+      "source": "/reference/api/proxy/patch",
+      "destination": "/reference/backend/http-api/proxy/patch"
+    },
+    {
+      "source": "/reference/api/proxy/delete",
+      "destination": "/reference/backend/http-api/proxy/delete"
+    },
+    {
+      "source": "/reference/api/proxy/get",
+      "destination": "/reference/backend/http-api/proxy/get"
+    },
+    {
+      "source": "/reference/api/proxy/post",
+      "destination": "/reference/backend/http-api/proxy/post"
+    },
+    {
+      "source": "/reference/api/proxy/put",
+      "destination": "/reference/backend/http-api/proxy/put"
+    },
+    {
+      "source": "/reference/sdks/node",
+      "destination": "/reference/backend/backend-sdk/node"
+    },
+    {
+      "source": "/reference/sdks/go",
+      "destination": "/reference/backend/backend-sdk/go"
+    },
+    {
+      "source": "/reference/sdks/php",
+      "destination": "/reference/backend/backend-sdk/php"
+    },
+    {
+      "source": "/reference/sdks/python",
+      "destination": "/reference/backend/backend-sdk/python"
+    },
+    {
+      "source": "/reference/sdks/ruby",
+      "destination": "/reference/backend/backend-sdk/ruby"
+    },
+    {
+      "source": "/reference/sdks/rust",
+      "destination": "/reference/backend/backend-sdk/rust"
+    },
+    {
+      "source": "/reference/sdks/java",
+      "destination": "/reference/backend/backend-sdk/java"
     }
   ],
   "navigation": {
@@ -423,7 +655,7 @@
                 "group": "Auth",
                 "expanded": false,
                 "pages": [
-                  "guides/auth/overview",
+                  "guides/auth/auth-guide",
                   "guides/auth/share-connect-link",
                   "guides/auth/connection-tags",
                   "guides/auth/customize-connect-ui",
@@ -434,17 +666,17 @@
                 "group": "Functions",
                 "expanded": false,
                 "pages": [
-                  "guides/functions/overview",
+                  "guides/functions/functions-guide",
                   {
                     "group": "Sync functions",
                     "pages": [
-                      "guides/functions/sync-functions",
-                      "guides/functions/sync-efficiency",
-                      "guides/functions/checkpoints",
-                      "guides/functions/records-cache",
-                      "guides/functions/deletion-detection",
-                      "guides/functions/realtime-syncs",
-                      "guides/functions/sync-partitioning"
+                      "guides/functions/syncs/sync-functions",
+                      "guides/functions/syncs/sync-efficiency",
+                      "guides/functions/syncs/checkpoints",
+                      "guides/functions/syncs/records-cache",
+                      "guides/functions/syncs/deletion-detection",
+                      "guides/functions/syncs/realtime-syncs",
+                      "guides/functions/syncs/sync-partitioning"
                     ]
                   },
                   "guides/functions/action-functions",
@@ -469,7 +701,7 @@
                   "guides/platform/limits",
                   "guides/platform/security",
                   "guides/platform/self-hosting",
-                  "guides/platform/proxy/implement-requests-proxy",
+                  "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",
                   "guides/platform/webhook-forwarding",
                   "guides/platform/common-issues",
@@ -491,133 +723,130 @@
             "pages": [
               {
                 "group": "Frontend",
-                "expanded": false,
                 "pages": [
-                  "reference/sdks/frontend"
+                  "reference/frontend/frontend-sdk"
                 ]
               },
               {
                 "group": "Backend",
-                "expanded": false,
                 "pages": [
                   {
                     "group": "HTTP API",
                     "icon": "cloud",
                     "pages": [
-                      "reference/api-keys",
-                      "reference/api/authentication",
-                      "reference/api/rate-limits",
+                      "reference/backend/http-api/api-keys",
+                      "reference/backend/http-api/authentication",
+                      "reference/backend/http-api/rate-limits",
                       {
                         "group": "Integrations",
                         "pages": [
-                          "reference/api/integration/list",
-                          "reference/api/integration/get",
-                          "reference/api/integration/create",
-                          "reference/api/integration/update",
-                          "reference/api/integration/delete"
+                          "reference/backend/http-api/integration/list",
+                          "reference/backend/http-api/integration/get",
+                          "reference/backend/http-api/integration/create",
+                          "reference/backend/http-api/integration/update",
+                          "reference/backend/http-api/integration/delete"
                         ]
                       },
                       {
                         "group": "Connect",
                         "pages": [
-                          "reference/api/connect/sessions/create",
-                          "reference/api/connect/sessions/reconnect",
-                          "reference/api/connect/session/get",
-                          "reference/api/connect/session/delete"
+                          "reference/backend/http-api/connect/sessions/create",
+                          "reference/backend/http-api/connect/sessions/reconnect",
+                          "reference/backend/http-api/connect/session/get",
+                          "reference/backend/http-api/connect/session/delete"
                         ]
                       },
                       {
                         "group": "Connections",
                         "pages": [
-                          "reference/api/connections/post",
-                          "reference/api/connections/list",
-                          "reference/api/connections/get",
-                          "reference/api/connections/patch",
-                          "reference/api/connections/set-metadata",
-                          "reference/api/connections/update-metadata",
-                          "reference/api/connections/delete"
+                          "reference/backend/http-api/connections/post",
+                          "reference/backend/http-api/connections/list",
+                          "reference/backend/http-api/connections/get",
+                          "reference/backend/http-api/connections/patch",
+                          "reference/backend/http-api/connections/set-metadata",
+                          "reference/backend/http-api/connections/update-metadata",
+                          "reference/backend/http-api/connections/delete"
                         ]
                       },
                       {
                         "group": "Functions",
                         "pages": [
-                          "reference/api/scripts/config"
+                          "reference/backend/http-api/scripts/config"
                         ]
                       },
                       {
                         "group": "Syncs",
                         "pages": [
-                          "reference/api/sync/records-list",
-                          "reference/api/sync/prune-records",
-                          "reference/api/sync/trigger",
-                          "reference/api/sync/start",
-                          "reference/api/sync/pause",
-                          "reference/api/sync/status",
-                          "reference/api/sync/update-connection-frequency",
-                          "reference/api/sync/environment-variables",
-                          "reference/api/sync/create-variant",
-                          "reference/api/sync/delete-variant"
+                          "reference/backend/http-api/sync/records-list",
+                          "reference/backend/http-api/sync/prune-records",
+                          "reference/backend/http-api/sync/trigger",
+                          "reference/backend/http-api/sync/start",
+                          "reference/backend/http-api/sync/pause",
+                          "reference/backend/http-api/sync/status",
+                          "reference/backend/http-api/sync/update-connection-frequency",
+                          "reference/backend/http-api/sync/environment-variables",
+                          "reference/backend/http-api/sync/create-variant",
+                          "reference/backend/http-api/sync/delete-variant"
                         ]
                       },
                       {
                         "group": "Actions",
                         "pages": [
-                          "reference/api/action/trigger"
+                          "reference/backend/http-api/action/trigger"
                         ]
                       },
                       {
                         "group": "Proxy",
                         "pages": [
-                          "reference/api/proxy/get",
-                          "reference/api/proxy/post",
-                          "reference/api/proxy/put",
-                          "reference/api/proxy/patch",
-                          "reference/api/proxy/delete"
+                          "reference/backend/http-api/proxy/get",
+                          "reference/backend/http-api/proxy/post",
+                          "reference/backend/http-api/proxy/put",
+                          "reference/backend/http-api/proxy/patch",
+                          "reference/backend/http-api/proxy/delete"
                         ]
                       },
                       {
                         "group": "Providers",
                         "pages": [
-                          "reference/api/providers/list",
-                          "reference/api/providers/get"
+                          "reference/backend/http-api/providers/list",
+                          "reference/backend/http-api/providers/get"
                         ]
                       },
                       {
                         "group": "Deprecated",
                         "pages": [
-                          "reference/api/connection/list",
-                          "reference/api/connection/get",
-                          "reference/api/connection/post",
-                          "reference/api/connection/set-metadata",
-                          "reference/api/connection/set-metadata-legacy",
-                          "reference/api/connection/update-metadata",
-                          "reference/api/connection/update-metadata-legacy",
-                          "reference/api/connection/delete"
+                          "reference/backend/http-api/connection/list",
+                          "reference/backend/http-api/connection/get",
+                          "reference/backend/http-api/connection/post",
+                          "reference/backend/http-api/connection/set-metadata",
+                          "reference/backend/http-api/connection/set-metadata-legacy",
+                          "reference/backend/http-api/connection/update-metadata",
+                          "reference/backend/http-api/connection/update-metadata-legacy",
+                          "reference/backend/http-api/connection/delete"
                         ]
                       }
                     ]
                   },
                   {
-                    "group": "Backend SDKs",
+                    "group": "Backend SDK",
                     "icon": "cubes",
                     "pages": [
-                      "reference/sdks/node",
-                      "reference/sdks/python",
-                      "reference/sdks/java",
-                      "reference/sdks/ruby",
-                      "reference/sdks/go",
-                      "reference/sdks/rust",
-                      "reference/sdks/php"
+                      "reference/backend/backend-sdk/node",
+                      "reference/backend/backend-sdk/python",
+                      "reference/backend/backend-sdk/java",
+                      "reference/backend/backend-sdk/ruby",
+                      "reference/backend/backend-sdk/go",
+                      "reference/backend/backend-sdk/rust",
+                      "reference/backend/backend-sdk/php"
                     ]
                   }
                 ]
               },
               {
                 "group": "Functions",
-                "expanded": false,
                 "pages": [
-                  "reference/cli",
-                  "reference/functions"
+                  "reference/functions/functions-cli",
+                  "reference/functions/functions-sdk"
                 ]
               }
             ]
@@ -632,7 +861,7 @@
             "group": "Overview",
             "pages": [
               "integrations/overview",
-              "reference/api-configuration",
+              "integrations/api-configuration",
               "integrations/contribute-or-request-api"
             ]
           },

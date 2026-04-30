@@ -25,11 +25,11 @@ Revoked access tokens and refresh failures happen to all integrations. To handle
 
 1. **Monitor for failures**: Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to receive notifications when token refresh fails
 2. **Handle revoked tokens**: Follow our [guide on handling revoked access tokens](/guides/platform/common-issues#token-refresh-error-from-the-external-api)
-3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/overview#re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
+3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/auth-guide#re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview#re-authorize-an-existing-connection) - implement reconnect sessions for invalid credentials.
+- [Auth guide](/guides/auth/auth-guide#re-authorize-an-existing-connection) - implement reconnect sessions for invalid credentials.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive refresh failure notifications.
 - [Common issues](/guides/platform/common-issues#token-refresh-error-from-the-external-api) - troubleshoot revoked tokens.
 

@@ -44,7 +44,7 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                     <div className="flex flex-col gap-2">
                         <div className="inline-flex gap-1 items-center">
                             <span className="text-body-medium-medium text-text-primary">Tags</span>
-                            <Link to="https://nango.dev/docs/implementation-guides/platform/auth/connection-tags#connection-tags" target="_blank">
+                            <Link to="https://nango.dev/docs/guides/auth/connection-tags" target="_blank">
                                 <ExternalLink className="size-3 text-icon-tertiary" />
                             </Link>
                         </div>

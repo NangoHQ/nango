@@ -209,7 +209,7 @@ export const FunctionsOne: React.FC = () => {
                             <div className="flex flex-col gap-1">
                                 <span className="text-text-primary text-body-medium-semi">Customize this template</span>
                                 <Link
-                                    to="https://nango.dev/docs/implementation-guides/platform/functions/functions-setup"
+                                    to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
                                     target="_blank"
                                     className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
                                 >
@@ -234,19 +234,11 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
@@ -312,11 +304,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 .
@@ -325,15 +313,11 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/use-cases/actions/async-actions" type="external" variant="info">
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously" type="external" variant="info">
                                     async actions
                                 </StyledLink>
                                 .
@@ -347,7 +331,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration#store-customer-specific-data"
+                                    to="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
                                     type="external"
                                     variant="info"
                                 >
@@ -359,19 +343,11 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 .{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks" type="external" variant="info">
                                     Webhooks
                                 </StyledLink>{' '}
                                 can notify you when new data is available.

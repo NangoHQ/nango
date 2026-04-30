@@ -1,0 +1,43 @@
+---
+title: 'List all integrations'
+openapi: 'GET /integrations'
+---
+
+<Info>
+  Requires an API key with one of: `environment:integrations:list` or `environment:integrations:list_credentials`. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+<RequestExample>
+
+```ts Node Client
+const nango = new Nango({ secretKey });
+
+const response = await nango.listIntegrations();
+```
+
+</RequestExample>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "unique_key": "slack-nango-community",
+      "display_name": "Slack",
+      "provider": "slack",
+      "logo": "http://localhost:3003/images/template-logos/slack.svg",
+      "created_at": "2023-10-16T08:45:26.241Z",
+      "updated_at": "2023-10-16T08:45:26.241Z",
+    },
+    {
+      "unique_key": "github-prod",
+      "display_name": "GitHub",
+      "provider": "github",
+      "logo": "http://localhost:3003/images/template-logos/github.svg",
+      "created_at": "2023-10-16T08:45:26.241Z",
+      "updated_at": "2023-10-16T08:45:26.241Z",
+    },
+  ]
+}
+```
+</ResponseExample>
