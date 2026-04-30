@@ -70,7 +70,14 @@ Each cell shows `simple → breakdown` ms.
 
 In every other (account, metric) cell with real data, simple ≈ breakdown within noise. The breakdown overhead only materialises when there is a lot of data to bucket, and 4 of the 5 expensive cells belong to the same outlier account (3660).
 
-**Counter cardinality is not the bottleneck.** Going from 25 distinct connections (small/function_executions) to 82,397 distinct connections (doomsday-px/proxy) — a 3,300× increase — only nudges the breakdown cost from 342 to 368 ms (~8%). What matters is total source-row count, not distinct-key count — the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` does its job.
+**Row volume drives breakdown cost more than cardinality.** The 5 expensive cells happen to have both high source-row counts and high distinct-connection counts — in this dataset the two correlate (high-traffic customers tend to have many active connections). To separate them, the cleanest comparison is the two doomsday accounts:
+
+| account / metric | distinct conns | total rows | breakdown ms |
+|---|---|---|---|
+| doomsday-fn / function_executions | 15,819 | 2.24M | **478** |
+| doomsday-px / proxy | 82,397 | 595k | **368** |
+
+Doomsday-px has **5× more distinct connections** but **~4× fewer source rows**, and its breakdown is *cheaper*. So between two high-volume cases, the one with more rows wins on cost; the one with more cardinality does not. That tells us the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` is doing its job — ClickHouse prunes to the relevant partition cheaply, and the per-connection grouping inside is small relative to the row scan.
 
 ---
 
