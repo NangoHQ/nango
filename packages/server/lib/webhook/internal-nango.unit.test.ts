@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
         triggerWebhook: vi.fn(),
         increment: vi.fn(),
         report: vi.fn(),
+        metricsIncrement: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
     };
@@ -126,7 +127,7 @@ describe('InternalNango queue dispatch', () => {
             { id: 12, connection_id: 'conn-2', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
         ]);
         mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'sync-1', webhook_subscriptions: ['push'] }]);
-        mocks.triggerWebhook.mockResolvedValue({ isErr: () => false });
+        mocks.triggerWebhook.mockResolvedValue(undefined);
     });
 
     it('logs queued successes and marks failed publishes as failed operations', async () => {
