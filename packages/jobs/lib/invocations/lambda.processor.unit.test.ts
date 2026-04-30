@@ -18,7 +18,12 @@ vi.mock('../execution/operations/handler.js', () => ({
 let mockLambdaFailureDestination: string | undefined = 'https://sqs.us-west-2.amazonaws.com/123456789/lambda-failures';
 vi.mock('../env.js', () => ({
     get envs() {
-        return { LAMBDA_FAILURE_DESTINATION: mockLambdaFailureDestination };
+        return {
+            LAMBDA_FAILURE_DESTINATION: mockLambdaFailureDestination,
+            LAMBDA_DEFAULT_MEMORY_MB: 512,
+            LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: 10,
+            LAMBDA_EXECUTION_TIMEOUT_SECS: 900
+        };
     }
 }));
 
@@ -138,7 +143,7 @@ describe('LambdaInvocationsProcessor', () => {
                     payload: { errorMessage: 'Random error' },
                     status: 500
                 }),
-                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0 },
+                telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 0.5 },
                 functionRuntime: 'lambda'
             })
         );

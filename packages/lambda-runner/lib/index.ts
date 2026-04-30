@@ -181,6 +181,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
         const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
         const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
         telemetryBag.durationMs = Date.now() - startTime;
+        telemetryBag.memoryGb = Number(context.memoryLimitInMB) / 1024;
         await jobsClient.putTask({
             taskId: request.taskId,
             nangoProps: request.nangoProps as unknown as NangoProps,

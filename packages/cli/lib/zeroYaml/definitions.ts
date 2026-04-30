@@ -13,13 +13,12 @@ import {
     InvalidModelDefinitionError,
     TrackDeletesDefinitionError
 } from './utils.js';
-import { zodToNangoModelField } from './zodToNango.js';
 import { Err, Ok } from '../utils/result.js';
 import { printDebug } from '../utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
-import type { NangoModel, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type { NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
@@ -80,23 +79,11 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                 if (parsedSyncRes.isErr()) {
                     return Err(parsedSyncRes.error);
                 }
-                const parsedSync = parsedSyncRes.value;
-                integration.syncs.push(parsedSync);
-
-                const models = buildNangoModelsForSync(script, integrationIdClean, basenameClean);
-                models.forEach((v, k) => {
-                    parsed.models.set(k, v);
-                });
+                integration.syncs.push(parsedSyncRes.value);
                 break;
             }
             case 'action': {
-                const action = parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
-                integration.actions.push(action);
-
-                const models = buildNangoModelsForAction(script, integrationIdClean, basenameClean);
-                models.forEach((v, k) => {
-                    parsed.models.set(k, v);
-                });
+                integration.actions.push(parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean }));
                 break;
             }
             case 'onEvent': {
@@ -281,66 +268,4 @@ function postValidation(parsed: NangoYamlParsed): Result<void> {
         }
     }
     return Ok(undefined);
-}
-
-/**
- * Builds legacy NangoModels for a sync.
- * To remove when we deprecate `schema.ts` and `schema.json` files.
- */
-export function buildNangoModelsForSync(
-    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>,
-    integrationIdClean: string,
-    basenameClean: string
-): Map<string, NangoModel> {
-    const models = new Map<string, NangoModel>();
-    for (const [name, zodSchema] of Object.entries(params.models)) {
-        const nangoModelField = zodToNangoModelField(name, zodSchema);
-        models.set(name, { name, fields: nangoModelField['value'] as NangoModel['fields'], description: nangoModelField.description });
-    }
-    if (params.metadata) {
-        const metadataModelName = `SyncMetadata_${integrationIdClean}_${basenameClean}`;
-        const nangoModelField = zodToNangoModelField(metadataModelName, params.metadata);
-        if (!Array.isArray(nangoModelField.value)) {
-            models.set(metadataModelName, {
-                name: metadataModelName,
-                fields: [{ ...nangoModelField, name: 'metadata' }],
-                isAnon: true,
-                description: nangoModelField.description
-            });
-        } else {
-            models.set(metadataModelName, {
-                name: metadataModelName,
-                fields: nangoModelField.value,
-                description: nangoModelField.description
-            });
-        }
-    }
-    return models;
-}
-
-/**
- * Builds legacy NangoModels for an action.
- * To remove when we deprecate `schema.ts` and `schema.json` files.
- */
-export function buildNangoModelsForAction(
-    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>,
-    integrationIdClean: string,
-    basenameClean: string
-): Map<string, NangoModel> {
-    const inputName = `ActionInput_${integrationIdClean}_${basenameClean}`;
-    const outputName = `ActionOutput_${integrationIdClean}_${basenameClean}`;
-    const models = new Map<string, NangoModel>();
-    const input = zodToNangoModelField(inputName, params.input);
-    if (!Array.isArray(input.value)) {
-        models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true, description: input.description });
-    } else {
-        models.set(input.name, { name: input.name, fields: input.value, description: input.description });
-    }
-    const output = zodToNangoModelField(outputName, params.output);
-    if (!Array.isArray(output.value)) {
-        models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true, description: output.description });
-    } else {
-        models.set(output.name, { name: output.name, fields: output.value, description: output.description });
-    }
-    return models;
 }

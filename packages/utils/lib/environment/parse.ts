@@ -469,6 +469,7 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // Lambda
+    LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
     LAMBDA_DEFAULT_PREFIX: z.string().optional().default('nango-runner-function'),
     LAMBDA_ECR_REGISTRY: z.string().optional(),
@@ -534,6 +535,23 @@ export const ENVS = z.object({
     NANGO_WEBHOOK_CIRCUIT_BREAKER_WINDOW_SECS: z.coerce.number().optional().default(10),
     NANGO_WEBHOOK_CIRCUIT_BREAKER_COOLDOWN_DURATION_SECS: z.coerce.number().optional().default(60),
     NANGO_WEBHOOK_CIRCUIT_BREAKER_AUTO_RESET_SECS: z.coerce.number().optional().default(3600),
+
+    // WEBHOOK INGRESS
+    WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
+
+    // TASK DISPATCH QUEUE
+    NANGO_TASK_DISPATCH_QUEUE_URL: z.url().optional(),
+    NANGO_TASK_DISPATCH_DLQ_URL: z.url().optional(),
+    NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
+    NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
+    NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
+    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
+    NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
+    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+
+    // E2B sandboxes
+    E2B_API_KEY: z.string().optional(),
+    E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),

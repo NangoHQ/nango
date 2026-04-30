@@ -1,14 +1,13 @@
 import type { Result } from '../result.js';
 import type { DBTeam } from '../team/db.js';
 import type { UsageMetric } from '../usage/index.js';
-import type { DBUser } from '../user/db.js';
 
 export interface BillingClient {
     ingest: (events: BillingEvent[]) => Promise<Result<void>>;
-    upsertCustomer: (team: DBTeam, user: DBUser) => Promise<Result<BillingCustomer>>;
-    updateCustomer: (customerId: string, name: string) => Promise<Result<void>>;
     linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>>;
+    getOrCreateCustomer: (accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>) => Promise<Result<BillingCustomer>>;
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
+    putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
@@ -17,9 +16,16 @@ export interface BillingClient {
     applyPendingChanges: (opts: {
         pendingChangeId: string;
         /**
-         * format: dollar.cent = 0.00
+         * Stripe PaymentIntent ID, used to cross-reference the payment in Orb.
          */
-        amount: string;
+        paymentExternalId: string;
+        /**
+         * Amount collected via Stripe in dollars (e.g. "25.00"). Orb uses this
+         * to credit the customer the difference vs. the actual invoice amount,
+         * so overcharges (e.g. when falling back to the base fee) are corrected
+         * automatically. No credit is issued if the amounts match exactly.
+         */
+        amountCollected: string;
     }) => Promise<Result<BillingSubscription>>;
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;
@@ -28,7 +34,30 @@ export interface BillingClient {
 
 export interface BillingCustomer {
     id: string;
+    invoicingDetails: BillingInvoicingDetails;
     portalUrl: string | null;
+}
+
+export interface BillingInvoicingDetails {
+    legalEntityName: string;
+    email: string;
+    address: BillingAddress | null;
+    taxId: BillingTaxId | null;
+}
+
+export interface BillingAddress {
+    line1: string | null;
+    line2: string | null;
+    city: string | null;
+    state: string | null;
+    postalCode: string | null;
+    country: string | null;
+}
+
+export interface BillingTaxId {
+    country: string;
+    type: string;
+    value: string;
 }
 
 export interface BillingSubscription {

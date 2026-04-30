@@ -1,12 +1,12 @@
 ---
-title: "Detecting deletes"
-sidebarTitle: "Detecting deletes"
-description: "Guide on how to detect deleted records with syncs"
+title: 'Deletion detection'
+sidebarTitle: 'Deletion detection'
+description: 'Surface deletes from the external API — even when the API itself doesn''t expose them cleanly.'
 ---
 
-Sometimes you need to know when an object you are syncing has been deleted in the external system.
+Sometimes you need to know when a record you are syncing has been deleted in the external system. Deletion detection works differently depending on whether your sync function is incremental or full — pick the strategy that matches your sync approach.
 
-Deletion detection works differently depending on whether your sync is incremental or full. Pick the strategy that matches your sync approach.
+For incremental syncs, you must actively tell Nango which IDs have been removed. For full syncs (which fetch all records on every run), Nango can compute deletes for you automatically.
 
 ## Detecting deletes in incremental syncs
 
@@ -77,7 +77,7 @@ export default createSync({
 
 ## Detecting deletes in full syncs
 
-Syncs that fetch all records on every run can automatically detect deletions.
+Sync functions that fetch all records on every run can automatically detect deletions.
 
 Nango detects removals by computing the diff between what existed before `trackDeletesStart` and what was saved between `trackDeletesStart` and `trackDeletesEnd` ([full reference](/reference/functions#detect-deletions-automatically)).
 
@@ -105,9 +105,9 @@ export default createSync({
     // Mark the start of deletion tracking
     await nango.trackDeletesStart('Ticket');
 
-    const tickets = await nango.paginate<{ id: string; subject: string; status: string }>({
+    const tickets = nango.paginate<{ id: string; subject: string; status: string }>({
       endpoint: '/tickets',
-      paginate: { type: 'cursor', cursorPathInResponse: 'next', cursorNameInRequest: 'cursor', responsePath: 'tickets' }
+      paginate: { type: 'cursor', cursor_path_in_response: 'next', cursor_name_in_request: 'cursor', response_path: 'tickets' }
     });
 
     for await (const page of tickets) {
@@ -157,7 +157,3 @@ We strongly recommend not performing irreversible destructive actions (like hard
 | --- | --- |
 | Records that still exist in the source API are shown as `deleted` in Nango | Sync didn't save all records (silent failures) between `trackDeletesStart` and `trackDeletesEnd` |
 | You never see deleted records | Check if deletion detection is implemented for the sync. |
-
-<Tip>
-  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>

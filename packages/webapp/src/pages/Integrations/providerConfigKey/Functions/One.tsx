@@ -7,6 +7,7 @@ import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../compon
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -27,6 +28,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
 
@@ -158,6 +160,22 @@ export const FunctionsOne: React.FC = () => {
                                     <Download />
                                 </Button>
                             )}
+                            <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    disabled={!func.enabled}
+                                    onClick={() => {
+                                        openPlaygroundWithContext({
+                                            integration: integrationData.integration.unique_key,
+                                            functionName: func.name,
+                                            functionType: func.type as 'action' | 'sync'
+                                        });
+                                    }}
+                                >
+                                    Playground <ExternalLink />
+                                </Button>
+                            </ConditionalTooltip>
                             <FunctionSwitch flow={func} integration={integrationData.integration} />
                         </div>
                     </div>

@@ -36,7 +36,7 @@ NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 ```
 
-Get your `prod` and `dev` secret keys from the [Environment Settings tab](https://app.nango.dev/environment-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
+Get your `prod` and `dev` secret keys from [Environment Settings > API Keys](https://app.nango.dev/environment-settings#api-keys) (toggle between the `prod` and `dev` environment in the left nav bar).
 
 <Info>
 For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
@@ -119,7 +119,7 @@ Environment variables:
 ```bash
 # Recommendation: in a ".env" file in ./nango-integrations.
 
-# Authenticates the CLI (get the keys in the dashboard's Environment Settings).
+# Authenticates the CLI (get the keys in the dashboard's Environment Settings > API Keys).
 NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 

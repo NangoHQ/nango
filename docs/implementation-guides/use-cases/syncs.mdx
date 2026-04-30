@@ -1,0 +1,154 @@
+---
+title: 'Sync external API data'
+sidebarTitle: 'Sync guide'
+description: 'Sync data from external APIs, feed RAG pipelines, and fire change-detection triggers.'
+---
+
+Syncing external APIs reliably means rate-limit-aware polling, resumable checkpoints, deletion detection (which every API does differently — or not at all), and memory-safe streaming for big datasets — rebuilt for every integration. Most teams spend weeks here and still ship gaps in production.
+
+Nango handles all of it. You define a function that fetches what you need; Nango runs it on a schedule (or on webhook), checkpoints progress, detects adds/updates/deletes, and pushes a webhook to your app when new data lands. Pick from **thousands of pre-built sync functions** or write your own.
+
+**Common patterns:**
+
+- Sync records into your DB — CRM data (HubSpot, Salesforce, Attio…), files from drives (Google Drive, SharePoint, Box…), call transcripts (Gong, Fathom, Zoom…)
+- Feed RAG pipelines with fresh customer data
+- Get notified when something changes upstream (e.g., a new email arrives, a deal moves stage, a file is shared)
+
+<Tip>
+For agentic / on-demand tool calling against external APIs (no local replication needed), use [Tool calling for AI agents](/implementation-guides/use-cases/tool-calling) instead.
+</Tip>
+
+## How Nango fits in
+
+1. **You configure** an integration in Nango (e.g. Salesforce) and pick which sync functions to enable — from thousands of [pre-built templates](https://www.nango.dev/templates) or your own custom code.
+2. **Your user authorizes** via a Connect link. Nango handles OAuth, stores tokens, and refreshes them as they expire.
+3. **Nango runs your function** on a schedule (or on webhook), with retries, rate-limit handling, and pagination. It writes records to Nango's records cache.
+4. **Nango detects changes** (adds/updates/deletes) by comparing payload hashes, and sends a webhook to your app whenever fresh data is available.
+5. **Your app reads the delta** from the records cache via cursor — never re-processing what you've already seen.
+
+## Why Nango
+
+- **Built-in change detection.** Nango hashes every record and surfaces only what changed since your last cursor. No diffing on your side.
+- **Resilient incremental syncs via [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).** Save progress mid-run; resume from where the last execution stopped on failure or interruption — even on million-record datasets.
+- **Real-time when you need it.** Combine [webhooks from external APIs](/implementation-guides/use-cases/syncs/realtime-syncs) with periodic polling for a reliable stream of changes that's resilient to provider outages.
+- **Detect deletions** even on APIs that don't expose them, via [trackDeletes](/implementation-guides/use-cases/syncs/deletion-detection) or a recently-deleted endpoint.
+- **Per-connection fan-out via [variants](/implementation-guides/use-cases/syncs/sync-partitioning).** When one end-user has many sub-resources to sync (mailboxes, drive folders, Slack channels, repos…), spawn an independent sync process for each — running in parallel with its own checkpoint and schedule.
+- **Configurable cadence** — pick any frequency from every 30 seconds to once a day. See [minimum sync frequency](/guides/platform/limits#minimum-sync-frequency).
+- **Two-way sync.** Combine sync functions with [action functions](/implementation-guides/use-cases/actions) to write changes back to the external API.
+- **Encrypted, observable, scoped per user.** Records are encrypted at rest and in transit; every run is logged; each function executes in the context of an end-user [Connection](/guides/primitives/auth#overview).
+
+<Card title="Browse thousands of pre-built sync functions" icon="rectangle-list" href="https://www.nango.dev/templates">
+  Common syncs across CRMs, drives, mail, calendar, communication, ticketing, billing, and more — ready to enable in one click.
+</Card>
+
+## Build a sync
+
+Follow the [Functions guide](/guides/primitives/functions#guide) and pick the **Schedule** tab — it walks through scaffolding, dev mode, testing, deploying, and the consumer-side flow (Nango webhook URL, sync webhook payload, reading records via cursor).
+
+For sync-specific concerns, dive deeper into:
+
+- [Checkpoints](/implementation-guides/use-cases/syncs/checkpoints) — make your sync incremental and resilient to failures.
+- [Deletion detection](/implementation-guides/use-cases/syncs/deletion-detection) — surface deletes from the external API.
+- [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs) — combine webhooks with polling for sub-second freshness.
+- [Records cache](/implementation-guides/use-cases/syncs/records-cache) — how Nango stores records and exposes deltas via cursors.
+- [Sync partitioning](/implementation-guides/use-cases/syncs/sync-partitioning) — fan out a sync into per-resource variants within one connection.
+
+<Note>
+  Skipping the build entirely? Open the **Integrations** tab → select your integration → **Endpoints** → toggle the sync function on. Nango then syncs in the background for every connection of that integration. Browse the catalog at [nango.dev/templates](https://www.nango.dev/templates).
+</Note>
+
+## Two-way syncs
+
+The hard part of staying in sync with an external API is the read side — pulling fresh data, deduping, detecting changes, handling deletes. That's what sync functions solve.
+
+Writing data **back** to the external API is comparatively easy and doesn't need polling: you do it on demand from your app via [action functions](/implementation-guides/use-cases/actions), which run in real time and return the result synchronously. Pair the two for true two-way sync — read with sync functions, write with action functions.
+
+## Sync efficiency
+
+Two factors dominate sync performance and cost: how much data each run transfers, and how often runs happen.
+
+### Full vs. incremental
+
+A **full sync** re-fetches every record from the external API on every run. Simple and works for any API, but cost scales with total dataset size — you re-pay for the same data forever.
+
+An **incremental sync** only fetches what changed since the last run, by passing a checkpoint (a timestamp, cursor, or page token) back to the API. The first run is still expensive, but every run after only processes the delta.
+
+Whether you can run incrementally depends on the API. Incremental works when the API supports filtering by modification timestamp, sorting by `updated_at`, or exposing a "since cursor". If the API only lets you list everything, you're stuck with full syncs.
+
+**Incremental is dramatically more efficient than full** — fewer API calls, lower bandwidth, less compute, faster runs, lower cost — and it's safer because checkpoints make runs resumable on failure. Use incremental whenever the API supports it.
+
+### Practices for efficient syncs
+
+- **Run only as often as the business needs.** A 30-minute sync is six times cheaper than a 5-minute sync. Pick the lowest cadence that meets your freshness requirements — especially for full syncs.
+- **Make full syncs incremental wherever possible.** Even a coarse `since` filter (last 7 days) cuts cost dramatically vs. fetching everything.
+- **For full syncs that genuinely can't go incremental, evaluate webhooks instead.** Many APIs that don't support `since` filtering do support webhooks — Nango can process them directly inside a sync function. [Reach out](https://nango.dev/slack) if you'd like help wiring this up.
+- **Keep output models small.** Drop fields you don't need before calling `batchSave()` — the records cache stores everything you save, and smaller records mean less compute, bandwidth, and storage downstream.
+- **Review API interactions and function logic for inefficiencies.** A duplicated request, an unnecessary join, or a `for` loop that could be a single bulk call adds up fast at scale.
+
+### Avoiding memory overuse
+
+Sync functions run on VMs with fixed resources. The most common cause of memory-related failures is accumulating records in memory instead of saving them as you go.
+
+Don't do this:
+
+```ts
+exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
+    const allRecords: any[] = [];
+
+    while (nextPage) {
+        const res = await nango.get({ endpoint: '/contacts', params: { since: checkpoint?.lastModifiedISO, cursor: nextPage } });
+        allRecords.push(...res.data.records); // Accumulates in memory
+    }
+
+    await nango.batchSave(mapContacts(allRecords), 'Contact'); // Saves everything at once
+};
+```
+
+Instead, save records and checkpoint after each page:
+
+```ts
+exec: async (nango) => {
+    const checkpoint = await nango.getCheckpoint();
+
+    while (nextPage) {
+        const res = await nango.get({ endpoint: '/contacts', params: { since: checkpoint?.lastModifiedISO, cursor: nextPage } });
+
+        const contacts = mapContacts(res.data.records);
+        await nango.batchSave(contacts, 'Contact');
+        await nango.saveCheckpoint({ lastModifiedISO: contacts[contacts.length - 1].lastModified });
+
+        nextPage = res.data.nextCursor;
+    }
+};
+```
+
+This releases each page from memory after saving, keeping usage constant regardless of dataset size. Monitor memory consumption in the **Logs** tab of the Nango dashboard.
+
+### Filtering unnecessary data
+
+Filter as early as possible — using filters provided by the external API or by discarding records before calling `batchSave()`. This keeps the external system as the source of truth: if you need additional fields later, edit your function and trigger a sync with `reset: true` to backfill.
+
+You can also use [connection metadata](/reference/sdks/node#get-connection-metadata) to implement per-customer filters in your sync functions.
+
+## Data retention
+
+<Warning>
+**Data retention policies**
+
+Nango automatically manages data retention for synced records:
+- **Records not updated for 30 days**: Payload is pruned (metadata like record ID and sync state remain for change detection)
+- **Syncs not executed for 60 days**: All records from that sync are permanently deleted
+
+**Best practice**: Fetch records from Nango promptly after receiving webhook notifications and store them in your own system. Don't use Nango's cache as your primary long-term data store.
+
+[Learn more about data retention policies](/guides/platform/security#synced-records-retention)
+</Warning>
+
+<Info>
+On the Growth plan and above, retention policies can be customized. Reach out to us to discuss your needs.
+</Info>
+
+<Tip>
+**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>

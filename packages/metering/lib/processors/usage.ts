@@ -7,7 +7,7 @@ import { logger } from '../utils.js';
 
 import type { Transport } from '@nangohq/pubsub';
 import type { UsageEvent } from '@nangohq/types';
-import type { ClickhouseIngestion, Usage } from '@nangohq/usage';
+import type { Clickhouse, Usage } from '@nangohq/usage';
 import type { Result } from '@nangohq/utils';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -15,9 +15,9 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 export class UsageProcessor {
     private subscriber: Subscriber;
     private usageTracker: Usage;
-    private clickhouse: ClickhouseIngestion;
+    private clickhouse: Clickhouse;
 
-    constructor({ transport, usageTracker, clickhouse }: { transport: Transport; usageTracker: Usage; clickhouse: ClickhouseIngestion }) {
+    constructor({ transport, usageTracker, clickhouse }: { transport: Transport; usageTracker: Usage; clickhouse: Clickhouse }) {
         this.subscriber = new Subscriber(transport);
         this.usageTracker = usageTracker;
         this.clickhouse = clickhouse;

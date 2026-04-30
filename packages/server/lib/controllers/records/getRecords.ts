@@ -9,12 +9,18 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
 
+export const getLookbackCutoff = () => new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+const withinLookback = z
+    .string()
+    .datetime()
+    .refine((val) => new Date(val) >= getLookbackCutoff(), { message: 'must be within the last 12 months' });
+
 export const validationQuery = z
     .object({
         model: modelSchema,
         variant: variantSchema.optional(),
-        delta: z.string().datetime().optional(),
-        modified_after: z.string().datetime().optional(),
+        delta: withinLookback.optional(),
+        modified_after: withinLookback.optional(),
         limit: z.coerce.number().min(1).max(10000).default(100).optional(),
         filter: z
             .string()
@@ -54,7 +60,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -88,10 +94,10 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
     });
 
     try {
-        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length);
+        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length, { accountId: account.id });
         // using the response content-length header as the records size metric in order to avoid stringifying the response body
         const responseSize = parseInt(res.get('content-length') || '0');
-        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize);
+        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
     } catch {
         // ignore errors
     }

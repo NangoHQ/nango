@@ -1,6 +1,6 @@
 export const sql = [
     `
-    CREATE TABLE IF NOT EXISTS usage.daily_mar
+    CREATE TABLE IF NOT EXISTS {database:Identifier}.daily_mar
     (
         day              Date,
         account_id       Int64,
@@ -17,8 +17,8 @@ export const sql = [
     TTL day + INTERVAL 24 MONTH
     `,
     `
-    CREATE MATERIALIZED VIEW IF NOT EXISTS usage.daily_mar_mv
-    TO usage.daily_mar AS
+    CREATE MATERIALIZED VIEW IF NOT EXISTS {database:Identifier}.daily_mar_mv
+    TO {database:Identifier}.daily_mar AS
     SELECT
         toDate(ts)                          AS day,
         account_id,
@@ -28,7 +28,7 @@ export const sql = [
         attributes.syncId::String           AS sync_id,
         attributes.model::String            AS model,
         sum(value)                          AS value
-    FROM usage.raw_events
+    FROM {database:Identifier}.raw_events
     WHERE type = 'usage.monthly_active_records'
     GROUP BY day, account_id, environment_id, integration_id, connection_id, sync_id, model
     `

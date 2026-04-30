@@ -1,4 +1,4 @@
-import { Ellipsis, ExternalLink } from 'lucide-react';
+import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -8,6 +8,7 @@ import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/use
 import { useStore } from '../../../store';
 import { Dot } from '@/components-v2/Dot';
 import { PermissionGate } from '@/components-v2/PermissionGate';
+import { StatusWithIcon } from '@/components-v2/StatusWithIcon';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
@@ -18,6 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
+import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useUser } from '@/hooks/useUser';
 
@@ -28,6 +30,8 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
     const { toast } = useToast();
     const [role, setRole] = useState<Role>(user.role);
     const { mutateAsync: patchTeamUser, isPending } = usePatchTeamUser(env);
+    const { data: currentPlan } = useApiGetCurrentPlan(env);
+    const hasRBAC = planHasRbac(currentPlan?.data);
 
     const onSubmit = async () => {
         if (role === user.role) {
@@ -53,7 +57,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center gap-2">
                         <Input type="email" value={user.email} disabled className="flex-1" />
-                        <RoleSelect value={role} onChange={setRole} />
+                        <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
                     </div>
                     <StyledLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" type="external" icon>
                         Learn more about roles and permissions
@@ -81,6 +85,8 @@ export const TeamMembers: React.FC = () => {
     const { user: me } = useUser();
     const { mutateAsync: deleteTeamUser } = useDeleteTeamUser(env);
     const { mutateAsync: cancelInvitation } = useDeleteInvite(env);
+    const { data: currentPlan } = useApiGetCurrentPlan(env);
+    const hasRBAC = planHasRbac(currentPlan?.data);
 
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
@@ -142,7 +148,25 @@ export const TeamMembers: React.FC = () => {
                             <TableCell>{user.email}</TableCell>
 
                             <TableCell>
-                                <RoleBadge role={user.role} />
+                                <div className="inline-flex items-center gap-2">
+                                    <RoleBadge role={user.role} />
+                                    {!hasRBAC && user.role !== 'administrator' && (
+                                        <StatusWithIcon
+                                            variant="warning"
+                                            tooltipContent={
+                                                <span>
+                                                    RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
+                                                    <StyledLink to={`/${env}/team/billing#plans`} className="text-s">
+                                                        Upgrade
+                                                    </StyledLink>{' '}
+                                                    to reactivate role.
+                                                </span>
+                                            }
+                                        >
+                                            <TriangleAlert />
+                                        </StatusWithIcon>
+                                    )}
+                                </div>
                             </TableCell>
 
                             <TableCell>

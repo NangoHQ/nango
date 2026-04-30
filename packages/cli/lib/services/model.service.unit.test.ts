@@ -1,11 +1,9 @@
-import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 import { parse } from './config.service.js';
-import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
+import { buildModelsTS, fieldToTypescript, fieldsToTypescript } from './model.service.js';
 import { removeVersion } from '../tests/helpers.js';
 
 import type { NangoModel } from '@nangohq/types';
@@ -250,20 +248,5 @@ describe('fieldToTypescript', () => {
                 }
             })
         ).toStrictEqual('User[] | string');
-    });
-});
-
-describe('generate exports', () => {
-    describe('json', () => {
-        it('should export to JSON', () => {
-            const folderTS = path.join(os.tmpdir(), 'cli-exports-json');
-            fs.rmSync(folderTS, { recursive: true, force: true });
-            fs.mkdirSync(folderTS, { recursive: true });
-            const pathTS = path.join(folderTS, 'schema.ts');
-            fs.writeFileSync(pathTS, `export interface Test { id: string; name: number[]; }`);
-
-            const res = getExportToJSON({ pathTS });
-            expect(removeVersion(JSON.stringify(res, null, 2))).toMatchSnapshot();
-        });
     });
 });

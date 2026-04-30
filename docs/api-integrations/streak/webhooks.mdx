@@ -1,0 +1,119 @@
+---
+title: 'How to setup webhooks with Streak on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Streak events in your app using Nango webhooks'
+---
+
+This guide shows you how to receive real-time Streak events in Nango by registering a webhook via the Streak API.
+
+## How it works
+
+Streak supports outbound webhooks triggered by pipeline or team-level automations. The flow is:
+
+1. After a connection is created, a post-connection script generates a secret token, registers a webhook with Streak (passing the Nango webhook URL as `targetUrl` and the token as `token`), and stores the token in `connection_config.streakWebhookToken`.
+2. When the specified event occurs, Streak sends a POST to Nango with the token in the `X-Streak-Webhook-Token` header.
+3. Nango matches the token against `connection_config.streakWebhookToken` to identify the correct connection and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+Copy the webhook URL from your Streak integration page in the [Nango dashboard](https://app.nango.dev/dev/integrations), under the **Webhook URL** section.
+
+### 2. Register the webhook via a post-connection script
+
+Use a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler) to automatically register the webhook with Streak whenever a new connection is created. The script generates a secret token, registers the webhook with Streak, and stores the token in the connection config for routing:
+
+```typescript
+import { createOnEvent } from 'nango';
+import { randomBytes } from 'crypto';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Register a Streak outbound webhook and store the token for routing',
+    exec: async (nango) => {
+        const webhookUrl = await nango.getWebhookURL();
+        const token = randomBytes(32).toString('hex');
+
+        // Register the webhook with Streak
+        // Specify either pipelineKey or teamKey depending on your use case
+        // https://streak.readme.io/reference/create-a-webhook
+        const response = await nango.post({
+            endpoint: '/v2/webhooks',
+            params: { pipelineKey: '<YOUR_PIPELINE_KEY>' },
+            data: {
+                event: 'BOX_EDITED',
+                targetUrl: webhookUrl,
+                token,
+            },
+        });
+
+        // Store the token in connection config for webhook routing
+        // streakWebhookToken: matched against X-Streak-Webhook-Token header to identify this connection
+        // streakWebhookKey: used to delete the webhook when the connection is removed
+        await nango.updateConnectionConfig({
+            streakWebhookToken: token,
+            streakWebhookKey: response.data.key,
+        });
+    }
+});
+```
+
+Replace `event` with the Streak event type you want to subscribe to (e.g. `BOX_CREATED`, `BOX_EDITED`). See [Streak's event list](https://streak.readme.io/reference/webhooks) for all available events.
+
+### 3. Handle forwarded webhooks
+
+When a Streak event fires, Nango matches the `X-Streak-Webhook-Token` header against `connection_config.streakWebhookToken` to identify the connection, then forwards the event to your app. Example payload structure:
+
+```json
+{
+  "from": "streak",
+  "providerConfigKey": "streak",
+  "type": "forward",
+  "payload": [{
+    "eventType": "BOX_EDITED",
+    "pipelineKey": "agxzfm1haWxmb29...",
+    "boxKey": "agxzfm1haWxmb29...",
+    "timestamp": 1700000000000
+  }],
+  "connectionId": "connection-123"
+}
+```
+
+<Note>
+If the `X-Streak-Webhook-Token` header is missing, Nango will reject the request. If it does not match any connection's config.
+</Note>
+
+### 4. Delete the webhook on connection removal
+
+Use a `pre-connection-deletion` script to clean up the Streak webhook when a connection is deleted:
+
+```typescript
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Delete the Streak webhook before connection deletion',
+    exec: async (nango) => {
+        const connectionConfig = await nango.getConnectionConfig();
+        const webhookKey = connectionConfig['streakWebhookKey'];
+
+        if (!webhookKey) {
+            return;
+        }
+
+        try {
+            await nango.delete({
+                endpoint: `/v2/webhooks/${webhookKey}`,
+                headers: { 'Content-Type': 'application/json', accept: 'application/json' }
+            });
+        } catch (err) {
+            await nango.log(`Failed to delete Streak webhook: ${String(err)}`, { level: 'error' });
+        }
+    }
+});
+```
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
+
+---

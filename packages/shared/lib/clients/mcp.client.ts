@@ -6,6 +6,7 @@ import type { DBEnvironment, DBTeam, Provider } from '@nangohq/types';
 
 interface McpRegisterResponse {
     client_id: string;
+    client_secret?: string;
     redirect_uris: string[];
     client_name: string;
     grant_types: string[];
@@ -15,7 +16,15 @@ interface McpRegisterResponse {
     client_id_issued_at: number;
 }
 
-export async function registerClientId({ provider, environment, team }: { provider: Provider; environment: DBEnvironment; team: DBTeam }): Promise<string> {
+export async function registerClientId({
+    provider,
+    environment,
+    team
+}: {
+    provider: Provider;
+    environment: DBEnvironment;
+    team: DBTeam;
+}): Promise<{ client_id: string; client_secret?: string }> {
     if (provider.auth_mode !== 'MCP_OAUTH2' || !('registration_url' in provider)) {
         throw new Error('Provider is not MCP');
     }
@@ -28,7 +37,7 @@ export async function registerClientId({ provider, environment, team }: { provid
         };
         const { data } = await axios.post<McpRegisterResponse>(registrationUrl, body);
 
-        return data.client_id;
+        return { client_id: data.client_id, ...(data.client_secret && { client_secret: data.client_secret }) };
     } catch (err) {
         report(err);
     }

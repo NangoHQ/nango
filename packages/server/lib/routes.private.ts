@@ -21,7 +21,8 @@ import {
     resendVerificationEmailByUuid,
     signin,
     signup,
-    validateEmailAndLogin
+    validateEmailAndLogin,
+    validateSigninRequest
 } from './controllers/v1/account/index.js';
 import { getManagedCallback } from './controllers/v1/account/managed/getCallback.js';
 import { getManagedEmailVerification } from './controllers/v1/account/managed/getVerification.js';
@@ -39,9 +40,13 @@ import { getConnection as getConnectionWeb } from './controllers/v1/connections/
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
+import { createApiKey } from './controllers/v1/environment/createApiKey.js';
+import { deleteApiKey } from './controllers/v1/environment/deleteApiKey.js';
 import { deleteEnvironment } from './controllers/v1/environment/deleteEnvironment.js';
 import { getEnvironment } from './controllers/v1/environment/getEnvironment.js';
 import { getEnvironments } from './controllers/v1/environment/getEnvironments.js';
+import { listApiKeys } from './controllers/v1/environment/listApiKeys.js';
+import { patchApiKey } from './controllers/v1/environment/patchApiKey.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
@@ -72,6 +77,7 @@ import { searchMessages } from './controllers/v1/logs/searchMessages.js';
 import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
+import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
@@ -93,6 +99,7 @@ import { getUser } from './controllers/v1/user/getUser.js';
 import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
+import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
@@ -141,7 +148,7 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 if (flagHasAuth) {
     web.route('/account/signup').post(rateLimiterMiddleware, signup);
     web.route('/account/logout').post(rateLimiterMiddleware, postLogout);
-    web.route('/account/signin').post(rateLimiterMiddleware, passport.authenticate('local'), signin);
+    web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
     web.route('/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
@@ -184,6 +191,7 @@ web.route('/plans/current').get(webAuth, getCurrentPlan);
 web.route('/plans/trial/extension').post(webAuth, can(p.canChangePlan), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
+web.route('/plans/billing/invoicing').put(webAuth, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/change').post(webAuth, can(p.canChangePlan), postPlanChange);
 
 // Environments
@@ -195,22 +203,13 @@ web.route('/environments/current').get(webAuth, can({ action: 'read', resource: 
 web.route('/environments/webhook').patch(webAuth, can({ action: 'update', resource: 'webhook', scopedBy: envScope }), patchWebhook);
 web.route('/environments/variables').post(webAuth, can({ action: 'update', resource: 'environment_variable', scopedBy: envScope }), postEnvironmentVariables);
 
+// API Key management
+web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
+web.route('/environment/api-keys').post(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
+web.route('/environment/api-keys/:keyId').patch(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), patchApiKey);
+web.route('/environment/api-keys/:keyId').delete(webAuth, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), deleteApiKey);
+
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/rotate-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.rotateKey.bind(environmentController)
-);
-web.route('/environment/revert-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.revertKey.bind(environmentController)
-);
-web.route('/environment/activate-key').post(
-    webAuth,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    environmentController.activateKey.bind(environmentController)
-);
 web.route('/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 
 // Connect

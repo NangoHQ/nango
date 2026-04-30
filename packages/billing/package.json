@@ -16,7 +16,8 @@
         "@nangohq/utils": "file:../utils",
         "orb-billing": "5.44.0",
         "stripe": "18.2.1",
-        "uuidv7": "1.0.2"
+        "uuidv7": "1.0.2",
+        "zod": "4.0.5"
     },
     "devDependencies": {
         "vitest": "3.2.4"
