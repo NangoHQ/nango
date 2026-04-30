@@ -9,6 +9,10 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 
 The scan must end with `success no broken links found`.
 
+## Prefix docs PR titles with `docs:`
+
+Pull requests that only change docs must have a PR title prefixed with `docs:`.
+
 ## Never use `{#anchor}` heading-id syntax
 
 Mintlify's MDX parser treats `{...}` as a JavaScript expression and chokes on `#` inside it. A single `## Heading {#anchor}` anywhere in the docs aborts `mintlify broken-links` for the **entire site** before it can scan for actual broken links.
