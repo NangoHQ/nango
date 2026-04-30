@@ -648,7 +648,7 @@ program
             } catch (err: any) {
                 console.error(chalk.red(err.message));
                 if (err instanceof MissingArgumentError) {
-                    this.help();
+                    this.outputHelp();
                 }
                 process.exit(1);
             }

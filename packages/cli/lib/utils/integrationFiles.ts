@@ -64,6 +64,12 @@ export async function checkExistingFiles(
     return { proceed: false, filesToSkip };
 }
 
+export function hasImport(content: string, importPath: string): boolean {
+    const escaped = importPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const importRegex = new RegExp(`^\\s*import\\s+['"]${escaped}['"]`, 'm');
+    return importRegex.test(content);
+}
+
 export async function updateIndexFile(fullPath: string, files: { relativePath: string; isScript: boolean }[], debug: boolean): Promise<void> {
     const indexPath = path.join(fullPath, 'index.ts');
     let indexContent = '';
@@ -79,7 +85,7 @@ export async function updateIndexFile(fullPath: string, files: { relativePath: s
         const importPath = './' + file.relativePath.replace(/\.ts$/, '.js');
         const importStatement = `import '${importPath}';`;
 
-        if (!indexContent.includes(importPath)) {
+        if (!hasImport(indexContent, importPath)) {
             newImports.push(importStatement);
         }
     }

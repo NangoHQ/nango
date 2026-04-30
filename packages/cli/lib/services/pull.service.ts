@@ -22,8 +22,11 @@ const folderToScriptType: Record<'syncs' | 'actions' | 'on-events', ScriptTypeLi
     'on-events': 'on-event'
 };
 
-export function isValidName(segment: string): boolean {
-    return /^[a-zA-Z0-9_-]+$/.test(segment);
+export function isUnsafeName(segment: string): boolean {
+    if (!segment) return true;
+    if (segment === '.' || segment === '..') return true;
+    if (segment.includes('/') || segment.includes('\\')) return true;
+    return false;
 }
 
 interface PullOptionsBase {
@@ -46,12 +49,12 @@ type PullCatalogOptions = PullOptionsBase;
 export async function pullFunction(options: PullFunctionOptions): Promise<boolean> {
     const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
 
-    if (!isValidName(integrationId)) {
+    if (isUnsafeName(integrationId)) {
         console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
         return false;
     }
 
-    if (!isValidName(name)) {
+    if (isUnsafeName(name)) {
         console.log(chalk.red(`Invalid function name: '${name}'.`));
         return false;
     }
@@ -129,12 +132,12 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
 export async function pullFromCatalog(options: PullCatalogOptions): Promise<boolean> {
     const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
 
-    if (!isValidName(integrationId)) {
+    if (isUnsafeName(integrationId)) {
         console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
         return false;
     }
 
-    if (!isValidName(name)) {
+    if (isUnsafeName(name)) {
         console.log(chalk.red(`Invalid function name: '${name}'.`));
         return false;
     }
