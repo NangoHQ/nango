@@ -78,6 +78,7 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(10),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -428,7 +429,7 @@ export const ENVS = z.object({
             z.object({
                 topicArns: z
                     .partialRecord(
-                        z.enum(['user', 'usage', 'team']),
+                        z.enum(['user', 'usage', 'team', 'lambda_keep_warm']),
                         z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
                     )
                     .optional()
@@ -437,22 +438,23 @@ export const ENVS = z.object({
                     .record(z.string(), z.url())
                     .check((payload) => {
                         const record = payload.value;
+                        const allowedSubjects = new Set(['user', 'usage', 'team', 'lambda_keep_warm']);
                         for (const key of Object.keys(record)) {
                             const lastColon = key.lastIndexOf(':');
                             if (lastColon < 0 || lastColon === key.length - 1) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be user, usage, or team)`,
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of user, usage, team, lambda_keep_warm)`,
                                     path: [key],
                                     input: record[key]
                                 });
                                 continue;
                             }
                             const subject = key.slice(lastColon + 1);
-                            if (!(subject === 'user' || subject === 'usage' || subject === 'team')) {
+                            if (!allowedSubjects.has(subject)) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": subject after ':' must be user, usage, or team`,
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of user, usage, team, lambda_keep_warm`,
                                     path: [key],
                                     input: record[key]
                                 });

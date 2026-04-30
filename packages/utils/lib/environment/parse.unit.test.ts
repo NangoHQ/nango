@@ -63,7 +63,7 @@ describe('parse', () => {
         }).toThrow();
     });
 
-    it('should throw when queueUrls subject suffix is not user|usage|team', () => {
+    it('should throw when queueUrls subject suffix is not a known pubsub subject', () => {
         expect(() => {
             parseEnvs(ENVS, {
                 NANGO_PUBSUB_SNS_SQS_CONFIG: JSON.stringify({
@@ -77,6 +77,15 @@ describe('parse', () => {
     it('should parse valid NANGO_PUBSUB_SNS_SQS_CONFIG', () => {
         const topicArns = { usage: 'arn:aws:sns:us-east-1:123456789012:usage-events' };
         const queueUrls = { 'default:usage': 'https://sqs.us-east-1.amazonaws.com/123456789012/usage-queue' };
+        const res = parseEnvs(ENVS, {
+            NANGO_PUBSUB_SNS_SQS_CONFIG: JSON.stringify({ topicArns, queueUrls })
+        });
+        expect(res.NANGO_PUBSUB_SNS_SQS_CONFIG).toEqual({ topicArns, queueUrls });
+    });
+
+    it('should parse NANGO_PUBSUB_SNS_SQS_CONFIG with lambda_keep_warm subject', () => {
+        const topicArns = { lambda_keep_warm: 'arn:aws:sns:us-east-1:123456789012:lambda-keep-warm' };
+        const queueUrls = { 'jobs:lambda_keep_warm': 'https://sqs.us-east-1.amazonaws.com/123456789012/lambda-keep-warm-queue' };
         const res = parseEnvs(ENVS, {
             NANGO_PUBSUB_SNS_SQS_CONFIG: JSON.stringify({ topicArns, queueUrls })
         });

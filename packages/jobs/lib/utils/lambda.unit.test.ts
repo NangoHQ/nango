@@ -11,7 +11,15 @@ vi.mock('../env.js', () => ({
     }
 }));
 
-import { LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX, getLambdaFunctionName, getLambdaTenantId, getRoutingId, isLambdaTenantIsolationRoutingId } from './lambda.js';
+import {
+    LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX,
+    getLambdaFunctionName,
+    getLambdaTenantId,
+    getLambdaTenantIdFromAccountEnv,
+    getRoutingId,
+    getRoutingIdFromPlan,
+    isLambdaTenantIsolationRoutingId
+} from './lambda.js';
 
 import type { Node } from '@nangohq/fleet';
 import type { NangoProps, RoutingContext } from '@nangohq/types';
@@ -147,5 +155,24 @@ describe('getLambdaFunctionName', () => {
 describe('getLambdaTenantId', () => {
     it('returns team and environment scoped id', () => {
         expect(getLambdaTenantId(minimalNangoProps())).toBe('account-1-env-1');
+    });
+});
+
+describe('getLambdaTenantIdFromAccountEnv', () => {
+    it('matches getLambdaTenantId for the same account and environment', () => {
+        expect(getLambdaTenantIdFromAccountEnv(1, 1)).toBe(getLambdaTenantId(minimalNangoProps()));
+    });
+});
+
+describe('getRoutingIdFromPlan', () => {
+    beforeEach(() => {
+        mockEnvs.LAMBDA_DEFAULT_PREFIX = 'default-prefix';
+        mockEnvs.LAMBDA_DEFAULT_MEMORY_MB = 512;
+    });
+
+    it('matches getRoutingId for the same plan slice', () => {
+        const plan = { fleet_node_routing_override: 'custom' as string | null, lambda_tenant_isolation: true };
+        const routingContext: RoutingContext = { plan: plan as RoutingContext['plan'], features: [] };
+        expect(getRoutingIdFromPlan(plan)).toBe(getRoutingId({ nangoProps: minimalNangoProps(), routingContext }));
     });
 });

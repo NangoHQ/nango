@@ -10,6 +10,7 @@ import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/ut
 import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
+import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
@@ -37,6 +38,7 @@ try {
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
     const invocationsProcessor = new LambdaInvocationsProcessor();
+    const lambdaKeepWarmProcessor = new LambdaKeepWarmProcessor({ transport: pubsub.transport });
 
     // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
     let healthCheck: NodeJS.Timeout | undefined;
@@ -108,6 +110,7 @@ try {
     processor.start();
 
     invocationsProcessor.start();
+    lambdaKeepWarmProcessor.start();
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {

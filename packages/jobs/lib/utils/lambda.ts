@@ -24,21 +24,36 @@ export function getLambdaFunctionName(node: Node): string {
 }
 
 /** Stable `TenantId` for AWS Lambda invoke when the plan uses tenant-isolated functions (PER_TENANT). */
-export function getLambdaTenantId(nangoProps: NangoProps): string {
-    return `account-${nangoProps.team.id}-env-${nangoProps.environmentId}`;
+export function getLambdaTenantIdFromAccountEnv(accountId: number, environmentId: number): string {
+    return `account-${accountId}-env-${environmentId}`;
 }
 
-export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
-    const tshirtSize = getTShirtSize(params);
-    const prefix = params.routingContext?.plan?.fleet_node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
+/** Stable `TenantId` for AWS Lambda invoke when the plan uses tenant-isolated functions (PER_TENANT). */
+export function getLambdaTenantId(nangoProps: NangoProps): string {
+    return getLambdaTenantIdFromAccountEnv(nangoProps.team.id, nangoProps.environmentId);
+}
+
+interface PlanRoutingSlice {
+    fleet_node_routing_override: string | null;
+    lambda_tenant_isolation: boolean;
+}
+
+/** Routing id for the shared Lambda pool from plan flags (matches {@link getRoutingId} for a given plan). */
+export function getRoutingIdFromPlan(plan?: PlanRoutingSlice | null): string {
+    const tshirtSize = getTShirtSizeFromDefaultMemory();
+    const prefix = plan?.fleet_node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
     const base = `${prefix}-${tshirtSize}`;
-    if (params.routingContext?.plan?.lambda_tenant_isolation) {
+    if (plan?.lambda_tenant_isolation) {
         return `${base}${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX}`;
     }
     return base;
 }
 
-function getTShirtSize(_params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
+export function getRoutingId(params: { nangoProps: NangoProps; routingContext?: RoutingContext | undefined }): string {
+    return getRoutingIdFromPlan(params.routingContext?.plan);
+}
+
+function getTShirtSizeFromDefaultMemory(): string {
     //t-shirt size will be retrieved from nangoProps or routingContext as specified by the customer
     //for now, we will just use the default memory size
     const memoryMb = envs.LAMBDA_DEFAULT_MEMORY_MB;

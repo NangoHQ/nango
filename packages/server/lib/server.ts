@@ -19,6 +19,7 @@ import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nang
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
+import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
@@ -95,6 +96,7 @@ refreshConnectionsCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();
+lambdaKeepWarmCron();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();

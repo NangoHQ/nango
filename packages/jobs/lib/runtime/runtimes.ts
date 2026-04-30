@@ -39,6 +39,11 @@ export function getDefaultFleet(): Fleet {
     return runnersFleet;
 }
 
+/** Lambda runner fleet when `useLambda` is enabled; otherwise `undefined`. */
+export function getLambdaFleet(): Fleet | undefined {
+    return runtimes.get(envs.RUNNER_LAMBDA_FLEET_ID)?.fleet;
+}
+
 export async function getRuntimeAdapter(params: { nangoProps: NangoProps; routingContext: RoutingContext }): Promise<Result<RuntimeAdapter>> {
     const result = await getFleetId(params);
     if (result.isErr()) {
