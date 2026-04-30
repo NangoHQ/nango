@@ -11649,12 +11649,12 @@ momentum-io:
 modjo-ai:
     display_name: Modjo AI
     categories:
-        - ai
+        - crm
     auth_mode: API_KEY
     proxy:
         base_url: https://api.modjo.ai
         headers:
-            X-API-KEY: ${apiKey}
+            x-api-key: ${apiKey}
         verification:
             method: GET
             endpoints:
