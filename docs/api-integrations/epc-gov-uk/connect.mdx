@@ -1,0 +1,39 @@
+---
+title: Energy Performance Certificates (Gov.UK) - How do I link my account?
+sidebarTitle: Energy Performance Certificates (Gov.UK)
+---
+
+# Overview
+
+To authenticate with the Energy Performance Certificates (Gov.UK) API, you need:
+1. **API Key** - A bearer token issued by the EPC data service when you register.
+
+This guide will walk you through registering for API access and locating your API key.
+
+### Prerequisites
+
+- A registered account on the [Get energy performance of buildings data](https://get-energy-performance-data.communities.gov.uk) service.
+
+### Instructions
+
+#### Step 1: Finding Your API Key
+
+> **Note:** This API is provided by the UK Ministry of Housing, Communities and Local Government (MHCLG) for accessing Energy Performance Certificate data for England and Wales. Access is free but requires registration.
+
+1. Visit [https://get-energy-performance-data.communities.gov.uk](https://get-energy-performance-data.communities.gov.uk) and register for an account if you don't already have one.
+2. Once registered, log in and navigate to '[My Account](https://get-energy-performance-data.communities.gov.uk/api/my-account)'.
+3. Your **API Key** is displayed in the page footer. Copy the value from *Bearer token (for developers)*.
+
+<img src="/api-integrations/epc-gov-uk/api-key.png" />
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with the EPC API.
+2. Enter your **API Key** in the API Key field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/epc-gov-uk/form.png" style={{maxWidth: "450px" }} />
+
+You are now connected to the Energy Performance Certificates (Gov.UK) API.

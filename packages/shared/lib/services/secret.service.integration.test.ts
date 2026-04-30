@@ -22,8 +22,8 @@ describe('Secret service', () => {
 
     it('creates a default secret for each environment', async () => {
         const env = await newEnv();
-        // Note: getDefaultSecretForEnv will throw if no default secret exists.
-        (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        // Note: getInternalSecretForEnv will throw if no default secret exists.
+        (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
     });
 
     it('refuses to create two default secrets', async () => {
@@ -55,7 +55,7 @@ describe('Secret service', () => {
             })
         ).unwrap();
         (await secretService.markDefault(db.knex, secret.id)).unwrap();
-        const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const newDefault = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
         expect(newDefault.id).toEqual(secret.id);
     });
 

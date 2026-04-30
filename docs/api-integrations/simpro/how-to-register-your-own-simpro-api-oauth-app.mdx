@@ -1,0 +1,62 @@
+---
+title: 'How to register your own simPRO OAuth app'
+sidebarTitle: 'simPRO Setup'
+description: 'Register an OAuth app with simPRO and connect it to Nango'
+---
+
+This guide shows you how to register your own app with simPRO to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their simPRO account.
+
+simPRO offers two paths depending on whether you're integrating against a single build (typical for in-house tooling) or building a public integration distributed to many simPRO customers.
+
+## Path 1 — single-build OAuth app (in-house use)
+
+Use this path if you only need to connect to your own simPRO build.
+
+<Steps>
+  <Step title="Log in to your simPRO build">
+    Go to `https://<your-build-name>.simprosuite.com/` and log in with an admin account.
+  </Step>
+  <Step title="Open API Applications">
+    Navigate to **System** > **Setup** > **Integrations** > **API** > **Applications**.
+  </Step>
+  <Step title="Create a new application">
+    1. Click **Create Application**
+    2. Fill in: Company, Name, Email Address
+    3. **Redirect URI**: enter `https://api.nango.dev/oauth/callback`
+    4. **Authentication Method**: select `OAuth 2.0`
+    5. **Grant Type**: select `Authorisation Code`
+    6. Click **Create**
+  </Step>
+  <Step title="Get your credentials">
+    Copy your **Client ID** and **Client Secret** from the application detail page (or download the key file simPRO offers on creation). You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account. Note that this app's credentials only work against the build it was created in — if you need to connect multiple customer builds, see Path 2.
+  </Step>
+</Steps>
+
+## Path 2 — central partner OAuth app (multi-tenant integrations)
+
+Use this path if you're building a public integration that connects to many simPRO customers' builds.
+
+<Steps>
+  <Step title="Sign the Simpro Group Partner Program Agreement">
+    Apply at [simprogroup.com/partners](https://www.simprogroup.com/partners) and complete the partner programme agreement. You'll get access to the Simpro Group Partner Network portal at simpro.allbound.com.
+  </Step>
+  <Step title="Submit the integration approval form">
+    From the partner portal, find **Integration Approval Process and Technical Guidelines**. The PDF describes a 2-phase approval (submit integration name, description, redirect URIs → Simpro reviews → central credentials issued).
+  </Step>
+  <Step title="Specify your Nango callback URL">
+    In the integration approval form, set the redirect URI to `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Receive central OAuth credentials">
+    After approval, the Simpro Group partner team will issue you a central client ID and secret that work across every customer's simPRO build. Use these in your Nango integration settings.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first customer's account. Each customer enters their own simPRO build name when authorising.
+  </Step>
+</Steps>
+
+For more details, see [simPRO's API authentication docs](https://developer.simprogroup.com/apidoc/?page=3366d2ea7906f693b27d57ed9cca3acb#tag/Authorisation-code-grant-workflow).
+
+---

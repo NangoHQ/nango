@@ -1,0 +1,199 @@
+---
+title: 'Action functions'
+sidebarTitle: 'Action functions'
+description: 'Build Action functions that your app, backend jobs, or agents can call on demand.'
+---
+
+Action functions run when your app, backend job, or agent explicitly calls them. In SDK and API names, this function type is often called an **action** because it receives an input and returns an output.
+
+Use action functions for reads, writes, multi-step provider workflows, unified API operations, and AI tools.
+
+## Create the function
+
+Add a file under the integration's `actions/` folder:
+
+```typescript github/actions/create-issue.ts
+import { createAction } from 'nango';
+import * as z from 'zod';
+
+export default createAction({
+    description: 'Creates a GitHub issue',
+    version: '1.0.0',
+    input: z.object({
+        owner: z.string(),
+        repo: z.string(),
+        title: z.string(),
+        body: z.string().optional()
+    }),
+    output: z.object({
+        id: z.number(),
+        url: z.string().url()
+    }),
+    exec: async (nango, input) => {
+        const response = await nango.post({
+            endpoint: `/repos/${input.owner}/${input.repo}/issues`,
+            data: {
+                title: input.title,
+                body: input.body
+            }
+        });
+
+        return {
+            id: response.data.id,
+            url: response.data.html_url
+        };
+    }
+});
+```
+
+Import it from `index.ts`:
+
+```typescript index.ts
+import './github/actions/create-issue';
+```
+
+<Warning>
+  The output of an action function cannot exceed 2 MB. Return only the fields your app needs. For larger payloads, use the [requests proxy](/guides/platform/proxy/implement-requests-proxy) to fetch data directly from your app.
+</Warning>
+
+<Accordion title="For agents">
+  Before generating an action function, collect the integration ID, connection ID for testing, provider endpoint, required input fields, expected output shape, and whether the operation is safe to retry.
+
+  Prefer explicit Zod schemas and short provider response mapping. If the action performs writes, make the logic idempotent before using async execution or retries.
+</Accordion>
+
+## Test and deploy
+
+Dry run the function with realistic input:
+
+```bash
+nango dryrun create-issue '<CONNECTION-ID>' -e dev --input '{"owner":"NangoHQ","repo":"interactive-demo","title":"Bug report","body":"Created from a Nango action"}'
+```
+
+Deploy your functions:
+
+```bash
+nango deploy
+```
+
+To deploy only this action function:
+
+```bash
+nango deploy --action create-issue dev
+```
+
+For broader test coverage, see the [testing guide](/guides/functions/testing). To deploy from CI, see [CI/CD](/guides/functions/ci-cd).
+
+## Trigger synchronously
+
+Synchronous execution is the default. The API or SDK call returns the function output.
+
+<Tabs>
+  <Tab title="TypeScript">
+  ```typescript
+  import { Nango } from '@nangohq/node';
+
+  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+  const result = await nango.triggerAction(
+      'github',
+      '<CONNECTION-ID>',
+      'create-issue',
+      {
+          owner: 'NangoHQ',
+          repo: 'interactive-demo',
+          title: 'Bug report',
+          body: 'Created from a Nango action'
+      }
+  );
+  ```
+  </Tab>
+  <Tab title="cURL">
+  ```bash
+  curl --request POST \
+    --url https://api.nango.dev/action/trigger \
+    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+    --header 'Connection-Id: <CONNECTION-ID>' \
+    --header 'Provider-Config-Key: github' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "action_name": "create-issue",
+      "input": {
+        "owner": "NangoHQ",
+        "repo": "interactive-demo",
+        "title": "Bug report",
+        "body": "Created from a Nango action"
+      }
+    }'
+  ```
+  </Tab>
+</Tabs>
+
+## Trigger asynchronously
+
+Use async execution for bulk writes, bursty work, or provider endpoints with tight rate limits. Nango queues the execution, applies retries, and lets you poll or receive a webhook when it completes.
+
+<Note>
+  Execution timing for asynchronous actions is not guaranteed. Async actions are currently processed sequentially per environment, so completion time depends on how many actions are queued and how long each one runs. Design callers to handle delays by polling the result endpoint or listening for the completion webhook.
+</Note>
+
+<Tabs>
+  <Tab title="TypeScript">
+  ```typescript
+  const { id, statusUrl } = await nango.triggerActionAsync(
+      'github',
+      '<CONNECTION-ID>',
+      'create-issue',
+      {
+          owner: 'NangoHQ',
+          repo: 'interactive-demo',
+          title: 'Bug report',
+          body: 'Created from an async Nango action'
+      }
+  );
+  ```
+  </Tab>
+  <Tab title="cURL">
+  ```bash
+  curl --request POST \
+    --url https://api.nango.dev/action/trigger \
+    --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
+    --header 'Connection-Id: <CONNECTION-ID>' \
+    --header 'Provider-Config-Key: github' \
+    --header 'X-Async: true' \
+    --header 'X-Max-Retries: 3' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "action_name": "create-issue",
+      "input": {
+        "owner": "NangoHQ",
+        "repo": "interactive-demo",
+        "title": "Bug report",
+        "body": "Created from an async Nango action"
+      }
+    }'
+  ```
+  </Tab>
+</Tabs>
+
+Poll the result:
+
+```typescript
+const result = await nango.getAsyncActionResult({ id });
+```
+
+The async trigger response includes a `statusUrl` and `id`. Poll `GET /action/<ACTION-ID>` for the result: `404` means the execution is still running, `200` returns the function output, and `500` returns the execution error.
+
+To receive completion events instead of polling, configure [webhooks from Nango to your app](/guides/platform/webhooks-from-nango) and enable the `Async action completed` webhook.
+
+<Warning>
+  Use retries only for idempotent function logic. Retried writes can otherwise create duplicate side effects in the external API.
+</Warning>
+
+## Related guides
+
+- [Function tool calling](/guides/functions/tool-calling)
+- [Data validation](/guides/functions/data-validation)
+- [Rate limits](/guides/functions/rate-limits)
+- [Trigger action API](/reference/api/action/trigger)
+- [Functions SDK reference](/reference/functions)

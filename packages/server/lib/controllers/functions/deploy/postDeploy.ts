@@ -1,9 +1,11 @@
 import db from '@nangohq/database';
-import { configService, getApiUrl, getSyncConfigRaw, secretService } from '@nangohq/shared';
+import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
+import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDeployBodySchema } from '../validation.js';
 
@@ -37,17 +39,18 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         name: body.function_name,
         isAction: body.function_type === 'action'
     });
-    if (existingSyncConfig && (existingSyncConfig.is_public || existingSyncConfig.pre_built)) {
+
+    if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
-                message: `Cannot overwrite pre-built function '${body.function_name}'`
+                message: `Cannot overwrite existing function '${body.function_name}'`
             }
         });
         return;
     }
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
     if (defaultSecret.isErr()) {
         sendStepError({ res, status: 500, error: defaultSecret.error });
         return;
@@ -61,14 +64,17 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             code: body.code,
             environment_name: environment.name,
             nango_secret_key: defaultSecret.value.secret,
-            nango_host: getApiUrl()
+            nango_host: getRemoteFunctionNangoHost()
         });
+        const output = parseDeploySuccessOutput(result.output);
 
         res.status(200).send({
             integration_id: body.integration_id,
             function_name: body.function_name,
             function_type: body.function_type,
-            output: result.output
+            deployed: output.deployed,
+            deployed_functions: output.deployedFunctions,
+            output: output.output
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });

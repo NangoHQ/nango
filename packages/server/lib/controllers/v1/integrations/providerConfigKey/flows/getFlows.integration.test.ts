@@ -21,24 +21,24 @@ describe(`GET ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { method: 'GET', token: secret.secret, params: { providerConfigKey: 'test' } }
+            { method: 'GET', token: apiKey.secret, params: { providerConfigKey: 'test' } }
         );
 
         shouldRequireQueryEnv(res);
     });
 
     it('should get 404', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'test' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isError(res.json);
@@ -49,14 +49,14 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get github templates', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(route, {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'github' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -68,11 +68,10 @@ describe(`GET ${route}`, () => {
             enabled: false,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
             input: 'ActionInput_github_writefile',
-            is_public: true,
+            source: 'catalog',
             json_schema: expect.any(Object),
             last_deployed: null,
             name: 'write-file',
-            pre_built: true,
             returns: ['ActionOutput_github_writefile'],
             runs: '',
             scopes: ['repo'],
@@ -83,7 +82,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should create same template and deduplicate correctly', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -101,7 +100,7 @@ describe(`GET ${route}`, () => {
             method: 'GET',
             query: { env: 'dev' },
             params: { providerConfigKey: 'github' },
-            token: secret.secret
+            token: apiKey.secret
         });
 
         expect(res.res.status).toBe(200);
@@ -111,9 +110,8 @@ describe(`GET ${route}`, () => {
         expect(scriptWriteFile).toMatchObject({
             enabled: true,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-            is_public: false,
+            source: 'repo',
             name: 'write-file',
-            pre_built: false,
             type: 'action'
         });
 
@@ -140,8 +138,6 @@ describe(`GET ${route}`, () => {
                         sync_type: 'full',
                         version: '1.0.0',
                         enabled: false,
-                        is_public: true,
-                        pre_built: true,
                         endpoints: [{ group: 'Users', method: 'GET', path: '/syncs/sync-users' }],
                         runs: 'every hour'
                     })
@@ -151,7 +147,7 @@ describe(`GET ${route}`, () => {
         ]);
 
         try {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             const config = await seeders.createConfigSeed(env, 'hubspot', 'hubspot');
             const connection = await seeders.createConnectionSeed({ env, provider: 'hubspot' });
 
@@ -169,7 +165,7 @@ describe(`GET ${route}`, () => {
                 method: 'GET',
                 query: { env: 'dev' },
                 params: { providerConfigKey: 'hubspot' },
-                token: secret.secret
+                token: apiKey.secret
             });
 
             expect(res.res.status).toBe(200);
@@ -186,9 +182,7 @@ describe(`GET ${route}`, () => {
             expect(newTemplate).not.toBeUndefined();
             expect(newTemplate).toMatchObject({
                 enabled: false,
-                is_public: true,
                 name: 'sync-users',
-                pre_built: true,
                 returns: ['User'],
                 type: 'sync'
             });

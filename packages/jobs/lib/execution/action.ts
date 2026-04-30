@@ -6,6 +6,7 @@ import {
     NangoError,
     accountService,
     configService,
+    customerKeyService,
     environmentService,
     errorManager,
     externalWebhookService,
@@ -30,7 +31,6 @@ import type { Config } from '@nangohq/shared';
 import type {
     CheckpointRange,
     ConnectionJobs,
-    DBAPISecret,
     DBEnvironment,
     DBSyncConfig,
     DBTeam,
@@ -126,7 +126,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -271,7 +271,6 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
-        secret: nangoProps.secretKey,
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -294,12 +293,12 @@ export async function handleActionSuccess({
         syncId: null as unknown as string,
         syncVariant: null as unknown as string,
         scriptVersion: nangoProps.syncConfig.version,
-        preBuilt: nangoProps.syncConfig.pre_built,
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
 
     void pubsub.publisher.publish({
@@ -384,7 +383,6 @@ export async function handleActionError({
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
-            secret: nangoProps.secretKey,
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -483,12 +481,12 @@ function onFailure({
             syncId: null as unknown as string,
             syncVariant: null as unknown as string,
             scriptVersion: syncConfig?.version,
-            preBuilt: syncConfig?.pre_built,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({
@@ -523,14 +521,12 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
 
 async function sendWebhookIfNeeded({
     environment,
-    secret,
     connectionId,
     providerConfigKey,
     task,
     logCtx
 }: {
     environment: DBEnvironment | undefined;
-    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;
@@ -544,8 +540,12 @@ async function sendWebhookIfNeeded({
     }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
         await sendAsyncActionWebhook({
-            secret,
+            secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
             payload: {

@@ -69,53 +69,6 @@ class EnvironmentController {
             next(err);
         }
     }
-
-    async rotateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to rotate is required' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const newKey = await environmentService.rotateKey(environment.id, req.body.type);
-            res.status(200).send({ key: newKey });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async revertKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to rotate is required' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const newKey = await environmentService.revertKey(environment.id, req.body.type);
-            res.status(200).send({ key: newKey });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async activateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to activate is required' });
-                return;
-            }
-            const { environment } = res.locals;
-
-            await environmentService.activateKey(environment.id, req.body.type);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
 }
 
 export default new EnvironmentController();

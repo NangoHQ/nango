@@ -48,7 +48,17 @@ import type {
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
-import type { DeleteEnvironment, GetEnvironment, GetEnvironments, PatchEnvironment, PostEnvironment } from './environment/api/index.js';
+import type {
+    CreateApiKey,
+    DeleteApiKey,
+    DeleteEnvironment,
+    GetEnvironment,
+    GetEnvironments,
+    ListApiKeys,
+    PatchApiKey,
+    PatchEnvironment,
+    PostEnvironment
+} from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
@@ -64,7 +74,8 @@ import type {
     PatchIntegration,
     PatchPublicIntegration,
     PostIntegration,
-    PostPublicIntegration
+    PostPublicIntegration,
+    PostPublicQuickstartIntegration
 } from './integration/api.js';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
@@ -120,6 +131,7 @@ export type PublicApiEndpoints =
     | PostPublicConnectTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
+    | PostPublicQuickstartIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
@@ -185,6 +197,10 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | GetEnvironments
     | GetEnvironment
+    | ListApiKeys
+    | CreateApiKey
+    | DeleteApiKey
+    | PatchApiKey
     | PatchWebhook
     | PostEnvironmentVariables
     | PostImpersonate

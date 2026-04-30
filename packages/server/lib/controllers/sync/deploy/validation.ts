@@ -158,7 +158,8 @@ const commonValidation = z
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
-            .optional()
+            .optional(),
+        source: z.enum(['standalone', 'repo']).optional()
     })
     .strict();
 

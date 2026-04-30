@@ -5,6 +5,7 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
+import { getCommandOutput } from './command-output.js';
 import { RemoteFunctionError } from './helpers.js';
 import {
     remoteFunctionCompileTimeoutMs,
@@ -71,7 +72,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
             });
         } catch (err) {
             if (err instanceof CommandExitError) {
-                throw new CompilerError(err.stderr || err.stdout || 'Compilation failed', 'compilation');
+                throw new CompilerError(getCommandOutput(err, 'Compilation failed'), 'compilation');
             }
             if (err instanceof TimeoutError) {
                 throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
@@ -86,7 +87,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
             bundleSizeBytes: Buffer.byteLength(bundledJs, 'utf8')
         };
     } finally {
-        await sandbox.kill().catch(() => {});
+        await sandbox.kill().catch(() => undefined);
     }
 }
 

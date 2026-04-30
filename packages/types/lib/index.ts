@@ -72,12 +72,15 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
+export { ALL_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
+export type { ApiKeyScope } from './api-keys/scopes.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
 export type * from './environment/variable/index.js';
 export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
+export type * from './webhooks/dispatch.js';
 export type * from './webhooks/http.api.js';
 export type * from './flow/http.api.js';
 export type * from './flow/index.js';
