@@ -7129,7 +7129,7 @@ gerrit:
 getty-images:
     display_name: Getty Images
     categories:
-        - media
+        - design
     auth_mode: OAUTH2
     authorization_url: https://authentication.gettyimages.com/oauth2/auth
     token_url: https://authentication.gettyimages.com/oauth2/token
@@ -7141,6 +7141,8 @@ getty-images:
         grant_type: refresh_token
     proxy:
         base_url: https://api.gettyimages.com
+        headers:
+            api-key: ${clientId}
     docs: https://nango.dev/docs/api-integrations/getty-images
     setup_guide_url: https://nango.dev/docs/api-integrations/getty-images/how-to-register-your-own-getty-images-oauth-app
 
