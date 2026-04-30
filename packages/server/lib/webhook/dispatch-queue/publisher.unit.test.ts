@@ -123,7 +123,7 @@ describe('DispatchQueuePublisher', () => {
         const { sqs, send } = makeSqsMock(() => ({ $metadata: {}, Successful: [], Failed: [] }));
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
         const res = await publisher.publish([], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 0, failed: 0 });
+        expect(res).toEqual({ enqueued: 0, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(0);
     });
 
@@ -132,7 +132,7 @@ describe('DispatchQueuePublisher', () => {
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
         const messages = Array.from({ length: 25 }, () => buildMessage());
         const res = await publisher.publish(messages, 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 25, failed: 0 });
+        expect(res).toEqual({ enqueued: 25, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(3);
         const entryCounts = send.mock.calls.map((call) => (call[0] as SendMessageBatchCommand).input.Entries?.length);
         expect(entryCounts).toEqual([10, 10, 5]);
@@ -207,7 +207,7 @@ describe('DispatchQueuePublisher', () => {
         responses[2]!.resolve(successfulBatchResponse(send.mock.calls[2]![0] as SendMessageBatchCommand));
         responses[3]!.resolve(successfulBatchResponse(send.mock.calls[3]![0] as SendMessageBatchCommand));
 
-        await expect(publishPromise).resolves.toEqual({ enqueued: 4, failed: 0 });
+        await expect(publishPromise).resolves.toEqual({ enqueued: 4, failed: 0, failedActivityLogIds: [] });
     });
 
     it('retries failed entries once and reports remaining failures', async () => {
@@ -229,8 +229,11 @@ describe('DispatchQueuePublisher', () => {
         ];
         const { sqs, send } = makeSqsMock((_n, call) => responses[call]!);
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
-        const res = await publisher.publish([buildMessage(), buildMessage(), buildMessage()], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 2, failed: 1 });
+        const res = await publisher.publish(
+            [buildMessage(), buildMessage({ activityLogId: 'log-2' }), buildMessage({ activityLogId: 'log-3' })],
+            'account:1:env:2'
+        );
+        expect(res).toEqual({ enqueued: 2, failed: 1, failedActivityLogIds: ['log-3'] });
         expect(send.mock.calls).toHaveLength(2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.enqueued', 2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.failed', 1);
@@ -253,11 +256,34 @@ describe('DispatchQueuePublisher', () => {
         });
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
         const res = await publisher.publish([buildMessage()], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 1, failed: 0 });
+        expect(res).toEqual({ enqueued: 1, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 1);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 1);
         expect(tracerMocks.span.setTag.mock.calls.filter(([tag]) => tag === 'error')).toHaveLength(0);
         expect(tracerMocks.activeSpan.setTag).toHaveBeenCalledWith('sqs.send.error', expect.any(Error));
+    });
+
+    it('reports malformed failed entry ids without crashing retries', async () => {
+        const { sqs } = makeSqsMock((_n, call) => {
+            if (call === 0) {
+                return {
+                    $metadata: {},
+                    Successful: [],
+                    Failed: [{ Id: 'bogus', SenderFault: false, Code: 'InternalError', Message: 'boom' }]
+                };
+            }
+
+            return {
+                $metadata: {},
+                Successful: [],
+                Failed: [{ Id: 'bogus', SenderFault: false, Code: 'InternalError', Message: 'still boom' }]
+            };
+        });
+        const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
+
+        const res = await publisher.publish([buildMessage()], 'account:1:env:2');
+
+        expect(res).toEqual({ enqueued: 0, failed: 1, failedActivityLogIds: [] });
     });
 });
