@@ -537,7 +537,7 @@ export const ENVS = z.object({
     NANGO_WEBHOOK_CIRCUIT_BREAKER_AUTO_RESET_SECS: z.coerce.number().optional().default(3600),
 
     // WEBHOOK INGRESS
-    WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
+    WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(true),
     NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: z.coerce.number().min(0).optional().default(4000),
     NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(false),
 
@@ -547,9 +547,10 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
     NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
-    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
+    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(1),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
-    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
+    NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
 
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),
