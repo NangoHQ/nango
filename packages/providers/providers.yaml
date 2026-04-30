@@ -11646,6 +11646,28 @@ momentum-io:
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
 
+modjo-ai:
+    display_name: Modjo AI
+    categories:
+        - ai
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.modjo.ai
+        headers:
+            X-API-KEY: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?page=1&perPage=1
+    docs: https://nango.dev/docs/api-integrations/modjo-ai
+    docs_connect: https://nango.dev/docs/api-integrations/modjo-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Modjo AI API key.
+            doc_section: '#step-1-generate-your-api-key'
+
 mollie:
     display_name: Mollie
     categories:

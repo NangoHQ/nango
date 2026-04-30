@@ -865,6 +865,7 @@
               "integrations/all/missive",
               "api-integrations/juniper-mist",
               "integrations/all/mixpanel",
+              "api-integrations/modjo-ai",
               "api-integrations/mollie",
               "api-integrations/modmed",
               "api-integrations/monday",
