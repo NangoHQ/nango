@@ -944,6 +944,7 @@
               "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/posthog",
+              "api-integrations/posthog-oauth",
               "api-integrations/practicefusion",
               "api-integrations/printful",
               "integrations/all/prive",

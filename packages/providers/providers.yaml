@@ -13862,6 +13862,34 @@ posthog:
             example: phx_1PPf***************************k3D
             doc_section: '#step-2-finding-your-api-key'
 
+posthog-oauth:
+    display_name: PostHog (OAuth)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.posthog.com/oauth/authorize/
+    token_url: https://oauth.posthog.com/oauth/token/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.posthog.com
+    docs: https://nango.dev/docs/api-integrations/posthog-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/posthog-oauth/how-to-register-your-own-posthog-oauth-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/posthog-oauth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your PostHog cloud account.
+            pattern: '^(us(\.i)?|eu(\.i)?)$'
+            example: us
+            suffix: .posthog.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+
 prive:
     display_name: Prive
     categories:
