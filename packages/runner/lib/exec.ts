@@ -23,7 +23,6 @@ import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncRunner, payload?: object) => Promise<unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     default: ((nango: NangoActionRunner | NangoSyncRunner, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 

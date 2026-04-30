@@ -43,7 +43,7 @@ export const ConnectionCreate: React.FC = () => {
     const { data: listIntegrationData, isLoading } = useListIntegrations(env);
     const listIntegration = listIntegrationData?.data;
 
-    const [integration, setIntegration] = useState<ApiIntegrationList>();
+    const [integration, setIntegration] = useState<ApiIntegrationList | undefined>();
     const { data: provider } = useProvider(env, integration?.provider);
 
     const form = useForm<ConnectionFormData>({

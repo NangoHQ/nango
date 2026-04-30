@@ -29,7 +29,7 @@ Copy the webhook URL from your Google Calendar integration page in the Nango das
 
 Create a notification channel for the calendar you want to watch by sending a `POST` request to the appropriate `watch` endpoint. See the [API reference](https://developers.google.com/workspace/calendar/api/guides/push#create-notification-channels) for the exact URI.
 
-You can automate creating the channel for new connections with a [post-connection-creation script](/guides/functions/event-functions):
+You can automate creating the channel for new connections with a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';
@@ -260,7 +260,7 @@ With webhooks driving real-time updates, you can run syncs less often (e.g. `1d`
 <Note>
 If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`. For Google Calendar, subscribe to `'*'` and use the forwarded headers (e.g. `x-goog-resource-state`, `x-goog-resource-uri`) to decide what to fetch.
 
-See: [Real-time syncs](/guides/functions/syncs/realtime-syncs)
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
 </Note>
 
 ## Connection matching

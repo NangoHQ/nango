@@ -88,7 +88,7 @@ console.log(res.data); // { id: '...', expirationDateTime: '...', ... }
 Microsoft will immediately send a validation request to your Nango webhook URL with a `validationToken` query parameter. Nango responds automatically, no action required on your part.
 
 
-You can automate subscription creation for new connections using a [post-connection-creation script](/guides/functions/event-functions):
+You can automate subscription creation for new connections using a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler):
 
 ```typescript
 import { createOnEvent, ProxyConfiguration } from 'nango';

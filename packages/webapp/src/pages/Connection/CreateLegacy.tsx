@@ -35,7 +35,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
-    const [integration, setIntegration] = useState<ApiIntegrationList>();
+    const [integration, setIntegration] = useState<ApiIntegrationList | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [authMode, setAuthMode] = useState<AuthModeType>('OAUTH2');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
@@ -1306,7 +1306,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     Integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
-                                <a href="https://nango.dev/docs/guides/auth/auth-guide" className="text-text-blue" target="_blank" rel="noreferrer">
+                                <a
+                                    href="https://nango.dev/docs/guides/auth/auth-guide"
+                                    className="text-text-blue"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     Authorize an API guide
                                 </a>{' '}
                                 for more instructions.

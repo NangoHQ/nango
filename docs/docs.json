@@ -77,31 +77,135 @@
   },
   "redirects": [
     {
-      "source": "/implementation-guides/platform/auth/implement-api-auth",
-      "destination": "/guides/auth/auth-guide"
+      "source": "/introduction",
+      "destination": "/"
     },
     {
-      "source": "/guides/primitives/auth",
-      "destination": "/guides/auth/auth-guide"
+      "source": "/changelog/overview",
+      "destination": "/updates/product"
+    },
+    {
+      "source": "/changelog/dev-updates",
+      "destination": "/updates/dev"
+    },
+    {
+      "source": "/guides/mcp",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/guides/use-cases/mcp-server",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/overview",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/any-llm",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
+      "destination": "/guides/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
       "destination": "/guides/functions/syncs/sync-functions"
     },
     {
-      "source": "/guides/platform/free-self-hosting/configuration",
-      "destination": "/guides/platform/self-hosting"
-    },
-    {
-      "source": "/implementation-guides/use-cases/tool-calling/overview",
-      "destination": "/getting-started/use-cases/tool-calling"
-    },
-    {
       "source": "/implementation-guides/use-cases/actions/implement-an-action",
       "destination": "/guides/functions/action-functions"
     },
     {
-      "source": "/guides/primitives/functions",
+      "source": "/implementation-guides/use-cases/actions/async-actions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/checkpoints",
+      "destination": "/guides/functions/syncs/checkpoints"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/deletion-detection",
+      "destination": "/guides/functions/syncs/deletion-detection"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/realtime-syncs",
+      "destination": "/guides/functions/syncs/realtime-syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/records-cache",
+      "destination": "/guides/functions/syncs/records-cache"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/sync-partitioning",
+      "destination": "/guides/functions/syncs/sync-partitioning"
+    },
+    {
+      "source": "/guides/primitives/proxy",
+      "destination": "/guides/platform/proxy-requests"
+    },
+    {
+      "source": "/guides/platform/ai-integration-builder",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/guides/platform/free-self-hosting/configuration",
+      "destination": "/guides/platform/self-hosting"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customer-configuration",
+      "destination": "/guides/functions/storage"
+    },
+    {
+      "source": "/implementation-guides/platform/open-telemetry-export",
+      "destination": "/guides/platform/observability"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/implement-api-auth",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/configure-integration",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/contribute-new-api",
+      "destination": "/integrations/contribute-or-request-api"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/functions-setup",
       "destination": "/guides/functions/functions-guide"
     },
     {
@@ -109,20 +213,180 @@
       "destination": "/guides/functions/functions-guide"
     },
     {
+      "source": "/implementation-guides/platform/functions/catalog",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customize-template",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/http-functions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/lifecycle-events",
+      "destination": "/guides/functions/event-functions"
+    },
+    {
       "source": "/getting-started/sample-app",
       "destination": "/getting-started/use-cases/sample-app"
+    },
+    {
+      "source": "/guides/primitives/auth",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/guides/primitives/functions",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling",
+      "destination": "/getting-started/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs",
+      "destination": "/getting-started/use-cases/syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions",
+      "destination": "/getting-started/use-cases/actions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/webhooks-from-external-apis",
+      "destination": "/getting-started/use-cases/webhooks-from-external-apis"
+    },
+    {
+      "source": "/implementation-guides/use-cases/unified-apis",
+      "destination": "/getting-started/use-cases/unified-apis"
+    },
+    {
+      "source": "/implementation-guides/use-cases/customer-configuration",
+      "destination": "/getting-started/use-cases/customer-configuration"
+    },
+    {
+      "source": "/implementation-guides/use-cases/implement-event-handler",
+      "destination": "/getting-started/use-cases/implement-event-handler"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/share-connect-link",
+      "destination": "/guides/auth/share-connect-link"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/connection-tags",
+      "destination": "/guides/auth/connection-tags"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/customize-connect-ui",
+      "destination": "/guides/auth/customize-connect-ui"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/token-refreshing",
+      "destination": "/guides/auth/token-refreshing"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-functions",
+      "destination": "/guides/functions/syncs/sync-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-efficiency",
+      "destination": "/guides/functions/syncs/sync-efficiency"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/checkpoints",
+      "destination": "/guides/functions/syncs/checkpoints"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/records-cache",
+      "destination": "/guides/functions/syncs/records-cache"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/deletion-detection",
+      "destination": "/guides/functions/syncs/deletion-detection"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/realtime-syncs",
+      "destination": "/guides/functions/syncs/realtime-syncs"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-partitioning",
+      "destination": "/guides/functions/syncs/sync-partitioning"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/action-functions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/webhook-functions",
+      "destination": "/guides/functions/webhook-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/event-functions",
+      "destination": "/guides/functions/event-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/tool-calling",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/storage",
+      "destination": "/guides/functions/storage"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/logging",
+      "destination": "/guides/functions/logging"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/rate-limits",
+      "destination": "/guides/functions/rate-limits"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/data-validation",
+      "destination": "/guides/functions/data-validation"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/testing",
+      "destination": "/guides/functions/testing"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/ci-cd",
+      "destination": "/guides/functions/ci-cd"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/unified-apis",
+      "destination": "/guides/functions/unified-apis"
+    },
+    {
+      "source": "/implementation-guides/platform/proxy/implement-requests-proxy",
+      "destination": "/guides/platform/proxy-requests"
     },
     {
       "source": "/implementation-guides/platform/webhooks-from-nango",
       "destination": "/guides/platform/webhooks-from-nango"
     },
     {
-      "source": "/implementation-guides/platform/auth/configure-integration",
-      "destination": "/guides/auth/auth-guide"
+      "source": "/implementation-guides/platform/webhook-forwarding",
+      "destination": "/guides/platform/webhook-forwarding"
     },
     {
-      "source": "/implementation-guides/use-cases/webhooks-from-external-apis",
-      "destination": "/getting-started/use-cases/webhooks-from-external-apis"
+      "source": "/implementation-guides/platform/common-issues",
+      "destination": "/guides/platform/common-issues"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-to-checkpoints",
+      "destination": "/guides/platform/migrations/migrate-to-checkpoints"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-from-end-user",
+      "destination": "/guides/platform/migrations/migrate-from-end-user"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-from-public-key",
+      "destination": "/guides/platform/migrations/migrate-from-public-key"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-to-zero-yaml",
+      "destination": "/guides/platform/migrations/migrate-to-zero-yaml"
     }
   ],
   "navigation": {
