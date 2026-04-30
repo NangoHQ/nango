@@ -732,6 +732,7 @@
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
               "integrations/all/jazzhr",
+              "api-integrations/jiminny",
               "api-integrations/jira",
               "integrations/all/jira-basic",
               "integrations/all/jira-data-center-api-key",

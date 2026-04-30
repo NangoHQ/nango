@@ -9165,7 +9165,8 @@ jiminny:
             method: GET
             endpoints:
                 - /me
-    docs: https://nango.dev/docs/integrations/all/jiminny
+    docs: https://nango.dev/docs/api-integrations/jiminny
+    docs_connect: https://nango.dev/docs/api-integrations/jiminny/connect
     connection_config:
         region:
             type: string
