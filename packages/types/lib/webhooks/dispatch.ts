@@ -1,3 +1,5 @@
+import type { JsonValue } from 'type-fest';
+
 /**
  * SQS message envelope for the webhook task-dispatch queue.
  *
@@ -21,7 +23,7 @@ export interface WebhookDispatchMessage {
     parentSyncName: string;
     /** Webhook subscription name matched on the inbound payload; passed to executeWebhook as args.webhookName. */
     webhookName: string;
-    /** Activity log id created before enqueue; also reused as the taskName dedupe seed. */
+    /** Activity log id created before enqueue; reused so redelivery of this published message keeps the same taskName. */
     activityLogId: string;
     connection: {
         id: number;
@@ -29,5 +31,5 @@ export interface WebhookDispatchMessage {
         provider_config_key: string;
         environment_id: number;
     };
-    payload: unknown;
+    payload: JsonValue;
 }
