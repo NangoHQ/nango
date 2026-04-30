@@ -22,7 +22,7 @@ Copy the webhook URL from your Streak integration page in the [Nango dashboard](
 
 ### 2. Register the webhook via a post-connection script
 
-Use a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler) to automatically register the webhook with Streak whenever a new connection is created. The script generates a secret token, registers the webhook with Streak, and stores the token in the connection config for routing:
+Use a [post-connection-creation script](/guides/functions/event-functions) to automatically register the webhook with Streak whenever a new connection is created. The script generates a secret token, registers the webhook with Streak, and stores the token in the connection config for routing:
 
 ```typescript
 import { createOnEvent } from 'nango';

@@ -68,7 +68,7 @@ description: "Updates and breaking changes for developers."
   const jsonSchema = z.toJSONSchema(issueSchema);
   ```
 
-  See the [data validation guide](/implementation-guides/platform/functions/data-validation) for more details on working with Zod schemas in Nango.
+  See the [data validation guide](/guides/functions/data-validation) for more details on working with Zod schemas in Nango.
 
   ---
 </Update>
@@ -78,7 +78,7 @@ description: "Updates and breaking changes for developers."
 
   ### ✨ What's new
 
-  [Sync functions](/implementation-guides/platform/functions/sync-functions) now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync function only retrieves what changed since the last checkpoint.
+  [Sync functions](/guides/functions/syncs/sync-functions) now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync function only retrieves what changed since the last checkpoint.
 
   ```ts
   // Simplified Example
@@ -109,8 +109,8 @@ description: "Updates and breaking changes for developers."
   ### 💡 What should I do?
 
   - For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
-  - If you use `nango.lastSyncDate`, follow the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
-  - See the full [checkpoints documentation](/implementation-guides/platform/functions/checkpoints) for details.
+  - If you use `nango.lastSyncDate`, follow the [migration guide](/guides/platform/migrations/migrate-to-checkpoints).
+  - See the full [checkpoints documentation](/guides/functions/syncs/checkpoints) for details.
 </Update>
 
 <Update label="January 6, 2026">
@@ -171,7 +171,7 @@ description: "Updates and breaking changes for developers."
   **For new integrations:**
 
   - Use the `X-Nango-Hmac-Sha256` header to verify webhook signatures
-  - See the updated [webhook documentation](/implementation-guides/platform/webhooks-from-nango#verifying-webhooks-from-nango) for code examples
+  - See the updated [webhook documentation](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango) for code examples
 
   **For existing integrations:**
 
@@ -317,7 +317,7 @@ description: "Updates and breaking changes for developers."
 <Update label="August 22, 2025">
   ## Action payload output limit
 
-  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](/implementation-guides/platform/proxy/implement-requests-proxy).
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads like this, we encourage usage of the Nango [proxy](/guides/platform/proxy-requests).
 
   Additionally, we will also soon restrict action inputs so please take note of your inputs.
 

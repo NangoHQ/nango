@@ -43,7 +43,7 @@ export const ConnectionCreate: React.FC = () => {
     const { data: listIntegrationData, isLoading } = useListIntegrations(env);
     const listIntegration = listIntegrationData?.data;
 
-    const [integration, setIntegration] = useState<ApiIntegrationList | undefined>();
+    const [integration, setIntegration] = useState<ApiIntegrationList>();
     const { data: provider } = useProvider(env, integration?.provider);
 
     const form = useForm<ConnectionFormData>({
@@ -168,7 +168,7 @@ export const ConnectionCreate: React.FC = () => {
                         <h1 className="text-2xl">Embed in your app</h1>
                         <a
                             className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                            href="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
+                            href="https://nango.dev/docs/guides/auth/auth-guide"
                             target="_blank"
                             rel="noreferrer"
                         >

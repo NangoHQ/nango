@@ -27,7 +27,7 @@ If you use webhooks for real-time syncs, we recommend always combining them with
 
 As an alternative to real-time syncing, consider **near**-real-time syncing by polling at a higher frequency, which is simpler. Sync functions can run as frequently as every 30 seconds.
 
-This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/auth/overview#overview).
+This is more resource intensive, but can be a good compromise if you are only syncing data for a handful of [Connections](/guides/auth/auth-guide#overview).
 
 ## Implement a real-time sync
 
@@ -35,7 +35,7 @@ This is more resource intensive, but can be a good compromise if you are only sy
 
 To create a real-time sync, you need:
 - Webhooks from the external API enabled. Follow [Webhook functions](/guides/functions/webhook-functions).
-- A sync function for the object you want to sync. See [Sync functions](/guides/functions/sync-functions).
+- A sync function for the object you want to sync. See [Sync functions](/guides/functions/syncs/sync-functions).
 
 ### Step 2 — Enable webhooks processing
 
@@ -92,5 +92,5 @@ Run `batchSave` / `batchUpdate` / `batchDelete` calls sequentially (not in paral
 
 - [Webhook functions](/guides/functions/webhook-functions) - process external API webhooks in Nango.
 - [Webhook forwarding](/guides/platform/webhook-forwarding) - forward provider webhooks to your app.
-- [Sync functions](/guides/functions/sync-functions) - keep a polling sync as reconciliation.
+- [Sync functions](/guides/functions/syncs/sync-functions) - keep a polling sync as reconciliation.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - consume sync completion notifications.

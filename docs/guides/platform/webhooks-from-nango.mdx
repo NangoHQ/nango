@@ -228,7 +228,7 @@ Payload received following a refresh token error:
 
 ### Sync webhooks
 
-Sync webhooks are sent when a [sync function](/guides/functions/sync-functions) execution finishes, whether successful or not.
+Sync webhooks are sent when a [sync function](/guides/functions/syncs/sync-functions) execution finishes, whether successful or not.
 
 Payload received following a successful sync execution:
 
@@ -250,7 +250,7 @@ Payload received following a successful sync execution:
 }
 ```
 
-`modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/records-cache#cursors-and-sync-progress).
+`modifiedAfter` is an ISO-8601 timestamp marking the start of the last run. To read the changed records, use cursor-based fetching as described in [Records cache → Cursors and sync progress](/guides/functions/syncs/records-cache#cursors-and-sync-progress).
 
 <Warning>
 **Fetch records promptly**: Due to Nango's [data retention policies](/guides/platform/security#synced-records-retention), you should fetch and store synced records in your own system promptly after receiving webhook notifications. Records not updated for 30 days will have their payload pruned, and sync functions not executed for 60 days will have all records deleted.

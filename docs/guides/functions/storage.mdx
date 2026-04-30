@@ -19,7 +19,7 @@ Use metadata for:
 - Values discovered during setup, such as provider webhook subscription IDs or tenant-specific identifiers.
 - Configuration shared across multiple functions for the same connection.
 
-Do not use metadata for synced datasets or large lists of records. For data replicated by sync functions, use the [records cache](/guides/functions/records-cache).
+Do not use metadata for synced datasets or large lists of records. For data replicated by sync functions, use the [records cache](/guides/functions/syncs/records-cache).
 
 ## Set and update metadata from your app
 
@@ -160,7 +160,7 @@ await nango.startSync('<INTEGRATION-ID>', ['contacts'], '<CONNECTION-ID>');
 
 The records cache is the storage layer for sync output. Sync functions write records with `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your app reads changed records through the records API or SDK.
 
-Use the records cache for synced external data, not for function configuration. See [Records cache](/guides/functions/records-cache).
+Use the records cache for synced external data, not for function configuration. See [Records cache](/guides/functions/syncs/records-cache).
 
 ## Related guides
 
