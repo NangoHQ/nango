@@ -335,43 +335,16 @@ export class InternalNango {
                     };
                 } catch (err) {
                     if (logCtx) {
-                        const failedLogCtx = logCtx;
                         const formattedError = err instanceof NangoError ? err : new NangoError('webhook_failure', { error: errorToObject(err) });
 
-                        for (const operation of [
-                            async () => {
-                                await failedLogCtx.error('The webhook failed during queue preparation', {
-                                    error: err,
-                                    webhook,
-                                    connection: connection.connection_id,
-                                    integration: connection.provider_config_key
-                                });
-                            },
-                            async () => {
-                                await failedLogCtx.enrichOperation({ error: formattedError });
-                            },
-                            async () => {
-                                await failedLogCtx.failed();
-                            }
-                        ]) {
-                            try {
-                                await operation();
-                            } catch (logCtxErr) {
-                                report(logCtxErr, {
-                                    error: 'The webhook queue preparation failure could not be written to the log context',
-                                    activityLogId: failedLogCtx.id,
-                                    provider: this.integration.provider,
-                                    accountId: this.team.id,
-                                    environmentId: this.environment.id,
-                                    syncConfigId: syncConfig.id,
-                                    syncName: syncConfig.sync_name,
-                                    webhook,
-                                    connectionId: connection.id,
-                                    connection: connection.connection_id,
-                                    integration: connection.provider_config_key
-                                });
-                            }
-                        }
+                        await logCtx.error('The webhook failed during queue preparation', {
+                            error: err,
+                            webhook,
+                            connection: connection.connection_id,
+                            integration: connection.provider_config_key
+                        });
+                        await logCtx.enrichOperation({ error: formattedError });
+                        await logCtx.failed();
                     }
 
                     return {
