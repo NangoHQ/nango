@@ -118,7 +118,7 @@ Read more about [integration functions](/guides/primitives/functions) to underst
 
 <ResponseField name="checkpoint" type="ZodSchema">
   Optional schema defining the shape of checkpoint data for this sync.
-  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints) for details.
+  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/implementation-guides/platform/functions/checkpoints) for details.
 
   ```ts
   checkpoint: z.object({
@@ -317,7 +317,7 @@ await nango.delete(config); // DELETE request
         Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
       </ResponseField>
       <ResponseField name="baseUrlOverride" type="string">
-        The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
+        The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
       </ResponseField>
       <ResponseField name="decompress" type="boolean">
         Override the decompress option when making requests. Optional, defaults to false
@@ -356,7 +356,7 @@ The following will apply:
 - By default, retries are performed when:
   - HTTP Status: `>= 500`, `429`
   - Network error: `ECONNRESET`, `ETIMEDOUT`, and `ECONNABORTED`.
-  - Pre-configured headers for providers in ([providers.yaml](https://nango.dev/providers.yaml)).
+  - Pre-configured headers for providers in ([providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml)).
 - Use the `retryOn` parameter to specify an array of additional status codes to retry on.
 - By default, no retries are performed: `retries` default to `0`
 - The retry starting delay is `3000ms`, the delay between attempts is multiplied by `2` each time (exponential backoff) and is capped at `10 minutes`.
@@ -502,7 +502,7 @@ As shown in the example above, use a `for` loop to iterate through the paginated
 <Tip>
   Nango has pre-configured the pagination settings for some popular APIs, so you don't have to specify them in functions.
 
-  You can view the pre-configured pagination settings for all APIs in the [providers.yaml](https://nango.dev/providers.yaml) file.
+  You can view the pre-configured pagination settings for all APIs in the [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml) file.
 
   Please note that some APIs have diverging pagination strategies per endpoint, so you might still need to override pre-configured pagination settings at times.
 </Tip>
@@ -758,7 +758,7 @@ await nango.getConnection();
 
 ## Sync-specific helper methods
 
-Sync functions persist data updates to the Nango cache, which your app later fetches (cf. [step-by-step guide](/implementation-guides/use-cases/syncs)).
+Sync functions persist data updates to the Nango cache, which your app later fetches. See the [sync functions section](/implementation-guides/platform/functions/sync-functions).
 
 ### Checkpoints
 
@@ -767,7 +767,7 @@ Checkpoints allow syncs to save their progress and resume from where they left o
 - Tracking pagination state across sync runs
 - Storing custom cursor/offset values
 
-To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
+To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/implementation-guides/platform/functions/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
 
 #### getCheckpoint()
 
@@ -842,7 +842,7 @@ This does not remove cached payloads.
 If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
 </Tip>
 
-To implement deletion detection in your syncs, [follow this guide](/implementation-guides/use-cases/syncs/deletion-detection).
+To implement deletion detection in your syncs, [follow this guide](/implementation-guides/platform/functions/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
@@ -903,7 +903,7 @@ Call `trackDeletesStart` at the beginning of your sync execution, before fetchin
 `deleteRecordsFromPreviousExecutions` is deprecated. Use `trackDeletesStart`/`trackDeletesEnd` instead.
 </Note>
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/use-cases/syncs/deletion-detection).
+For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/platform/functions/deletion-detection).
 
 ### Update records
 

@@ -137,7 +137,7 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
     - Go to: [http://localhost:3011](http://localhost:3011)
   </Step>
   <Step title="Bonus: Deploy custom functions">
-    The above sample app uses pre-built functions, but you can also use custom ones.
+    The above sample app uses template functions, but you can also use custom ones.
 
     - Set up the Nango CLI:
     ```sh
@@ -160,7 +160,7 @@ The sample app includes a complete implementation for integrating file storage p
 
 ### Overview
 
-Nango's pre-built file integration allows you to:
+Nango's template file functions allow you to:
 
 1. **OAuth Flow**: Handle authentication using Nango's SDK
 2. **File Picker**: Let users select specific files and folders to sync
@@ -332,3 +332,9 @@ The sample app supports all file types through Nango's proxy:
 <Tip>
     **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
+
+## Next steps
+
+- [Auth guide](/guides/primitives/auth) - understand the authorization flow used by the sample app.
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - customize the data sync logic.
+- [Webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) - process sync and auth notifications.

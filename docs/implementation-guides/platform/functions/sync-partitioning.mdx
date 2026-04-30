@@ -155,3 +155,10 @@ await nango.log(`Filtering orders above ${threshold}`);
 ```
 
 Keep variants non-overlapping in data scope (unless intentional), store variant-specific settings in connection metadata rather than hardcoding them, and avoid creating one variant per row of data — variants are best for partitioning, not row-level fan-out.
+
+## Related guides
+
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - build the base sync before adding variants.
+- [Checkpoints](/implementation-guides/platform/functions/checkpoints) - track progress per variant.
+- [Records cache](/implementation-guides/platform/functions/records-cache) - fetch data for each variant.
+- [Create sync variant API](/reference/api/sync/create-variant) - manage variants programmatically.

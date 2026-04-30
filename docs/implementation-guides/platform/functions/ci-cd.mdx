@@ -4,7 +4,7 @@ sidebarTitle: 'CI/CD'
 description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-CI/CD for Nango is about keeping your [Functions](/guides/primitives/functions) — syncs, actions, and webhook handlers — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/primitives/functions) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -154,7 +154,7 @@ jobs:
 <Warning>
   **Destructive Changes**
 
-  A destructive change removes an integration, sync, or action. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
+  A destructive change removes an integration, sync function, or action function. To prevent accidental deletions, `nango deploy` will prompt for confirmation when it detects one.
 
   In CI, use `--auto-confirm` or `--allow-destructive` to bypass the prompt. We recommend only doing this on a manual trigger, as shown above.
 </Warning>

@@ -157,3 +157,10 @@ We strongly recommend not performing irreversible destructive actions (like hard
 | --- | --- |
 | Records that still exist in the source API are shown as `deleted` in Nango | Sync didn't save all records (silent failures) between `trackDeletesStart` and `trackDeletesEnd` |
 | You never see deleted records | Check if deletion detection is implemented for the sync. |
+
+## Related guides
+
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - implement full and incremental syncs.
+- [Records cache](/implementation-guides/platform/functions/records-cache) - understand how deleted records are exposed to your app.
+- [Sync efficiency](/implementation-guides/platform/functions/sync-efficiency) - reduce API work during delete detection.
+- [Functions SDK reference](/reference/functions#delete-records) - deletion helper methods.

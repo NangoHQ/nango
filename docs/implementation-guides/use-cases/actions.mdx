@@ -1,249 +1,43 @@
 ---
-title: 'Call external APIs on demand'
-sidebarTitle: 'Call external APIs on demand'
-description: 'Run on-demand reads and writes against any external API — synchronously or as background batch jobs.'
+title: 'Run external API operations'
+sidebarTitle: 'Run external API operations'
+description: 'Use Nango functions to read, write, and automate external APIs on demand.'
 ---
 
-Nango Actions are functions that run on Nango's platform to help you read from or write to external APIs in a clean, consistent, and composable way. You can think of actions as "virtual endpoints" on external APIs that you get to define.
+Some integration work needs to happen immediately: create a CRM contact, send a Slack message, fetch the latest account settings, or run a multi-step workflow after a user clicks a button.
 
-## When to use actions
+Nango handles these on-demand operations with Action functions. You write the API logic once, Nango runs it with the right connection credentials, and your app calls the function from any backend or agent framework.
 
-Actions are ideal when you want to:
-- **Create unified interfaces** across different APIs (e.g., a single `create-contact` that works with Salesforce, HubSpot, Attio, etc.)
-- **Write data asynchronously** to external APIs as fast as rate limits allow (e.g., creating hundreds of invoices after a monthly billing run)
-- **Abstract multi-step operations** into a single interface (e.g., create an opportunity and link it to a contact and company in one call)
-- **Enforce type safety** for all interactions with external APIs
+## When this fits
 
-## Key facts
+Use Action functions when you need to:
 
-- Actions run in Nango's infrastructure, powered by [Functions](/guides/primitives/functions)
-- Actions take an input and return an output—you control the code, API requests, transformations, and data models
-- All platform features are available: data validation, per-customer config, retries, rate-limit handling, and pagination helpers
-- Actions run **synchronously by default** but can also run [asynchronously](#async-execution) for batch writes
-- Actions run in the context of a [Connection](/guides/primitives/auth#overview) (API key or access token of your user)
-- Actions can call other actions to build workflows
-- Actions can be exposed to LLMs via the [MCP Server](/implementation-guides/use-cases/tool-calling#mcp-server)
-- Actions can be used to build [unified APIs](/implementation-guides/use-cases/unified-apis)
-- All action invocations and API requests are logged in [Nango's logs](/guides/platform/observability)
+- Run reads or writes against an external API on demand.
+- Hide multi-step provider workflows behind one stable interface.
+- Normalize the same operation across several APIs.
+- Execute bulk or rate-limited work in the background.
+- Expose selected operations as tools for AI agents.
 
-## Build an action
+For continuously replicated data, use [Sync external API data](/implementation-guides/use-cases/syncs) instead.
 
-Follow the [Functions guide](/guides/primitives/functions#guide) and pick the **HTTP** tab — it walks through scaffolding, dev mode, testing, deploying, and triggering from your app.
+## How Nango fits in
 
-<Warning>
-  The output of an action cannot exceed 2 MB.
-</Warning>
+1. Your user authorizes an integration with Nango.
+2. You enable a template function or deploy your own.
+3. Your app calls the function with an input payload.
+4. Nango executes the provider API calls with the user's credentials.
+5. Your app receives the result, or polls/listens for completion if the function runs asynchronously.
 
-For action-specific concerns, see:
+These functions are the technical foundation behind on-demand API operations, unified APIs, and AI tool calls.
 
-- [Async execution](#async-execution) — fire-and-forget batch invocations with automatic retries.
-- [Actions calling actions (workflows)](#actions-calling-actions-workflows) — chain actions to compose multi-step operations.
-- [Using actions with the MCP Server](#using-actions-with-the-mcp-server) — expose actions as tools to AI agents.
+## What to read next
+
+- [Functions guide](/guides/primitives/functions) - create, test, deploy, and trigger functions end to end.
+- [Action functions](/implementation-guides/platform/functions/action-functions) - synchronous calls, async execution, retries, and workflows.
+- [Tool calling for AI agents](/implementation-guides/use-cases/tool-calling) - use functions as AI tools.
+- [Build a unified API](/implementation-guides/use-cases/unified-apis) - use functions behind a normalized product API.
+- [Functions SDK reference](/reference/functions) - runtime methods available inside function code.
 
 <Note>
-  Skipping the build entirely? Enable a [pre-built template](https://www.nango.dev/templates) from the dashboard.
+  You can enable template functions from the [template catalog](https://www.nango.dev/templates) and skip writing code until you need custom behavior.
 </Note>
-
-## Async execution
-
-### Synchronous or asynchronous execution
-
-Both execution models have different trade-offs.
-
-<table>
-  <tr>
-    <th>Execution mode</th>
-    <th>Pros</th>
-    <th>Cons</th>
-    <th>Best fit for</th>
-  </tr>
-  <tr>
-    <td><strong>Synchronous</strong></td>
-    <td>
-      <ul>
-        <li>Immediate result</li>
-        <li>Simple error handling</li>
-        <li>Easier to debug</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>You need to handle rate limits</li>
-        <li>You need to handle concurrency</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Real-time user interactions</li>
-        <li>Freshness of data is important (e.g., current settings)</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td><strong>Asynchronous</strong></td>
-    <td>
-      <ul>
-        <li>Handles rate limits and retries automatically</li>
-        <li>Scales to large/batch workloads</li>
-        <li>"Fire and forget" execution</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Result is not immediate</li>
-        <li>Requires polling or webhook handling</li>
-        <li>More complex error handling</li>
-      </ul>
-    </td>
-    <td>
-      <ul>
-        <li>Bulk or bursty workloads</li>
-        <li>Endpoints with very low rate limits</li>
-        <li>Batch writes</li>
-      </ul>
-    </td>
-  </tr>
-</table>
-
-### Executing action asynchronously
-
-To trigger an action asynchronously, add the `X-Async` header or use the `triggerActionAsync` SDK method.
-
-<Tabs>
-
-<Tab title="cURL (standard endpoint)">
-
-```bash
-curl --request POST \
-  --url https://api.nango.dev/action/trigger \
-  --header 'Authorization: Bearer <ENV-SECRET-KEY>' \
-  --header 'Connection-Id: <CONNECTION-ID>' \
-  --header 'Provider-Config-Key: <INTEGRATION-ID>' \
-  --header 'X-Async: true'
-  --data '{
-    "action_name": "<ACTION-NAME>",
-    "input": { ... }
-  }'
-```
-</Tab>
-
-<Tab title="Node SDK">
-
-```ts
-import { Nango }  from '@nangohq/node';
-
-const nango = new Nango({ secretKey: '<ENV-SECRET-KEY>' });
-
-// Trigger an asynchronous action
-const { id, statusUrl } = await nango.triggerActionAsync('<INTEGRATION-ID>', '<CONNECTION-ID>', '<ACTION-NAME>', jsonInput);
-
-// Later, retrieve the result
-try {
-  const result = await nango.getAsyncActionResult({ id });
-  ...
-} catch (error) {
-  // handle error
-}
-```
-</Tab>
-
-</Tabs>
-
-You can also specify the maximum number of retries in case of failure using the `X-Max-Retries` header (the value must be between 0 and 5):
-
-```bash
---header 'X-Max-Retries: 3'
-```
-
-<Warning>
-When using retries with asynchronous actions, make sure your action logic is idempotent. This means that running the action multiple times with the same input should produce the same result without unwanted side effects.
-</Warning>
-
-#### Response format
-
-When triggering an action asynchronously, the response will include a status URL and ID that you can use to poll to obtain the action result:
-
-```json
-{
-  "statusUrl": "/action/<ACTION-ID>",
-  "id": "<ACTION-ID>"
-}
-```
-
-#### Checking the action result
-
-Poll the action result endpoint to check if the action has completed:
-
-<Tabs>
-
-<Tab title="cURL">
-
-```bash
-curl --request GET \
-  --url https://api.nango.dev/action/<ACTION-ID> \
-  --header 'Authorization: Bearer <PROJECT-SECRET-KEY>'
-```
-</Tab>
-
-<Tab title="Node SDK">
-
-```ts
-import { Nango }  from '@nangohq/node';
-
-const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
-const result = await nango.getAsyncActionResult({ id: '<ACTION-ID>' });
-...
-```
-</Tab>
-
-</Tabs>
-
-<Note>
-Execution timing for asynchronous actions is not guaranteed. Actions are currently processed sequentially per environment, so execution time depends on how many actions are triggered and how long each one runs. Design your implementation to handle potential delays.
-</Note>
-
-The behavior of the action result endpoint:
-
-- Returns a `404` error if the action has not completed yet
-- Returns a `200` with the actual result data once the action completes successfully
-- Returns a `500` with an error once the action completes with a failure
-
-#### Receiving webhook notifications
-
-Instead of polling, configure webhooks to be notified when an async action completes.
-1. [Set up webhooks from Nango to your app](/implementation-guides/platform/webhooks-from-nango)
-2. Enable the `Async action completed` webhook for your environment
-3. When an action completes, Nango sends:
-
-```json
-{
-  "type": "async_action",
-  "from": "nango",
-  "connectionId": "<CONNECTION-ID>",
-  "providerConfigKey": "<INTEGRATION-ID>",
-  "payload": {
-    "id": "<ACTION-ID>",
-    "statusUrl": "/action/<ACTION-ID>"
-  }
-}
-```
-
-The webhook's payload contains the same information as the initial response when triggering the action—an ID and status URL that you can use to retrieve the completed action result. After receiving this webhook, you can make a single API call to get the action result rather than repeatedly polling.
-
-### Troubleshoot errors & monitor
-
-Navigate to the **Logs** tab to inspect potential errors and monitor action executions.
-
-## Actions calling actions (workflows)
-
-Nango supports calling an action from within another action, letting you chain actions together and build entire workflows. Each action invocation will show up separately in the [logs](/guides/platform/observability).
-
-## Using actions with the MCP Server
-
-Actions are also exposed as tools on the [built-in MCP Server](/implementation-guides/use-cases/tool-calling#mcp-server).
-
-Follow the [MCP server section](/implementation-guides/use-cases/tool-calling#mcp-server) in the AI tool calling guide to set this up.
-
-<Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>

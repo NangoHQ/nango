@@ -39,7 +39,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 - **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 700+ APIs supported; new ones [added on demand](/implementation-guides/platform/auth/contribute-new-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [build a custom UI](/implementation-guides/platform/auth/customize-connect-ui).
-- **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/primitives/proxy) or [Functions](/guides/primitives/functions) to avoid handling credentials directly.
+- **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/implementation-guides/platform/proxy/implement-requests-proxy) or [Functions](/guides/primitives/functions) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
 
 ## Guide
@@ -275,7 +275,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     🎉 **You are connected!** Next:
     - View connections and credentials in the **Connections** tab.
     - Retrieve credentials via the [API](/reference/api/connections/get) or [Node SDK](/reference/sdks/node#get-a-connection-with-credentials).
-    - Build with [Syncs](/implementation-guides/use-cases/syncs), [Actions](/implementation-guides/use-cases/actions), [Webhooks](/implementation-guides/use-cases/webhooks-from-external-apis), or any other Nango primitive.
+    - Build with [sync functions](/implementation-guides/platform/functions/sync-functions), [Action functions](/implementation-guides/platform/functions/action-functions), [webhook functions](/implementation-guides/platform/functions/webhook-functions), or any other Nango function type.
   </Step>
 </Steps>
 
@@ -289,7 +289,7 @@ By default, Nango's OAuth callback domain is `api.nango.dev`. Some APIs (Google,
 
 ## Re-authorize an existing connection
 
-Credentials can become invalid (revoked, scope changes, etc.). Re-authorization updates an existing connection's credentials while preserving its data and config. Deleting and re-creating the connection wipes that data — prefer re-auth. **Implement re-auth before going to production.**
+Credentials can become invalid (revoked, scope changes, etc.). Re-authorization updates an existing connection's credentials while preserving its data and config. Deleting and re-creating the connection wipes that data — prefer re-authorization. **Implement re-authorization before going to production.**
 
 ### Detect invalid connections
 
@@ -362,3 +362,10 @@ Same flow as a new connection, but using a reconnect session token. Pass the ret
 <Tip>
   **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
+
+## Related guides
+
+- [Share a connect link](/implementation-guides/platform/auth/share-connect-link) - send authorization links by email, support tools, or cross-device flows.
+- [Connection tags](/implementation-guides/platform/auth/connection-tags) - attribute connections to users, orgs, and other entities.
+- [Customize Connect UI](/implementation-guides/platform/auth/customize-connect-ui) - build your own authorization UI.
+- [Token refreshing and validity](/implementation-guides/platform/auth/token-refreshing) - handle revoked or expired credentials.

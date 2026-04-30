@@ -1,98 +1,35 @@
 ---
-title: 'Handle lifecycle events'
-sidebarTitle: 'Handle lifecycle events'
-description: 'Guide on how to implement a lifecycle event handler in Nango'
+title: 'React to connection lifecycle events'
+sidebarTitle: 'Connection lifecycle events'
+description: 'Run integration logic when a connection is validated, created, or deleted.'
 ---
 
-## What are lifecycle events?
+Some integration work should happen around the connection lifecycle rather than from a user action or schedule. For example, you may need to verify credentials before accepting a connection, register provider webhooks after authorization, or clean up subscriptions before a customer disconnects.
 
-Lifecycle events let you customize Nango's behavior at different points in a [Connection](/guides/primitives/auth#overview)'s lifecycle.
+Nango supports this with event functions. They run automatically for a specific integration and connection event.
 
-When certain things happen for a Connection, Nango triggers an event. You can register an event handler [Function](/guides/primitives/functions) for a specific event and integration.
+## When this fits
 
-**Example:** You register a `post-connection-creation` event handler on your Salesforce integration. Nango will call this function once for each Salesforce connection, immediately after it has been created.
+Use event functions when you need to:
 
-All lifecycle event executions are logged in Nango's [logs](/guides/platform/observability).
+- Validate credentials or provider permissions during connection creation.
+- Register external webhook subscriptions after a connection is created.
+- Fetch account context and store it as connection metadata.
+- Clean up provider resources before a connection is deleted.
 
-## Supported lifecycle events
+These functions are not called by your app directly. Nango runs them when the configured lifecycle event occurs.
 
-| Event | Description |
-|-------|-------------|
-| `validate-connection` | Occurs when a connection is being created. Allows custom validation of credentials. Rejects and deletes the connection if validation fails. |
-| `post-connection-creation` | Occurs immediately after a connection has been created. |
-| `pre-connection-deletion` | Occurs before a connection is deleted. |
+## How Nango fits in
 
-See the [lifecycle events reference](/reference/functions#createonevent) for details.
+1. Your user creates or deletes a connection.
+2. Nango detects the lifecycle event.
+3. Nango runs the event function with that connection's credentials.
+4. The function validates, initializes, registers, or cleans up provider-side resources.
+5. The execution appears in Nango logs.
 
-## Common use cases
+## What to read next
 
-- **Credential validation**: Integration-specific validation logic for API keys (e.g., check permissions to access a specific endpoint)
-- **Webhook registration**: Register webhook subscriptions after a connection has been created
-- **Account configuration**: Fetch account configuration information from the external API
-- **Cleanup on deletion**: Deregister webhook subscriptions or revoke access tokens when a connection is deleted
-
-## How to implement an event handler
-
-### Step 1 - Initial Functions setup
-
-If you don't have a `nango-integrations` folder yet, follow the [initial Functions setup guide](/guides/primitives/functions#guide) first.
-
-### Step 2 - Create your event function file
-
-Create a new file in your integration's `on-events` folder:
-
-```
-nango-integrations/
-├── .nango
-├── .env
-├── index.ts
-├── package.json
-└── salesforce/
-    └── on-events/
-        └── setup.ts
-```
-
-<Note>
-The integration folder name (e.g., `salesforce`) must match an integration ID in your Nango dashboard.
-</Note>
-
-Paste the following scaffold into the file:
-
-```typescript setup.ts
-import { createOnEvent } from 'nango';
-
-export default createOnEvent({
-    description: "<description of your event handler>",
-    event: 'post-connection-creation', // or 'pre-connection-deletion' or 'validate-connection'
-    exec: async (nango) => {
-        // Your integration code goes here.
-    }
-});
-```
-
-Import your new event file in your `index.ts` file:
-
-```typescript index.ts
-import './salesforce/on-events/setup';
-```
-
-### Step 3 - Implement the event function
-
-Implement your handler logic in the `exec` function. The function kicks off when the associated event occurs.
-
-Helpful resources:
-- [`nango` object reference](/reference/functions) for SDK methods available in event functions
-- [Reference implementations repo](https://www.nango.dev/templates) for examples (search for `onEvent(`)
-- [Build with AI](/guides/primitives/functions#guide) to author event handlers with Claude Code, Cursor, and other coding agents
-
-### Step 4 - Deploy your integrations
-
-Deploy your event function to an environment in your Nango account:
-
-```bash
-nango deploy dev
-```
-
-<Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+- [Event functions](/implementation-guides/platform/functions/event-functions) - supported events, function syntax, testing, and deployment.
+- [Webhook functions](/implementation-guides/platform/functions/webhook-functions) - register and process external webhooks.
+- [Storage](/implementation-guides/platform/functions/storage) - store account context on the connection.
+- [Functions SDK reference](/reference/functions#createonevent) - `createOnEvent()` reference.

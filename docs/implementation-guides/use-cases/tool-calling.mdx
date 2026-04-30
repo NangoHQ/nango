@@ -1,349 +1,43 @@
 ---
 title: 'Tool calling for AI agents'
 sidebarTitle: 'Tool calling for AI agents'
-description: 'Give your agents and LLMs scoped, observable access to any external API.'
+description: 'Give agents scoped, observable access to external APIs through Nango action functions.'
 ---
 
-Your AI agent is only as useful as the systems it can touch. Letting it act on real APIs — Hubspot, Gmail, Slack, Linear, and the rest — means solving OAuth for every provider, refreshing tokens that expire mid-conversation, scoping access per user, handling rate limits, and logging every call for debugging. Most teams spend weeks on this plumbing before their agent does anything useful.
+AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
-Nango handles all of that. Connect any major API, expose its functions as tools to any LLM or agent framework, and let Nango run the calls in a sandboxed, observable runtime — with **thousands of pre-built functions** ready to use, and your own custom ones when you need them.
+Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the Nango API or the built-in MCP server.
 
-<Tip>
-**Prefer MCP?** Skip to the [MCP server](#mcp-server) below — one URL, three headers, and every Nango function is exposed as a tool to any MCP client.
-</Tip>
+## When this fits
 
-<Tip>
-For RAG-style use cases where data must be replicated locally, use [Syncs](/implementation-guides/use-cases/syncs) instead.
-</Tip>
+Use Nango for AI tool calling when:
+
+- Your agent needs to fetch or change data in external APIs.
+- Tool calls must run with each user's own credentials.
+- You want logs, retries, rate-limit handling, and a deployable runtime.
+- You need template action functions now, with room for custom action functions later.
+- You want one MCP server URL for Nango-hosted tools.
+
+For RAG-style workflows where data should be replicated before the agent needs it, use [Sync external API data](/implementation-guides/use-cases/syncs).
 
 ## How Nango fits in
 
-1. **You configure** an integration in Nango (e.g. Hubspot) and pick which functions your agent can use — from thousands of [pre-built templates](https://www.nango.dev/templates) or your own custom code.
-2. **Your user authorizes** via a Connect link. Nango handles the OAuth flow, stores tokens, and refreshes them as they expire.
-3. **Your agent calls a tool** from any LLM or agent framework — or directly via the [MCP server](#mcp-server).
-4. **Nango executes** the API call with retries, rate-limit handling, and audit logging — and returns the result to your agent.
-5. **You observe** every call in the Nango dashboard.
+1. Your user authorizes an integration with Nango.
+2. You enable template action functions or deploy custom action functions for allowed operations.
+3. Your agent lists or receives those action functions as tools.
+4. The agent asks Nango to execute an action function for the right connection.
+5. Nango runs the external API call with the user's credentials and logs the execution.
 
-## Why Nango
+This keeps provider credentials in Nango and gives you a stable tool surface across frameworks.
 
-- **Framework-agnostic.** Works with any agentic or LLM framework, or none at all.
-- **Thousands of pre-built functions.** Common operations like "Create Lead", "Send Message", or "List Files" are ready to use across most major APIs — see the [template catalog](https://www.nango.dev/templates).
-- **Scoped per user.** Every tool call runs in the context of an end-user [Connection](/guides/primitives/auth#overview), so your agent can never act outside the permissions a user granted.
-- **Reliable execution.** Tool code runs in sandboxed, elastic environments with retries, rate-limit handling, and full observability. Under 100ms overhead — fast enough for human-in-the-loop workflows.
-- **Autonomous tool discovery.** Let agents introspect available tools at runtime — see [Autonomous tool selection](#autonomous-tool-selection).
-- **MCP-native.** Expose functions to any MCP-compatible client, or use Nango as the auth layer when connecting to third-party MCP servers.
+## Technical setup
 
-<Card title="Browse thousands of pre-built functions" icon="rectangle-list" href="https://www.nango.dev/templates">
-  Common operations across CRMs, drives, mail, calendar, communication, ticketing, billing, and more — ready to enable in one click.
-</Card>
+Nango supports both direct action function execution and MCP-based tool discovery. Use the technical [Tool calling & MCP](/implementation-guides/platform/functions/tool-calling) guide for headers, transports, tool discovery, action execution, and client setup.
 
-## Guide
+## What to read next
 
-The examples below all call a Hubspot `whoami` function via Nango. **Requirements:** a Nango account with a Hubspot integration configured and the `whoami` function enabled, plus an account with the relevant LLM provider.
-
-<Steps>
-<Step title="Authorize the user">
-
-Before your agent can call any tool, the user has to authorize the integration. Create a Connect session, send the user the resulting link, and Nango stores the tokens and refreshes them automatically from there.
-
-```ts
-import { Nango } from "@nangohq/node";
-
-const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
-
-const userId = "user1";
-const integrationId = "hubspot";
-
-// Reuse an existing connection if the user already authorized.
-const { connections } = await nango.listConnections({ integrationId, tags: { end_user_id: userId } });
-let connectionId = connections[0]?.connection_id;
-
-if (!connectionId) {
-  const session = await nango.createConnectSession({
-    allowed_integrations: [integrationId],
-    tags: { end_user_id: userId },
-  });
-
-  // In production, send `session.data.connect_link` to your user — redirect them,
-  // render it as a button in your chat UI, email it, etc.
-  const connection = await nango.waitForConnection(integrationId, userId);
-  connectionId = connection!.connection_id;
-}
-```
-
-<Tip>
-This example uses the Node SDK, a lightweight wrapper over Nango's REST API. The same flow works in any language — see the [Create Connect Session API](/reference/api/connect/sessions/create).
-</Tip>
-
-</Step>
-
-<Step title="Define a tool and let your agent call it">
-
-Each tab assumes `nango`, `connectionId`, and `integrationId` are already in scope from Step 1. The snippet shows the framework-specific tool definition and how to execute the requested tool via Nango.
-
-<Tabs>
-
-<Tab title="OpenAI">
-
-**Setup**
-
-```bash
-npm i openai @nangohq/node
-```
-
-**Usage**
-
-```ts
-import OpenAI from "openai";
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
-
-const response = await client.responses.create({
-  model: "gpt-5",
-  input: "Using the who_am_i tool, provide the current user info.",
-  tools: [
-    {
-      type: "function",
-      name: "who_am_i",
-      description: "Get the current user info.",
-      parameters: { type: "object", properties: {}, additionalProperties: false },
-      strict: true,
-    },
-  ],
-});
-
-const functionCall = response.output.find((item) => item.type === "function_call");
-
-if (functionCall?.name === "who_am_i") {
-  // Execute the requested tool with Nango.
-  const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami");
-  console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
-} else {
-  console.log(response.output_text);
-}
-```
-
-</Tab>
-
-<Tab title="Anthropic">
-
-**Setup**
-
-```bash
-npm i @anthropic-ai/sdk @nangohq/node
-```
-
-**Usage**
-
-```ts
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-const message = await client.messages.create({
-  model: "claude-sonnet-4-6", // see Anthropic's model docs for the latest IDs
-  max_tokens: 1024,
-  messages: [
-    { role: "user", content: "Using the who_am_i tool, provide the current user info." }
-  ],
-  tools: [
-    {
-      name: "who_am_i",
-      description: "Get the current user info.",
-      input_schema: { type: "object", properties: {}, required: [] },
-    },
-  ],
-  tool_choice: { type: "auto" },
-});
-
-const toolUse = message.content.find((c) => c.type === "tool_use");
-
-if (toolUse && toolUse.type === "tool_use" && toolUse.name === "who_am_i") {
-  // Execute the requested tool with Nango.
-  const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami");
-  console.log("✅ Agent retrieved your Hubspot user info:", userInfo);
-} else {
-  console.log(message.content.find((c) => c.type === "text")?.text);
-}
-```
-
-<Tip>
-For the latest Claude model identifiers, see [Anthropic's model overview](https://docs.anthropic.com/en/docs/about-claude/models).
-</Tip>
-
-</Tab>
-
-<Tab title="Vercel AI SDK">
-
-**Setup**
-
-```bash
-npm i ai @ai-sdk/openai @nangohq/node zod
-```
-
-**Usage**
-
-```ts
-import { generateText, tool } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { z } from "zod";
-
-const response = await generateText({
-  model: openai("gpt-4o"),
-  prompt: "Using the who_am_i tool, provide the current user info.",
-  tools: {
-    who_am_i: tool({
-      description: "Get the current user info.",
-      inputSchema: z.object({}),
-      execute: async () => {
-        // Execute the requested tool with Nango.
-        return await nango.triggerAction(integrationId, connectionId, "whoami");
-      },
-    }),
-  },
-});
-
-console.log("✅ Agent retrieved your Hubspot user info:", response.toolResults[0].output);
-```
-
-</Tab>
-
-<Tab title="LangChain">
-
-**Setup**
-
-```bash
-npm i langchain @langchain/core @langchain/openai @nangohq/node zod
-```
-
-**Usage**
-
-```ts
-import { createAgent } from "langchain";
-import { tool } from "@langchain/core/tools";
-import { z } from "zod";
-
-const whoAmITool = tool(
-  async () => {
-    // Execute the requested tool with Nango.
-    const result = await nango.triggerAction(integrationId, connectionId, "whoami");
-    return JSON.stringify(result);
-  },
-  {
-    name: "who_am_i",
-    description: "Get the current user info.",
-    schema: z.object({}),
-  }
-);
-
-const agent = createAgent({
-  model: "openai:gpt-4o",
-  tools: [whoAmITool],
-});
-
-const result = await agent.invoke({
-  messages: [{ role: "user", content: "Using the who_am_i tool, provide the current user info." }],
-});
-
-console.log("✅ Agent retrieved your Hubspot user info:", result.messages[result.messages.length - 1].content);
-```
-
-</Tab>
-
-<Tab title="Any LLM">
-
-**Setup**
-
-```bash
-npm i @nangohq/node
-```
-
-**Usage**
-
-This is a generic pattern; adapt the `modelClient` calls and response parsing to your provider's SDK.
-
-```ts
-const response = await modelClient.generate({
-  model: "your-llm-model-id",
-  input: "Get the current Hubspot user info using the who_am_i tool.",
-  tools: [
-    {
-      name: "who_am_i",
-      description: "Fetch the current Hubspot user profile.",
-      parameters: { type: "object", properties: {} },
-    },
-  ],
-});
-
-// Check if the model requested a tool call (shape depends on your provider)
-const toolCall = response?.toolCalls?.[0] || response?.tool_call || null;
-
-if (toolCall?.name === "who_am_i") {
-  // Execute the requested tool with Nango.
-  const userInfo = await nango.triggerAction(integrationId, connectionId, "whoami");
-  console.log("✅ Retrieved Hubspot user info:", userInfo);
-} else {
-  console.log("🗣️ Model response:", response?.text || response?.output_text || JSON.stringify(response));
-}
-```
-
-</Tab>
-
-<Tab title="MCP server">
-
-See the [MCP server](#mcp-server) section below for the full walkthrough — including connecting via the Vercel AI SDK and Claude Desktop.
-
-</Tab>
-
-</Tabs>
-
-</Step>
-
-<Step title="Let your agent discover tools (optional)">
-
-<a id="autonomous-tool-selection"></a>
-
-Hardcoding the tool list is fine when your agent does one thing. For agents that should choose between many functions — or where you keep enabling new ones — let the model discover available tools at runtime.
-
-The [scripts config endpoint](/reference/api/scripts/config) returns the spec of every enabled function for a connection. Feed it directly into your `tools` array, and the model picks the right one for each prompt. When you enable a new function in Nango, your agent picks it up on the next request, with no code change.
-
-</Step>
-
-<Step title="Observe & optimize">
-
-Track tool call results and performance in Nango's [Logs](/guides/platform/observability) — every tool execution is logged with inputs, outputs, latency, and any errors. Use this to debug failing tool calls, tune prompts, and monitor production usage.
-
-</Step>
-</Steps>
-
-## MCP server
-
-Nango ships a built-in MCP server that exposes your Nango functions as tools any MCP-compatible LLM client can invoke.
-
-### How the server works
-
-[Functions](/implementation-guides/use-cases/actions) are predefined API interactions you can run through Nango — for example, creating a calendar event in Google Calendar or fetching recent leads from a CRM. The MCP server exposes them as tools to LLM clients.
-
-When an LLM client connects to the server:
-
-1. The server authenticates the request using your Nango secret key.
-2. It identifies available functions based on the provided connection ID and integration ID.
-3. It exposes those functions as tools for the LLM to invoke.
-4. When the LLM invokes a tool, the MCP server executes the corresponding Nango function.
-
-### Connection details
-
-The Nango MCP server is exposed at `https://api.nango.dev/mcp` over the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#streamable-http) (HTTP+SSE is **not** supported).
-
-Requests must include the following headers:
-
-- `Authorization`: Bearer token with your Nango secret key
-- `connection-id`: The connection ID that determines available functions
-- `provider-config-key`: The integration ID
-- `Accept: application/json, text/event-stream` — required by the Streamable HTTP transport spec; clients must advertise both content types
-
-Point any MCP-compatible client at that URL with those headers and you're done. For a full chat-loop reference implementation, see the [Nango MCP Client Example repo](https://github.com/NangoHQ/nango-mcp-client-example).
-
-<Tip>
-**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+- [Tool calling & MCP](/implementation-guides/platform/functions/tool-calling) - connect Nango action functions to agents, LLM SDKs, and MCP clients.
+- [Action functions](/implementation-guides/platform/functions/action-functions) - build the action functions agents can call.
+- [Get integration functions config](/reference/api/scripts/config) - list enabled action functions programmatically.
+- [Functions guide](/guides/primitives/functions) - create, test, deploy, and trigger functions.
+- [Auth guide](/guides/primitives/auth) - let users authorize external APIs.

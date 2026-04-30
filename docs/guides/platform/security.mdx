@@ -97,7 +97,7 @@ Credentials are stored for as long as the connection exists. You have full contr
 When a connection is deleted:
 
 1. **Immediate soft delete**: Connection is marked as deleted and becomes inaccessible
-2. **Associated data cleanup**: Syncs are stopped, and scheduled tasks are cancelled
+2. **Associated data cleanup**: Sync functions are stopped, and scheduled tasks are cancelled
 3. **Hard delete after retention period**: Credentials and associated data are permanently removed from the database
 
 The default retention period is **31 days**. For self-hosted deployments, this is configurable.
@@ -129,7 +129,7 @@ Nango automatically manages data retention for records stored in the Nango recor
 If a record has not been updated for **30 days**, Nango will automatically empty its payload.
 
 **Impact:**
-After pruning, the record's data fields are no longer retrievable from the Nango cache via the API or SDK. However, Nango retains the metadata needed for change detection (record ID and payload hash). Your syncs will continue to work normally. This pruning does not impact sync execution or delta-detection capabilities.
+After pruning, the record's data fields are no longer retrievable from the Nango cache via the API or SDK. However, Nango retains the metadata needed for change detection (record ID and payload hash). Your sync functions will continue to work normally. This pruning does not impact sync execution or delta-detection capabilities.
 
 #### Automated hard deletion (60 days)
 
@@ -173,7 +173,7 @@ If your use case requires accessing record payloads from Nango's cache beyond th
 You can delete connections through:
 
 - **Dashboard**: Navigate to the connection and click "Delete"
-- **API**: Call the [delete connection endpoint](/reference/api/connection/delete)
+- **API**: Call the [delete connection endpoint](/reference/api/connections/delete)
 - **SDK**: Use the `deleteConnection` method in any of our backend SDKs
 
 ### Automatic cleanup
@@ -361,3 +361,10 @@ For details on available scopes, advised profiles, and key management, see the [
 <Tip>
 **Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.
 </Tip>
+
+## Related guides
+
+- [API keys](/reference/api-keys) - create scoped keys for production access.
+- [Auth guide](/guides/primitives/auth) - keep provider credentials out of your app.
+- [Token refreshing and validity](/implementation-guides/platform/auth/token-refreshing) - handle revoked OAuth credentials.
+- [Self-host Nango](/guides/platform/self-hosting) - review deployment and data ownership options.

@@ -4,7 +4,7 @@ sidebarTitle: 'Real-time syncs'
 description: 'Combine webhooks from external APIs with periodic polling for a reliable, real-time stream of changes.'
 ---
 
-Nango supports real-time syncs using [webhooks from external APIs](/implementation-guides/use-cases/webhooks-from-external-apis). You can rely entirely on webhooks or combine them with polling to ensure you never miss data.
+Nango supports real-time syncs using [webhook functions](/implementation-guides/platform/functions/webhook-functions). You can rely entirely on webhooks or combine them with polling to ensure you never miss data.
 
 ## What is a real-time sync
 
@@ -34,8 +34,8 @@ This is more resource intensive, but can be a good compromise if you are only sy
 ### Step 1 — Setup prerequisites
 
 To create a real-time sync, you need:
-- Webhooks from the external API enabled. Follow our [webhooks from external APIs guide](/implementation-guides/use-cases/webhooks-from-external-apis).
-- A sync function for the object you want to sync. See the [main sync guide](/implementation-guides/use-cases/syncs).
+- Webhooks from the external API enabled. Follow [Webhook functions](/implementation-guides/platform/functions/webhook-functions).
+- A sync function for the object you want to sync. See [Sync functions](/implementation-guides/platform/functions/sync-functions).
 
 ### Step 2 — Enable webhooks processing
 
@@ -63,7 +63,7 @@ export default createSync({
 });
 ```
 
-To check if a sync supports webhooks, navigate to the _Integrations_ tab > select an integration > _Endpoints_ sub-tab > check the script settings for webhook subscriptions.
+To check if a sync supports webhooks, navigate to the _Integrations_ tab > select an integration > _Endpoints_ sub-tab > check the function settings for webhook subscriptions.
 
 ## Sync concurrency considerations
 
@@ -87,3 +87,10 @@ Two strategies are available:
 - **`ignore_if_modified_after`** — preserves records that were modified after the current batch was fetched. **Recommended** when you combine polling with webhooks.
 
 Run `batchSave` / `batchUpdate` / `batchDelete` calls sequentially (not in parallel), and persist data promptly after fetching — concurrent batch operations can race against each other.
+
+## Related guides
+
+- [Webhook functions](/implementation-guides/platform/functions/webhook-functions) - process external API webhooks in Nango.
+- [Webhook forwarding](/implementation-guides/platform/webhook-forwarding) - forward provider webhooks to your app.
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - keep a polling sync as reconciliation.
+- [Webhooks from Nango](/implementation-guides/platform/webhooks-from-nango) - consume sync completion notifications.

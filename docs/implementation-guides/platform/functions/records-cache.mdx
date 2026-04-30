@@ -135,7 +135,7 @@ curl -G https://api.nango.dev/records \
 
 ## Re-syncing: preserve vs. clear the cache
 
-See [Re-syncing: resetting checkpoints and the cache](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) in the Checkpoints guide for the `reset` / `emptyCache` options and their implications.
+See [Re-syncing: resetting checkpoints and the cache](/implementation-guides/platform/functions/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) in the Checkpoints guide for the `reset` / `emptyCache` options and their implications.
 
 ## Cache summary
 
@@ -150,3 +150,10 @@ See [Re-syncing: resetting checkpoints and the cache](/implementation-guides/use
 | **Cursor** | Opaque ordered string for tracking sync progress and pagination |
 | **Payload TTL** | 30 days without update → payload pruned |
 | **Full record TTL** | 60 days without sync execution → all records hard-deleted |
+
+## Related guides
+
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - write records into the cache.
+- [Sync efficiency](/implementation-guides/platform/functions/sync-efficiency) - keep records small and consume changes promptly.
+- [Deletion detection](/implementation-guides/platform/functions/deletion-detection) - mark records deleted in the cache.
+- [Get records API](/reference/api/sync/records-list) - fetch changed records from your app.

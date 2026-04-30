@@ -69,7 +69,7 @@ Customers should **pin their CLI version to the `application-version`** specifie
 
 You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
 
-See the full [changelog](/updates) for details on each release.
+See the full [changelog](/updates/product) for details on each release.
 
 ## Cloud provider support
 
@@ -91,7 +91,7 @@ Auto-scaling is not provided out-of-the-box yet, but the default configuration s
 
 Bottlenecks mostly depend on:
 - **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
-- **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
+- **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
 
 ## Data storage
 
@@ -135,10 +135,207 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
-<Info>
-A limited [free self-hosting](/guides/platform/free-self-hosting/configuration) option is available for hobbby projects.
-</Info>
+## Free self-hosting
+
+A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
+
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+
+### Feature availability
+
+| Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
+| --- | --- | --- |
+| Auth | Yes | Yes |
+| Proxy | Yes | Yes |
+| Observability | Auth + proxy only | Full |
+| OpenTelemetry export | No | Yes |
+| Functions | No | Yes |
+| Webhooks | No | Yes |
+| MCP server | No | Yes |
+| Customize auth branding | No | Yes |
+| Role-based permissions | No | Yes |
+| SAML SSO | No | Yes |
+| Support SLA | No | Yes |
+
+### Server URL, callback URL, and custom domains
+
+Add server environment variables for the instance URL and port in the `.env` file or directly in your hosting provider:
+
+```sh
+NANGO_SERVER_URL=<INSTANCE-URL>
+SERVER_PORT=<PORT>
+```
+
+The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
+
+<Note>You can customize the callback URL by updating the "Callback URL" field in the "Environment Settings" tab in the Nango admin.</Note>
+
+<Note>
+If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
+</Note>
+
+### Connect UI
+
+Nango Connect is available for self-hosted deployments in the main Docker image.
+
+```sh
+FLAG_SERVE_CONNECT_UI=true
+NANGO_CONNECT_UI_PORT=3009
+NANGO_PUBLIC_CONNECT_URL=<INSTANCE-URL>
+```
+
+Nango Connect is available by default at `http://localhost:3009`.
+
+<Note>
+If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
+</Note>
+
+See [Auth](/guides/primitives/auth) for the end-user connection flow.
+
+### Persistent storage
+
+If you deploy with Docker Compose, the bundled database uses local container storage. This is not appropriate for production.
+
+Connect Nango to an external Postgres database by setting the database environment variables:
+
+```sh
+NANGO_DB_USER=<REPLACE>
+NANGO_DB_PASSWORD=<REPLACE>
+NANGO_DB_HOST=<REPLACE>
+NANGO_DB_PORT=<REPLACE>
+NANGO_DB_NAME=<REPLACE>
+NANGO_DB_SSL=true
+```
+
+You can also use a database URL:
+
+```sh
+NANGO_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+
+Special characters in `NANGO_DATABASE_URL` must be URL encoded.
+
+<Note>
+Nango is incompatible with connection poolers using `pool_mode=transaction`. Use a direct database connection or configure the pooler to use a different mode.
+</Note>
+
+Records saved by sync functions can be persisted in a dedicated database. To use a dedicated records database, set `RECORDS_DATABASE_URL`:
+
+```sh
+RECORDS_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+
+Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not specified, records are stored in the main database.
+
+<Tip>
+Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
+</Tip>
+
+### Securing your instance
+
+#### Securing the dashboard
+
+By default, the dashboard of your Nango instance is open to anyone who can access your instance URL.
+
+You can secure it with Basic Auth by setting the following environment variables and restarting the server:
+
+```bash
+FLAG_AUTH_ENABLED=false
+NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
+NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
+```
+
+#### Encrypting sensitive data
+
+You can enforce encryption of sensitive data, including tokens, secret keys, and app secrets, by setting a 256-bit base64-encoded key:
+
+```sh
+openssl rand -base64 32
+```
+
+Set the generated value as `NANGO_ENCRYPTION_KEY`:
+
+```sh
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
+```
+
+After you restart the Nango server, database encryption happens automatically. The encryption key cannot currently be modified after it is set.
+
+<Warning>
+`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/sdks/frontend#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
+</Warning>
+
+#### Custom websockets path
+
+The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the login flow.
+
+To isolate websockets from the dashboard, set `NANGO_SERVER_WEBSOCKETS_PATH`:
+
+```sh
+NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
+```
+
+If you set a custom path, configure `websocketsPath` when initializing the `Nango` object in the `@nangohq/frontend` SDK:
+
+```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '</YOUR-WEBSOCKETS-PATH>' });
+```
+
+### Telemetry
+
+Telemetry on self-hosted instances is light by default. Nango tracks core actions at a high level and does not track sensitive information.
+
+You can disable telemetry with:
+
+```sh
+TELEMETRY=false
+```
+
+### Logs
+
+Nango uses Elasticsearch to store execution logs and power the logs UI. To keep free self-hosted deployments lighter, this stack is optional.
+
+To enable logs:
+
+- Host an Elasticsearch cluster.
+- Set `NANGO_LOGS_ENABLED=true`.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables.
+
+Elasticsearch hosting options include:
+
+- Local: uncomment the service in [`docker-compose.yaml`](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63) and run `docker-compose up`.
+- Elastic Cloud: use [elastic.co](https://www.elastic.co/).
+- Render: deploy an Elasticsearch instance with [Render](https://docs.render.com/deploy-elasticsearch).
+
+If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in your host logs.
+
+### Run and update Nango
+
+To install Nango on a VM:
+
+```bash
+mkdir nango && cd nango
+wget https://raw.githubusercontent.com/NangoHQ/nango/master/docker-compose.yaml
+docker-compose up -d
+```
+
+To update Nango:
+
+```bash
+docker-compose stop
+docker-compose rm -f
+docker-compose pull
+docker-compose up -d
+```
 
 <Tip>
 If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
 </Tip>
+
+## Related guides
+
+- [Security](/guides/platform/security) - review data, encryption, and access controls.
+- [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
+- [Changelog](/updates/product) - track changes that affect self-hosted upgrades.

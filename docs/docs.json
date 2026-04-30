@@ -90,67 +90,87 @@
     },
     {
       "source": "/guides/mcp",
-      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
+      "destination": "/implementation-guides/platform/functions/tool-calling#mcp-server"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
+      "destination": "/implementation-guides/platform/functions/tool-calling#mcp-server"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/overview",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/any-llm",
-      "destination": "/implementation-guides/use-cases/tool-calling"
+      "destination": "/implementation-guides/platform/functions/tool-calling"
     },
     {
       "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
-      "destination": "/implementation-guides/use-cases/tool-calling#mcp-server"
+      "destination": "/implementation-guides/platform/functions/tool-calling#mcp-server"
     },
     {
       "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
-      "destination": "/implementation-guides/use-cases/syncs"
+      "destination": "/implementation-guides/platform/functions/sync-functions"
     },
     {
       "source": "/implementation-guides/use-cases/actions/implement-an-action",
-      "destination": "/implementation-guides/use-cases/actions"
+      "destination": "/implementation-guides/platform/functions/action-functions"
     },
     {
       "source": "/implementation-guides/use-cases/actions/async-actions",
-      "destination": "/implementation-guides/use-cases/actions#async-execution"
+      "destination": "/implementation-guides/platform/functions/action-functions#trigger-asynchronously"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/checkpoints",
+      "destination": "/implementation-guides/platform/functions/checkpoints"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/deletion-detection",
+      "destination": "/implementation-guides/platform/functions/deletion-detection"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/realtime-syncs",
+      "destination": "/implementation-guides/platform/functions/realtime-syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/records-cache",
+      "destination": "/implementation-guides/platform/functions/records-cache"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/sync-partitioning",
+      "destination": "/implementation-guides/platform/functions/sync-partitioning"
     },
     {
       "source": "/guides/primitives/proxy",
@@ -158,7 +178,15 @@
     },
     {
       "source": "/guides/platform/ai-integration-builder",
-      "destination": "/guides/primitives/functions#guide"
+      "destination": "/guides/primitives/functions#function-ai-builder"
+    },
+    {
+      "source": "/guides/platform/free-self-hosting/configuration",
+      "destination": "/guides/platform/self-hosting#free-self-hosting"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customer-configuration",
+      "destination": "/implementation-guides/platform/functions/storage#customer-configuration-pattern"
     },
     {
       "source": "/implementation-guides/platform/open-telemetry-export",
@@ -178,15 +206,27 @@
     },
     {
       "source": "/implementation-guides/platform/functions/functions-setup",
-      "destination": "/guides/primitives/functions#guide"
+      "destination": "/guides/primitives/functions#step-by-step-guide"
     },
     {
       "source": "/implementation-guides/platform/functions/leverage-ai-agents",
-      "destination": "/guides/primitives/functions#guide"
+      "destination": "/guides/primitives/functions#function-ai-builder"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/catalog",
+      "destination": "/guides/primitives/functions#template-catalog"
     },
     {
       "source": "/implementation-guides/platform/functions/customize-template",
-      "destination": "/guides/primitives/functions#guide"
+      "destination": "/guides/primitives/functions#template-catalog"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/http-functions",
+      "destination": "/implementation-guides/platform/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/lifecycle-events",
+      "destination": "/implementation-guides/platform/functions/event-functions"
     }
   ],
   "navigation": {
@@ -199,7 +239,21 @@
             "group": "Getting started",
             "pages": [
               "getting-started/intro-to-nango",
-              "getting-started/quickstart"
+              "getting-started/quickstart",
+              {
+                "group": "Use cases",
+                "expanded": false,
+                "pages": [
+                  "implementation-guides/use-cases/tool-calling",
+                  "implementation-guides/use-cases/syncs",
+                  "implementation-guides/use-cases/actions",
+                  "implementation-guides/use-cases/webhooks-from-external-apis",
+                  "implementation-guides/use-cases/unified-apis",
+                  "implementation-guides/use-cases/customer-configuration",
+                  "implementation-guides/use-cases/implement-event-handler",
+                  "getting-started/sample-app"
+                ]
+              }
             ]
           },
           {
@@ -212,7 +266,8 @@
                   "guides/primitives/auth",
                   "implementation-guides/platform/auth/share-connect-link",
                   "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui"
+                  "implementation-guides/platform/auth/customize-connect-ui",
+                  "implementation-guides/platform/auth/token-refreshing"
                 ]
               },
               {
@@ -220,34 +275,29 @@
                 "expanded": false,
                 "pages": [
                   "guides/primitives/functions",
+                  {
+                    "group": "Sync functions",
+                    "pages": [
+                      "implementation-guides/platform/functions/sync-functions",
+                      "implementation-guides/platform/functions/sync-efficiency",
+                      "implementation-guides/platform/functions/checkpoints",
+                      "implementation-guides/platform/functions/records-cache",
+                      "implementation-guides/platform/functions/deletion-detection",
+                      "implementation-guides/platform/functions/realtime-syncs",
+                      "implementation-guides/platform/functions/sync-partitioning"
+                    ]
+                  },
+                  "implementation-guides/platform/functions/action-functions",
+                  "implementation-guides/platform/functions/webhook-functions",
+                  "implementation-guides/platform/functions/event-functions",
+                  "implementation-guides/platform/functions/tool-calling",
+                  "implementation-guides/platform/functions/storage",
+                  "implementation-guides/platform/functions/logging",
                   "implementation-guides/platform/functions/rate-limits",
                   "implementation-guides/platform/functions/data-validation",
                   "implementation-guides/platform/functions/testing",
-                  "implementation-guides/platform/functions/ci-cd"
-                ]
-              },
-              {
-                "group": "Use cases",
-                "expanded": false,
-                "pages": [
-                  "implementation-guides/use-cases/tool-calling",
-                  {
-                    "group": "Sync external API data",
-                    "pages": [
-                      "implementation-guides/use-cases/syncs",
-                      "implementation-guides/use-cases/syncs/checkpoints",
-                      "implementation-guides/use-cases/syncs/deletion-detection",
-                      "implementation-guides/use-cases/syncs/realtime-syncs",
-                      "implementation-guides/use-cases/syncs/records-cache",
-                      "implementation-guides/use-cases/syncs/sync-partitioning"
-                    ]
-                  },
-                  "implementation-guides/use-cases/actions",
-                  "implementation-guides/use-cases/webhooks-from-external-apis",
-                  "implementation-guides/use-cases/unified-apis",
-                  "implementation-guides/use-cases/customer-configuration",
-                  "implementation-guides/use-cases/implement-event-handler",
-                  "getting-started/sample-app"
+                  "implementation-guides/platform/functions/ci-cd",
+                  "implementation-guides/platform/functions/unified-apis"
                 ]
               },
               {
@@ -261,6 +311,7 @@
                   "guides/platform/self-hosting",
                   "implementation-guides/platform/proxy/implement-requests-proxy",
                   "implementation-guides/platform/webhooks-from-nango",
+                  "implementation-guides/platform/webhook-forwarding",
                   "implementation-guides/platform/common-issues",
                   {
                     "group": "Migrations",
@@ -494,7 +545,6 @@
               "integrations/all/aws",
               "api-integrations/aws-iam",
               "api-integrations/aws-inspector2",
-              "api-integrations/aws-multi-service",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
               "api-integrations/axiom",
@@ -597,7 +647,6 @@
               "integrations/all/crisp",
               "api-integrations/crisp-plugin-install",
               "integrations/all/crowdstrike",
-              "api-integrations/crunchbase",
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
@@ -643,7 +692,6 @@
               "integrations/all/employment-hero",
               "integrations/all/entrata",
               "integrations/all/envoy",
-              "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
@@ -884,7 +932,6 @@
               "api-integrations/notion",
               "api-integrations/nyne-ai",
               "integrations/all/notion-scim",
-              "api-integrations/ocean-io",
               "integrations/all/odoo",
               "integrations/all/odoo-cc",
               "integrations/all/okta",
@@ -992,7 +1039,6 @@
               "integrations/all/rocketlane",
               "integrations/all/roam-scim",
               "integrations/all/rock-gym-pro",
-              "api-integrations/rocketreach",
               "api-integrations/rootly",
               "integrations/all/sage",
               "integrations/all/sage-hr",
@@ -1078,7 +1124,6 @@
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
-              "api-integrations/store-leads",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",
@@ -1144,7 +1189,6 @@
               "api-integrations/vercel-mcp",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
-              "api-integrations/vtex",
               "integrations/all/precisefp",
               "integrations/all/wakatime",
               "integrations/all/wave-accounting",

@@ -207,12 +207,12 @@ For small datasets (e.g., a list of Slack users for an organization with fewer t
 As datasets grow, full syncs become unscalable — taking longer to run, triggering rate limits, and consuming more compute and memory. If your dataset has more than a few thousand records and the API supports pagination and/or filtering by date or cursor, use checkpoints.
 
 <Warning>
-`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead — see [Deletion detection](/implementation-guides/use-cases/syncs/deletion-detection).
+`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead — see [Deletion detection](/implementation-guides/platform/functions/deletion-detection).
 </Warning>
 
 ## Checkpoints vs. cursors
 
-Both checkpoints and [cursors](/implementation-guides/use-cases/syncs/records-cache#cursors-and-sync-progress) are markers of sync progress, but they track different relationships:
+Both checkpoints and [cursors](/implementation-guides/platform/functions/records-cache#cursors-and-sync-progress) are markers of sync progress, but they track different relationships:
 
 | | Checkpoint | Cursor |
 | --- | --- | --- |
@@ -239,7 +239,7 @@ When you [trigger a sync](/reference/api/sync/trigger) manually (from the UI or 
 **Use `reset: true` with `emptyCache: true`** when you need to start from scratch — for example, after a breaking change to your data model.
 
 <Warning>
-Resetting the checkpoint triggers a full re-sync from the external API, which takes longer and may incur higher compute costs. Clearing the cache additionally means every record will be reported as `ADDED`, your previously persisted [cursors](/implementation-guides/use-cases/syncs/records-cache#cursors-and-sync-progress) become invalid, and you will need to reprocess the entire dataset on your side.
+Resetting the checkpoint triggers a full re-sync from the external API, which takes longer and may incur higher compute costs. Clearing the cache additionally means every record will be reported as `ADDED`, your previously persisted [cursors](/implementation-guides/platform/functions/records-cache#cursors-and-sync-progress) become invalid, and you will need to reprocess the entire dataset on your side.
 </Warning>
 
 ```ts

@@ -149,7 +149,7 @@ await nango.createIntegration(<PROVIDER-ID>, <INTEGRATION-ID>);
 
 <Expandable>
     <ResponseField name="provider" type="string" required>
-        The ID of the API provider in Nango (cf. [providers.yaml](https://nango.dev/providers.yaml) for a list of API provider IDs.)
+        The ID of the API provider in Nango (cf. [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml) for a list of API provider IDs.)
     </ResponseField>
 
     <ResponseField name="unique_key" type="string" required>
@@ -1512,7 +1512,7 @@ await nango.triggerSync('<INTEGRATION-ID>', [
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
     <ResponseField name="opts" type="object">
-        Options for triggering the sync. See the [checkpoints guide](/implementation-guides/use-cases/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
+        Options for triggering the sync. See the [checkpoints guide](/implementation-guides/platform/functions/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
         <Expandable>
             <ResponseField name="reset" type="boolean">
                 If `true`, clears the checkpoint before triggering the sync, causing it to start fresh.
@@ -1671,7 +1671,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
 }
 ```
 
-The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/implementation-guides/use-cases/syncs/checkpoints).
+The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/implementation-guides/platform/functions/checkpoints).
 </Expandable>
 
 ### Override sync connection frequency
@@ -1946,7 +1946,7 @@ const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123
 
 ## Proxy
 
-Makes an HTTP request using the [proxy](/guides/primitives/proxy):
+Makes an HTTP request using the [proxy](/implementation-guides/platform/proxy/implement-requests-proxy):
 
 ```js
 const config = {
@@ -1992,7 +1992,7 @@ await nango.delete(config); // DELETE request
                 Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
             </ResponseField>
             <ResponseField name="baseUrlOverride" type="string">
-                The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://nango.dev/providers.yaml).
+                The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
             </ResponseField>
             <ResponseField name="decompress" type="boolean">
                 Override the decompress option when making requests. Optional, defaults to false
