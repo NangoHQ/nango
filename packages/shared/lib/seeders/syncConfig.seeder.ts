@@ -10,6 +10,7 @@ export function getTestStdSyncConfig(data?: Partial<NangoSyncConfig>): NangoSync
         json_schema: {},
         sdk_version: '1.0.0',
         features: [],
+        source: 'repo',
         ...data
     };
 }

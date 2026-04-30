@@ -2067,7 +2067,6 @@ aws-multi-service:
         retry:
             at:
                 - 'x-ratelimit-reset'
-    credentials_verification_script: awsIamCredentialsVerification
     docs: https://nango.dev/docs/api-integrations/aws-multi-service
     docs_connect: https://nango.dev/docs/api-integrations/aws-multi-service/connect
     credentials:

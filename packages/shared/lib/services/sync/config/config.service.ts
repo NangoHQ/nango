@@ -10,7 +10,16 @@ import remoteFileService from '../../file/remote.service.js';
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { SyncConfigWithProvider } from '../../../models/Sync.js';
-import type { DBConnection, DBSyncConfig, NangoModel, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type {
+    DBConnection,
+    DBSyncConfig,
+    FunctionSource,
+    NangoModel,
+    NangoSyncConfig,
+    NangoSyncEndpointV2,
+    SlimSync,
+    StandardNangoConfig
+} from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -42,8 +51,7 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata?.scopes || [],
             version: syncConfig.version,
-            is_public: syncConfig.is_public || false,
-            pre_built: syncConfig.pre_built || false,
+            source: syncConfig.source,
             endpoints: syncConfig.endpoints_object || [],
             input: syncConfig.input || undefined,
             enabled: syncConfig.enabled,
@@ -136,8 +144,6 @@ export async function getSyncConfig({
                 attributes: syncConfig.attributes || {},
                 fileLocation,
                 version: syncConfig.version || '',
-                pre_built: syncConfig.pre_built || false,
-                is_public: syncConfig.is_public || false,
                 metadata: syncConfig.metadata,
                 enabled: syncConfig.enabled
             };
@@ -277,7 +283,7 @@ export async function getSyncAndActionConfigByParams(
     environment_id: number,
     sync_name: string,
     providerConfigKey: string,
-    is_public: boolean
+    source: FunctionSource
 ): Promise<DBSyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
@@ -295,7 +301,7 @@ export async function getSyncAndActionConfigByParams(
                 nango_config_id: config.id as number,
                 active: true,
                 deleted: false,
-                is_public: is_public
+                source
             })
             .orderBy('created_at', 'desc')
             .first();
@@ -430,7 +436,7 @@ export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: 
             active: true,
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
-            pre_built: false,
+            source: 'repo',
             [`${TABLE}.deleted`]: false
         });
 
@@ -448,8 +454,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
             `${TABLE}.auto_start`,
-            `${TABLE}.pre_built`,
-            `${TABLE}.is_public`,
+            `${TABLE}.source`,
             `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
@@ -602,8 +607,7 @@ export async function getPublicConfig(environment_id: number): Promise<DBSyncCon
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             active: true,
-            pre_built: true,
-            is_public: true,
+            source: 'catalog',
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
