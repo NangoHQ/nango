@@ -11,13 +11,23 @@ import { runWithConcurrencyLimit } from './runWithConcurrencyLimit.js';
 import { getOrchestrator } from '../utils/utils.js';
 import { dispatchQueuePublisher } from './dispatch-queue/client.js';
 
-import type { DispatchQueuePublisher } from './dispatch-queue/publisher.js';
-import type { LogContextGetter } from '@nangohq/logs';
-import type { Config } from '@nangohq/shared';
-import type { ConnectionInternal, DBConnectionDecrypted, DBEnvironment, DBIntegrationDecrypted, DBPlan, DBSyncConfig, DBTeam, Metadata } from '@nangohq/types';
+import type { DispatchQueuePublisher, PreparedDispatchMessage } from './dispatch-queue/publisher.js';
+import type { LogContext, LogContextGetter } from '@nangohq/logs';
+import type {
+    ConnectionInternal,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBIntegrationDecrypted,
+    DBPlan,
+    DBSyncConfig,
+    DBTeam,
+    Metadata,
+    WebhookDispatchMessage
+} from '@nangohq/types';
 
 const LARGE_FANOUT_THRESHOLD = 200;
 const LOG_CONTEXT_CREATE_CONCURRENCY = 25;
+const SQS_MAX_MESSAGE_BODY_BYTES = 1_048_576;
 
 interface MatchedExecution {
     syncConfig: DBSyncConfig;
@@ -26,27 +36,12 @@ interface MatchedExecution {
 }
 
 interface QueuedExecution {
+    syncConfig: DBSyncConfig;
+    webhook: string;
+    connection: DBConnectionDecrypted | ConnectionInternal;
     kind: 'queued';
     logCtx: Awaited<ReturnType<LogContextGetter['create']>>;
-    message: {
-        version: 1;
-        kind: 'webhook';
-        taskName: string;
-        createdAt: string;
-        accountId: number;
-        integrationId: number;
-        provider: string;
-        parentSyncName: string;
-        activityLogId: string;
-        webhookName: string;
-        connection: {
-            id: number;
-            connection_id: string;
-            provider_config_key: string;
-            environment_id: number;
-        };
-        payload: Record<string, any>;
-    };
+    preparedMessage: PreparedDispatchMessage;
 }
 
 interface FailedQueuedExecution extends MatchedExecution {
@@ -206,7 +201,7 @@ export class InternalNango {
         type: string | undefined;
         webhookHeaderValue: string | undefined;
     }): Promise<void> {
-        const orchestrator = getOrchestrator();
+        const executions: { syncConfig: DBSyncConfig; webhook: string; connection: DBConnectionDecrypted | ConnectionInternal; logCtx: LogContext }[] = [];
 
         for (const syncConfig of syncConfigsWithWebhooks) {
             const { webhook_subscriptions } = syncConfig;
@@ -223,17 +218,22 @@ export class InternalNango {
 
                 if (type === webhook || webhookHeaderValue === webhook || webhook === '*') {
                     for (const connection of connections) {
-                        await orchestrator.triggerWebhook({
-                            account: this.team,
-                            environment: this.environment,
-                            integration: this.integration as Config,
-                            connection,
-                            webhookName: webhook,
-                            syncConfig,
-                            input: body,
-                            maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
-                            logContextGetter: this.logContextGetter
-                        });
+                        try {
+                            const logCtx = await this.logContextGetter.create(
+                                { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
+                                {
+                                    account: this.team,
+                                    environment: this.environment,
+                                    integration: { id: this.integration.id!, name: this.integration.unique_key, provider: this.integration.provider },
+                                    connection: { id: connection.id, name: connection.connection_id },
+                                    syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
+                                }
+                            );
+                            logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+                            executions.push({ syncConfig, webhook, connection, logCtx });
+                        } catch (err) {
+                            report(err, { context: 'dispatchViaOrchestrator log context creation failed' });
+                        }
                     }
 
                     triggered = true;
@@ -243,6 +243,25 @@ export class InternalNango {
                     }
                 }
             }
+        }
+
+        await this.dispatchExecutionsViaOrchestrator(executions, body);
+    }
+
+    private async dispatchExecutionsViaOrchestrator(
+        executions: { syncConfig: DBSyncConfig; webhook: string; connection: DBConnectionDecrypted | ConnectionInternal; logCtx: LogContext }[],
+        body: Record<string, any>
+    ): Promise<void> {
+        const orchestrator = getOrchestrator();
+        for (const { syncConfig, webhook, connection, logCtx } of executions) {
+            await orchestrator.triggerWebhook({
+                connection,
+                webhookName: webhook,
+                syncConfig,
+                input: body,
+                maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
+                logCtx
+            });
         }
     }
 
@@ -304,34 +323,44 @@ export class InternalNango {
                     );
                     logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
+                    const message: WebhookDispatchMessage = {
+                        version: 1,
+                        kind: 'webhook',
+                        taskName: computeTaskName({
+                            environmentId: this.environment.id,
+                            providerConfigKey: this.integration.unique_key,
+                            parentSyncName: syncConfig.sync_name,
+                            connectionId: connection.id,
+                            activityLogId: logCtx.id
+                        }),
+                        createdAt: new Date().toISOString(),
+                        accountId: this.team.id,
+                        integrationId: this.integration.id!,
+                        provider: this.integration.provider,
+                        parentSyncName: syncConfig.sync_name,
+                        activityLogId: logCtx.id,
+                        webhookName: webhook,
+                        connection: {
+                            id: connection.id,
+                            connection_id: connection.connection_id,
+                            provider_config_key: connection.provider_config_key,
+                            environment_id: connection.environment_id
+                        },
+                        payload: body
+                    };
+                    const serializedBody = JSON.stringify(message);
+                    const preparedMessage: PreparedDispatchMessage = {
+                        message,
+                        byteSize: Buffer.byteLength(serializedBody, 'utf8')
+                    };
+
                     return {
                         kind: 'queued' as const,
                         logCtx,
-                        message: {
-                            version: 1 as const,
-                            kind: 'webhook' as const,
-                            taskName: computeTaskName({
-                                environmentId: this.environment.id,
-                                providerConfigKey: this.integration.unique_key,
-                                parentSyncName: syncConfig.sync_name,
-                                connectionId: connection.id,
-                                activityLogId: logCtx.id
-                            }),
-                            createdAt: new Date().toISOString(),
-                            accountId: this.team.id,
-                            integrationId: this.integration.id!,
-                            provider: this.integration.provider,
-                            parentSyncName: syncConfig.sync_name,
-                            activityLogId: logCtx.id,
-                            webhookName: webhook,
-                            connection: {
-                                id: connection.id,
-                                connection_id: connection.connection_id,
-                                provider_config_key: connection.provider_config_key,
-                                environment_id: connection.environment_id
-                            },
-                            payload: body
-                        }
+                        syncConfig,
+                        webhook,
+                        connection,
+                        preparedMessage
                     };
                 } catch (err) {
                     if (logCtx) {
@@ -380,8 +409,6 @@ export class InternalNango {
             return;
         }
 
-        const messages = queuedExecutions.map(({ message }) => message);
-
         if (matchedExecutions.length > LARGE_FANOUT_THRESHOLD) {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_LARGE_FANOUT, 1, {
                 provider: this.integration.provider,
@@ -390,34 +417,57 @@ export class InternalNango {
             });
         }
 
-        const messageGroupId = `account:${this.team.id}:env:${this.environment.id}`;
-        const publishResult = await publisher.publish(messages, messageGroupId);
-        const failedActivityLogIds = new Set(publishResult.failedActivityLogIds);
-        const unmappedFailureCount = publishResult.failed - failedActivityLogIds.size;
+        const queueEligibleExecutions = queuedExecutions.filter(({ preparedMessage }) => preparedMessage.byteSize <= SQS_MAX_MESSAGE_BODY_BYTES);
+        const oversizedExecutions = queuedExecutions.filter(({ preparedMessage }) => preparedMessage.byteSize > SQS_MAX_MESSAGE_BODY_BYTES);
 
-        for (const { message, logCtx } of queuedExecutions) {
-            if (!failedActivityLogIds.has(message.activityLogId) && unmappedFailureCount === 0) {
-                void logCtx.info('The webhook was successfully queued for execution', {
-                    action: message.webhookName,
+        let unmappedFailureCount = 0;
+
+        if (queueEligibleExecutions.length > 0) {
+            const messageGroupId = `account:${this.team.id}:env:${this.environment.id}`;
+            const publishResult = await publisher.publish(
+                queueEligibleExecutions.map(({ preparedMessage }) => preparedMessage),
+                messageGroupId
+            );
+            const failedActivityLogIds = new Set(publishResult.failedActivityLogIds);
+            unmappedFailureCount = publishResult.failed - failedActivityLogIds.size;
+
+            for (const {
+                preparedMessage: { message },
+                logCtx
+            } of queueEligibleExecutions) {
+                if (!failedActivityLogIds.has(message.activityLogId) && unmappedFailureCount === 0) {
+                    void logCtx.info('The webhook was successfully queued for execution', {
+                        action: message.webhookName,
+                        connection: message.connection.connection_id,
+                        integration: message.connection.provider_config_key
+                    });
+                    continue;
+                }
+
+                const error = new NangoError('webhook_failure', {
+                    error: 'The webhook could not be queued for execution',
+                    taskName: message.taskName
+                });
+
+                await logCtx.error('The webhook failed to queue for execution', {
+                    error,
+                    webhook: message.webhookName,
                     connection: message.connection.connection_id,
                     integration: message.connection.provider_config_key
                 });
-                continue;
+                await logCtx.enrichOperation({ error });
+                await logCtx.failed();
             }
+        }
 
-            const error = new NangoError('webhook_failure', {
-                error: 'The webhook could not be queued for execution',
-                taskName: message.taskName
+        if (oversizedExecutions.length > 0) {
+            metrics.increment(metrics.Types.WEBHOOK_DISPATCH_BYPASS_OVERSIZE, oversizedExecutions.length, {
+                provider: this.integration.provider,
+                accountId: this.team.id,
+                environmentId: this.environment.id
             });
 
-            await logCtx.error('The webhook failed to queue for execution', {
-                error,
-                webhook: message.webhookName,
-                connection: message.connection.connection_id,
-                integration: message.connection.provider_config_key
-            });
-            await logCtx.enrichOperation({ error });
-            await logCtx.failed();
+            await this.dispatchExecutionsViaOrchestrator(oversizedExecutions, body);
         }
 
         if (unmappedFailureCount > 0) {

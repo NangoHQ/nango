@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => {
         dispatchQueueClient: { dispatchQueuePublisher: null as any },
         triggerWebhook: vi.fn(),
         report: vi.fn(),
+        triggerWebhookWithLogContext: vi.fn(),
+        metricsIncrement: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
     };
@@ -20,9 +22,26 @@ vi.mock('../utils/utils.js', () => ({ getOrchestrator: () => ({ triggerWebhook: 
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal();
 
+    if (!actual || typeof actual !== 'object' || !('metrics' in actual)) {
+        throw new Error('Invalid @nangohq/utils mock: missing metrics export');
+    }
+
+    const { metrics } = actual;
+    if (!metrics || typeof metrics !== 'object' || !('Types' in metrics) || !metrics.Types || typeof metrics.Types !== 'object') {
+        throw new Error('Invalid @nangohq/utils mock: missing metrics.Types export');
+    }
+
     return {
         ...(actual as object),
-        report: mocks.report
+        report: mocks.report,
+        metrics: {
+            ...metrics,
+            Types: {
+                ...metrics.Types,
+                WEBHOOK_DISPATCH_BYPASS_OVERSIZE: 'nango.webhook.dispatch_queue.bypass_oversize'
+            },
+            increment: mocks.metricsIncrement
+        }
     };
 });
 vi.mock('@nangohq/shared', () => {
@@ -105,6 +124,7 @@ describe('InternalNango queue dispatch', () => {
         ]);
         mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'sync-1', webhook_subscriptions: ['push'] }]);
         mocks.triggerWebhook.mockResolvedValue(undefined);
+        mocks.triggerWebhookWithLogContext.mockResolvedValue(undefined);
     });
 
     it('logs queued successes and marks failed publishes as failed operations', async () => {
@@ -141,13 +161,34 @@ describe('InternalNango queue dispatch', () => {
         const publisher = { publish: vi.fn() };
         mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
 
-        const { nango, logContextGetter } = makeInternalNango([]);
+        const logCtx1 = createLogCtx('log-1');
+        const logCtx2 = createLogCtx('log-2');
+        const { nango, logContextGetter } = makeInternalNango([logCtx1, logCtx2]);
 
         const result = await nango.executeScriptForWebhooks({ body: { event: 'x' }, webhookTypeValue: 'push' });
 
         expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
-        expect(logContextGetter.create).not.toHaveBeenCalled();
+        expect(logContextGetter.create).toHaveBeenCalledTimes(2);
+        expect(publisher.publish).not.toHaveBeenCalled();
+    });
+
+    it('dispatches successful orchestrator executions even when one log context creation fails', async () => {
+        mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = false;
+        const publisher = { publish: vi.fn() };
+        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
+
+        const logCtx2 = createLogCtx('log-2');
+        const logContextGetter = {
+            create: vi.fn().mockRejectedValueOnce(new Error('transient db failure')).mockResolvedValueOnce(logCtx2)
+        } as any;
+        const { nango } = makeInternalNango([], logContextGetter);
+
+        const result = await nango.executeScriptForWebhooks({ body: { event: 'x' }, webhookTypeValue: 'push' });
+
+        expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
+        expect(mocks.triggerWebhook).toHaveBeenCalledTimes(1);
+        expect(mocks.triggerWebhook).toHaveBeenCalledWith(expect.objectContaining({ logCtx: logCtx2 }));
         expect(publisher.publish).not.toHaveBeenCalled();
     });
 
@@ -209,9 +250,11 @@ describe('InternalNango queue dispatch', () => {
         expect(publisher.publish).toHaveBeenCalledWith(
             [
                 expect.objectContaining({
-                    activityLogId: 'log-2',
-                    webhookName: 'push',
-                    connection: expect.objectContaining({ connection_id: 'conn-2' })
+                    message: expect.objectContaining({
+                        activityLogId: 'log-2',
+                        webhookName: 'push',
+                        connection: expect.objectContaining({ connection_id: 'conn-2' })
+                    })
                 })
             ],
             'account:1:env:2'
@@ -254,8 +297,10 @@ describe('InternalNango queue dispatch', () => {
         expect(publisher.publish).toHaveBeenCalledWith(
             [
                 expect.objectContaining({
-                    activityLogId: 'log-2',
-                    connection: expect.objectContaining({ connection_id: 'conn-2' })
+                    message: expect.objectContaining({
+                        activityLogId: 'log-2',
+                        connection: expect.objectContaining({ connection_id: 'conn-2' })
+                    })
                 })
             ],
             'account:1:env:2'
@@ -293,6 +338,26 @@ describe('InternalNango queue dispatch', () => {
         expect(logCtx2.failed).toHaveBeenCalledOnce();
         expect(mocks.report).toHaveBeenCalledWith(expect.any(Error), {
             unmappedFailureCount: 2,
+            accountId: 1,
+            environmentId: 2
+        });
+    });
+
+    it('dispatches oversized messages directly to the orchestrator and emits a metric', async () => {
+        const publisher = { publish: vi.fn() };
+        mocks.dispatchQueueClient.dispatchQueuePublisher = publisher;
+
+        const logCtx1 = createLogCtx('log-1');
+        const logCtx2 = createLogCtx('log-2');
+        const { nango } = makeInternalNango([logCtx1, logCtx2]);
+
+        const result = await nango.executeScriptForWebhooks({ body: { payload: 'x'.repeat(1_100_000) }, webhookTypeValue: 'push' });
+
+        expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
+        expect(publisher.publish).not.toHaveBeenCalled();
+        expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
+        expect(mocks.metricsIncrement).toHaveBeenCalledWith('nango.webhook.dispatch_queue.bypass_oversize', 2, {
+            provider: 'github',
             accountId: 1,
             environmentId: 2
         });
