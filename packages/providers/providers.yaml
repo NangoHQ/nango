@@ -117,7 +117,7 @@ absorb-lms:
     authorization_params:
         response_type: code
     proxy:
-        base_url: ${connectionConfig.portalRoute}
+        base_url: https://${connectionConfig.portalRoute}
         headers:
             x-api-version: ${connectionConfig.apiVersion}
             x-api-key: ${connectionConfig.restApiKey}
