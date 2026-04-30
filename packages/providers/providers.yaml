@@ -15139,13 +15139,12 @@ reapit:
 rydoo:
     display_name: Rydoo
     categories:
-        - expense-management
+        - accounting
     auth_mode: OAUTH2_CC
     token_url: https://accounts.rydoo.com/connect/token
     token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
-    expires_in_unit: seconds
     proxy:
         base_url: https://api.rydoo.com
     docs: https://nango.dev/docs/api-integrations/rydoo
