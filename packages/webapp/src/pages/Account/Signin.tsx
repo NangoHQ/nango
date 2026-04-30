@@ -79,6 +79,7 @@ export const Signin: React.FC = () => {
                     setShowResendEmail(true);
                     setServerErrorMessage('Please verify your email before logging in.');
                 } else if (res.json.error.code === 'user_suspended') {
+                    setShowResendEmail(false);
                     setServerErrorMessage('Your account has been suspended. Please contact support.');
                 } else {
                     setServerErrorMessage('Issue logging in. Please try again.');
