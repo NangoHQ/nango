@@ -70,7 +70,7 @@ Each cell shows `simple → breakdown` ms.
 
 In every other (account, metric) cell with real data, simple ≈ breakdown within noise. The breakdown overhead only materialises when there is a lot of data to bucket, and 4 of the 5 expensive cells belong to the same outlier account (3660).
 
-**Counter cardinality is not the bottleneck.** Going from 25 distinct connections (small/function_executions) to 82,397 distinct connections (doomsday-px/proxy) only doubles the breakdown cost (342 → 368 ms). What matters is total source-row count, not distinct-key count — the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` does its job.
+**Counter cardinality is not the bottleneck.** Going from 25 distinct connections (small/function_executions) to 82,397 distinct connections (doomsday-px/proxy) — a 3,300× increase — only nudges the breakdown cost from 342 to 368 ms (~8%). What matters is total source-row count, not distinct-key count — the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` does its job.
 
 ---
 
