@@ -538,6 +538,8 @@ export const ENVS = z.object({
 
     // WEBHOOK INGRESS
     WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
+    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: z.coerce.number().min(0).optional().default(4000),
+    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(false),
 
     // TASK DISPATCH QUEUE
     NANGO_TASK_DISPATCH_QUEUE_URL: z.url().optional(),
@@ -547,7 +549,7 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
     NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
-    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
 
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),

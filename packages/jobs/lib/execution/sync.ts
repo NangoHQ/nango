@@ -563,12 +563,12 @@ export async function handleSyncSuccess({
             syncId: nangoProps.syncId,
             syncVariant: nangoProps.syncVariant!,
             scriptVersion: nangoProps.syncConfig.version,
-            preBuilt: nangoProps.syncConfig.pre_built,
             content: `The sync "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-            endUser: nangoProps.endUser
+            endUser: nangoProps.endUser,
+            source: nangoProps.syncConfig.source
         });
 
         const sync = await getSyncById(nangoProps.syncId);
@@ -887,12 +887,12 @@ async function onFailure({
             syncId: syncId,
             syncVariant: syncVariant || 'base',
             scriptVersion: syncConfig?.version,
-            preBuilt: syncConfig?.pre_built,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
     }
 

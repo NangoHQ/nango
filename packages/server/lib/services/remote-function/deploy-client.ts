@@ -54,7 +54,8 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             NO_COLOR: '1',
             NANGO_SECRET_KEY: request.nango_secret_key,
             NANGO_HOSTPORT: request.nango_host,
-            NANGO_DEPLOY_AUTO_CONFIRM: 'true'
+            NANGO_DEPLOY_AUTO_CONFIRM: 'true',
+            NANGO_DEPLOY_SOURCE: 'standalone'
         };
         const command = buildShellCommand(['nango', ...buildDeployArgs(request)]);
 

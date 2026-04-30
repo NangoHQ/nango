@@ -14,8 +14,6 @@ export interface NangoIntegrationDataV1 {
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
-    pre_built?: boolean;
-    is_public?: boolean;
     endpoint?: NangoSyncEndpointV2 | NangoSyncEndpointV2[];
     enabled?: boolean;
 }

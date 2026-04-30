@@ -28,6 +28,7 @@ export async function createSyncSeeds({
             file_location: 'file_location',
             nango_config_id: syncData.nango_config_id,
             version: syncData.version || '0.0.0',
+            source: syncData.source || 'repo',
             active: true,
             runs: 'runs',
             track_deletes: syncData.track_deletes === true,

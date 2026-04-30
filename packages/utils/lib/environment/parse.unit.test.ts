@@ -156,6 +156,41 @@ describe('parse', () => {
         });
     });
 
+    describe('NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN', () => {
+        it('should default to 4000', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN).toBe(4000);
+        });
+
+        it('should accept 0 (disabled)', () => {
+            const res = parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: '0' });
+            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN).toBe(0);
+        });
+
+        it('should accept positive overrides', () => {
+            const res = parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: '120' });
+            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN).toBe(120);
+        });
+
+        it('should reject negatives', () => {
+            expect(() => {
+                parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: '-1' });
+            }).toThrowError();
+        });
+    });
+
+    describe('NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE', () => {
+        it('should default to false', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(false);
+        });
+
+        it('should coerce "true"/"false" strings', () => {
+            expect(parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: 'true' }).NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(true);
+            expect(parseEnvs(ENVS, { NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: 'false' }).NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE).toBe(false);
+        });
+    });
+
     describe('NANGO_TASK_DISPATCH_*', () => {
         it('should apply defaults when task-dispatch vars are absent', () => {
             const res = parseEnvs(ENVS, {});
@@ -165,7 +200,7 @@ describe('parse', () => {
                 NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: 30,
                 NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: 50,
                 NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: 10,
-                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 5
+                NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: 10
             });
             expect(res.NANGO_TASK_DISPATCH_QUEUE_URL).toBeUndefined();
             expect(res.NANGO_TASK_DISPATCH_DLQ_URL).toBeUndefined();
