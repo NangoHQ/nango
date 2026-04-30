@@ -285,7 +285,7 @@ publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFu
 publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
 
 publicAPI.use('/functions', jsonContentTypeMiddleware);
-publicAPI.route('/functions/pull').get(apiAuth, getFunctionPull);
+publicAPI.route('/functions/pull').get(apiAuth, withScope('environment:deploy'), getFunctionPull);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
