@@ -969,6 +969,7 @@
               "integrations/all/readwise",
               "integrations/all/readwise-reader",
               "api-integrations/reapit",
+              "api-integrations/rydoo",
               "api-integrations/recall-ai",
               "api-integrations/reply-io",
               "api-integrations/researchdesk",
