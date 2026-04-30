@@ -3,7 +3,7 @@
 **Date:** 2026-04-30
 **Scope:** Validate whether ClickHouse read query performance is acceptable to power the billing usage page (`/plans/billing-usage`) in two modes: (1) drop-in replacement for the current Orb-backed query, and (2) the new "per-connection" breakdown that Orb cannot provide.
 
-**TL;DR:** The new per-connection-breakdown dashboard is sub-500 ms wall time for 99%+ of customers. One outlier customer (account 3660) hits ~1.2 s in the worst-case combo. The most obvious code-level mitigation (coalescing the 3 function metrics into one query) was tested and does not help.
+**TL;DR:** The new per-connection-breakdown dashboard is sub-500 ms wall time for 99%+ of customers. One outlier customer (account 3660) hits ~1.2 s in the worst-case eager-fan-out combo. The most obvious code-level mitigation (coalescing the 3 function metrics into one query) was tested and does not help. A per-metric breakdown shows that **breakdown cost is highly concentrated** in 4 specific (account, metric) cells — opening the door to a lazy "default aggregate, opt-in per-connection" UX that would cut the doomsday-fn page-load ~4× without affecting other customers.
 
 ---
 
@@ -73,6 +73,36 @@ Two axes:
 
 ---
 
+## Sub-investigation: per-metric cost solo (each query measured in isolation)
+
+The four-use-case matrix above measures fan-outs and one designated "primary" single query per account. To see which specific metrics are cheap and which are expensive, we ran each of the 7 dashboard metrics in isolation — once with breakdown, once without — for all 5 accounts. Average of 3 runs, same 14-day window.
+
+Numbers reported as `simple → breakdown ms (ratio)`. Zero-row cases are queries against tables where this account has no data; they short-circuit close to network-RTT floor (~210–220 ms).
+
+Cases where breakdown costs >1.5× of simple — i.e. where the per-connection bucketing genuinely matters:
+
+| Account | Metric | simple | breakdown | ratio |
+|---|---|---|---|---|
+| doomsday-fn (3660) | function_compute_gbms | 252 ms | 535 ms | **2.12×** |
+| doomsday-fn (3660) | function_executions | 254 ms | 478 ms | **1.88×** |
+| doomsday-fn (3660) | function_logs | 230 ms | 430 ms | **1.87×** |
+| doomsday-fn (3660) | records | 290 ms | 443 ms | **1.53×** |
+| doomsday-px (2976) | proxy | 246 ms | 368 ms | **1.50×** |
+
+Everywhere else (29 of 35 account × metric combinations), simple ≈ breakdown within noise (0.88–1.25×). The breakdown overhead is highly concentrated: it shows up only when there is a lot of data to bucket.
+
+### Product implication: lazy per-connection breakdown
+
+The doomsday-fn fan-out + breakdown (1,236 ms in the main matrix) is dominated by 4 expensive breakdown queries running in parallel. If the dashboard instead defaults to aggregate ("no breakdown") and only fetches the per-connection breakdown when the user opts into a specific chart:
+
+| Approach | Doomsday-fn page load | Normal accounts |
+|---|---|---|
+| Eager: every chart broken down up front (today's iteration-1 D column) | 1,236 ms | 243–340 ms |
+| Lazy: default aggregate, opt-in per-chart | ~290 ms (slowest of the 7 simple queries) | ~250 ms |
+| Lazy + 1 chart drill-down (e.g. function_compute_gbms) | +535 ms for that chart only | +200–250 ms for that chart |
+
+That's a ~4× page-load improvement for the worst case, no perceptible change for normal accounts. The cost of the per-connection view only materialises when a user explicitly asks for it. Whether this matches the desired UX is a product call, but the perf data favours it strongly.
+
 ## Sub-investigation: does coalescing the 3 function metrics help?
 
 The first hypothesis for the doomsday-fn slowness was that `function_executions`, `function_logs`, and `function_compute_gbms` all live in `daily_function_executions`, so the fan-out fires 3 separate top-N+rest queries against the same table — and we expected this to contend. We tested 3 strategies on the same accounts:
@@ -134,6 +164,7 @@ node bench/diagnose.mjs           # ingestion window + per-account row counts
 node bench/probe-test-set.mjs     # cardinality probes for picking test accounts
 node bench/topn-rest.mjs          # top-N+rest per-account, 14-day window
 node bench/iteration-1.mjs        # 4-use-case matrix (this report's main table)
+node bench/per-metric-solo.mjs    # per-metric solo costs, simple vs breakdown
 node bench/coalesce-test.mjs      # the coalescing sub-investigation
 ```
 
