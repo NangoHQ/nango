@@ -6,7 +6,6 @@ description: 'Spawn multiple independent sync processes inside a single connecti
 
 Sync variants let you spawn multiple independent sync processes **inside a single connection** — one per mailbox, file folder, Slack channel, repo, or any other sub-resource the end-user has access to. Each variant runs on its own schedule, with its own checkpoint and records cache, so a slow partition doesn't block a fast one.
 
-Nango is already multi-tenant by default — every sync function executes in the context of an end-user [Connection](/guides/auth/auth-guide#overview), and runs independently for each connection. Variants are for the next level down: fan-out *within* one connection.
 
 ## Overview
 
@@ -158,7 +157,4 @@ Keep variants non-overlapping in data scope (unless intentional), store variant-
 
 ## Related guides
 
-- [Sync functions](/guides/functions/syncs/sync-functions) - build the base sync before adding variants.
-- [Checkpoints](/guides/functions/syncs/checkpoints) - track progress per variant.
-- [Records cache](/guides/functions/syncs/records-cache) - fetch data for each variant.
 - [Create sync variant API](/reference/api/sync/create-variant) - manage variants programmatically.

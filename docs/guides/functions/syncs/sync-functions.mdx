@@ -82,7 +82,6 @@ import './crm/syncs/contacts';
 ```
 
 <Warning>
-  Sync implementation quality matters. Suboptimal syncs can consume far more API calls, compute, memory, and storage than needed; they can also become expensive, crash, behave unreliably, or hit provider rate limits. Before deploying a sync to production, review the [Sync efficiency guide](/guides/functions/syncs/sync-efficiency).
 </Warning>
 
 <Accordion title="For agents">
@@ -218,9 +217,3 @@ For unified models, use the same schema for synced records and write action inpu
 
 ## Deep dives
 
-- [Sync efficiency](/guides/functions/syncs/sync-efficiency)
-- [Checkpoints](/guides/functions/syncs/checkpoints)
-- [Records cache](/guides/functions/syncs/records-cache)
-- [Deletion detection](/guides/functions/syncs/deletion-detection)
-- [Real-time syncs](/guides/functions/syncs/realtime-syncs)
-- [Sync partitioning](/guides/functions/syncs/sync-partitioning)

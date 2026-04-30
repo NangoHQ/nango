@@ -8,7 +8,6 @@ Sync functions are often used to replicate external datasets into your app or to
 
 ## Prefer incremental syncs
 
-An **incremental sync** fetches only records that changed since the previous run. The function stores progress in a [checkpoint](/guides/functions/syncs/checkpoints), then passes that progress back to the external API on the next run.
 
 A **full sync** fetches the whole dataset every run, then saves or compares the complete result.
 
@@ -23,7 +22,6 @@ Full syncs can be acceptable for small datasets or low-frequency jobs. For large
 
 This choice is constrained by the external API shape. To benefit from incremental syncing, the provider usually needs a parameter such as `updated_at`, `updated_since`, `modified_after`, a cursor, a sequence ID, or an event stream that lets you ask for only changed records.
 
-The hardest case is a large dataset where the API does not support incremental filters. Often, that happens because the provider expects you to use webhooks instead. In Nango, use [webhook functions](/guides/functions/webhook-functions), [webhook forwarding](/guides/platform/webhook-forwarding), or [real-time syncs](/guides/functions/syncs/realtime-syncs) to process provider events and avoid polling the entire dataset.
 
 The risky combination is: **large dataset + no incremental API + high freshness requirement**. If you need to run a full sync frequently to keep data fresh, the design is usually unrealistic in terms of cost, runtime, reliability, and rate limits. Look for a webhook strategy, reduce freshness requirements, partition the dataset, or narrow the scope of synced data.
 
@@ -104,12 +102,3 @@ Nango's records cache is a delivery mechanism, not your app's long-term data sto
 
 When reading records from Nango, keep page sizes modest. A page size around `100` records is a good default: it keeps payloads quick to transfer, reduces memory spikes in your worker, and makes retries less expensive when a downstream write fails.
 
-Read [Records cache](/guides/functions/syncs/records-cache) for cursor behavior, payload shape, and retention details.
-
-## Related guides
-
-- [Functions guide](/guides/functions/syncs/sync-functions)
-- [Checkpoints](/guides/functions/syncs/checkpoints)
-- [Records cache](/guides/functions/syncs/records-cache)
-- [Real-time syncs](/guides/functions/syncs/realtime-syncs)
-- [Sync partitioning](/guides/functions/syncs/sync-partitioning)

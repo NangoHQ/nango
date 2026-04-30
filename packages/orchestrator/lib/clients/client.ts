@@ -65,6 +65,15 @@ export class OrchestratorClient {
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(postImmediateRoute)({ body: props });
         if ('error' in res) {
+            const duplicateMessage = getDuplicateTaskNameMessage(res.error.payload);
+            if (duplicateMessage !== null) {
+                return Err({
+                    name: 'duplicate_task_name',
+                    message: duplicateMessage || 'Task with this name already exists',
+                    payload: {}
+                });
+            }
+
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling immediate task`,
@@ -255,7 +264,7 @@ export class OrchestratorClient {
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
         const { args, ...rest } = props;
-        const schedulingProps = {
+        const schedulingProps: ImmediateProps = {
             ...rest,
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
@@ -516,4 +525,32 @@ export class OrchestratorClient {
             }));
         }
     }
+}
+
+function getDuplicateTaskNameMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== 'object' || !('error' in payload)) {
+        return null;
+    }
+
+    const response = payload as {
+        error?: {
+            code?: string;
+            message?: string;
+        };
+    };
+
+    if (response.error?.code !== 'duplicate_task_name') {
+        return null;
+    }
+
+    return response.error.message || '';
+}
+
+export function isDuplicateTaskNameClientError(err: unknown): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { name?: string };
+    return error.name === 'duplicate_task_name';
 }

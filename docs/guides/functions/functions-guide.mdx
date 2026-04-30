@@ -14,7 +14,6 @@ You write functions in TypeScript and deploy them to Nango. Your app can call th
 
 ## How functions fit
 
-1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
 2. Your app stores the resulting `connectionId`.
 3. You deploy functions for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
@@ -212,7 +211,6 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
 
     | If you need to... | Guides | Trigger types | Common examples |
     | --- | --- | --- | --- |
-    | Keep external API data fresh in your app, or react to changes | [Sync function](/guides/functions/syncs/sync-functions) | Schedule, manual sync trigger, or external webhook reconciliation | Sync contacts/files/events/tickets, RAG, change detection / triggers |
     | Run an operation when your app or agent asks for it | [Action function](/guides/functions/action-functions) | HTTP API, SDK, async action queue, or MCP/tool call | Create an issue, send a message, fetch details, perform a write |
     | Process an external provider webhook inside Nango | [Webhook function](/guides/functions/webhook-functions) | External API sends a webhook to Nango | Update records from a webhook payload, normalize events, mark data for reconciliation |
     | React when a Nango connection is created, validated, or deleted | [Event function](/guides/functions/event-functions) | Nango connection lifecycle event | Validate credentials, register provider webhooks, seed metadata, clean up subscriptions |
@@ -225,7 +223,6 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
   <Step title="Build the function">
     Follow the specific function type guide for implementation details:
 
-    - [Sync functions](/guides/functions/syncs/sync-functions) — build scheduled data replication, checkpoints, metadata-driven parameters, and record consumption.
     - [Action functions](/guides/functions/action-functions) — build action function operations your app, jobs, or agents can call.
     - [Webhook functions](/guides/functions/webhook-functions) — process external API webhooks inside Nango.
     - [Event functions](/guides/functions/event-functions) — react to Nango connection lifecycle events.
@@ -252,7 +249,6 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     nango deploy
     ```
 
-    For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
 
   <Step title="Receive webhooks from Nango">
