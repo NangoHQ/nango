@@ -68,6 +68,16 @@ export enum Types {
     WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
 
+    WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
+    WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
+    WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
+    WEBHOOK_DISPATCH_CONSUME_SUCCESS = 'nango.webhook.dispatch_queue.consume.success',
+    WEBHOOK_DISPATCH_CONSUME_FAILURE = 'nango.webhook.dispatch_queue.consume.failure',
+    WEBHOOK_DISPATCH_SCHEDULE_SUCCESS = 'nango.webhook.dispatch_queue.schedule.success',
+    WEBHOOK_DISPATCH_SCHEDULE_FAILURE = 'nango.webhook.dispatch_queue.schedule.failure',
+    WEBHOOK_DISPATCH_POISON_PILL = 'nango.webhook.dispatch_queue.poison_pill',
+    WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
+
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
