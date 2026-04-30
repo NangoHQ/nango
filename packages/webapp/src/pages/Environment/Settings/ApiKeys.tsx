@@ -203,7 +203,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                             type="checkbox"
                                                             checked={isScopeSelected(item.credentials, selectedScopes)}
                                                             disabled={disabled || wildcardSelected}
-                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials, selectedScopes))}
+                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
                                                             className="accent-brand shrink-0"
                                                         />
                                                         <span
