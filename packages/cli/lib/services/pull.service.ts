@@ -22,8 +22,8 @@ const folderToScriptType: Record<'syncs' | 'actions' | 'on-events', ScriptTypeLi
     'on-events': 'on-event'
 };
 
-export function isInvalidPathSegment(segment: string): boolean {
-    return segment === '.' || segment === '..' || segment.includes('/') || segment.includes('\\');
+export function isValidName(segment: string): boolean {
+    return /^[a-zA-Z0-9_-]+$/.test(segment);
 }
 
 interface PullOptionsBase {
@@ -46,8 +46,13 @@ type PullCatalogOptions = PullOptionsBase;
 export async function pullFunction(options: PullFunctionOptions): Promise<boolean> {
     const { fullPath, environmentName, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
 
-    if (isInvalidPathSegment(integrationId) || isInvalidPathSegment(name)) {
-        console.log(chalk.red('Invalid integration or function name. Path separators and `.`/`..` are not allowed.'));
+    if (!isValidName(integrationId)) {
+        console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
+        return false;
+    }
+
+    if (!isValidName(name)) {
+        console.log(chalk.red(`Invalid function name: '${name}'.`));
         return false;
     }
 
@@ -56,7 +61,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
     try {
         await parseSecretKey(environmentName, debug);
 
-        const url = new URL('/functions/pull', resolveHostport());
+        const url = new URL('/functions/pull', resolveHostport(environmentName));
         url.searchParams.set('integrationId', integrationId);
         url.searchParams.set('name', name);
         url.searchParams.set('env', environmentName);
@@ -124,8 +129,13 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
 export async function pullFromCatalog(options: PullCatalogOptions): Promise<boolean> {
     const { fullPath, integrationId, name, type, debug, force, autoConfirm, interactive = true } = options;
 
-    if (isInvalidPathSegment(integrationId) || isInvalidPathSegment(name)) {
-        console.log(chalk.red('Invalid integration or function name. Path separators and `.`/`..` are not allowed.'));
+    if (!isValidName(integrationId)) {
+        console.log(chalk.red(`Invalid integration name: '${integrationId}'.`));
+        return false;
+    }
+
+    if (!isValidName(name)) {
+        console.log(chalk.red(`Invalid function name: '${name}'.`));
         return false;
     }
 

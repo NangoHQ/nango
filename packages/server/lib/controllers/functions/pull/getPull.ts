@@ -3,7 +3,7 @@ import fs from 'fs';
 import * as z from 'zod';
 
 import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, remoteFileService } from '@nangohq/shared';
-import { isEnterprise, isLocal, isTest, useS3, zodErrorToHTTP } from '@nangohq/utils';
+import { isEnterprise, isLocal, isTest, report, useS3, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -30,7 +30,8 @@ async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig
     const dir = syncConfig.file_location.split('/').slice(0, -1).join('/');
     try {
         return await remoteFileService.getFile(`${dir}/${syncConfig.sync_name}.ts`);
-    } catch {
+    } catch (err) {
+        report(err, { syncConfigId: syncConfig.id, providerConfigKey, syncName: syncConfig.sync_name });
         return null;
     }
 }
@@ -81,7 +82,7 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
     }
 
     const code = await getFunctionTsCode({ syncConfig, providerConfigKey: integrationId });
-    if (!code) {
+    if (code === null) {
         res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
         return;
     }
