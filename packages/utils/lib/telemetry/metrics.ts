@@ -47,6 +47,7 @@ export enum Types {
     CRON_REFRESH_CONNECTIONS = 'nango.server.cron.refreshConnections',
     CRON_REFRESH_CONNECTIONS_FAILED = 'nango.server.cron.refreshConnections.failed',
     CRON_REFRESH_CONNECTIONS_SUCCESS = 'nango.server.cron.refreshConnections.success',
+    CRON_LAMBDA_KEEP_WARM = 'nango.server.cron.lambdaKeepWarm',
     REFRESH_CONNECTIONS_FAILED = 'nango.server.refreshConnections.failed',
     REFRESH_CONNECTIONS_SUCCESS = 'nango.server.refreshConnections.success',
     REFRESH_CONNECTIONS_FRESH = 'nango.server.refreshConnections.fresh',

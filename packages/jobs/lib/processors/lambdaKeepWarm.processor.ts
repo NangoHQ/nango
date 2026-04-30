@@ -52,7 +52,11 @@ async function processKeepWarm(event: LambdaKeepWarmInvokeEvent): Promise<void> 
     const { accountId, environmentId, provisionedConcurrency } = event.payload;
 
     const planRes = await getPlan(db.readOnly, { accountId });
-    if (planRes.isErr() || !planRes.value.lambda_tenant_isolation) {
+    if (planRes.isErr()) {
+        report(new Error('lambda_keep_warm_get_plan_failed', { cause: planRes.error }), { accountId });
+        return;
+    }
+    if (!planRes.value.lambda_tenant_isolation) {
         return;
     }
 
