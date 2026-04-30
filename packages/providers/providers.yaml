@@ -17703,6 +17703,45 @@ tailscale-api-key:
             pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
             doc_section: '#step-2-generating-an-api-access-token'
 
+talentlms:
+    display_name: TalentLMS
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.talentlms.com
+        headers:
+            x-api-key: ${apiKey}
+            x-api-version: ${connectionConfig.apiVersion}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/users?page[size]=1
+    docs: https://nango.dev/docs/api-integrations/talentlms
+    docs_connect: https://nango.dev/docs/api-integrations/talentlms/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your TalentLMS account.
+            example: mycompany
+            suffix: .talentlms.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            default_value: '2025-01-01'
+            hidden: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TalentLMS API key.
+            doc_section: '#step-2-finding-your-api-key'
+
 tally:
     display_name: Tally
     categories:
