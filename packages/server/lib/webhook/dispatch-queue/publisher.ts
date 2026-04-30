@@ -1,7 +1,7 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 
-import { metrics } from '@nangohq/utils';
+import { metrics, report } from '@nangohq/utils';
 
 import { runWithConcurrencyLimit } from '../runWithConcurrencyLimit.js';
 
@@ -23,6 +23,7 @@ export interface DispatchQueuePublisherProps {
 export interface PublishResult {
     enqueued: number;
     failed: number;
+    failedActivityLogIds: string[];
 }
 
 interface BatchPublishResult extends PublishResult {
@@ -61,7 +62,7 @@ export class DispatchQueuePublisher {
      */
     async publish(messages: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
         if (messages.length === 0) {
-            return { enqueued: 0, failed: 0 };
+            return { enqueued: 0, failed: 0, failedActivityLogIds: [] };
         }
 
         const activeSpan = tracer.scope().active();
@@ -88,6 +89,7 @@ export class DispatchQueuePublisher {
 
                 const enqueued = results.reduce((sum, r) => sum + r.enqueued, 0);
                 const failed = results.reduce((sum, r) => sum + r.failed, 0);
+                const failedActivityLogIds = results.flatMap((r) => r.failedActivityLogIds);
                 const retriedEntries = results.reduce((sum, r) => sum + r.retriedEntries, 0);
                 const retriedBatches = results.filter((r) => r.retriedEntries > 0).length;
 
@@ -109,7 +111,7 @@ export class DispatchQueuePublisher {
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider });
                 }
 
-                return { enqueued, failed };
+                return { enqueued, failed, failedActivityLogIds };
             } catch (err) {
                 span.setTag('error', err);
                 throw err;
@@ -123,16 +125,44 @@ export class DispatchQueuePublisher {
         const entries = batch.map((message, idx) => toEntry(message, idx, messageGroupId));
 
         const first = await this.trySend(entries);
-        const failedIndices = first.failedIds.map((id) => entryIdToIndex(id));
+        const failedIndices = first.failedIds.flatMap((id) => {
+            const index = entryIdToIndex(id);
+            if (index === null) {
+                report(new Error('webhook_dispatch_invalid_failed_entry_id'), { entryId: id });
+                return [];
+            }
+
+            return [index];
+        });
+        const invalidFailedCount = first.failedIds.length - failedIndices.length;
         if (failedIndices.length === 0) {
-            return { enqueued: batch.length, failed: 0, retriedEntries: 0 };
+            return {
+                enqueued: batch.length - invalidFailedCount,
+                failed: invalidFailedCount,
+                failedActivityLogIds: [],
+                retriedEntries: 0
+            };
         }
 
         const retryEntries = failedIndices.map((i) => entries[i]).filter((e): e is SendMessageBatchRequestEntry => e !== undefined);
         const second = await this.trySend(retryEntries);
 
-        const enqueued = batch.length - second.failedIds.length;
-        return { enqueued, failed: second.failedIds.length, retriedEntries: failedIndices.length };
+        const enqueued = batch.length - invalidFailedCount - second.failedIds.length;
+        return {
+            enqueued,
+            failed: invalidFailedCount + second.failedIds.length,
+            failedActivityLogIds: second.failedIds.flatMap((id) => {
+                const index = entryIdToIndex(id);
+                if (index === null) {
+                    report(new Error('webhook_dispatch_invalid_failed_entry_id'), { entryId: id });
+                    return [];
+                }
+
+                const activityLogId = batch[index]?.activityLogId;
+                return activityLogId ? [activityLogId] : [];
+            }),
+            retriedEntries: failedIndices.length
+        };
     }
 
     private async trySend(entries: SendMessageBatchRequestEntry[]): Promise<{ failedIds: string[] }> {
@@ -160,8 +190,13 @@ function indexToEntryId(index: number): string {
     return `m${index}`;
 }
 
-function entryIdToIndex(id: string): number {
-    return Number.parseInt(id.slice(1), 10);
+function entryIdToIndex(id: string): number | null {
+    if (!id.startsWith('m')) {
+        return null;
+    }
+
+    const index = Number.parseInt(id.slice(1), 10);
+    return Number.isNaN(index) ? null : index;
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
