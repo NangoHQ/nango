@@ -10958,6 +10958,7 @@ metabase:
             format: hostname
             prefix: https://
             order: 1
+            doc_section: '#step-1-finding-your-metabase-hostname'
         domain:
             type: string
             title: ''
@@ -10971,7 +10972,7 @@ metabase:
             description: The API key for your Metabase account
             example: mb_**************************kR9mZw=
             pattern: '^mb_[A-Za-z0-9+/]+=*$'
-            doc_section: '#step-1-generating-an-api-key'
+            doc_section: '#step-2-generating-an-api-key'
 
 mercury:
     display_name: Mercury
