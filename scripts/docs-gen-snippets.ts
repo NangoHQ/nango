@@ -195,10 +195,10 @@ function useCasesSnippet(useCases: any) {
 | Function name | Description | Type | Source code |
 | - | - | - | - |
 ${endpoints
-    .map((endpoint) => {
-        const typePath = endpoint.type === 'sync' ? '/guides/functions/sync-functions' : '/guides/functions/action-functions';
-        return `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](${typePath}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`;
-    })
+    .map(
+        (endpoint) =>
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/implementation-guides/use-cases/${endpoint.type}s/${endpoint.type === 'sync' ? 'implement-a-sync' : 'implement-an-action'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+    )
     .join('\n')}
             `.trim();
         })
@@ -210,7 +210,7 @@ ${endpoints
 function emptyUseCases() {
     return `_No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/overview) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>`;
 }
 
 interface Endpoint {
