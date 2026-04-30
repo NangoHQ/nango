@@ -74,7 +74,7 @@ The only connection config value you need to set as a developer is **`botHostTen
   }
 }
 ```
-To use bot operations in the end user’s tenant, the bot must be installed in that tenant. You can use a [Nango post-connection event handler](/implementation-guides/use-cases/implement-event-handler) to run publish and install operations for the bot using your delegated permissions. After that, use the `botFrameworkAccessToken` from the connection config to perform operations on the end user’s tenant.
+To use bot operations in the end user’s tenant, the bot must be installed in that tenant. You can use a [Nango post-connection event handler](/implementation-guides/platform/functions/event-functions) to run publish and install operations for the bot using your delegated permissions. After that, use the `botFrameworkAccessToken` from the connection config to perform operations on the end user’s tenant.
 
 ## Documentation
 

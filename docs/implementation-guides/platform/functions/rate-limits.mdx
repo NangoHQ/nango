@@ -21,7 +21,7 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
 - It uses exponential backoff to wait out the rate-limit period
-- Nango [syncs](/implementation-guides/use-cases/syncs) can run for up to 24 hours, allowing retries to occur within this window (note that action and webhook functions have shorter lifespans, see [Resource Limits](/guides/platform/limits))
+- Nango [sync functions](/implementation-guides/platform/functions/sync-functions) can run for up to 24 hours, allowing retries to occur within this window (note that action functions and webhook functions have shorter lifespans; see [Resource limits](/guides/platform/limits))
 - It works for APIs without requiring any API-specific configurations
 
 Find details about HTTP request retries in the [reference](/reference/functions#http-request-retries).
@@ -40,6 +40,13 @@ await nango.get({ endpoint: '/some-endpoint', retryHeader: { at: "x-ratelimit-re
 
 
 If rate-limit headers are not already configured for an API you are using, you can request their inclusion by reaching out to the Nango team via the [community](https://nango.dev/slack)—typically within 24 hours.
+
+## Related guides
+
+- [Sync efficiency](/implementation-guides/platform/functions/sync-efficiency) - avoid unnecessary provider requests.
+- [Action functions](/implementation-guides/platform/functions/action-functions) - design retries for idempotent actions.
+- [Resource limits](/guides/platform/limits) - understand runtime constraints.
+- [Functions SDK reference](/reference/functions#http-request-retries) - configure request retries.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

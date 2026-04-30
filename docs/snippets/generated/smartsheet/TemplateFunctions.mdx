@@ -1,0 +1,8 @@
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-user` | Creates a user in Smartsheet | [Action function](/implementation-guides/platform/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/create-user.ts) |
+| `delete-user` | Deletes a user from Smartsheet. User is transitioned to a free collaborator with read-only access to owned reports, sheets, Sights, workspaces, and any shared templates (unless those are optionally transferred to another user). | [Action function](/implementation-guides/platform/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/delete-user.ts) |
+| `disable-user` | Disables a user in an organization account. User will no longer be able to access Smartsheet in any way. User's assets will continue to be owned by this user until they are transferred to another user. | [Action function](/implementation-guides/platform/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/actions/disable-user.ts) |
+| `users` | Fetches a list of users from Smartsheet | [Sync function](/implementation-guides/platform/functions/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/smartsheet/syncs/users.ts) |

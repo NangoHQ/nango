@@ -25,10 +25,10 @@ Create documentation for new Nango integrations following the established struct
 
 | File | Path | Purpose |
 |------|------|---------|
-| Main page | `docs/api-integrations/[slug].mdx` | Quickstart + guide links + syncs section |
+| Main page | `docs/api-integrations/[slug].mdx` | Quickstart + guide links + template functions section |
 | Setup guide | `docs/api-integrations/[slug]/how-to-register-your-own-[slug]-api-oauth-app.mdx` | OAuth app registration steps |
 | Connect guide | `docs/api-integrations/[slug]/connect.mdx` | Optional: custom connection UI |
-| Syncs snippet | `snippets/generated/[slug]/PreBuiltUseCases.mdx` | Auto-generated or empty state |
+| Template functions snippet | `snippets/generated/[slug]/TemplateFunctions.mdx` | Auto-generated or empty state |
 | Navigation | `docs/docs.json` | Add to "APIs & Integrations" group |
 | Provider config | `packages/providers/providers.yaml` | Add docs and setup_guide_url |
 
@@ -123,13 +123,13 @@ Register an OAuth app with [Integration Name] and obtain credentials to connect 
 
 Official docs: [[Integration Name] API docs]([API_DOCS_URL])
 
-## 🧩 Pre-built syncs & actions for [Integration Name]
+## 🧩 Template functions for [Integration Name]
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. Extend and customize to fit your needs.
 
-import PreBuiltUseCases from "/snippets/generated/[slug]/PreBuiltUseCases.mdx"
+import TemplateFunctions from "/snippets/generated/[slug]/TemplateFunctions.mdx"
 
-<PreBuiltUseCases />
+<TemplateFunctions />
 
 ---
 ```
@@ -174,12 +174,12 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 ---
 ```
 
-### Empty Syncs Snippet
+### Empty Template Functions Snippet
 
-**Path:** `snippets/generated/[slug]/PreBuiltUseCases.mdx`
+**Path:** `snippets/generated/[slug]/TemplateFunctions.mdx`
 
 ```mdx
-_No pre-built syncs or actions available yet._
+_No template functions available yet._
 
 <Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>
 ```
@@ -228,7 +228,7 @@ If connect guide exists, also add:
 - [ ] Gather integration info (name, slug, auth type, API URLs)
 - [ ] Create main page at `docs/api-integrations/[slug].mdx`
 - [ ] Create setup guide at `docs/api-integrations/[slug]/how-to-register-your-own-[slug]-api-oauth-app.mdx`
-- [ ] Create empty syncs snippet at `snippets/generated/[slug]/PreBuiltUseCases.mdx`
+- [ ] Create empty template functions snippet at `snippets/generated/[slug]/TemplateFunctions.mdx`
 - [ ] Add to docs.json "APIs & Integrations" group (alphabetically)
 - [ ] Add docs URLs to providers.yaml entry
 - [ ] Verify all links work
@@ -242,7 +242,7 @@ If connect guide exists, also add:
 | Wrong link format in guides section | Use `/api-integrations/[slug]/how-to-register-your-own-[slug]-api-oauth-app` |
 | Missing two spaces after guide links | Add `  ` (two spaces) after closing `)` for proper line breaks |
 | Wrong slug format | Use lowercase with hyphens (e.g., `google-calendar`, not `googleCalendar`) |
-| Forgetting PreBuiltUseCases snippet | Always create it, even if empty |
+| Forgetting TemplateFunctions snippet | Always create it, even if empty |
 | Not updating providers.yaml | Must add `docs` and `setup_guide_url` properties |
 
 ## Auth Type Variations
@@ -266,7 +266,7 @@ If connect guide exists, also add:
 **Files created:**
 1. `docs/api-integrations/slack.mdx` - Main page with quickstart
 2. `docs/api-integrations/slack/how-to-register-your-own-slack-api-oauth-app.mdx` - Setup guide
-3. `snippets/generated/slack/PreBuiltUseCases.mdx` - Syncs snippet
+3. `snippets/generated/slack/TemplateFunctions.mdx` - Template functions snippet
 
 **docs.json entry:**
 ```json

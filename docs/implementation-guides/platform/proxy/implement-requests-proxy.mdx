@@ -10,7 +10,7 @@ Use the requests proxy to make authenticated API requests to the external API.
 
 Make sure you have an [integration configured](/guides/primitives/auth#guide) in your environment, and at least one [connection](/guides/primitives/auth#overview) available for it.
 
-You can use the proxy with the [Node SDK](/reference/sdks/node#proxy-get-requests) or [REST API](/reference/api/proxy/get):
+You can use the proxy with the [Node SDK](/reference/sdks/node#proxy) or [REST API](/reference/api/proxy/get):
 
 <Tabs>
     <Tab title="Node">
@@ -54,3 +54,10 @@ You can use the proxy with the [Node SDK](/reference/sdks/node#proxy-get-request
         ```
     </Tab>
 </Tabs>
+
+## Related guides
+
+- [Auth guide](/guides/primitives/auth) - create the connection used by proxy requests.
+- [Node SDK reference](/reference/sdks/node#proxy) - proxy helper methods.
+- [Proxy API reference](/reference/api/proxy/get) - REST endpoints for proxied requests.
+- [Rate limits](/implementation-guides/platform/functions/rate-limits) - handle provider throttling.

@@ -31,9 +31,9 @@ Different function types have varying execution and enqueuing time limits:
 
 | Function Type | Max Execution Time |
 | - | - |
-| [Syncs](/implementation-guides/use-cases/syncs) | 24 hours |
-| [Actions](/implementation-guides/use-cases/actions) | 15 minutes |
-| [External webhooks](/implementation-guides/use-cases/webhooks-from-external-apis) | 1 hour |
+| [Sync functions](/implementation-guides/platform/functions/sync-functions) | 24 hours |
+| [Action functions](/implementation-guides/platform/functions/action-functions) | 15 minutes |
+| [Webhook functions](/implementation-guides/platform/functions/webhook-functions) | 1 hour |
 
 ### Minimum sync frequency
 
@@ -41,11 +41,11 @@ The minimum sync frequency is **30 seconds**, available on all plans. You can se
 
 ### Sync variant limits
 
-Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/implementation-guides/use-cases/syncs/sync-partitioning) for more details.
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/implementation-guides/platform/functions/sync-partitioning) for more details.
 
-### Action output limits
+### Action function output limits
 
-Actions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/primitives/proxy) instead.
+Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/implementation-guides/platform/proxy/implement-requests-proxy) instead.
 
 ## Data retention policies
 
@@ -75,7 +75,13 @@ Webhooks sent from Nango to your application have the following limits:
 - **Timeout**: 20 seconds
 - **Retries**: 2 attempts
 
-These limits apply to all webhook types: auth, syncs, async actions, and webhook forwards.
+These limits apply to all webhook types: auth, sync function completion, async action function completion, and webhook forwards.
+
+## Related guides
+
+- [Rate limits](/implementation-guides/platform/functions/rate-limits) - handle provider throttling in functions.
+- [Sync efficiency](/implementation-guides/platform/functions/sync-efficiency) - stay within payload and runtime limits.
+- [Security](/guides/platform/security) - review retention and access constraints.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

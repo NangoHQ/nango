@@ -1,14 +1,14 @@
 ---
 title: 'How to use the Google Drive files sync'
 sidebarTitle: 'Files Sync Guide'
-description: 'Learn how to sync files and folders from Google Drive using Nango pre-built syncs'
+description: 'Learn how to sync files and folders from Google Drive using Nango template sync functions'
 ---
 
-This guide shows you how to use Nango's pre-built syncs to automatically sync files and folders from Google Drive into your application. The pre-built syncs handle authentication, pagination, and incremental updates so you can focus on building your product.
+This guide shows you how to use Nango's template sync functions to automatically sync files and folders from Google Drive into your application. The template sync functions handle authentication, pagination, and incremental updates so you can focus on building your product.
 
-## Available pre-built syncs
+## Available template functions
 
-Nango provides several pre-built syncs for Google Drive:
+Nango provides several template functions for Google Drive:
 
 - **`documents`**: Syncs the metadata of files and folders. Works with individual files or nested folders using the Google Picker API.
 - **`folders`**: Syncs root-level folders from Google Drive.
@@ -144,7 +144,7 @@ When files are synced, Nango will send a webhook notification:
 
 ## Customizing the syncs
 
-All pre-built syncs can be extended and customized to fit your needs:
+All template functions can be extended and customized to fit your needs:
 
 1. View the [source code on GitHub](https://github.com/NangoHQ/integration-templates/tree/main/integrations/google-drive)
 2. Copy the sync to your project
@@ -157,7 +157,7 @@ See Extend and customize for detailed instructions.
 
 - [Google Drive API Documentation](https://developers.google.com/workspace/drive/api/reference/rest/v3)
 - [Google Picker API Guide](https://developers.google.com/drive/picker/guides/overview)
-- [Nango Syncs Documentation](/implementation-guides/use-cases/syncs)
+- [Sync functions](/implementation-guides/platform/functions/sync-functions)
 - [Nango Actions Documentation](/implementation-guides/use-cases/actions)
 
 ---

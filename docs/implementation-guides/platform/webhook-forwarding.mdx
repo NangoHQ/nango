@@ -1,0 +1,102 @@
+---
+title: 'External webhook forwarding'
+sidebarTitle: 'External webhook forwarding'
+description: 'Forward external API webhooks through Nango to your app, with connection attribution.'
+---
+
+Webhook forwarding lets Nango receive webhooks from external APIs and forward them to your app's webhook URL. Use it when your app should own the webhook handling logic, but you still want Nango to provide the provider-specific webhook URL, routing, signing, retries, and logs.
+
+For processing the webhook inside Nango function code, use [webhook functions](/implementation-guides/platform/functions/webhook-functions).
+
+## How forwarding works
+
+1. You configure your app's webhook URL in **Environment Settings > Webhook URLs**.
+2. You register the integration's Nango webhook URL in the provider's developer portal. Find it in **Integrations > [Integration] > Webhooks**.
+3. The provider sends a webhook to Nango.
+4. Nango runs the provider-specific routing logic and tries to map the event to one or more Nango connections.
+5. Nango forwards the payload to your app's webhook URL and signs the request like other Nango webhooks.
+
+Nango forwards webhooks asynchronously after accepting the provider webhook, so slow app endpoints do not block the provider response.
+
+## Forwarded payloads
+
+When Nango can attribute the webhook to a connection, your app receives a Nango wrapper:
+
+```json
+{
+  "from": "hubspot",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "type": "forward",
+  "connectionId": "<CONNECTION-ID>",
+  "payload": {
+    "...": "raw provider payload"
+  }
+}
+```
+
+If a provider webhook maps to multiple connections, Nango sends one forwarded webhook per connection.
+
+If Nango cannot map the webhook to a connection, Nango forwards the raw provider payload without the wrapper. Your consumer should handle both shapes when the provider can emit unattributed events.
+
+## Headers and signatures
+
+Nango forwards safe provider headers when possible, excluding headers that should not be replayed such as `authorization`, `cookie`, `host`, `content-length`, `content-type`, `user-agent`, and similar transport-sensitive headers.
+
+Every forwarded webhook is signed with the same headers used by other Nango webhooks:
+
+- `X-Nango-Hmac-Sha256`
+- `X-Nango-Signature` for backwards compatibility
+
+Verify forwarded webhooks the same way you verify other webhooks from Nango. See [Verifying webhooks from Nango](/implementation-guides/platform/webhooks-from-nango#verifying-webhooks-from-nango).
+
+## When to use forwarding
+
+Use forwarding when:
+
+- Your app already has webhook handling logic.
+- You want app code to decide what to do with the provider event.
+- You need Nango to attribute the event to a connection when possible.
+- You want webhook delivery logs and retries without running Nango function code.
+
+Use [webhook functions](/implementation-guides/platform/functions/webhook-functions) when Nango should update records, normalize the payload, or run connection-scoped integration logic immediately.
+
+## Configure forwarding
+
+<Steps>
+  <Step title="Configure your app webhook URL">
+    In Nango, open **Environment Settings > Webhook URLs** and add your app's endpoint.
+
+    Nango sends forwarded webhooks to the same URLs used for auth, sync, and async action webhooks.
+  </Step>
+
+  <Step title="Register the provider webhook URL">
+    In the integration page, copy the Nango webhook URL from **Integrations > [Integration] > Webhooks** and register it in the provider's developer portal.
+
+    Some providers use one global webhook registration. Others require one webhook registration per connected account. Provider-specific docs explain the required setup.
+  </Step>
+
+  <Step title="Handle both payload shapes">
+    If the payload has `"type": "forward"`, read `connectionId`, `providerConfigKey`, and `payload`.
+
+    If the payload does not have `"type": "forward"`, handle it as the raw provider payload. This can happen when the provider event cannot be attributed to a Nango connection.
+  </Step>
+</Steps>
+
+<Accordion title="For agents">
+  When implementing webhook forwarding, first find the provider-specific Nango webhook guide. Confirm whether the provider routes automatically or requires embedding the Nango connection ID, tenant ID, team ID, installation ID, or another identifier in the provider webhook subscription.
+
+  Implement signature verification with `X-Nango-Hmac-Sha256`, then branch on whether the incoming body has `type: "forward"`. Store and use `connectionId` only when it is present.
+</Accordion>
+
+## Retries and debugging
+
+Nango retries forwarded webhooks when your app returns a non-2xx response or has a network failure. Forwarded attempts appear in Nango logs as webhook forwarding operations.
+
+For retry behavior, timeout limits, and local testing tips, see [Webhook retries & debugging](/implementation-guides/platform/webhooks-from-nango#webhook-retries-and-debugging) and [Webhook limits](/guides/platform/limits#webhook-limits).
+
+## Related guides
+
+- [Webhook functions](/implementation-guides/platform/functions/webhook-functions)
+- [Process external webhooks](/implementation-guides/use-cases/webhooks-from-external-apis)
+- [Receive webhooks from Nango](/implementation-guides/platform/webhooks-from-nango)
+- [Observability](/guides/platform/observability)

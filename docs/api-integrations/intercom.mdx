@@ -13,10 +13,12 @@ Connect to Intercom with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Intercom_.
     </Step>
     <Step title="Authorize Intercom">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Intercom. Later, you'll let your users do the same directly from your app. Nango doesn't provide a test OAuth app for Intercom yet. You'll need to set up your own by following these [instructions](#🧑%E2%80%8D💻-oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Intercom. Later, you'll let your users do the same directly from your app. Nango doesn't provide a test OAuth app for Intercom yet. You'll need to set up your own by following these [instructions](#oauth-app-setup). After that, make sure to add the OAuth client ID, secret, and scopes in the integration settings in Nango.
     </Step>
     <Step title="Call the Intercom API">
     Let's make your first request to the Intercom API (fetch current admin information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+<a id="oauth-app-setup"></a>
+
     <Tabs>
         <Tab title="cURL">
             ```bash
@@ -72,12 +74,12 @@ Learn how to authenticate with Intercom and link your account
 
 Official docs: [Intercom API documentation](https://developers.intercom.com/docs/build-an-integration/learn-more/rest-apis)
 
-## 🧩 Pre-built syncs & actions for Intercom
+## 🧩 Template functions for Intercom
 
 Enable them in your dashboard. Extend and customize to fit your needs.
 
-import PreBuiltUseCases from "/snippets/generated/intercom/PreBuiltUseCases.mdx"
+import TemplateFunctions from "/snippets/generated/intercom/TemplateFunctions.mdx"
 
-<PreBuiltUseCases />
+<TemplateFunctions />
 
 ---

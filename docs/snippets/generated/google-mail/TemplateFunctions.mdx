@@ -1,0 +1,18 @@
+### Emails
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `send-email` | Send an Email using Gmail. | [Action function](/implementation-guides/platform/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-mail/actions/send-email.ts) |
+| `emails` | Fetches a list of emails from gmail. Goes back default to 1 year but metadata can be set using the `backfillPeriodMs` property to change the lookback. The property should be set in milliseconds. | [Sync function](/implementation-guides/platform/functions/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-mail/syncs/emails.ts) |
+
+### Labels
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `labels` | Fetches a list of labels from gmail. | [Sync function](/implementation-guides/platform/functions/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-mail/syncs/labels.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `fetch-attachment` | An action used to fetch the contents of an attachment. | [Action function](/implementation-guides/platform/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-mail/actions/fetch-attachment.ts) |

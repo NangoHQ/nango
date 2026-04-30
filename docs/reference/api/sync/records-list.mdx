@@ -10,7 +10,7 @@ openapi: 'GET /records'
 
 ## Receive webhooks on data updates
 
-Receive webhooks from Nango when new records are available. Follow our [implement a sync guide](/implementation-guides/use-cases/syncs).
+Receive webhooks from Nango when new records are available. Follow the [sync functions section](/implementation-guides/platform/functions/sync-functions).
 
 <Warning>
 **Data availability**: Records are subject to Nango's [data retention policies](/guides/platform/security#synced-records-retention). Records not updated for 30 days will have their payload pruned (only metadata remains). Records from syncs not executed for 60 days are permanently deleted. Fetch and store records promptly in your own system.
@@ -22,7 +22,7 @@ Receive webhooks from Nango when new records are available. Follow our [implemen
 This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
 </Tip>
 
-### Default behaviour
+### Default behavior
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
@@ -45,4 +45,3 @@ By default this returns an array of objects in the data model that you queried w
     next_cursor: "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=="
 }
 ```
-

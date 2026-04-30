@@ -85,7 +85,7 @@ for (const docsPath of docsPaths) {
             await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
             const casesSnippet = useCasesSnippet(useCases[provider]);
-            await fs.writeFile(`${snippetPath}/PreBuiltUseCases.mdx`, casesSnippet, 'utf-8');
+            await fs.writeFile(`${snippetPath}/TemplateFunctions.mdx`, casesSnippet, 'utf-8');
 
             providersHandled.push(provider);
         }
@@ -126,7 +126,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, isAlias
         `<Accordion title="✅ Read & write data">`,
         `| Tools | Status |`,
         `| - | - |`,
-        `| Pre-built integrations | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
+        `| Template functions | ${hasUseCases ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
         `| API unification | ✅ |`,
         `| 2-way sync | ✅ |`,
         `| Webhooks from Nango on data modifications | ✅ |`,
@@ -146,7 +146,7 @@ function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, isAlias
         `<Accordion title="✅ Customization">`,
         `| Tools | Status |`,
         `| - | - |`,
-        `| Create or customize use-cases | ✅ |`,
+        `| Create or customize template functions | ✅ |`,
         `| Pre-configured pagination | ${hasPagination ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
         `| Pre-configured rate-limit handling | ${hasRateLimit ? '✅' : '🚫 (time to contribute: &lt;48h)'} |`,
         `| Per-customer configurations | ✅ |`,
@@ -197,7 +197,7 @@ function useCasesSnippet(useCases: any) {
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/implementation-guides/use-cases/${endpoint.type}s/${endpoint.type === 'sync' ? 'implement-a-sync' : 'implement-an-action'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync function' : 'Action function'}](${endpoint.type === 'sync' ? '/implementation-guides/platform/functions/sync-functions' : '/implementation-guides/platform/functions/action-functions'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
     )
     .join('\n')}
             `.trim();
@@ -208,7 +208,7 @@ ${endpoints
 }
 
 function emptyUseCases() {
-    return `_No pre-built syncs or actions available yet._
+    return `_No template functions available yet._
 
 <Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>`;
 }

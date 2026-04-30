@@ -18,7 +18,7 @@ This approach ensures your integrations work correctly while providing fast, rel
 
 ## Dry run testing
 
-Dry runs allow you to execute your syncs and actions against real API connections without saving data to your database. This is essential for:
+Dry runs allow you to execute your sync functions and action functions against real API connections without saving data to your database. This is essential for:
 
 - Testing integration logic before deployment
 - Debugging issues with live data
@@ -46,10 +46,10 @@ Common options for testing:
 # Specify environment (dev or prod)
 nango dryrun fetch-tickets abc-123 -e prod
 
-# For actions: pass input data
+# For action functions: pass input data
 nango dryrun create-ticket abc-123 --input '{"title": "Test ticket"}'
 
-# For syncs: specify an initial checkpoint
+# For sync functions: specify an initial checkpoint
 nango dryrun fetch-tickets abc-123 --checkpoint '{ "lastModifiedAt": "2026-02-01T01:00:00.000Z" }'
 
 # Use a specific integration when sync names overlap
@@ -181,7 +181,7 @@ The `test.json` file contains all the necessary mock data for a given test:
 
 ### Using stubbed metadata
 
-For syncs that rely on connection metadata, you can provide test metadata:
+For sync functions that rely on connection metadata, you can provide test metadata:
 
 ```bash
 nango dryrun fetch-tickets abc-123 --save --metadata '{"accountId": "test-123"}'
@@ -211,16 +211,16 @@ Generate tests for your integrations:
 nango generate:tests
 ```
 
-You can also generate tests for specific integrations, syncs, or actions:
+You can also generate tests for specific integrations, sync functions, or action functions:
 
 ```bash
 # Generate tests for a specific integration
 nango generate:tests -i github
 
-# Generate tests for a specific sync
+# Generate tests for a specific sync function
 nango generate:tests -s fetch-tickets
 
-# Generate tests for a specific action
+# Generate tests for a specific action function
 nango generate:tests -a create-ticket
 
 # Combine flags for more specific targeting
@@ -317,7 +317,7 @@ describe('github create-ticket tests', () => {
 The `NangoSyncMock` and `NangoActionMock` classes automatically load your saved mocks from the `.test.json` file:
 
 1. **API requests** are intercepted and return saved mock responses from the `api` section.
-2. **Input data** is loaded from the `input` property (for actions).
+2. **Input data** is loaded from the `input` property for action functions.
 3. **Expected outputs** are loaded from the `output` property.
 4. **Tests compare** actual outputs against expected outputs.
 
@@ -526,7 +526,7 @@ it('should fetch all pages of results', async () => {
 });
 ```
 
-### Testing syncs with checkpoints
+### Testing sync functions with checkpoints
 
 Test that checkpoint logic works:
 
@@ -594,5 +594,5 @@ describe.each([
 
 - [Data Validation](/implementation-guides/platform/functions/data-validation) - Learn more about schema validation
 - [Vitest Documentation](https://vitest.dev/) - Official Vitest docs
-- [Actions](/implementation-guides/use-cases/actions) - Building and testing actions
-- [Syncs](/implementation-guides/use-cases/syncs) - Building and testing syncs
+- [Action functions](/implementation-guides/platform/functions/action-functions) - Building and testing on-demand functions
+- [Sync functions](/implementation-guides/platform/functions/sync-functions) - Building and testing sync functions

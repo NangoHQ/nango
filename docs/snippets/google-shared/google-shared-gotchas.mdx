@@ -7,7 +7,7 @@
 4.  The user granted [time-based access](https://developers.google.com/identity/protocols/oauth2/web-server#time-based-access) to your app and the access expired.
 5.  If an admin [set any of the services requested in your app's scopes to Restricted](https://support.google.com/a/answer/7281227#restrictaccess).
 6.  For [Google Cloud Platform APIs](https://developers.google.com/identity/protocols/oauth2#gcp) - the session length set by the admin could have been exceeded.
-7.  In "Testing" mode with an external user type, refresh tokens expire in 7 days unless only basic scopes are used — userinfo.email, userinfo.profile, openid, or their [OpenID Connect equivalents](https://developers.google.com/identity/protocols/oauth2/scopes#openid-connect). You can remove this 7-day limit by switch from Testing to Production. Follow step 6 in the [Setup Guide](#setup-guide) above.
+7.  In "Testing" mode with an external user type, refresh tokens expire in 7 days unless only basic scopes are used — userinfo.email, userinfo.profile, openid, or their [OpenID Connect equivalents](https://developers.google.com/identity/protocols/oauth2/scopes#openid-connect). You can remove this 7-day limit by switch from Testing to Production. Follow the setup guide above.
 8.  Google allows up to 100 refresh tokens per account per OAuth client ID; new tokens overwrite the oldest without warning when the limit is reached.
 -   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`https://app.nango.dev` if you're testing from the Nango UI).
 -   For applications using sensitive or restricted scopes, Google requires verification and a security assessment. This process can take several weeks to complete.

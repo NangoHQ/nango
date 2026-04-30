@@ -1,0 +1,194 @@
+---
+title: 'Unified APIs with functions'
+sidebarTitle: 'Unified APIs'
+description: 'Build provider-specific functions behind one stable model and operation surface.'
+---
+
+API unification is the process of standardizing multiple provider APIs behind one interface that your product can use consistently.
+
+In Nango, unification is optional and code-first. You define the models and operations that fit your product, then implement provider-specific functions that translate to and from each external API.
+
+## When to unify
+
+Unification is useful when your customers use different systems for the same business object:
+
+- CRMs with contacts, companies, deals, and custom fields.
+- ATS platforms with candidates, jobs, stages, and applications.
+- Accounting systems with invoices, customers, transactions, and accounts.
+- Support tools with tickets, comments, users, and organizations.
+
+It is less useful when the provider exposes concepts that are deeply unique. For example, Notion's block model can be partially normalized for simple document export, but advanced block behavior usually needs provider-specific logic.
+
+Unification does not need to be perfect to be valuable. A stable common model with explicit provider extensions is often better than trying to force every API into a lowest-common-denominator shape.
+
+## Design principles
+
+Design the unified model around your product, not around the external APIs.
+
+If your app already has a `Contact`, `Invoice`, or `Candidate` model, use that as the starting point. Keep the fields your workflows actually need, and resist carrying every provider field into the common model.
+
+Expect optional fields. Providers rarely expose the same data with the same semantics, and some customers may rely on custom fields or custom statuses. Model those gaps intentionally with nullable fields, fallbacks, metadata, or provider-specific extensions.
+
+Use the same model for reads and writes when possible. If a sync writes `UnifiedContact` records into your app, the corresponding create or update action should accept the same shape unless the write operation truly needs a different contract.
+
+Validate close to the external API. Use [data validation](/implementation-guides/platform/functions/data-validation) in your functions so mapping drift, malformed provider responses, and invalid write inputs fail at the integration boundary.
+
+## Define the model
+
+Put shared schemas in a common file and import them from each provider implementation:
+
+```ts models.ts
+import * as z from 'zod';
+
+export const UnifiedUser = z.object({
+    id: z.string().optional(),
+    name: z.string().optional(),
+    email: z.string().email().optional(),
+    externalUrl: z.string().url().optional(),
+    raw: z.unknown().optional()
+});
+
+export const CreateUnifiedUser = z.object({
+    name: z.string(),
+    email: z.string().email()
+});
+
+export type UnifiedUser = z.infer<typeof UnifiedUser>;
+```
+
+Keep provider-specific fields explicit:
+
+```ts models.ts
+export const JiraUser = UnifiedUser.extend({
+    accountType: z.string().optional()
+});
+```
+
+## Implement unified actions
+
+Each provider gets an action with the same input and output contract:
+
+<Tabs>
+  <Tab title="Jira">
+  ```ts jira/actions/create-user.ts
+  import { createAction } from 'nango';
+  import { CreateUnifiedUser, UnifiedUser } from '../../models';
+
+  export default createAction({
+      description: 'Creates a user in Jira',
+      input: CreateUnifiedUser,
+      output: UnifiedUser,
+      exec: async (nango, input) => {
+          const response = await nango.post({
+              endpoint: '/rest/api/3/user',
+              data: {
+                  emailAddress: input.email,
+                  displayName: input.name
+              }
+          });
+
+          return {
+              id: response.data.accountId,
+              name: response.data.displayName ?? input.name,
+              email: input.email,
+              raw: response.data
+          };
+      }
+  });
+  ```
+  </Tab>
+  <Tab title="Zendesk">
+  ```ts zendesk/actions/create-user.ts
+  import { createAction } from 'nango';
+  import { CreateUnifiedUser, UnifiedUser } from '../../models';
+
+  export default createAction({
+      description: 'Creates a user in Zendesk',
+      input: CreateUnifiedUser,
+      output: UnifiedUser,
+      exec: async (nango, input) => {
+          const response = await nango.post({
+              endpoint: '/api/v2/users.json',
+              data: {
+                  user: {
+                      name: input.name,
+                      email: input.email
+                  }
+              }
+          });
+
+          return {
+              id: String(response.data.user.id),
+              name: response.data.user.name,
+              email: response.data.user.email,
+              externalUrl: response.data.user.url,
+              raw: response.data.user
+          };
+      }
+  });
+  ```
+  </Tab>
+</Tabs>
+
+Your app can choose the integration ID at runtime and call the same action name for each provider:
+
+```ts
+await nango.triggerAction(integrationId, connectionId, 'create-user', {
+    name: 'Ada Lovelace',
+    email: 'ada@example.com'
+});
+```
+
+## Implement unified syncs
+
+Sync functions are where read-side unification usually lives. Fetch provider records, map each page into your unified model, then save those records to Nango's records cache:
+
+```ts hubspot/syncs/users.ts
+import { createSync } from 'nango';
+import { UnifiedUser } from '../../models';
+
+export default createSync({
+    description: 'Syncs users into the unified user model',
+    frequency: 'every hour',
+    models: { UnifiedUser },
+    exec: async (nango) => {
+        for await (const page of nango.paginate<any>({
+            endpoint: '/crm/v3/objects/contacts',
+            params: { properties: 'email,firstname,lastname' },
+            paginate: {
+                type: 'cursor',
+                cursor_path_in_response: 'paging.next.after',
+                cursor_name_in_request: 'after',
+                response_path: 'results',
+                limit_name_in_request: 'limit',
+                limit: 100
+            }
+        })) {
+            const users = page.map((contact) => ({
+                id: contact.id,
+                name: [contact.properties.firstname, contact.properties.lastname].filter(Boolean).join(' '),
+                email: contact.properties.email,
+                raw: contact
+            }));
+
+            await nango.batchSave(users, 'UnifiedUser');
+        }
+    }
+});
+```
+
+## Handle provider-specific behavior
+
+Use one of these patterns when the common model is not enough:
+
+- Extend the common model with provider-specific fields for integrations that need them.
+- Store raw provider data under a `raw` field for debugging or advanced workflows.
+- Use connection metadata for customer-specific mappings, such as custom fields, custom statuses, or selected pipelines.
+- Create provider-specific actions for operations that do not map cleanly to the unified interface.
+
+## Related guides
+
+- [Action functions](/implementation-guides/platform/functions/action-functions)
+- [Sync functions](/implementation-guides/platform/functions/sync-functions)
+- [Data validation](/implementation-guides/platform/functions/data-validation)
+- [Storage](/implementation-guides/platform/functions/storage)
