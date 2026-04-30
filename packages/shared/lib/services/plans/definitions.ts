@@ -34,7 +34,8 @@ export const freePlan: PlanDefinition = {
         action_function_runtime: 'lambda',
         webhook_function_runtime: 'lambda',
         on_event_function_runtime: 'lambda',
-        sync_lambda_checkpoint_required: false
+        sync_lambda_checkpoint_required: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -73,7 +74,8 @@ export const starterV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -113,7 +115,8 @@ export const growthV1Plan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -180,7 +183,8 @@ export const enterprisePlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -220,7 +224,8 @@ export const starterLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -259,7 +264,8 @@ export const scaleLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -298,7 +304,8 @@ export const growthLegacyPlan: PlanDefinition = {
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
         can_disable_connect_ui_watermark: true,
-        remote_functions: false
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 

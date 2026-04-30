@@ -60,4 +60,38 @@ describe('remote function helpers', () => {
             error: { code: 'server_error', message: 'Failed at github/syncs/foo.ts:12:3 while reading <path>' }
         });
     });
+
+    it('preserves relative compiler diagnostics with line and column numbers', () => {
+        const { res, send } = mockResponse();
+
+        sendStepError({
+            res,
+            error: new Error("err - github/actions/foo.ts:4:7 \n  Type 'string' is not assignable to type 'number'.")
+        });
+
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'server_error',
+                message: "err - github/actions/foo.ts:4:7 \n  Type 'string' is not assignable to type 'number'."
+            }
+        });
+    });
+
+    it('keeps long compiler diagnostics in the response message', () => {
+        const { res, status, send } = mockResponse();
+        const message = `Found errors\n${'x'.repeat(1000)}`;
+
+        sendStepError({
+            res,
+            error: new RemoteFunctionError({ code: 'compilation_error', message, status: 400 })
+        });
+
+        expect(status).toHaveBeenCalledWith(400);
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'compilation_error',
+                message
+            }
+        });
+    });
 });

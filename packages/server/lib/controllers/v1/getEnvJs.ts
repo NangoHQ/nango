@@ -14,11 +14,10 @@ import {
     isHosted
 } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-
 import type { WindowEnv } from '@nangohq/types';
+import type { RequestHandler } from 'express';
 
-export const getEnvJs = asyncWrapper<any, any>((_, res) => {
+export const getEnvJs: RequestHandler = (_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
         publicUrl: basePublicUrl,
@@ -47,4 +46,4 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
     res.setHeader('content-type', 'text/javascript');
     res.set('Cache-Control', 'public, max-age=3600');
     res.send(`window._env = ${JSON.stringify(configObject, null, 2)};`);
-});
+};

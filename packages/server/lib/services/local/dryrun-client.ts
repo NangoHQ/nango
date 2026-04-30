@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { buildDryrunArgs } from '../remote-function/command-builders.js';
+import { getDryrunCommandErrorOutput, getDryrunCommandSuccessOutput } from '../remote-function/command-output.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
 import { RemoteFunctionError } from '../remote-function/helpers.js';
 import {
@@ -72,8 +73,17 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
                 ['exec', '-w', remoteFunctionProjectPath, containerName, 'nango', ...buildDryrunArgs(request)],
                 { timeout: remoteFunctionDryrunTimeoutMs }
             );
-            return { output: stdout || stderr };
+            const dryrunErrorOutput = getDryrunCommandErrorOutput({ stdout, stderr });
+            if (dryrunErrorOutput) {
+                throw new RemoteFunctionError({ code: 'dryrun_error', message: dryrunErrorOutput, status: 400 });
+            }
+
+            return { output: getDryrunCommandSuccessOutput({ stdout, stderr }) };
         } catch (err) {
+            if (err instanceof RemoteFunctionError) {
+                throw err;
+            }
+
             throw new RemoteFunctionError({
                 code: isExecTimeoutError(err) ? 'timeout' : 'dryrun_error',
                 message: isExecTimeoutError(err) ? 'Dry run timed out' : getExecErrorOutput(err),
@@ -81,6 +91,6 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
             });
         }
     } finally {
-        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => {});
+        await execDockerFileAsync(['rm', '-f', containerName]).catch(() => undefined);
     }
 }

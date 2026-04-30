@@ -224,9 +224,10 @@ All credential access and modifications are logged:
 - Credential refresh operations
 - API requests using credentials
 
-Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/implementation-guides/platform/open-telemetry-export).
+Logs are available in the Nango dashboard and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
-## Team & roles {#team-and-roles}
+<a id="team-and-roles"></a>
+## Team & roles
 
 Nango supports multiple team members per account with role-based access control (RBAC). Roles determine what each member can view and modify, particularly in production environments.
 
@@ -281,7 +282,8 @@ The production flag currently governs role-based access. In the future it may al
 These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid secret key retains full API access regardless of their dashboard role.
 </Info>
 
-## Single sign-on (SSO) {#sso}
+<a id="sso"></a>
+## Single sign-on (SSO)
 
 Nango Cloud uses [WorkOS](https://workos.com) to power SSO.
 
@@ -349,6 +351,12 @@ To minimize disruption:
 - Periodically review this page for updates
 
 We will make reasonable efforts to communicate breaking changes in advance.
+
+## API Key Scoping
+
+Nango supports scoped API keys, allowing you to follow the principle of least privilege when granting programmatic access to your environments. Each API key can be restricted to specific operations — for example, a CI/CD pipeline key that can only deploy, or a backend service key that can read connections but not manage integrations.
+
+For details on available scopes, advised profiles, and key management, see the [API Keys reference](/reference/api-keys).
 
 <Tip>
 **Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.

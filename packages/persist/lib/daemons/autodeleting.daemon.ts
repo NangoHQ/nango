@@ -53,8 +53,7 @@ export function autoDeletingDaemon(): Awaited<ReturnType<typeof cancellableDaemo
                         environmentId: candidate.value.environmentId,
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
-                        mode: 'hard',
-                        limit: envs.PERSIST_AUTO_DELETING_LIMIT
+                        mode: 'hard'
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

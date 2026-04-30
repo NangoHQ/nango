@@ -3,6 +3,10 @@ title: 'Get integration functions config'
 openapi: 'GET /scripts/config'
 ---
 
+<Info>
+  Requires an API key with the `environment:config:read` scope. [Learn more about API key scopes](/reference/api-keys#scopes).
+</Info>
+
 The `/scripts/config` endpoint returns the configuration for all integration functions. There are two variants of this endpoint:
 
 1. `/scripts/config?format=nango` - Returns the standard configuration format

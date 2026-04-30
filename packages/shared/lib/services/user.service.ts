@@ -1,12 +1,13 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok } from '@nangohq/utils';
+import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
+const envs = parseEnvs(ENVS);
 
 class UserService {
     async getUserById(id: number): Promise<DBUser | null> {
@@ -106,7 +107,7 @@ class UserService {
         salt = '',
         account_id,
         email_verified,
-        role = 'administrator'
+        role = envs.DEFAULT_USER_ROLE
     }: {
         email: string;
         name: string;

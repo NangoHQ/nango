@@ -1,0 +1,95 @@
+---
+title: 'AWS Multi-Service'
+sidebarTitle: 'AWS Multi-Service'
+description: 'Integrate your application with any AWS service API'
+---
+
+## 🚀 Quickstart
+
+Connect to any AWS service with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _AWS Multi-Service_.
+
+    <Note>
+    You (the developer) must configure one **Connection Configuration** setting when creating the integration:
+    - **AWS Service** — the service endpoint prefix for the AWS API you want to connect to (e.g. `s3`, `athena`, `inspector2`).
+
+    This is set as a Connection Configuration value, it is not entered by your end users.
+    </Note>
+    </Step>
+    <Step title="Authorize AWS">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter an AWS Access Key ID and Secret Access Key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the AWS API">
+    Let's make your first request — list Athena workgroups as an example. The target AWS service (e.g. `athena`) is defined in the connection config when you set up the integration. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy//" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "nango-proxy-X-Amz-Target: AmazonAthena.ListWorkGroups" \
+              -H "nango-proxy-Content-Type: application/x-amz-json-1.1"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '//',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            headers: {
+                'X-Amz-Target': 'AmazonAthena.ListWorkGroups',
+                'Content-Type': 'application/x-amz-json-1.1'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth#guide) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 AWS Multi-Service Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/aws-multi-service/connect)  
+Connect your AWS account using the Connect UI
+
+Official docs: [AWS API Reference](https://docs.aws.amazon.com/index.html)
+
+## 🧩 Pre-built syncs & actions for AWS Multi-Service
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/aws-multi-service/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

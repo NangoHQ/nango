@@ -1207,8 +1207,10 @@ export async function getCountsByModel({
 
 export async function* paginateCounts({
     environmentIds,
+    connectionIds,
     batchSize = 1000
 }: {
+    connectionIds?: number[];
     environmentIds?: number[];
     batchSize?: number;
 } = {}): AsyncGenerator<Result<RecordCount[]>> {
@@ -1223,6 +1225,10 @@ export async function* paginateCounts({
 
             if (environmentIds && environmentIds.length > 0) {
                 query = query.whereIn('environment_id', environmentIds);
+            }
+
+            if (connectionIds && connectionIds.length > 0) {
+                query = query.whereIn('connection_id', connectionIds);
             }
 
             const results = await query;

@@ -33,12 +33,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should be forbidden for non-internal accounts', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         // NANGO_SHARED_DEV_ACCOUNT_UUID is not set, so no account matches
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { customEnvironment: 'dev' },
             body: {
                 debug: false,
@@ -56,13 +56,13 @@ describe(`POST ${endpoint}`, () => {
 
     describe('models_json_schema handling', () => {
         it('should use per-flow models_json_schema directly', async () => {
-            const { account, env, secret } = await seeders.seedAccountEnvAndUser();
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
             process.env['NANGO_SHARED_DEV_ACCOUNT_UUID'] = account.uuid;
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 query: { customEnvironment: 'dev' },
                 body: {
                     debug: false,
@@ -118,13 +118,13 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should filter top-level jsonSchema to only the models used by a flow (legacy format)', async () => {
-            const { account, env, secret } = await seeders.seedAccountEnvAndUser();
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
             process.env['NANGO_SHARED_DEV_ACCOUNT_UUID'] = account.uuid;
 
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 query: { customEnvironment: 'dev' },
                 body: {
                     debug: false,

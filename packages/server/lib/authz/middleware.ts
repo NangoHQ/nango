@@ -1,4 +1,4 @@
-import { flags } from '@nangohq/utils';
+import { flagHasPlan, flags } from '@nangohq/utils';
 
 import { evaluator } from './evaluator.js';
 
@@ -17,7 +17,13 @@ export function can(permission: Permission | ScopedPermission): RequestHandler {
             return;
         }
 
-        const user = res.locals['user'];
+        const { plan, user } = res.locals as RequestLocals;
+
+        if (flagHasPlan && (!plan || !plan.has_rbac)) {
+            next();
+            return;
+        }
+
         if (!user) {
             next();
             return;

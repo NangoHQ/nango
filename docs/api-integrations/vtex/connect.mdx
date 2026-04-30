@@ -1,0 +1,48 @@
+---
+title: 'VTEX - How do I link my account?'
+sidebarTitle: 'VTEX'
+---
+
+# Overview
+
+To authenticate with VTEX, you will need:
+1. **Account Name** — Your VTEX store account name (the subdomain of your VTEX Admin URL).
+2. **App Key** — Your VTEX application key (starts with `vtexappkey-`).
+3. **App Token** — The application token associated with your App Key.
+
+This guide will walk you through finding your **Account Name** and generating your **App Key** and **App Token**.
+
+### Prerequisites
+
+- A VTEX store account with administrator access.
+- The **User Administrator - RESTRICTED** role or a custom role with **Edit API Keys** permission.
+
+### Step 1: Finding Your Account Name
+
+Your account name is the subdomain of your VTEX Admin URL. For example, if you access your store at `https://mystore.myvtex.com`, your account name is `mystore`.
+
+### Step 2: Generating an API Key
+
+1. In the top bar of the VTEX Admin, click your profile avatar (the first letter of your email), then click **Account Settings** > **API Keys**.
+2. Make sure you are on the **Generated** tab.
+3. Click **+ Generate Key**.
+4. Fill in the **Key identification** field with a name to identify the API key.
+5. Select the **roles** that will be associated with the key. Select only the roles required for the integration — avoid overly permissive roles.
+6. Click **Generate**.
+7. A single-access link to view the new token will appear. Click **Copy** to copy the link to your clipboard. The link is valid for 24 hours and can only be accessed once.
+8. Click **Close**, then open the copied link.
+9. Click **Copy** to copy the **App Token** to your clipboard. Store it securely — this secret is only shown once.
+
+Your **App Key** (e.g. `vtexappkey-mystore-ABCDEF`) is shown in the **Generated** tab of the API Keys page.
+
+### Step 3: Enter Your Credentials in Nango
+
+Once you have your **Account Name**, **App Key**, and **App Token**:
+
+1. Open the Nango connection form for VTEX.
+2. Enter your **Account Name**, **App Key**, and **App Token** in the corresponding fields.
+3. Click **Connect** to complete authentication.
+
+<img src="/api-integrations/vtex/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to VTEX.
