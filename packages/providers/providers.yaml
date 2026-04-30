@@ -17725,6 +17725,7 @@ talentlms:
             title: Subdomain
             description: The subdomain of your TalentLMS account.
             example: mycompany
+            pattern: '^[a-z0-9-]+$'
             suffix: .talentlms.com
             prefix: https://
             order: 1
