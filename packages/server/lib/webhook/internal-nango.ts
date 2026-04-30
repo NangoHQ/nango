@@ -207,42 +207,48 @@ export class InternalNango {
         webhookHeaderValue: string | undefined;
     }): Promise<void> {
         const orchestrator = getOrchestrator();
+        let scheduledCount = 0;
 
-        for (const syncConfig of syncConfigsWithWebhooks) {
-            const { webhook_subscriptions } = syncConfig;
-            if (!webhook_subscriptions) {
-                continue;
-            }
-
-            let triggered = false;
-
-            for (const webhook of webhook_subscriptions) {
-                if (triggered) {
-                    break;
+        try {
+            for (const syncConfig of syncConfigsWithWebhooks) {
+                const { webhook_subscriptions } = syncConfig;
+                if (!webhook_subscriptions) {
+                    continue;
                 }
 
-                if (type === webhook || webhookHeaderValue === webhook || webhook === '*') {
-                    for (const connection of connections) {
-                        await orchestrator.triggerWebhook({
-                            account: this.team,
-                            environment: this.environment,
-                            integration: this.integration as Config,
-                            connection,
-                            webhookName: webhook,
-                            syncConfig,
-                            input: body,
-                            maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
-                            logContextGetter: this.logContextGetter
-                        });
-                    }
+                let triggered = false;
 
-                    triggered = true;
-                    if (webhook === '*') {
-                        // Only trigger once since it will match all webhooks
+                for (const webhook of webhook_subscriptions) {
+                    if (triggered) {
                         break;
                     }
+
+                    if (type === webhook || webhookHeaderValue === webhook || webhook === '*') {
+                        for (const connection of connections) {
+                            await orchestrator.triggerWebhook({
+                                account: this.team,
+                                environment: this.environment,
+                                integration: this.integration as Config,
+                                connection,
+                                webhookName: webhook,
+                                syncConfig,
+                                input: body,
+                                maxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
+                                logContextGetter: this.logContextGetter
+                            });
+                            scheduledCount += 1;
+                        }
+
+                        triggered = true;
+                        if (webhook === '*') {
+                            // Only trigger once since it will match all webhooks
+                            break;
+                        }
+                    }
                 }
             }
+        } finally {
+            metrics.increment(metrics.Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS, scheduledCount, { provider: this.integration.provider });
         }
     }
 

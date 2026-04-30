@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => {
         },
         dispatchQueueClient: { dispatchQueuePublisher: null as any },
         triggerWebhook: vi.fn(),
+        increment: vi.fn(),
         report: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
@@ -22,6 +23,14 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return {
         ...(actual as object),
+        metrics: {
+            ...(actual as any).metrics,
+            Types: {
+                WEBHOOK_DIRECT_TRIGGER_SUCCESS: 'nango.webhook.direct_trigger.success',
+                WEBHOOK_DISPATCH_LARGE_FANOUT: 'nango.webhook.dispatch_queue.large_fanout'
+            },
+            increment: mocks.increment
+        },
         report: mocks.report
     };
 });
@@ -97,6 +106,7 @@ function makeInternalNango(logContexts: ReturnType<typeof createLogCtx>[], logCo
 describe('InternalNango queue dispatch', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.increment.mockClear();
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = true;
         mocks.dispatchQueueClient.dispatchQueuePublisher = null;
         mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
@@ -149,6 +159,7 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
         expect(logContextGetter.create).not.toHaveBeenCalled();
         expect(publisher.publish).not.toHaveBeenCalled();
+        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 2, { provider: 'github' });
     });
 
     it('creates log contexts concurrently before publishing queue messages', async () => {
