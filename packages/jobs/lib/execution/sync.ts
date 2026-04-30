@@ -116,7 +116,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
                 integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
                 connection: { id: task.connection.id, name: task.connection.connection_id },
                 syncConfig: { id: syncConfig.id, name: syncConfig.sync_name },
-                meta: { scriptVersion: syncConfig.version }
+                meta: { scriptVersion: syncConfig.version, emptyCache: task.emptyCache }
             }
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation, startedAt));
@@ -194,6 +194,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncJobId: syncJob.id,
             attributes: syncConfig.attributes,
             track_deletes: syncConfig.track_deletes,
+            emptyCache: task.emptyCache,
             syncConfig,
             debug: task.debug || false,
             logger: sdkLogger,

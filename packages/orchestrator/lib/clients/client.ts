@@ -145,7 +145,8 @@ export class OrchestratorClient {
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
         const res = await this.routeFetch(postScheduleRunRoute)({
             body: {
-                scheduleName: props.scheduleName
+                scheduleName: props.scheduleName,
+                extra: props.extra
             }
         });
         if ('error' in res) {

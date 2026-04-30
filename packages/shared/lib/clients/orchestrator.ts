@@ -586,7 +586,7 @@ export class Orchestrator {
                     res = await this.client.unpauseSync({ scheduleName });
                     break;
                 case SyncCommand.RUN:
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: false } });
                     break;
                 case SyncCommand.RUN_FULL: {
                     await cancelling(syncId);
@@ -602,6 +602,7 @@ export class Orchestrator {
                         return Err(deletedCheckpoints.error);
                     }
 
+                    // TODO: remove block once the records deletion is handled as part of the sync execution
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
                         for (let model of syncConfig?.models || []) {
@@ -617,7 +618,7 @@ export class Orchestrator {
                         }
                     }
 
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: delete_records || false } });
                     break;
                 }
             }
