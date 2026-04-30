@@ -7126,6 +7126,24 @@ gerrit:
             doc_section: '#step-1-finding-your-host'
             order: 1
 
+getty-images:
+    display_name: Getty Images
+    categories:
+        - media
+    auth_mode: OAUTH2
+    authorization_url: https://authentication.gettyimages.com/oauth2/auth
+    token_url: https://authentication.gettyimages.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.gettyimages.com
+    docs: https://nango.dev/docs/api-integrations/getty-images
+    setup_guide_url: https://nango.dev/docs/api-integrations/getty-images/how-to-register-your-own-getty-images-oauth-app
+
 grammarly:
     display_name: Grammarly
     categories:

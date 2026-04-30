@@ -691,6 +691,7 @@
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",
               "integrations/all/gerrit",
+              "api-integrations/getty-images",
               "integrations/all/ghost-admin",
               "integrations/all/ghost-content",
               "api-integrations/github",
