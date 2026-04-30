@@ -72,31 +72,29 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
         return;
     }
 
-    if (account) {
-        const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'sync', action: 'delete_variant' } },
-            {
-                account,
-                environment,
-                ...(providerConfig
-                    ? {
-                          integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider }
-                      }
-                    : {}),
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: sync.sync_config_id, name: sync.name }
-            }
-        );
-        await logCtx.info(`Deleting sync variant '${params.variant}' for '${params.name}'`, {
-            syncName: params.name,
-            syncVariant: params.variant,
-            connection: connection.connection_id,
-            integration: providerConfig?.unique_key ?? body.provider_config_key,
-            syncId: sync.id
-        });
-        await logCtx.success();
-    }
-
     res.status(200).send({ success: true });
+
+    const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
+    const logCtx = await logContextGetter.create(
+        { operation: { type: 'sync', action: 'delete_variant' } },
+        {
+            account,
+            environment,
+            ...(providerConfig
+                ? {
+                      integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider }
+                  }
+                : {}),
+            connection: { id: connection.id, name: connection.connection_id },
+            syncConfig: { id: sync.sync_config_id, name: sync.name }
+        }
+    );
+    await logCtx.info(`Deleting sync variant '${params.variant}' for '${params.name}'`, {
+        syncName: params.name,
+        syncVariant: params.variant,
+        connection: connection.connection_id,
+        integration: providerConfig?.unique_key ?? body.provider_config_key,
+        syncId: sync.id
+    });
+    await logCtx.success();
 });

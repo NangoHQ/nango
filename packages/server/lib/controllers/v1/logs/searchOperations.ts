@@ -30,6 +30,8 @@ const validation = z
                     'sync:run',
                     'sync:request_run',
                     'sync:request_run_full',
+                    'sync:create_variant',
+                    'sync:delete_variant',
                     'proxy',
                     'deploy',
                     'auth',
