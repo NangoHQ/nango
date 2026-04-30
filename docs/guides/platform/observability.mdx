@@ -15,7 +15,7 @@ When you encounter a problem, great observability is the difference between a we
 We built Nango's logs based on three principles:
 
 - **Comprehensive**: Everything that happens in Nango for your integrations produces an "operation" in the logs
-- **Detailed**: Every operation and every log message contains detailed information about the integration, [connection](/guides/primitives/auth#overview), and [function](/guides/primitives/functions). Error messages are as detailed as the external APIs allow.
+- **Detailed**: Every operation and every log message contains detailed information about the integration, [connection](/guides/auth/overview#overview), and [function](/guides/functions/overview). Error messages are as detailed as the external APIs allow.
 - **Customizable**: You can easily log your own messages from functions you write ([learn more](/reference/functions#logging)). To consume logs, you can either use our built-in interface or export them with our [OpenTelemetry exporter](#opentelemetry-export)
 
 ## Overview of Nango logs
@@ -67,6 +67,6 @@ The following operations are exported as traces:
 
 ## Related guides
 
-- [Function logging](/implementation-guides/platform/functions/logging) - add custom logs from function code.
-- [Webhooks from Nango](/implementation-guides/platform/webhooks-from-nango#webhook-retries-and-debugging) - debug webhook delivery.
-- [Common issues](/implementation-guides/platform/common-issues) - troubleshoot failed auth, sync, and proxy operations.
+- [Function logging](/guides/functions/logging) - add custom logs from function code.
+- [Webhooks from Nango](/guides/platform/webhooks-from-nango#webhook-retries-and-debugging) - debug webhook delivery.
+- [Common issues](/guides/platform/common-issues) - troubleshoot failed auth, sync, and proxy operations.

@@ -1,0 +1,45 @@
+---
+title: 'Process external webhooks'
+sidebarTitle: 'Process external webhooks'
+description: 'Receive provider webhooks through Nango, then forward or process them with functions.'
+---
+
+Many APIs can notify you when something changes, but each provider has its own webhook registration flow, payload shape, retries, and connection mapping. Nango gives external APIs one integration-specific webhook URL and attributes incoming events to the right connection.
+
+You can forward those webhooks to your app, process them in Nango functions, or combine them with sync functions for reliable near real-time data.
+
+## When this fits
+
+Use Nango for external webhooks when:
+
+- A provider can notify you about changes faster than polling alone.
+- You need to map incoming provider webhooks to Nango connections.
+- Webhooks should trigger follow-up API requests with the user's credentials.
+- You want webhook events and related API calls visible in Nango logs.
+- You need real-time sync behavior without relying only on provider webhooks.
+
+For outgoing webhooks from Nango to your app, see [Receive webhooks from Nango](/guides/platform/webhooks-from-nango).
+
+## How Nango fits in
+
+1. You register the Nango webhook URL in the provider's developer portal.
+2. The provider sends events to Nango.
+3. Nango attributes each event to the right integration and connection when possible.
+4. Nango forwards the event to your app or routes it into a function.
+5. If the event updates synced data, the function writes records to Nango's cache.
+
+## Common patterns
+
+- Forward the provider webhook payload to your app for custom handling.
+- Use a webhook function to fetch the changed object and update the records cache.
+- Keep a periodic sync function as reconciliation in case provider webhooks are missed.
+- Register per-connection provider webhooks in an event function after authorization.
+
+## What to read next
+
+- [Webhook functions](/guides/functions/webhook-functions) - set up provider webhooks and process them in functions.
+- [Webhook forwarding](/guides/platform/webhook-forwarding) - forward external API webhooks through Nango to your app.
+- [Real-time syncs](/guides/functions/realtime-syncs) - combine provider webhooks with sync functions.
+- [Event functions](/guides/functions/event-functions) - register provider webhooks after connection creation.
+- [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) - configure your app's webhook URL and verify signatures.
+- [Sync functions](/guides/functions/sync-functions) - write changed records into Nango's cache.

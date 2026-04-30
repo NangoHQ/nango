@@ -515,7 +515,7 @@ await nango.getConnection(<INTEGRATION-ID>, <CONNECTION-ID>);
 <Info>
 The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth, etc.).
 
-If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/implementation-guides/platform/proxy/implement-requests-proxy)).
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the Proxy ([step-by-step guide](/guides/platform/proxy/implement-requests-proxy)).
 </Info>
 
 <Tip>
@@ -1512,7 +1512,7 @@ await nango.triggerSync('<INTEGRATION-ID>', [
         The connection ID. If omitted, the sync will trigger for all relevant connections.
     </ResponseField>
     <ResponseField name="opts" type="object">
-        Options for triggering the sync. See the [checkpoints guide](/implementation-guides/platform/functions/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
+        Options for triggering the sync. See the [checkpoints guide](/guides/functions/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details on `reset` and `emptyCache`.
         <Expandable>
             <ResponseField name="reset" type="boolean">
                 If `true`, clears the checkpoint before triggering the sync, causing it to start fresh.
@@ -1671,7 +1671,7 @@ await nango.syncStatus('<INTEGRATION-ID>', '*', '<CONNECTION_ID>');
 }
 ```
 
-The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/implementation-guides/platform/functions/checkpoints).
+The `checkpoint` field contains the last saved checkpoint for the sync. Learn more about [checkpoints](/guides/functions/checkpoints).
 </Expandable>
 
 ### Override sync connection frequency
@@ -1946,7 +1946,7 @@ const result = await nango.getAsyncActionResult({ statusUrl: '/action/action_123
 
 ## Proxy
 
-Makes an HTTP request using the [proxy](/implementation-guides/platform/proxy/implement-requests-proxy):
+Makes an HTTP request using the [proxy](/guides/platform/proxy/implement-requests-proxy):
 
 ```js
 const config = {

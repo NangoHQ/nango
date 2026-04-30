@@ -78,7 +78,7 @@ description: "Full reference of the SDK available in Nango Functions."
   </Tab>
 </Tabs>
 
-Read more about [integration functions](/guides/primitives/functions) to understand what role they play in Nango.
+Read more about [integration functions](/guides/functions/overview) to understand what role they play in Nango.
 
 ## Configuration
 
@@ -118,7 +118,7 @@ Read more about [integration functions](/guides/primitives/functions) to underst
 
 <ResponseField name="checkpoint" type="ZodSchema">
   Optional schema defining the shape of checkpoint data for this sync.
-  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/implementation-guides/platform/functions/checkpoints) for details.
+  Use checkpoints to save progress and avoid re-fetching all data on every run. See the [checkpoints guide](/guides/functions/checkpoints) for details.
 
   ```ts
   checkpoint: z.object({
@@ -758,7 +758,7 @@ await nango.getConnection();
 
 ## Sync-specific helper methods
 
-Sync functions persist data updates to the Nango cache, which your app later fetches. See the [sync functions section](/implementation-guides/platform/functions/sync-functions).
+Sync functions persist data updates to the Nango cache, which your app later fetches. See the [sync functions section](/guides/functions/sync-functions).
 
 ### Checkpoints
 
@@ -767,7 +767,7 @@ Checkpoints allow syncs to save their progress and resume from where they left o
 - Tracking pagination state across sync runs
 - Storing custom cursor/offset values
 
-To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/implementation-guides/platform/functions/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
+To use checkpoints, define a `checkpoint` schema in your sync configuration (see [Configuration](#createsync)). For a complete guide on implementing incremental syncs with checkpoints, see the [checkpoints guide](/guides/functions/checkpoints). If you are migrating from `nango.lastSyncDate`, see the [migration guide](/guides/platform/migrations/migrate-to-checkpoints).
 
 #### getCheckpoint()
 
@@ -842,7 +842,7 @@ This does not remove cached payloads.
 If you want to permanently remove data from Nango storage for cost or compliance reasons, use [record pruning instead](/reference/api/sync/prune-records).
 </Tip>
 
-To implement deletion detection in your syncs, [follow this guide](/implementation-guides/platform/functions/deletion-detection).
+To implement deletion detection in your syncs, [follow this guide](/guides/functions/deletion-detection).
 
 The only field that needs to be present in each record when calling `batchDelete` is the unique `id`; the other fields are ignored.
 
@@ -903,7 +903,7 @@ Call `trackDeletesStart` at the beginning of your sync execution, before fetchin
 `deleteRecordsFromPreviousExecutions` is deprecated. Use `trackDeletesStart`/`trackDeletesEnd` instead.
 </Note>
 
-For more details on deletion detection strategies, see the [detecting deletes guide](/implementation-guides/platform/functions/deletion-detection).
+For more details on deletion detection strategies, see the [detecting deletes guide](/guides/functions/deletion-detection).
 
 ### Update records
 
