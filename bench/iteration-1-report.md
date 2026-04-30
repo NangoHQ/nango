@@ -153,7 +153,7 @@ Whether 1.2 s for one outlier customer is acceptable, and what target we set for
 
 ---
 
-## Follow-ups (open questions, not recommendations)
+## Follow-ups
 
 These need to be answered before NAN-5390 can be declared resolved or before we can commit to migrating the dashboard.
 
@@ -165,9 +165,10 @@ These need to be answered before NAN-5390 can be declared resolved or before we 
 
 4. **ClickHouse for inline capping.** The capping refresh path (today: Orb + Redis) is a different access pattern from the dashboard — fewer dimensions, but on the request hot path with stricter latency and higher QPS. Iteration 1 didn't model this. Need to validate that ClickHouse can serve "is this account over its limit?" inline without becoming a new bottleneck for proxy/connection-creation requests.
 
-5. **Server-side metrics (`query_log`).** Iteration 1 is wall-time only. Once we want to optimise specific queries or model cluster capacity, we'll need `read_rows`, `memory_usage`, and thread parallelism per query. Requires `GRANT REMOTE ON *.* …` to read `clusterAllReplicas('default', system.query_log)`.
 
-6. **Open product/architecture questions.** Separately: does the left-column summary (`/plans/usage`) move to ClickHouse too, or stay on Orb? What latency target are we committing to for the page? How are billing-period boundaries reproduced if the summary leaves Orb? These are not bench questions but they shape what "done" looks like.
+## Notes
+
+**Server-side metrics (`query_log`).** Iteration 1 is wall-time only. Once we want to optimise specific queries or model cluster capacity, we'll need `read_rows`, `memory_usage`, and thread parallelism per query. Requires `GRANT REMOTE ON *.* …` to read `clusterAllReplicas('default', system.query_log)`.
 
 ---
 
