@@ -30,7 +30,7 @@
         "clsx": "2.1.1",
         "globals": "15.14.0",
         "lucide-react": "0.542.0",
-        "postcss": "8.5.1",
+        "postcss": "8.5.10",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "4.0.13",
