@@ -181,7 +181,7 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 ```mdx
 _No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/functions/functions-guide) independently.</Tip>
 ```
 
 ## Configuration Updates

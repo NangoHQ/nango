@@ -23,6 +23,7 @@ import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
     onWebhookPayloadReceived?: (nango: NangoSyncRunner, payload?: object) => Promise<unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
     default: ((nango: NangoActionRunner | NangoSyncRunner, payload?: object) => Promise<unknown>) | CreateAnyResponse;
 }
 
@@ -196,7 +197,7 @@ export async function exec({
                     if (!isEnterprise) {
                         if (outputSizeInBytes > maxSizeInBytes) {
                             throw new Error(
-                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22%2C-2025`
+                                `Output size is too large: ${outputSizeInBytes} bytes. Maximum allowed size is ${maxSizeInBytes} bytes (2MB). See the deprecation announcement: https://nango.dev/docs/updates/dev#august-22-2025`
                             );
                         }
                     }

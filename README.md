@@ -128,7 +128,7 @@ Fully operable via CLI and API. Compatible with any backend language or framewor
 
 ## Open-source vs. paid
 
-Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/free-self-hosting/configuration) with a limited feature set.
+Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/self-hosting#free-self-hosting) with a limited feature set.
 
 ## Contributing
 

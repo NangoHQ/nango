@@ -920,7 +920,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     <div className="flex text-white text-sm">
                                                         <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
                                                         <a
-                                                            href="https://nango.dev/docs/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization"
+                                                            href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue hover:text-text-light-blue ml-1"

@@ -32,7 +32,7 @@ export const Homepage: React.FC = () => {
                     <h2 className="text-xl text-center">Logs not configured</h2>
                     <div className="text-sm text-gray-400">
                         Follow{' '}
-                        <Link to="https://nango.dev/docs/guides/platform/free-self-hosting/configuration#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/platform/self-hosting#logs" className="text-blue-400">
                             these instructions
                         </Link>{' '}
                         to configure logs and enable execution metrics in your dashboard.

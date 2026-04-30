@@ -304,11 +304,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/guides/functions/action-functions#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 .
@@ -317,15 +313,11 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/guides/functions/action-functions#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/getting-started/use-cases/actions/async-actions" type="external" variant="info">
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously" type="external" variant="info">
                                     async actions
                                 </StyledLink>
                                 .

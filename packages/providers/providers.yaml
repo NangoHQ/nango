@@ -1178,7 +1178,7 @@ apollo-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://app.apollo.io/api
-    docs: https://nango.dev/docs/api-integrations/apollo-oauth
+    docs: https://nango.dev/docs/integrations/all/apollo-oauth
 
 apple-app-store:
     display_name: Apple App Store
@@ -1343,8 +1343,8 @@ asana-scim:
                 - /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/api-integrations/asana-scim
-    docs_connect: https://nango.dev/docs/api-integrations/asana-scim/connect
+    docs: https://nango.dev/docs/integrations/all/asana-scim
+    docs_connect: https://nango.dev/docs/integrations/all/asana-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2214,7 +2214,7 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
-    docs: https://nango.dev/docs/integrations/all/bamboohr
+    docs: https://nango.dev/docs/api-integrations/bamboohr
     setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
     connection_config:
@@ -4332,7 +4332,7 @@ copper-api-key:
                 content-type: application/json
             endpoints:
                 - /v1/account
-    docs_connect: https://nango.dev/docs/integrations/all/copper/connect
+    docs_connect: https://nango.dev/docs/integrations/all/copper-api-key/connect
     credentials:
         apiKey:
             type: string
@@ -4504,8 +4504,8 @@ confluence-basic:
                 content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
-    docs: https://nango.dev/docs/api-integrations/confluence-basic
-    docs_connect: https://nango.dev/docs/api-integrations/confluence-basic/connect
+    docs: https://nango.dev/docs/integrations/all/confluence-basic
+    docs_connect: https://nango.dev/docs/integrations/all/confluence-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -4542,8 +4542,8 @@ confluence-data-center:
             after:
                 - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
-    docs: https://nango.dev/docs/api-integrations/confluence-data-center
-    docs_connect: https://nango.dev/docs/api-integrations/confluence-data-center/connect
+    docs: https://nango.dev/docs/integrations/all/confluence-data-center
+    docs_connect: https://nango.dev/docs/integrations/all/confluence-data-center/connect
     connection_config:
         endpointURL:
             type: string
@@ -10414,8 +10414,8 @@ loop-returns:
         headers:
             x-authorization: ${apiKey}
         base_url: https://api.loopreturns.com/api
-    docs: https://docs.nango.dev/integrations/all/loop-returns
-    docs_connect: https://docs.nango.dev/integrations/all/loop-returns/connect
+    docs: https://nango.dev/docs/integrations/all/loop-returns
+    docs_connect: https://nango.dev/docs/integrations/all/loop-returns/connect
     credentials:
         apiKey:
             type: string
@@ -11109,8 +11109,8 @@ microsoft-oauth2-cc:
     webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - validationToken
-    docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -11316,8 +11316,8 @@ maxio:
             method: GET
             endpoints:
                 - /subscriptions.json
-    docs: https://nango.dev/docs/integrations/all/maxio
-    docs_connect: https://nango.dev/docs/integrations/all/maxio/connect
+    docs: https://nango.dev/docs/api-integrations/maxio
+    docs_connect: https://nango.dev/docs/api-integrations/maxio/connect
     credentials:
         username:
             type: string
@@ -13323,8 +13323,8 @@ pennylane-company-api:
         retry:
             at:
                 - 'ratelimit-reset'
-    docs: https://docs.nango.dev/integrations/all/pennylane-company-api
-    docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
+    docs: https://nango.dev/docs/integrations/all/pennylane-company-api
+    docs_connect: https://nango.dev/docs/integrations/all/pennylane-company-api/connect
     credentials:
         apiKey:
             type: string
@@ -13549,8 +13549,8 @@ pingone:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingone
-    docs_connect: https://docs.nango.dev/integrations/all/pingone/connect
+    docs: https://nango.dev/docs/integrations/all/pingone
+    docs_connect: https://nango.dev/docs/integrations/all/pingone/connect
     connection_config:
         tld:
             type: string
@@ -13582,8 +13582,8 @@ pingone-cc:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingone-cc
-    docs_connect: https://docs.nango.dev/integrations/all/pingone-cc/connect
+    docs: https://nango.dev/docs/integrations/all/pingone-cc
+    docs_connect: https://nango.dev/docs/integrations/all/pingone-cc/connect
     connection_config:
         tld:
             type: string
@@ -15123,8 +15123,8 @@ rootly:
                 content-type: application/vnd.api+json
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/rootly
-    docs_connect: https://nango.dev/docs/integrations/all/rootly/connect
+    docs: https://nango.dev/docs/api-integrations/rootly
+    docs_connect: https://nango.dev/docs/api-integrations/rootly/connect
     credentials:
         apiKey:
             type: string
@@ -15353,7 +15353,7 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
-    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
     docs_connect: https://nango.dev/docs/api-integrations/salesforce/connect
     connection_config:
         instance_url:
@@ -15506,7 +15506,7 @@ salesforce-experience-cloud:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://nango.dev/docs/api-integrations/salesforce-experience-cloud
+    docs: https://nango.dev/docs/integrations/all/salesforce-experience-cloud
     connection_config:
         subdomain:
             type: string
@@ -15552,7 +15552,7 @@ salesforce-cdp:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/api-integrations/salesforce-cdp
+    docs: https://nango.dev/docs/integrations/all/salesforce-cdp
     docs_connect: https://nango.dev/docs/integrations/all/salesforce-cdp/connect
     credentials:
         jwt:
@@ -16411,8 +16411,8 @@ sharepoint-online-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
-    docs: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc
-    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc/connect
+    docs: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc
+    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -16447,8 +16447,8 @@ sharepoint-online-v1:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/api-integrations/sharepoint-online-v1
-    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-v1/connect
+    docs: https://nango.dev/docs/integrations/all/sharepoint-online-v1
+    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect
     connection_config:
         tenantId:
             type: string
@@ -19729,8 +19729,8 @@ workday-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.tokenDomain}/ccx/api
-    docs: https://nango.dev/docs/integrations/all/workday-oauth
-    docs_connect: https://nango.dev/docs/integrations/all/workday-oauth/connect
+    docs: https://nango.dev/docs/api-integrations/workday-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/workday-oauth/connect
     connection_config:
         authorizationDomain:
             type: string
