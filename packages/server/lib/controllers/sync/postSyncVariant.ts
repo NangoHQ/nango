@@ -124,6 +124,28 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
         logContextGetter
     });
 
+    const account = res.locals.account;
+    if (account) {
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'sync', action: 'create_variant' } },
+            {
+                account,
+                environment,
+                integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider },
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
+            }
+        );
+        await logCtx.info(`Creating sync variant '${params.variant}' for '${params.name}'`, {
+            syncName: params.name,
+            syncVariant: params.variant,
+            connection: connection.connection_id,
+            integration: providerConfig.unique_key,
+            syncId: sync.id
+        });
+        await logCtx.success();
+    }
+
     res.status(200).send({
         id: sync.id,
         name: sync.name,

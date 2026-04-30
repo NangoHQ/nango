@@ -120,6 +120,8 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'sync:request_run': 'Incremental execution triggered',
     'sync:run': 'Sync executed',
     'sync:unpause': 'Sync schedule resumed',
+    'sync:create_variant': 'Sync variant created',
+    'sync:delete_variant': 'Sync variant deleted',
     'webhook:incoming': 'External webhook executed',
     'webhook:forward': 'External webhook forwarded',
     'webhook:sync': 'Sync completion webhooks',

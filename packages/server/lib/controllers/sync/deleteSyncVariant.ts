@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
-import { connectionService, getSync, syncManager } from '@nangohq/shared';
+import { logContextGetter } from '@nangohq/logs';
+import { configService, connectionService, getSync, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
@@ -46,7 +47,7 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
 
     const body: DeleteSyncVariant['Body'] = parsedBody.data;
     const params: DeleteSyncVariant['Params'] = parsedParams.data;
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
 
     if (params.variant.toLowerCase() === 'base') {
         res.status(400).send({ error: { code: 'invalid_variant', message: `Cannot delete protected variant "${params.variant}".` } });
@@ -70,5 +71,32 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
         res.status(500).send({ error: { code: 'failed_sync_variant_deletion' } });
         return;
     }
+
+    if (account) {
+        const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'sync', action: 'delete_variant' } },
+            {
+                account,
+                environment,
+                ...(providerConfig
+                    ? {
+                          integration: { id: providerConfig.id!, name: providerConfig.unique_key, provider: providerConfig.provider }
+                      }
+                    : {}),
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: sync.sync_config_id, name: sync.name }
+            }
+        );
+        await logCtx.info(`Deleting sync variant '${params.variant}' for '${params.name}'`, {
+            syncName: params.name,
+            syncVariant: params.variant,
+            connection: connection.connection_id,
+            integration: providerConfig?.unique_key ?? body.provider_config_key,
+            syncId: sync.id
+        });
+        await logCtx.success();
+    }
+
     res.status(200).send({ success: true });
 });
