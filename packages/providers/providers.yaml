@@ -102,6 +102,52 @@
             secret: true
             doc_section: '#step-1-obtaining-your-client-credentials'
 
+absorb-lms:
+    display_name: Absorb LMS
+    categories:
+        - other
+    auth_mode: OAUTH2
+    disable_pkce: true
+    authorization_url: https://${connectionConfig.portalRoute}/oauth/authorize
+    token_url: https://${connectionConfig.portalRoute}/oauth/token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: ${connectionConfig.portalRoute}
+        headers:
+            x-api-version: ${connectionConfig.apiVersion}
+            x-api-key: ${connectionConfig.restApiKey}
+    docs: https://nango.dev/docs/api-integrations/absorb-lms
+    docs_connect: https://nango.dev/docs/api-integrations/absorb-lms/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/absorb-lms/how-to-register-your-own-absorb-lms-api-oauth-app
+    connection_config:
+        portalRoute:
+            type: string
+            title: Hostname
+            description: The hostname of your Absorb LMS portal.
+            example: mycompany.myabsorb.com
+            prefix: https://
+            format: hostname
+            order: 1
+            doc_section: '#step-1-finding-your-portal-route'
+        restApiKey:
+            type: string
+            title: REST API Key
+            description: Your Absorb LMS REST API Private Key.
+            secret: true
+            order: 2
+            doc_section: '#step-2-finding-your-rest-api-key'
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            default_value: 'v1'
+            hidden: true
+
 accelo:
     display_name: Accelo
     categories:
