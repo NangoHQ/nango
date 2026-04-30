@@ -58,26 +58,19 @@ Each cell shows `simple → breakdown` ms.
 
 ### What this matrix shows
 
-**Breakdown is essentially free across the population.** Out of 30 cells with a meaningful breakdown column (excluding the 5 connection cells), only 5 have a ratio > 1.5×:
+**Breakdown is cheap for small/medium queries; it gets expensive on large ones.** The top-N+rest pattern needs to scan the source partition essentially twice — once in the subquery that picks the top-25 connections, once in the outer aggregation. So as the partition grows, the breakdown overhead grows with it. The 5 cells with a >1.5× ratio are all the largest-volume (account, metric) pairs in the dataset:
 
-| Account | Metric | simple | breakdown | ratio |
-|---|---|---|---|---|
-| doomsday-fn (3660) | function_compute_gbms | 252 | 535 | **2.12×** |
-| doomsday-fn (3660) | function_executions | 254 | 478 | **1.88×** |
-| doomsday-fn (3660) | function_logs | 230 | 430 | **1.87×** |
-| doomsday-fn (3660) | records | 290 | 443 | **1.53×** |
-| doomsday-px (2976) | proxy | 246 | 368 | **1.50×** |
+| Account | Metric | source rows (14d) | simple | breakdown | ratio |
+|---|---|---|---|---|---|
+| doomsday-fn (3660) | function_compute_gbms | 2.24M | 252 | 535 | **2.12×** |
+| doomsday-fn (3660) | function_executions | 2.24M | 254 | 478 | **1.88×** |
+| doomsday-fn (3660) | function_logs | 2.24M | 230 | 430 | **1.87×** |
+| doomsday-fn (3660) | records | 17.8k | 290 | 443 | **1.53×** |
+| doomsday-px (2976) | proxy | 595k | 246 | 368 | **1.50×** |
 
-In every other (account, metric) cell with real data, simple ≈ breakdown within noise. The breakdown overhead only materialises when there is a lot of data to bucket, and 4 of the 5 expensive cells belong to the same outlier account (3660).
+In every other (account, metric) cell with real data, simple ≈ breakdown within noise. The breakdown overhead only materialises when there is a lot of data to bucket — and 4 of the 5 expensive cells belong to the same outlier account (3660), with its 2.24M-row partition.
 
-**Row volume drives breakdown cost more than cardinality.** The 5 expensive cells happen to have both high source-row counts and high distinct-connection counts — in this dataset the two correlate (high-traffic customers tend to have many active connections). To separate them, the cleanest comparison is the two doomsday accounts:
-
-| account / metric | distinct conns | total rows | breakdown ms |
-|---|---|---|---|
-| doomsday-fn / function_executions | 15,819 | 2.24M | **478** |
-| doomsday-px / proxy | 82,397 | 595k | **368** |
-
-Doomsday-px has **5× more distinct connections** but **~4× fewer source rows**, and its breakdown is *cheaper*. So between two high-volume cases, the one with more rows wins on cost; the one with more cardinality does not. That tells us the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` is doing its job — ClickHouse prunes to the relevant partition cheaply, and the per-connection grouping inside is small relative to the row scan.
+**It's not cardinality, it's row volume.** Doomsday-px has 82,397 distinct connections (5× doomsday-fn) but ~4× fewer source rows, and its breakdown (368 ms) is *cheaper* than doomsday-fn's (478 ms). So between two high-volume cases, row count predicts cost — cardinality does not. That tells us the sort-key prefix `(account_id, day, environment_id, integration_id, connection_id, …)` is doing its job: ClickHouse prunes to the relevant partition cheaply, and the per-connection grouping inside is small relative to the row scan.
 
 ---
 
