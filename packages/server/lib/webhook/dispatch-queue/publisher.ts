@@ -10,6 +10,7 @@ import type { WebhookDispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;
 const DEFAULT_PUBLISH_CONCURRENCY = 10;
+export const SQS_BATCH_MAX_BYTES = 1_048_576;
 
 export interface DispatchQueuePublisherProps {
     sqs: SQSClient;
@@ -24,6 +25,11 @@ export interface PublishResult {
     enqueued: number;
     failed: number;
     failedActivityLogIds: string[];
+}
+
+export interface PreparedDispatchMessage {
+    message: WebhookDispatchMessage;
+    byteSize: number;
 }
 
 interface BatchPublishResult extends PublishResult {
@@ -60,13 +66,13 @@ export class DispatchQueuePublisher {
      * caller can treat them as a metric/trace concern, not an HTTP 500 (provider retries
      * are worse).
      */
-    async publish(messages: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
+    async publish(messages: PreparedDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
         if (messages.length === 0) {
             return { enqueued: 0, failed: 0, failedActivityLogIds: [] };
         }
 
         const activeSpan = tracer.scope().active();
-        const firstMessage = messages[0]!;
+        const firstMessage = messages[0]!.message;
         const batches = chunk(messages, this.batchSize);
         const span = tracer.startSpan('webhook.dispatch.publish', {
             ...(activeSpan ? { childOf: activeSpan } : {}),
@@ -121,7 +127,7 @@ export class DispatchQueuePublisher {
         });
     }
 
-    private async sendBatch(batch: WebhookDispatchMessage[], messageGroupId: string): Promise<BatchPublishResult> {
+    private async sendBatch(batch: PreparedDispatchMessage[], messageGroupId: string): Promise<BatchPublishResult> {
         const entries = batch.map((message, idx) => toEntry(message, idx, messageGroupId));
 
         const first = await this.trySend(entries);
@@ -158,7 +164,7 @@ export class DispatchQueuePublisher {
                     return [];
                 }
 
-                const activityLogId = batch[index]?.activityLogId;
+                const activityLogId = batch[index]?.message.activityLogId;
                 return activityLogId ? [activityLogId] : [];
             }),
             retriedEntries: failedIndices.length
@@ -178,10 +184,10 @@ export class DispatchQueuePublisher {
     }
 }
 
-function toEntry(message: WebhookDispatchMessage, index: number, messageGroupId: string): SendMessageBatchRequestEntry {
+function toEntry(message: PreparedDispatchMessage, index: number, messageGroupId: string): SendMessageBatchRequestEntry {
     return {
         Id: indexToEntryId(index),
-        MessageBody: JSON.stringify(message),
+        MessageBody: JSON.stringify(message.message),
         MessageGroupId: messageGroupId
     };
 }
@@ -199,10 +205,28 @@ function entryIdToIndex(id: string): number | null {
     return Number.isNaN(index) ? null : index;
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < items.length; i += size) {
-        chunks.push(items.slice(i, i + size));
+function chunk(items: PreparedDispatchMessage[], size: number): PreparedDispatchMessage[][] {
+    const chunks: PreparedDispatchMessage[][] = [];
+    let currentChunk: PreparedDispatchMessage[] = [];
+    let currentChunkBytes = 0;
+
+    for (const item of items) {
+        const exceedsBatchSize = currentChunk.length >= size;
+        const exceedsBatchBytes = currentChunkBytes + item.byteSize > SQS_BATCH_MAX_BYTES;
+
+        if (currentChunk.length > 0 && (exceedsBatchSize || exceedsBatchBytes)) {
+            chunks.push(currentChunk);
+            currentChunk = [];
+            currentChunkBytes = 0;
+        }
+
+        currentChunk.push(item);
+        currentChunkBytes += item.byteSize;
     }
+
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk);
+    }
+
     return chunks;
 }
