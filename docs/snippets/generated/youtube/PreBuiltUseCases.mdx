@@ -1,3 +1,56 @@
-_No pre-built syncs or actions available yet._
+### Captions
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-captions` | List caption tracks for a YouTube video. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/list-captions.ts) |
+
+### Channels
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-channel` | Retrieve YouTube channel details by ID, handle, username, or mine | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/get-channel.ts) |
+
+### Comments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-comment-reply` | Reply to an existing YouTube comment | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/create-comment-reply.ts) |
+| `create-comment` | Create a top-level comment on a YouTube video or channel thread. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/create-comment.ts) |
+| `delete-comment` | Delete a YouTube comment by comment ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/delete-comment.ts) |
+| `get-comment` | Retrieve a YouTube comment by comment ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/get-comment.ts) |
+| `list-comment-threads` | List YouTube comment threads for a video or channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/list-comment-threads.ts) |
+| `update-comment` | Update the text of a YouTube comment. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/update-comment.ts) |
+
+### Playlists
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-playlist-item` | Add a video to a YouTube playlist | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/add-playlist-item.ts) |
+| `create-playlist` | Create a YouTube playlist for the authenticated channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/create-playlist.ts) |
+| `delete-playlist-item` | Remove an item from a YouTube playlist | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/delete-playlist-item.ts) |
+| `delete-playlist` | Delete a YouTube playlist by playlist ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/delete-playlist.ts) |
+| `get-playlist` | Retrieve a YouTube playlist by playlist ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/get-playlist.ts) |
+| `list-channel-playlists` | List playlists for a YouTube channel | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/list-channel-playlists.ts) |
+| `list-playlist-items` | List items in a YouTube playlist | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/list-playlist-items.ts) |
+| `update-playlist` | Update a YouTube playlist's metadata or privacy state | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/update-playlist.ts) |
+
+### Videos
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-video` | Delete a YouTube video owned by the authenticated channel. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/delete-video.ts) |
+| `get-video` | Retrieve a YouTube video by video ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/get-video.ts) |
+| `list-uploaded-videos` | List uploaded videos for a channel using its uploads playlist. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/list-uploaded-videos.ts) |
+| `update-video` | Update YouTube video metadata for an owned video. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/update-video.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `update-playlist-item` | Update a playlist item's metadata or position. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/actions/update-playlist-item.ts) |
+| `caption-tracks` | Sync caption track metadata for YouTube videos in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/caption-tracks.ts) |
+| `channel-playlists` | Sync playlists for YouTube channels in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/channel-playlists.ts) |
+| `channels` | Sync one or more YouTube channels in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/channels.ts) |
+| `comment-threads` | Sync comment threads for YouTube videos or channels in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/comment-threads.ts) |
+| `playlist-items` | Sync items from YouTube playlists in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/playlist-items.ts) |
+| `uploaded-videos` | Sync uploaded videos for YouTube channels in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youtube/syncs/uploaded-videos.ts) |

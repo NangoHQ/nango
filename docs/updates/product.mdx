@@ -32,7 +32,7 @@ description: "Product updates and improvements."
   - ***Enabled* functions only:** The function dropdown shows only functions that are enabled for the selected integration.
   - **Input validation:** Required fields are validated before execution. Missing inputs are flagged immediately without triggering a run.
   - **Inline results and errors:** Execution results, timing, and error codes (e.g., invalid credentials) are displayed directly in the panel.
-  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#observability) view for any execution directly from the result.
+  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#overview-of-nango-logs) view for any execution directly from the result.
   - **Permission-gated:** Playground access in production environments respects your team's [roles](/guides/platform/security#team-and-roles).
 </Update>
 ---
@@ -171,7 +171,7 @@ description: "Product updates and improvements."
   });
   ```
 
-  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints).
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/implementation-guides/platform/functions/checkpoints).
 
   **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. Follow the [Migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
 
@@ -191,7 +191,7 @@ description: "Product updates and improvements."
 
   ![Building Nango integrations with Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
-  See the [Functions guide](/guides/primitives/functions#guide) for instructions on building integrations with AI.
+  See the [Functions guide](/guides/primitives/functions#step-by-step-guide) for instructions on building integrations with AI.
 
   ## Support for MCP Auth
 
@@ -262,7 +262,7 @@ description: "Product updates and improvements."
   - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload.
   - **Automated hard deletion:** If a sync has not executed for 60 days, we permanently delete all records belonging to that sync (payload and metadata).
 
-  These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/use-cases/syncs/records-cache).
+  These policies take effect starting January 8, 2026. See the [Records cache documentation](/implementation-guides/platform/functions/records-cache).
 
   We also introduced a new endpoint to manually prune records.
 
@@ -450,7 +450,7 @@ description: "Product updates and improvements."
   nango clone github/actions/list-repos
   ```
 
-  See the guide on [customizing a function template](/guides/primitives/functions#guide).
+  See the guide on [customizing a function template](/guides/primitives/functions#step-by-step-guide).
 
   ## Better support for Monorepos & Package Managers
 
@@ -519,7 +519,7 @@ description: "Product updates and improvements."
 
   ## Integrating Nango into your CI/CD processes
 
-  - [CI/CD for Nango integrations](/implementation-guides/platform/functions/ci-cd#ci-cd-for-nango-integrations): A complete guide on integrating Nango into your CI/CD processes.
+  - [CI/CD for Nango integrations](/implementation-guides/platform/functions/ci-cd): A complete guide on integrating Nango into your CI/CD processes.
 
   ## New blog posts
 
@@ -583,7 +583,7 @@ description: "Product updates and improvements."
 
   ## Improved deletion detection when syncing data
 
-  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/use-cases/syncs/deletion-detection)).
+  For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/implementation-guides/platform/functions/deletion-detection)).
 
   Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 
@@ -593,7 +593,7 @@ description: "Product updates and improvements."
 
   ## Custom credentials verification
 
-  We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/implementation-guides/use-cases/implement-event-handler)).
+  We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/implementation-guides/platform/functions/event-functions)).
 
   This lets you verify your customers’ API credentials by testing them against specific endpoints that correspond to particular API scopes.
 
@@ -739,7 +739,7 @@ description: "Product updates and improvements."
     ![Generate integrations with AI illustration](/images/changelog/generate-integrations-with-ai.png)
   </Frame>
   We published a new guide on using AI to generate integrations faster than coding them manually. You can still edit the generated code as needed.\
-  [Guide](/guides/primitives/functions#guide).
+  [Guide](/guides/primitives/functions#step-by-step-guide).
 
   ---
 
@@ -812,7 +812,7 @@ description: "Product updates and improvements."
 
   - Choose a language.
   - Override links to end-user guides with your own versions.\
-    [Docs](/reference/sdks/frontend#param-lang).
+    [Docs](/reference/sdks/frontend#connect-using-nango-connect-ui).
 
   ---
 
@@ -824,7 +824,7 @@ description: "Product updates and improvements."
   - You don’t need the response right away.
   - Actions should be retried for reliability.
   - You’re sending many actions at once.\
-    [Docs](/implementation-guides/use-cases/actions#async-execution).
+    [Docs](/implementation-guides/platform/functions/action-functions#trigger-asynchronously).
 
   ---
 
@@ -1066,7 +1066,7 @@ description: "Product updates and improvements."
 
   The API and UI give you full control over these syncs, letting you create, manage, and monitor them with ease.
 
-  [Learn more in the docs](/implementation-guides/use-cases/syncs/sync-partitioning).
+  [Learn more in the docs](/implementation-guides/platform/functions/sync-partitioning).
 
   ---
 
@@ -1115,7 +1115,7 @@ description: "Product updates and improvements."
   - **Most recent update wins (default)**: The latest write—whether from a webhook or a periodic sync—always updates the record.
   - **Ignore older updates**: When polling, Nango checks if a newer webhook update exists. If so, it preserves the more recent webhook data instead of overwriting it.
 
-  [Learn more in the docs](/implementation-guides/use-cases/syncs#sync-concurrency-considerations).
+  [Learn more in the docs](/implementation-guides/platform/functions/realtime-syncs#sync-concurrency-considerations).
 
   ---
 </Update>
@@ -1171,7 +1171,7 @@ description: "Product updates and improvements."
   <Frame>
     ![Event-based scripts illustration](/images/changelog/event-based-scripts.png)
   </Frame>
-  Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/implementation-guides/use-cases/implement-event-handler).
+  Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/implementation-guides/platform/functions/event-functions).
 
   ---
 </Update>
@@ -1263,7 +1263,7 @@ description: "Product updates and improvements."
   <Frame>
     ![Guides illustration](/images/changelog/guides.png)
   </Frame>
-  The [Guides](/guides) section of the documentation has been improved with a feature-based classification and more comprehensive, detailed guides.
+  The [Guides](/getting-started/intro-to-nango) section of the documentation has been improved with a feature-based classification and more comprehensive, detailed guides.
 
   ---
 
@@ -1272,7 +1272,7 @@ description: "Product updates and improvements."
   <Frame>
     ![API-specific docs illustration](/images/changelog/api-specific-docs.png)
   </Frame>
-  API-specific documentation has been enhanced to include more details about tooling, pre-built integrations, and configurations for each API. For example, see the [Hubspot](/api-integrations/hubspot) documentation. These API-specific docs are automatically generated and kept up-to-date.
+  API-specific documentation has been enhanced to include more details about tooling, template functions, and configurations for each API. For example, see the [Hubspot](/api-integrations/hubspot) documentation. These API-specific docs are automatically generated and kept up-to-date.
 
   ---
 
@@ -1281,7 +1281,7 @@ description: "Product updates and improvements."
   <Frame>
     ![Integration docs illustration](/images/changelog/integration-docs.png)
   </Frame>
-  Each pre-built integration now includes a ReadMe file with detailed information about the integration, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company integration](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
+  Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company template function](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
 
   ---
 
@@ -1444,5 +1444,5 @@ description: "Product updates and improvements."
   <Frame>
     ![JSONSchema types screenshot](/images/changelog/jsonschema-types.png)
   </Frame>
-  Nango now lets you generate strongly-typed JSONSchema models for your integrations inputs and outputs, compatible with all programming languages and importable in your codebase. For TypeScript codebases, you can also generate TypeScript and Zod models. Check out this [guide](/implementation-guides/platform/functions/data-validation#using-schema-json-in-your-codebase) to get started.
+  Nango now lets you generate strongly-typed JSONSchema models for your integrations inputs and outputs, compatible with all programming languages and importable in your codebase. For TypeScript codebases, you can also generate TypeScript and Zod models. Check out this [guide](/implementation-guides/platform/functions/data-validation#json-schema-runtime-language-agnostic) to get started.
 </Update>

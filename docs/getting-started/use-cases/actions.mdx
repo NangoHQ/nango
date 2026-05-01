@@ -1,0 +1,43 @@
+---
+title: 'Run external API operations'
+sidebarTitle: 'Run external API operations'
+description: 'Use Nango functions to read, write, and automate external APIs on demand.'
+---
+
+Some integration work needs to happen immediately: create a CRM contact, send a Slack message, fetch the latest account settings, or run a multi-step workflow after a user clicks a button.
+
+Nango handles these on-demand operations with Action functions. You write the API logic once, Nango runs it with the right connection credentials, and your app calls the function from any backend or agent framework.
+
+## When this fits
+
+Use Action functions when you need to:
+
+- Run reads or writes against an external API on demand.
+- Hide multi-step provider workflows behind one stable interface.
+- Normalize the same operation across several APIs.
+- Execute bulk or rate-limited work in the background.
+- Expose selected operations as tools for AI agents.
+
+For continuously replicated data, use [Sync external API data](/getting-started/use-cases/syncs) instead.
+
+## How Nango fits in
+
+1. Your user authorizes an integration with Nango.
+2. You enable a template function or deploy your own.
+3. Your app calls the function with an input payload.
+4. Nango executes the provider API calls with the user's credentials.
+5. Your app receives the result, or polls/listens for completion if the function runs asynchronously.
+
+These functions are the technical foundation behind on-demand API operations, unified APIs, and AI tool calls.
+
+## What to read next
+
+- [Functions guide](/guides/functions/overview) - create, test, deploy, and trigger functions end to end.
+- [Action functions](/guides/functions/action-functions) - synchronous calls, async execution, retries, and workflows.
+- [Tool calling for AI agents](/getting-started/use-cases/tool-calling) - use functions as AI tools.
+- [Build a unified API](/getting-started/use-cases/unified-apis) - use functions behind a normalized product API.
+- [Functions SDK reference](/reference/functions) - runtime methods available inside function code.
+
+<Note>
+  You can enable template functions from the [template catalog](https://www.nango.dev/templates) and skip writing code until you need custom behavior.
+</Note>
