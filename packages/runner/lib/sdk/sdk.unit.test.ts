@@ -624,3 +624,32 @@ describe('listRecords', () => {
         });
     });
 });
+
+describe('deleteRecordsUpToCursor', () => {
+    it('should throw if aborted', async () => {
+        const ac = new AbortController();
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
+        ac.abort();
+        await expect(nango.deleteRecordsUpToCursor('SomeModel', { cursor: 'c1' })).rejects.toThrowError(new ExecutionAbortedSDKError());
+    });
+
+    it('should call persist deleteRecordsUpToCursor with model and cursor', async () => {
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.deleteRecordsUpToCursor = vi.fn().mockResolvedValueOnce(Ok({ deletedCount: 3 }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const result = await nango.deleteRecordsUpToCursor('SomeModel', { cursor: 'cursor123' });
+
+        expect(result).toEqual({ deletedCount: 3 });
+        expect(mockPersistClient.deleteRecordsUpToCursor).toHaveBeenCalledOnce();
+        expect(mockPersistClient.deleteRecordsUpToCursor).toHaveBeenCalledWith({
+            model: 'SomeModel',
+            cursor: 'cursor123',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            syncId: nangoProps.syncId,
+            syncJobId: nangoProps.syncJobId,
+            activityLogId: nangoProps.activityLogId
+        });
+    });
+});

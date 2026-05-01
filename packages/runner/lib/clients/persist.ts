@@ -10,6 +10,7 @@ import type {
     CursorOffset,
     DeleteOutdatedRecordsSuccess,
     DeleteRecordsSuccess,
+    DeleteRecordsUpToCursorSuccess,
     GetCheckpointSuccess,
     GetCursorSuccess,
     GetRecordsSuccess,
@@ -248,6 +249,38 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to delete outdated records: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async deleteRecordsUpToCursor({
+        model,
+        cursor,
+        environmentId,
+        nangoConnectionId,
+        syncId,
+        syncJobId,
+        activityLogId
+    }: {
+        model: string;
+        cursor: string;
+        environmentId: number;
+        nangoConnectionId: number;
+        syncId: string;
+        syncJobId: number;
+        activityLogId: string;
+    }): Promise<Result<DeleteRecordsUpToCursorSuccess>> {
+        const res = await this.fetch<DeleteRecordsUpToCursorSuccess>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records/up-to-cursor`,
+            data: {
+                model,
+                cursor,
+                activityLogId
+            }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to delete records up to cursor: ${res.error.message}`));
         }
         return res;
     }
