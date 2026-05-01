@@ -2,10 +2,10 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
+import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { pubsub } from '../pubsub.js';
 
 import type { DBEnvironment } from '@nangohq/types';
 

@@ -158,7 +158,6 @@ class AccountService {
                 return null;
             }
 
-            await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
             if (flagHasPlan) {
                 const freePlan = plansList.find((plan) => plan.code === 'free');
                 const res = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
@@ -168,6 +167,7 @@ class AccountService {
                     throw res.error;
                 }
             }
+            await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
             return result[0];
         });

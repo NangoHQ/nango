@@ -28,6 +28,7 @@
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:../providers",
+        "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/utils": "file:../utils",
         "@xmldom/xmldom": "0.8.12",
         "ajv": "8.18.0",

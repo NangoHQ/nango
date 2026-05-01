@@ -36,7 +36,6 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "@nangohq/pubsub": "file:../pubsub",
         "@workos-inc/node": "6.2.0",
         "axios": "1.15.0",
         "body-parser": "2.2.1",

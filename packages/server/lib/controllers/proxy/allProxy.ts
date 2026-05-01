@@ -13,6 +13,7 @@ import {
     connectionService,
     errorManager,
     getProxyConfiguration,
+    pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
 import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
@@ -21,7 +22,6 @@ import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDen
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
-import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { capping } from '../../utils/usage.js';
 import { featureFlags } from '../../utils/utils.js';

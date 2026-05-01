@@ -61,6 +61,8 @@ export * from './utils/error.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
 
+export { pubsub } from './utils/pubsub.js';
+
 export {
     ErrorSourceEnum,
     Orchestrator,

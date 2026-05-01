@@ -10,12 +10,12 @@ import {
     externalWebhookService,
     getProxyConfiguration,
     productTracking,
+    pubsub,
     syncManager
 } from '@nangohq/shared';
 import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
-import { pubsub } from '../pubsub.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';

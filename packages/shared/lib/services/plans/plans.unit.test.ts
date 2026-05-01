@@ -136,7 +136,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_records_autopruning: true,
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,
-        lambda_tenant_isolation: false,
+        lambda_tenant_isolation: defaultPlanDefinition.flags.lambda_tenant_isolation ?? false,
         ...defaultPlanDefinition,
         ...flagOverrides
     };
