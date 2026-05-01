@@ -127,7 +127,7 @@ describe('InternalNango queue dispatch', () => {
             { id: 12, connection_id: 'conn-2', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
         ]);
         mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'sync-1', webhook_subscriptions: ['push'] }]);
-        mocks.triggerWebhook.mockResolvedValue(undefined);
+        mocks.triggerWebhook.mockResolvedValue({ isErr: () => false });
     });
 
     it('logs queued successes and marks failed publishes as failed operations', async () => {
