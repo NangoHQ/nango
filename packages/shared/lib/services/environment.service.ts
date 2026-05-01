@@ -30,7 +30,11 @@ async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accou
             return;
         }
         const planRes = await getPlan(trx, { accountId });
-        if (planRes.isErr() || !planRes.value.lambda_tenant_isolation) {
+        if (planRes.isErr()) {
+            report(new Error('lambda_keep_warm_get_plan_failed', { cause: planRes.error }), { accountId });
+            return;
+        }
+        if (!planRes.value.lambda_tenant_isolation) {
             return;
         }
         const res = await pubsub.publisher.publish({

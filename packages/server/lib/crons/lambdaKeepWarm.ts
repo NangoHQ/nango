@@ -2,70 +2,98 @@ import tracer from 'dd-trace';
 import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
+import { getLocking } from '@nangohq/kvstore';
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
+import type { Lock } from '@nangohq/kvstore';
 import type { DBEnvironment } from '@nangohq/types';
 
 const logger = getLogger('cron.lambdaKeepWarm');
 
 const TWENTY_FOUR_H_MS = 24 * 60 * 60 * 1000;
+const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
     if (!envs.LAMBDA_ENABLED) {
         return;
     }
-    const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
     if (cronMinutes <= 0) {
         return;
     }
 
-    cron.schedule(
-        `*/${cronMinutes} * * * *`,
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        async () => {
+    cron.schedule(`*/${cronMinutes} * * * *`, () => {
+        (async () => {
             const start = Date.now();
             try {
-                await tracer.trace<Promise<void>>('nango.server.cron.lambdaKeepWarm', async () => {
-                    await exec();
-                });
-                logger.info('✅ done');
+                await exec();
             } catch (err) {
                 report(new Error('cron_failed_lambda_keep_warm', { cause: err }));
+            } finally {
+                metrics.duration(metrics.Types.CRON_LAMBDA_KEEP_WARM, Date.now() - start);
+                logger.info('✅ done');
             }
-            metrics.duration(metrics.Types.CRON_LAMBDA_KEEP_WARM, Date.now() - start);
-        }
-    );
+        })().catch((err: unknown) => {
+            logger.error('Failed to execute lambdaKeepWarm cron job');
+            report(new Error('cron_failed_lambda_keep_warm', { cause: err }));
+        });
+    });
 }
 
 export async function exec(): Promise<void> {
-    const since = new Date(Date.now() - TWENTY_FOUR_H_MS);
+    const locking = await getLocking();
 
-    const rows = await db.readOnly
-        .select<{ account_id: number; id: number }[]>('_nango_environments.account_id', '_nango_environments.id')
-        .from<DBEnvironment>('_nango_environments')
-        .join('plans', 'plans.account_id', '_nango_environments.account_id')
-        .where('_nango_environments.deleted', false)
-        .where('_nango_environments.created_at', '>=', since)
-        .where('plans.lambda_tenant_isolation', true);
+    await tracer.trace<Promise<void>>('nango.server.cron.lambdaKeepWarm', async (span) => {
+        let lock: Lock | undefined;
+        try {
+            logger.info('Starting');
 
-    for (const row of rows) {
-        const res = await pubsub.publisher.publish({
-            subject: 'lambda_keep_warm',
-            type: 'lambda_keep_warm.invoke',
-            payload: {
-                accountId: row.account_id,
-                environmentId: row.id,
-                provisionedConcurrency: 1
+            const ttlMs = cronMinutes * 60 * 1000;
+            const lockKey = 'lock:lambdaKeepWarm:cron';
+
+            try {
+                lock = await locking.acquire(lockKey, ttlMs);
+            } catch {
+                logger.info('Could not acquire lock, skipping');
+                return;
             }
-        });
-        if (res.isErr()) {
-            report(new Error('lambda_keep_warm_publish_failed', { cause: res.error }), {
-                accountId: row.account_id,
-                environmentId: row.id
-            });
+
+            const since = new Date(Date.now() - TWENTY_FOUR_H_MS);
+
+            const rows = await db.readOnly
+                .select<{ account_id: number; id: number }[]>('_nango_environments.account_id', '_nango_environments.id')
+                .from<DBEnvironment>('_nango_environments')
+                .join('plans', 'plans.account_id', '_nango_environments.account_id')
+                .where('_nango_environments.deleted', false)
+                .where('_nango_environments.created_at', '>=', since)
+                .where('plans.lambda_tenant_isolation', true);
+
+            for (const row of rows) {
+                const res = await pubsub.publisher.publish({
+                    subject: 'lambda_keep_warm',
+                    type: 'lambda_keep_warm.invoke',
+                    payload: {
+                        accountId: row.account_id,
+                        environmentId: row.id,
+                        provisionedConcurrency: 1
+                    }
+                });
+                if (res.isErr()) {
+                    report(new Error('lambda_keep_warm_publish_failed', { cause: res.error }), {
+                        accountId: row.account_id,
+                        environmentId: row.id
+                    });
+                }
+            }
+        } catch (err) {
+            report(new Error('cron_failed_lambda_keep_warm', { cause: err }));
+            span.setTag('error', err);
+        } finally {
+            if (lock) {
+                locking.release(lock);
+            }
         }
-    }
+    });
 }
