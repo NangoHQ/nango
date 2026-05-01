@@ -4,7 +4,15 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
-import { configService, connectionService, deleteExpiredInvitations, deleteJobsByDate, environmentService, getSoftDeletedSyncConfig } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    deleteExpiredInvitations,
+    deleteJobsByDate,
+    environmentService,
+    getSoftDeletedSyncConfig,
+    getSoftDeletedSyncs
+} from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -15,6 +23,7 @@ import { deleteConnectionData } from './delete/deleteConnectionData.js';
 import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
 import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
 import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
+import { deleteSyncData } from './delete/deleteSyncData.js';
 
 import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
@@ -30,6 +39,7 @@ const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MA
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
 const deleteOauthSessionOlderThan = envs.CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS;
 const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
+const deleteSyncsOlderThan = envs.CRON_DELETE_OLD_SYNCS_MAX_DAYS;
 const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
 const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
@@ -115,6 +125,23 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'invitations',
             deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
+        });
+
+        // Delete syncs and all associated data
+        await batchDelete({
+            ...opts,
+            name: 'sync',
+            deleteFn: async () => {
+                const syncs = await getSoftDeletedSyncs({ limit, olderThan: deleteSyncsOlderThan });
+                if (syncs.isErr()) {
+                    throw syncs.error;
+                }
+                for (const { sync, syncConfig } of syncs.value) {
+                    await deleteSyncData(sync, syncConfig, opts);
+                }
+
+                return syncs.value.length;
+            }
         });
 
         // Delete integrations and all associated data

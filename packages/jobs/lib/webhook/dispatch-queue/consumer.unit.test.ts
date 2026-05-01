@@ -61,6 +61,7 @@ function makeHarness(
         messages?: WebhookDispatchMessage[];
         badBody?: string;
         consumerConcurrency?: number;
+        maxAgeMs?: number;
         sqsSend?: ReturnType<typeof vi.fn>;
     } = {}
 ): Harness {
@@ -102,7 +103,8 @@ function makeHarness(
         consumerConcurrency: opts.consumerConcurrency ?? 1,
         maxMessages: 10,
         waitTimeSeconds: 0,
-        visibilityTimeoutSeconds: 30
+        visibilityTimeoutSeconds: 30,
+        maxAgeMs: opts.maxAgeMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhook };
@@ -259,6 +261,17 @@ describe('DispatchQueueConsumer', () => {
         const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
         expect(deleteCalls).toHaveLength(1);
         expect(deleteCalls[0]?.[1]).toBeUndefined();
+    });
+
+    it('deletes a stale message without calling orchestrator', async () => {
+        const h = makeHarness({ messages: [buildMessage()], maxAgeMs: 100 });
+        // SentTimestamp in makeHarness is Date.now() - 500, which exceeds maxAgeMs of 100ms
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        expect(h.orchestratorExecuteWebhook).not.toHaveBeenCalled();
+        expect(getDeleteCalls(h)).toHaveLength(1);
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {

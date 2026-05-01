@@ -6053,6 +6053,26 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://nango.dev/docs/integrations/all/eventbrite
 
+etsy:
+    display_name: Etsy
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://www.etsy.com/oauth/connect
+    token_url: https://api.etsy.com/v3/public/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.etsy.com
+        headers:
+            x-api-key: ${clientId}:${clientSecret}
+    docs: https://nango.dev/docs/api-integrations/etsy
+    setup_guide_url: https://nango.dev/docs/api-integrations/etsy/how-to-register-your-own-etsy-api-oauth-app
+
 exa:
     display_name: Exa
     categories:
@@ -10958,7 +10978,7 @@ metabase:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.domain}.com
         headers:
             x-api-key: ${apiKey}
         verification:
@@ -10967,22 +10987,32 @@ metabase:
                 content-type: application/json
             endpoints:
                 - /api/database
-    docs: https://nango.dev/docs/integrations/all/metabase
-    docs_connect: https://nango.dev/docs/integrations/all/metabase/connect
+    docs: https://nango.dev/docs/api-integrations/metabase
+    docs_connect: https://nango.dev/docs/api-integrations/metabase/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Metabase hostname
+            example: acme.metabaseapp.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-metabase-hostname'
         domain:
             type: string
-            title: Metabase Domain
-            description: The domain (without the extension) of your Metabase account
-            pattern: '^[a-z0-9.-]+$'
-            example: metabase
-            doc_section: '#step-2-finding-your-metabase-domain'
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
-            doc_section: '#step-1-generating-an-api-key'
+            example: mb_**************************kR9mZw=
+            pattern: '^mb_[A-Za-z0-9+/]+=*$'
+            doc_section: '#step-2-generating-an-api-key'
 
 mercury:
     display_name: Mercury
@@ -12895,12 +12925,15 @@ paligo:
             title: Username
             description: Your Paligo account username (email address).
             example: name@example.com
+            format: email
             doc_section: '#step-3-enter-credentials-in-the-connect-ui'
         password:
             type: string
             title: API Key
             description: The API key token generated.
             secret: true
+            pattern: '^[A-F0-9]+$'
+            example: 74E12F****************************9C5D6F
             doc_section: '#step-2-create-an-api-key'
 
 pandadoc:
