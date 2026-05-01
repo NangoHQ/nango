@@ -35,6 +35,10 @@ export interface DeleteOutdatedRecordsSuccess {
     deletedKeys: string[];
 }
 
+export interface DeleteRecordsUpToCursorSuccess {
+    deletedCount: number;
+}
+
 export interface GetCursorSuccess {
     cursor?: string;
 }
