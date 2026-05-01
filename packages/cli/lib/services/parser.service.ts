@@ -68,7 +68,6 @@ class ParserService {
             'getEnvironmentVariables',
             'getFieldMapping',
             'getMetadata',
-            'listRecords',
             'log',
             'patch',
             'post',
