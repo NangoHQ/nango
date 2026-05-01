@@ -489,6 +489,12 @@ export declare class NangoSync<TCheckpoint = Checkpoint> extends NangoAction {
             cursor?: string;
         }
     ): AsyncGenerator<NangoRecord<T>>;
+    deleteRecordsUpToCursor(
+        model: string,
+        options: {
+            cursor: string;
+        }
+    ): Promise<{ deletedCount: number }>;
     getCheckpoint(): Promise<TCheckpoint | null>;
     saveCheckpoint(checkpoint: TCheckpoint): Promise<void>;
     clearCheckpoint(): Promise<void>;
