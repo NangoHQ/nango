@@ -1119,6 +1119,7 @@
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/paddle",
               "api-integrations/paylocity-nextgen",
               "api-integrations/paylocity",
               "integrations/all/payfit",

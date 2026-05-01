@@ -12904,6 +12904,38 @@ pandadoc-api-key:
             example: 3039ba033eb1410caa0a2227158d63c9d6502cd8
             pattern: '^[a-fA-F0-9]+$'
 
+paddle:
+    display_name: Paddle
+    categories:
+        - payment
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.paddle.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/paddle
+    docs_connect: https://nango.dev/docs/api-integrations/paddle/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/paddle/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Paddle API key.
+            example: pdl_live_apikey_01kpb*********************_xRs9*********************_A40
+            pattern: '^pdl_[a-z]+_apikey_[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-generating-your-api-key'
+    connection_config:
+        subdomain:
+            type: string
+            title: Environment
+            description: Use 'api' for live or 'sandbox-api' for sandbox.
+            pattern: '^(api|sandbox-api)$'
+            example: api
+            prefix: https://
+            suffix: .paddle.com
+            doc_section: '#step-1-choosing-your-environment'
+            order: 1
+
 passportal:
     display_name: Passportal
     categories:

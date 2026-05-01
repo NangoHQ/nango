@@ -1,0 +1,54 @@
+---
+title: Paddle - How do I link my account?
+sidebarTitle: Paddle
+---
+
+# Overview
+
+To authenticate with Paddle, you will need:
+1. **API Key** - An API key generated from your Paddle vendor dashboard.
+2. **Environment** - Use `api` for live or `sandbox-api` for sandbox.
+
+This guide will walk you through generating your **API Key** within Paddle.
+
+### Prerequisites
+
+- You must have a Paddle vendor account. Sign up at [paddle.com](https://www.paddle.com).
+
+### Instructions
+
+#### Step 1: Generating your API key
+
+1. Log in to the [Paddle vendor dashboard](https://vendors.paddle.com).
+2. Navigate to **Developer Tools** -> [**Authentication**](https://vendors.paddle.com/authentication-v2).
+3. Click **+ New API Key**.
+
+<img src="/api-integrations/paddle/create_api_key.png"/>
+
+
+4. Fill in the details:
+   - **Name** - A label to identify this key.
+   - **Description** - An optional description of the key's purpose.
+   - **Expires in** - Choose an expiry window or set no expiry.
+   - **Permissions** - Select the scopes this key should have access to.
+5. Click **Save**.
+
+<img src="/api-integrations/paddle/api_key_form.png"/>
+6. Copy the generated API key and store it securely. Paddle only shows this key once.
+
+
+<img src="/api-integrations/paddle/generated_api_key.png"/>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+
+1. Open the form where you need to authenticate with Paddle.
+2. Select your **Environment**: enter `api` for your live account or `sandbox-api` for sandbox.
+3. Enter your **API Key** in the respective field.
+4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/paddle/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Paddle.
