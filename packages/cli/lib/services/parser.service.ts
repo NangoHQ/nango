@@ -62,11 +62,13 @@ class ParserService {
             'batchSend',
             'delete',
             'deleteRecordsFromPreviousExecutions',
+            'deleteRecordsUpToCursor',
             'get',
             'getConnection',
             'getEnvironmentVariables',
             'getFieldMapping',
             'getMetadata',
+            'listRecords',
             'log',
             'patch',
             'post',
@@ -80,7 +82,7 @@ class ParserService {
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'listRecords', 'deleteRecordsUpToCursor'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'deleteRecordsUpToCursor', 'listRecords'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
