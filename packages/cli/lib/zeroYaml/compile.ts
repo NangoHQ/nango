@@ -472,7 +472,6 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'getEnvironmentVariables',
         'getFieldMapping',
         'getMetadata',
-        'listRecords',
         'log',
         'patch',
         'post',
