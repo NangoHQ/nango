@@ -400,6 +400,11 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         } while (cursor);
     }
 
+    public override async deleteRecordsUpToCursor(_model: string, _options: { cursor: string }): Promise<{ deletedCount: number }> {
+        this.log(`This has no effect locally. On a remote Nango instance, it would soft-delete all records up to and including the given record cursor.`);
+        return Promise.resolve({ deletedCount: 0 });
+    }
+
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
         // Not applicable to CLI
         return Promise.resolve();

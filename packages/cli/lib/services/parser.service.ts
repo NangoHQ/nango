@@ -80,7 +80,7 @@ class ParserService {
             'triggerAction'
         ];
 
-        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'listRecords'];
+        const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'batchUpdate', 'listRecords', 'deleteRecordsUpToCursor'];
 
         const deprecatedCalls: Record<string, string> = {
             batchSend: 'batchSave',
@@ -93,6 +93,7 @@ class ParserService {
         const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
         const callsReferencingModelsToCheck = callsBatchingRecords.concat(
             'deleteRecordsFromPreviousExecutions',
+            'deleteRecordsUpToCursor',
             'getRecordsByIds',
             'listRecords',
             'setMergingStrategy',
