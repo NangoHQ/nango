@@ -469,7 +469,8 @@ export const kubernetesNodeProvider: NodeProvider = {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1,
-        replicas: 1
+        replicas: 1,
+        isolationMode: 'sandbox'
     },
     start: async (node: Node) => {
         const kubernetes = Kubernetes.getInstance();

@@ -22,6 +22,7 @@ interface DBNodeConfigOverride {
     readonly execution_timeout_secs: number | null;
     readonly provisioned_concurrency: number | null;
     readonly replicas: number | null;
+    readonly isolation_mode: NodeConfigOverride['isolationMode'];
     readonly created_at: Date;
     readonly updated_at: Date;
 }
@@ -42,7 +43,8 @@ const DBNodeConfigOverride = {
             updated_at: nodeConfigOverride.updatedAt,
             execution_timeout_secs: nodeConfigOverride.executionTimeoutSecs,
             provisioned_concurrency: nodeConfigOverride.provisionedConcurrency,
-            replicas: nodeConfigOverride.replicas
+            replicas: nodeConfigOverride.replicas,
+            isolation_mode: nodeConfigOverride.isolationMode
         };
     },
     from: (dbNodeConfigOverride: DBNodeConfigOverride): NodeConfigOverride => {
@@ -59,6 +61,7 @@ const DBNodeConfigOverride = {
             executionTimeoutSecs: dbNodeConfigOverride.execution_timeout_secs,
             provisionedConcurrency: dbNodeConfigOverride.provisioned_concurrency,
             replicas: dbNodeConfigOverride.replicas,
+            isolationMode: dbNodeConfigOverride.isolation_mode,
             createdAt: dbNodeConfigOverride.created_at,
             updatedAt: dbNodeConfigOverride.updated_at
         };
@@ -84,6 +87,7 @@ export async function upsert(
             execution_timeout_secs: props.executionTimeoutSecs ?? null,
             provisioned_concurrency: props.provisionedConcurrency ?? null,
             replicas: props.replicas ?? null,
+            isolation_mode: props.isolationMode ?? null,
             created_at: now,
             updated_at: now
         };
@@ -99,6 +103,7 @@ export async function upsert(
             ...(props.replicas !== undefined ? { replicas: props.replicas } : {}),
             ...(props.executionTimeoutSecs !== undefined ? { execution_timeout_secs: props.executionTimeoutSecs } : {}),
             ...(props.provisionedConcurrency !== undefined ? { provisioned_concurrency: props.provisionedConcurrency } : {}),
+            ...(props.isolationMode !== undefined ? { isolation_mode: props.isolationMode } : {}),
             updated_at: now
         };
 

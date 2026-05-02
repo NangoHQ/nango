@@ -217,6 +217,16 @@ class Lambda {
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
                 DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
                 DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || '',
+                ...(node.isolationMode === 'subprocess'
+                    ? {
+                          NANGO_RUNNER_ISOLATION: 'subprocess-deno',
+                          // baked into the lambda image; overrideable if needed
+                          NANGO_DENO_BOOTSTRAP_PATH: '/opt/nango-deno/bootstrap.ts',
+                          // cache seeded at build time; used by deno runtime
+                          DENO_DIR: '/opt/deno-cache',
+                          NANGO_DENO_CACHED_ONLY: 'false'
+                      }
+                    : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
                 ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }
@@ -270,7 +280,8 @@ export const lambdaNodeProvider: NodeProvider = {
         idleMaxDurationMs: 0,
         executionTimeoutSecs: envs.LAMBDA_EXECUTION_TIMEOUT_SECS,
         provisionedConcurrency: envs.LAMBDA_MAXIMUM_PROVISIONED_CONCURRENCY,
-        replicas: 1
+        replicas: 1,
+        isolationMode: 'sandbox'
     },
     start: async (node: Node) => {
         return Lambda.getInstance().createFunction(node);

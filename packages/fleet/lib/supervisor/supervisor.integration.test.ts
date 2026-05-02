@@ -24,7 +24,8 @@ const mockNodeProvider = {
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
         provisionedConcurrency: -1,
-        replicas: 1
+        replicas: 1,
+        isolationMode: 'sandbox' as const
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),

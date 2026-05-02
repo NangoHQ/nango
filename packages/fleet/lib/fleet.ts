@@ -221,7 +221,8 @@ export class Fleet {
                 defaultConfig.idleMaxDurationMs === override.idleMaxDurationMs &&
                 defaultConfig.executionTimeoutSecs === override.executionTimeoutSecs &&
                 defaultConfig.provisionedConcurrency === override.provisionedConcurrency &&
-                defaultConfig.replicas === override.replicas;
+                defaultConfig.replicas === override.replicas &&
+                defaultConfig.isolationMode === override.isolationMode;
 
             if (isDefault) {
                 return nodeConfigOverrides.remove(trx, override.routingId);
