@@ -73,6 +73,70 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
 #navigation-items { padding-top: 20px !important; }
 
+/* ══ TOC — hide scrollbar until hover ════════════════════════════ */
+/*
+ * #table-of-contents has overflow-y-auto directly on it. Hide the
+ * scrollbar at rest, reveal it on hover. WebKit and Firefox each need
+ * their own properties.
+ */
+#table-of-contents {
+  scrollbar-width: none; /* Firefox */
+}
+#table-of-contents::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+#table-of-contents:hover {
+  scrollbar-width: thin; /* Firefox */
+}
+#table-of-contents:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+/* ══ CHANGELOG PAGE — hide left sidebar, keep TOC ════════════════ */
+/*
+ * Mintlify sets data-page-href on the #content div. We use :has()
+ * to scope sidebar-hiding to just the changelog page while leaving
+ * the right-side "On this page" TOC intact. Substring match is used
+ * because local dev and prod may format the path slightly differently.
+ *
+ * Both rules below are gated to lg+ (≥1024px). Below lg, Mintlify
+ * shows a hamburger menu instead of the desktop sidebar, and the
+ * Update component renders as a vertical stack (flex-col) where the
+ * label is full-width on top of the content. Applying the desktop
+ * shift on smaller viewports would push content off the left edge.
+ */
+@media (min-width: 1024px) {
+  body:has([data-page-href*="updates/changelog"]) #sidebar-content,
+  body:has([data-page-href*="updates/changelog"]) :has(> #sidebar-content) {
+    display: none !important;
+  }
+
+  /*
+   * Push only the Update components leftward into the freed sidebar
+   * space. The page header (title, description, copy page button)
+   * stays at its original prose-constrained position because we don't
+   * touch #content-area or #content. The Update flex row has a fixed
+   * 160px label column + 24px gap = 184px on the left, so we shift
+   * the entire .update-container left by 184px AND grow its width by
+   * 184px. Net effect: the date pill sits in the freed sidebar area,
+   * the content column starts where the date used to be, and the
+   * right edge stays aligned with the rest of the page content.
+   */
+  body:has([data-page-href*="updates/changelog"]) .update-container {
+    margin-left: -184px !important;
+    width: calc(100% + 184px) !important;
+    max-width: none !important;
+  }
+}
+
 /* ══ LOGO ════════════════════════════════════════════════════════ */
 a[href="https://www.nango.dev"] img,
 a[href="https://www.nango.dev"] svg {
