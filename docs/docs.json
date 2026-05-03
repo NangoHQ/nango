@@ -82,11 +82,19 @@
     },
     {
       "source": "/changelog/overview",
-      "destination": "/updates/product"
+      "destination": "/updates/changelog"
     },
     {
       "source": "/changelog/dev-updates",
-      "destination": "/updates/dev"
+      "destination": "/updates/changelog"
+    },
+    {
+      "source": "/updates/product",
+      "destination": "/updates/changelog"
+    },
+    {
+      "source": "/updates/dev",
+      "destination": "/updates/changelog"
     },
     {
       "source": "/guides/mcp",
@@ -1646,14 +1654,8 @@
       {
         "tab": "Changelog",
         "icon": "bolt",
-        "groups": [
-          {
-            "group": "Changelog",
-            "pages": [
-              "updates/dev",
-              "updates/product"
-            ]
-          }
+        "pages": [
+          "updates/changelog"
         ]
       },
       {

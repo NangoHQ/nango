@@ -1,7 +1,7 @@
 ---
-title: "Product updates"
-sidebarTitle: "Product updates"
-description: "Product updates and improvements."
+title: "Changelog"
+sidebarTitle: "Changelog"
+description: "New features, improvements, and breaking changes."
 ---
 
 <Update label="April 22, 2026">
@@ -105,6 +105,68 @@ description: "Product updates and improvements."
 
 ---
 
+<Update label="March 16, 2026">
+  ## Deprecation of `schema.ts` and `schema.json` generation
+
+  Running `nango compile` or `nango deploy` currently generates three files under `.nango/`: `schema.ts`, `schema.json`, and `nango.json`. We will stop generating `schema.ts` and `schema.json`. The `nango.json` file remains unchanged.
+
+  Effective **April 16, 2026**.
+
+  **Am I impacted?**
+
+  - If you import TypeScript types from `.nango/schema.ts` in your application code (e.g., to type SDK calls like `nango.listRecords<MyModel>(...)`).
+  - If you consume `.nango/schema.json` for runtime data validation or code generation.
+
+  ### Migrating off `schema.ts`
+
+  Export the types directly from your sync/action files using `z.infer`, then import them in your application code.
+
+  **Before:**
+
+  ```ts
+  import type { GithubIssue } from './nango-integrations/.nango/schema';
+  import Nango from '@nangohq/node';
+
+  const nango = new Nango({ secretKey: '...' });
+  const issues = await nango.listRecords<GithubIssue>({ ... });
+  ```
+
+  **After:**
+
+  1. In your sync/action file, export the inferred type:
+
+     ```ts
+     // In: github/syncs/fetchIssues.ts
+     export type GithubIssue = z.infer<typeof issueSchema>;
+     ```
+  2. Import it in your application code:
+
+     ```ts
+     import type { GithubIssue } from './nango-integrations/github/syncs/fetchIssues';
+
+     const issues = await nango.listRecords<GithubIssue>({ ... });
+     ```
+
+  If your types are already defined with `z.infer` but not exported, you only need to add the `export` keyword.
+
+  ### Migrating off `schema.json`
+
+  JSON schemas are now available per sync/action inside `.nango/nango.json` via the `json_schema` property. This replaces the top-level `schema.json`, which had naming conflicts when models across integrations shared the same name.
+
+  To generate JSON Schema programmatically, Zod v4 supports this natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
+
+  ```ts
+  import { z } from 'zod';
+  import { issueSchema } from './nango-integrations/github/syncs/fetchIssues';
+
+  const jsonSchema = z.toJSONSchema(issueSchema);
+  ```
+
+  See the [data validation guide](/guides/functions/data-validation) for more details on working with Zod schemas in Nango.
+</Update>
+
+---
+
 <Update label="February 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in February">
@@ -147,6 +209,8 @@ description: "Product updates and improvements."
       - [Upsales](/api-integrations/upsales)
     </Accordion>
   </AccordionGroup>
+  <a id="february-5,-2026"></a>
+  <a id="february-5-2026"></a>
   ## Sync checkpoints
 
   We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
@@ -173,7 +237,9 @@ description: "Product updates and improvements."
 
   Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/guides/functions/syncs/checkpoints).
 
-  **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. Follow the [Migration guide](/guides/platform/migrations/migrate-to-checkpoints) to move to Sync checkpoints.
+  **No breaking changes:** Existing syncs without a `checkpoint` declaration continue to run as full syncs. For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
+
+  **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. If you use `nango.lastSyncDate` for incremental syncing, we recommend migrating — checkpoints are more resilient, more flexible, and will be the primary supported path going forward. There is no deprecation timeline for `nango.lastSyncDate`, but new improvements will only land on checkpoints. Follow the [Migration guide](/guides/platform/migrations/migrate-to-checkpoints).
 
   ## Serverless runtime for execution
 
@@ -255,14 +321,28 @@ description: "Product updates and improvements."
       - [Wise (API Key)](/api-integrations/wise-api-key)
     </Accordion>
   </AccordionGroup>
+  <a id="january-6,-2026"></a>
+  <a id="january-6-2026"></a>
   ## Sync cache data retention and pruning
 
-  We added automatic data retention policies for records stored in the Nango sync cache. These policies ensure payload data is not retained indefinitely.
+  We added automatic data retention policies for records stored in the Nango sync cache. These policies apply to synced records produced by syncs (our replication-oriented functions) and ensure that record payloads are not retained indefinitely.
 
-  - **Automated payload pruning:** If a record has not been updated for 30 days, we automatically empty its payload.
-  - **Automated hard deletion:** If a sync has not executed for 60 days, we permanently delete all records belonging to that sync (payload and metadata).
+  **Retention lifecycle:**
 
-  These policies take effect starting January 8, 2026. See the [Records cache documentation](/guides/functions/syncs/records-cache).
+  1. **Automated payload pruning.** If a record has not been updated for **30 days**, Nango automatically prunes its payload. The record still exists and its metadata remains intact, including record ID, sync state, and payload hash (used for change detection). After pruning, the record's data fields are no longer retrievable from the Nango cache, but Nango can still track the record and detect future changes. This pruning does not impact sync execution or delta-detection.
+  2. **Automated hard deletion.** If a sync has not executed for **60 days**, records belonging to that sync will be permanently deleted (payload and metadata).
+
+  **Timeline:** Policies start on **January 8, 2026**. Record payload pruning starts **30 days later**. Record hard deletion for inactive syncs starts **60 days later**.
+
+  **Am I impacted?**
+
+  Most customers (including most sync users) are not impacted, in particular if you use syncs for replication, receive updates via Nango webhooks, and replicate records into your own system shortly after they arrive in the Nango cache. You are impacted if you use Nango sync's cache as a long-term persistent data store, reading or editing record payloads from the Nango cache long after they were updated.
+
+  **What to do:** If you fetch record payloads from Nango long after they were updated (30+ days), reach out. We will make sure you do not experience breaking changes.
+
+  **Why:** These retention policies are part of our broader commitment to helping customers meet modern data compliance and security expectations. They ensure that sensitive user data is not stored indefinitely in the Nango sync cache when it is no longer needed for syncing.
+
+  See the [Records cache documentation](/guides/functions/syncs/records-cache).
 
   We also introduced a new endpoint to manually prune records.
 
@@ -319,6 +399,30 @@ description: "Product updates and improvements."
   - [Gong OAuth refresh token invalid_grant](https://www.nango.dev/blog/gong-oauth-refresh-token-invalid-grant)
   - [Confluence OAuth refresh token invalid_grant](https://www.nango.dev/blog/confluence-oauth-refresh-token-invalid-grant)
 </Update>
+
+<Update label="December 5, 2025">
+  ## New HMAC-based webhook signature header
+
+  Nango webhooks now include a new `X-Nango-Hmac-Sha256` header that uses HMAC-SHA256 for improved security. The legacy `X-Nango-Signature` header (plain SHA-256 with key concatenation) is still sent for backwards compatibility but should no longer be used.
+
+  HMAC-SHA256 is cryptographically more secure than plain SHA-256 with concatenation. HMAC provides better protection against length extension attacks and is the industry standard for webhook signature verification.
+
+  **Timeline:**
+
+  - **Now available:** The `X-Nango-Hmac-Sha256` header is already included in all webhook requests.
+  - The `X-Nango-Signature` header will continue to be sent for backwards compatibility, with no current deprecation timeline.
+
+  **Am I impacted?**
+
+  - If you currently verify webhooks using the `X-Nango-Signature` header.
+  - If you are implementing webhook verification for the first time.
+
+  **For new integrations:** verify webhook signatures using the `X-Nango-Hmac-Sha256` header. See the updated [webhook documentation](/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango) for code examples.
+
+  **For existing integrations:** migrate to `X-Nango-Hmac-Sha256` when convenient. The old `X-Nango-Signature` header will continue to work, but we recommend migrating for better security.
+</Update>
+
+---
 
 <Update label="December 2025">
   <AccordionGroup>
@@ -392,6 +496,25 @@ description: "Product updates and improvements."
 
   - [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
   - [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
+</Update>
+
+---
+
+<Update label="November 27, 2025">
+  ## Behavior change of webhooks from Nango to your app
+
+  New behavior:
+
+  - **Timeout:** 20s (instead of 60s)
+  - **Retries:** 2 (instead of 7)
+
+  Effective **December 3, 2025**.
+
+  **Am I impacted?** Most customers — in particular anyone consuming webhooks for auth, syncs, async actions, or webhook forwards.
+
+  **Action required:** None.
+
+  **Why:** The previous long timeout and many retries created incidents when webhook endpoints were unavailable. The new behavior is in line with other popular APIs (e.g., Stripe, Hubspot).
 </Update>
 
 ---
@@ -471,6 +594,62 @@ description: "Product updates and improvements."
 
 ---
 
+<Update label="October 29, 2025">
+  ## Function custom logs won't be ingested by default for remote environments
+
+  Function custom logs are calls to `nango.log(...)` in your functions (action functions, sync functions, webhook functions, and event functions).
+
+  Starting in November, only `warn` and `error` level logs will be ingested by default for remote environments. Debug and info level logs will no longer be ingested automatically. When you call `nango.log(...)` without an explicit level (which defaults to `info`), these logs will not appear in the Nango UI logs tab for remote environments.
+
+  All function custom logs, regardless of log level, will continue to surface in your local console when using the `nango dryrun` CLI command.
+
+  Effective **November 1, 2025**.
+
+  **Am I impacted?**
+
+  - If you use custom logs in your syncs and actions with `nango.log(...)`.
+  - If you rely on viewing debug and info level logs in the Nango UI logs tab for remote environments.
+
+  ### Keeping logs visible in the Nango UI
+
+  **Option 1: Raise the log level on individual calls**
+
+  ```ts
+  nango.log('Important information', { level: 'warn' });
+  nango.log('Critical error occurred', { level: 'error' });
+  ```
+
+  **Option 2: Set a minimum level for the entire function run**
+
+  ```ts
+  nango.logger({
+    level: 'info' // info-level logs and above (warn & error) will be indexed
+  });
+
+  // Now all your regular nango.log() calls will be ingested
+  nango.log('This will now appear in the UI');
+  ```
+
+  **Option 3: Set an environment variable to revert to the original behavior**
+
+  While this is the simplest way to restore the previous behavior, we recommend Options 1 or 2 for better cost control.
+
+  In your environment settings in the Nango UI, create an environment variable with key `NANGO_LOGGER_LEVEL` and value `'info'` (or `'debug'`, `'warn'`, `'error'`).
+
+  **Warning:** Option 3 ingests all function logs across all syncs and actions. Carefully monitor your log volume starting in November to avoid unexpectedly high bills.
+
+  **Important notes:**
+
+  - Options 1 and 2 require changes in your function code and must be deployed using the Nango CLI.
+  - Option 3 can be configured directly in the Nango UI without code changes.
+  - Local development is unaffected — all logs continue to appear when using `nango dryrun`.
+  - This change helps ensure you're only billed for logs you actively use in production.
+
+  **Why:** Many customers generate a large number of custom logs for local development purposes without using them in remote environments. With the new pricing model starting in November (which includes generous included usage for function custom logs), this change ensures that customers don't get billed for logs they're not actively using.
+</Update>
+
+---
+
 <Update label="October 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in October">
@@ -532,6 +711,44 @@ description: "Product updates and improvements."
   - [Merge pricing: What you should know before you commit](https://www.nango.dev/blog/merge-pricing)
   - [The 4 most popular Paragon alternatives](https://www.nango.dev/blog/4-most-popular-paragon-alternatives)
   - [The 4 most popular Merge.dev alternatives](https://www.nango.dev/blog/4-most-popular-merge-dev-alternatives)
+</Update>
+
+---
+
+<Update label="September 1, 2025">
+  ## End-user info is no longer shared between connections
+
+  Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and because it was impossible to declare multiple organizations for a given user.
+
+  Effective **September 8, 2025** — end-user updates will stop being replicated across connections.
+
+  **Am I impacted?**
+
+  - If your users can be tied to multiple organizations.
+  - If you were relying on end-user auto-replication to maintain data freshness.
+
+  **What to do:**
+
+  End-user fields are mostly for display and tagging purposes.
+
+  - If you are not using them, you can safely ignore this update.
+  - If you are using them and wish to keep them in sync across connections (e.g., display name), patch each connection when your end-user is updated on your side:
+
+    ```ts
+    await nango.patchConnection({
+      connectionId,
+      provider_config_key
+    }, {
+      end_user: {
+        id: '123',
+        email: 'new-email@nango.dev'
+      }
+    });
+    ```
+
+  If you don't keep them in sync, the only side effect is that data will be stale in the Nango platform.
+
+  There is no batch endpoint for this operation. If you need one, please reach out on Slack.
 </Update>
 
 ---
@@ -600,6 +817,96 @@ description: "Product updates and improvements."
   ---
 </Update>
 
+<Update label="August 22, 2025">
+  ## Action payload output limit
+
+  Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads, use the Nango [proxy](/guides/platform/proxy-requests).
+
+  We will also soon restrict action inputs, so please take note of your inputs.
+
+  Effective **October 1, 2025** — actions exceeding the 2MB output limit will throw an error.
+
+  **Am I impacted?**
+
+  - If you use actions with heavy outputs. Typical large-output actions include [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts), and in general anything fetching an object from an external system. We've added dedicated proxy code to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts).
+  - If you're using a now-deprecated template function that fetches objects from an external system.
+
+  **What to do:**
+
+  - Check your action logs for a warning that you've exceeded the action output limitation.
+  - Verify the actions you're using and log the output size of the action.
+  - Migrate the action to use the proxy instead.
+
+  If your action logs exceed the 2MB limitation, you'll see a warning like this:
+
+  ![Action output size warning](/images/action-output-size-warning.png)
+
+  Reach out with any questions or concerns in our Slack community.
+</Update>
+
+---
+
+<Update label="August 20, 2025">
+  ## Deprecation of `/connection` endpoints
+
+  In this release, we've made some changes to the API that are breaking for some users.
+
+  - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead. All endpoints except one take and return the same data — only the base path has changed.
+  - The endpoint `POST /connections` (previously `POST /connection`) now takes a different body but returns the same data. This new body is more flexible and ensures stricter typings on your side and validation on ours.
+  - The endpoints `POST /connection/:connectionId/metadata` and `PATCH /connection/:connectionId/metadata`, which have been deprecated for a while, will not be migrated to `/connections` and will be removed at the end of the grace period.
+
+  Effective **January 20, 2026** — all `/connection` endpoints will be removed.
+
+  **Am I impacted?**
+
+  - If you manually use any endpoint under `/connection`.
+  - If you use the CLI.
+  - If you use the official Nango SDKs.
+
+  **What to do:**
+
+  - If you use the CLI, upgrade to `>=0.67.0`.
+  - If you use the official Nango SDKs, upgrade to `>=0.67.0`.
+  - If you manually use any endpoint under `/connection`, migrate to `/connections`.
+  - If you use the `POST /connection/:connectionId/metadata` or `PATCH /connection/:connectionId/metadata` endpoints, migrate to `/connections/metadata`.
+  - If you specifically use the `POST /connection` endpoint to import connections, see the migration section below.
+
+  ### Migrating to `POST /connections`
+
+  Only this endpoint requires a manual migration. Previously, credentials were all at the root of the body:
+
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connection \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "access_token": "some-access-token",
+    [...]
+  }'
+  ```
+
+  Now they are nested under the `credentials` key:
+
+  ```bash
+  curl -X POST https://api.nango.dev/v1/connections \
+  -H "Authorization: Bearer <your-secret-key>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider_config_key": "slack",
+    "credentials": {
+      "type": "OAUTH2",
+      "access_token": "some-access-token",
+      [...]
+    }
+  }'
+  ```
+
+  Please report any inconsistencies or issues with the new endpoints in our Slack community.
+</Update>
+
+---
+
 <Update label="August 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in August">
@@ -652,7 +959,7 @@ description: "Product updates and improvements."
   - **Email**: Sent to everyone who signs up (with the option to unsubscribe).
   - **Private Slack channels**: Delivered directly if your team has a dedicated channel with us.
   - **Community Slack**: Shared in the `#dev-updates` channel.
-  - **Docs**: Dedicated [Dev Updates changelog](/updates/dev).
+  - **Docs**: This [changelog](/updates/changelog).
 
   ---
 
@@ -668,6 +975,20 @@ description: "Product updates and improvements."
 
   ---
 </Update>
+
+<Update label="July 21, 2025">
+  ## Deprecation of `nango.yaml` configuration file
+
+  The new script format is now officially released under CLI `>=0.64.0`. If you are already using it or have tried before, the only big change between beta and now is that we now use Zod v4. By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install Zod `4.0.5` manually.
+
+  Effective **December 1, 2025** — `nango.yaml` support will be removed.
+
+  **Am I impacted?** Anyone using custom scripts.
+
+  **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-to-zero-yaml).
+</Update>
+
+---
 
 <Update label="July 2025">
   <AccordionGroup>
