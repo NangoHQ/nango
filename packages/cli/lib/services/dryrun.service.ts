@@ -306,7 +306,13 @@ export class DryRunService {
                 console.log(chalk.red(result.message));
                 return Err(result.message);
             }
-            stubbedCheckpoint = validateCheckpoint(result.value);
+            try {
+                stubbedCheckpoint = validateCheckpoint(result.value);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Invalid checkpoint';
+                console.log(chalk.red(message));
+                return Err(message);
+            }
         }
 
         const responseCollector = new ResponseCollector();

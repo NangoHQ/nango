@@ -118,6 +118,15 @@ describe('DryRunService', () => {
         }
     });
 
+    it('returns a Result error when checkpoint JSON is invalid', async () => {
+        const result = await buildService().run({ sync: 'syncIssues', connectionId: 'conn-1', checkpoint: '{"cursor":{"nested":true}}' } as any);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('Invalid checkpoint');
+        }
+    });
+
     it('returns a Result error when script execution fails', async () => {
         const service = buildService();
         vi.spyOn(service, 'runScript').mockResolvedValue({ success: false, error: new Error('script failed'), response: null });
