@@ -115,8 +115,9 @@ export class DryRunService {
         const environment = options.optionalEnvironment || this.environment;
 
         if (!environment) {
-            console.log(chalk.red('Environment is required'));
-            return Err('Environment is required');
+            const message = 'Environment is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         await parseSecretKey(environment, debug);
@@ -138,8 +139,9 @@ export class DryRunService {
         }
 
         if (!syncName) {
-            console.log(chalk.red('Sync name is required'));
-            return Err('Sync name is required');
+            const message = 'Sync name is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         if (!syncVariant) {
@@ -147,8 +149,9 @@ export class DryRunService {
         }
 
         if (!connectionId) {
-            console.log(chalk.red('Connection id is required'));
-            return Err('Connection id is required');
+            const message = 'Connection id is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         const def = await parseIntegrationDefinitions({ fullPath: this.fullPath, debug });
@@ -160,8 +163,9 @@ export class DryRunService {
         const parsed: NangoYamlParsed = def.value;
 
         if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
-            console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
-            return Err(`Integration "${options.optionalProviderConfigKey}" does not exist`);
+            const message = `Integration "${options.optionalProviderConfigKey}" does not exist`;
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         let providerConfigKey: string | undefined;
@@ -180,8 +184,9 @@ export class DryRunService {
                     continue;
                 }
                 if (scriptInfo) {
-                    console.log(chalk.red(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`));
-                    return Err(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`);
+                    const message = `Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`;
+                    console.log(chalk.red(message));
+                    return Err(message);
                 }
                 scriptInfo = script;
                 providerConfigKey = integration.providerConfigKey;
@@ -194,8 +199,9 @@ export class DryRunService {
                         continue;
                     }
                     if (isOnEventScript) {
-                        console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
-                        return Err(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`);
+                        const message = `Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`;
+                        console.log(chalk.red(message));
+                        return Err(message);
                     }
                     isOnEventScript = true;
                     providerConfigKey = integration.providerConfigKey;
@@ -228,8 +234,9 @@ export class DryRunService {
         }
         const nangoConnection = nangoConnectionRes.value;
         if (!nangoConnection) {
-            console.log(chalk.red('Connection not found'));
-            return Err('Connection not found');
+            const message = 'Connection not found';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         if (debug) {
