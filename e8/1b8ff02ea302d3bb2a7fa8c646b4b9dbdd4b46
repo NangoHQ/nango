@@ -1,0 +1,53 @@
+packages/server/lib/services/local/deploy-client.ts
+  51a9da23508442e2 4,61
+packages/server/lib/services/remote-function/deploy-client.ts
+  51a9da23508442e2 7,9,74
+packages/cli/lib/services/dryrun.service.ts
+  51a9da23508442e2 30,44,111,119,142,151,158,164,184,198,207-209,216,225-229,232,240-245,248,280,289,300,394,398,402,481,484-486
+packages/server/lib/services/local/dryrun-client.ts
+  51a9da23508442e2 4,6,85
+packages/cli/lib/utils.unit.test.ts
+  51a9da23508442e2 6,147-208
+packages/server/lib/services/remote-function/cli-exit-codes.unit.test.ts
+  51a9da23508442e2 1-32
+packages/server/lib/services/remote-function/command-output.unit.test.ts
+  51a9da23508442e2 3
+packages/cli/lib/services/sdk.ts
+  51a9da23508442e2 105,112,120-124
+packages/cli/lib/services/dryrun.service.unit.test.ts
+  51a9da23508442e2 1-132
+packages/server/lib/services/remote-function/dryrun-client.ts
+  51a9da23508442e2 7,9,108
+packages/cli/lib/utils.ts
+  51a9da23508442e2 19,22,217,226,228,232,241,243
+packages/server/lib/services/remote-function/dryrun-client.unit.test.ts
+  51a9da23508442e2 1-120
+packages/server/lib/services/remote-function/cli-exit-codes.ts
+  51a9da23508442e2 1-51
+packages/server/lib/services/remote-function/deploy-client.unit.test.ts
+  51a9da23508442e2 1-97
+packages/cli/lib/index.ts
+  51a9da23508442e2 16,235,241,310-311,381-382,388,394,399,416-419,473,479,485
+packages/cli/lib/exit-codes.ts
+  51a9da23508442e2 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "e81b8ff02ea302d3bb2a7fa8c646b4b9dbdd4b46",
+  "prompts": {
+    "51a9da23508442e2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df1e7-d6f4-7f11-ae86-4613e80c4d53",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski",
+      "messages": [],
+      "total_additions": 599,
+      "total_deletions": 143,
+      "accepted_lines": 580,
+      "overriden_lines": 0
+    }
+  }
+}
