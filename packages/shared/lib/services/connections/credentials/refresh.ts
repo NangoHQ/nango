@@ -212,6 +212,7 @@ async function refreshCredentials(
         logCtx.merge(logsBuffer);
 
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+        logger.error('Failed to refresh credentials', err);
         void logCtx.error('Failed to refresh credentials', err);
         await logCtx.failed();
 
