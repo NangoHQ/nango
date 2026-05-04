@@ -3,7 +3,13 @@
 **Date:** 2026-04-30
 **Scope:** Validate whether ClickHouse read query performance is acceptable to power the billing usage page (`/plans/billing-usage`) in two modes: (1) drop-in replacement for the current Orb-backed query, and (2) the new "per-connection" breakdown that Orb cannot provide.
 
-**TL;DR:** The new per-connection-breakdown dashboard is sub-500 ms wall time for 99%+ of customers. One outlier customer (account 3660) hits ~1.2 s in the worst-case eager-fan-out combo. The per-metric data shows the breakdown overhead is highly concentrated in 4 specific (account, metric) cells — opening the door to a lazy "default aggregate, opt-in per-connection" UX that would cut the doomsday-fn page-load ~4× without affecting other customers. The most obvious code-level mitigation (coalescing the 3 function metrics into one query) was tested and does not help.
+**TL;DR — three outcomes:**
+
+1. **Per-connection-breakdown dashboard is feasible.** Sub-500 ms wall time for 99%+ of customers. One outlier (account 3660) hits ~1.2 s in the worst-case eager-fan-out combo — concentrated in 4 specific (account, metric) cells, all on the same 2.24M-row partition. A lazy "default aggregate, opt-in per-connection" UX would cut that page-load ~4× without affecting other customers. Coalescing the 3 function metrics was tested and does not help.
+
+2. **Horizontal scaling works.** Adding one ClickHouse Cloud replica delivered ~2.24× throughput and halved p50/p95 under sustained 20× concurrency. Capacity is a tunable knob if production traffic ever pressures the cluster.
+
+3. **Drop-in replacement for inline capping is feasible at today's traffic.** Production Orb p99 sits at ~0.8–2 s (DD); ClickHouse simple-counter queries land at ~220–280 ms. Combined with the low reconciliation rate (≈ 1 call/account/6 h on the `/plans/usage` path), swapping the Orb call in `usageTracker.revalidate` for a ClickHouse query is a clear net win, with the scaling lever in place for future growth.
 
 ---
 
