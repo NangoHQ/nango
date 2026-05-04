@@ -311,12 +311,18 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
  * Mintlify pins an "Ask a question..." chat-assistant input at the
  * bottom of every doc page. The navbar already has a separate Ask AI
  * button, so this bottom input is redundant. Mintlify doesn't expose
- * a docs.json toggle for it. Hide it via class/id, and use [class*=]
- * to catch the surrounding wrapper (which holds the keyboard shortcut
- * hint and send button) — Mintlify uses the `chat-assistant-` prefix
- * across all related elements.
+ * a docs.json toggle for it.
+ *
+ * Two layers needed: the input itself uses `chat-assistant-` prefixed
+ * classes (caught by [class*="chat-assistant"]), but its outer wrapper
+ * uses only generic Tailwind classes — `rounded-2xl pointer-events-auto
+ * bg-background-light/90 ...`. That combination is distinctive enough
+ * to target without false positives on regular page content.
  */
 #chat-assistant-textarea,
 [class*="chat-assistant"] {
+  display: none !important;
+}
+div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
