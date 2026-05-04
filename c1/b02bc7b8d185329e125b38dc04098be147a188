@@ -1,0 +1,23 @@
+packages/server/lib/controllers/v1/flows/preBuilt/postDeploy.integration.test.ts
+  c4d4db50307ef7ea 3,60-64,69,72,80,83-84,87,89-93,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "c1b02bc7b8d185329e125b38dc04098be147a188",
+  "prompts": {
+    "c4d4db50307ef7ea": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski",
+      "messages": [],
+      "total_additions": 18,
+      "total_deletions": 87,
+      "accepted_lines": 18,
+      "overriden_lines": 0
+    }
+  }
+}
