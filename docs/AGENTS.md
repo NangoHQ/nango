@@ -13,6 +13,14 @@ The scan must end with `success no broken links found`.
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
 
+## Keep link maintenance tightly scoped
+
+When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
+
+The only legitimate reason for a docs task to edit application or package code is to update docs URLs. When that happens, run `npx prettier --check <changed-code-files>` before pushing to catch formatting changes caused by longer or shorter URLs.
+
+Generated docs output must stay out of link-only PRs unless the user explicitly asks to include it. If a generator needs changes, update the generator or source metadata and leave the generated files for a separate generation PR.
+
 ## Never use `{#anchor}` heading-id syntax
 
 Mintlify's MDX parser treats `{...}` as a JavaScript expression and chokes on `#` inside it. A single `## Heading {#anchor}` anywhere in the docs aborts `mintlify broken-links` for the **entire site** before it can scan for actual broken links.

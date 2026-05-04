@@ -106,7 +106,7 @@ export async function exec(): Promise<void> {
                     const updated = await disableScriptConfig({ id: sync.id, environmentId: sync.environment_id });
                     await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: sync.id });
                     if (updated > 0) {
-                        await syncManager.pauseSchedules({ syncConfigId: sync.id, environmentId: sync.environment_id, orchestrator });
+                        await syncManager.pauseSyncs({ syncConfigId: sync.id, environmentId: sync.environment_id, orchestrator });
                     }
                 }
             }

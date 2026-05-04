@@ -5,7 +5,7 @@ description: "Use tags to attribute connections to users, orgs, and other entiti
 ---
 
 <Info>
-  Pre-requisite: complete the [Set up an integration](/guides/auth/overview#guide) section of the Auth guide.
+  Pre-requisite: complete the [Set up an integration](/guides/auth/auth-guide#guide) section of the Auth guide.
 </Info>
 
 Tags are small key/value strings you can attach to a connect session. Nango copies them to the resulting connection and includes them in auth webhooks.
@@ -38,7 +38,7 @@ Tags are intentionally flexible so you can model your own tenant/user/workspace 
   Tags are designed for identifiers and routing metadata. Avoid putting secrets or large/free-form payloads in tags.
 </Note>
 
-This guide extends the [Auth](/guides/auth/overview) flow.
+This guide extends the [Auth](/guides/auth/auth-guide) flow.
 
 ## 1. Add tags when creating a Connect session
 
@@ -273,7 +273,7 @@ The tags have several limitations:
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview) - create connect sessions with tags.
+- [Auth guide](/guides/auth/auth-guide) - create connect sessions with tags.
 - [Share a connect link](/guides/auth/share-connect-link) - include tags in link-based flows.
 - [Migrate from end user](/guides/platform/migrations/migrate-from-end-user) - move legacy ownership fields to tags.
-- [List connections API](/reference/api/connections/list) - filter connections by tags.
+- [List connections API](/reference/backend/http-api/connections/list) - filter connections by tags.
