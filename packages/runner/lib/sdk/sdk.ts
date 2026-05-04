@@ -614,6 +614,47 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
+    public async clearRecordsIfNeeded(): Promise<void> {
+        if (!this.emptyCache) {
+            return;
+        }
+        for (const model of this.syncConfig?.models || []) {
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Clearing records for model ${model}...`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+            let hasMore = true;
+            let deletedCount = 0;
+            while (hasMore) {
+                this.throwIfAbortedOrKilled();
+                const res = await this.persistClient.deleteHardAllRecords({
+                    model: this.modelFullName(model),
+                    environmentId: this.environmentId,
+                    nangoConnectionId: this.nangoConnectionId!,
+                    syncId: this.syncId!,
+                    syncJobId: this.syncJobId!
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                deletedCount += res.value.deletedCount;
+                hasMore = res.value.hasMore;
+            }
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Cleared ${deletedCount} records for model ${model}.`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+        }
+    }
+
     private async fetchRecordsPage<T extends Record<string, any>>(
         model: string,
         options?: {

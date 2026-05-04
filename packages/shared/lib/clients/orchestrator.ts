@@ -575,10 +575,13 @@ export class Orchestrator {
                         return Err(deletedCheckpoints.error);
                     }
 
-                    // TODO: remove block once the records deletion is handled as part of the sync execution
+                    // TODO:
+                    // - remove block once the records deletion is handled as part of the sync execution
+                    // - pass the delete_records flag as part of the executeSync extra options
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);
-                        for (let model of syncConfig?.models || []) {
+                        const models = syncConfig?.models || [];
+                        for (let model of models) {
                             if (syncVariant !== 'base') {
                                 model = `${model}::${syncVariant}`;
                             }
@@ -591,7 +594,7 @@ export class Orchestrator {
                         }
                     }
 
-                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: delete_records || false } });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: false } });
                     break;
                 }
             }
