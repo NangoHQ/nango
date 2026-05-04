@@ -4,8 +4,9 @@ import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
+import { getDeployErrorCode } from './cli-exit-codes.js';
 import { buildDeployArgs } from './command-builders.js';
-import { getCommandOutput, isCompilationFailureOutput } from './command-output.js';
+import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate, remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
@@ -70,7 +71,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             if (err instanceof CommandExitError) {
                 const output = getCommandOutput(err, 'Deployment failed');
                 throw new RemoteFunctionError({
-                    code: isCompilationFailureOutput(output) ? 'compilation_error' : 'deployment_error',
+                    code: getDeployErrorCode(err),
                     message: output,
                     status: 400
                 });
