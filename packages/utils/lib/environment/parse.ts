@@ -472,6 +472,10 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // Lambda
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce
+        .number()
+        .optional()
+        .default(24 * 60 * 60 * 1000),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
     LAMBDA_DEFAULT_PREFIX: z.string().optional().default('nango-runner-function'),

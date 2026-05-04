@@ -13,7 +13,7 @@ import type { DBEnvironment } from '@nangohq/types';
 
 const logger = getLogger('cron.lambdaKeepWarm');
 
-const TWENTY_FOUR_H_MS = 24 * 60 * 60 * 1000;
+const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
@@ -60,7 +60,7 @@ export async function exec(): Promise<void> {
                 return;
             }
 
-            const since = new Date(Date.now() - TWENTY_FOUR_H_MS);
+            const since = new Date(Date.now() - lambdaKeepWarmAccountAgeMs);
 
             const rows = await db.readOnly
                 .select<{ account_id: number; id: number }[]>('_nango_environments.account_id', '_nango_environments.id')
