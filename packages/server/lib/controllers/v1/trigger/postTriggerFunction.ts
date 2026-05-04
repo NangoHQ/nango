@@ -2,7 +2,6 @@ import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -79,7 +78,6 @@ export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(asy
         const syncIdentifiers = normalizeSyncParams([function_name]);
 
         const { success, error } = await syncManager.runSyncCommand({
-            recordsService,
             orchestrator,
             environment: environment,
             providerConfigKey: provider_config_key,

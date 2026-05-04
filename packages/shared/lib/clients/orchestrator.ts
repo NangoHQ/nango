@@ -9,7 +9,7 @@ import { hardDeleteCheckpoints } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
-import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
@@ -519,7 +519,6 @@ export class Orchestrator {
         command,
         environmentId,
         logCtx,
-        recordsService,
         initiator,
         delete_records
     }: {
@@ -530,7 +529,6 @@ export class Orchestrator {
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
-        recordsService: RecordsServiceInterface;
         initiator: string;
         delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
@@ -575,26 +573,7 @@ export class Orchestrator {
                         return Err(deletedCheckpoints.error);
                     }
 
-                    // TODO:
-                    // - remove block once the records deletion is handled as part of the sync execution
-                    // - pass the delete_records flag as part of the executeSync extra options
-                    if (delete_records) {
-                        const syncConfig = await getSyncConfigBySyncId(syncId);
-                        const models = syncConfig?.models || [];
-                        for (let model of models) {
-                            if (syncVariant !== 'base') {
-                                model = `${model}::${syncVariant}`;
-                            }
-                            const deletion = await recordsService.deleteRecords({ environmentId, connectionId, model, mode: 'hard' });
-                            if (deletion.isErr()) {
-                                void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
-                                return Err(deletion.error);
-                            }
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, deletion.value);
-                        }
-                    }
-
-                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: false } });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: delete_records || false } });
                     break;
                 }
             }
