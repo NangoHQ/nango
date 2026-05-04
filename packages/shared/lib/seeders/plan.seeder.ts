@@ -1,8 +1,4 @@
-import { getPlanDefinition } from '../services/plans/definitions.js';
-
 import type { DBPlan } from '@nangohq/types';
-
-const freePlanFlags = getPlanDefinition('free')!.flags;
 
 export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
     return {
@@ -52,7 +48,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         has_records_autopruning: true,
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,
-        lambda_tenant_isolation: freePlanFlags.lambda_tenant_isolation ?? false,
+        lambda_tenant_isolation: false,
         ...override
     };
 }

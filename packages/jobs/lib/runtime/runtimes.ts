@@ -39,7 +39,6 @@ export function getDefaultFleet(): Fleet {
     return runnersFleet;
 }
 
-/** Lambda runner fleet when `useLambda` is enabled; otherwise `undefined`. */
 export function getLambdaFleet(): Fleet | undefined {
     return runtimes.get(envs.RUNNER_LAMBDA_FLEET_ID)?.fleet;
 }

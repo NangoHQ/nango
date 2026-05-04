@@ -29,13 +29,13 @@ export class LambdaKeepWarmProcessor {
         }
 
         logger.info('Starting lambda keep-warm subscriber...', {
-            subscribeConcurrency: envs.NANGO_JOBS_LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY
+            subscribeConcurrency: envs.LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY
         });
 
         this.subscriber.subscribe({
             consumerGroup: 'jobs',
             subject: 'lambda_keep_warm',
-            concurrency: envs.NANGO_JOBS_LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY,
+            concurrency: envs.LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY,
             callback: async (event) => {
                 try {
                     await processKeepWarm(event);
@@ -48,7 +48,7 @@ export class LambdaKeepWarmProcessor {
 }
 
 async function processKeepWarm(event: LambdaKeepWarmInvokeEvent): Promise<void> {
-    if (!useLambda || !envs.LAMBDA_ENABLED) {
+    if (!useLambda) {
         return;
     }
 

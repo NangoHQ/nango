@@ -4,7 +4,7 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { pubsub } from '@nangohq/shared';
-import { getLogger, metrics, report } from '@nangohq/utils';
+import { getLogger, metrics, report, useLambda } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
@@ -17,7 +17,7 @@ const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
-    if (!envs.LAMBDA_ENABLED) {
+    if (!useLambda) {
         return;
     }
     if (cronMinutes <= 0) {
