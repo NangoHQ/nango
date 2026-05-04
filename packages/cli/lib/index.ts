@@ -13,6 +13,7 @@ import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
 import { getVersionOutput } from './cli.js';
+import { NANGO_CLI_COMPILE_ERROR_EXIT_CODE, NANGO_CLI_DEPLOY_ERROR_EXIT_CODE, NANGO_CLI_DRYRUN_ERROR_EXIT_CODE } from './exit-codes.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
@@ -231,13 +232,13 @@ program
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
             return;
         }
 
         const res = await compileAllFunctions({ fullPath, debug, interactive });
         if (res.isErr()) {
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
         }
     });
 
@@ -306,7 +307,8 @@ program
             const definitions = await parseIntegrationDefinitions({ fullPath, debug });
             if (definitions.isErr()) {
                 console.error(chalk.red('Could not build function definitions to select from.'));
-                process.exit(1);
+                process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+                return;
             }
 
             let integrationFilter: string[] | undefined = integrationId ? [integrationId] : undefined;
@@ -376,24 +378,25 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
-            process.exit(1);
+            process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+            return;
         }
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
             return;
         }
 
         const res = await compileAllFunctions({ fullPath, debug, interactive });
         if (res.isErr()) {
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
             return;
         }
 
         const dryRun = new DryRunService({ fullPath, validation: shouldValidate });
-        await dryRun.run({
+        const resDryRun = await dryRun.run({
             autoConfirm,
             debug,
             interactive,
@@ -410,6 +413,10 @@ program
             checkpoint,
             diagnostics
         });
+        if (resDryRun.isErr()) {
+            process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+            return;
+        }
     });
 
 program
@@ -463,19 +470,19 @@ program
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
             return;
         }
 
         const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
         if (resCompile.isErr()) {
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
             return;
         }
 
         const res = await deploy({ fullPath, options, environmentName: environment });
         if (res.isErr()) {
-            process.exitCode = 1;
+            process.exitCode = NANGO_CLI_DEPLOY_ERROR_EXIT_CODE;
             return;
         }
     });
