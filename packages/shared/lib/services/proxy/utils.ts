@@ -531,7 +531,11 @@ export function buildProxyHeaders({
 
             switch (connection.credentials.type) {
                 case 'OAUTH2': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.access_token });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.access_token,
+                        clientId: integrationConfig?.oauth_client_id || '',
+                        clientSecret: integrationConfig?.oauth_client_secret || ''
+                    });
                     break;
                 }
                 case 'JWT':

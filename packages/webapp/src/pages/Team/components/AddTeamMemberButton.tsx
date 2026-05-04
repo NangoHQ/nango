@@ -109,7 +109,7 @@ export const AddTeamMemberButton = () => {
                         </form>
                     </Form>
 
-                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" type="external" icon>
+                    <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
                         Learn more about roles and permissions
                     </StyledLink>
                 </div>

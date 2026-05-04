@@ -7,6 +7,7 @@ import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
 import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
 
+import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
@@ -14,6 +15,7 @@ import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.j
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
+import { DispatchQueueConsumer } from './webhook/dispatch-queue/consumer.js';
 
 const logger = getLogger('Jobs');
 
@@ -39,6 +41,19 @@ try {
     const processor = new Processor(orchestratorUrl);
     const invocationsProcessor = new LambdaInvocationsProcessor();
     const lambdaKeepWarmProcessor = new LambdaKeepWarmProcessor({ transport: pubsub.transport });
+
+    const webhookDispatchConsumer = envs.NANGO_TASK_DISPATCH_QUEUE_URL
+        ? new DispatchQueueConsumer({
+              queueUrl: envs.NANGO_TASK_DISPATCH_QUEUE_URL,
+              orchestratorClient,
+              webhookMaxConcurrency: envs.WEBHOOK_ENVIRONMENT_MAX_CONCURRENCY,
+              consumerConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
+              maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
+              waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
+              visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
+          })
+        : undefined;
 
     // We are using a setTimeout because we don't want overlapping setInterval if the DB is down
     let healthCheck: NodeJS.Timeout | undefined;
@@ -81,6 +96,9 @@ try {
             await db.readOnly.destroy();
             await destroyKvstore();
             await invocationsProcessor.stop();
+            if (webhookDispatchConsumer) {
+                await webhookDispatchConsumer.stop();
+            }
 
             console.info('Closed');
 
@@ -111,6 +129,11 @@ try {
 
     invocationsProcessor.start();
     lambdaKeepWarmProcessor.start();
+
+    if (webhookDispatchConsumer) {
+        webhookDispatchConsumer.start();
+        logger.info('webhook dispatch queue consumer started');
+    }
 
     void otlp.register(getOtlpRoutes);
 } catch (err) {

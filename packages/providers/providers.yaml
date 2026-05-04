@@ -1178,7 +1178,7 @@ apollo-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://app.apollo.io/api
-    docs: https://nango.dev/docs/api-integrations/apollo-oauth
+    docs: https://nango.dev/docs/integrations/all/apollo-oauth
 
 apple-app-store:
     display_name: Apple App Store
@@ -1343,8 +1343,8 @@ asana-scim:
                 - /1.0/scim/Users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/api-integrations/asana-scim
-    docs_connect: https://nango.dev/docs/api-integrations/asana-scim/connect
+    docs: https://nango.dev/docs/integrations/all/asana-scim
+    docs_connect: https://nango.dev/docs/integrations/all/asana-scim/connect
     credentials:
         apiKey:
             type: string
@@ -2214,7 +2214,7 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
-    docs: https://nango.dev/docs/integrations/all/bamboohr
+    docs: https://nango.dev/docs/api-integrations/bamboohr
     setup_guide_url: https://nango.dev/docs/api-integrations/bamboohr/how-to-register-your-own-bamboohr-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/bamboohr/connect
     connection_config:
@@ -4332,7 +4332,7 @@ copper-api-key:
                 content-type: application/json
             endpoints:
                 - /v1/account
-    docs_connect: https://nango.dev/docs/integrations/all/copper/connect
+    docs_connect: https://nango.dev/docs/integrations/all/copper-api-key/connect
     credentials:
         apiKey:
             type: string
@@ -4504,8 +4504,8 @@ confluence-basic:
                 content-type: application/json
             endpoints:
                 - /wiki/api/v2/spaces
-    docs: https://nango.dev/docs/api-integrations/confluence-basic
-    docs_connect: https://nango.dev/docs/api-integrations/confluence-basic/connect
+    docs: https://nango.dev/docs/integrations/all/confluence-basic
+    docs_connect: https://nango.dev/docs/integrations/all/confluence-basic/connect
     connection_config:
         subdomain:
             type: string
@@ -4542,8 +4542,8 @@ confluence-data-center:
             after:
                 - 'retry-after'
         base_url: https://${connectionConfig.endpointURL}
-    docs: https://nango.dev/docs/api-integrations/confluence-data-center
-    docs_connect: https://nango.dev/docs/api-integrations/confluence-data-center/connect
+    docs: https://nango.dev/docs/integrations/all/confluence-data-center
+    docs_connect: https://nango.dev/docs/integrations/all/confluence-data-center/connect
     connection_config:
         endpointURL:
             type: string
@@ -6053,6 +6053,26 @@ eventbrite:
         base_url: https://www.eventbriteapi.com
     docs: https://nango.dev/docs/integrations/all/eventbrite
 
+etsy:
+    display_name: Etsy
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://www.etsy.com/oauth/connect
+    token_url: https://api.etsy.com/v3/public/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.etsy.com
+        headers:
+            x-api-key: ${clientId}:${clientSecret}
+    docs: https://nango.dev/docs/api-integrations/etsy
+    setup_guide_url: https://nango.dev/docs/api-integrations/etsy/how-to-register-your-own-etsy-api-oauth-app
+
 exa:
     display_name: Exa
     categories:
@@ -7149,6 +7169,26 @@ gerrit:
             example: http://localhost:8080
             doc_section: '#step-1-finding-your-host'
             order: 1
+
+getty-images:
+    display_name: Getty Images
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://authentication.gettyimages.com/oauth2/auth
+    token_url: https://authentication.gettyimages.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.gettyimages.com
+        headers:
+            api-key: ${clientId}
+    docs: https://nango.dev/docs/api-integrations/getty-images
+    setup_guide_url: https://nango.dev/docs/api-integrations/getty-images/how-to-register-your-own-getty-images-oauth-app
 
 grammarly:
     display_name: Grammarly
@@ -10414,8 +10454,8 @@ loop-returns:
         headers:
             x-authorization: ${apiKey}
         base_url: https://api.loopreturns.com/api
-    docs: https://docs.nango.dev/integrations/all/loop-returns
-    docs_connect: https://docs.nango.dev/integrations/all/loop-returns/connect
+    docs: https://nango.dev/docs/integrations/all/loop-returns
+    docs_connect: https://nango.dev/docs/integrations/all/loop-returns/connect
     credentials:
         apiKey:
             type: string
@@ -10938,7 +10978,7 @@ metabase:
         - analytics
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.domain}.com
+        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.domain}.com
         headers:
             x-api-key: ${apiKey}
         verification:
@@ -10947,22 +10987,32 @@ metabase:
                 content-type: application/json
             endpoints:
                 - /api/database
-    docs: https://nango.dev/docs/integrations/all/metabase
-    docs_connect: https://nango.dev/docs/integrations/all/metabase/connect
+    docs: https://nango.dev/docs/api-integrations/metabase
+    docs_connect: https://nango.dev/docs/api-integrations/metabase/connect
     connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The Metabase hostname
+            example: acme.metabaseapp.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-metabase-hostname'
         domain:
             type: string
-            title: Metabase Domain
-            description: The domain (without the extension) of your Metabase account
-            pattern: '^[a-z0-9.-]+$'
-            example: metabase
-            doc_section: '#step-2-finding-your-metabase-domain'
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true # deprecating this in favor of hostname
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Metabase account
-            doc_section: '#step-1-generating-an-api-key'
+            example: mb_**************************kR9mZw=
+            pattern: '^mb_[A-Za-z0-9+/]+=*$'
+            doc_section: '#step-2-generating-an-api-key'
 
 mercury:
     display_name: Mercury
@@ -11109,8 +11159,8 @@ microsoft-oauth2-cc:
     webhook_user_defined_secret: true
     webhook_allowed_query_params:
         - validationToken
-    docs: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc
-    docs_connect: https://nango.dev/docs/integrations/all/microsoft-oauth2-cc/connect
+    docs: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -11316,8 +11366,8 @@ maxio:
             method: GET
             endpoints:
                 - /subscriptions.json
-    docs: https://nango.dev/docs/integrations/all/maxio
-    docs_connect: https://nango.dev/docs/integrations/all/maxio/connect
+    docs: https://nango.dev/docs/api-integrations/maxio
+    docs_connect: https://nango.dev/docs/api-integrations/maxio/connect
     credentials:
         username:
             type: string
@@ -11669,6 +11719,28 @@ momentum-io:
             title: API Key
             description: The API key for your Make account
             doc_section: '#step-1-generating-an-api-key'
+
+modjo-ai:
+    display_name: Modjo AI
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.modjo.ai
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?page=1&perPage=1
+    docs: https://nango.dev/docs/api-integrations/modjo-ai
+    docs_connect: https://nango.dev/docs/api-integrations/modjo-ai/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Modjo AI API key.
+            doc_section: '#step-1-generate-your-api-key'
 
 mollie:
     display_name: Mollie
@@ -12853,12 +12925,15 @@ paligo:
             title: Username
             description: Your Paligo account username (email address).
             example: name@example.com
+            format: email
             doc_section: '#step-3-enter-credentials-in-the-connect-ui'
         password:
             type: string
             title: API Key
             description: The API key token generated.
             secret: true
+            pattern: '^[A-F0-9]+$'
+            example: 74E12F****************************9C5D6F
             doc_section: '#step-2-create-an-api-key'
 
 pandadoc:
@@ -13323,8 +13398,8 @@ pennylane-company-api:
         retry:
             at:
                 - 'ratelimit-reset'
-    docs: https://docs.nango.dev/integrations/all/pennylane-company-api
-    docs_connect: https://docs.nango.dev/integrations/all/pennylane-company-api/connect
+    docs: https://nango.dev/docs/integrations/all/pennylane-company-api
+    docs_connect: https://nango.dev/docs/integrations/all/pennylane-company-api/connect
     credentials:
         apiKey:
             type: string
@@ -13549,8 +13624,8 @@ pingone:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingone
-    docs_connect: https://docs.nango.dev/integrations/all/pingone/connect
+    docs: https://nango.dev/docs/integrations/all/pingone
+    docs_connect: https://nango.dev/docs/integrations/all/pingone/connect
     connection_config:
         tld:
             type: string
@@ -13582,8 +13657,8 @@ pingone-cc:
         retry:
             after:
                 - 'retry-after'
-    docs: https://docs.nango.dev/integrations/all/pingone-cc
-    docs_connect: https://docs.nango.dev/integrations/all/pingone-cc/connect
+    docs: https://nango.dev/docs/integrations/all/pingone-cc
+    docs_connect: https://nango.dev/docs/integrations/all/pingone-cc/connect
     connection_config:
         tld:
             type: string
@@ -13885,6 +13960,34 @@ posthog:
             pattern: '^phx_[A-Za-z0-9]+$'
             example: phx_1PPf***************************k3D
             doc_section: '#step-2-finding-your-api-key'
+
+posthog-oauth:
+    display_name: PostHog (OAuth)
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.posthog.com/oauth/authorize/
+    token_url: https://oauth.posthog.com/oauth/token/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.posthog.com
+    docs: https://nango.dev/docs/api-integrations/posthog-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/posthog-oauth/how-to-register-your-own-posthog-oauth-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/posthog-oauth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your PostHog cloud account.
+            pattern: '^(us(\.i)?|eu(\.i)?)$'
+            example: us
+            suffix: .posthog.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
 
 prive:
     display_name: Prive
@@ -15123,8 +15226,8 @@ rootly:
                 content-type: application/vnd.api+json
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/rootly
-    docs_connect: https://nango.dev/docs/integrations/all/rootly/connect
+    docs: https://nango.dev/docs/api-integrations/rootly
+    docs_connect: https://nango.dev/docs/api-integrations/rootly/connect
     credentials:
         apiKey:
             type: string
@@ -15160,6 +15263,30 @@ reapit:
             title: ''
             description: ''
             automated: true
+rydoo:
+    display_name: Rydoo
+    categories:
+        - accounting
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.rydoo.com/connect/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.rydoo.com
+    docs: https://nango.dev/docs/api-integrations/rydoo
+    docs_connect: https://nango.dev/docs/api-integrations/rydoo/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Rydoo Client ID.
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Rydoo Client Secret.
+            secret: true
+
 segment:
     display_name: Segment
     categories:
@@ -15353,7 +15480,7 @@ salesforce:
     webhook_routing_script: salesforceWebhookRouting
     post_connection_script: salesforcePostConnection
     docs: https://nango.dev/docs/api-integrations/salesforce
-    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/how-to-register-your-own-salesforce-api-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/salesforce/salesforce-api-oauth-app-setup
     docs_connect: https://nango.dev/docs/api-integrations/salesforce/connect
     connection_config:
         instance_url:
@@ -15506,7 +15633,7 @@ salesforce-experience-cloud:
         - instance_url
     proxy:
         base_url: ${connectionConfig.instance_url}
-    docs: https://nango.dev/docs/api-integrations/salesforce-experience-cloud
+    docs: https://nango.dev/docs/integrations/all/salesforce-experience-cloud
     connection_config:
         subdomain:
             type: string
@@ -15552,7 +15679,7 @@ salesforce-cdp:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/api-integrations/salesforce-cdp
+    docs: https://nango.dev/docs/integrations/all/salesforce-cdp
     docs_connect: https://nango.dev/docs/integrations/all/salesforce-cdp/connect
     credentials:
         jwt:
@@ -16411,8 +16538,8 @@ sharepoint-online-oauth2-cc:
         grant_type: client_credentials
     proxy:
         base_url: https://graph.microsoft.com
-    docs: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc
-    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-oauth2-cc/connect
+    docs: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc
+    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-oauth2-cc/connect
     connection_config:
         tenantId:
             type: string
@@ -16447,8 +16574,8 @@ sharepoint-online-v1:
         token: access_token
         token_expiration: expires_in
         token_expiration_strategy: expireIn
-    docs: https://nango.dev/docs/api-integrations/sharepoint-online-v1
-    docs_connect: https://nango.dev/docs/api-integrations/sharepoint-online-v1/connect
+    docs: https://nango.dev/docs/integrations/all/sharepoint-online-v1
+    docs_connect: https://nango.dev/docs/integrations/all/sharepoint-online-v1/connect
     connection_config:
         tenantId:
             type: string
@@ -17726,6 +17853,46 @@ tailscale-api-key:
             example: tskey-api-k7Hpb9Lcv611CNTRL-WJ9YG52LqXJXY9oJ7RtmXJdzWkdRMgBG
             pattern: '^tskey-api-[A-Za-z0-9]+CNTRL-[A-Za-z0-9]+$'
             doc_section: '#step-2-generating-an-api-access-token'
+
+talentlms:
+    display_name: TalentLMS
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.talentlms.com
+        headers:
+            x-api-key: ${apiKey}
+            x-api-version: ${connectionConfig.apiVersion}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/users?page[size]=1
+    docs: https://nango.dev/docs/api-integrations/talentlms
+    docs_connect: https://nango.dev/docs/api-integrations/talentlms/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your TalentLMS account.
+            example: mycompany
+            pattern: '^[a-z0-9-]+$'
+            suffix: .talentlms.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+        apiVersion:
+            type: string
+            title: ''
+            description: ''
+            default_value: '2025-01-01'
+            hidden: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TalentLMS API key.
+            doc_section: '#step-2-finding-your-api-key'
 
 tally:
     display_name: Tally
@@ -19729,8 +19896,8 @@ workday-oauth:
         grant_type: refresh_token
     proxy:
         base_url: https://${connectionConfig.tokenDomain}/ccx/api
-    docs: https://nango.dev/docs/integrations/all/workday-oauth
-    docs_connect: https://nango.dev/docs/integrations/all/workday-oauth/connect
+    docs: https://nango.dev/docs/api-integrations/workday-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/workday-oauth/connect
     connection_config:
         authorizationDomain:
             type: string

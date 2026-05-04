@@ -82,7 +82,7 @@ export const Functions: React.FC = () => {
             <div className="flex flex-col gap-2.5">
                 <div className="inline-flex items-center gap-2">
                     Environment variables
-                    <ButtonLink variant="ghost" size="icon" target="_blank" to="https://nango.dev/docs/reference/functions#environment-variables">
+                    <ButtonLink variant="ghost" size="icon" target="_blank" to="https://nango.dev/docs/reference/functions/functions-sdk#environment-variables">
                         <ExternalLink />
                     </ButtonLink>
                 </div>

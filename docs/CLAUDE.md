@@ -9,6 +9,18 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 
 The scan must end with `success no broken links found`.
 
+## Prefix docs PR titles with `docs:`
+
+Pull requests that only change docs must have a PR title prefixed with `docs:`.
+
+## Keep link maintenance tightly scoped
+
+When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
+
+The only legitimate reason for a docs task to edit application or package code is to update docs URLs. When that happens, run `npx prettier --check <changed-code-files>` before pushing to catch formatting changes caused by longer or shorter URLs.
+
+Generated docs output must stay out of link-only PRs unless the user explicitly asks to include it. If a generator needs changes, update the generator or source metadata and leave the generated files for a separate generation PR.
+
 ## Never use `{#anchor}` heading-id syntax
 
 Mintlify's MDX parser treats `{...}` as a JavaScript expression and chokes on `#` inside it. A single `## Heading {#anchor}` anywhere in the docs aborts `mintlify broken-links` for the **entire site** before it can scan for actual broken links.
@@ -26,28 +38,66 @@ Browsers honor `id` attributes for fragment scrolling identically to heading-gen
 
 After every pull/merge that touches `docs/`, re-run the same sed against `docs/**/*.mdx` to bring newly imported files in line with the rename. `mintlify broken-links` may not flag these as hard failures if the old paths are kept alive via `redirects` in `docs.json` — they'll resolve via the redirect, but they're stale and should point at the canonical destination.
 
-## Docs architecture
+## Documentation tab structure
 
-The docs have two distinct section types with different purposes:
+Keep the documentation tab organized around the reader's journey and the ownership of each topic.
 
-- **Use cases** — orientation and routing pages only. Help readers understand what problem a use case solves, when to use Nango for it, and which technical docs to follow. No step-by-step implementation blocks. Link to functions guides instead. Keep them flat (no nesting). Aim for ~100–200 lines.
-- **Functions** — technical source of truth. Owns building, testing, deploying, triggering, syncing, scheduling, checkpoints, records cache, and HTTP invocation. Step-by-step guides live here and must be end-to-end (no missing steps).
+### Getting started
+
+Getting started is the first experience with Nango. Keep it minimal, low friction, and optimized for simplicity and conviction.
+
+- **Introduction** — explain Nango in the simplest possible way. Help readers understand what Nango is and why it matters without technical depth.
+- **Quick start** — show how Nango works at a high level and create the "wow" moment quickly. Favor a smooth path over completeness.
+
+Do not overload Getting started with edge cases, limits, architecture details, or exhaustive implementation guidance. Link out to Guides and Reference for depth.
+
+### Guides
+
+Guides are the home for practical technical content and customer-orientation content. They should help readers understand Nango's primitives, platform behavior, constraints, and implementation paths.
+
+Use these ownership rules:
+
+- **Auth** — technical guides specific to Nango Auth, connection flows, auth configuration, credentials, provider setup, and auth-specific behavior.
+- **Functions** — technical guides specific to Nango Functions. This includes building, testing, deploying, CI/CD, sync functions, action functions, webhook functions, event functions, tool calling, data validation, checkpoints, records cache, and other function-only concerns.
+- **Platform** — technical guides for concepts common to Auth and Functions. This includes environments, observability, limits, security, self-hosting, webhook forwarding, and webhooks received from Nango.
+- **Use cases** — orientation and routing pages only. Start from the customer's problem or investigation context, explain when Nango is useful, and point to the right primitives, guides, and references. Use cases can lightly pitch the value, but they should not contain step-by-step implementation details or become the technical source of truth.
+
+When deciding where content belongs, ask whether it is specific to Auth, specific to Functions, or common to both. Specific content belongs under the relevant primitive; shared platform behavior belongs under Platform.
+
+Examples:
+
+- Webhook forwarding belongs under Platform.
+- Webhook functions belong under Functions.
+- Webhooks received from Nango belong under Platform.
+- Sync functions, action functions, event functions, CI/CD, testing, and data validation belong under Functions.
 
 General functions guides may mention a concept (e.g. checkpoints) but should link to the dedicated page rather than duplicating the explanation.
 
-## Terminology: use "functions" as the core primitive
+### Reference
+
+Reference is the code-adjacent surface area: API endpoints, SDK methods, method signatures, schemas, parameters, return values, events, and other exact interfaces Nango exposes.
+
+Reference should be precise and easy to scan. Guides should link to Reference for exact details, and Reference can link back to Guides when a concept needs explanation or an end-to-end implementation path.
+
+## Terminology: use function type names
 
 Use `function` / `functions` as the main term throughout the docs.
 
-Only refer to `actions` or `syncs` when the specific type distinction is technically necessary:
-- A sync is a function type that is scheduled and typically persists records.
-- An action is a function type that is triggered by HTTP or explicit calls.
+Use these names for function types:
+- **Sync functions** — functions that keep external API data fresh and typically persist records.
+- **Action functions** — functions your app, backend job, or agent calls on demand.
+- **Webhook functions** — functions that process external API webhooks inside Nango.
+- **Event functions** — functions that run on Nango connection lifecycle events.
 
-Prefer:
-> Create a function
+Prefer canonical function type names over labels based on trigger mechanics.
 
-Over:
-> Create an action or sync
+## Glossary
+
+Keep this glossary current as docs terminology evolves.
+
+- **Template** — the reusable blueprint for a Nango function. A template is code, not a deployed function. Customers can deploy a template to Nango directly or clone it into their local functions repo before customizing it.
+- **Template function** — product-facing term for a Nango-maintained, pre-built function implementation that customers can deploy from the UI, and soon via API. Use this when discussing the implementation or product workflow.
+- **Template use case** — marketing-facing term for the business need a template function solves. Use this before readers are familiar with Nango Functions.
 
 ## Content style
 
