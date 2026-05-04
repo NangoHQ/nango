@@ -1,6 +1,6 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
+import { env, filterJsonSchemaForModels, metrics, stringToHash } from '@nangohq/utils';
 
 import { getSyncAndActionConfigByParams, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
@@ -156,9 +156,17 @@ export async function deploy({
 
     try {
         await db.knex.transaction(async (trx) => {
+            // Acquire advisory locks in a consistent order to prevent deadlocks.
+            // This serializes concurrent deploys for the same sync, including first-time
+            // deploys.
+            const lockKeys = syncConfigs
+                .map((sc) => stringToHash(`deploy_sync_config:${sc.environment_id}:${sc.nango_config_id}:${sc.sync_name}:${sc.type}`))
+                .sort((a, b) => a - b);
+            for (const key of lockKeys) {
+                await trx.raw(`SELECT pg_advisory_xact_lock(?)`, [key]);
+            }
+
             const staleIds: number[] = [];
-            // Lock currently active configs inside the transaction so concurrent deploys
-            // serialize here and read fresh state rather than stale pre-transaction IDs.
             for (const sc of syncConfigs) {
                 const rows = await trx
                     .from<DBSyncConfig>(TABLE)
@@ -170,7 +178,6 @@ export async function deploy({
                         active: true,
                         deleted: false
                     })
-                    .forUpdate()
                     .select('id');
                 staleIds.push(...rows.map((r) => r.id));
             }
@@ -316,7 +323,14 @@ async function compileDeployInfo({
     }
 
     const version = optionalVersion || bumpedVersion || '1';
-    const lastSyncWasEnabled = previousSyncAndActionConfig?.enabled ?? true;
+
+    // intentionally not filtered by source so a disabled sync stays disabled when switching sources (e.g. catalog → repo).
+    const activeConfig = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .where({ environment_id, sync_name: syncName, nango_config_id: config.id as number, type, active: true, deleted: false })
+        .orderBy('created_at', 'desc')
+        .first();
+    const lastSyncWasEnabled = activeConfig?.enabled ?? true;
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
 
