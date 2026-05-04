@@ -52,7 +52,7 @@
         "semver": "7.5.4",
         "simple-oauth2": "5.1.0",
         "undici": "6.24.1",
-        "uuid": "9.0.0",
+        "uuid": "14.0.0",
         "webflow-api": "3.3.4",
         "xml-crypto": "6.1.2",
         "zod": "4.0.5"
