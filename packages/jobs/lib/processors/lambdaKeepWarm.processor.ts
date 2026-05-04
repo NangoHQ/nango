@@ -4,7 +4,7 @@ import { getPlan } from '@nangohq/shared';
 import { getLogger, report, useLambda } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { invokeLambdaReadinessCheckSync } from '../runner/lambda.js';
+import { invokeLambdaReadinessCheckEvent } from '../runner/lambda.js';
 import { getLambdaFleet } from '../runtime/runtimes.js';
 import { getLambdaTenantIdFromAccountEnv, getRoutingIdFromPlan } from '../utils/lambda.js';
 
@@ -28,11 +28,14 @@ export class LambdaKeepWarmProcessor {
             return;
         }
 
-        logger.info('Starting lambda keep-warm subscriber...');
+        logger.info('Starting lambda keep-warm subscriber...', {
+            subscribeConcurrency: envs.NANGO_JOBS_LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY
+        });
 
         this.subscriber.subscribe({
             consumerGroup: 'jobs',
             subject: 'lambda_keep_warm',
+            concurrency: envs.NANGO_JOBS_LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY,
             callback: async (event) => {
                 try {
                     await processKeepWarm(event);
@@ -81,7 +84,7 @@ async function processKeepWarm(event: LambdaKeepWarmInvokeEvent): Promise<void> 
     const tenantId = getLambdaTenantIdFromAccountEnv(accountId, environmentId);
     const n = Math.max(1, Math.floor(provisionedConcurrency));
 
-    const results = await Promise.all(Array.from({ length: n }, () => invokeLambdaReadinessCheckSync({ functionArn: url, tenantId })));
+    const results = await Promise.all(Array.from({ length: n }, () => invokeLambdaReadinessCheckEvent({ functionArn: url, tenantId })));
 
     for (const r of results) {
         if (r.isErr()) {

@@ -28,6 +28,14 @@ function subscriptionKey<TSubject extends Event['subject']>(consumerGroup: strin
     return `${consumerGroup}:${subject}`;
 }
 
+function subscribeConcurrency(concurrency: number | undefined): number {
+    const n = concurrency ?? 1;
+    if (!Number.isFinite(n)) {
+        return 1;
+    }
+    return Math.max(1, Math.min(10, Math.floor(n)));
+}
+
 function unwrapSqsBody(body: string): string {
     let parsed: unknown;
     try {
@@ -173,7 +181,10 @@ export class SnsSqs implements Transport {
         }
         const abort = new AbortController();
         this.pollerAbort.set(key, abort);
-        void this.pollQueue(queueUrl, props, abort.signal);
+        const loops = subscribeConcurrency(props.concurrency);
+        for (let i = 0; i < loops; i++) {
+            void this.pollQueue(queueUrl, props, abort.signal);
+        }
     }
 
     private async pollQueue<TSubject extends Event['subject']>(queueUrl: string, props: SubscribeProps<TSubject>, signal: AbortSignal): Promise<void> {

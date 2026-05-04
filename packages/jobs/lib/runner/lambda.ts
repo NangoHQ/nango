@@ -39,8 +39,34 @@ const cloudwatchLogsClient = new CloudWatchLogsClient();
 const READINESS_CHECK_TENANT_ID = 'nango-readiness';
 
 /**
- * Synchronous readiness invoke (RequestResponse) — used at function creation and for tenant keep-warm.
- * Omit `tenantId` for non–tenant-isolated functions; pass a real tenant id for PER_TENANT keep-warm.
+ * Async readiness invoke (`Event`) — returns after AWS accepts the invoke; use for keep-warm so SQS handlers finish quickly.
+ */
+export async function invokeLambdaReadinessCheckEvent(params: { functionArn: string; tenantId?: string | undefined }): Promise<Result<void>> {
+    const readinessCheckRequest: LambdaReadinessCheck = {
+        type: 'readiness_check'
+    };
+    const command = new InvokeCommand({
+        FunctionName: params.functionArn,
+        Payload: JSON.stringify(readinessCheckRequest),
+        InvocationType: 'Event',
+        ...(params.tenantId !== undefined && { TenantId: params.tenantId })
+    });
+    try {
+        const response = await lambdaClient.send(command);
+        if (response.StatusCode !== 202 && response.StatusCode !== 200) {
+            logger.error(`Async readiness check ${params.functionArn} returned status code ${response.StatusCode}`, response);
+            return Err(new Error(`Lambda async readiness unexpected status: ${response.StatusCode}`));
+        }
+        return Ok(undefined);
+    } catch (err) {
+        logger.error(`Async readiness check invoke failed ${params.functionArn}`, err);
+        return Err(new Error(`Lambda async readiness invoke failed: ${stringifyError(err)}`, { cause: err }));
+    }
+}
+
+/**
+ * Synchronous readiness invoke (RequestResponse) — used at function creation to confirm the function responds before fleet registration.
+ * Omit `tenantId` for non–tenant-isolated functions; pass `READINESS_CHECK_TENANT_ID` for PER_TENANT when probing at creation time.
  */
 export async function invokeLambdaReadinessCheckSync(params: { functionArn: string; tenantId?: string | undefined }): Promise<Result<void>> {
     const readinessCheckRequest: LambdaReadinessCheck = {
