@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import { getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
-import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
+import { Err, FixedSizeMap, Ok, errorToObject, getLogger, metrics } from '@nangohq/utils';
 
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
@@ -212,7 +212,7 @@ async function refreshCredentials(
         logCtx.merge(logsBuffer);
 
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
-        logger.error('Failed to refresh credentials', err);
+        logger.error('Failed to refresh credentials', errorToObject(err));
         void logCtx.error('Failed to refresh credentials', err);
         await logCtx.failed();
 
