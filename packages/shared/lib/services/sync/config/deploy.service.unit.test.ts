@@ -243,7 +243,14 @@ describe('Sync config create', () => {
             return Promise.resolve([]);
         });
 
-        vi.spyOn(db.knex, 'from').mockRejectedValue(new Error());
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                    first: vi.fn().mockResolvedValue(null)
+                })
+            })
+        } as any);
+        vi.spyOn(db.knex, 'transaction').mockRejectedValue(new Error());
 
         await expect(
             DeployConfigService.deploy({
@@ -298,14 +305,18 @@ describe('Sync config models_json_schema handling', () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
-        // Mock the transaction to capture the sync config being inserted into the database
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                    first: vi.fn().mockResolvedValue(null)
+                })
+            })
+        } as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
             const mockTrx = {
                 from: (_table: string) => ({
                     where: () => ({
-                        forUpdate: () => ({
-                            select: () => Promise.resolve([]) // no stale configs by default
-                        })
+                        select: () => Promise.resolve([]) // no stale configs by default
                     }),
                     update: () => ({ whereIn: () => Promise.resolve() }),
                     insert: (data: any) => {
@@ -490,17 +501,23 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
         is_public: false
     };
 
-    function buildMockTrx({ staleIds = [] as number[], capturedInserts = [] as any[] } = {}) {
-        const forUpdateSpy = vi.fn();
-        const whereInSpy = vi.fn().mockResolvedValue(undefined);
+    function mockDbKnexActiveConfig(activeConfig: DBSyncConfig | null = null) {
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                orderBy: vi.fn().mockReturnValue({
+                    first: vi.fn().mockResolvedValue(activeConfig)
+                })
+            })
+        } as any);
+    }
 
-        forUpdateSpy.mockReturnValue({
-            select: vi.fn().mockResolvedValue(staleIds.map((id) => ({ id })))
-        });
+    function buildMockTrx({ staleIds = [] as number[], capturedInserts = [] as any[] } = {}) {
+        const selectSpy = vi.fn().mockResolvedValue(staleIds.map((id) => ({ id })));
+        const whereInSpy = vi.fn().mockResolvedValue(undefined);
 
         const mockTrx = {
             from: vi.fn().mockReturnValue({
-                where: vi.fn().mockReturnValue({ forUpdate: forUpdateSpy }),
+                where: vi.fn().mockReturnValue({ select: selectSpy }),
                 update: vi.fn().mockReturnValue({ whereIn: whereInSpy }),
                 insert: vi.fn().mockImplementation((data: any) => {
                     capturedInserts.push(...(Array.isArray(data) ? data : [data]));
@@ -510,11 +527,12 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
             raw: vi.fn().mockResolvedValue(undefined)
         };
 
-        return { mockTrx, forUpdateSpy, whereInSpy };
+        return { mockTrx, selectSpy, whereInSpy };
     }
 
-    it('calls forUpdate() on the active-config query inside the transaction', async () => {
-        const { mockTrx, forUpdateSpy } = buildMockTrx();
+    it('acquires an advisory lock inside the transaction to serialize concurrent deploys', async () => {
+        const { mockTrx } = buildMockTrx();
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
@@ -534,11 +552,12 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
         });
 
         expect(success).toBe(true);
-        expect(forUpdateSpy).toHaveBeenCalled();
+        expect(mockTrx.raw).toHaveBeenCalledWith('SELECT pg_advisory_xact_lock(?)', [expect.any(Number)]);
     });
 
     it('marks previously active config IDs as inactive when found inside the transaction', async () => {
         const { mockTrx, whereInSpy } = buildMockTrx({ staleIds: [42, 43] });
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
@@ -562,6 +581,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
 
     it('skips the inactive update when no stale configs are found inside the transaction', async () => {
         const { mockTrx, whereInSpy } = buildMockTrx({ staleIds: [] });
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
@@ -586,6 +606,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
     it('queries with the correct keys to identify the right active config to replace', async () => {
         const { mockTrx } = buildMockTrx();
         const fromSpy = mockTrx.from;
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
@@ -620,6 +641,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
     it('preserves the enabled state from the previously deployed config', async () => {
         const capturedInserts: any[] = [];
         const { mockTrx } = buildMockTrx({ staleIds: [99], capturedInserts });
+        mockDbKnexActiveConfig({ ...mockExistingConfig, enabled: false });
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue({ ...mockExistingConfig, enabled: false });
@@ -645,6 +667,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
     it('defaults enabled to true when there is no previous config', async () => {
         const capturedInserts: any[] = [];
         const { mockTrx } = buildMockTrx({ capturedInserts });
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
@@ -674,9 +697,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
         const mockTrx = {
             from: vi.fn().mockReturnValue({
                 where: vi.fn().mockReturnValue({
-                    forUpdate: vi.fn().mockReturnValue({
-                        select: vi.fn().mockResolvedValue([{ id: DEPLOY_A_NEW_CONFIG_ID }])
-                    })
+                    select: vi.fn().mockResolvedValue([{ id: DEPLOY_A_NEW_CONFIG_ID }])
                 }),
                 update: vi.fn().mockReturnValue({ whereIn: whereInSpy }),
                 insert: vi.fn().mockImplementation((data: any) => {
@@ -686,6 +707,7 @@ describe('Deploy transaction - FOR UPDATE prevents duplicate active configs', ()
             }),
             raw: vi.fn().mockResolvedValue(undefined)
         };
+        mockDbKnexActiveConfig(null);
 
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
