@@ -14744,7 +14744,7 @@ shopify-partner:
             headers:
                 content-type: application/json
             endpoints:
-                - 2025-04/graphql.json
+                - 2026-04/graphql.json
     docs: https://nango.dev/docs/integrations/all/shopify-partner
     docs_connect: https://nango.dev/docs/integrations/all/shopify-partner/connect
     credentials:
