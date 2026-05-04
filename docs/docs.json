@@ -1003,7 +1003,7 @@
               "integrations/all/kintone",
               "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
-              "integrations/all/knowbe4",
+              "api-integrations/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
               "api-integrations/klicktipp",

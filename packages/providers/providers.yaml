@@ -9825,22 +9825,16 @@ kintone-user-api:
             pattern: '^[a-z0-9_-]+$'
 
 knowbe4:
-    display_name: KnowBe4 (Reporting)
+    display_name: KnowBe4
     categories:
         - support
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.subdomain}.knowbe4.com
-        verification:
-            method: GET
-            headers:
-                content-type: application/json
-            endpoints:
-                - /v1/users
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/knowbe4
-    docs_connect: https://nango.dev/docs/integrations/all/knowbe4/connect
+    docs: https://nango.dev/docs/api-integrations/knowbe4
+    docs_connect: https://nango.dev/docs/api-integrations/knowbe4/connect
     credentials:
         apiKey:
             type: string
