@@ -102,16 +102,19 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
 
 /* ══ TOC — active item padding ═══════════════════════════════════ */
 /*
- * Mintlify's right-side "On this page" TOC renders the active item
- * with a background, but the anchor links have no horizontal padding,
- * so the highlight sits flush against the text. Give every TOC link
- * uniform padding + radius so the active highlight has breathing room
- * and matches the 4px radius used elsewhere. The negative margin
- * keeps the text aligned with the "On this page" header above it.
+ * The active TOC item gets its gray background from the sidebar
+ * `li[data-active="true"] > a` rule below (selector isn't scoped
+ * to the sidebar). Without horizontal padding on the link, that
+ * highlight sits flush against the text. Add padding + radius so
+ * the active highlight has breathing room. We deliberately don't
+ * use a negative margin to compensate position — Mintlify's TOC
+ * container clips overflow, so a negative margin would just hide
+ * the left edge of the highlight. The text shifts ~8px right of
+ * its original position; alignment with the "On this page" header
+ * is close enough not to look off.
  */
 #table-of-contents a {
   padding: 4px 8px !important;
-  margin-left: -8px !important;
   border-radius: 4px !important;
   display: block !important;
 }
