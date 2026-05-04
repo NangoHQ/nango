@@ -77,11 +77,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
                 {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
                 ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                         How to use Syncs <ExternalLink />
                     </ButtonLink>
                 )}

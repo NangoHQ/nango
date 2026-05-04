@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2025-02-13
 openapi: 3.1.0
 externalDocs:
-    url: https://nango.dev/docs/reference/overview
+    url: https://nango.dev/docs/reference/backend/http-api/authentication
 info:
     title: 'Nango API'
     description: 'Nango API specs used to authorize & sync data with external APIs.'
@@ -2037,7 +2037,7 @@ paths:
     /action/{actionId}:
         get:
             summary: Get action result
-            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/actions/use-an-action#checking-the-action-result) for more details.
+            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
             parameters:
                 - name: actionId
                   in: path
@@ -2163,7 +2163,7 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/actions/use-an-action#asynchronous-action) for more details.
+                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
                 - name: X-Max-Retries
                   in: header
                   required: false

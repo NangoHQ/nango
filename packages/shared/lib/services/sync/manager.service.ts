@@ -4,7 +4,15 @@ import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
 import connectionService from '../connection.service.js';
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import { getLatestSyncJob } from './job.service.js';
-import { createSync, getSync, getSyncsByConnectionId, getSyncsByProviderConfigKey, getSyncsBySyncConfigId, softDeleteSync } from './sync.service.js';
+import {
+    createSync,
+    getSync,
+    getSyncsByConnectionId,
+    getSyncsByProviderConfigKey,
+    getSyncsBySyncConfigId,
+    softDeleteSync,
+    undeleteSync
+} from './sync.service.js';
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
 import accountService from '../account.service.js';
@@ -93,11 +101,13 @@ export class SyncManagerService {
                 continue;
             }
 
-            const existingSync = await getSync({ connectionId, name: syncName, variant: syncVariant });
-            if (existingSync) {
-                await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: nangoConnection.environment_id });
+            // Resume soft-deleted syncs if needed
+            const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
+            if (existing.isOk()) {
+                await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
                 continue;
             }
+            // If the sync doesn't exist, create it and schedule it
             const sync = await createSync({ connectionId, syncConfig, variant: syncVariant });
             if (sync) {
                 await orchestrator.scheduleSync({
@@ -146,11 +156,13 @@ export class SyncManagerService {
                 if (!syncConfig) {
                     continue;
                 }
-                const existingSync = await getSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
-                if (existingSync) {
-                    await orchestrator.unpauseSync({ syncId: existingSync.id, environmentId: connection.environment_id });
+                // Resume soft-deleted syncs if needed
+                const existing = await undeleteSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
+                if (existing.isOk()) {
+                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
                     continue;
                 }
+                // If the sync doesn't exist, create it and schedule it
                 const sync = await createSync({ connectionId: connection.id, syncConfig, variant: syncVariant });
                 if (sync) {
                     await orchestrator.scheduleSync({
@@ -497,7 +509,7 @@ export class SyncManagerService {
             });
         }
     }
-    public async pauseSchedules({
+    public async pauseSyncs({
         syncConfigId,
         environmentId,
         orchestrator
@@ -508,9 +520,13 @@ export class SyncManagerService {
     }): Promise<void> {
         const syncs = await getSyncsBySyncConfigId(environmentId, syncConfigId);
         for (const sync of syncs) {
-            const res = await orchestrator.pauseSync({ syncId: sync.id, environmentId });
-            if (res.isErr()) {
-                logger.error('Failed to delete schedule for sync', { syncId: sync.id, error: res.error });
+            const deletingSync = await softDeleteSync(sync.id);
+            if (deletingSync.isErr()) {
+                logger.error('Failed to soft delete sync', { syncId: sync.id });
+            }
+            const pausingSchedule = await orchestrator.pauseSync({ syncId: sync.id, environmentId });
+            if (pausingSchedule.isErr()) {
+                logger.error('Failed to delete schedule for sync', { syncId: sync.id, error: pausingSchedule.error });
             }
         }
     }

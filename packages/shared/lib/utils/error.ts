@@ -103,6 +103,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Authentication failed. The user could not be found.';
                 break;
 
+            case 'user_suspended':
+                this.status = 400;
+                this.message = 'User account is suspended.';
+                break;
+
             case 'missing_body':
                 this.status = 400;
                 this.message = 'Missing request body.';

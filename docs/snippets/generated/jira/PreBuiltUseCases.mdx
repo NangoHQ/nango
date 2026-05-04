@@ -1,13 +1,111 @@
+### Attachments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-attachment` | Delete an attachment from a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/delete-attachment.ts) |
+
+### Comments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-comment` | Delete a comment from a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/delete-comment.ts) |
+| `update-comment` | Update a comment on a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/update-comment.ts) |
+
+### Fields
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-fields` | List Jira field metadata available to the user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-fields.ts) |
+
+### Issue Types
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-issue-types` | List Jira issue types available to the user | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-issue-types.ts) |
+
+### Issue Worklogs
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `update-worklog` | Update a worklog on a Jira issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/update-worklog.ts) |
+
 ### Issues
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-issue` | An action that creates an Issue on Jira | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/create-issue.ts) |
-| `issues` | Fetches a list of issues from Jira | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/issues.ts) |
+| `add-attachment` | Attach a file to a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/add-attachment.ts) |
+| `add-comment` | Add a comment to a Jira issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/add-comment.ts) |
+| `add-watcher` | Add a watcher to a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/add-watcher.ts) |
+| `create-issue-link` | Link two Jira issues with a relationship type | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/create-issue-link.ts) |
+| `create-issue` | Create a Jira issue in a project. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/create-issue.ts) |
+| `delete-issue-link` | Delete a link between Jira issues | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/delete-issue-link.ts) |
+| `delete-issue` | Delete a Jira issue by ID or key | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/delete-issue.ts) |
+| `get-create-issue-metadata` | Retrieve project and issue type metadata for issue creation. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-create-issue-metadata.ts) |
+| `get-edit-issue-metadata` | Retrieve editable field metadata for an existing Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-edit-issue-metadata.ts) |
+| `get-issue-changelog` | Retrieve the changelog for a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-issue-changelog.ts) |
+| `get-issue` | Retrieve a Jira issue by ID or key | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-issue.ts) |
+| `list-issue-comments` | List comments on a Jira issue with pagination | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-issue-comments.ts) |
+| `list-transitions` | List available workflow transitions for a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-transitions.ts) |
+| `list-watchers` | List watchers on a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-watchers.ts) |
+| `search-issues` | Search Jira issues using JQL. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/search-issues.ts) |
+| `transition-issue` | Move a Jira issue through a workflow transition. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/transition-issue.ts) |
+| `update-issue` | Update issue fields on an existing Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/update-issue.ts) |
+
+### Priorities
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-priority` | Retrieve a Jira priority by priority ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-priority.ts) |
+| `list-priorities` | List Jira priorities available to the user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-priorities.ts) |
+
+### Projects
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-project` | Retrieve a Jira project by ID or key. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-project.ts) |
+| `list-project-components` | List components for a Jira project | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-project-components.ts) |
+| `list-project-versions` | List versions for a Jira project | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-project-versions.ts) |
+| `list-projects` | List Jira projects accessible to the authenticated user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-projects.ts) |
+
+### Statuses
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-status` | Retrieve a Jira status by status ID or name. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-status.ts) |
+| `list-statuses` | List Jira statuses available to the user | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-statuses.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-myself` | Retrieve the currently authenticated Jira user. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-myself.ts) |
+| `get-user` | Retrieve a Jira user by account ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-user.ts) |
+| `list-users` | Search Jira users visible to the authenticated account. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-users.ts) |
+
+### Watchers
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `remove-watcher` | Remove a watcher from a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/remove-watcher.ts) |
+
+### Worklogs
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-worklog` | Log time against a Jira issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/add-worklog.ts) |
+| `delete-worklog` | Delete a worklog from a Jira issue. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/delete-worklog.ts) |
+| `list-worklogs` | List worklogs on a Jira issue | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/list-worklogs.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `issue-types` | Fetches a list of issue types for a project | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/issue-types.ts) |
-| `projects` | Fetches a list of projects from Jira | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/projects.ts) |
+| `get-field` | Retrieve Jira field metadata by field ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-field.ts) |
+| `get-issue-type` | Retrieve Jira issue type metadata by issue type ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/actions/get-issue-type.ts) |
+| `fields` | Sync Jira field metadata available to the authenticated user. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/fields.ts) |
+| `issue-types` | Sync Jira issue types available to the authenticated user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/issue-types.ts) |
+| `issues` | Sync Jira issues using JQL-backed search with incremental updates | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/issues.ts) |
+| `project-components` | Sync Jira project components for projects in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/project-components.ts) |
+| `project-versions` | Sync Jira project versions for projects in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/project-versions.ts) |
+| `projects` | Sync Jira projects accessible to the authenticated user. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/projects.ts) |
+| `users` | Sync Jira users visible to the authenticated account | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/jira/syncs/users.ts) |

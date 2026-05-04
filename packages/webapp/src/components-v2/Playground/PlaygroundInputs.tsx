@@ -53,7 +53,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                                 </AlertButtonLink>
                             )}
                             <AlertButtonLink
-                                to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration"
+                                to="https://nango.dev/docs/getting-started/use-cases/customer-configuration"
                                 variant="info"
                                 onClick={() => setPlaygroundOpen(false)}
                             >
