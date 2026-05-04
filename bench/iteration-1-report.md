@@ -213,3 +213,51 @@ Quick existence proof that horizontal scaling is a real capacity lever in ClickH
 The 10.5 s max-latency outlier on the 2-replica run is one or two queries that hit the new replica before its caches warmed; p99 of 2.9 s is the more honest tail signal.
 
 **Implication.** Scaling is a usable knob. If production traffic ever pushes us toward saturation we can buy headroom by adding replicas — confirmed, not assumed. Combined with the iteration-1 latency numbers, this means a drop-in ClickHouse replacement of the current Orb-backed reconciliation path is feasible at today's production load, and the escalation path (more replicas) is in place for future growth.
+
+---
+
+## Appendix — current Orb traffic flow (production)
+
+Two paths produce Orb traffic in production today. They share `UsageBillingClient.getUsage` (Layer 2 cache + Orb SDK call) but enter the cache via different keys, so they never share entries.
+
+### Path 1 — `/plans/usage` (left-column / sidebar summary)
+
+**Trigger:** webapp polls every 10 s per active session (`useApiGetUsage` refetchInterval). Multiplied across open tabs, this is the highest-rate caller.
+
+**Dampening before Orb:**
+
+1. **Layer 1** (per-metric Redis counter `usageV2:{accountId}:{metric}[:YYYY-MM]`) absorbs the polling. The vast majority of `/plans/usage` requests are served entirely from Layer 1 and never reach `UsageBillingClient.getUsage`.
+2. When the Layer 1 entry is stale (`revalidateAfter < now`, governed by `USAGE_REVALIDATE_AFTER_MS = 1 h` with 0–1 h jitter), the request fires `revalidate(...)` *fire-and-forget*. The response to the user is unaffected.
+3. `revalidate` acquires a 60-second lock keyed on `(accountId, source)`; the 5 billing metrics share `source = 'billing:subscription:usage'`, so only one revalidation per account per minute reaches the next layer.
+4. The revalidation calls `usageTracker.getBillingUsage(subId)` with **no opts** → `UsageBillingClient.getUsage`. Layer 2 key: `billing:usage:{subId}`.
+5. **Layer 2** TTL is `USAGE_BILLING_API_CACHE_TTL_SECONDS = 6 h`. Most revalidations are absorbed here, returning cached Orb responses up to 6 h old. A real Orb HTTP call fires at most once every 6 h per account on this path.
+
+**Net Orb call rate (path 1):** ≈ 1 call per account per 6 h, independent of tab count or polling rate.
+
+### Path 2 — `/plans/billing-usage` (full dashboard)
+
+**Trigger:** webapp navigation to the billing page. Two components on the page each fire a request:
+- `Payment.tsx` — no timeframe, asks Orb for "current period" totals
+- `Usage.tsx` — with `from`/`to` for the selected month, gets a per-day series
+
+**Dampening before Orb:**
+
+1. No Layer 1 for this path. Every request goes directly to `usageTracker.getBillingUsage(subId, opts)` → `UsageBillingClient.getUsage`.
+2. **Layer 2** key is `billing:usage:{subId}:{hash(opts)}` — distinct per `(subscriptionId, granularity, timeframe)`. Same 6 h TTL.
+3. First request for a given `(subId, opts)` is a cold miss → Orb. Subsequent identical requests within 6 h are served from Layer 2.
+
+**Net Orb call rate (path 2):** ≈ 1 cold Orb call per `(account, opts)` per 6 h. The user typically navigates the same month repeatedly, so cache absorbs the bulk.
+
+### Observed in production (DataDog, via PR #6001 metrics)
+
+Live dashboard: [link](https://us3.datadoghq.com/s/e94cfb60-2611-11ee-93ab-da7ad0900003/uce-fwr-c2n).
+
+- `nango.billing.usage.cache` — counter is **sparse** (~1–2 events/min cluster-wide) versus ~5–22 `/plans/usage` requests/min. Confirms Layer 1 absorbs the polling: most traffic never reaches `UsageBillingClient.getUsage`.
+- `nango.billing.usage.orb.ms` (cache-miss latency) — p99 floats between **~0.8 s and ~2 s** in steady state. The Orb HTTP call dominates the request budget.
+- `nango.billing.usage.orb.errors` — ~0; no rate-limit or transport failures observed.
+
+### Implications for the ClickHouse migration
+
+- **Path 1 is the simpler swap.** `getBillingMetrics` is the only callsite to redirect at Orb→ClickHouse. Layer 1 + capping middleware untouched.
+- **Path 2 can move independently.** The 6 h Layer 2 TTL was sized for Orb's ~1.5 s response cost; with ClickHouse at 200–500 ms we could shrink it materially — though that's an optimisation, not a blocker.
+- **Both paths use Layer 2 for stampede control.** With ClickHouse and the confirmed replica-scaling lever, the stampede pressure on the source largely evaporates and Layer 2 becomes a candidate for simplification (separate refactor, not gating).
