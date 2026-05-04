@@ -52,30 +52,21 @@ export class UsageBillingClient {
         // Orb-vs-alternative-backend comparison.
         const callOrb = metrics.time(metrics.Types.BILLING_USAGE_ORB_MS, () => this.billingClient.getUsage(subscriptionId, opts), tags);
 
-        // Total cache-miss path (queue wait + Orb call + cache write). Subtracting BILLING_USAGE_ORB_MS
-        // from this approximates the queue wait (Redis write is sub-millisecond noise).
-        const callTotal = metrics.time(
-            metrics.Types.BILLING_USAGE_TOTAL_MS,
-            () =>
-                this.throttle('usage', async () => {
-                    const res = await callOrb();
-                    if (res.isOk()) {
-                        try {
-                            await this.redis.set(cacheKey, JSON.stringify(res.value), {
-                                EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS
-                            });
-                        } catch {
-                            // ignore cache set errors
-                        }
-                    } else {
-                        metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
-                    }
-                    return res;
-                }),
-            tags
-        );
-
-        return callTotal();
+        return this.throttle('usage', async () => {
+            const res = await callOrb();
+            if (res.isOk()) {
+                try {
+                    await this.redis.set(cacheKey, JSON.stringify(res.value), {
+                        EX: envs.USAGE_BILLING_API_CACHE_TTL_SECONDS
+                    });
+                } catch {
+                    // ignore cache set errors
+                }
+            } else {
+                metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
+            }
+            return res;
+        });
     }
 
     private getCacheKey(subscriptionId: string, opts?: GetBillingUsageOpts): string {
