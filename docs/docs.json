@@ -1448,6 +1448,7 @@
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
+              "api-integrations/sap-ariba",
               "api-integrations/salesforce",
               "api-integrations/salesforce-cc",
               "api-integrations/salesforce-jwt",
