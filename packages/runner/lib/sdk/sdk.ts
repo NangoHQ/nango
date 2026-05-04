@@ -693,6 +693,28 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         } while (cursor);
     }
 
+    public async deleteRecordsUpToCursor(
+        model: string,
+        options: {
+            cursor: string;
+        }
+    ): Promise<{ deletedCount: number }> {
+        this.throwIfAbortedOrKilled();
+        const res = await this.persistClient.deleteRecordsUpToCursor({
+            model: this.modelFullName(model),
+            cursor: options.cursor,
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            syncId: this.syncId!,
+            syncJobId: this.syncJobId!,
+            activityLogId: this.activityLogId
+        });
+        if (res.isErr()) {
+            throw res.error;
+        }
+        return { deletedCount: res.value.deletedCount };
+    }
+
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
         this.throwIfAbortedOrKilled();
         return this.locking.tryAcquireLock(props);
@@ -775,6 +797,7 @@ const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncRunner | keyof NangoActionRunne
     'batchSend',
     'getRecordsByIds',
     'listRecords',
+    'deleteRecordsUpToCursor',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',

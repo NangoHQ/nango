@@ -74,6 +74,17 @@ export abstract class NangoSyncBase<
     ): AsyncGenerator<TModel>;
 
     /**
+     * Soft-delete all records up to and including the given pagination cursor (same ordering as listRecords).
+     * Does not use record merging strategies (those apply to persist upserts only).
+     */
+    public abstract deleteRecordsUpToCursor(
+        model: TModelName,
+        options: {
+            cursor: string;
+        }
+    ): MaybePromise<{ deletedCount: number }>;
+
+    /**
      * @deprecated please use trackDeletesStart and trackDeletesEnd
      */
     public abstract deleteRecordsFromPreviousExecutions(model: TModelName): MaybePromise<{ deletedKeys: string[] }>;

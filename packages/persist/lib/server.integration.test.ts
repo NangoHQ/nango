@@ -219,7 +219,14 @@ describe('Persist API', () => {
 
     it('should fail if passing incorrect authorization header ', async () => {
         const recordsUrl = `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records`;
-        const reqs = [`POST ${serverUrl}/environment/${seed.env.id}/log`, `POST ${recordsUrl}`, `PUT ${recordsUrl}`, `DELETE ${recordsUrl}`];
+        const recordsUpToCursorUrl = `${recordsUrl}/up-to-cursor`;
+        const reqs = [
+            `POST ${serverUrl}/environment/${seed.env.id}/log`,
+            `POST ${recordsUrl}`,
+            `PUT ${recordsUrl}`,
+            `DELETE ${recordsUrl}`,
+            `DELETE ${recordsUpToCursorUrl}`
+        ];
 
         for (const req of reqs) {
             const [method, url] = req.split(' ');
@@ -609,6 +616,74 @@ describe('Persist API', () => {
             });
             expect(response.status).toEqual(409);
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
+        });
+    });
+
+    describe('deleteRecordsUpToCursor', () => {
+        it('should return 400 for invalid cursor', async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/up-to-cursor`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({
+                        model: 'SomeModel',
+                        cursor: 'not-a-valid-cursor',
+                        activityLogId: seed.activityLogId
+                    }),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            expect(response.status).toEqual(400);
+            expect(await response.json()).toMatchObject({ error: { code: 'invalid_cursor_value' } });
+        });
+
+        it('should soft-delete records up to cursor inclusive', async () => {
+            const model = 'DeleteUpToCursorModel';
+            await insertRecords(seed, model, [
+                { id: '1', name: 'r1' },
+                { id: '2', name: 'r2' },
+                { id: '3', name: 'r3' }
+            ]);
+
+            const listed = (
+                await records.getRecords({
+                    connectionId: seed.connection.id,
+                    model
+                })
+            ).unwrap();
+            const cursorMid = listed.records[1]?._nango_metadata.cursor;
+            expect(cursorMid).toBeDefined();
+
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/up-to-cursor`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({
+                        model,
+                        cursor: cursorMid!,
+                        activityLogId: seed.activityLogId
+                    }),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            expect(response.status).toEqual(200);
+            expect(await response.json()).toStrictEqual({ deletedCount: 2 });
+
+            const after = (
+                await records.getRecords({
+                    connectionId: seed.connection.id,
+                    model
+                })
+            ).unwrap();
+            const nonDeleted = after.records.filter((r) => r._nango_metadata.last_action !== 'DELETED');
+            expect(nonDeleted).toHaveLength(1);
+            expect(nonDeleted[0]).toMatchObject({ id: '3', name: 'r3' });
         });
     });
 });

@@ -466,6 +466,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
         'batchSend',
         'delete',
         'deleteRecordsFromPreviousExecutions',
+        'deleteRecordsUpToCursor',
         'get',
         'getConnection',
         'getEnvironmentVariables',
