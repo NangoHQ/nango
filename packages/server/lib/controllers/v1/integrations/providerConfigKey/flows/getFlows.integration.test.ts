@@ -4,49 +4,6 @@ import { flowService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
-import type { StandardNangoConfig } from '@nangohq/types';
-
-function buildGithubMockStandardConfig(): StandardNangoConfig {
-    return {
-        providerConfigKey: 'github',
-        actions: [
-            {
-                name: 'write-file',
-                type: 'action',
-                description: 'Write content to a file in a github repo',
-                runs: '',
-                scopes: ['repo'],
-                version: '1.0.0',
-                source: 'catalog',
-                endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-                input: 'ActionInput_github_writefile',
-                returns: ['ActionOutput_github_writefile'],
-                enabled: false,
-                last_deployed: null,
-                webhookSubscriptions: [],
-                json_schema: { definitions: {} },
-                metadata: { description: 'Write content to a file in a github repo', scopes: ['repo'] },
-                sdk_version: '0.0.0-zero',
-                features: []
-            }
-        ],
-        syncs: [
-            seeders.getTestStdSyncConfig({
-                name: 'list-files',
-                type: 'sync',
-                returns: ['GithubFile'],
-                description: 'List files in a github repo',
-                version: '1.0.0',
-                enabled: false,
-                endpoints: [{ group: 'Files', method: 'GET', path: '/files' }],
-                runs: 'every hour',
-                source: 'catalog'
-            })
-        ],
-        ['on-events']: []
-    };
-}
-
 const route = '/api/v1/integrations/:providerConfigKey/flows';
 let api: Awaited<ReturnType<typeof runServer>>;
 describe(`GET ${route}`, () => {
@@ -92,94 +49,78 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get github templates', async () => {
-        const getAllAvailableFlowsAsStandardConfigSpy = vi
-            .spyOn(flowService, 'getAllAvailableFlowsAsStandardConfig')
-            .mockReturnValue([buildGithubMockStandardConfig()]);
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
 
-        try {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-            await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
 
-            const res = await api.fetch(route, {
-                method: 'GET',
-                query: { env: 'dev' },
-                params: { providerConfigKey: 'github' },
-                token: apiKey.secret
-            });
-
-            expect(res.res.status).toBe(200);
-            isSuccess(res.json);
-            const scriptWriteFile = res.json.data.flows.find((value) => value.name === 'write-file');
-            expect(scriptWriteFile).not.toBeUndefined();
-            expect(scriptWriteFile).toMatchObject({
-                description: expect.any(String),
-                enabled: false,
-                endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-                input: 'ActionInput_github_writefile',
-                source: 'catalog',
-                json_schema: expect.any(Object),
-                last_deployed: null,
-                name: 'write-file',
-                returns: ['ActionOutput_github_writefile'],
-                runs: '',
-                scopes: ['repo'],
-                type: 'action',
-                version: expect.any(String),
-                webhookSubscriptions: []
-            });
-        } finally {
-            getAllAvailableFlowsAsStandardConfigSpy.mockRestore();
-        }
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        const scriptCreateOrUpdateFile = res.json.data.flows.find((value) => value.name === 'create-or-update-file');
+        expect(scriptCreateOrUpdateFile).not.toBeUndefined();
+        expect(scriptCreateOrUpdateFile).toMatchObject({
+            description: expect.any(String),
+            enabled: false,
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }],
+            input: 'ActionInput_github_createorupdatefile',
+            source: 'catalog',
+            json_schema: expect.any(Object),
+            last_deployed: null,
+            name: 'create-or-update-file',
+            returns: ['ActionOutput_github_createorupdatefile'],
+            runs: '',
+            scopes: ['repo'],
+            type: 'action',
+            version: expect.any(String),
+            webhookSubscriptions: []
+        });
     });
 
     it('should create same template and deduplicate correctly', async () => {
-        const getAllAvailableFlowsAsStandardConfigSpy = vi
-            .spyOn(flowService, 'getAllAvailableFlowsAsStandardConfig')
-            .mockReturnValue([buildGithubMockStandardConfig()]);
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
-        try {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-            const config = await seeders.createConfigSeed(env, 'github', 'github');
-            const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: config.id!,
+            sync_name: 'create-or-update-file',
+            type: 'action',
+            models: [],
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }]
+        });
 
-            await seeders.createSyncSeeds({
-                connectionId: connection.id,
-                environment_id: env.id,
-                nango_config_id: config.id!,
-                sync_name: 'write-file',
-                type: 'action',
-                models: [],
-                endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }]
-            });
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev' },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
 
-            const res = await api.fetch(route, {
-                method: 'GET',
-                query: { env: 'dev' },
-                params: { providerConfigKey: 'github' },
-                token: apiKey.secret
-            });
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        const scriptCreateOrUpdateFile = res.json.data.flows.find((value) => value.name === 'create-or-update-file');
+        expect(scriptCreateOrUpdateFile).not.toBeUndefined();
+        expect(scriptCreateOrUpdateFile).toMatchObject({
+            enabled: true,
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }],
+            source: 'repo',
+            name: 'create-or-update-file',
+            type: 'action'
+        });
 
-            expect(res.res.status).toBe(200);
-            isSuccess(res.json);
-            const scriptWriteFile = res.json.data.flows.find((value) => value.name === 'write-file');
-            expect(scriptWriteFile).not.toBeUndefined();
-            expect(scriptWriteFile).toMatchObject({
-                enabled: true,
-                endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-                source: 'repo',
-                name: 'write-file',
-                type: 'action'
-            });
+        // Should not duplicate template vs enabled
+        expect(res.json.data.flows.filter((value) => value.name === 'create-or-update-file')).toHaveLength(1);
 
-            // Should not duplicate template vs enabled
-            expect(res.json.data.flows.filter((value) => value.name === 'write-file')).toHaveLength(1);
-
-            // Should not dedup the sync with the same endpoint path
-            const scriptListFile = res.json.data.flows.find((value) => value.name === 'list-files');
-            expect(scriptListFile).not.toBeUndefined();
-        } finally {
-            getAllAvailableFlowsAsStandardConfigSpy.mockRestore();
-        }
+        // Should not dedup the sync with the same endpoint path
+        const scriptListFile = res.json.data.flows.find((value) => value.name === 'list-files');
+        expect(scriptListFile).not.toBeUndefined();
     });
 
     it('should keep renamed templates visible when an older sync with the same model name exists', async () => {
