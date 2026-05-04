@@ -203,7 +203,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                             type="checkbox"
                                                             checked={isScopeSelected(item.credentials, selectedScopes)}
                                                             disabled={disabled || wildcardSelected}
-                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials, selectedScopes))}
                                                             className="accent-brand shrink-0"
                                                         />
                                                         <span
@@ -550,6 +550,9 @@ export const ApiKeys: React.FC = () => {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1">
+                                            <PermissionGate condition={canReadSecret}>
+                                                {(allowed) => <CopyButton text={key.secret} disabled={!allowed} />}
+                                            </PermissionGate>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
