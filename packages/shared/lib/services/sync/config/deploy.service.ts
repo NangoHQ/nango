@@ -2,7 +2,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
-import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
+import { getSyncAndActionConfigByParams, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
 import { resolveLocalFileName } from '../../../utils/utils.js';
@@ -103,7 +103,6 @@ export async function deploy({
 
     const deployResults: SyncDeploymentResult[] = [];
     const flowsWithoutScript: FlowWithoutScript[] = [];
-    const idsToMarkAsInactive: number[] = [];
     const syncConfigs: DBSyncConfigInsert[] = [];
     for (const flow of flows) {
         const { fileBody: _fileBody, ...rest } = flow;
@@ -128,7 +127,6 @@ export async function deploy({
             return { success, error, response: null };
         }
 
-        idsToMarkAsInactive.push(...response.idsToMarkAsInactive);
         syncConfigs.push(response.syncConfig);
         const deployResult: SyncDeploymentResult = {
             name: flow.syncName,
@@ -158,9 +156,27 @@ export async function deploy({
 
     try {
         await db.knex.transaction(async (trx) => {
-            // Mark old configs as inactive BEFORE inserting new ones
-            if (idsToMarkAsInactive.length > 0) {
-                await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
+            const staleIds: number[] = [];
+            // Lock currently active configs inside the transaction so concurrent deploys
+            // serialize here and read fresh state rather than stale pre-transaction IDs.
+            for (const sc of syncConfigs) {
+                const rows = await trx
+                    .from<DBSyncConfig>(TABLE)
+                    .where({
+                        environment_id: sc.environment_id,
+                        nango_config_id: sc.nango_config_id,
+                        sync_name: sc.sync_name,
+                        type: sc.type,
+                        active: true,
+                        deleted: false
+                    })
+                    .forUpdate()
+                    .select('id');
+                staleIds.push(...rows.map((r) => r.id));
+            }
+
+            if (staleIds.length > 0) {
+                await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', staleIds);
             }
 
             const flowIds = await trx.from<DBSyncConfig>(TABLE).insert(syncConfigs).returning('id');
@@ -180,7 +196,7 @@ export async function deploy({
             }
 
             // Use the switchActiveSyncConfig function for each inactive config
-            for (const id of idsToMarkAsInactive) {
+            for (const id of staleIds) {
                 await switchActiveSyncConfig(id, trx);
             }
 
@@ -240,7 +256,7 @@ async function compileDeployInfo({
     orchestrator: Orchestrator;
     sdkVersion: string | undefined;
     source: FunctionSource;
-}): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
+}): Promise<ServiceResponse<{ syncConfig: DBSyncConfigInsert }>> {
     const {
         syncName,
         providerConfigKey,
@@ -300,7 +316,7 @@ async function compileDeployInfo({
     }
 
     const version = optionalVersion || bumpedVersion || '1';
-    const idsToMarkAsInactive: number[] = [];
+    const lastSyncWasEnabled = previousSyncAndActionConfig?.enabled ?? true;
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
 
@@ -345,19 +361,6 @@ async function compileDeployInfo({
         throw new NangoError('file_upload_error');
     }
 
-    const oldConfigsAll = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
-    const oldConfigs = oldConfigsAll.filter((c: DBSyncConfig) => c.type === type);
-    let lastSyncWasEnabled = true;
-
-    if (oldConfigs.length > 0) {
-        const ids = oldConfigs.map((oldConfig: DBSyncConfig) => oldConfig.id);
-        idsToMarkAsInactive.push(...ids);
-        const lastConfig = oldConfigs[oldConfigs.length - 1];
-        if (lastConfig) {
-            lastSyncWasEnabled = lastConfig.enabled;
-        }
-    }
-
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
     if (!models_json_schema && aggregatedJsonSchema) {
         // Legacy: jsonSchema for all functions were sent at the root of the body
@@ -373,7 +376,6 @@ async function compileDeployInfo({
         success: true,
         error: null,
         response: {
-            idsToMarkAsInactive,
             syncConfig: {
                 source,
                 pre_built: source === 'catalog',
