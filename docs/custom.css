@@ -100,6 +100,22 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
   background-color: rgba(128, 128, 128, 0.6);
 }
 
+/* ══ TOC — active item padding ═══════════════════════════════════ */
+/*
+ * Mintlify's right-side "On this page" TOC renders the active item
+ * with a background, but the anchor links have no horizontal padding,
+ * so the highlight sits flush against the text. Give every TOC link
+ * uniform padding + radius so the active highlight has breathing room
+ * and matches the 4px radius used elsewhere. The negative margin
+ * keeps the text aligned with the "On this page" header above it.
+ */
+#table-of-contents a {
+  padding: 4px 8px !important;
+  margin-left: -8px !important;
+  border-radius: 4px !important;
+  display: block !important;
+}
+
 /* ══ CHANGELOG PAGE — hide left sidebar, keep TOC ════════════════ */
 /*
  * Mintlify sets data-page-href on the #content div. We use :has()
@@ -284,4 +300,5 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   text-decoration: none !important;
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
-  background-
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
