@@ -306,22 +306,17 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* ══ HIDE BOTTOM "ASK A QUESTION" INPUT ══════════════════════════ */
+/* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
 /*
- * Mintlify pins an assistant chat input at the bottom of every doc
- * page. The navbar already has a separate "Ask AI" button, so this
- * bottom input is redundant. There's no docs.json toggle for it
- * (visibility is dashboard-only on Mintlify's side), so hide via CSS.
- * Hide both the input and any direct wrapper to collapse residual
- * sticky-positioned space.
+ * Mintlify pins an "Ask a question..." chat-assistant input at the
+ * bottom of every doc page. The navbar already has a separate Ask AI
+ * button, so this bottom input is redundant. Mintlify doesn't expose
+ * a docs.json toggle for it. Hide it via class/id, and use [class*=]
+ * to catch the surrounding wrapper (which holds the keyboard shortcut
+ * hint and send button) — Mintlify uses the `chat-assistant-` prefix
+ * across all related elements.
  */
-input[placeholder*="Ask a question"],
-textarea[placeholder*="Ask a question"] {
-  display: none !important;
-}
-div:has(> input[placeholder*="Ask a question"]),
-div:has(> textarea[placeholder*="Ask a question"]),
-form:has(> input[placeholder*="Ask a question"]),
-form:has(> textarea[placeholder*="Ask a question"]) {
+#chat-assistant-textarea,
+[class*="chat-assistant"] {
   display: none !important;
 }
