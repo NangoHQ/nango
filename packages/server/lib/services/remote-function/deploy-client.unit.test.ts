@@ -37,6 +37,11 @@ vi.mock('e2b', () => ({
 
 vi.mock('@nangohq/utils', async (importOriginal) => {
     const actual = await importOriginal();
+
+    if (!actual || typeof actual !== 'object') {
+        throw new Error('Invalid @nangohq/utils mock');
+    }
+
     return { ...actual, isLocal: false };
 });
 
