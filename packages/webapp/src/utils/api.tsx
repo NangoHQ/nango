@@ -2,7 +2,7 @@ import { toast } from 'react-toastify';
 
 import { globalEnv } from './env';
 
-import type { ApiError, PostSignup } from '@nangohq/types';
+import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
@@ -63,53 +63,6 @@ function serverErrorToast() {
     toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
 
-export function useLogoutAPI() {
-    return async () => {
-        const options = {
-            method: 'POST'
-        };
-
-        await apiFetch('/api/v1/account/logout', options);
-    };
-}
-
-export function useSignupAPI() {
-    return async (body: PostSignup['Body']) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify(body)
-            };
-
-            return await apiFetch('/api/v1/account/signup', options);
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useSigninAPI() {
-    return async (email: string, password: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ email: email, password: password })
-            };
-
-            const res = await apiFetch('/api/v1/account/signin', options);
-
-            if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
-                serverErrorToast();
-                return;
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
 export function useHostedSigninAPI() {
     return async () => {
         try {
@@ -119,36 +72,6 @@ export function useHostedSigninAPI() {
                 serverErrorToast();
                 return;
             }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useRequestPasswordResetAPI() {
-    return async (email: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/forgot-password`, {
-                method: 'POST',
-                body: JSON.stringify({ email: email })
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useResetPasswordAPI() {
-    return async (token: string, password: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/reset-password`, {
-                method: 'PUT',
-                body: JSON.stringify({ password: password, token: token })
-            });
 
             return res;
         } catch {

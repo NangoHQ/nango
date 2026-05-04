@@ -225,6 +225,33 @@ export const getSyncs = async (
     });
 };
 
+export const getSyncsByIds = async ({ syncIds }: { syncIds: string[] }): Promise<Pick<Sync, 'id' | 'nango_connection_id'>[]> => {
+    if (syncIds.length === 0) {
+        return [];
+    }
+    return db.knex.select('id', 'nango_connection_id').from<Sync>(TABLE).whereIn('id', syncIds).andWhere({ deleted: false });
+};
+
+export const getSyncsByConnectionIds = async ({
+    connectionIds
+}: {
+    connectionIds: number[];
+}): Promise<Result<Pick<Sync, 'id' | 'name' | 'nango_connection_id'>[]>> => {
+    if (connectionIds.length === 0) {
+        return Ok([]);
+    }
+    try {
+        const result = await db.knex
+            .select('id', 'name', 'nango_connection_id')
+            .from<Sync>(TABLE)
+            .whereIn('nango_connection_id', connectionIds)
+            .andWhere({ deleted: false });
+        return Ok(result);
+    } catch (err) {
+        return Err(new Error(`Failed to get syncs by connection ids: ${stringifyError(err)}`));
+    }
+};
+
 export const getSyncsByConnectionId = async ({
     connectionId,
     filter = []
@@ -307,9 +334,57 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
     return true;
 };
 
-export const softDeleteSync = async (syncId: string): Promise<string> => {
-    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
-    return syncId;
+export const softDeleteSync = async (syncId: string): Promise<Result<string>> => {
+    try {
+        await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        return Ok(syncId);
+    } catch (err) {
+        return Err(new Error(`Failed to soft delete sync with id ${syncId}: ${stringifyError(err)}`));
+    }
+};
+
+export const undeleteSync = async ({ connectionId, name, variant }: { connectionId: number; name: string; variant: string }): Promise<Result<Sync>> => {
+    try {
+        // Return existing non-deleted sync if one exists
+        const [existing] = await db.knex.from<Sync>(TABLE).where({
+            nango_connection_id: connectionId,
+            name,
+            variant,
+            deleted: false
+        });
+
+        if (existing) {
+            return Ok(existing);
+        }
+
+        // Undelete the most recently deleted one
+        const [res] = await db.knex
+            .from<Sync>(TABLE)
+            .where(
+                'id',
+                '=',
+                db.knex
+                    .from(TABLE)
+                    .select('id')
+                    .where({
+                        nango_connection_id: connectionId,
+                        name,
+                        variant,
+                        deleted: true
+                    })
+                    .orderBy('deleted_at', 'desc')
+                    .limit(1)
+            )
+            .update({ deleted: false, deleted_at: null })
+            .returning('*');
+
+        if (res) {
+            return Ok(res);
+        }
+        return Err(new Error(`No sync to undelete for connection ${connectionId} with name ${name} and variant ${variant}`));
+    } catch (err) {
+        return Err(new Error(`Failed to undelete sync for connection ${connectionId} with name ${name} and variant ${variant}: ${stringifyError(err)}`));
+    }
 };
 
 export const findSyncByConnections = async (connectionIds: number[], sync_name: string): Promise<Sync[]> => {
@@ -352,7 +427,7 @@ export const getAndReconcileDifferences = async ({
     flows,
     performAction,
     debug = false,
-    singleDeployMode = false,
+    deployMode = 'all',
     logCtx,
     logContextGetter,
     orchestrator
@@ -361,7 +436,7 @@ export const getAndReconcileDifferences = async ({
     flows: CLIDeployFlowConfig[];
     performAction: boolean;
     debug?: boolean | undefined;
-    singleDeployMode?: boolean | undefined;
+    deployMode?: 'all' | 'single' | 'integration' | undefined;
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
@@ -483,9 +558,16 @@ export const getAndReconcileDifferences = async ({
     const deletedActions: SlimAction[] = [];
     const deletedModels: string[] = [];
 
-    if (!singleDeployMode) {
+    if (deployMode !== 'single' && flows.length > 0) {
+        const integrationScopeKey = deployMode === 'integration' ? flows[0]?.providerConfigKey : undefined;
         for (const existingSync of existingSyncs) {
-            const flow = flows.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+            if (integrationScopeKey && integrationScopeKey !== existingSync.unique_key) {
+                continue;
+            }
+
+            const flow = flows.find(
+                (sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key && sync.type === existingSync.type
+            );
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
 
             if (!flow) {
@@ -555,6 +637,33 @@ export const getAndReconcileDifferences = async ({
 
 export async function hardDeleteSync(id: string) {
     await db.knex.from<Sync>('_nango_syncs').where({ id }).delete();
+}
+
+export async function getSoftDeletedSyncs({
+    limit,
+    olderThan
+}: {
+    limit: number;
+    olderThan: number;
+}): Promise<Result<{ sync: Sync; syncConfig: DBSyncConfig | null }[]>> {
+    try {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        const res = await db.knex
+            .select<
+                { sync: Sync; syncConfig: DBSyncConfig | null }[]
+            >(db.knex.raw('row_to_json(_nango_syncs.*) as sync'), db.knex.raw('CASE WHEN _nango_sync_configs.id IS NULL THEN NULL ELSE row_to_json(_nango_sync_configs.*) END as "syncConfig"'))
+            .from<Sync>('_nango_syncs')
+            .leftJoin('_nango_sync_configs', '_nango_sync_configs.id', '_nango_syncs.sync_config_id')
+            .where('_nango_syncs.deleted', true)
+            .andWhere('_nango_syncs.deleted_at', '<=', dateThreshold.toISOString())
+            .limit(limit);
+
+        return Ok(res);
+    } catch (err) {
+        return Err(new Error(`Failed to get soft deleted syncs: ${stringifyError(err)}`));
+    }
 }
 
 export function normalizedSyncParams(syncs: (string | { name: string; variant: string })[]): Result<{ syncName: string; syncVariant: string }[]> {

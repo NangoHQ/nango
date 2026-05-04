@@ -1,6 +1,8 @@
+import db from '@nangohq/database';
 import {
     accountService,
     connectionService,
+    customerKeyService,
     environmentService,
     externalWebhookService,
     generateSlackConnectionId,
@@ -9,6 +11,7 @@ import {
 } from '@nangohq/shared';
 import { isCloud, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { canReadProdSecret } from '../../../authz/resolve.js';
 import { envs } from '../../../env.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { planToApi } from '../../../formatters/plan.js';
@@ -28,10 +31,6 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     if (!isCloud) {
         environment.websockets_path = getWebsocketsPath();
-        if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
-            environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
-            environment.secret_key_rotatable = false;
-        }
 
         if (process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`]) {
             environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
@@ -45,7 +44,6 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
 
     let slack_notifications_channel = '';
     if (environment.slack_notifications) {
-        const connectionId = generateSlackConnectionId(account.uuid, environment.name);
         const integrationId = envs.NANGO_SLACK_INTEGRATION_KEY;
         const env = 'prod';
         const info = await accountService.getAccountAndEnvironmentIdByUUID(envs.NANGO_ADMIN_UUID!, env);
@@ -53,7 +51,7 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             const connectionConfig = await connectionService.getConnectionConfig({
                 provider_config_key: integrationId,
                 environment_id: info.environmentId,
-                connection_id: connectionId
+                connection_id: generateSlackConnectionId(account.uuid, environment.id)
             });
             if (connectionConfig && connectionConfig['incoming_webhook.channel']) {
                 slack_notifications_channel = connectionConfig['incoming_webhook.channel'];
@@ -64,6 +62,14 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
     const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
     const webhookSettings = await externalWebhookService.get(environment.id);
+
+    let webhookSigningKey: string | null = null;
+    if (await canReadProdSecret(res.locals, environment)) {
+        const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (signingKeyResult.isOk()) {
+            webhookSigningKey = signingKeyResult.value;
+        }
+    }
 
     res.status(200).send({
         plan: plan ? planToApi(plan) : null,
@@ -91,7 +97,9 @@ export const getEnvironment = asyncWrapper<GetEnvironment>(async (req, res) => {
             uuid: account.uuid,
             name: account.name,
             email: user.email,
-            slack_notifications_channel
+            slack_notifications_channel,
+            webhook_signing_key: webhookSigningKey,
+            managed_secret_key: !isCloud ? (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] ?? null) : null
         }
     });
 });

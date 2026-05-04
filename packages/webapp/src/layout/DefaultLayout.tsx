@@ -1,15 +1,18 @@
+import { LogoInverted } from '@/assets/LogoInverted';
+import { cn } from '@/utils/utils';
+
 interface DefaultLayoutI {
     children: React.ReactNode;
+    className?: string;
 }
 
-export default function DefaultLayout({ children }: DefaultLayoutI) {
+export default function DefaultLayout({ children, className }: DefaultLayoutI) {
     return (
-        <div className="flex min-h-full flex-col justify-center py-10 sm:px-6 lg:px-8">
-            <div className="flex flex-col bg-bg-elevated border border-border-disabled p-[60px] mx-auto">
-                <div className="pb-[20px]">
-                    <img className="mx-auto h-14 w-auto" src="/logo-light.svg" alt="Nango" />
-                </div>
-                {children}
+        <div className="w-full h-full flex justify-center items-center py-22">
+            {/* Card */}
+            <div className="w-[485px] min-w-[385px] p-15 flex flex-col items-center gap-5 bg-bg-elevated border-border-disabled rounded">
+                <LogoInverted className="size-12.5 text-text-primary" />
+                <div className={cn('w-full flex flex-col items-center', className)}>{children}</div>
             </div>
         </div>
     );

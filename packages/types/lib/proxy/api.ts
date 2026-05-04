@@ -28,6 +28,12 @@ export interface BaseProxyConfiguration {
     responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
+    forwardHeadersOnRedirect?: boolean;
+    /**
+     * If set, called with the absolute URL of each HTTP redirect before Axios follows it.
+     * Implementations may throw (e.g. shared `ProxyError`) to abort the redirect.
+     */
+    validateProxyRedirectUrl?: (absoluteRedirectUrl: string) => void;
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {

@@ -376,6 +376,9 @@
     --color-feedback-error-bg: var(--color-red-100);
     --color-feedback-error-alt: var(--color-red-100);
     --color-feedback-error-border: var(--color-red-300);
+    --color-feedback-neutral-fg: var(--color-text-secondary);
+    --color-feedback-neutral-bg: var(--color-bg-subtle);
+    --color-feedback-neutral-alt: var(--color-bg-subtle);
 
     /* Dropdown */
     --color-dropdown-bg-default: var(--color-gray-75);
@@ -487,6 +490,9 @@
             --color-feedback-error-bg: var(--color-red-900);
             --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
+            --color-feedback-neutral-fg: var(--color-gray-600);
+            --color-feedback-neutral-bg: var(--color-gray-825);
+            --color-feedback-neutral-alt: var(--color-gray-825);
 
             /* Dropdown */
             --color-dropdown-bg-default: var(--color-gray-825);
@@ -583,6 +589,30 @@
     font-weight: 600;
 }
 
+@utility text-label-large {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
+@utility text-heading-large {
+    font-size: 24px;
+    line-height: 32px;
+    font-weight: 500;
+}
+
+@utility text-heading-medium {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 500;
+}
+
+@utility text-heading-sm {
+    font-size: 16px;
+    line-height: 20.8px;
+    font-weight: 500;
+}
+
 @utility text-body-large-regular {
     font-size: 16px;
     line-height: 24px;
@@ -611,6 +641,12 @@
     font-size: 14px;
     line-height: 20px;
     font-weight: 600;
+}
+
+@utility text-body-small-light {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 300;
 }
 
 @utility text-body-small-regular {
@@ -642,6 +678,14 @@
     line-height: 14px;
     font-family: 'Geist Mono';
     font-weight: 400;
+    letter-spacing: -0.04em;
+}
+
+@utility text-code-body-small-medium {
+    font-size: 12px;
+    line-height: 14px;
+    font-family: 'Roboto Mono';
+    font-weight: 500;
     letter-spacing: -0.04em;
 }
 
@@ -693,4 +737,33 @@
 .mantine-Prism-code {
     font-family: 'Geist Mono';
     background-color: var(--color-bg-surface) !important;
+}
+
+.scrollbar-app {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-400) transparent;
+}
+.scrollbar-app::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scrollbar-app::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scrollbar-app::-webkit-scrollbar-thumb {
+    background: var(--color-gray-400);
+    border-radius: 3px;
+}
+.scrollbar-app::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-500);
+}
+.dark .scrollbar-app {
+    scrollbar-color: var(--color-gray-600) transparent;
+}
+.dark .scrollbar-app::-webkit-scrollbar-thumb {
+    background: var(--color-gray-600);
+}
+.dark .scrollbar-app::-webkit-scrollbar-thumb:hover {
+    background: var(--color-gray-550);
 }

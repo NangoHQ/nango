@@ -1,38 +1,70 @@
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
-import { buildAction, buildSync } from './definitions.js';
+import { parseAction, parseSync } from './definitions.js';
 
-describe('buildSync', () => {
-    it('should build a sync', () => {
-        const res = buildSync({
+const syncParams = {
+    type: 'sync' as const,
+    description: 'A sync',
+    version: '1',
+    endpoints: [{ method: 'GET' as const, path: '/foobar' }],
+    frequency: 'every 1 hour',
+    autoStart: true,
+    trackDeletes: false,
+    syncType: 'full' as const,
+    webhookSubscriptions: ['*'],
+    scopes: ['foobar'],
+    models: {
+        Model: z.object({ id: z.string(), foobar: z.string() })
+    },
+    metadata: z.void(),
+    exec: () => {
+        return;
+    }
+};
+
+const actionParams = {
+    type: 'action' as const,
+    description: 'An action',
+    version: '1',
+    endpoint: { method: 'GET' as const, path: '/foobar' },
+    scopes: ['foobar'],
+    input: z.void(),
+    output: z.number(),
+    metadata: z.object({ foo: z.string() }),
+    exec: () => {
+        return;
+    }
+};
+
+describe('parseSync', () => {
+    it('should return the parsed sync without endpoints', () => {
+        const { endpoints, ...syncParamsWithoutEndpoints } = syncParams;
+        const res = parseSync({
             filePath: './fetchIssues.ts',
-            params: {
-                type: 'sync',
-                description: 'A sync',
-                version: '1',
-                endpoints: [{ method: 'GET', path: '/foobar' }],
-                frequency: 'every 1 hour',
-                autoStart: true,
-                trackDeletes: false,
-                syncType: 'full',
-                webhookSubscriptions: ['*'],
-                scopes: ['foobar'],
-                models: {
-                    Model: z.object({ id: z.string(), foobar: z.string() })
-                },
-                metadata: z.void(),
-                exec: () => {
-                    return;
-                }
-            },
+            params: syncParamsWithoutEndpoints,
             basename: 'fetchIssues',
             basenameClean: 'fetchIssues',
             integrationIdClean: 'github'
         });
-        const def = res.unwrap();
 
-        expect(def.sync).toStrictEqual<typeof def.sync>({
+        expect(res.unwrap()).toMatchObject({
+            type: 'sync',
+            name: 'fetchIssues',
+            endpoints: []
+        });
+    });
+
+    it('should return the parsed sync', () => {
+        const res = parseSync({
+            filePath: './fetchIssues.ts',
+            params: syncParams,
+            basename: 'fetchIssues',
+            basenameClean: 'fetchIssues',
+            integrationIdClean: 'github'
+        });
+
+        expect(res.unwrap()).toMatchObject({
             type: 'sync',
             name: 'fetchIssues',
             description: 'A sync',
@@ -46,70 +78,66 @@ describe('buildSync', () => {
             scopes: ['foobar'],
             usedModels: ['Model', 'SyncMetadata_github_fetchIssues'],
             input: 'SyncMetadata_github_fetchIssues',
-            output: ['Model']
-        });
-        expect(Array.from(def.models.values())).toStrictEqual([
-            {
-                fields: [{ name: 'metadata', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'SyncMetadata_github_fetchIssues',
-                description: undefined
-            },
-            {
-                fields: [
-                    { name: 'id', optional: false, tsType: true, value: 'string', description: undefined },
-                    { name: 'foobar', optional: false, tsType: true, value: 'string', description: undefined }
-                ],
-                name: 'Model',
-                description: undefined
-            }
-        ]);
-    });
-
-    it('should build an action', () => {
-        const res = buildAction({
-            params: {
-                type: 'action',
-                description: 'A sync',
-                version: '1',
-                endpoint: { method: 'GET', path: '/foobar' },
-                scopes: ['foobar'],
-                input: z.void(),
-                output: z.number(),
-                metadata: z.object({ foo: z.string() }),
-                exec: () => {
-                    return;
+            output: ['Model'],
+            json_schema: {
+                definitions: {
+                    Model: {
+                        type: 'object',
+                        additionalProperties: false,
+                        properties: {
+                            id: { type: 'string' },
+                            foobar: { type: 'string' }
+                        },
+                        required: ['id', 'foobar']
+                    }
                 }
-            },
+            }
+        });
+    });
+});
+
+describe('parseAction', () => {
+    it('should return the parsed action without endpoint', () => {
+        const { endpoint, ...actionParamsWithoutEndpoint } = actionParams;
+        const action = parseAction({
+            filePath: './createIssue.ts',
+            params: actionParamsWithoutEndpoint,
             basename: 'createIssue',
             basenameClean: 'createIssue',
             integrationIdClean: 'github'
         });
 
-        expect(res.action).toStrictEqual<typeof res.action>({
+        expect(action).toMatchObject({
             type: 'action',
             name: 'createIssue',
-            description: 'A sync',
+            endpoint: null
+        });
+    });
+
+    it('should return the parsed action', () => {
+        const action = parseAction({
+            filePath: './createIssue.ts',
+            params: actionParams,
+            basename: 'createIssue',
+            basenameClean: 'createIssue',
+            integrationIdClean: 'github'
+        });
+
+        expect(action).toMatchObject({
+            type: 'action',
+            name: 'createIssue',
+            description: 'An action',
             version: '1',
-            endpoint: { method: 'GET', path: '/foobar' },
+            endpoint: { method: 'GET' as const, path: '/foobar' },
             scopes: ['foobar'],
             input: 'ActionInput_github_createIssue',
             output: ['ActionOutput_github_createIssue'],
-            usedModels: ['ActionInput_github_createIssue', 'ActionOutput_github_createIssue']
-        });
-        expect(Array.from(res.models.values())).toStrictEqual([
-            {
-                fields: [{ name: 'input', tsType: true, value: 'void', description: undefined }],
-                isAnon: true,
-                name: 'ActionInput_github_createIssue',
-                description: undefined
-            },
-            {
-                fields: [{ name: 'output', optional: false, tsType: true, value: 'number', description: undefined }],
-                isAnon: true,
-                name: 'ActionOutput_github_createIssue',
-                description: undefined
+            usedModels: ['ActionInput_github_createIssue', 'ActionOutput_github_createIssue'],
+            json_schema: {
+                definitions: {
+                    ActionOutput_github_createIssue: { type: 'number' }
+                }
             }
-        ]);
+        });
     });
 });

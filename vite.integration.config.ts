@@ -18,7 +18,10 @@ export default defineConfig({
             FLAG_PLAN_ENABLED: 'true',
             ORCHESTRATOR_SERVICE_URL: 'http://orchestrator',
             RUNNER_NODE_ID: '1',
-            FLAG_API_RATE_LIMIT_ENABLED: 'false'
+            FLAG_API_RATE_LIMIT_ENABLED: 'false',
+            FLAG_AUTH_ROLES_ENABLED: 'true',
+            // Used by allProxy.integration.test.ts denylist case; must be set before server modules load
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid'])
         },
         fileParallelism: false,
         pool: 'forks',

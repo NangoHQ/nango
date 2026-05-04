@@ -10,10 +10,10 @@ import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nan
 
 import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
+import * as assertionClient from '../auth/assertion.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
-import * as samlClient from '../auth/samlAssertion.js';
 import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
@@ -22,6 +22,7 @@ import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS,
     getExpiresAtFromCredentials
 } from './connections/utils.js';
 import syncManager from './sync/manager.service.js';
@@ -32,10 +33,12 @@ import {
     extractStepNumber,
     extractValueByPath,
     formatPem,
+    getStableInterpolationReplacers,
     getStepResponse,
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
+    makeUrl,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
@@ -228,7 +231,7 @@ class ConnectionService {
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
                     environment_id: encryptedConnection.environment_id,
-                    metadata: encryptedConnection.connection_config,
+                    metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
                     last_refresh_success: encryptedConnection.last_refresh_success,
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
@@ -644,18 +647,28 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
+    public async findConnectionsByConnectionConfigValue(
+        key: string,
+        value: string,
+        environmentId: number,
+        configId?: number
+    ): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
+            .modify((query) => {
+                if (typeof configId === 'number') {
+                    query.andWhere({ config_id: configId });
+                }
+            })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
 
         if (!result || result.length == 0) {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => encryptionManager.decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -677,8 +690,9 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId, config_id: configId })
-            // escape the question mark so it doesn't try to bind it as a parameter
-            .where(db.knex.raw(`metadata->? \\? ?`, [metadataProperty, payloadIdentifier]))
+            // Match both scalar values (metadata.key === value) and set-like values (metadata.key contains value).
+            // We escape the question mark so it doesn't try to bind it as a parameter.
+            .where(db.knex.raw(`(metadata->>? = ? OR metadata->? \\? ?)`, [metadataProperty, payloadIdentifier, metadataProperty, payloadIdentifier]))
             .andWhere('deleted', false);
 
         if (!result || result.length == 0) {
@@ -1034,6 +1048,26 @@ class ConnectionService {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
+                if (!expiration && typeof token === 'string') {
+                    const decoded = jwtClient.decode(token);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || tokenExpiresAt < expiresAt) {
+                            expiresAt = tokenExpiresAt;
+                        }
+                    }
+                }
+
+                if (refreshToken) {
+                    const decoded = jwtClient.decode(refreshToken);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
+                            expiresAt = refreshTokenExpiresAt;
+                        }
+                    }
+                }
+
                 const twoStepCredentials: TwoStepCredentials = {
                     type: 'TWO_STEP',
                     token: token,
@@ -1313,7 +1347,7 @@ class ConnectionService {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials
+                dynamicCredentials: { ...dynamicCredentials, connectionConfig }
             });
 
             if (create.isErr()) {
@@ -1328,12 +1362,21 @@ class ConnectionService {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
-            const create = samlClient.generateAssertion({
-                provider,
-                dynamicCredentials: credentials,
-                connectionConfig,
-                ...(assertionOption && { assertionOption })
-            });
+            const assertionType = provider.assertion.type;
+            const create =
+                assertionType === 'jwt'
+                    ? assertionClient.generateJwtAssertion({
+                          provider,
+                          dynamicCredentials: credentials,
+                          connectionConfig,
+                          ...(assertionOption && { assertionOption })
+                      })
+                    : assertionClient.generateSamlAssertion({
+                          provider,
+                          dynamicCredentials: credentials,
+                          connectionConfig,
+                          ...(assertionOption && { assertionOption })
+                      });
 
             if (create.isErr()) {
                 console.log(create.error);
@@ -1355,10 +1398,11 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
-        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
-        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
-        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
+        if (typeof tokenUrl !== 'string' || !tokenUrl.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+
+        const url = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
@@ -1382,12 +1426,14 @@ class ConnectionService {
         const headers: Record<string, any> | string = {};
 
         if (tokenHeaders) {
+            const headerValues = Object.values(tokenHeaders).filter((v): v is string => typeof v === 'string');
+            const stableReplacers = getStableInterpolationReplacers(headerValues);
             for (const [key, value] of Object.entries(tokenHeaders)) {
                 const strippedValue = stripCredential(value);
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
-                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials, stableReplacers);
                 } else if (typeof strippedValue === 'string') {
-                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials, stableReplacers);
                 } else {
                     headers[key] = strippedValue;
                 }
@@ -1440,26 +1486,34 @@ class ConnectionService {
                         continue;
                     }
 
+                    const applyInterpolation = (input: any, source: Record<string, any>) => {
+                        if (typeof input === 'object' && input !== null) {
+                            return interpolateObject(input, source);
+                        } else if (typeof input === 'string') {
+                            return interpolateString(input, source);
+                        }
+                        return input;
+                    };
+
+                    const isResolved = (val: any): val is string => typeof val === 'string' && !val.includes('${');
+
+                    const resolveStepValue = (value: string): any => {
+                        const stepNumber = extractStepNumber(value);
+                        const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
+                        const fromCredentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                        const fromStepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                        return isResolved(fromStepResponse)
+                            ? fromStepResponse
+                            : isResolved(fromCredentials)
+                              ? fromCredentials
+                              : (fromStepResponse ?? fromCredentials);
+                    };
+
                     let stepPostBody: Record<string, any> = {};
 
                     if (step.token_params) {
                         for (const [key, value] of Object.entries(step.token_params)) {
-                            const stepNumber = extractStepNumber(value);
-                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
-
-                            const applyInterpolation = (input: any, source: Record<string, any>) => {
-                                if (typeof input === 'object' && input !== null) {
-                                    return interpolateObject(input, source);
-                                } else if (typeof input === 'string') {
-                                    return interpolateString(input, source);
-                                }
-                                return input;
-                            };
-
-                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
-                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
-                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
-                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
+                            stepPostBody[key] = resolveStepValue(value);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
@@ -1467,14 +1521,14 @@ class ConnectionService {
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
-                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
 
                     if (step.token_headers) {
                         for (const [key, value] of Object.entries(step.token_headers)) {
-                            stepHeaders[key] = interpolateString(value, dynamicCredentials);
+                            stepHeaders[key] = resolveStepValue(value);
                         }
                     }
 

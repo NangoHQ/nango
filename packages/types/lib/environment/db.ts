@@ -53,6 +53,7 @@ export interface DBEnvironment extends TimestampsAndDeletedCorrect {
 
     webhook_receive_url: string | null;
     otlp_settings: { endpoint: string; headers: Record<string, string> } | null;
+    is_production: boolean;
 }
 
 export interface DBExternalWebhook extends Timestamps {
@@ -76,4 +77,28 @@ export interface DBAPISecret extends Timestamps {
     tag: string;
     hashed: string;
     is_default: boolean;
+}
+
+export type CustomerKeyType = 'api' | 'webhook_signing';
+
+export interface DBCustomerKey extends Timestamps {
+    id: number;
+    account_id: number;
+    key_type: CustomerKeyType;
+    display_name: string;
+    scopes: string[] | null;
+    secret: string;
+    iv: string;
+    tag: string;
+    hashed: string;
+    last_used_at: Date | null;
+    deleted_at: Date | null;
+}
+
+export type CustomerKeyEntityType = 'environment' | 'account';
+
+export interface DBCustomerKeyRelation {
+    customer_key_id: number;
+    entity_type: CustomerKeyEntityType;
+    entity_id: number;
 }

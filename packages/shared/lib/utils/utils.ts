@@ -2,6 +2,8 @@ import crypto, { createPrivateKey, createPublicKey } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import get from 'lodash-es/get.js';
 
 import { isEnterprise, localhostUrl } from '@nangohq/utils';
@@ -13,6 +15,8 @@ export enum NodeEnv {
     Staging = 'staging',
     Prod = 'production'
 }
+
+dayjs.extend(utc);
 
 export function getPort() {
     if (process.env['SERVER_PORT']) {
@@ -194,38 +198,120 @@ export function getWebsocketsPath(): string {
     return process.env['NANGO_SERVER_WEBSOCKETS_PATH'] || '/';
 }
 
+function replaceBase64Expression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${base64\((.*?)\)}/g, (_, inner) => Buffer.from(resolveInner(inner)).toString('base64'));
+}
+
+function replaceSha256HexExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => crypto.createHash('sha256').update(resolveInner(inner), 'utf8').digest('hex'));
+}
+
+function replaceHmacSha1HexExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${hmacSha1Hex\(([\s\S]*?)\)}/g, (match, inner) => {
+        const lastComma = inner.lastIndexOf(',');
+        if (lastComma === -1) return match;
+        const message = resolveInner(inner.slice(0, lastComma));
+        const key = resolveInner(inner.slice(lastComma + 1).trim());
+        return crypto.createHmac('sha1', key).update(message, 'utf8').digest('hex');
+    });
+}
+
+function formatAwsSigV4Date(date: Date): string {
+    return date.toISOString().replace(/[:-]|\.\d{3}/g, '');
+}
+
+function splitTopLevelArgs(inner: string): string[] {
+    const args: string[] = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < inner.length; i++) {
+        if (inner[i] === '(') depth++;
+        else if (inner[i] === ')') depth--;
+        else if (inner[i] === ',' && depth === 0) {
+            args.push(inner.slice(start, i).trim());
+            start = i + 1;
+        }
+    }
+    args.push(inner.slice(start).trim());
+    return args;
+}
+
+function replaceAwsSigV4Expression(str: string, resolveInner: (inner: string) => string, replacers: Record<string, any>): string {
+    return str.replace(/\${awsSigV4\(([\s\S]*?)\)}/g, (match, inner) => {
+        const args = splitTopLevelArgs(inner);
+        if (args.length !== 4 && args.length !== 5) return match;
+
+        const [accessKeyId, secretKey, region, service, customHost] = args.map(resolveInner);
+        if (!accessKeyId || !secretKey || !region || !service) return match;
+
+        const date = formatAwsSigV4Date(getNowDate(replacers));
+        const dateStamp = date.slice(0, 8);
+        const method = (replacers['method'] as string | undefined) ?? 'GET';
+        const path = (replacers['path'] as string | undefined) ?? '/';
+        const host = customHost || `${service}.amazonaws.com`;
+
+        const urlCanonicalParams = (replacers['urlCanonicalParams'] as string | undefined) ?? (replacers['params'] as string | undefined) ?? '';
+        const bodyCanonicalParams = (replacers['bodyCanonicalParams'] as string | undefined) ?? '';
+        const contentType = (replacers['contentType'] as string | undefined) ?? '';
+        const querystring = urlCanonicalParams;
+        const payloadHash = crypto.createHash('sha256').update(bodyCanonicalParams).digest('hex');
+        // content-type sorts before host alphabetically
+        const canonicalHeaders = contentType ? `content-type:${contentType}\nhost:${host}\nx-amz-date:${date}\n` : `host:${host}\nx-amz-date:${date}\n`;
+        const signedHeaders = contentType ? 'content-type;host;x-amz-date' : 'host;x-amz-date';
+        const canonicalRequest = `${method}\n${path}\n${querystring}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+
+        const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+        const stringToSign = `AWS4-HMAC-SHA256\n${date}\n${credentialScope}\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
+
+        const kDate = crypto.createHmac('sha256', `AWS4${secretKey}`).update(dateStamp).digest();
+        const kRegion = crypto.createHmac('sha256', kDate).update(region).digest();
+        const kService = crypto.createHmac('sha256', kRegion).update(service).digest();
+        const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest();
+        const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
+
+        return `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+    });
+}
+
 /**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
  *
+ * @param optionalReplacers - Optional extra replacers (e.g. stable random/now) merged on top of replacers; avoids mutating the main replacers object.
+ *
  * @remarks
  * Copied from https://stackoverflow.com/a/1408373/250880
  */
-export function interpolateString(str: string, replacers: Record<string, any>): string {
-    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateString(inner, replacers);
-        return Buffer.from(resolvedInner).toString('base64');
-    });
+export function interpolateString(str: string, replacers: Record<string, any>, optionalReplacers?: Record<string, any>): string {
+    const effective = optionalReplacers ? { ...replacers, ...optionalReplacers } : replacers;
+
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective), effective);
+
+    str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
 
     str = str.replace(/\${fingerprint\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateString(inner, replacers);
+        const resolvedInner = interpolateString(inner, effective);
         return getFingerprint(resolvedInner);
     });
 
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, effective));
+
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        if (b === 'now') {
-            return new Date().toISOString();
+        const nowValue = resolveNowExpression(b, effective);
+        if (nowValue !== null) {
+            return nowValue;
         }
         if (b === 'random') {
-            return crypto.randomUUID();
+            return (effective['random'] as string | undefined) ?? crypto.randomUUID();
         }
         if (b.startsWith('base64(')) {
             return a;
         }
-        if (b in replacers && replacers[b] != null) {
-            return `${replacers[b]}`;
+        if (b in effective && effective[b] != null) {
+            return `${effective[b]}`;
         }
-        const r = resolveKey(b, replacers);
+        const r = resolveKey(b, effective);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
 
@@ -250,10 +336,10 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
     return value;
 }
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
-    str = str.replace(/\${base64\((.*?)\)}/g, (_, inner) => {
-        const resolvedInner = interpolateStringFromObject(inner, replacers);
-        return Buffer.from(resolvedInner).toString('base64');
-    });
+    str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
+    str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
 
     if (str.includes('||')) {
         const [left, right = ''] = str.split('||').map((part) => part.trim());
@@ -267,7 +353,23 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     }
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
-        const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
+        const nowValue = resolveNowExpression(b, replacers);
+        if (nowValue !== null) {
+            return nowValue;
+        }
+        if (b === 'random') {
+            return (replacers['random'] as string | undefined) ?? crypto.randomUUID();
+        }
+        if (b === 'endpoint') {
+            return (replacers['endpoint'] as string | undefined) ?? '';
+        }
+        // try dot-notation path first, fall back to a flat key lookup
+        // for callers that pass top-level keys containing literal dots in their name.
+        const r =
+            b
+                .split('.')
+                .reduce((o: Record<string, any> | undefined, i: string) => (o != null ? o[i] : undefined), replacers as Record<string, any> | undefined) ??
+            replacers[b];
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
     return interpolated;
@@ -285,20 +387,31 @@ export function interpolateObjectValues(obj: Record<string, string | undefined>,
     return interpolated;
 }
 
-export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>): Record<string, any> {
+export function interpolateObject(obj: Record<string, any>, dynamicValues: Record<string, any>, optionalReplacers?: Record<string, any>): Record<string, any> {
+    const effective = optionalReplacers ? { ...dynamicValues, ...optionalReplacers } : dynamicValues;
     const interpolated: Record<string, any> = {};
 
     for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'string') {
-            interpolated[key] = interpolateString(value, dynamicValues);
+            interpolated[key] = interpolateString(value, effective);
         } else if (typeof value === 'object' && value !== null) {
-            interpolated[key] = interpolateObject(value, dynamicValues);
+            interpolated[key] = interpolateObject(value, effective);
         } else {
             interpolated[key] = value;
         }
     }
 
     return interpolated;
+}
+
+export function getStableInterpolationReplacers(values: string[]): Record<string, string> {
+    const has = (pattern: string) => values.some((v) => v.includes(pattern));
+    const now = new Date();
+
+    return {
+        ...(has('${random}') && { random: crypto.randomUUID() }),
+        ...((has('${now}') || has('${now:') || has('${awsSigV4(')) && { now: now.toISOString() })
+    };
 }
 
 export function stripCredential(obj: any): any {
@@ -451,7 +564,7 @@ export function getConnectionMetadata(
 }
 
 export function makeUrl(template: string, config: Record<string, any>, skipEncodeKeys: string[] = []): URL {
-    const cleanTemplate = template.replace(/connectionConfig\./g, '');
+    const cleanTemplate = template.replace(/connectionConfig\./g, '').replace(/credentials\./g, '');
     const encodedParams = skipEncodeKeys.includes('base_url') ? config : encodeParameters(config);
     const interpolatedUrl = interpolateStringFromObject(cleanTemplate, removeEmptyValues(encodedParams));
 
@@ -521,4 +634,34 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
         }
     }
     return cleaned;
+}
+function resolveNowExpression(expression: string, replacers: Record<string, any>): string | null {
+    if (expression === 'now') {
+        const isoNow = replacers['now'] as string | undefined;
+        return isoNow ?? new Date().toISOString();
+    }
+
+    const formatMatch = expression.match(/^now:(.+)$/);
+    if (formatMatch) {
+        const format = formatMatch[1];
+        return format ? dayjs.utc(getNowDate(replacers)).format(format) : null;
+    }
+
+    return null;
+}
+
+function getNowDate(replacers: Record<string, any>): Date {
+    const isoNow = replacers['now'] as string | undefined;
+    return isoNow ? new Date(isoNow) : new Date();
+}
+
+const __dirname = dirname();
+const basePath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] || path.resolve(__dirname, `../nango-integrations`);
+
+export function resolveLocalFileName({ syncName, providerConfigKey }: { syncName: string; providerConfigKey: string }): string {
+    return `${syncName}-${providerConfigKey}.js`;
+}
+
+export function resolveLocalFilePath({ fileName }: { fileName: string }): string {
+    return path.resolve(basePath, fileName);
 }

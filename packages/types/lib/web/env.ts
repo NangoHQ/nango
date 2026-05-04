@@ -1,6 +1,5 @@
 export interface WindowEnv {
     apiUrl: string;
-    apiDownWatchPublicKey: string;
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;
@@ -21,5 +20,6 @@ export interface WindowEnv {
         gettingStarted: boolean;
         slack: boolean;
         plan: boolean;
+        authRoles: boolean;
     };
 }

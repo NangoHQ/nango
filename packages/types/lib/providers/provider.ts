@@ -50,6 +50,7 @@ export interface BaseProvider {
         query?: Record<string, string>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
+        forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
@@ -80,6 +81,7 @@ export interface BaseProvider {
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
+    webhook_allowed_query_params?: string[];
     post_connection_script?: string;
     pre_connection_deletion_script?: string;
     credentials_verification_script?: string;
@@ -92,6 +94,7 @@ export interface BaseProvider {
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
     token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
+    available_scopes?: string[];
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -152,6 +155,8 @@ export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
         protocol: 'RSA' | 'HMAC';
+        // For HMAC only. `hex` matches legacy providers (e.g. Ghost). `utf8` uses the signing key as a UTF-8 string (e.g. Heymarket). Defaults to `hex`
+        hmac_secret_encoding?: 'hex' | 'utf8';
     };
     token: {
         signing_key: string;
@@ -220,6 +225,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_request_method?: 'GET';
     }[];
     assertion?: {
+        type?: 'saml' | 'jwt';
         key?: string;
         issuer?: string;
         lifetimeInSeconds?: number;
@@ -227,6 +233,9 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
         sessionIndex?: string;
         recipient?: string;
+        // jwt-specific
+        header?: Record<string, string>;
+        payload?: Record<string, string>;
     };
     assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;

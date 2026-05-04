@@ -4,9 +4,15 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
+import {
+    connectionCopyWithParsedConnectionConfig,
+    formatPem,
+    getStableInterpolationReplacers,
+    interpolateIfNeeded,
+    interpolateProxyUrlParts
+} from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
 
 import type {
@@ -31,7 +37,8 @@ type ProxyErrorCode =
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
-    | 'invalid_certificate_or_key_format';
+    | 'invalid_certificate_or_key_format'
+    | 'proxy_redirect_to_denied_host';
 
 export interface RetryReason {
     retry: boolean;
@@ -50,6 +57,28 @@ export class ProxyError extends Error {
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
+/**
+ * Absolute URL for the upcoming redirect request, from Node `follow-redirects` options
+ * (after `spreadUrlObject`, `href` is set).
+ */
+export function absoluteUrlFromRedirectRequestOptions(options: Record<string, unknown>): string | null {
+    if (typeof options['href'] === 'string' && options['href'].length > 0) {
+        return options['href'];
+    }
+    const protocol = typeof options['protocol'] === 'string' ? options['protocol'] : '';
+    const host =
+        typeof options['host'] === 'string'
+            ? options['host']
+            : typeof options['hostname'] === 'string'
+              ? `${options['hostname']}${typeof options['port'] === 'number' && options['port'] ? `:${options['port']}` : ''}`
+              : '';
+    const path = typeof options['path'] === 'string' ? options['path'] : '/';
+    if (!protocol || !host) {
+        return null;
+    }
+    return `${protocol}//${host}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export function getAxiosConfiguration({
     proxyConfig,
     connection,
@@ -65,8 +94,20 @@ export function getAxiosConfiguration({
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
         url,
-        headers,
-        beforeRedirect: (options: Record<string, any>) => {
+        headers
+    };
+
+    // TODO: change default to false after removing the metric below
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
+    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+        if (proxyConfig.validateProxyRedirectUrl) {
+            const absolute = absoluteUrlFromRedirectRequestOptions(options);
+            if (absolute) {
+                proxyConfig.validateProxyRedirectUrl(absolute);
+            }
+        }
+        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
+        if (shouldForward) {
             // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
@@ -133,7 +174,17 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const {
+        endpoint: passedEndpoint,
+        providerConfigKey,
+        method,
+        retries,
+        headers,
+        baseUrlOverride,
+        retryOn,
+        forwardHeadersOnRedirect,
+        validateProxyRedirectUrl
+    } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -198,7 +249,9 @@ export function getProxyConfiguration({
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
-        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+        ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
     };
 
     return Ok(configBody);
@@ -222,13 +275,16 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
+    const normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
     const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+        ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
+        ...connection.credentials
+    });
 
     let url = new URL(fullEndpoint);
     if (config.params) {
@@ -263,6 +319,55 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
         }
     }
     return url.toString();
+}
+
+function getRawBody(method: string, data: unknown): string {
+    if (!['POST', 'PUT', 'PATCH'].includes(method) || !data) return '';
+    if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
+    if (Buffer.isBuffer(data)) return data.toString('utf8');
+    if (data instanceof URLSearchParams) return data.toString();
+    if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
+    return '';
+}
+
+// builds the canonical parameter string as required by the Duo API request signing spec.
+// https://duo.com/docs/authapi#authentication
+export function buildCanonicalParams(method: string, data: unknown, queryString: string): string {
+    const encode = (s: string) =>
+        encodeURIComponent(s)
+            .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+            .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
+
+    const fromQueryString = (qs: string) =>
+        qs
+            .split('&')
+            .filter(Boolean)
+            .map((pair) => {
+                const i = pair.indexOf('=');
+                return {
+                    k: decodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
+                    v: decodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
+                };
+            })
+            .sort((a, b) => a.k.localeCompare(b.k))
+            .map(({ k, v }) => `${encode(k)}=${encode(v)}`)
+            .join('&');
+
+    const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+
+    if (isBodyMethod) {
+        if (!data) return '';
+        if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
+        if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
+        if (data instanceof URLSearchParams) return fromQueryString(data.toString());
+        if (typeof data !== 'object' || data instanceof FormData) return '';
+        return Object.entries(data as Record<string, unknown>)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => `${encode(k)}=${encode(String(v))}`)
+            .join('&');
+    }
+
+    return queryString ? fromQueryString(queryString) : '';
 }
 
 /**
@@ -393,31 +498,69 @@ export function buildProxyHeaders({
 
     // Custom headers handling
     if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+        const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
+        const stableReplacers = getStableInterpolationReplacers(headerValues);
+
+        const parsedUrl = new URL(url);
+        const endpointPath = parsedUrl.pathname;
+        const endpointQuery = parsedUrl.search.slice(1);
+        const contentTypeHeader = Object.entries(config.headers ?? {}).find(([k]) => k.toLowerCase() === 'content-type');
+        const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
+        const baseReplacers = {
+            endpoint: config.endpoint,
+            host: parsedUrl.host,
+            path: endpointPath,
+            params: buildCanonicalParams(config.method, config.data, endpointQuery),
+            urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),
+            bodyCanonicalParams: getRawBody(config.method, config.data),
+            contentType
+        };
+
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
+                headers[key] = interpolateIfNeeded(value, {
+                    connectionConfig: connection.connection_config,
+                    credentials: connection.credentials,
+                    ...(connection.credentials as Record<string, string>),
+                    method: config.method,
+                    ...stableReplacers,
+                    ...baseReplacers
+                });
                 continue;
             }
 
             switch (connection.credentials.type) {
                 case 'OAUTH2': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.access_token });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.access_token,
+                        clientId: integrationConfig?.oauth_client_id || '',
+                        clientSecret: integrationConfig?.oauth_client_secret || ''
+                    });
                     break;
                 }
+                case 'JWT':
+                case 'OAUTH2_CC':
                 case 'SIGNATURE': {
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '', credentials: connection.credentials });
-                    break;
-                }
-                case 'JWT': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.token || '',
+                        credentials: connection.credentials,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
                 }
                 default:
-                    headers[key] = interpolateIfNeeded(value, connection.credentials as Record<string, string>);
+                    headers[key] = interpolateIfNeeded(value, {
+                        credentials: connection.credentials,
+                        ...(connection.credentials as Record<string, string>),
+                        method: config.method,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
             }
         }

@@ -4,6 +4,7 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
+import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
@@ -18,6 +19,7 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
+    private backpressureMonitor: BackpressureMonitoringDaemon;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -63,6 +65,7 @@ export class Scheduler {
             onError
         });
         this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
+        this.backpressureMonitor = new BackpressureMonitoringDaemon({ db, abortSignal: this.ac.signal, onError });
     }
 
     start(): void {
@@ -70,6 +73,7 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
+        void this.backpressureMonitor.start();
     }
 
     async stop(): Promise<void> {
@@ -77,6 +81,7 @@ export class Scheduler {
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();
+        await this.backpressureMonitor.waitUntilStopped();
     }
 
     /**
@@ -197,18 +202,22 @@ export class Scheduler {
                 };
             }
 
-            const created = await tasks.create(trx, taskProps);
-            if (created.isOk()) {
-                const task = created.value;
-                if (task.scheduleId) {
-                    const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
-                    if (scheduleRes.isErr()) {
-                        return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
-                    }
-                }
-                this.onCallbacks[task.state](task);
+            const created = await tasks.create(trx, [taskProps]);
+            if (created.isErr()) {
+                return Err(created.error);
             }
-            return created;
+            const task = created.value.tasks[0];
+            if (!task) {
+                return Err(`Failed to create task '${taskProps.name}'`);
+            }
+            if (task.scheduleId) {
+                const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
+                if (scheduleRes.isErr()) {
+                    return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
+                }
+            }
+            this.onCallbacks[task.state](task);
+            return Ok(task);
         });
     }
 
@@ -270,12 +279,24 @@ export class Scheduler {
      * @example
      * const succeed = await scheduler.succeed({ taskId: '00000000-0000-0000-0000-000000000000', output: {foo: 'bar'} });
      */
-    public async succeed({ taskId, output }: { taskId: string; output: JsonValue }): Promise<Result<Task>> {
+    public async succeed({
+        taskId,
+        output,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        output: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'SUCCEEDED';
         const succeeded: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(trx, { taskId, newState, output });
             if (res.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -297,7 +318,15 @@ export class Scheduler {
      * @example
      * const failed = await scheduler.fail({ taskId: '00000000-0000-0000-0000-000000000000', error: {message: 'error'});
      */
-    public async fail({ taskId, error }: { taskId: string; error: JsonValue }): Promise<Result<Task>> {
+    public async fail({
+        taskId,
+        error,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        error: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'FAILED';
         return await this.db.transaction(async (trx) => {
             const task = await tasks.get(trx, taskId);
@@ -313,7 +342,11 @@ export class Scheduler {
 
             const failed = await tasks.transitionState(trx, { taskId, newState, output: error });
             if (failed.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -352,7 +385,15 @@ export class Scheduler {
      * @example
      * const cancelled = await scheduler.cancel({ taskId: '00000000-0000-0000-0000-000000000000' });
      */
-    public async cancel({ taskId, reason }: { taskId: string; reason: JsonValue }): Promise<Result<Task>> {
+    public async cancel({
+        taskId,
+        reason,
+        nextExecutionInMs
+    }: {
+        taskId: string;
+        reason: JsonValue;
+        nextExecutionInMs?: number | undefined;
+    }): Promise<Result<Task>> {
         const newState: TaskState = 'CANCELLED';
         const cancelled: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(this.db, {
@@ -361,7 +402,11 @@ export class Scheduler {
                 output: { reason }
             });
             if (res.isOk()) {
-                const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [taskId], taskState: newState });
+                const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                    taskIds: [taskId],
+                    taskState: newState,
+                    nextExecutionInMs
+                });
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
                 }
@@ -417,7 +462,7 @@ export class Scheduler {
                     if (t.isErr()) {
                         return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
                     }
-                    const scheduleRes = await schedules.updateLastScheduledTaskState(trx, { taskIds: [task.id], taskState: newState });
+                    const scheduleRes = await schedules.scheduleNextExecution(trx, { taskIds: [task.id], taskState: newState });
                     if (scheduleRes.isErr()) {
                         return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
                     }

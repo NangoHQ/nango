@@ -7,12 +7,13 @@ import { cn } from '@/utils/utils';
 import type { VariantProps } from 'class-variance-authority';
 
 const badgeVariants = cva(
-    'inline-flex items-center justify-center uppercase rounded px-2 py-0.5 w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
+    'inline-flex items-center justify-center rounded px-2 py-0.5 w-fit whitespace-nowrap shrink-0 [&>svg]:size-3.5 gap-1 [&>svg]:pointer-events-none',
     {
         variants: {
             variant: {
-                brand: 'bg-bg-accent text-text-brand',
                 gray: 'bg-badge-bg-gray text-badge-fg-gray',
+                secondary: 'bg-bg-subtle text-text-secondary border border-border-muted',
+                brand: 'bg-bg-accent text-text-brand',
                 mint: 'bg-badge-bg-mint text-badge-fg-mint',
                 pink: 'bg-badge-bg-pink text-badge-fg-pink',
                 yellow: 'bg-badge-bg-yellow text-badge-fg-yellow',

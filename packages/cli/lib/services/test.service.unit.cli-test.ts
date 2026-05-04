@@ -462,7 +462,7 @@ describe('generateSyncTest', () => {
         const content = await fs.readFile(outputPath, 'utf8');
 
         // Check imports
-        expect(content).toContain("import { vi, expect, it, describe } from 'vitest'");
+        expect(content).toContain("import { afterEach, vi, expect, it, describe } from 'vitest'");
         expect(content).toContain("import createSync from '../syncs/fetch-issues.js'");
 
         // Check describe block
@@ -472,6 +472,13 @@ describe('generateSyncTest', () => {
         expect(content).toContain('dirname: __dirname,');
         expect(content).toContain('name: "fetch-issues"');
         expect(content).toContain('Model: "GithubIssue"');
+        expect(content).toContain('const createTestContext = () => {');
+        expect(content).toContain('afterEach(() => {');
+        expect(content).toContain('vi.clearAllMocks();');
+        expect(content).toContain('vi.restoreAllMocks();');
+        expect(content).toContain("const batchDeleteSpy = vi.spyOn(nangoMock, 'batchDelete');");
+        expect(content).toContain('const spiedData = batchDeleteSpy.mock.calls.flatMap(call => {');
+        expect(content).toContain('expect(spied).toStrictEqual(batchDeleteData);');
 
         // Check test cases exist
         expect(content).toContain("it('should get, map correctly the data and batchSave the result'");

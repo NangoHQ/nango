@@ -1,6 +1,17 @@
+import * as crypto from 'node:crypto';
+
+import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
-import { ProxyError, buildProxyHeaders, buildProxyURL, getProxyConfiguration } from './utils.js';
+import {
+    ProxyError,
+    absoluteUrlFromRedirectRequestOptions,
+    buildCanonicalParams,
+    buildProxyHeaders,
+    buildProxyURL,
+    getAxiosConfiguration,
+    getProxyConfiguration
+} from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
@@ -109,6 +120,52 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('should use the final URL host for signed proxy header interpolation', () => {
+        const requestDate = 'Tue, 21 Apr 2026 12:34:56 +0000';
+        const username = 'DIABCDEFGHIJKLMNOPQR';
+        const password = 'secret';
+        const authorizationTemplate =
+            'Basic ${base64(${credentials.username}:${hmacSha1Hex(' + requestDate + '\n${method}\n${host}\n${path}\n${params}, ${credentials.password})})}';
+        const expectedAuthorization = (host: string) => {
+            const canonical = `${requestDate}\nGET\n${host}\n/admin/v1/users\naccount_id=DA123`;
+            const signature = crypto.createHmac('sha1', password).update(canonical, 'utf8').digest('hex');
+            return 'Basic ' + Buffer.from(`${username}:${signature}`).toString('base64');
+        };
+
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'BASIC',
+                proxy: {
+                    base_url: 'https://${connectionConfig.hostname}',
+                    headers: {
+                        authorization: authorizationTemplate
+                    }
+                }
+            },
+            endpoint: '/admin/v1/users',
+            method: 'GET'
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'BASIC', username, password },
+            connection_config: { hostname: 'api-parent.duosecurity.com' }
+        });
+
+        const childHeaders = buildProxyHeaders({
+            config,
+            url: 'https://api-child.duosecurity.com/admin/v1/users?account_id=DA123',
+            connection
+        });
+        const parentHeaders = buildProxyHeaders({
+            config,
+            url: 'https://api-parent.duosecurity.com/admin/v1/users?account_id=DA123',
+            connection
+        });
+
+        expect(childHeaders['authorization']).toBe(expectedAuthorization('api-child.duosecurity.com'));
+        expect(childHeaders['authorization']).not.toBe(expectedAuthorization('api-parent.duosecurity.com'));
+        expect(parentHeaders['authorization']).toBe(expectedAuthorization('api-parent.duosecurity.com'));
+    });
+
     it('should correctly construct headers with an authorization override', () => {
         const config = getDefaultProxy({
             provider: {
@@ -129,6 +186,102 @@ describe('buildProxyHeaders', () => {
 
         expect(result).toEqual({
             authorization: 'Bearer testtoken'
+        });
+    });
+
+    describe('authorization header precedence', () => {
+        it('level 1: BASIC auto-sets authorization as Basic base64', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: { base_url: '' }
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'user', password: 'pass' }
+                })
+            });
+            expect(result['authorization']).toBe('Basic ' + Buffer.from('user:pass').toString('base64'));
+        });
+
+        it('level 2: provider proxy.headers authorization overrides the BASIC auto-header', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'my-api-key', password: 'ignored' }
+                })
+            });
+            // Provider config wins over the automatic Basic header
+            expect(result['authorization']).toBe('ApiKey my-api-key');
+        });
+
+        it('level 3: script config.headers authorization overrides provider proxy.headers', () => {
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                },
+                headers: {
+                    authorization: 'Bearer script-token'
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'my-api-key', password: 'ignored' }
+                })
+            });
+            // Script header wins over both provider config and BASIC auto-header
+            expect(result['authorization']).toBe('Bearer script-token');
+        });
+
+        it('all three: script > provider config > BASIC auto — final winner is the script header', () => {
+            const basicEncoded = Buffer.from('user:pass').toString('base64');
+            const config = getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url: '',
+                        headers: {
+                            authorization: 'ApiKey ${credentials.username}'
+                        }
+                    }
+                },
+                headers: {
+                    authorization: 'Bearer script-token'
+                }
+            });
+            const result = buildProxyHeaders({
+                config,
+                url: 'https://api.example.com',
+                connection: getTestConnection({
+                    credentials: { type: 'BASIC', username: 'user', password: 'pass' }
+                })
+            });
+            expect(result['authorization']).not.toBe(`Basic ${basicEncoded}`); // BASIC auto-header lost
+            expect(result['authorization']).not.toBe('ApiKey user'); // provider config lost
+            expect(result['authorization']).toBe('Bearer script-token'); // script won
         });
     });
 
@@ -280,6 +433,162 @@ describe('buildProxyHeaders', () => {
         expect(result).toEqual({
             'authorization-token': 'some-oauth-access-token'
         });
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${endpoint} with config.endpoint', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-request-path': '${endpoint}'
+                    }
+                }
+            },
+            endpoint: '/v1.0/msp/tenants'
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'token',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['x-request-path']).toBe('/v1.0/msp/tenants');
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${random} and uses same value across headers (stable per request)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-av-req-id': '${random}',
+                        'x-av-req-id-copy': '${random}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        expect(result['x-av-req-id']).toMatch(uuidRegex);
+        expect(result['x-av-req-id-copy']).toMatch(uuidRegex);
+        expect(result['x-av-req-id']).toBe(result['x-av-req-id-copy']);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${now} and uses same value across headers (stable per request)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-av-date': '${now}',
+                        'x-av-date-copy': '${now}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+        expect(result['x-av-date']).toMatch(isoRegex);
+        expect(result['x-av-date-copy']).toMatch(isoRegex);
+        expect(result['x-av-date']).toBe(result['x-av-date-copy']);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers ${now:...} with stable now', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        'x-date-formatted': '${now:YYYY-MM-DD}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 't',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['x-date-formatted']).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+
+    it('TWO_STEP: interpolates proxy.headers with accessToken, random, now, and endpoint together', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'TWO_STEP',
+                proxy: {
+                    base_url: 'http://example.com',
+                    headers: {
+                        authorization: 'Bearer ${accessToken}',
+                        'x-av-req-id': '${random}',
+                        'x-av-date': '${now}',
+                        'x-path': '${endpoint}'
+                    }
+                }
+            },
+            endpoint: '/v1.0/auth'
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'TWO_STEP',
+                    token: 'my-access-token',
+                    raw: {}
+                }
+            })
+        });
+
+        expect(result['authorization']).toBe('Bearer my-access-token');
+        expect(result['x-path']).toBe('/v1.0/auth');
+        expect(result['x-av-req-id']).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        expect(result['x-av-date']).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
     it('should correctly override headers with different casing', () => {
@@ -568,6 +877,46 @@ describe('buildProxyURL', () => {
         expect(url).toBe('https://api.gong.io/api/test');
     });
 
+    it('should use ConnectWise PSA custom hostname when provided', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { hostname: 'psa.example.com', subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://psa.example.com/v4_6_release/apis/3.0/api/test');
+    });
+
+    it('should keep ConnectWise PSA subdomain behavior when custom hostname is absent', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'BASIC',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.hostname}/v4_6_release/apis/3.0 || https://${connectionConfig.subdomain}.myconnectwise.net/v4_6_release/apis/3.0'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'BASIC', username: 'testuser', password: 'testpassword' },
+                connection_config: { subdomain: 'api-na' }
+            })
+        });
+
+        expect(url).toBe('https://api-na.myconnectwise.net/v4_6_release/apis/3.0/api/test');
+    });
+
     it('should handle Proxy base URL interpolation with hostname when connection configuration param is present', () => {
         const config = getDefaultProxy({
             provider: {
@@ -607,6 +956,46 @@ describe('buildProxyURL', () => {
         });
 
         expect(url).toBe('https://amplitude.com/api/test');
+    });
+
+    it('should fall back to second base URL when first connectionConfig param is absent (e.g. amazon-selling-partner without subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { region: 'na' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-na.amazon.com/api/test');
+    });
+
+    it('should use first base URL when subdomain connectionConfig param is present (e.g. amazon-selling-partner with subdomain)', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'OAUTH2',
+                    proxy: {
+                        base_url:
+                            'https://${connectionConfig.subdomain}-${connectionConfig.region}.amazon.com || https://sellingpartnerapi-${connectionConfig.region}.amazon.com'
+                    }
+                }
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'OAUTH2', access_token: 'token', raw: {} },
+                connection_config: { subdomain: 'sellingpartnerapi', region: 'eu' }
+            })
+        });
+
+        expect(url).toBe('https://sellingpartnerapi-eu.amazon.com/api/test');
     });
 
     it('should construct url with a string query params with ?', () => {
@@ -801,6 +1190,119 @@ describe('buildProxyURL', () => {
 
         expect(url).toBe('https://example.com/api/test?existing=param&application_key=app-key-123&version=v1');
     });
+
+    it('should interpolate ${apiKey} in the base URL', () => {
+        const url = buildProxyURL({
+            config: getDefaultProxy({
+                provider: {
+                    auth_mode: 'API_KEY',
+                    proxy: {
+                        base_url: 'https://${apiKey}.example.com'
+                    }
+                },
+                endpoint: '/api/test'
+            }),
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'my-secret-key' }
+            })
+        });
+
+        expect(url).toBe('https://my-secret-key.example.com/api/test');
+    });
+});
+
+describe('getAxiosConfiguration', () => {
+    it('should set beforeRedirect by default (headers are forwarded on redirect by default)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
+    });
+
+    it('should set beforeRedirect when forwardHeadersOnRedirect is false (to track metric)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            forwardHeadersOnRedirect: false
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        expect(axiosConfig.beforeRedirect).toBeDefined();
+    });
+
+    it('invokes validateProxyRedirectUrl with redirect href before other beforeRedirect work', () => {
+        const seen: string[] = [];
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRedirectUrl: (absoluteUrl) => {
+                seen.push(absoluteUrl);
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
+        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails);
+
+        expect(seen).toEqual(['https://redirect.example/next']);
+    });
+
+    it('propagates throw from validateProxyRedirectUrl', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            validateProxyRedirectUrl: () => {
+                throw new ProxyError('proxy_redirect_to_denied_host', 'blocked');
+            }
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
+        });
+
+        const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
+        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails)).toThrow(ProxyError);
+    });
+});
+
+describe('absoluteUrlFromRedirectRequestOptions', () => {
+    it('returns href when present', () => {
+        expect(absoluteUrlFromRedirectRequestOptions({ href: 'https://a.example/path' })).toBe('https://a.example/path');
+    });
+
+    it('composes from protocol host path when href missing', () => {
+        expect(
+            absoluteUrlFromRedirectRequestOptions({
+                protocol: 'https:',
+                host: 'api.example.com',
+                path: '/p?q=1'
+            })
+        ).toBe('https://api.example.com/p?q=1');
+    });
 });
 
 describe('getProxyConfiguration', () => {
@@ -909,6 +1411,126 @@ describe('getProxyConfiguration', () => {
             decompress: false,
             params: { foo: 'bar' },
             responseType: 'blob'
+        });
+    });
+
+    it('passes through validateProxyRedirectUrl', () => {
+        const validateProxyRedirectUrl = (url: string): void => {
+            void url;
+        };
+        const externalConfig: UserProvidedProxyConfiguration = {
+            method: 'GET',
+            providerConfigKey: 'provider-config-key-1',
+            endpoint: '/api/test',
+            baseUrlOverride: 'https://api.github.com.override',
+            validateProxyRedirectUrl
+        };
+        const internalConfig: InternalProxyConfiguration = {
+            providerName: 'github'
+        };
+
+        const res = getProxyConfiguration({ externalConfig, internalConfig });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        expect(res.value.validateProxyRedirectUrl).toBe(validateProxyRedirectUrl);
+    });
+});
+
+describe('buildCanonicalParams', () => {
+    describe('GET — query string from endpoint', () => {
+        it('returns empty string when no query string', () => {
+            expect(buildCanonicalParams('GET', undefined, '')).toBe('');
+        });
+
+        it('returns single param encoded', () => {
+            expect(buildCanonicalParams('GET', undefined, 'username=root')).toBe('username=root');
+        });
+
+        it('sorts params lexicographically by key', () => {
+            expect(buildCanonicalParams('GET', undefined, 'username=root&realname=First Last')).toBe('realname=First%20Last&username=root');
+        });
+
+        it('uses uppercase hex digits', () => {
+            expect(buildCanonicalParams('GET', undefined, 'email=user@example.com')).toBe('email=user%40example.com');
+        });
+
+        it('does not encode RFC 3986 unreserved chars (A-Za-z0-9 - _ . ~)', () => {
+            expect(buildCanonicalParams('GET', undefined, 'q=hello-world_test.value~')).toBe('q=hello-world_test.value~');
+        });
+
+        it('decodes then re-encodes existing encoding', () => {
+            // input already has %20, should decode and re-encode with uppercase
+            expect(buildCanonicalParams('GET', undefined, 'realname=First%20Last&username=root')).toBe('realname=First%20Last&username=root');
+        });
+
+        it('handles multiple params already sorted', () => {
+            expect(buildCanonicalParams('GET', undefined, 'limit=10&offset=0')).toBe('limit=10&offset=0');
+        });
+    });
+
+    describe('DELETE — same as GET (query string)', () => {
+        it('uses query string for DELETE', () => {
+            expect(buildCanonicalParams('DELETE', undefined, 'id=123')).toBe('id=123');
+        });
+    });
+
+    describe('POST — body params (Buffer)', () => {
+        it('parses form-encoded Buffer body', () => {
+            const body = Buffer.from('name=My%20Group&desc=Test');
+            expect(buildCanonicalParams('POST', body, '')).toBe('desc=Test&name=My%20Group');
+        });
+
+        it('returns empty string for empty Buffer', () => {
+            expect(buildCanonicalParams('POST', Buffer.from(''), '')).toBe('');
+        });
+    });
+
+    describe('POST — body params (string)', () => {
+        it('parses form-encoded string body', () => {
+            expect(buildCanonicalParams('POST', 'name=My%20Group', '')).toBe('name=My%20Group');
+        });
+
+        it('strips leading ? from string body', () => {
+            expect(buildCanonicalParams('POST', '?name=test', '')).toBe('name=test');
+        });
+
+        it('sorts string body params', () => {
+            expect(buildCanonicalParams('POST', 'username=root&realname=First%20Last', '')).toBe('realname=First%20Last&username=root');
+        });
+    });
+
+    describe('POST — body params (plain object)', () => {
+        it('encodes plain object body', () => {
+            expect(buildCanonicalParams('POST', { name: 'My Group' }, '')).toBe('name=My%20Group');
+        });
+
+        it('sorts plain object keys', () => {
+            expect(buildCanonicalParams('POST', { username: 'root', realname: 'First Last' }, '')).toBe('realname=First%20Last&username=root');
+        });
+
+        it('returns empty string for null data', () => {
+            expect(buildCanonicalParams('POST', null, '')).toBe('');
+        });
+
+        it('returns empty string for FormData', () => {
+            expect(buildCanonicalParams('POST', new FormData(), '')).toBe('');
+        });
+    });
+
+    describe('encoding correctness', () => {
+        it('encodes space as %20 (not +)', () => {
+            expect(buildCanonicalParams('GET', undefined, 'q=hello world')).toBe('q=hello%20world');
+        });
+
+        it('encodes @ with uppercase hex', () => {
+            expect(buildCanonicalParams('GET', undefined, 'email=a@b.com')).toBe('email=a%40b.com');
+        });
+
+        it('encodes ! ( ) * with uppercase hex', () => {
+            const result = buildCanonicalParams('GET', undefined, 'q=a!b(c)d*e');
+            expect(result).toBe('q=a%21b%28c%29d%2Ae');
         });
     });
 });

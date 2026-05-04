@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://spec.openapis.org/oas/3.1/schema/2025-02-13
 openapi: 3.1.0
 externalDocs:
-    url: https://nango.dev/docs/reference/overview
+    url: https://nango.dev/docs/reference/backend/http-api/authentication
 info:
     title: 'Nango API'
     description: 'Nango API specs used to authorize & sync data with external APIs.'
@@ -115,6 +115,48 @@ paths:
                                 credentials:
                                     $ref: '#/components/schemas/IntegrationCredentials'
 
+            responses:
+                '200':
+                    description: Successfully created an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        $ref: '#/components/schemas/Integration'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+    /integrations/quickstart:
+        post:
+            summary: Create a quickstart integration
+            description: Create an integration using a Nango-provided developer app for providers that require a developer app.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - unique_key
+                                - provider
+                            properties:
+                                unique_key:
+                                    type: string
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
+                                provider:
+                                    type: string
+                                    description: The provider unique name.
+                                display_name:
+                                    type: string
+                                    description: The integration display name.
+                                forward_webhooks:
+                                    type: boolean
+                                    description: Whether to forward webhooks for this integration.
             responses:
                 '200':
                     description: Successfully created an integration
@@ -822,8 +864,8 @@ paths:
                     $ref: '#/components/responses/BadRequest'
 
         post:
-            summary: Add a connection
-            description: Adds a connection for which you already have credentials.
+            summary: Upsert a connection
+            description: Upserts a connection for which you already have credentials.
             requestBody:
                 required: true
                 content:
@@ -1995,7 +2037,7 @@ paths:
     /action/{actionId}:
         get:
             summary: Get action result
-            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/actions/use-an-action#checking-the-action-result) for more details.
+            description: Retrieves the result of an asynchronous action. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
             parameters:
                 - name: actionId
                   in: path
@@ -2078,7 +2120,7 @@ paths:
                                     anyOf:
                                         - type: string
                                         - type: 'null'
-                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency. Uses the https://github.com/vercel/ms notations. Min frequency: 5 minutes."
+                                    description: "The frequency you want to set (ex: 'every hour'). Set null to revert to the default frequency. Uses the https://github.com/vercel/ms notations. Min frequency: 30 seconds."
             responses:
                 '200':
                     description: Successfully updated the frequency
@@ -2121,7 +2163,7 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/actions/use-an-action#asynchronous-action) for more details.
+                  description: Set to true to trigger the action asynchronously. When true, the response will include a status URL and ID for retrieving the action result later. See [Asynchronous action documentation](/guides/functions/action-functions#trigger-asynchronously) for more details.
                 - name: X-Max-Retries
                   in: header
                   required: false

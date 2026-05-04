@@ -3,10 +3,8 @@ import { pathToFileURL } from 'url';
 
 import { getInterval } from '@nangohq/nango-yaml';
 
-import { zodToNangoModelField } from './zodToNango.js';
-import { Err, Ok } from '../utils/result.js';
-import { printDebug } from '../utils.js';
-import { getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
+import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
 import {
     DuplicateEndpointDefinitionError,
     DuplicateModelDefinitionError,
@@ -15,15 +13,17 @@ import {
     InvalidModelDefinitionError,
     TrackDeletesDefinitionError
 } from './utils.js';
+import { Err, Ok } from '../utils/result.js';
+import { printDebug } from '../utils.js';
 
 import type { CreateActionResponse, CreateOnEventResponse, CreateSyncResponse } from '@nangohq/runner-sdk';
-import type { ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
-import type { NangoModel, NangoModelField, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
+import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
+import type { NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type * as z from 'zod';
 
 const allowed = ['action', 'sync', 'onEvent'];
 
-export async function buildDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
+export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPath: string; debug: boolean }): Promise<Result<NangoYamlParsed>> {
     const parsed: NangoYamlParsed = { yamlVersion: 'v2', integrations: [], models: new Map() };
 
     printDebug('Rebuilding parsed from js files', debug);
@@ -51,8 +51,8 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
         printDebug(`Parsing ${filePath}`, debug);
 
         const script = moduleContent.default.default as
-            | CreateSyncResponse<Record<string, ZodModel>, z.ZodObject>
-            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>
+            | CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>
+            | CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>
             | CreateOnEventResponse;
 
         const basename = path.basename(filePath, '.js');
@@ -75,23 +75,15 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
         switch (script.type) {
             case 'sync': {
-                const resBuild = buildSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
-                if (resBuild.isErr()) {
-                    return Err(resBuild.error);
+                const parsedSyncRes = parseSync({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean });
+                if (parsedSyncRes.isErr()) {
+                    return Err(parsedSyncRes.error);
                 }
-                const def = resBuild.value;
-                integration.syncs.push(def.sync);
-                def.models.forEach((v, k) => {
-                    parsed.models.set(k, v);
-                });
+                integration.syncs.push(parsedSyncRes.value);
                 break;
             }
             case 'action': {
-                const def = buildAction({ params: script, integrationIdClean, basename, basenameClean });
-                integration.actions.push(def.action);
-                def.models.forEach((v, k) => {
-                    parsed.models.set(k, v);
-                });
+                integration.actions.push(parseAction({ filePath: realPath, params: script, integrationIdClean, basename, basenameClean }));
                 break;
             }
             case 'onEvent': {
@@ -123,7 +115,7 @@ export async function buildDefinitions({ fullPath, debug }: { fullPath: string; 
 
 const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
 
-export function buildSync({
+export function parseSync({
     filePath,
     params,
     integrationIdClean,
@@ -131,43 +123,33 @@ export function buildSync({
     basenameClean
 }: {
     filePath: string;
-    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata>;
+    params: CreateSyncResponse<Record<string, ZodModel>, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): Result<{ sync: ParsedNangoSync; models: Map<string, NangoModel> }> {
-    const models = new Map<string, NangoModel>();
-    const usedModels = new Set(Object.keys(params.models));
-    const metadata = params.metadata ? zodToNangoModelField(`SyncMetadata_${integrationIdClean}_${basenameClean}`, params.metadata) : null;
-    if (metadata) {
-        usedModels.add(metadata.name);
-        if (!Array.isArray(metadata.value)) {
-            models.set(metadata.name, { name: metadata.name, fields: [{ ...metadata, name: 'metadata' }], isAnon: true, description: metadata.description });
-        } else {
-            models.set(metadata.name, { name: metadata.name, fields: metadata.value, description: metadata.description });
-        }
-    }
-
+}): Result<ParsedNangoSync> {
     // Validation
     // TODO: We should probably share this with the backend and have a single zod validation
     const interval = getInterval(params.frequency, new Date());
     if (interval instanceof Error) {
         return Err(new InvalidIntervalDefinitionError(filePath, ['createSync', 'frequency']));
     }
-    if (Object.keys(params.models).length !== params.endpoints.length) {
+    if (params.endpoints && Object.keys(params.models).length !== params.endpoints.length) {
         return Err(new EndpointMismatchDefinitionError(filePath, ['createSync', 'endpoints']));
     }
     if (params.syncType === 'incremental' && params.trackDeletes) {
         return Err(new TrackDeletesDefinitionError(filePath, ['createSync', 'trackDeletes']));
     }
 
-    const seen = new Set();
-    for (const endpoint of params.endpoints) {
-        const key = `${endpoint.method} ${endpoint.path}`;
-        if (seen.has(key)) {
-            return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+    if (params.endpoints) {
+        const seen = new Set();
+        for (const endpoint of params.endpoints) {
+            const key = `${endpoint.method} ${endpoint.path}`;
+            if (seen.has(key)) {
+                return Err(new DuplicateEndpointDefinitionError(key, filePath, ['createSync', 'endpoints']));
+            }
+            seen.add(key);
         }
-        seen.add(key);
     }
 
     for (const modelName of Object.keys(params.models)) {
@@ -176,68 +158,77 @@ export function buildSync({
         }
     }
 
+    const allZodModels: Record<string, z.ZodType> = { ...params.models };
+    const metadataModelName = params.metadata ? `SyncMetadata_${integrationIdClean}_${basenameClean}` : null;
+    if (params.metadata && metadataModelName) {
+        // Add metadata model
+        allZodModels[metadataModelName] = params.metadata;
+    }
+    const outputNames = Object.keys(params.models);
+    const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
+
+    const features = detectFeatures({ entryPoint: filePath });
+
     const sync: ParsedNangoSync = {
         type: 'sync',
         description: params.description,
         auto_start: params.autoStart === true,
-        endpoints: params.endpoints,
-        input: metadata?.name || null,
+        endpoints: params.endpoints ?? [],
+        input: metadataModelName,
         name: basename,
-        output: Object.entries(params.models).map(([name, model]) => {
-            const to = zodToNangoModelField(name, model);
-            models.set(name, { name, fields: to['value'] as NangoModelField[], description: to.description });
-            usedModels.add(name);
-            return name;
-        }),
+        output: outputNames,
         runs: params.frequency,
         scopes: params.scopes || [],
         sync_type: params.syncType || 'full',
         track_deletes: params.trackDeletes === true,
-        usedModels: Array.from(usedModels.values()),
+        usedModels: Object.keys(allZodModels),
         version: params.version || '',
-        webhookSubscriptions: params.webhookSubscriptions || []
+        webhookSubscriptions: params.webhookSubscriptions || [],
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
-    return Ok({ sync, models });
+
+    return Ok(sync);
 }
 
-export function buildAction({
+export function parseAction({
+    filePath,
     params,
     integrationIdClean,
     basename,
     basenameClean
 }: {
-    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, z.ZodObject>;
+    filePath: string;
+    params: CreateActionResponse<z.ZodTypeAny, z.ZodTypeAny, ZodMetadata, ZodCheckpoint>;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): { action: ParsedNangoAction; models: Map<string, NangoModel> } {
-    const models = new Map<string, NangoModel>();
-    const input = zodToNangoModelField(`ActionInput_${integrationIdClean}_${basenameClean}`, params.input);
-    if (!Array.isArray(input.value)) {
-        models.set(input.name, { name: input.name, fields: [{ ...input, name: 'input' }], isAnon: true, description: input.description });
-    } else {
-        models.set(input.name, { name: input.name, fields: input.value, description: input.description });
-    }
+}): ParsedNangoAction {
+    const inputName = `ActionInput_${integrationIdClean}_${basenameClean}`;
+    const outputName = `ActionOutput_${integrationIdClean}_${basenameClean}`;
 
-    const output = zodToNangoModelField(`ActionOutput_${integrationIdClean}_${basenameClean}`, params.output);
-    if (!Array.isArray(output.value)) {
-        models.set(output.name, { name: output.name, fields: [{ ...output, name: 'output' }], isAnon: true, description: output.description });
-    } else {
-        models.set(output.name, { name: output.name, fields: output.value, description: output.description });
-    }
+    const allZodModels: Record<string, z.ZodType> = {
+        [inputName]: params.input,
+        [outputName]: params.output
+    };
 
-    const action: ParsedNangoAction = {
+    const jsonSchema = buildJsonSchemaDefinitionsFromZodModels(allZodModels);
+
+    const features = detectFeatures({ entryPoint: filePath });
+
+    return {
         type: 'action' as const,
         description: params.description,
-        endpoint: params.endpoint,
-        input: input.name,
+        endpoint: params.endpoint ?? null,
+        input: inputName,
         name: basename,
-        output: [output.name],
+        output: [outputName],
         scopes: params.scopes || [],
-        usedModels: [input.name, output.name],
-        version: params.version || ''
+        usedModels: [inputName, outputName],
+        version: params.version || '',
+        json_schema: jsonSchema,
+        features: features.isOk() ? features.value : [] // silently ignore features detection error as it is only used internally and we don't want it to block the parsing
     };
-    return { action, models };
 }
 
 function postValidation(parsed: NangoYamlParsed): Result<void> {

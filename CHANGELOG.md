@@ -2,6 +2,454 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.1] - 2026-04-17
+
+### Added
+
+- *(orchestrator)* Add dropped task metric for capped groups (#5865) by @pfreixes
+
+### Fixed
+
+- *(vulns)* Fix vulns (#5888) by @rossmcewan
+
+## [v0.70.0] - 2026-04-16
+
+### Added
+
+- *(server)* Add client IP tags to Datadog traces (#5860) by @marcindobry
+- *(proxy)* Resolve `accessToken` in custom headers for OAUTH2_CC (#5881) by @hassan254-prog
+- Add `has_rbac` feature flag (#5847) by @kaposke
+- *(server)* Add remote function public API (#5836) by @marcindobry
+- Stop generating schema.ts / schema.json and stop accepting top-level json-schema (#5874) by @kaposke
+
+### Fixed
+
+- *(clickhouse)* Compute_gbms to be calculated in mv (#5872) by @TBonnin
+- *(lambda)* New plan flag to control lambda rollout (#5858) by @rossmcewan
+- *(lambda)* Track memory and duration correctly (#5875) by @rossmcewan
+- *(security)* Security fixes (#5876) by @rossmcewan
+- *(shared)* Missing types (#5884) by @rossmcewan
+- *(shared)* Fix metrics call (#5885) by @rossmcewan
+
+## [v0.69.50] - 2026-04-16
+
+### Added
+
+- *(playground)* NAN-4846: Create playground (#5581) by @agusayerza
+- *(orchestrator)* Serialize webhooks admision (#5855) by @pfreixes
+- *(providers)* Agent-powered oauth2 scope discovery (#5701) by @hassan254-prog
+- *(integrations)* Add support for cisco duo admin (#5820) by @hassan254-prog
+- Add more data for function template observability (#5698) by @marcindobry
+- Allow customers to update invoicing details (#5834) by @ErickRDev
+- *(integrations)* Add support for lob (#5853) by @hassan254-prog
+- *(webhooks)* Add webhook support for streak (#5859) by @hassan254-prog
+- *(usage)* Add usage metric querying from clickhouse (#5861) by @TBonnin
+- *(integrations)* Add support for qualia (#5854) by @hassan254-prog
+
+### Changed
+
+- Product chnagelog update for Playground (#5868) by @sapnesh-nango
+
+### Fixed
+
+- Fix not being able to see some templates (#5705) by @marcindobry
+- *(providers)* Fix salesforce jwt to use authorization_url in connection config (#5846) by @hassan254-prog
+- *(providers)* Update datadog application key regex pattern (#5852) by @hassan254-prog
+- *(cli)* Remove --ai variant from nango init command (#5867) by @rguldener
+
+## [v0.69.49] - 2026-04-14
+
+### Added
+
+- *(providers)* Add Halo PSA integration (#5805) by @justonf
+- Ingest usage events to clickhouse (#5798) by @TBonnin
+- *(usage)* Add clickhouse materialized views for metrics (#5804) by @TBonnin
+- *(integrations)* Add support for freepik (#5808) by @hassan254-prog
+- *(integrations)* Add support for clickhouse (#5802) by @hassan254-prog
+- *(integrations)* Add support for perk (#5803) by @hassan254-prog
+- *(proxy)* Add deny list for base url override in proxy (#5775) by @rossmcewan
+- *(clickhouse)* Add missing connection_id column in some materialized views (#5816) by @TBonnin
+- *(providers)* Add Zorus integration (#5818) by @praneeth-oai
+- *(integrations)* Add support for workday adaptive planning (#5823) by @hassan254-prog
+- *(providers)* Add pendo-oauth (OAuth2 client credentials) (#5811) by @omar-inkeep
+- *(integrations)* Add support for listrak (#5824) by @hassan254-prog
+- *(integrations)* Add support for stay-ai (#5825) by @hassan254-prog
+- *(integrations)* Add support for bing-webmasters (#5817) by @naorhaziz
+- *(integrations)* Add support for shopify client credentials (#5830) by @hassan254-prog
+- Update claude code skill to run and test nango (#5851) by @pfreixes
+
+### Changed
+
+- New docs design (#5819) by @mintlify[bot]
+- Fix type in google security review guide (#5826) by @rguldener
+- Fix latex escapes (#5827) by @rguldener
+- Update version in manifest by @actions-user
+- Align docs on minimum sync frequency (30 seconds) (#5844) by @mintlify[bot]
+
+### Fixed
+
+- *(locks)* Fix kv locks (#5760) by @rossmcewan
+- *(webapp)* Allow clearing webhook urls in settings (#5800) by @hassan254-prog
+- *(webapp)* Correct RBAC docs link anchor fragment (#5813) by @kaposke
+- Fix microsoft teams bot docs (#5807) by @hassan254-prog
+- *(vulns)* Nodemailer (#5821) by @rossmcewan
+- *(webapp)* Don't allow toggling `prod` environment production status (#5812) by @kaposke
+- *(docs)* Restore search and Ask AI functionality by fixing z-index stacking (#5828) by @mintlify[bot]
+- *(vulns)* Upgrade axios (#5829) by @rossmcewan
+- *(orch)* Paginate query that expires tasks (#5840) by @TBonnin
+- *(orchestrator)* Disable max concurrency backpressure query (#5841) by @pfreixes
+- *(logger)* Replace logger.warn with logger.warning for syslog (#5843) by @hassan254-prog
+- Handle WorkOS email verification during managed sign-in (#5814) by @marcindobry
+- *(orchestrator)* Enable max concurrency backpressure query (#5850) by @pfreixes
+
+## [v0.69.48] - 2026-04-08
+
+### Added
+
+- *(lambda)* Add types for test event type (#5737) by @rossmcewan
+- *(proxy)* Add a flag in the proxyConfig to enable forwarding header on redirect (#5668) by @hassan254-prog
+- *(pubsub)* Adding sns-sqs transport (#5695) by @rossmcewan
+- *(lambda)* Add integrationConfig to nangoPropsSchema (#5747) by @hassan254-prog
+- *(integrations)* Add support for shipbob (pat) (#5748) by @hassan254-prog
+- Remove api down watch (#5744) by @kaposke
+- *(webapp)* RBAC UI feedback (low hanging) (#5734) by @kaposke
+- *(website)* Replace webflow provider sync with sanity cms sync (#5730) by @hassan254-prog
+- *(sanity-sync)* Add env targeting to sanity providers sync (#5756) by @hassan254-prog
+- *(integrations)* Add support for cin7-core (#5758) by @hassan254-prog
+- *(integrations)* Add support for orange logic (#5755) by @hassan254-prog
+- *(integrations)* Add support for google maps (#5754) by @hassan254-prog
+- *(integrations)* Add support for workpath (#5753) by @hassan254-prog
+- *(integrations)* Add support for clover (#5757) by @hassan254-prog
+- *(sanity-sync)* Add categories to providers missing categories (#5763) by @hassan254-prog
+- Add March 2026 product changelog: RBAC, 34 new APIs, blog posts (#5768) by @SapneshNaik
+- *(server)* Track missing OAuth state cookies to assess CSRF fix re-enablement impact (#5733) by @agusayerza
+- *(sanity-sync)* Add more logs to sanity sync (#5777) by @hassan254-prog
+- Add rbac docs links (#5735) by @kaposke
+- *(integrations)* Add support for apple business manager (#5743) by @hassan254-prog
+- Env settings badge redesign (#5762) by @kaposke
+- *(connectwise-psa)* Support custom ConnectWise PSA hostnames (#5745) by @justonf
+- *(providers)* Add SentinelOne (#5769) by @justonf
+- *(auto-approve)* Add trusted author (#5786) by @TBonnin
+- *(webhooks)* Add support for webhooks from multiple calendars (#5787) by @rbwest
+- Add running-and-testing-locally skill with browser testing workflow (#5731) by @pfreixes
+- Redact connection credentials instead of deleting them (#5796) by @kaposke
+- Add `isDowngrade` to `plan_changed` event (#5782) by @kaposke
+- *(providers)* Add PRTG Classic integration (#5788) by @justonf
+- *(integrations)* Add support for workday adaptive planning (#5801) by @hassan254-prog
+- *(connections)* Add   pausedSyncs to connection list API (#5699) by @agusayerza
+
+### Changed
+
+- Bump max string length in checkpoint (#5740) by @rbwest
+- RBAC docs (#5752) by @bastienbeurier
+- Auto-approve gh action for docs only PRs (#5751) by @TBonnin
+- *(records)* Create records_data table (#5741) by @TBonnin
+- Read records payload from new table (#5761) by @TBonnin
+- *(records)* Writing records payload to dedicated table (#5742) by @TBonnin
+- Update docs on overriding connect UI docs url (#5764) by @SapneshNaik
+- Rename function builder skill references (#5767) by @marcindobry
+- Add SSO documentation to security page (#5785) by @mintlify[bot]
+- Rename account-usage to usage (#5792) by @TBonnin
+
+### Fixed
+
+- *(webapp)* Narrow provider search to name fields only (#5739) by @hassan254-prog
+- *(vulns)* Npm audit fix (#5738) by @rossmcewan
+- *(webapp)* Allow for scopes to be defined when creating an oauth2_cc integration (#5732) by @hassan254-prog
+- Revert wrongly committed TODO in docs by @TBonnin
+- *(sanity-sync)* Fix envs vars always evaluating to true (#5771) by @hassan254-prog
+- Docs only PR should skip code related gh actions (#5765) by @TBonnin
+- *(vulns)* Fix vulnerabilities (#5770) by @rossmcewan
+- Improve error message on records lock timeout (#5789) by @TBonnin
+- *(webapp)* Delete integrations button not working (#5794) by @kaposke
+- *(webapp)* Improve error feedback on plan upgrade flows (#5780) by @ErickRDev
+- *(vulns)* Fix vulns (#5809) by @rossmcewan
+
+## [v0.69.47] - 2026-03-30
+
+### Added
+
+- *(permissions)* NAN-2184 expose authRoles feature flag to frontend (#5666) by @pfreixes
+- *(permissions)* NAN-2184 implements team/invite role managment (#5663) by @pfreixes
+- *(webapp)* Add "Connections" link in integration page (#5673) by @kaposke
+- Only run checkpointed syncs on lambda (#5674) by @TBonnin
+- *(webflow-sync)* Add force update flag and monthly scheduled run (#5636) by @hassan254-prog
+- *(integrations)* Add support for lightspeed retail (#5670) by @hassan254-prog
+- *(integrations)* Add support for heymarket (#5683) by @hassan254-prog
+- *(integrations)* Add support for clay (#5684) by @hassan254-prog
+- Add ability to download deployed functions in debug mode (#5657) by @kaposke
+- Add Claude Code skills for running tests and building (#5681) by @pfreixes
+- *(providers)* Add Clio OAuth2 integration (#5642) by @ianedwards
+- *(scheduler)* Add queue backpressure monitoring (#5692) by @pfreixes
+- *(integrations)* Add Conta Azul integration (#5691) by @diegoleme
+- *(webapp)* Migrate environment requests to tanstack query (#5687) by @kaposke
+- *(providers)* Interpolate the subdomain in the proxy base URL for aws selling partner (#5697) by @hassan254-prog
+- *(runner)* Add Redis-based abort polling for multi-replica runners (#5703) by @pfreixes
+- *(integrations)* Add support for google contacts (#5704) by @hassan254-prog
+- *(webapp)* Migrate env settings inputs to v2 (#5689) by @kaposke
+- *(syncs)* Expose listRecords for use in syncs (#5676) by @rbwest
+- Expose checkpoints in sync completion webhooks (#5710) by @TBonnin
+- *(auth)* Introspect refresh token JWT expiry for TWO_STEP providers (#5702) by @hassan254-prog
+- *(integrations)* Add support for toggl (#5714) by @hassan254-prog
+- *(integrations)* Add support for reply.io (#5715) by @hassan254-prog
+- *(integrations)* Add support for front api key (#5717) by @hassan254-prog
+- *(integrations)* Add support for bliro (#5718) by @hassan254-prog
+- *(webapp)* RBAC UI (#5722) by @kaposke
+- *(webapp)* Redesign team page with rbac (#5726) by @kaposke
+- *(webapp)* Add environment toggle to production (#5727) by @kaposke
+- *(lambda)* Added test-invocation schema (#5720) by @rossmcewan
+- *(integrations)* Add support for salesforce client credentials (#5594) by @aadhitemp
+
+### Changed
+
+- Replace full links with relative links in docs (#5686) by @hassan254-prog
+- Batch insert tasks (#5688) by @TBonnin
+- *(records)* Use ctid-based CTE to delete outdated records (#5694) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/033f030f63b6137334bb6c8af42a80f82d578142 by Hassan_Wari by @github-actions[bot]
+- *(records)* Avoid pg_column_size on unchanged records during upsert (#5708) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/03af56e67f8813f6b96e33972e50bdff16a619b7 by Marcin Dobrowolski by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a3af1e0869dd18aa1015ffa81358d55fca513594 by Marcin Dobrowolski by @github-actions[bot]
+- Add free vs. paid self-hosted table (#5721) by @rguldener
+- Move authz types to shared package (#5711) by @kaposke
+- Update version in manifest by @actions-user
+- *(records)* Revert pg_column_size optimization (#5725) by @TBonnin
+
+### Fixed
+
+- *(lambda)* Retrieve providers on invocation (#5671) by @rossmcewan
+- *(lambda)* Catch error when loading providers (#5672) by @rossmcewan
+- *(lambda)* Use node.provisionedConcurrency as the max for the auto-scaling (#5669) by @rossmcewan
+- *(webapp)* NAN-4720: prevent spaces on connection tags (#5679) by @agusayerza
+- *(connect-ui)* Restore client secret field for providers that use OAUTH2_CC and define custom credentials (#5685) by @hassan254-prog
+- *(webapp)* Incorrect error message for incorrect login credentials (#5664) by @kaposke
+- *(webapp)* Embed auth link in getting started (#5675) by @kaposke
+- *(orch)* Enforce max amount of queued tasks (#5677) by @TBonnin
+- *(oauth)* Resolve flat dot-notation keys in token url interpolation (#5693) by @hassan254-prog
+- *(sync)* Improve error handling and operation logging for sync commands (#5678) by @hassan254-prog
+- *(vulns)* Package upgrades and audit fixes (#5696) by @rossmcewan
+- *(records)* Do not overwrite json if hash is identical (#5700) by @TBonnin
+- *(providers)* Correct Conta Azul scope separator (#5707) by @diegoleme
+- *(utils)* Extract provider error fields from response data directly (#5634) by @hassan254-prog
+- *(tests)* Only pass --dir flag when npm_config_dir is set (#5709) by @TBonnin
+- *(webhooks)* Use headers instead of the request body for webhookscript executions in g-calendar (#5724) by @hassan254-prog
+- *(auth)* Handle expired OAuth code in SSO callback gracefully (#5719) by @pfreixes
+- *(auth)* Attach WorkOS error details to DD span in SSO callback (#5729) by @pfreixes
+- *(vulns)* Npm audit fix (#5716) by @rossmcewan
+
+## [v0.69.46] - 2026-03-18
+
+### Added
+
+- *(runner-sdk)* Deprecate `endpoints` in functions (#5647) by @kaposke
+- *(server)* NAN-2184 role-based authorization system (#5644) by @pfreixes
+- *(integrations)* Add support for slack mcp (#5655) by @hassan254-prog
+- *(integrations)* Add support for vercel mcp (#5660) by @hassan254-prog
+- *(integrations)* Add support for ms word and powerpoint (#5661) by @hassan254-prog
+- *(integrations)* Add support for pleo (#5662) by @hassan254-prog
+- *(integrations)* Add support for shopworks (#5665) by @hassan254-prog
+- Add features to sync config table (#5652) by @TBonnin
+- Detect features in CLI and pass to /deploy endpoint   (#5653) by @TBonnin
+
+### Changed
+
+- Dev update - deprecation notice for `schema.ts` and `schema.json` (#5650) by @SapneshNaik
+- Update data validation guide for `schema.ts`/`schema.json` deprecation (#5651) by @SapneshNaik
+- Document function concurrency and sync variant limits (#5613) by @bastienbeurier
+- Increase max concurrency limits (#5667) by @TBonnin
+
+### Fixed
+
+- *(autodelete)* Don't filter out entries with count=0 (#5635) by @TBonnin
+- Revert function concurrency metric (#5638) by @TBonnin
+- *(lambda)* Node routing overrides (#5649) by @rossmcewan
+- *(lambda)* Set log group retention (#5659) by @rossmcewan
+- *(query)* `deleteOutdatedRecords` transaction handling (#5656) by @agusayerza
+
+## [v0.69.45] - 2026-03-17
+
+### Added
+
+- *(server)* Run credentials verification on the connection import endpoint (#5538) by @hassan254-prog
+- *(database)* Add role column to users/invitations and is_production to environments (#5629) by @pfreixes
+- *(shared)* Set is_production flag when creating prod environments (#5631) by @pfreixes
+- *(database)* Backfill is_production for existing prod environments (#5632) by @pfreixes
+- Add stop listening on connection deletion and real-time sync concept for gmail and google calendar webhooks (#5624) by @agusayerza
+- *(integrations)* Add support for triple whale (#5643) by @hassan254-prog
+- *(integrations)* Add support for typefully v2 (#5646) by @hassan254-prog
+
+### Changed
+
+- Iterate on the docs navigation (#5628) by @bastienbeurier
+- Track functions concurrency in metrics (#5623) by @TBonnin
+- Clarify checkpoint docs for incremental and full syncs (#5621) by @TBonnin
+- Document implementation on microsoft client credentials webhooks (#5619) by @hassan254-prog
+- *(cli)* Light refac on build and deploy  (#5627) by @kaposke
+- Remove AGENTS.md (#5617) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/4c31ea1df4bcb1c0a4a6c9b32dfdd2cd6cb720f1 by Marcin Dobrowolski by @github-actions[bot]
+- *(server)* Remove nango yaml logic from `POST /flows/pre-built/deploy` (#5637) by @kaposke
+
+### Fixed
+
+- *(providers)* Fix vercel api key pattern (#5645) by @hassan254-prog
+- *(vulns)* Npm audit fix (#5633) by @rossmcewan
+- *(fleet)* Fix node config override checks (#5630) by @rossmcewan
+- *(deploy)* Detect deleted syncs when deploying (#5614) by @hassan254-prog
+- *(connect-ui)* Pass authorization params during reconnect (#5654) by @hassan254-prog
+
+## [v0.69.44] - 2026-03-13
+
+### Added
+
+- *(cli)* Build and send json-schema per function (#5572) by @kaposke
+- *(lambda)* Add lifecycle to zod schema (#5596) by @TBonnin
+- Add variants_per_sync_max to plan (#5607) by @TBonnin
+- *(webhooks)* Store emailAddress on Gmail/Calendar connection config for webhook routing (#5600) by @agusayerza
+- *(integrations)* Add support for google tasks (#5611) by @hassan254-prog
+- *(integrations)* Add support for avanan (#5553) by @hassan254-prog
+- *(cli)* Drop `nango.yaml` support in CLI commands (#5604) by @kaposke
+- *(cli)* Clear mocks in generated sync tests (#5605) by @marcindobry
+- *(integrations)* Add support for telegram (#5606) by @hassan254-prog
+- *(integrations)* Add support for trigify io mcp (#5612) by @hassan254-prog
+- New free accounts default to lambda runtime for syncs (#5599) by @TBonnin
+- *(integrations)* Add support for provenexpert (#5545) by @alex-onepage
+- *(integrations)* Add support for webinarjam (#5514) by @alex-onepage
+- *(webhooks)* Add webhook support for ms client credentials (#5602) by @hassan254-prog
+
+### Changed
+
+- Add gmail webhooks documentation (#5610) by @agusayerza
+- Enable records autodelete (#5616) by @TBonnin
+- *(plans)* Nan 4966 enable sync variants and fast syncing for all accounts (#5608) by @rbwest
+- Drop plan has_sync_variants (#5609) by @TBonnin
+- Google Calendar webhook setup (#5620) by @rbwest
+
+### Fixed
+
+- *(auth)* Restore self-close fallback in OAuth callback popup (#5452 regression) (#5618) by @agusayerza
+- Hash emails on connection config for gmail and google calendar (#5622) by @agusayerza
+- *(lambda)* Support large payloads in Lambda (#5601) by @rossmcewan
+
+## [v0.69.43] - 2026-03-11
+
+### Fixed
+
+- *(webapp)* Long wait time after Sign in (#5592) by @kaposke
+- *(webapp)* SignIn autoComplete (#5598) by @kaposke
+- Build lambda on arm64 github runner (#5597) by @TBonnin
+- *(sdk)* Add checkpoint methods to mock classes (#5603) by @marcindobry
+
+## [v0.69.42] - 2026-03-10
+
+### Added
+
+- Resume sync immediately when interrupted gracefully (#5591) by @TBonnin
+
+### Fixed
+
+- *(docs)* Replace while loop with nango.paginate in checkpoints doc (#5587) by @TBonnin
+- *(runner)* Correct env var name for conflict resolution mode (#5593) by @rossmcewan
+- *(runner)* Pass redis url (#5595) by @rossmcewan
+- *(runner-lambda)* Return checkpoints (#5589) by @TBonnin
+- *(cli)* Ignore axios default urlencoded Content-Type in unified mocks (#5590) by @marcindobry
+
+## [v0.69.41] - 2026-03-09
+
+### Added
+
+- *(integrations)* Migrate asana-mcp to v2 (#5547) by @hassan254-prog
+- *(webhooks)* Add na, eu, au to trusted ConnectWise PSA subdomains (#5557) by @mayankj
+- *(integrations)* Add support for axiom (#5558) by @hassan254-prog
+- *(webhooks)* Add support for ms teams bot webhooks (#5560) by @hassan254-prog
+- *(runner-sdk)* Add execution lifecycle with interrupt and kill timeouts (#5555) by @TBonnin
+- *(server)* Support flow-level json-schema (#5561) by @kaposke
+- *(integrations)* Add support for supabase mcp (#5569) by @hassan254-prog
+- *(integrations)* Add support for circleback mcp (#5571) by @hassan254-prog
+- *(integrations)* Add support for amplitude mcp (#5568) by @hassan254-prog
+- Expose function checkpoints (from/to) in Nango logs (#5565) by @TBonnin
+- *(orch)* Allow overriding next execution when completing a task (#5566) by @TBonnin
+- *(integrations)* Add support for quentn (#5470) by @alex-onepage
+- *(migrations)* Increase `oauth_client_id` size limit (#5573) by @hassan254-prog
+- *(providers)* Allow for interpolation of hostnames for dayforce (#5539) by @hassan254-prog
+- *(integrations)* Add support for klicktipp (#5473) by @alex-onepage
+- *(db)* Migrate Slack connection IDs from env name to env id (#5564) by @pfreixes
+- *(webapp)* Redesign auth pages (#5518) by @kaposke
+- *(integrations)* Add support for cleverreach (#5480) by @alex-onepage
+- *(integrations)* Add support for mailjet (#5583) by @alex-onepage
+- *(fleet)* Add support for runner replicas (#5579) by @TBonnin
+
+### Changed
+
+- Reposition intro + update API count to 700+ (#5562) by @bastienbeurier
+- Changelog and Dev update for February 2026 (#5556) by @SapneshNaik
+- Update README.md (#5574) by @bastienbeurier
+- *(slack)* Remove legacy name-based connection ID fallback (#5586) by @pfreixes
+
+### Fixed
+
+- *(proxy)* Properly send error responses (#5551) by @hassan254-prog
+- *(vulns)* Npm audit fix and some upgrades (#5563) by @rossmcewan
+- *(deps)* Upgrades and vuln fixes (#5570) by @rossmcewan
+- *(providers)* Fix supabase apikey interpolation (#5575) by @hassan254-prog
+- *(orchestrator)* Enforce group max concurrency when dequeuing with wildcard pattern (#5578) by @TBonnin
+- *(slack)* Use environment id for slack connection id with legacy fallback (#5559) by @pfreixes
+- *(runner)* Distributed conflict tracking (#5580) by @rossmcewan
+- *(cli)* Restore pagination logging after dryrun (#5588) by @agusayerza
+
+## [v0.69.40] - 2026-03-03
+
+### Added
+
+- *(lambda)* Add lambda destination for failures (#5503) by @rossmcewan
+- Make track deletes work across execution (#5517) by @TBonnin
+
+### Changed
+
+- Add Share Connect link docs (#5549) by @agusayerza
+
+### Fixed
+
+- *(runner-sdk)* TriggerSync to support new opts param (#5550) by @TBonnin
+
+## [v0.69.39] - 2026-03-02
+
+### Added
+
+- *(integrations)* Add support for granola-mcp (#5511) by @hassan254-prog
+- *(integrations)* Add support for ukg pro hcm client credentials (#5523) by @hassan254-prog
+- *(webapp)* Redesign connection page (#5438) by @kaposke
+- *(webapp)* Redesign toasts (#5498) by @kaposke
+- *(integrations)* Add support for google forms (#5528) by @hassan254-prog
+- *(integrations)* Add support for Google BigQuery (#5529) by @hassan254-prog
+- *(integrations)* Add support for gamma (#5530) by @hassan254-prog
+- *(integrations)* Add support for mercury (#5532) by @hassan254-prog
+- *(integrations)* Add support for heygen (#5533) by @hassan254-prog
+
+### Changed
+
+- *(runner)* Expose error.cause in http client (#5513) by @TBonnin
+- Migrate builder-io docs (#5501) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Migrate salesforce docs to use eca instead of connected apps (#5507) by @hassan254-prog
+- Move slack user tokens docs to a separate docs section (#5534) by @hassan254-prog
+- Update version in manifest by @actions-user
+- Improve CLI dependency management guidance for CI and monorepos (#5524) by @agusayerza
+- Removed unused docs pages (#5548) by @bastienbeurier
+- CON-6/backfill-product-updates - October, November, December 25 and January 26 (#5520) by @SapneshNaik
+
+### Fixed
+
+- *(server)* Early exit on failing refresh token connections (#5505) by @agusayerza
+- *(docker)* Upgrade npm version and fix vulns (#5522) by @rossmcewan
+- *(webapp)* Integrations cache invalidation (#5496) by @kaposke
+- *(lambda)* Better logging and error message (#5525) by @rossmcewan
+- *(integrations)* Okta-cc connect guide, hide client_secret in Connect UI (#5526) by @agusayerza
+- *(webapp)* Support JWT privateKey as pem string on connection page (#5537) by @hassan254-prog
+- *(runner)* Use undici default agent in http client (#5515) by @TBonnin
+- *(server)* Set qs array limit to 100 (#5543) by @hassan254-prog
+- *(webapp)* Overflowing models cause sync table to be scrollable (#5542) by @kaposke
+- *(webapp)* Invalidate flows when toggling function (#5541) by @kaposke
+- *(cli)* Smart filtering in dryrun interactive mode (#5519) by @agusayerza
+
 ## [v0.69.38] - 2026-02-24
 
 ### Added
@@ -227,7 +675,7 @@ All notable changes to this project will be documented in this file.
 - *(integrations)* Add support for microsoft planner (#5289) by @digggy
 - *(integrations)* Add support for sellercloud (#5242) by @hassan254-prog
 - *(ui)* Use tags for email and display_name in AvatarOrganization (#5343) by @marcindobry
-- *(integrations)* Add Upsales API integration (#5112) by @frkst
+- *(integrations)* Add Upsales API integration (#5112)
 - *(persist)* Adds checkpoint endpoints to the persist (#5335) by @TBonnin
 - *(tags)* Match the validation of end_user tags to new tags (#5341) by @marcindobry
 - *(docs)* Add docs for records retention policies (#5217) by @TBonnin
@@ -5987,6 +6435,20 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
+[v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
+[v0.69.50]: https://github.com/NangoHQ/nango/compare/v0.69.49..v0.69.50
+[v0.69.49]: https://github.com/NangoHQ/nango/compare/v0.69.48..v0.69.49
+[v0.69.48]: https://github.com/NangoHQ/nango/compare/v0.69.47..v0.69.48
+[v0.69.47]: https://github.com/NangoHQ/nango/compare/v0.69.46..v0.69.47
+[v0.69.46]: https://github.com/NangoHQ/nango/compare/v0.69.45..v0.69.46
+[v0.69.45]: https://github.com/NangoHQ/nango/compare/v0.69.44..v0.69.45
+[v0.69.44]: https://github.com/NangoHQ/nango/compare/v0.69.43..v0.69.44
+[v0.69.43]: https://github.com/NangoHQ/nango/compare/v0.69.42..v0.69.43
+[v0.69.42]: https://github.com/NangoHQ/nango/compare/v0.69.41..v0.69.42
+[v0.69.41]: https://github.com/NangoHQ/nango/compare/v0.69.40..v0.69.41
+[v0.69.40]: https://github.com/NangoHQ/nango/compare/v0.69.39..v0.69.40
+[v0.69.39]: https://github.com/NangoHQ/nango/compare/v0.69.38..v0.69.39
 [v0.69.38]: https://github.com/NangoHQ/nango/compare/v0.69.36..v0.69.38
 [v0.69.36]: https://github.com/NangoHQ/nango/compare/v0.69.35..v0.69.36
 [v0.69.35]: https://github.com/NangoHQ/nango/compare/v0.69.34..v0.69.35

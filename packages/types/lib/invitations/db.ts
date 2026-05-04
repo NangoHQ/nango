@@ -1,4 +1,5 @@
 import type { Timestamps } from '../db.js';
+import type { Role } from '../user/db.js';
 
 export interface DBInvitation extends Timestamps {
     id: number;
@@ -9,4 +10,5 @@ export interface DBInvitation extends Timestamps {
     token: string;
     expires_at: Date;
     accepted: boolean;
+    role: Role;
 }

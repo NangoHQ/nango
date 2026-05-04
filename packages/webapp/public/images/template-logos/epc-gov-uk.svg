@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <rect x="10" y="10" width="44" height="44" rx="5" fill="#00703C"/>
+  <text x="32" y="31" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">EPC</text>
+  <text x="32" y="43" font-family="Arial, sans-serif" font-size="7" fill="white" text-anchor="middle">GOV.UK</text>
+</svg>

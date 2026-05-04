@@ -16,9 +16,11 @@
         "typescript": "5.9.3"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "3.993.0",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/node": "file:../node-client",
         "@nangohq/runner": "file:../runner",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "datadog-lambda-js": "12.130.0",

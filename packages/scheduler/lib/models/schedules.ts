@@ -249,25 +249,31 @@ export async function setLastScheduledTask(db: knex.Knex, updates: { id: string;
     }
 }
 
-export async function updateLastScheduledTaskState(
+export async function scheduleNextExecution(
     db: knex.Knex,
-    { taskIds, taskState }: { taskIds: string[]; taskState: TaskState }
+    { taskIds, taskState, nextExecutionInMs }: { taskIds: string[]; taskState: TaskState; nextExecutionInMs?: number | undefined }
 ): Promise<Result<Schedule[]>> {
     try {
         if (taskIds.length <= 0) {
             return Ok([]);
         }
+        if (nextExecutionInMs !== undefined && nextExecutionInMs < 0) {
+            return Err(new Error(`Invalid nextExecutionInMs: ${nextExecutionInMs}. Must be a positive integer.`));
+        }
         const updated = await db(SCHEDULES_TABLE)
             .update({
                 updated_at: db.fn.now(),
                 last_scheduled_task_state: taskState,
-                next_execution_at: db.raw('starts_at + CEILING(EXTRACT(EPOCH FROM (NOW() - starts_at)) / EXTRACT(EPOCH FROM frequency)) * frequency')
+                next_execution_at:
+                    nextExecutionInMs !== undefined
+                        ? db.raw(`NOW() + ? * INTERVAL '1 millisecond'`, [nextExecutionInMs])
+                        : db.raw('starts_at + CEILING(EXTRACT(EPOCH FROM (NOW() - starts_at)) / EXTRACT(EPOCH FROM frequency)) * frequency')
             })
             .whereIn('last_scheduled_task_id', taskIds)
             .returning('*');
         return Ok(updated.map(DbSchedule.from));
     } catch (err) {
-        return Err(new Error(`Error updating last scheduled tasks ${taskIds.join(', ')}: ${stringifyError(err)}`));
+        return Err(new Error(`Error scheduling next execution for tasks ${taskIds.join(', ')}: ${stringifyError(err)}`));
     }
 }
 

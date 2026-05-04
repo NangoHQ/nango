@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
 
-import { bundleFile, compileAll } from './compile.js';
+import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
 import { CompileError } from './utils.js';
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
@@ -31,11 +31,11 @@ describe('compileAll', () => {
         console.log('compiling to ', dir);
         await copyDirectoryAndContents(path.join(fixturesPath, 'zero/valid'), dir);
 
-        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.0.5' } };
+        const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.3.6' } };
 
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
         await exec('npm i', { cwd: dir });
-        const result = await compileAll({ fullPath: dir, debug: false });
+        const result = await compileAllFunctions({ fullPath: dir, debug: false });
         result.unwrap();
         expect(result.isOk()).toBe(true);
     });
@@ -65,5 +65,20 @@ describe('edge cases', () => {
         assert(result.error instanceof CompileError, 'Should be an error');
 
         expect(result.error.toText().replaceAll('\\', '/')).toMatchSnapshot();
+    });
+});
+
+describe('detectFeatures', () => {
+    it('should fail if entrypoint does not exists', () => {
+        const res = detectFeatures({ entryPoint: path.join(fixturesPath, 'does/not/exist.ts') });
+        expect(res.isErr()).toBe(true);
+    });
+    it('should detect features', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.ts') }).unwrap();
+        expect(features).toEqual(['checkpoints']);
+    });
+    it('should not detect features if none', () => {
+        const features = detectFeatures({ entryPoint: path.join(fixturesPath, 'zero/cases/features.none.ts') }).unwrap();
+        expect(features).toEqual([]);
     });
 });

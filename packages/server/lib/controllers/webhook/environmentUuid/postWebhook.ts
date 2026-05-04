@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { accountService, configService, getPlan } from '@nangohq/shared';
+import { accountService, configService, getPlan, getProvider } from '@nangohq/shared';
 import { flagHasPlan, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
@@ -49,7 +49,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
+            metrics.duration(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
             const isDisabledForThisAccount = await featureFlags.isSet('disable-external-webhooks', { distinctId: account.uuid });
             if (isDisabledForThisAccount) {
@@ -78,12 +78,25 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED, 1, {
+                accountId: account.id,
+                provider: integration.provider
+            });
 
-            // Note that we do not pass on query parameters!
-            // Some providers send unverifiable query parameters
-            // we ignore them for security reasons, as they generally
-            // cannot be included in the webhook signatures.
+            const provider = getProvider(integration.provider);
+
+            // Query params are blocked by default — providers may include unverifiable params
+            // that can't be covered by webhook signatures. Only params explicitly listed in
+            // `webhook_allowed_query_params` (provider config) are forwarded.
+            const allowedQueryParams = provider?.webhook_allowed_query_params ?? [];
+            const queryFiltered = allowedQueryParams.reduce<Record<string, string>>((acc, name) => {
+                const v = req.query[name];
+                if (v) acc[name] = typeof v === 'string' ? v : String(v);
+                return acc;
+            }, {});
+
+            const query = Object.keys(queryFiltered).length > 0 ? queryFiltered : undefined;
+
             const response = await routeWebhook({
                 environment,
                 account,
@@ -92,6 +105,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 headers,
                 body: req.body,
                 rawBody: req.rawBody!,
+                ...(query !== undefined ? { query } : {}),
                 logContextGetter
             });
 

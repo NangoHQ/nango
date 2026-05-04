@@ -91,10 +91,11 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
-        jsonSchema: body.jsonSchema,
+        aggregatedJsonSchema: body.jsonSchema,
         logContextGetter,
         sdkVersion: body.sdkVersion,
-        orchestrator
+        orchestrator,
+        source: 'catalog'
     });
 
     if (!success || !syncConfigDeployResult) {
@@ -109,7 +110,7 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             flows: body.flowConfigs,
             performAction: body.reconcile,
             debug: body.debug,
-            singleDeployMode: body.singleDeployMode,
+            deployMode: body.deployMode,
             logCtx,
             logContextGetter,
             orchestrator

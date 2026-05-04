@@ -19,4 +19,5 @@ export interface NodeConfig {
     readonly idleMaxDurationMs: number;
     readonly executionTimeoutSecs: number;
     readonly provisionedConcurrency: number;
+    readonly replicas: number;
 }

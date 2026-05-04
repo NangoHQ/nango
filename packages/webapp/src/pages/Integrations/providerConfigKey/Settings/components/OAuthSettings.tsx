@@ -1,6 +1,8 @@
 import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { ScopesInput } from '@/components-v2/ScopesInput';
@@ -8,12 +10,13 @@ import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { apiPatchIntegration } from '@/hooks/useIntegration';
+import { usePatchIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -24,6 +27,11 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { confirm, DialogComponent } = useConfirmDialog();
+
+    const { can } = usePermissions();
+    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
+
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
     const [isEditingClientId, setIsEditingClientId] = useState(false);
 
     const callbackUrl = environment.callback_url || defaultCallback();
@@ -31,20 +39,18 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const isSharedCredentials = Boolean(integration.shared_credentials_id);
 
     const onSave = async (field: Partial<PatchIntegration['Body']>, supressToast = false) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
-            ...field
-        });
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            if (!supressToast) {
-                toast({ title: errorMessage, variant: 'error' });
-            }
-            throw new Error(errorMessage);
-        } else {
+        try {
+            await patchIntegration({
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                ...field
+            });
             if (!supressToast) {
                 toast({ title: 'Successfully updated', variant: 'success' });
             }
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 
@@ -114,6 +120,9 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                             onSave={handleClientIdSave}
                             onEditingChange={setIsEditingClientId}
                             validate={validateNotEmpty}
+                            canEdit={canEdit}
+                            canRead={canEdit}
+                            secret={!canEdit}
                         />
                         {isEditingClientId && hasExistingClientId && (
                             <Alert variant="warning">
@@ -138,6 +147,8 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
                         initialValue={integration.oauth_client_secret || ''}
                         onSave={(value) => onSave({ clientSecret: value })}
                         validate={validateNotEmpty}
+                        canEdit={canEdit}
+                        canRead={canEdit}
                     />
                 )}
             </div>
@@ -146,7 +157,14 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
             {template.auth_mode !== 'TBA' && template.installation !== 'outbound' && (
                 <div className="flex flex-col gap-2">
                     <Label htmlFor="scopes">Scopes</Label>
-                    <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} isSharedCredentials={isSharedCredentials} />
+                    <ScopesInput
+                        scopesString={integration.oauth_scopes || ''}
+                        onChange={handleScopesChange}
+                        isSharedCredentials={isSharedCredentials}
+                        readOnly={!canEdit}
+                        availableScopes={template.available_scopes}
+                        showAvailableScopesDropdown={true}
+                    />
                 </div>
             )}
 

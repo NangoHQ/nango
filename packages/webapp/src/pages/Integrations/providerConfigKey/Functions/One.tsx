@@ -1,40 +1,49 @@
-import { ExternalLink, Info } from 'lucide-react';
-import { useMemo } from 'react';
+import { Download, ExternalLink, Info } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { EmptyCard } from '../../components/EmptyCard';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { IntegrationsBadge } from '../../components/IntegrationsBadge';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
+import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
+import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { ButtonLink } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
+import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
+import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
 
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
+    const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { data: integrationData, loading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
-    const { data, loading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const debugMode = useStore((state) => state.debugMode);
+    const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
+    const integrationData = integrationResponse?.data;
+    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
+    const flowsData = flowsResponse?.data;
 
-    const func = data?.flows.find((flow) => flow.name === functionName);
+    const func = flowsData?.flows.find((flow) => flow.name === functionName);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
         if (!func || !func.input || !func.json_schema) {
@@ -70,6 +79,26 @@ export const FunctionsOne: React.FC = () => {
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
     const isLoading = integrationLoading || flowsLoading;
+
+    const downloadCode = useCallback(async () => {
+        if (!func || !func.enabled || !func.id) {
+            return;
+        }
+        try {
+            await apiFlowDownload(env, { id: func.id }, func.name);
+            toast({
+                title: 'Downloading function code',
+                variant: 'success'
+            });
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to download function code',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [func, env, toast]);
 
     if (isLoading) {
         return (
@@ -125,34 +154,62 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <FunctionSwitch flow={func} integration={integrationData.integration} />
+                        <div className="inline-flex items-center gap-2">
+                            {func.enabled && debugMode && (
+                                <Button onClick={downloadCode} variant="ghost" size="icon">
+                                    <Download />
+                                </Button>
+                            )}
+                            <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    disabled={!func.enabled}
+                                    onClick={() => {
+                                        openPlaygroundWithContext({
+                                            integration: integrationData.integration.unique_key,
+                                            functionName: func.name,
+                                            functionType: func.type as 'action' | 'sync'
+                                        });
+                                    }}
+                                >
+                                    Playground <ExternalLink />
+                                </Button>
+                            </ConditionalTooltip>
+                            <FunctionSwitch flow={func} integration={integrationData.integration} />
+                        </div>
                     </div>
 
                     <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
 
                     <div className="flex flex-wrap gap-4 gap-y-2">
-                        <IntegrationsBadge label="Type">
+                        <KeyValueBadge label="Type">
                             <span>{func.type}</span>
-                        </IntegrationsBadge>
-                        {func.runs && (
-                            <IntegrationsBadge label="Frequency">
-                                <span>{func.runs}</span>
-                            </IntegrationsBadge>
+                        </KeyValueBadge>
+                        <KeyValueBadge label="Source code">{func.source === 'repo' ? 'your repo' : 'Nango'}</KeyValueBadge>
+                        {func.sync_type && (
+                            <KeyValueBadge label="Sync type">
+                                <span>{func.sync_type}</span>
+                            </KeyValueBadge>
                         )}
-                        {func.auto_start !== undefined && <IntegrationsBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</IntegrationsBadge>}
-                        <IntegrationsBadge label="Source">{func.pre_built ? 'template' : 'custom'}</IntegrationsBadge>
-                        {func.version && <IntegrationsBadge label="Version">v{func.version}</IntegrationsBadge>}
-                        {func.scopes && func.scopes.length > 0 && <IntegrationsBadge label="Required scopes">{func.scopes?.join(', ')}</IntegrationsBadge>}
+                        {func.runs && (
+                            <KeyValueBadge label="Frequency">
+                                <span>{func.runs}</span>
+                            </KeyValueBadge>
+                        )}
+                        {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
+                        {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
+                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
-                {func.pre_built && (
+                {func.source === 'catalog' && (
                     <CardSubheader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col gap-1">
                                 <span className="text-text-primary text-body-medium-semi">Customize this template</span>
                                 <Link
-                                    to="https://nango.dev/docs/implementation-guides/platform/functions/functions-setup"
+                                    to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
                                     target="_blank"
                                     className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
                                 >
@@ -177,19 +234,11 @@ export const FunctionsOne: React.FC = () => {
                                 <TabsTrigger value="output">Output</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="tertiary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
@@ -201,7 +250,9 @@ export const FunctionsOne: React.FC = () => {
                                     <JsonSchemaTopLevelObject schema={inputSchema} />
                                 </>
                             ) : (
-                                <EmptyCard content={`No inputs.`} />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No inputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                         <TabsContent value="output" className="flex flex-col gap-4">
@@ -226,7 +277,9 @@ export const FunctionsOne: React.FC = () => {
                                     </Navigation>
                                 </>
                             ) : (
-                                <EmptyCard content="No outputs." />
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
+                                </EmptyCard>
                             )}
                         </TabsContent>
                     </Tabs>
@@ -251,11 +304,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 .
@@ -264,15 +313,11 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/use-cases/actions/async-actions" type="external" variant="info">
+                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously" type="external" variant="info">
                                     async actions
                                 </StyledLink>
                                 .
@@ -286,7 +331,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
                                 <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration#store-customer-specific-data"
+                                    to="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
                                     type="external"
                                     variant="info"
                                 >
@@ -298,19 +343,11 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records" type="external" variant="info">
                                     Nango API
                                 </StyledLink>
                                 .{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
+                                <StyledLink to="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks" type="external" variant="info">
                                     Webhooks
                                 </StyledLink>{' '}
                                 can notify you when new data is available.

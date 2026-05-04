@@ -24,7 +24,8 @@ describe('NodeConfgOverrides', () => {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 3
     };
 
     it('should be successfully created', async () => {
@@ -41,6 +42,7 @@ describe('NodeConfgOverrides', () => {
             idleMaxDurationMs: props.idleMaxDurationMs,
             executionTimeoutSecs: props.executionTimeoutSecs,
             provisionedConcurrency: props.provisionedConcurrency,
+            replicas: props.replicas,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -58,7 +60,8 @@ describe('NodeConfgOverrides', () => {
                 isProfilingEnabled: null,
                 idleMaxDurationMs: null,
                 executionTimeoutSecs: null,
-                provisionedConcurrency: null
+                provisionedConcurrency: null,
+                replicas: null
             })
         ).unwrap();
         expect(nodeConfigOverride).toStrictEqual({
@@ -73,6 +76,7 @@ describe('NodeConfgOverrides', () => {
             idleMaxDurationMs: null,
             executionTimeoutSecs: null,
             provisionedConcurrency: null,
+            replicas: null,
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date)
         });
@@ -90,7 +94,8 @@ describe('NodeConfgOverrides', () => {
             isProfilingEnabled: true,
             idleMaxDurationMs: 1_800_000,
             executionTimeoutSecs: -1,
-            provisionedConcurrency: -1
+            provisionedConcurrency: -1,
+            replicas: 5
         };
         const updatedNodeConfigOverride = (await node_config_overrides.upsert(dbClient.db, updatedProps)).unwrap();
         expect(updatedNodeConfigOverride).toStrictEqual({
@@ -104,6 +109,7 @@ describe('NodeConfgOverrides', () => {
             idleMaxDurationMs: updatedProps.idleMaxDurationMs,
             executionTimeoutSecs: updatedProps.executionTimeoutSecs,
             provisionedConcurrency: updatedProps.provisionedConcurrency,
+            replicas: updatedProps.replicas,
             updatedAt: expect.any(Date)
         });
     });

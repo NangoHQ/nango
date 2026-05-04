@@ -60,7 +60,8 @@ async function createNode(db: knex.Knex, { routingId, deploymentId, fleetId }: {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     });
     return node.unwrap();
 }

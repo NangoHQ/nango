@@ -7,16 +7,16 @@ import { build } from 'esbuild';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
-import { generateAdditionalExports } from '../services/model.service.js';
+import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
+import { generateNangoJson } from '../services/model.service.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
-import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { buildDefinitions } from './definitions.js';
-import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
-import type { Result } from '@nangohq/types';
+import type { Feature, Result } from '@nangohq/types';
 
 /**
  * This function is used to compile the code in the integration.
@@ -26,7 +26,7 @@ import type { Result } from '@nangohq/types';
  * - Compile the code to .cjs
  * - Rebuild nango.yaml in memory
  */
-export async function compileAll({
+export async function compileAllFunctions({
     fullPath,
     debug,
     interactive = true
@@ -76,7 +76,7 @@ export async function compileAll({
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await compileOne({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.log('');
@@ -88,9 +88,9 @@ export async function compileAll({
         spinner.text = `Building ${entryPoints.length} file(s)`;
         spinner.succeed();
 
-        // Build and export the definitions
-        spinner = spinnerFactory.start('Exporting definitions');
-        const def = await buildDefinitions({ fullPath, debug });
+        // Build definitions and export the artifacts (.nango/nango.json)
+        spinner = spinnerFactory.start('Generating artifacts');
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
             console.log('');
@@ -103,14 +103,14 @@ export async function compileAll({
                 if (sync.track_deletes) {
                     console.warn(
                         chalk.yellow(
-                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.deleteRecordsFromPreviousExecutions()' in your sync script to automatically detect deletions.`
+                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
                         )
                     );
                 }
             }
         }
 
-        generateAdditionalExports({ parsed: def.value, fullPath, debug });
+        generateNangoJson({ parsed: def.value, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {
@@ -281,6 +281,72 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
             );
         }
 
+        for (const [model, { startLines, endLines }] of bag.trackDeletesByModel) {
+            if (startLines.length > 1) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called only once per sync`,
+                        line: Math.max(...startLines)
+                    })
+                );
+            }
+            if (endLines.length > 1) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd for model '${model}' should be called only once per sync`,
+                        line: Math.max(...endLines)
+                    })
+                );
+            }
+            if (endLines.length > 0 && startLines.length === 0) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd for model '${model}' is called but trackDeletesStart is never called`,
+                        line: Math.min(...endLines)
+                    })
+                );
+            }
+            if (startLines.length > 0 && endLines.length === 0) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' is called but trackDeletesEnd is never called`,
+                        line: Math.min(...startLines)
+                    })
+                );
+            }
+            if (startLines.length > 0 && endLines.length > 0 && startLines.some((line) => line > Math.min(...endLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called before trackDeletesEnd`,
+                        line: Math.min(...startLines)
+                    })
+                );
+            }
+            if (startLines.length > 0 && bag.batchingRecordsLines.some((line) => line < Math.min(...startLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesStart for model '${model}' should be called before any batching records function`,
+                        line: Math.min(...startLines)
+                    })
+                );
+            }
+            if (endLines.length > 0 && bag.batchingRecordsLines.some((line) => line > Math.min(...endLines))) {
+                return Err(
+                    fileErrorToText({
+                        filePath: friendlyPath,
+                        msg: `trackDeletesEnd for model '${model}' should be called after any batching records function`,
+                        line: Math.min(...endLines)
+                    })
+                );
+            }
+        }
+
         const output = res.outputFiles?.[0]?.text || '';
         return Ok(output);
     } catch (err) {
@@ -304,7 +370,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileFunction({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
@@ -340,6 +406,29 @@ export function tsToJsPath(filePath: string) {
     return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
 }
 
+/**
+ * Detects which features are used in function code
+ */
+export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
+    try {
+        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
+        const { plugin, bag } = nangoPlugin({ entryPoint });
+        babel.transformSync(source, {
+            filename: entryPoint,
+            plugins: [plugin],
+            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+            generatorOpts: { decoratorsBeforeExport: true }
+        });
+        const features: Feature[] = [];
+        if (bag.checkpointsLines.length > 0) {
+            features.push('checkpoints');
+        }
+        return Ok(features);
+    } catch (err) {
+        return Err(new Error('failed_to_detect_features', { cause: err }));
+    }
+}
+
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 type AugmentedExportDefault = babel.types.ExportDefaultDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
 
@@ -355,11 +444,15 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const batchingRecordsLines: number[] = [];
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
+    const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
+    const checkpointsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
-        deleteRecordsFromPreviousExecutionsLines
+        deleteRecordsFromPreviousExecutionsLines,
+        trackDeletesByModel,
+        checkpointsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
@@ -368,25 +461,27 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
     const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
     const needsAwait = [
-        'batchSend',
-        'batchSave',
         'batchDelete',
-        'log',
-        'getFieldMapping',
-        'setFieldMapping',
-        'getMetadata',
-        'setMetadata',
-        'proxy',
-        'get',
-        'post',
-        'put',
-        'patch',
+        'batchSave',
+        'batchSend',
         'delete',
+        'deleteRecordsFromPreviousExecutions',
+        'get',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction',
+        'getFieldMapping',
+        'getMetadata',
+        'log',
+        'patch',
+        'post',
+        'proxy',
+        'put',
+        'setFieldMapping',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecutions'
+        'setMetadata',
+        'trackDeletesEnd',
+        'trackDeletesStart',
+        'triggerAction'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -496,8 +591,27 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                     if (callee.property.name === 'deleteRecordsFromPreviousExecutions') {
                                         deleteRecordsFromPreviousExecutionsLines.push(lineNumber);
                                     }
+                                    if (callee.property.name === 'trackDeletesStart' || callee.property.name === 'trackDeletesEnd') {
+                                        const args = astPath.node.arguments;
+                                        if (args.length > 0 && t.isStringLiteral(args[0])) {
+                                            const model = args[0].value;
+                                            if (!trackDeletesByModel.has(model)) {
+                                                trackDeletesByModel.set(model, { startLines: [], endLines: [] });
+                                            }
+                                            const entry = trackDeletesByModel.get(model)!;
+                                            if (callee.property.name === 'trackDeletesStart') {
+                                                entry.startLines.push(lineNumber);
+                                            } else {
+                                                entry.endLines.push(lineNumber);
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                        }
+
+                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
+                            checkpointsLines.push(lineNumber);
                         }
                     },
 

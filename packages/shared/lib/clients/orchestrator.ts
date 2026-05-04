@@ -3,10 +3,9 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
-import { deleteCheckpoint } from '../index.js';
+import { hardDeleteCheckpoints } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
@@ -33,16 +32,7 @@ import type {
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
-import type {
-    AsyncActionResponse,
-    ConnectionInternal,
-    ConnectionJobs,
-    DBConnection,
-    DBConnectionDecrypted,
-    DBEnvironment,
-    DBSyncConfig,
-    DBTeam
-} from '@nangohq/types';
+import type { AsyncActionResponse, ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -234,25 +224,19 @@ export class Orchestrator {
     }
 
     async triggerWebhook<T = unknown>({
-        account,
-        environment,
-        integration,
         connection,
         webhookName,
         syncConfig,
         input,
         maxConcurrency,
-        logContextGetter
+        logCtx
     }: {
-        account: DBTeam;
-        environment: DBEnvironment;
-        integration: ProviderConfig;
         connection: ConnectionJobs;
         webhookName: string;
         syncConfig: DBSyncConfig;
         input: object;
         maxConcurrency: number;
-        logContextGetter: LogContextGetter;
+        logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
@@ -267,17 +251,6 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
-            {
-                account,
-                environment,
-                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
-            }
-        );
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         try {
             let parsedInput = null;
@@ -592,12 +565,15 @@ export class Orchestrator {
                     await cancelling(syncId);
 
                     await clearLastSyncDate(syncId);
-                    deleteCheckpoint(db.knex, {
+                    // Delete all checkpoint (including the trackDeletes ones)
+                    const deletedCheckpoints = await hardDeleteCheckpoints(db.knex, {
                         environmentId,
                         connectionId,
-                        key: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant }),
-                        force: true
+                        keyPrefix: getCheckpointKey({ type: 'sync', name: syncName, variant: syncVariant })
                     });
+                    if (deletedCheckpoints.isErr()) {
+                        return Err(deletedCheckpoints.error);
+                    }
 
                     if (delete_records) {
                         const syncConfig = await getSyncConfigBySyncId(syncId);

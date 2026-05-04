@@ -1,4 +1,6 @@
 export { default as githubAppOauthPostConnection } from './providers/github-app-oauth/post-connection.js';
+export { default as googleMailPostConnection } from './providers/google-mail/post-connection.js';
+export { default as googleCalendarPostConnection } from './providers/google-calendar/post-connection.js';
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
 export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
 export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';

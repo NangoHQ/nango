@@ -2,17 +2,18 @@ import { basePublicUrl } from '@nangohq/utils';
 
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 
-export function integrationToApi(data: IntegrationConfig): ApiIntegration {
+export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
+    const hideCredentials = options?.includeCredentials === false || !!data.shared_credentials_id;
     return {
         id: data.id,
         unique_key: data.unique_key,
         provider: data.provider,
-        oauth_client_id: data.shared_credentials_id ? '' : data.oauth_client_id,
-        oauth_client_secret: data.shared_credentials_id ? '' : data.oauth_client_secret,
+        oauth_client_id: hideCredentials ? '' : data.oauth_client_id,
+        oauth_client_secret: hideCredentials ? '' : data.oauth_client_secret,
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: data.app_link,
-        custom: data.custom,
+        custom: hideCredentials ? null : data.custom,
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,

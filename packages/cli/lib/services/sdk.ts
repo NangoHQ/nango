@@ -7,7 +7,7 @@ import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } f
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
 import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
@@ -34,7 +34,7 @@ function showLoggerLevelWarning() {
             called = true;
             console.log(
                 chalk.yellow(
-                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions/functions-sdk#logging'
                 )
             );
         }
@@ -375,13 +375,50 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         return objects;
     }
 
+    public override async *listRecords<T extends Record<string, any> = Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
+        let cursor: string | null | undefined = options?.cursor;
+        do {
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model: this.modelFullName(model),
+                cursor: cursor ?? null
+            };
+
+            const { records, next_cursor } = await this.nango.listRecords<T>(props);
+
+            for (const record of records) {
+                yield record;
+            }
+
+            cursor = next_cursor;
+        } while (cursor);
+    }
+
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {
         // Not applicable to CLI
         return Promise.resolve();
     }
 
     public override async deleteRecordsFromPreviousExecutions(_model: string): Promise<{ deletedKeys: string[] }> {
-        this.log(`This has no effect but on a remote Nango instance would delete records that were not added or updated during the current execution.`);
+        this.log(
+            `This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved during this sync execution.`
+        );
+        return Promise.resolve({ deletedKeys: [] });
+    }
+
+    public override async trackDeletesStart(model: string): Promise<void> {
+        this.log(`This has no effect locally, but on a remote Nango instance it marks the start of deletion tracking for model '${model}'.`);
+        return Promise.resolve();
+    }
+
+    public override async trackDeletesEnd(_model: string): Promise<{ deletedKeys: string[] }> {
+        this.log(`This has no effect locally. On a remote Nango instance, it would mark as deleted any records that were not saved since trackDeletesStart.`);
         return Promise.resolve({ deletedKeys: [] });
     }
 }

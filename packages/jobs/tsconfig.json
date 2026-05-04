@@ -51,7 +51,7 @@
             "path": "../pubsub"
         },
         {
-            "path": "../account-usage"
+            "path": "../usage"
         }
     ],
     "include": ["lib/**/*"]

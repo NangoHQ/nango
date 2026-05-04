@@ -1,16 +1,22 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok } from '@nangohq/utils';
+import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const VERIFICATION_EMAIL_EXPIRATION = 3 * 24 * 60 * 60 * 1000;
+const envs = parseEnvs(ENVS);
 
 class UserService {
-    async getUserById(id: number): Promise<DBUser | null> {
-        const result = await db.knex.select<DBUser>('*').from<DBUser>(`_nango_users`).where({ id, suspended: false }).first();
+    async getUserById(id: number, includeSuspended = false): Promise<DBUser | null> {
+        const result = await db.knex
+            .select<DBUser>('*')
+            .from<DBUser>(`_nango_users`)
+            .where({ id })
+            .andWhere(includeSuspended ? {} : { suspended: false })
+            .first();
 
         return result || null;
     }
@@ -105,7 +111,8 @@ class UserService {
         hashed_password = '',
         salt = '',
         account_id,
-        email_verified
+        email_verified,
+        role = envs.DEFAULT_USER_ROLE
     }: {
         email: string;
         name: string;
@@ -113,6 +120,7 @@ class UserService {
         salt?: string;
         account_id: number;
         email_verified: boolean;
+        role?: DBUser['role'];
     }): Promise<DBUser | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
         const result: Pick<DBUser, 'id'>[] = await db.knex
@@ -125,7 +133,8 @@ class UserService {
                 account_id,
                 email_verified,
                 email_verification_token: email_verified ? null : uuid.v4(),
-                email_verification_token_expires_at: email_verified ? null : expires_at
+                email_verification_token_expires_at: email_verified ? null : expires_at,
+                role
             })
             .returning('id');
 

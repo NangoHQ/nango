@@ -49,6 +49,20 @@ export type PostPublicIntegration = Endpoint<{
     };
 }>;
 
+export type PostPublicQuickstartIntegration = Endpoint<{
+    Method: 'POST';
+    Path: '/integrations/quickstart';
+    Body: {
+        provider: string;
+        unique_key: string;
+        display_name?: string | undefined;
+        forward_webhooks?: boolean | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
@@ -112,6 +126,11 @@ export interface OAuthAuthBody {
     scopes?: string | undefined;
 }
 
+export interface OAuth2CCAuthBody {
+    authType: Extract<AuthModeType, 'OAUTH2_CC'>;
+    scopes?: string | undefined;
+}
+
 export interface AppAuthBody {
     authType: Extract<AuthModeType, 'APP'>;
     appId?: string | undefined;
@@ -149,7 +168,14 @@ export interface InstallPluginAuthBody {
     password?: string | undefined;
 }
 
-export type IntegrationAuthBody = OAuthAuthBody | AppAuthBody | CustomAuthBody | MCPOAuth2AuthBody | MCPOAuth2GenericAuthBody | InstallPluginAuthBody;
+export type IntegrationAuthBody =
+    | OAuthAuthBody
+    | OAuth2CCAuthBody
+    | AppAuthBody
+    | CustomAuthBody
+    | MCPOAuth2AuthBody
+    | MCPOAuth2GenericAuthBody
+    | InstallPluginAuthBody;
 
 export type PostIntegration = Endpoint<{
     Method: 'POST';

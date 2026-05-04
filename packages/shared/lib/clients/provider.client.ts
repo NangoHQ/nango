@@ -52,6 +52,10 @@ class ProviderClient {
             case 'stripe-app-sandbox':
             case 'workday-oauth':
             case 'fanvue':
+            case 'heygen':
+            case 'mercury':
+            case 'clover':
+            case 'posthog-oauth':
                 return true;
             default:
                 return false;
@@ -61,6 +65,7 @@ class ProviderClient {
     public shouldIntrospectToken(provider: string): boolean {
         switch (provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
@@ -111,6 +116,14 @@ class ProviderClient {
                 return this.createWorkdayOauthAccessToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'fanvue':
                 return this.createFanvueToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
+            case 'heygen':
+                return this.createHeyGenToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'mercury':
+                return this.createMercuryToken(tokenUrl, code, callBackUrl, codeVerifier);
+            case 'clover':
+                return this.createCloverToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'posthog-oauth':
+                return this.createPosthogOauthToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -123,6 +136,7 @@ class ProviderClient {
 
         const credentials = connection.credentials;
         const interpolatedTokenUrl = makeUrl(provider.token_url as string, connection.connection_config);
+        const interpolatedRefreshUrl = provider.refresh_url ? makeUrl(provider.refresh_url, connection.connection_config) : null;
 
         if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin' && config.provider !== 'instagram') {
             throw new NangoError('missing_refresh_token');
@@ -206,6 +220,14 @@ class ProviderClient {
                 );
             case 'fanvue':
                 return this.refreshFanvueToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
+            case 'mercury':
+                return this.refreshMercuryToken(interpolatedTokenUrl.href, credentials.refresh_token!);
+            case 'clover':
+                return this.refreshCloverToken(interpolatedRefreshUrl!.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'heygen':
+                return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
+            case 'posthog-oauth':
+                return this.refreshPosthogOauthToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -213,28 +235,29 @@ class ProviderClient {
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
         const { credentials } = connection;
-        const isOAuth2 = credentials.type === 'OAUTH2';
-        const isTwoStep = credentials.type === 'TWO_STEP';
 
-        if (!isOAuth2 && !isTwoStep) {
-            throw new NangoError('wrong_credentials_type');
-        }
-
-        const accessToken = isOAuth2 ? credentials.access_token : credentials.token;
-        if (!accessToken) {
-            throw new NangoError('access_token_missing');
+        function resolveByType(): { accessToken: string; clientId: string; clientSecret: string } {
+            switch (credentials.type) {
+                case 'OAUTH2':
+                    return { accessToken: credentials.access_token, clientId: config.oauth_client_id, clientSecret: config.oauth_client_secret };
+                case 'TWO_STEP':
+                    return { accessToken: credentials.token!, clientId: credentials['clientId'], clientSecret: credentials['clientSecret'] };
+                case 'OAUTH2_CC':
+                    return { accessToken: credentials.token, clientId: credentials.client_id, clientSecret: credentials.client_secret };
+                default:
+                    throw new NangoError('wrong_credentials_type');
+            }
         }
 
         const connectionConfig = connection.connection_config as Record<string, string>;
-        const clientId = isTwoStep ? credentials['clientId'] : config.oauth_client_id;
-        const clientSecret = isTwoStep ? credentials['clientSecret'] : config.oauth_client_secret;
+        const { accessToken, clientId, clientSecret } = resolveByType();
 
-        if (!clientId || !clientSecret) {
-            throw new NangoError('client_credentials_missing');
-        }
+        if (!accessToken) throw new NangoError('access_token_missing');
+        if (!clientId || !clientSecret) throw new NangoError('client_credentials_missing');
 
         switch (config.provider) {
             case 'salesforce':
+            case 'salesforce-cc':
             case 'salesforce-sandbox':
             case 'salesforce-experience-cloud':
             case 'salesforce-jwt':
@@ -1033,6 +1056,211 @@ class ProviderClient {
             throw new NangoError('fanvue_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('fanvue_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createMercuryToken(tokenUrl: string, code: string, redirect_uri: string, code_verifier: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('mercury_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('mercury_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshMercuryToken(tokenUrl: string, refreshToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('mercury_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('mercury_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createCloverToken(tokenUrl: string, code: string, client_id: string, client_secret: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const response = await axios.post(tokenUrl, { client_id, client_secret, code }, { headers: { 'Content-Type': 'application/json' } });
+
+            if (response.status === 200 && response.data) {
+                const { access_token_expiration, ...rest } = response.data;
+                return {
+                    ...rest,
+                    expires_at: access_token_expiration
+                };
+            }
+
+            throw new NangoError('clover_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('clover_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshCloverToken(refreshUrl: string, refresh_token: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const response = await axios.post(refreshUrl, { client_id, refresh_token }, { headers: { 'Content-Type': 'application/json' } });
+
+            if (response.status === 200 && response.data) {
+                const { access_token_expiration, ...rest } = response.data;
+                return {
+                    ...rest,
+                    expires_at: access_token_expiration
+                };
+            }
+
+            throw new NangoError('clover_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('clover_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createHeyGenToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                client_id,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('heygen_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshHeyGenToken(refreshTokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(refreshTokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('heygen_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('heygen_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createPosthogOauthToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        redirect_uri: string,
+        code_verifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                code,
+                client_id,
+                grant_type: 'authorization_code',
+                redirect_uri,
+                code_verifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('posthog_oauth_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('posthog_oauth_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshPosthogOauthToken(tokenUrl: string, refreshToken: string, client_id: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+            throw new NangoError('posthog_oauth_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('posthog_oauth_refresh_token_request_error', stringifyError(err));
         }
     }
 

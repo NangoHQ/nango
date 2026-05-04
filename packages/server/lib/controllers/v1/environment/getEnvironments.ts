@@ -17,7 +17,7 @@ export const getEnvironments = asyncWrapper<GetEnvironments>(async (req, res) =>
 
     res.status(200).send({
         data: environments.map((env) => {
-            return { name: env.name };
+            return { name: env.name, is_production: env.is_production };
         })
     });
 });

@@ -1,4 +1,4 @@
-import { PassThrough, Readable, Transform } from 'node:stream';
+import { PassThrough } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
@@ -17,6 +17,8 @@ import {
 } from '@nangohq/shared';
 import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
+import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDenylist.js';
+import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { pubsub } from '../../pubsub.js';
@@ -29,13 +31,15 @@ import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'node:http';
-import type { TransformCallback } from 'node:stream';
+import type { Readable } from 'node:stream';
 
 type ForwardedHeaders = Record<string, string>;
 
 const MEMOIZED_CONNECTION_TTL = 60000;
 
 const logger = getLogger('Proxy.Controller');
+
+const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
 
 const schemaHeaders = z.object({
     'provider-config-key': providerConfigKeySchema,
@@ -47,6 +51,8 @@ const schemaHeaders = z.object({
         .string()
         .regex(/^\d+(,\d+)*$/)
         .optional(),
+    // TODO: change default to 'false' after removing the metric in utils.ts
+    'forward-headers-on-redirect': z.enum(['true', 'false']).default('true'),
     'nango-activity-log-id': z.string().max(255).optional(),
     'nango-is-sync': z.enum(['true', 'false']).optional(),
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
@@ -58,19 +64,30 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
         return;
     }
+    const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
     const { environment, account, plan } = res.locals;
+
+    const baseUrlOverride = parsedHeaders['base-url-override'];
+    if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
+        res.status(400).send({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+        return;
+    }
 
     metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     let logCtx: LogContext | undefined;
-    const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
 
     const connectionId = parsedHeaders['connection-id'];
     const providerConfigKey = parsedHeaders['provider-config-key'];
     const retries = parsedHeaders['retries'];
-    const baseUrlOverride = parsedHeaders['base-url-override'];
     const decompress = parsedHeaders['decompress'] === 'true';
     const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
+    const forwardHeadersOnRedirect = parsedHeaders['forward-headers-on-redirect'] === 'true';
     const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
     const isSync = parsedHeaders['nango-is-sync'] === 'true';
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
@@ -187,7 +204,30 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     decompress,
                     method,
                     retryOn,
-                    responseType: 'stream'
+                    responseType: 'stream',
+                    forwardHeadersOnRedirect,
+                    ...(baseUrlOverrideDenylist.size > 0
+                        ? {
+                              validateProxyRedirectUrl: (absoluteUrl: string) => {
+                                  if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                                      metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+                                      let redirectHostForLog: string;
+                                      try {
+                                          redirectHostForLog = new URL(absoluteUrl).hostname;
+                                      } catch {
+                                          redirectHostForLog = 'unparseable';
+                                      }
+                                      logger.warning('Proxy redirect to denylisted host blocked', {
+                                          accountId: account.id,
+                                          providerConfigKey: parsedHeaders['provider-config-key'],
+                                          connectionId: parsedHeaders['connection-id'],
+                                          redirectHost: redirectHostForLog
+                                      });
+                                      throw new ProxyError('proxy_redirect_to_denied_host', 'This redirect target is not allowed by server configuration.');
+                                  }
+                              }
+                          }
+                        : {})
                 },
                 internalConfig
             }).unwrap(),
@@ -366,7 +406,24 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     });
 }
 
-function handleErrorResponse({
+function proxyErrorFromErrorChain(error: unknown): ProxyError | null {
+    let current: unknown = error;
+    const seen = new Set<unknown>();
+    while (current && typeof current === 'object' && !seen.has(current)) {
+        seen.add(current);
+        if (current instanceof ProxyError) {
+            return current;
+        }
+        if ('cause' in current && (current as { cause?: unknown }).cause !== undefined) {
+            current = (current as { cause: unknown }).cause;
+        } else {
+            break;
+        }
+    }
+    return null;
+}
+
+export function handleErrorResponse({
     res,
     error,
     requestConfig,
@@ -377,6 +434,18 @@ function handleErrorResponse({
     requestConfig?: AxiosRequestConfig | undefined;
     logCtx: LogContext;
 }) {
+    const proxyErr = proxyErrorFromErrorChain(error);
+    if (proxyErr?.code === 'proxy_redirect_to_denied_host') {
+        void logCtx.error('Proxy redirect denied by denylist', { error: proxyErr });
+        res.status(400).send({
+            error: {
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            }
+        });
+        return;
+    }
+
     if (!isAxiosError(error)) {
         if (error instanceof ProxyError) {
             void logCtx.error('Unknown error', { error });
@@ -405,46 +474,39 @@ function handleErrorResponse({
         const responseStatus = error.response?.status || 500;
         const responseHeaders = error.response?.headers || {};
 
-        res.writeHead(responseStatus, responseHeaders as OutgoingHttpHeaders);
-
-        const stream = new Readable();
-        stream.push(JSON.stringify(errorObject));
-        stream.push(null);
-
-        stream.pipe(res);
+        res.status(responseStatus).set(responseHeaders).send(errorObject);
 
         return;
     }
 
-    const errorData = error.response?.data as Readable;
-    const stringify = new Transform({
-        transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
-            callback(null, chunk);
-        }
-    });
-    if (error.response?.status) {
-        res.writeHead(error.response.status, error.response.headers as OutgoingHttpHeaders);
-    }
-    if (errorData) {
+    const errorStream = error.response?.data as Readable;
+    if (errorStream) {
         const chunks: Buffer[] = [];
-        errorData.pipe(stringify).pipe(res);
-        stringify.on('data', (data) => {
-            chunks.push(data);
+        errorStream.on('data', (chunk: Buffer | string) => {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
         });
-        stringify.on('end', () => {
+        errorStream.on('error', (err) => {
+            void logCtx.error('Error reading upstream error stream', { error: err });
+            res.status(500).send();
+        });
+        errorStream.on('end', () => {
             const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
-            let errorData: string | Record<string, string> = data;
+            let parsedBody: string | Record<string, string> = data;
             if (error.response?.headers?.['content-type']?.includes('application/json')) {
                 try {
-                    errorData = JSON.parse(data);
+                    parsedBody = JSON.parse(data);
                 } catch {
-                    // Intentionally left blank - errorData will be a string
+                    // Intentionally left blank - parsedBody stays string
                 }
             }
 
             metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
-            void logCtx.error('Failed with this body', { body: errorData });
+            const responseStatus = error.response?.status || 500;
+            const responseHeaders = error.response?.headers || {};
+            void logCtx.error('Failed with this body', { body: parsedBody });
+
+            res.status(responseStatus).set(responseHeaders).send(data);
         });
     }
 }

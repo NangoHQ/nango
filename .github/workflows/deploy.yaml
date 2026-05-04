@@ -207,7 +207,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
     deploy_lambda:
         if: inputs.service == 'lambda' && inputs.stage != 'replit'
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04-arm
         permissions:
             id-token: write
             contents: read
@@ -215,8 +215,6 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
             - name: Configure aws credentials

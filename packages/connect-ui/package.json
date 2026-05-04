@@ -10,7 +10,7 @@
         "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
     },
     "dependencies": {
-        "serve": "14.2.5"
+        "serve": "14.2.6"
     },
     "devDependencies": {
         "@hookform/resolvers": "5.1.1",
@@ -40,8 +40,8 @@
         "tailwindcss": "4.1.13",
         "tailwindcss-animate": "1.0.7",
         "typescript": "5.8.3",
-        "vite": "7.2.2",
-        "vite-plugin-svgr": "4.3.0",
+        "vite": "7.3.2",
+        "vite-plugin-svgr": "4.5.0",
         "zod": "4.0.5",
         "zustand": "5.0.3"
     }

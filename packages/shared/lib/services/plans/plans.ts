@@ -111,7 +111,8 @@ export async function getTrialsApproachingExpiration(db: Knex, { daysLeft }: { d
             .select<DBPlan[]>('plans.*')
             .join('_nango_accounts', '_nango_accounts.id', 'plans.account_id')
             .where('trial_end_at', '<=', dateThreshold.toISOString())
-            .whereNull('trial_end_notified_at');
+            .whereNull('trial_end_notified_at')
+            .where('plans.auto_idle', true);
         return Ok(res);
     } catch (err) {
         return Err(new Error('failed_to_get_trials', { cause: err }));
@@ -123,7 +124,8 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .from('plans')
         .select<DBPlan[]>('*')
         .where('plans.trial_end_at', '<=', db.raw('NOW()'))
-        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'));
+        .where((b) => b.where('plans.trial_expired', false).orWhereNull('plans.trial_expired'))
+        .where('plans.auto_idle', true);
 }
 
 export async function handlePlanChanged(
@@ -153,6 +155,8 @@ export async function handlePlanChanged(
     const isCurrentFree = currentPlan.value.name === freePlan.code;
     const isNewPaid = newPlan.code !== freePlan.code;
 
+    const isDowngrade = isPotentialDowngrade({ from: currentPlan.value.name, to: newPlan.code });
+
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         name: newPlan.code,
@@ -161,6 +165,15 @@ export async function handlePlanChanged(
         orb_future_plan_at: null,
         ...(orbCustomerId ? { orb_customer_id: orbCustomerId } : {}),
         ...(isCurrentFree && isNewPaid ? { orb_subscribed_at: new Date() } : {}),
+        ...(currentPlan.value.auto_idle && mergedFlags.auto_idle === false
+            ? {
+                  trial_start_at: null,
+                  trial_end_at: null,
+                  trial_end_notified_at: null,
+                  trial_extension_count: 0,
+                  trial_expired: null
+              }
+            : {}),
         ...mergedFlags
     });
 
@@ -171,7 +184,7 @@ export async function handlePlanChanged(
     productTracking.track({
         name: 'account:billing:plan_changed',
         team,
-        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, orbCustomerId: currentPlan.value.orb_customer_id }
+        eventProperties: { previousPlan: currentPlan.value.name, newPlan: newPlanCode, isDowngrade, orbCustomerId: currentPlan.value.orb_customer_id }
     });
 
     return Ok(true);
@@ -210,6 +223,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'trial_extension_count':
             case 'trial_end_notified_at':
             case 'trial_expired':
+            case 'fleet_node_routing_override':
             case 'created_at':
             case 'updated_at':
                 break;
@@ -221,13 +235,20 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             }
             // BOOLEAN FLAGS - keep override if true
             case 'has_otel':
-            case 'has_sync_variants':
             case 'has_webhooks_script':
             case 'has_webhooks_forward':
+            case 'has_rbac':
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
-            case 'can_customize_connect_ui_theme': {
+            case 'can_customize_connect_ui_theme':
+            case 'remote_functions': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
+                break;
+            }
+            // BOOLEAN FLAGS - keep override if different
+            case 'lambda_tenant_isolation':
+            case 'sync_lambda_checkpoint_required': {
+                overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
             // NUMBER FLAGS - keep override if higher, null means unlimited
@@ -248,7 +269,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 break;
             }
             // NUMBER FLAGS - keep override if higher
-            case 'environments_max': {
+            case 'environments_max':
+            case 'variants_per_sync_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
                 if (currentValue > newValue) {

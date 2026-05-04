@@ -44,7 +44,8 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['GithubIssue'],
                             webhookSubscriptions: [],
-                            version: ''
+                            version: '',
+                            features: []
                         }
                     ],
                     onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },
@@ -58,7 +59,8 @@ describe('parse', () => {
                             scopes: [],
                             type: 'action',
                             usedModels: ['GithubIssue', 'Anonymous_provider_action_createIssue_input'],
-                            version: ''
+                            version: '',
+                            features: []
                         }
                     ]
                 }
@@ -106,7 +108,8 @@ describe('parse', () => {
                             scopes: [],
                             type: 'action',
                             usedModels: ['Start', 'Middle', 'End'],
-                            version: ''
+                            version: '',
+                            features: []
                         }
                     ]
                 }
@@ -150,7 +153,8 @@ describe('parse', () => {
                             type: 'sync',
                             usedModels: ['Anonymous_provider_sync_top_output', 'Anonymous_provider_sync_top_input'],
                             webhookSubscriptions: [],
-                            version: ''
+                            version: '',
+                            features: []
                         }
                     ],
                     onEventScripts: { 'post-connection-creation': [], 'pre-connection-deletion': [], 'validate-connection': [] },

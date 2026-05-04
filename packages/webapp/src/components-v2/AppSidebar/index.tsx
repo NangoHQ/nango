@@ -33,9 +33,11 @@ interface SidebarItem {
 
 export const AppSidebar: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { meta, mutate: mutateMeta } = useMeta();
+    const { data: metaData, refetch: refetchMeta } = useMeta();
+    const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const { plan } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const plan = environmentData?.plan;
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -46,7 +48,7 @@ export const AppSidebar: React.FC = () => {
                 await apiPatchUser({
                     gettingStartedClosed: true
                 });
-                void mutateMeta();
+                void refetchMeta();
             }
         };
 
@@ -58,7 +60,7 @@ export const AppSidebar: React.FC = () => {
             { title: 'Metrics', url: `/${env}`, icon: AreaChart },
             { title: 'Environment settings', url: `/${env}/environment-settings`, icon: Settings2 }
         ].filter((item) => item !== null);
-    }, [env, meta, mutateMeta, showGettingStarted]);
+    }, [env, meta, refetchMeta, showGettingStarted]);
 
     const showUsageCard = useMemo(() => {
         if (!plan) return false;

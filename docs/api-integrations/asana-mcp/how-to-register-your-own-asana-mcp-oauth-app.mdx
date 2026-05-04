@@ -1,0 +1,42 @@
+---
+title: 'How to register your own Asana MCP OAuth app'
+sidebarTitle: 'Asana MCP Setup'
+description: 'Register an OAuth app with Asana for MCP and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Asana to obtain your OAuth credentials (client ID and client secret) for the Asana MCP server. These are required to let your users grant your app access to their Asana account via Nango.
+
+<Steps>
+<Step title="Create an account">
+    If you don't already have one, sign up for a free trial [Asana account](https://asana.com/create-account).
+  </Step>
+  <Step title="Create your app">
+    1. Navigate to [My apps](https://app.asana.com/0/my-apps).
+    2. Click the **Create new app** button.
+    3. Enter your app name (e.g., "My MCP Client").
+    4. Select **MCP app** as the app type.
+    5. Click **Create app**.
+    You'll see your app's **Client ID** and **Client secret**. Keep these handy; you'll need them for authentication.
+  </Step>
+  <Step title="Configure OAuth settings">
+    1. In the left sidebar, click **OAuth**.
+    2. Add your **Redirect URL**—the callback URL where Asana will send authorization codes. Use `https://api.nango.dev/oauth/callback` for Nango.
+  </Step>
+  <Step title="Configure workspace access">
+    Configure which workspaces can use your app:
+    1. In the left sidebar, click **Manage distribution**.
+    2. Under **Distribution method**, choose one of the following:
+       - **Specific workspaces:** Select individual workspaces where you want the MCP integration to be usable.
+       - **Any workspace:** Allow the app to be used in any workspace.
+    3. If you selected **Specific workspaces**, add the workspace(s) where you want to test.
+    4. Click **Save changes**.
+    **Important:** If you choose "Specific workspaces" but don't select any workspaces, users will see an error saying "This app is not available to your Asana workspace or organization." Make sure to select at least one workspace before testing.
+  </Step>
+  <Step title="Next">
+    Enter your **Client ID** and **Client secret** in the integration settings in Nango, then follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Integrating with Asana's MCP Server](https://developers.asana.com/docs/integrating-with-asanas-mcp-server).
+
+---

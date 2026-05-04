@@ -1,14 +1,16 @@
 import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
-import { env, filterJsonSchemaForModels } from '@nangohq/utils';
+import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
-import configService from '../../config.service.js';
-import remoteFileService from '../../file/remote.service.js';
-import { getSyncsByProviderConfigKey } from '../sync.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
+import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
+import { resolveLocalFileName } from '../../../utils/utils.js';
+import configService from '../../config.service.js';
 import { switchActiveSyncConfig } from '../../deploy/utils.js';
+import remoteFileService from '../../file/remote.service.js';
 import { onEventScriptService } from '../../on-event-scripts.service.js';
+import { getSyncsByProviderConfigKey } from '../sync.service.js';
 
 import type { Orchestrator } from '../../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
@@ -22,6 +24,7 @@ import type {
     DBSyncEndpoint,
     DBSyncEndpointCreate,
     DBTeam,
+    FunctionSource,
     HTTP_METHOD,
     NangoSyncEndpointV2,
     OnEventScriptsByProvider,
@@ -66,24 +69,27 @@ export async function deploy({
     environment,
     account,
     flows,
-    jsonSchema,
+    aggregatedJsonSchema,
     onEventScriptsByProvider,
     nangoYamlBody,
     logContextGetter,
     orchestrator,
     debug,
-    sdkVersion
+    sdkVersion,
+    source
 }: {
     environment: DBEnvironment;
     account: DBTeam;
     flows: CleanedIncomingFlowConfig[];
-    jsonSchema?: JSONSchema7 | undefined;
+    /** @deprecated */
+    aggregatedJsonSchema?: JSONSchema7 | undefined;
     onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
     nangoYamlBody: string;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
     debug?: boolean;
     sdkVersion: string | undefined;
+    source: FunctionSource;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
@@ -91,7 +97,7 @@ export async function deploy({
         await remoteFileService.upload({
             content: nangoYamlBody,
             destinationPath: `${env}/account/${account.id}/environment/${environment.id}/${nangoConfigFile}`,
-            destinationLocalPath: nangoConfigFile
+            destinationLocalFileName: nangoConfigFile
         });
     }
 
@@ -105,14 +111,15 @@ export async function deploy({
 
         const { success, error, response } = await compileDeployInfo({
             flow,
-            jsonSchema,
+            aggregatedJsonSchema,
             env,
             environment_id: environment.id,
             account,
             debug: Boolean(debug),
             logCtx,
             orchestrator,
-            sdkVersion
+            sdkVersion,
+            source
         });
 
         if (!success || !response) {
@@ -212,17 +219,19 @@ export async function deploy({
 
 async function compileDeployInfo({
     flow,
-    jsonSchema,
+    aggregatedJsonSchema,
     env,
     environment_id,
     account,
     debug,
     logCtx,
     orchestrator,
-    sdkVersion
+    sdkVersion,
+    source
 }: {
     flow: FlowParsed;
-    jsonSchema?: JSONSchema7 | undefined;
+    /** @deprecated */
+    aggregatedJsonSchema?: JSONSchema7 | undefined;
     env: string;
     environment_id: number;
     account: DBTeam;
@@ -230,6 +239,7 @@ async function compileDeployInfo({
     logCtx: LogContext;
     orchestrator: Orchestrator;
     sdkVersion: string | undefined;
+    source: FunctionSource;
 }): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
     const {
         syncName,
@@ -253,7 +263,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, false);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, source);
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
@@ -293,17 +303,38 @@ async function compileDeployInfo({
     const idsToMarkAsInactive: number[] = [];
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
+
+    const scanResult = scanCompiledDeployScript(jsFile);
+    if (!scanResult.ok && scanResult.rule !== 'parse_error') {
+        const rule = scanResult.rule;
+        metrics.increment(metrics.Types.DEPLOY_SECURITY_SCAN, 1, {
+            result: 'rejected',
+            rule,
+            syncName,
+            providerConfigKey
+        });
+        void logCtx.error('Deploy script rejected by security scan', {
+            syncName,
+            providerConfigKey,
+            rule,
+            hitCount: scanResult.hits.length
+        });
+
+        const error = new NangoError('deploy_script_security_rejected', { syncName, providerConfigKey });
+        return { success: false, error, response: null };
+    }
+
     const file_location = (await remoteFileService.upload({
         content: jsFile,
         destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-        destinationLocalPath: `${syncName}-${providerConfigKey}.js`
+        destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
     })) as string;
 
     if (typeof fileBody === 'object' && fileBody.ts) {
         await remoteFileService.upload({
             content: fileBody.ts,
             destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalPath: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+            destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
         });
     }
 
@@ -327,10 +358,11 @@ async function compileDeployInfo({
         }
     }
 
-    let models_json_schema: JSONSchema7 | null = null;
-    if (jsonSchema) {
+    let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
+    if (!models_json_schema && aggregatedJsonSchema) {
+        // Legacy: jsonSchema for all functions were sent at the root of the body
         const allModels = [...models, flow.input].filter(Boolean) as string[];
-        const result = filterJsonSchemaForModels(jsonSchema, allModels);
+        const result = filterJsonSchemaForModels(aggregatedJsonSchema, allModels);
         if (result.isErr()) {
             return { success: false, error: new NangoError('deploy_missing_json_schema_model', result.error), response: null };
         }
@@ -343,8 +375,9 @@ async function compileDeployInfo({
         response: {
             idsToMarkAsInactive,
             syncConfig: {
-                is_public: false,
-                pre_built: false,
+                source,
+                pre_built: source === 'catalog',
+                is_public: source === 'catalog',
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,
@@ -365,6 +398,7 @@ async function compileDeployInfo({
                 model_schema: null,
                 models_json_schema,
                 sdk_version: sdkVersion || null,
+                features: flow.features || [],
                 created_at: new Date(),
                 updated_at: new Date()
             }

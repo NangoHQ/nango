@@ -2,11 +2,11 @@ import { CopyButton } from '@/components-v2/CopyButton';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
-import { apiPatchIntegration } from '@/hooks/useIntegration';
+import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
-import { defaultCallback } from '@/utils/utils';
+import { defaultCallback } from '@/utils/cloud';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -16,20 +16,21 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
     const callbackUrl = environment.callback_url || defaultCallback();
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
-        const updated = await apiPatchIntegration(env, integration.unique_key, {
-            authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2_GENERIC'>,
-            ...field
-        } as any);
-        if ('error' in updated.json) {
-            const errorMessage = updated.json.error.message || 'Failed to update, an error occurred';
-            toast({ title: errorMessage, variant: 'error' });
-            throw new Error(errorMessage);
-        } else {
+        try {
+            await patchIntegration({
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2_GENERIC'>,
+                ...field
+            } as PatchIntegration['Body']);
             toast({ title: 'Successfully updated', variant: 'success' });
+        } catch {
+            const message = 'Failed to update, an error occurred';
+            toast({ title: message, variant: 'error' });
+            throw new Error(message);
         }
     };
 

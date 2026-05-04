@@ -15,7 +15,8 @@ interface UsageProps {
 
 export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     const env = useStore((state) => state.env);
-    const { plan } = useEnvironment(env);
+    const { data: environmentData } = useEnvironment(env);
+    const plan = environmentData?.plan;
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {

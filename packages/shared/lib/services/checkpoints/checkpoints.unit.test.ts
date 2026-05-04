@@ -90,8 +90,14 @@ describe('validateCheckpoint', () => {
             expect(result.isErr()).toBe(true);
         });
 
-        it('should fail for string value exceeding 255 characters', () => {
-            const longValue = 'a'.repeat(256);
+        it('should not fail for string value up to 4000 characters', () => {
+            const longValue = 'a'.repeat(4000);
+            const result = validateCheckpoint({ key: longValue });
+            expect(result.isErr()).toBe(false);
+        });
+
+        it('should fail for string value exceeding 4000 characters', () => {
+            const longValue = 'a'.repeat(4001);
             const result = validateCheckpoint({ key: longValue });
             expect(result.isErr()).toBe(true);
         });

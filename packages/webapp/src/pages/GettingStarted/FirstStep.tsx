@@ -5,7 +5,7 @@ import { useUnmount } from 'react-use';
 import Nango from '@nangohq/frontend';
 
 import { apiConnectSessions } from '../../hooks/useConnect';
-import { apiDeleteConnection } from '../../hooks/useConnections';
+import { useDeleteConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { GetUsageQueryKey } from '../../hooks/usePlan';
 import { useToast } from '../../hooks/useToast';
@@ -28,10 +28,12 @@ interface FirstStepProps {
 
 export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnectClicked, onConnected, onDisconnected }) => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const { user } = useUser();
 
     const { toast } = useToast();
+    const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();
     const connectUI = useRef<ConnectUI>();
 
     const onClickConnect = () => {
@@ -97,7 +99,10 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
             return;
         }
         try {
-            const { res } = await apiDeleteConnection({ connectionId: connection.connection_id }, { env, provider_config_key: integration.unique_key });
+            const { res } = await deleteConnection({
+                params: { connectionId: connection.connection_id },
+                query: { env, provider_config_key: integration.unique_key }
+            });
             if (!res.ok) {
                 throw new Error('Failed to delete connection');
             }
@@ -113,7 +118,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <div className="flex flex-col gap-1.5">
                     <h3 className="text-brand-500 text-sm font-semibold">Github connection authorized!</h3>
                 </div>
-                <Button variant="tertiary" size="lg" onClick={onClickDisconnect} className="w-fit">
+                <Button variant="tertiary" size="lg" onClick={onClickDisconnect} loading={isDeletingConnection} className="w-fit">
                     <IconBrandGithub className="size-5 mr-2" />
                     Disconnect from Github
                 </Button>

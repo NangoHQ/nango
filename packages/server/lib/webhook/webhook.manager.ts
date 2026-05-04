@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, externalWebhookService, getProvider, secretService } from '@nangohq/shared';
+import { NangoError, customerKeyService, externalWebhookService, getProvider } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
@@ -28,6 +28,7 @@ export async function routeWebhook({
     plan,
     body,
     rawBody,
+    query,
     logContextGetter
 }: {
     environment: DBEnvironment;
@@ -37,6 +38,7 @@ export async function routeWebhook({
     headers: Record<string, any>;
     body: any;
     rawBody: string;
+    query?: Record<string, string>;
     logContextGetter: LogContextGetter;
 }): Promise<WebhookResponse> {
     // Check if both body and headers are empty
@@ -77,7 +79,7 @@ export async function routeWebhook({
 
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            const handlerResult = await handler(internalNango, headers, body, rawBody);
+            const handlerResult = await handler(internalNango, headers, body, rawBody, query);
             return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
@@ -109,10 +111,12 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value;
+              })
+            : '';
 
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
@@ -122,7 +126,7 @@ export async function routeWebhook({
             integration,
             account,
             environment,
-            secret: defaultSecret.value.secret,
+            secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
             payload: webhookBodyToForward,

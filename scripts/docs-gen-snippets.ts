@@ -25,6 +25,9 @@ const providersPath = 'packages/providers/providers.yaml';
 const docsPaths = ['docs/integrations/all', 'docs/api-integrations'];
 const snippetsPath = 'docs/snippets/generated';
 
+// TODO: remove once alias providers declare webhook support in providers.yaml explicitly.
+const snippetSkipList = new Set(['confluence']);
+
 const flowsString = await fs.readFile(flowsPath, 'utf-8');
 const flows = JSON.parse(flowsString);
 const providers = yaml.load(await fs.readFile(providersPath, 'utf-8')) as Record<string, Provider>;
@@ -53,6 +56,11 @@ for (const docsPath of docsPaths) {
                 continue;
             }
 
+            if (snippetSkipList.has(provider)) {
+                providersHandled.push(provider);
+                continue;
+            }
+
             const snippetPath = `${snippetsPath}/${path.basename(file, '.mdx')}`;
 
             await fs.mkdir(snippetPath, { recursive: true });
@@ -72,7 +80,8 @@ for (const docsPath of docsPaths) {
                 console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
             }
 
-            const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider]);
+            const isAlias = !!(maybeAliased as any)['alias'];
+            const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider], isAlias);
             await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
 
             const casesSnippet = useCasesSnippet(useCases[provider]);
@@ -90,12 +99,13 @@ if (missingDocs.length > 0) {
     console.log(`Missing provider docs: ${missingDocs.join(', ')}`);
 }
 
-function preBuiltToolingSnippet(providerConfig: Provider, useCases: any) {
+function preBuiltToolingSnippet(providerConfig: Provider, useCases: any, isAlias = false) {
     const prettyAuthMode = prettyAuthModes[providerConfig.auth_mode];
     const hasAuthParams = !!providerConfig.authorization_params;
     const hasAuthGuide = !!providerConfig.docs_connect;
     const hasUseCases = useCases && useCases.length > 0;
-    const hasWebHooks = !!providerConfig.webhook_routing_script;
+    // TODO: remove once alias providers declare webhook support in providers.yaml explicitly.
+    const hasWebHooks = !isAlias && !!providerConfig.webhook_routing_script;
     const hasPagination = !!providerConfig.proxy?.paginate;
     const hasRateLimit = !!providerConfig.proxy?.retry?.at;
 
@@ -187,7 +197,7 @@ function useCasesSnippet(useCases: any) {
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/implementation-guides/use-cases/${endpoint.type}s/${endpoint.type === 'sync' ? 'implement-a-sync' : 'implement-an-action'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](${endpoint.type === 'sync' ? '/guides/functions/syncs/sync-functions' : '/guides/functions/action-functions'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
     )
     .join('\n')}
             `.trim();
@@ -200,7 +210,7 @@ ${endpoints
 function emptyUseCases() {
     return `_No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>`;
 }
 
 interface Endpoint {

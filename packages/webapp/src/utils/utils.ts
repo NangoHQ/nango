@@ -2,8 +2,6 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { extendTailwindMerge } from 'tailwind-merge';
 
-import { globalEnv } from './env.js';
-
 import type { SyncResult } from '../types.js';
 import type { ClassValue } from 'clsx';
 
@@ -15,17 +13,6 @@ const customTwMerge = extendTailwindMerge({
         }
     }
 });
-
-export const githubRepo = 'https://github.com/NangoHQ/integration-templates';
-export const githubIntegrationTemplates = `${githubRepo}/tree/main/integrations`;
-
-export function isCloudProd() {
-    return window.location.origin === 'https://app.nango.dev';
-}
-
-export function defaultCallback() {
-    return globalEnv.apiUrl + '/oauth/callback';
-}
 
 export function formatDateToPreciseUSFormat(dateString: string): string {
     const date = new Date(dateString);
@@ -260,4 +247,33 @@ export function truncateMiddle(str: string, maxLength: number = 14, ellipsis: st
     const frontChars = Math.ceil(charsToShow / 2);
     const backChars = Math.floor(charsToShow / 2);
     return str.substring(0, frontChars) + ellipsis + str.substring(str.length - backChars);
+}
+
+/**
+ * Transforms a key (in snake_case or camelCase) into a space-separated label
+ * with only the first word capitalized.
+ *
+ * @example
+ * formatKeyToLabel('api_key') // 'Api key'
+ * formatKeyToLabel('apiKey') // 'Api key'
+ * formatKeyToLabel('ApiKey') // 'Api key'
+ */
+export function formatKeyToLabel(key: string): string {
+    // Replace underscores with spaces
+    let formatted = key.replace(/_/g, ' ');
+
+    // Insert spaces before capital letters
+    formatted = formatted.replace(/([a-z])([A-Z])/g, '$1 $2');
+
+    // Split by spaces, lowercase all words, then capitalize first word
+    const words = formatted
+        .split(/\s+/)
+        .filter((word) => word.length > 0)
+        .map((word) => word.toLowerCase());
+
+    if (words.length === 0) return key;
+
+    words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+
+    return words.join(' ');
 }

@@ -3,7 +3,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import Ajv from 'ajv';
-// eslint-disable-next-line import/order
 import chalk from 'chalk';
 import { dump, load } from 'js-yaml';
 
@@ -52,7 +51,7 @@ if (validator.errors) {
 const invalidInterpolation = /(?<!(\$|]))\{/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    if (providerKey === 'sage-intacct') {
+    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp') {
         continue;
     }
     const { credentials, connection_config, ...providerWithoutSensitive } = provider;

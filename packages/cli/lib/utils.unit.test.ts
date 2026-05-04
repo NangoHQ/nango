@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { detectPackageManager } from './utils.js';
 
@@ -81,5 +81,66 @@ describe('detectPackageManager', () => {
             '/project': { files: ['pnpm-lock.yaml'] }
         });
         expect(detectPackageManager({ fullPath: '/project/apps/integrations' })).toBe('yarn');
+    });
+});
+
+describe('resolveHostport', () => {
+    beforeEach(() => {
+        vi.resetModules();
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    async function importResolveHostport() {
+        const mod = await import('./utils.js');
+        return mod.resolveHostport;
+    }
+
+    it('defaults to cloud host when NANGO_HOSTPORT is not set', async () => {
+        vi.stubEnv('NANGO_HOSTPORT', '');
+        const resolveHostport = await importResolveHostport();
+        expect(resolveHostport()).toBe('https://api.nango.dev');
+    });
+
+    it('uses NANGO_HOSTPORT when set', async () => {
+        vi.stubEnv('NANGO_HOSTPORT', 'http://localhost:3003');
+        const resolveHostport = await importResolveHostport();
+        expect(resolveHostport()).toBe('http://localhost:3003');
+    });
+
+    it('strips trailing slash from NANGO_HOSTPORT', async () => {
+        vi.stubEnv('NANGO_HOSTPORT', 'http://localhost:3003/');
+        const resolveHostport = await importResolveHostport();
+        expect(resolveHostport()).toBe('http://localhost:3003');
+    });
+
+    it('returns localhostUrl for env=local when NANGO_HOSTPORT is not set', async () => {
+        vi.stubEnv('NANGO_HOSTPORT', '');
+        const resolveHostport = await importResolveHostport();
+        expect(resolveHostport('local')).toBe('http://localhost:3003');
+    });
+
+    it('ignores env=local when NANGO_HOSTPORT is explicitly set', async () => {
+        vi.stubEnv('NANGO_HOSTPORT', 'https://my-nango.example.com');
+        const resolveHostport = await importResolveHostport();
+        expect(resolveHostport('local')).toBe('https://my-nango.example.com');
+    });
+});
+
+describe('getEnvironments', () => {
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+
+    it('warns and returns undefined when NANGO_SECRET_KEY is not set', async () => {
+        vi.stubEnv('NANGO_SECRET_KEY', '');
+        const { getEnvironments } = await import('./utils.js');
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+        const result = await getEnvironments();
+        expect(result).toBeUndefined();
+        expect(warn).toHaveBeenCalledOnce();
     });
 });

@@ -1,0 +1,48 @@
+---
+title: 'Supabase (MCP) - How do I link my account?'
+sidebarTitle: 'Supabase (MCP) Connect'
+description: 'Connect Supabase MCP with Nango using a project reference and Personal Access Token'
+---
+
+# Overview
+
+To connect **Supabase (MCP)** with Nango you need:
+
+1. **Project reference** — The 20-character ID of your Supabase project.
+2. **Personal Access Token** — A token from your Supabase account used to authenticate with the MCP server.
+
+This guide walks you through finding your project reference and creating a **Personal Access Token** in Supabase.
+
+### Prerequisites
+
+- A Supabase account and at least one project
+
+### Instructions:
+
+#### Step 1: Finding your project reference
+
+Your project reference is the 20-character ID that identifies your Supabase project:
+
+1. Open the [Supabase Dashboard](https://supabase.com/dashboard) and select your project.
+2. Obtain the ID from the project URL: `https://supabase.com/dashboard/project/<project-ref>/...` in your browser address bar.
+
+#### Step 2: Obtaining your Personal Access Token
+
+1. In the Supabase dashboard, open your **Account preferences**.
+2. Go to [Access tokens](https://supabase.com/dashboard/account/tokens).
+3. Click **Generate new token**.
+<img src="/api-integrations/supabase-mcp/pat.png"/>
+
+4. Give the token a name, and select the **Expires in** time and submit the form to create it.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Project reference** and **Personal Access Token**:
+
+1. Open the form where you need to authenticate with Supabase (MCP).
+2. Enter both **Project reference** and **Personal Access Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/supabase-mcp/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Supabase (MCP).

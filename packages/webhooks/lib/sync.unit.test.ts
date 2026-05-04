@@ -59,8 +59,7 @@ const syncConfig: DBSyncConfig = {
     type: 'sync',
     auto_start: false,
     attributes: {},
-    pre_built: true,
-    is_public: false,
+    source: 'catalog',
     metadata: {},
     model_schema: null,
     input: null,
@@ -69,6 +68,7 @@ const syncConfig: DBSyncConfig = {
     enabled: true,
     models_json_schema: null,
     sdk_version: null,
+    features: [],
     created_at: new Date(),
     updated_at: new Date()
 };

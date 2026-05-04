@@ -1,15 +1,18 @@
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { mutate } from 'swr';
+
+import { permissions } from '@nangohq/authz';
 
 import { useEnvironment } from '../../../hooks/useEnvironment.js';
-import { apiFlowDisable, apiFlowEnable, apiPreBuiltDeployFlow } from '../../../hooks/useFlow.js';
+import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
 import { useToast } from '../../../hooks/useToast.js';
 import { useStore } from '../../../store.js';
+import { APIError } from '../../../utils/api.js';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { usePermissions } from '@/hooks/usePermissions';
 
-import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
+import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
     flow: NangoSyncConfig;
@@ -17,10 +20,20 @@ export const FunctionSwitch: React.FC<{
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useEnvironment(env);
+    const plan = environmentData?.plan;
+    const environment = environmentData?.environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canWriteFlows = can(permissions.canWriteProdFlows) || !environment?.is_production;
+
     const { confirm, DialogComponent } = useConfirmDialog();
 
-    const [loading, setLoading] = useState(false);
+    const { mutateAsync: enableFlow, isPending: isEnablePending } = useFlowEnable(env, integration.unique_key);
+    const { mutateAsync: deployFlow, isPending: isDeployPending } = usePreBuiltDeployFlow(env, integration.unique_key);
+    const { mutateAsync: disableFlow, isPending: isDisablePending } = useFlowDisable(env, integration.unique_key);
+
+    const loading = isEnablePending || isDeployPending || isDisablePending;
 
     const toggleSync = () => {
         if (flow.type === 'action') {
@@ -59,73 +72,58 @@ export const FunctionSwitch: React.FC<{
     };
 
     const onEnable = async () => {
-        setLoading(true);
-
-        let res;
-        if (flow.id) {
-            // Already deployed, we just need to enable
-            res = await apiFlowEnable(
-                env,
-                { id: flow.id },
-                {
-                    provider: integration.provider,
-                    providerConfigKey: integration.unique_key,
-                    type: flow.type!,
-                    scriptName: flow.name
-                }
-            );
-        } else {
-            // Initial deployment
-            res = await apiPreBuiltDeployFlow(env, {
-                provider: integration.provider,
-                providerConfigKey: integration.unique_key,
-                type: flow.type!,
-                scriptName: flow.name
-            });
-        }
-        if ('error' in res.json) {
-            if (res.json.error.code === 'resource_capped' || res.json.error.code === 'plan_limit') {
-                toast({ title: res.json.error.message, variant: 'error' });
-            } else {
-                toast({ title: 'An unexpected error occurred', variant: 'error' });
-            }
-        } else {
-            toast({ title: `Enabled successfully`, variant: 'success' });
-            await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
-
-            if (plan && plan.auto_idle && !plan.trial_end_at) {
-                await mutateEnv();
-            }
-        }
-
-        setLoading(false);
-    };
-
-    const onDisable = async () => {
-        if (!flow.id) {
+        if (!flow.type) {
             return;
         }
 
-        setLoading(true);
+        const body = {
+            provider: integration.provider,
+            providerConfigKey: integration.unique_key,
+            type: flow.type,
+            scriptName: flow.name
+        };
 
-        const res = await apiFlowDisable(
-            env,
-            { id: flow.id },
-            {
-                provider: integration.provider,
-                providerConfigKey: integration.unique_key,
-                type: flow.type!,
-                scriptName: flow.name
+        try {
+            if (flow.id) {
+                await enableFlow({ params: { id: flow.id }, body });
+            } else {
+                await deployFlow(body);
             }
-        );
-        if ('error' in res.json) {
+            toast({ title: `Enabled successfully`, variant: 'success' });
+            if (plan && plan.auto_idle && !plan.trial_end_at) {
+                void refetchEnv();
+            }
+        } catch (err) {
+            if (err instanceof APIError) {
+                const { code, message } = (err.json as ApiError<string>).error;
+                if (code === 'resource_capped' || code === 'plan_limit') {
+                    toast({ title: message, variant: 'error' });
+                    return;
+                }
+            }
             toast({ title: 'An unexpected error occurred', variant: 'error' });
-        } else {
-            toast({ title: `Disabled successfully`, variant: 'success' });
-            await mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/integrations'));
+        }
+    };
+
+    const onDisable = async () => {
+        if (!flow.id || !flow.type) {
+            return;
         }
 
-        setLoading(false);
+        try {
+            await disableFlow({
+                params: { id: flow.id },
+                body: {
+                    provider: integration.provider,
+                    providerConfigKey: integration.unique_key,
+                    type: flow.type,
+                    scriptName: flow.name
+                }
+            });
+            toast({ title: `Disabled successfully`, variant: 'success' });
+        } catch {
+            toast({ title: 'An unexpected error occurred', variant: 'error' });
+        }
     };
 
     return (
@@ -135,16 +133,20 @@ export const FunctionSwitch: React.FC<{
                 e.stopPropagation();
             }}
         >
-            <Switch
-                name="script"
-                checked={flow.enabled === true}
-                className="cursor-pointer"
-                disabled={loading}
-                onClick={(e) => {
-                    e.preventDefault();
-                    toggleSync();
-                }}
-            />
+            <PermissionGate condition={canWriteFlows}>
+                {(allowed) => (
+                    <Switch
+                        name="script"
+                        checked={flow.enabled === true}
+                        className="cursor-pointer"
+                        disabled={loading || !allowed}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            toggleSync();
+                        }}
+                    />
+                )}
+            </PermissionGate>
             {flow.type === 'action' && loading && <Loader2 className="animate-spin size-4" />}
             {DialogComponent}
         </div>

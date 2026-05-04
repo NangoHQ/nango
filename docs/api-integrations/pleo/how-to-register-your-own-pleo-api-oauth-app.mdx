@@ -1,0 +1,45 @@
+---
+title: 'Set up Pleo with Nango'
+sidebarTitle: 'Pleo Setup'
+description: 'Register an OAuth app with Pleo and connect it to Nango'
+---
+
+Pleo uses a partner onboarding process — credentials are not self-serve. Follow these steps to obtain your Client ID and Client Secret.
+
+<Steps>
+    <Step title="Request Partner API Access">
+    Complete the [Pleo Partner API Access Request form](https://forms.gle/ZW1Xp5jqwKWVmK9K9) with your company details, intended integration, and planned API usage.
+    </Step>
+    <Step title="Review and Approval">
+    Pleo reviews your request for technical and security alignment. You will be contacted once approved.
+    </Step>
+    <Step title="Complete Developer Partner Registration">
+    Fill in the Developer Partner Registration form sent by Pleo. Use the [example registration](https://developers.pleo.io/docs/current/how-tos/oauth/how-to-register-an-oauth-client#example-registration) as a reference. Set the following Nango-specific values:
+
+    | Parameter | Value |
+    |-----------|-------|
+    | Redirect URIs | `https://api.nango.dev/oauth/callback` |
+    | PKCE Support | `Supported` |
+    </Step>
+    <Step title="Receive Staging Credentials">
+    Pleo creates a Staging company with dummy test data and shares your credentials via 1Password:
+    - **OAuth 2.0 credentials**: Client ID and Client Secret — you will need these when configuring Nango.
+    - **Staging login**: for accessing the Staging environment.
+    </Step>
+    <Step title="Verify Staging Access">
+    Retrieve and store your credentials within 7 days of notification. Log in at [app.staging.pleo.io](https://app.staging.pleo.io/login) and confirm you can access the dashboard and pre-loaded test data.
+    </Step>
+    <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+    </Step>
+</Steps>
+
+For full registration field details, see [How to Register an OAuth 2.0 Client](https://developers.pleo.io/docs/current/how-tos/oauth/how-to-register-an-oauth-client).
+
+## Moving to Production
+
+Production access is not available without prior Staging validation. Once your integration is fully tested in Staging and meets Pleo's technical and security requirements, you can [request Production](https://developers.pleo.io/docs/current/getting-started/testing-and-environments#moving-from-staging-to-production) access through the Early Access Programme (EAP).
+
+Once approved, Pleo will provide separate Production credentials (Client ID and Client Secret) via 1Password. Update your Nango integration configuration with the Production credentials to go live.
+
+---

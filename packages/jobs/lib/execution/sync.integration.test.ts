@@ -256,7 +256,8 @@ const runJob = async (
         taskId: 'abc',
         nangoProps: nangoProps.value,
         telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 },
-        functionRuntime: 'runner'
+        functionRuntime: 'runner',
+        checkpoints: null
     });
 
     const latestSyncJob = await getLatestSyncJob(sync.id);

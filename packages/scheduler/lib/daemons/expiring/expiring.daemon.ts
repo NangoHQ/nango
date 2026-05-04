@@ -49,7 +49,7 @@ export class ExpiringDaemon extends SchedulerDaemon {
                 }
                 if (expired.value.length > 0) {
                     // update schedules to reflect the expired tasks
-                    const scheduleRes = await schedules.updateLastScheduledTaskState(trx, {
+                    const scheduleRes = await schedules.scheduleNextExecution(trx, {
                         taskIds: expired.value.filter((t) => t.scheduleId).map((t) => t.id),
                         taskState: 'EXPIRED'
                     });

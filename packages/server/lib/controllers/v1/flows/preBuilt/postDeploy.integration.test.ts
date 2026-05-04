@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getSyncConfigRaw, remoteFileService, seeders } from '@nangohq/shared';
+import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
 
+import db from '../../../../../../database/lib/index.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -27,12 +28,12 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should fail if no template exists for this provider and script name', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
@@ -44,12 +45,12 @@ describe(`POST ${endpoint}`, () => {
 
     it('should deploy a template', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'airtable', 'airtable');
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'airtable', providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
         });
 
@@ -57,7 +58,7 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ data: { id: expect.any(Number) } });
 
         const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
-        expect(sync).toStrictEqual<typeof sync>({
+        expect(sync).toMatchObject({
             sync_name: 'tables',
             type: 'sync',
             models: ['Table'],
@@ -72,7 +73,7 @@ describe(`POST ${endpoint}`, () => {
             file_location: '_LOCAL_FILE_',
             id: expect.any(Number),
             input: 'SyncMetadata_airtable_tables',
-            is_public: true,
+            source: 'catalog',
             metadata: {
                 description: expect.any(String),
                 scopes: ['schema.bases:read']
@@ -107,7 +108,7 @@ describe(`POST ${endpoint}`, () => {
                                             type: 'string'
                                         },
                                         options: {
-                                            additionalProperties: false,
+                                            additionalProperties: {},
                                             type: 'object'
                                         },
                                         type: {
@@ -154,14 +155,43 @@ describe(`POST ${endpoint}`, () => {
                 }
             },
             nango_config_id: integration.id!,
-            pre_built: true,
             runs: 'every day',
             sdk_version: expect.any(String),
+            features: expect.any(Array),
             sync_type: 'full',
             track_deletes: false,
             updated_at: expect.any(Date),
             version: '1.0.0',
             webhook_subscriptions: null
         });
+    });
+
+    it('should ignore stale expired trial fields for non-auto-idling plans', async () => {
+        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'airtable-paid', 'airtable');
+        await updatePlan(db.knex, {
+            id: plan.id,
+            name: 'starter-v2',
+            auto_idle: false,
+            trial_start_at: new Date(Date.now() - 2 * 86400 * 1000),
+            trial_end_at: new Date(Date.now() - 86400 * 1000),
+            trial_end_notified_at: new Date(Date.now() - 12 * 3600 * 1000),
+            trial_extension_count: 3,
+            trial_expired: true
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            token: apiKey.secret,
+            body: { provider: 'airtable', providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(201);
+
+        const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
+        expect(sync?.enabled).toBe(true);
     });
 });

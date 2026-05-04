@@ -2,6 +2,7 @@ import { getKVStore } from '@nangohq/kvstore';
 import { accountService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { setTaskSuccess } from './state.js';
 import { orchestratorClient } from '../../clients.js';
 import { envs } from '../../env.js';
 import { logger } from '../../logger.js';
@@ -28,10 +29,8 @@ export async function abortTask(task: TaskAbort): Promise<Result<void>> {
         }
     }
 
-    const setSuccess = await orchestratorClient.succeed({ taskId: task.id, output: {} });
-    if (setSuccess.isErr()) {
-        logger.error(`failed to set cancel task ${task.id} as succeeded`, setSuccess.error);
-    }
+    await setTaskSuccess({ taskId: task.id, output: {} });
+
     return abortedScript;
 }
 
@@ -56,11 +55,13 @@ export async function abortTaskWithId({ taskId, teamId }: { taskId: string; team
     }
 }
 
-async function setAbortFlag(taskId: string): Promise<void> {
+export async function setAbortFlag(taskId: string): Promise<Result<void>> {
     try {
         const kvStore = await getKVStore('customer');
         await kvStore.set(`function:${taskId}:abort`, '1', { ttlMs: envs.RUNNER_ABORT_CHECK_INTERVAL_MS * 5 });
+        return Ok(undefined);
     } catch (err) {
         logger.error(`Error setting abort flag for task: ${taskId}`, err);
+        return Err(new Error(`Error setting abort flag for task: ${taskId}`, { cause: err }));
     }
 }

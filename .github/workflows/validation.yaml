@@ -19,13 +19,15 @@ jobs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
             - uses: actions/checkout@v4
-            - uses: dorny/paths-filter@v3
+            - uses: dorny/paths-filter@v4
               id: filter
               with:
+                  predicate-quantifier: 'some'
                   filters: |
                       docs:
                           - 'docs/**'
                           - 'packages/providers/providers.yaml'
+                          - 'packages/providers/providers.scopes.yaml'
             - name: Determine if should skip
               id: check
               run: |
@@ -79,7 +81,8 @@ jobs:
               run: |
                   npm install -g mintlify
                   cd docs
-                  if ! mintlify broken-links | grep -q "no broken links found"; then
-                    echo "Broken links found in documentation"
+                  broken_links_output=$(mintlify broken-links 2>&1) || true
+                  if ! echo "$broken_links_output" | grep -q "no broken links found"; then
+                    echo "$broken_links_output"
                     exit 1
                   fi

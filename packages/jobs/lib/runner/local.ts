@@ -24,7 +24,8 @@ export const localNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 0, // No auto-shutdown for local runners
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     },
     start: async (node) => {
         try {

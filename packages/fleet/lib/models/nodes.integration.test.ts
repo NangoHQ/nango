@@ -40,7 +40,8 @@ describe('Nodes', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: 1
             })
         ).unwrap();
         expect(node).toStrictEqual({
@@ -59,6 +60,7 @@ describe('Nodes', () => {
             idleMaxDurationMs: 1_800_000,
             executionTimeoutSecs: -1,
             provisionedConcurrency: -1,
+            replicas: 1,
             error: null,
             createdAt: expect.any(Date),
             lastStateTransitionAt: expect.any(Date)

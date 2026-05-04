@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { Spinner } from '../utils/spinner.js';
 import { detectPackageManager, printDebug } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
-import { compileAll } from './compile.js';
+import { compileAllFunctions } from './compile.js';
 import { exampleFolder } from './constants.js';
 
 import type { PackageJson } from 'type-fest';
@@ -112,7 +112,7 @@ export async function initZero({
     }
 
     {
-        const res = await compileAll({ fullPath: absolutePath, debug, interactive });
+        const res = await compileAllFunctions({ fullPath: absolutePath, debug, interactive });
         if (res.isErr()) {
             return false;
         }

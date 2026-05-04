@@ -1,5 +1,7 @@
 import type { TelemetryBag } from './sdk.js';
+import type { CheckpointRange } from '../checkpoint/types.js';
 import type { DBPlan } from '../plans/db.js';
+import type { Feature } from '../syncConfigs/db.js';
 
 export interface RunnerOutputError {
     type: string;
@@ -14,6 +16,7 @@ export interface RunnerOutputError {
 export interface RunnerOutput {
     output: unknown;
     telemetryBag: TelemetryBag;
+    checkpoints?: CheckpointRange | undefined;
 }
 
 export interface RunnerFlags {
@@ -23,6 +26,7 @@ export interface RunnerFlags {
     validateSyncMetadata: boolean;
 }
 
-export interface RuntimeContext {
+export interface RoutingContext {
     plan: DBPlan | null;
+    features: Feature[];
 }

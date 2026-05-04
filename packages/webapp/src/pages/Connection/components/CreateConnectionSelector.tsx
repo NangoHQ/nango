@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
+import { permissions } from '@nangohq/authz';
 import Nango from '@nangohq/frontend';
 
 import { IntegrationDropdown } from './IntegrationDropdown';
@@ -13,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
-import { clearIntegrationsCache, useListIntegration } from '../../../hooks/useIntegration';
+import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -21,7 +22,9 @@ import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -64,8 +67,13 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
-    const { list: listIntegration, mutate: listIntegrationMutate, loading } = useListIntegration(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
+    const { data: listIntegrationData, isLoading: listIntegrationPending } = useListIntegrations(env);
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
 
     const connectUI = useRef<ConnectUI>();
     const hasConnected = useRef<AuthResult | undefined>();
@@ -199,7 +207,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 await navigator.clipboard.writeText(shareUrl.toString());
                 toast.toast({
                     title: 'Shareable link copied',
-                    description: `Session expires at ${formatDateToPreciseUSFormat(expiresAt)}`,
+                    description: `Session expires in 30 mins (${formatDateToPreciseUSFormat(expiresAt)})`,
                     variant: 'success'
                 });
             } catch (_) {
@@ -213,15 +221,14 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const onEvent: OnConnectEvent = useCallback(
         (event) => {
             if (event.type === 'close') {
-                void listIntegrationMutate();
                 if (hasConnected.current) {
                     toast.toast({ title: `Connected to ${hasConnected.current.providerConfigKey}`, variant: 'success' });
                     navigate(`/${env}/connections/${integration?.unique_key || hasConnected.current.providerConfigKey}/${hasConnected.current.connectionId}`);
                 }
             } else if (event.type === 'connect') {
-                void listIntegrationMutate();
+                // TODO: remove after migrating all connection operations to tanstack query
                 clearConnectionsCache(cache, mutate);
-                clearIntegrationsCache(cache, mutate);
+                queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -233,7 +240,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 });
             }
         },
-        [toast, queryClient, env, navigate, integration, listIntegrationMutate, cache, mutate, analyticsTrack]
+        [toast, queryClient, env, navigate, integration, cache, mutate, analyticsTrack]
     );
 
     useUnmount(() => {
@@ -280,10 +287,10 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             <CardContent className={'flex flex-col rounded gap-2.5'}>
                 <div className="flex flex-col w-full">
                     <IntegrationDropdown
-                        integrations={listIntegration || []}
+                        integrations={listIntegrationData?.data ?? []}
                         selectedIntegration={integration}
                         onSelect={setIntegration}
-                        loading={loading}
+                        loading={listIntegrationPending}
                         disabled={Boolean(paramIntegrationId)}
                     />
                 </div>
@@ -292,9 +299,17 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className="inline-block" tabIndex={0}>
-                                    <Button onClick={onClickConnectUI} size="lg" disabled={usageCapReached || integrationHasMissingFields || !isFormValid}>
-                                        Authorize
-                                    </Button>
+                                    <PermissionGate condition={canCreateTestConnection}>
+                                        {(allowed) => (
+                                            <Button
+                                                onClick={onClickConnectUI}
+                                                size="lg"
+                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                            >
+                                                Authorize
+                                            </Button>
+                                        )}
+                                    </PermissionGate>
                                 </span>
                             </TooltipTrigger>
                             {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
@@ -304,16 +319,20 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <span className="inline-block" tabIndex={0}>
-                                    <Button
-                                        onClick={onClickShareConnectionLink}
-                                        size="lg"
-                                        variant="secondary"
-                                        loading={isShareLinkLoading}
-                                        disabled={usageCapReached || integrationHasMissingFields || !isFormValid}
-                                    >
-                                        <Link2 />
-                                        Share connect link
-                                    </Button>
+                                    <PermissionGate condition={canCreateTestConnection}>
+                                        {(allowed) => (
+                                            <Button
+                                                onClick={onClickShareConnectionLink}
+                                                size="lg"
+                                                variant="secondary"
+                                                loading={isShareLinkLoading}
+                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                            >
+                                                <Link2 />
+                                                Share connect link
+                                            </Button>
+                                        )}
+                                    </PermissionGate>
                                 </span>
                             </TooltipTrigger>
                             {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}

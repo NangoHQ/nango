@@ -42,7 +42,7 @@ COPY packages/providers/package.json ./packages/providers/package.json
 COPY packages/runner-sdk/package.json ./packages/runner-sdk/package.json
 COPY packages/billing/package.json ./packages/billing/package.json
 COPY packages/pubsub/package.json ./packages/pubsub/package.json
-COPY packages/account-usage/package.json ./packages/account-usage/package.json
+COPY packages/usage/package.json ./packages/usage/package.json
 COPY packages/email/package.json ./packages/email/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
 COPY package*.json  ./
@@ -82,7 +82,7 @@ RUN true \
 FROM node:22.21.1-bookworm-slim AS web
 
 # Install a more recent npm
-RUN npm install -g npm@11.6.4
+RUN npm install -g npm@11.10.1
 
 # - Bash is just to be able to log inside the image and have a decent shell
 RUN true \

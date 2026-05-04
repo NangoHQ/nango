@@ -12,6 +12,6 @@
     },
     "devDependencies": {
         "nango": "XXX",
-        "zod": "4.0.5"
+        "zod": "4.3.6"
     }
 }

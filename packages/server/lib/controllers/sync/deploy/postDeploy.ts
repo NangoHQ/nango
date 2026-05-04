@@ -60,10 +60,11 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
-        jsonSchema: body.jsonSchema,
+        aggregatedJsonSchema: body.jsonSchema,
         logContextGetter,
         sdkVersion: body.sdkVersion,
-        orchestrator
+        orchestrator,
+        source: body.source ?? ('repo' as const)
     });
 
     if (plan && !plan.trial_end_at && plan.auto_idle) {
@@ -86,7 +87,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
             flows: body.flowConfigs,
             performAction: body.reconcile,
             debug: body.debug,
-            singleDeployMode: body.singleDeployMode,
+            deployMode: body.deployMode,
             logCtx,
             logContextGetter,
             orchestrator

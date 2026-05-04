@@ -1,9 +1,11 @@
 import { uuidv4, uuidv7 } from 'uuidv7';
 
-import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
+import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
 
+import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
+import { envs } from '../env.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
 import type { Result } from '@nangohq/utils';
@@ -11,6 +13,7 @@ import type knex from 'knex';
 import type { JsonValue, SetOptional } from 'type-fest';
 
 export const TASKS_TABLE = 'tasks';
+const TASKS_INSERT_BATCH_SIZE = 1000;
 
 export type TaskProps = SetOptional<
     Omit<Task, 'id' | 'createdAt' | 'state' | 'lastStateTransitionAt' | 'lastHeartbeatAt' | 'output' | 'terminated'>,
@@ -120,28 +123,113 @@ export const DbTask = {
     }
 };
 
-export async function create(db: knex.Knex, taskProps: TaskProps): Promise<Result<Task>> {
-    const now = new Date();
-    const newTask: Task = {
-        ...taskProps,
-        id: uuidv7(),
-        createdAt: now,
-        state: 'CREATED',
-        lastStateTransitionAt: now,
-        lastHeartbeatAt: now,
-        terminated: false,
-        output: null,
-        scheduleId: taskProps.scheduleId,
-        retryKey: taskProps.retryKey || uuidv4()
-    };
+export async function create(
+    db: knex.Knex,
+    taskProps: TaskProps[],
+    opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
+): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[] }>> {
+    if (taskProps.length === 0) {
+        return Ok({ tasks: [], cappedGroupKeys: [] });
+    }
     try {
-        const inserted = await db.from<DBTask>(TASKS_TABLE).insert(DbTask.to(newTask)).returning('*');
-        if (!inserted?.[0]) {
-            return Err(new Error(`Error: no task '${taskProps.name}' created`));
+        // safeguard to prevent creating an unbounded number of tasks for the same group
+        // Note: check and insertion are not atomic so creating more tasks than the limit is still possible but this is a safeguard, not a strict limit
+        const groupKeys = [...new Set(taskProps.map((p) => p.groupKey))];
+        const sizes = await queueSizes(db, { groupKeys });
+        if (sizes.isErr()) {
+            return Err(sizes.error);
         }
-        return Ok(DbTask.from(inserted[0]));
+
+        const now = new Date();
+        const toInsertPerGroup = new Map<string, Task[]>();
+        const cappedGroupCounts = new Map<string, number>();
+        for (const props of taskProps) {
+            if (!toInsertPerGroup.has(props.groupKey)) {
+                toInsertPerGroup.set(props.groupKey, []);
+            }
+            const group = toInsertPerGroup.get(props.groupKey)!;
+            if (group.length < opts.groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
+                group.push({
+                    ...props,
+                    id: uuidv7(),
+                    state: 'CREATED',
+                    createdAt: now,
+                    lastStateTransitionAt: now,
+                    lastHeartbeatAt: now,
+                    terminated: false,
+                    output: null,
+                    retryKey: props.retryKey || uuidv4()
+                });
+            } else {
+                cappedGroupCounts.set(props.groupKey, (cappedGroupCounts.get(props.groupKey) ?? 0) + 1);
+            }
+        }
+        const droppedCountPerPrimitive = new Map<string, number>();
+        for (const [groupKey, droppedCount] of cappedGroupCounts.entries()) {
+            const primitive = groupKey.split(':')[0] || 'unknown';
+            droppedCountPerPrimitive.set(primitive, (droppedCountPerPrimitive.get(primitive) ?? 0) + droppedCount);
+        }
+        for (const [primitive, droppedCount] of droppedCountPerPrimitive.entries()) {
+            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
+        }
+        const toInsert = Array.from(toInsertPerGroup.values()).flat();
+        const tasks: Task[] = [];
+        while (toInsert.length) {
+            const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
+            const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
+            tasks.push(...batch.map(DbTask.from));
+        }
+        return Ok({
+            tasks,
+            cappedGroupKeys: Array.from(cappedGroupCounts.keys())
+        });
     } catch (err) {
-        return Err(new Error(`Error creating task '${taskProps.name}': ${stringifyError(err)}`));
+        if (isTasksUniqueNameViolation(err)) {
+            return Err(new DuplicateTaskNameError());
+        }
+        return Err(new Error(`Error creating tasks: ${stringifyError(err)}`));
+    }
+}
+
+function isTasksUniqueNameViolation(err: unknown): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { code?: string; constraint?: string; message?: string };
+    return error.code === '23505' && error.constraint === 'tasks_unique_name';
+}
+
+// Coalesce concurrent queueSizes queries for the same group keys.
+// When multiple immediate() calls target the same group key concurrently,
+// they share a single DB query instead of each running their own count.
+// The result may be slightly stale but the cap is a safeguard, not a strict limit.
+const inflightQueueSizes = new Map<string, Promise<Result<Map<string, number>>>>();
+
+export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
+    const cacheKey = opts.groupKeys ? JSON.stringify([...opts.groupKeys].sort()) : '*';
+    const inflight = inflightQueueSizes.get(cacheKey);
+    if (inflight) {
+        return inflight;
+    }
+
+    const promise = queueSizesQuery(db, opts).finally(() => {
+        inflightQueueSizes.delete(cacheKey);
+    });
+    inflightQueueSizes.set(cacheKey, promise);
+    return promise;
+}
+
+async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
+    try {
+        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
+        if (opts.groupKeys && opts.groupKeys.length > 0) {
+            q.whereIn('group_key', opts.groupKeys);
+        }
+        const rows = await q;
+        return Ok(new Map(rows.map((r) => [r.groupKey as string, Number(r.count)])));
+    } catch (err) {
+        return Err(new Error(`Error fetching queue sizes: ${stringifyError(err)}`));
     }
 }
 
@@ -261,6 +349,7 @@ export async function transitionState(
 
 export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { groupKeyPattern: string; limit: number }): Promise<Result<Task[]>> {
     try {
+        const groupKeyLikePattern = groupKeyPattern.replace(/\*/g, '%');
         const tasks = await db.transaction(async (trx) => {
             // Acquire a lock to prevent concurrent dequeueing of the same group
             // in order to ensure max concurrency is respected
@@ -274,7 +363,7 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
                         qb.select('id', 'group_key', 'created_at', 'group_max_concurrency')
                             .from(TASKS_TABLE)
                             .where('state', 'CREATED')
-                            .whereLike('group_key', groupKeyPattern.replace(/\*/g, '%'))
+                            .whereLike('group_key', groupKeyLikePattern)
                             .where('starts_after', '<=', db.fn.now())
                             .forUpdate()
                             .skipLocked();
@@ -284,7 +373,7 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
                         qb.select(db.raw('count(id) as running_count'), 'group_key')
                             .from(TASKS_TABLE)
                             .where('state', 'STARTED')
-                            .whereLike('group_key', groupKeyPattern)
+                            .whereLike('group_key', groupKeyLikePattern)
                             .groupBy('group_key');
                     })
                     // 3. rank the candidate tasks by created_at for each group
@@ -361,6 +450,7 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
                        )
                     )
                 FOR UPDATE SKIP LOCKED
+                LIMIT ${envs.ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE}
             )
             UPDATE ${TASKS_TABLE} t
             SET state = 'EXPIRED',
@@ -378,6 +468,32 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
         return Ok(tasks.map(DbTask.from));
     } catch (err) {
         return Err(new Error(`Error expiring tasks: ${stringifyError(err)}`));
+    }
+}
+
+export interface GroupBackpressure {
+    group_key: string;
+    queued: number;
+}
+
+export async function getGroupsWithBackpressure(db: knex.Knex, { limit }: { limit: number }): Promise<Result<GroupBackpressure[]>> {
+    try {
+        const { rows } = await db.raw<{ rows: GroupBackpressure[] }>(
+            `
+            SELECT group_key, count(*)::int as queued
+            FROM ${TASKS_TABLE}
+            WHERE state = 'CREATED'
+              AND group_max_concurrency > 0
+            GROUP BY group_key
+            HAVING count(*) > max(group_max_concurrency)
+            ORDER BY queued DESC
+            LIMIT ?
+            `,
+            [limit]
+        );
+        return Ok(rows ?? []);
+    } catch (err) {
+        return Err(new Error(`Error getting groups with backpressure: ${stringifyError(err)}`));
     }
 }
 

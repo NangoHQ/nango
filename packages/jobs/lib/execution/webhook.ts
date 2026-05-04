@@ -9,6 +9,7 @@ import {
     accountService,
     configService,
     createSyncJob,
+    customerKeyService,
     environmentService,
     externalWebhookService,
     getApiUrl,
@@ -30,7 +31,18 @@ import { pubsub } from '../utils/pubsub.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, FunctionRuntime, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type {
+    CheckpointRange,
+    ConnectionJobs,
+    DBEnvironment,
+    DBSyncConfig,
+    DBTeam,
+    FunctionRuntime,
+    NangoProps,
+    RoutingContext,
+    SdkLogger,
+    TelemetryBag
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
@@ -126,7 +138,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -158,14 +170,15 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx,
             input: task.input
         });
@@ -211,12 +224,14 @@ export async function handleWebhookSuccess({
     taskId,
     nangoProps,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const logCtx = logContextGetter.get({ id: nangoProps.activityLogId, accountId: nangoProps.team.id });
 
@@ -239,7 +254,8 @@ export async function handleWebhookSuccess({
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
 
     const syncJob = await updateSyncJobStatus(nangoProps.syncJobId!, SyncStatus.SUCCESS);
@@ -263,10 +279,10 @@ export async function handleWebhookSuccess({
     const team = accountAndEnv.account;
     const environment = accountAndEnv.environment;
 
-    if (environment) {
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
+    if (environment && webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
         }
 
         for (const model of nangoProps.syncConfig.models || []) {
@@ -292,7 +308,7 @@ export async function handleWebhookSuccess({
                             provider_config_key: nangoProps.providerConfigKey
                         },
                         environment: environment,
-                        secret: defaultSecret.value.secret,
+                        secret: webhookSigningKey.value,
                         webhookSettings,
                         syncConfig: nangoProps.syncConfig,
                         syncVariant: nangoProps.syncVariant || 'base',
@@ -301,7 +317,8 @@ export async function handleWebhookSuccess({
                         now: nangoProps.startedAt,
                         success: true,
                         responseResults: syncJob.result?.[model] || { added: 0, updated: 0, deleted: 0 },
-                        operation: 'WEBHOOK'
+                        operation: 'WEBHOOK',
+                        checkpoints
                     });
 
                     if (res.isErr()) {
@@ -331,11 +348,12 @@ export async function handleWebhookSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
 
+    await logCtx.enrichOperation({ meta: { checkpoints } });
     await logCtx.success();
 }
 
@@ -344,13 +362,15 @@ export async function handleWebhookError({
     nangoProps,
     error,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     let team: DBTeam | undefined;
     let environment: DBEnvironment | undefined;
@@ -394,7 +414,8 @@ export async function handleWebhookError({
         syncConfig: nangoProps.syncConfig,
         endUser: nangoProps.endUser,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        checkpoints
     });
 }
 
@@ -415,7 +436,8 @@ async function onFailure({
     error,
     endUser,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     connection: ConnectionJobs;
     team: DBTeam | undefined;
@@ -434,6 +456,7 @@ async function onFailure({
     endUser: NangoProps['endUser'];
     telemetryBag?: TelemetryBag | undefined;
     functionRuntime?: FunctionRuntime | undefined;
+    checkpoints?: CheckpointRange | undefined;
 }): Promise<void> {
     const logCtx = activityLogId && team ? logContextGetter.get({ id: activityLogId, accountId: team.id }) : null;
 
@@ -450,18 +473,18 @@ async function onFailure({
                 }
             });
 
-            if (team && environment && syncConfig && providerConfig) {
+            if (team && syncConfig && providerConfig) {
                 void tracer.scope().activate(span, async () => {
                     try {
-                        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-                        if (defaultSecret.isErr()) {
-                            throw defaultSecret.error;
+                        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                        if (webhookSigningKey.isErr()) {
+                            throw webhookSigningKey.error;
                         }
 
                         const res = await sendSyncWebhook({
                             account: team,
                             environment,
-                            secret: defaultSecret.value.secret,
+                            secret: webhookSigningKey.value,
                             connection: connection,
                             webhookSettings,
                             syncConfig,
@@ -474,7 +497,8 @@ async function onFailure({
                                 description: error.message
                             },
                             now: new Date(),
-                            operation: 'WEBHOOK'
+                            operation: 'WEBHOOK',
+                            checkpoints
                         });
 
                         if (res.isErr()) {
@@ -508,7 +532,8 @@ async function onFailure({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
         void pubsub.publisher.publish({
             subject: 'usage',
@@ -525,13 +550,13 @@ async function onFailure({
                     functionName: syncName,
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });
     }
 
-    void logCtx?.error(error.message, { error });
-    await logCtx?.enrichOperation({ error });
+    void logCtx?.error(error.message, { error, checkpoints });
+    await logCtx?.enrichOperation({ error, meta: { checkpoints } });
     await logCtx?.failed();
 }

@@ -17,8 +17,9 @@ export interface Node {
     readonly isTracingEnabled: NodeConfig['isTracingEnabled'];
     readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'];
     readonly idleMaxDurationMs: NodeConfig['idleMaxDurationMs'] | null;
-    readonly executionTimeoutSecs: number | null;
-    readonly provisionedConcurrency: number | null;
+    readonly executionTimeoutSecs: NodeConfig['executionTimeoutSecs'] | null;
+    readonly provisionedConcurrency: NodeConfig['provisionedConcurrency'] | null;
+    readonly replicas: NodeConfig['replicas'];
     readonly error: string | null;
     readonly createdAt: Date;
     readonly lastStateTransitionAt: Date;
@@ -34,8 +35,9 @@ export interface NodeConfigOverride {
     readonly isTracingEnabled: NodeConfig['isTracingEnabled'] | null;
     readonly isProfilingEnabled: NodeConfig['isProfilingEnabled'] | null;
     readonly idleMaxDurationMs: NodeConfig['idleMaxDurationMs'] | null;
-    readonly executionTimeoutSecs: number | null;
-    readonly provisionedConcurrency: number | null;
+    readonly executionTimeoutSecs: NodeConfig['executionTimeoutSecs'] | null;
+    readonly provisionedConcurrency: NodeConfig['provisionedConcurrency'] | null;
+    readonly replicas: NodeConfig['replicas'] | null;
     readonly createdAt: Date;
     readonly updatedAt: Date;
 }

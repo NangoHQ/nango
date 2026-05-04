@@ -1,10 +1,10 @@
-import * as uuid from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
+import customerKeyService from './customerKey.service.js';
 import secretService from './secret.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -12,17 +12,17 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
 
 const TABLE = '_nango_environments';
 
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 class EnvironmentService {
-    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name'>[]> {
+    async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
         try {
             const result = await db.knex
-                .select<Pick<DBEnvironment, 'name' | 'id'>[]>('id', 'name')
+                .select<Pick<DBEnvironment, 'name' | 'id' | 'is_production'>[]>('id', 'name', 'is_production')
                 .from<DBEnvironment>(TABLE)
                 .where({ account_id, deleted: false })
                 .orderBy('name', 'asc');
@@ -84,12 +84,14 @@ class EnvironmentService {
 
     async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
         return trx.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE).insert({ account_id: accountId, name }).returning('*');
+            const [environment] = await trx<DBEnvironment>(TABLE)
+                .insert({ account_id: accountId, name, is_production: name === PROD_ENVIRONMENT_NAME })
+                .returning('*');
             if (!environment) {
                 trx.rollback();
                 return null;
             }
-            // Invariant: Every environment always has one default key.
+            // Invariant: Every environment always has one default key (used by runners for persist auth).
             const created = await secretService.createSecret(trx, {
                 environmentId: environment.id,
                 displayName: 'default',
@@ -101,6 +103,24 @@ class EnvironmentService {
             const secret = created.value;
             environment.secret_key = secret.secret;
             environment.pending_secret_key = null;
+
+            const apiKey = await customerKeyService.createApiKey(trx, {
+                accountId: accountId,
+                environmentId: environment.id,
+                displayName: 'Default - Full access'
+            });
+            if (apiKey.isErr()) {
+                throw apiKey.error;
+            }
+
+            const webhookKey = await customerKeyService.createWebhookSigningKey(trx, {
+                accountId: accountId,
+                environmentId: environment.id
+            });
+            if (webhookKey.isErr()) {
+                throw webhookKey.error;
+            }
+
             return environment;
         });
     }
@@ -211,155 +231,6 @@ class EnvironmentService {
         }
 
         return results;
-    }
-
-    async rotateKey(id: number, type: string): Promise<string | null> {
-        if (type === 'secret') {
-            return this.rotateSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.rotatePublicKey(id);
-        }
-
-        return null;
-    }
-
-    async revertKey(id: number, type: string): Promise<string | null> {
-        if (type === 'secret') {
-            return this.revertSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.revertPublicKey(id);
-        }
-
-        return null;
-    }
-
-    async activateKey(id: number, type: string): Promise<boolean> {
-        if (type === 'secret') {
-            return this.activateSecretKey(id);
-        }
-
-        if (type === 'public') {
-            return this.activatePublicKey(id);
-        }
-
-        return false;
-    }
-
-    async rotateSecretKey(envId: number): Promise<string | null> {
-        const created = await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            // Note: For now, we enforce the invariant that only one non-default API secret
-            // can exist at a time: the 'pending' secret, during rotation.
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return secretService.createSecret(trx, {
-                environmentId: environment.id,
-                displayName: `rotated-${new Date().toISOString()}`,
-                isDefault: false
-            });
-        });
-        if (created === null) {
-            return null;
-        }
-        if (created.isErr()) {
-            throw created.error;
-        }
-        return created.value.secret;
-    }
-
-    async rotatePublicKey(id: number): Promise<string | null> {
-        const pending_public_key = uuid.v4();
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_public_key });
-
-        return pending_public_key;
-    }
-
-    async revertSecretKey(envId: number): Promise<string | null> {
-        const defaultSecret = await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return null;
-            }
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return secretService.getDefaultSecretForEnv(trx, envId);
-        });
-        if (defaultSecret === null) {
-            return null;
-        }
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
-        return defaultSecret.value.secret;
-    }
-
-    async revertPublicKey(id: number): Promise<string | null> {
-        const environment = await this.getById(id);
-
-        if (!environment) {
-            return null;
-        }
-
-        await db.knex.from<DBEnvironment>(TABLE).where({ id }).update({ pending_public_key: null });
-
-        return environment.public_key;
-    }
-
-    async activateSecretKey(envId: number): Promise<boolean> {
-        return await db.knex.transaction(async (trx) => {
-            const environment = await this.getByIdWithoutSecrets(trx, envId);
-            if (!environment) {
-                trx.rollback();
-                return false;
-            }
-            // Note: For now, only one non-default secret can exist: the 'pending' secret.
-            const [secret] = await trx<DBAPISecret>('api_secrets').select('*').where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            if (!secret) {
-                trx.rollback();
-                return false;
-            }
-            await secretService.markDefault(trx, secret.id);
-            await trx<DBAPISecret>('api_secrets').delete().where({
-                environment_id: environment.id,
-                is_default: false
-            });
-            return true;
-        });
-    }
-
-    async activatePublicKey(id: number): Promise<boolean> {
-        const environment = await this.getById(id);
-
-        if (!environment) {
-            return false;
-        }
-
-        await db.knex
-            .from<DBEnvironment>(TABLE)
-            .where({ id })
-            .update({
-                public_key: environment.pending_public_key as string,
-                pending_public_key: null
-            });
-
-        return true;
     }
 
     async getOauthCallbackUrl(environmentId?: number): Promise<string> {

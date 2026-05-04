@@ -49,11 +49,6 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
     const params: PostSyncVariant['Params'] = parsedParams.data;
     const { environment, plan } = res.locals;
 
-    if (plan && !plan.has_sync_variants) {
-        res.status(400).send({ error: { code: 'feature_disabled', message: 'Creating sync variant is only available for paying customer' } });
-        return;
-    }
-
     if (params.variant.toLowerCase() === 'base') {
         res.status(400).send({ error: { code: 'invalid_variant', message: `Variant name "${params.variant}" is protected.` } });
         return;
@@ -70,9 +65,10 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
         return;
     }
 
-    const maxSyncsPerConnection = envs.MAX_SYNCS_PER_CONNECTION;
-    if (syncs.length > maxSyncsPerConnection) {
-        res.status(400).send({ error: { code: 'resource_capped', message: `Maximum number of syncs per connection (${maxSyncsPerConnection}) reached` } });
+    const maxVariantsPerSync = plan?.variants_per_sync_max ?? envs.MAX_SYNCS_PER_CONNECTION;
+    const variantsForSync = syncs.filter((s) => s.name === params.name);
+    if (variantsForSync.length >= maxVariantsPerSync) {
+        res.status(400).send({ error: { code: 'resource_capped', message: `Maximum number of variants per sync (${maxVariantsPerSync}) reached` } });
         return;
     }
 

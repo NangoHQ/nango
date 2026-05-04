@@ -94,7 +94,7 @@ export type PostSignin = Endpoint<{
         email: string;
         password: string;
     };
-    Error: ApiError<'email_not_verified'> | ApiError<'unauthorized'>;
+    Error: ApiError<'email_not_verified'> | ApiError<'user_suspended'> | ApiError<'unauthorized'>;
     Success: {
         user: ApiUser;
     };
@@ -138,6 +138,31 @@ export type PostManagedSignup = Endpoint<{
         provider: 'GoogleOAuth';
         token?: string | undefined;
     };
+    Success: {
+        data: {
+            url: string;
+        };
+    };
+}>;
+
+export type GetManagedEmailVerification = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/account/managed/verification';
+    Error: ApiError<'not_found'>;
+    Success: {
+        data: {
+            email: string;
+        };
+    };
+}>;
+
+export type PostManagedEmailVerification = Endpoint<{
+    Method: 'POST';
+    Path: '/api/v1/account/managed/verification';
+    Body: {
+        code: string;
+    };
+    Error: ApiError<'invalid_verification_code'> | ApiError<'not_found'>;
     Success: {
         data: {
             url: string;

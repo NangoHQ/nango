@@ -1,0 +1,328 @@
+/* ── Nango Docs custom styles ──────────────────────────────────── */
+
+/* ══ BORDER RADIUS — 4px everywhere ═════════════════════════════ */
+/* Override all Tailwind rounded utilities */
+.rounded-sm, .rounded, .rounded-md, .rounded-lg,
+.rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full,
+[class~="rounded-sm"], [class~="rounded-md"], [class~="rounded-lg"],
+[class~="rounded-xl"], [class~="rounded-2xl"], [class~="rounded-3xl"] {
+  border-radius: 4px !important;
+}
+/* Native elements */
+pre, code, kbd, input, select, textarea, button { border-radius: 4px !important; }
+
+/* ══ GRID — behind everything, both modes ════════════════════════ */
+[class*="background-decoration"] {
+  opacity: 0.02 !important;
+  z-index: 0 !important;
+  pointer-events: none;
+}
+
+/* ══ GITHUB STARS — hide repo name, keep icon + count ═══════════ */
+#navbar a[href="https://github.com/NangoHQ/nango"] span.truncate {
+  display: none !important;
+}
+/* Hide entirely on mobile */
+@media (max-width: 767px) {
+  a[href="https://github.com/NangoHQ/nango"] { display: none !important; }
+}
+
+/* ══ SEARCH / ASK AI DIALOGS — always on top ════════════════════ */
+/*
+ * Mintlify renders search and Ask AI via headlessui portals (z-40).
+ * The navbar's backdrop-blur creates a stacking context quirk where
+ * its z-10 tab children can paint over the z-40 dialog panel.
+ * Fix: raise the headlessui dialog above the navbar entirely.
+ */
+[id^="headlessui-dialog-"]:not([id*="panel"]) {
+  z-index: 200 !important;
+}
+
+/* ══ NAVBAR ══════════════════════════════════════════════════════ */
+/*
+ * z-index: 30 matches Mintlify's native z-30 class so it stays
+ * below the headlessui dialog portals (now at z-200 above).
+ */
+@media (min-width: 768px) {
+  #navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 30 !important;
+  }
+}
+.dark #navbar {
+  background-color: #0b0b0c !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html:not(.dark) #navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+/* Remove inner div border so only the full-width #navbar border shows */
+#navbar [class*="border-b"] {
+  border-bottom: none !important;
+}
+
+/* ══ SIDEBAR ═════════════════════════════════════════════════════ */
+.dark #sidebar-content { background-color: #0b0b0c !important; }
+.dark :has(> #sidebar-content) { border-right: 1px solid rgba(255, 255, 255, 0.08) !important; }
+html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
+#sidebar-content .pointer-events-none.sticky { display: none !important; }
+#navigation-items { padding-top: 20px !important; }
+
+/* ══ TOC — hide scrollbar until hover ════════════════════════════ */
+/*
+ * #table-of-contents has overflow-y-auto directly on it. Hide the
+ * scrollbar at rest, reveal it on hover. WebKit and Firefox each need
+ * their own properties.
+ */
+#table-of-contents {
+  scrollbar-width: none; /* Firefox */
+}
+#table-of-contents::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+#table-of-contents:hover {
+  scrollbar-width: thin; /* Firefox */
+}
+#table-of-contents:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+/* ══ TOC — active item padding ═══════════════════════════════════ */
+/*
+ * The active TOC item gets its gray background from the sidebar
+ * `li[data-active="true"] > a` rule below (selector isn't scoped
+ * to the sidebar). Without horizontal padding on the link, that
+ * highlight sits flush against the text. Add padding + radius so
+ * the active highlight has breathing room. We deliberately don't
+ * use a negative margin to compensate position — Mintlify's TOC
+ * container clips overflow, so a negative margin would just hide
+ * the left edge of the highlight. The text shifts ~8px right of
+ * its original position; alignment with the "On this page" header
+ * is close enough not to look off.
+ */
+#table-of-contents a {
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  display: block !important;
+}
+
+/* ══ CHANGELOG PAGE — hide left sidebar, keep TOC ════════════════ */
+/*
+ * Mintlify sets data-page-href on the #content div. We use :has()
+ * to scope sidebar-hiding to just the changelog page while leaving
+ * the right-side "On this page" TOC intact. Substring match is used
+ * because local dev and prod may format the path slightly differently.
+ *
+ * Both rules below are gated to lg+ (≥1024px). Below lg, Mintlify
+ * shows a hamburger menu instead of the desktop sidebar, and the
+ * Update component renders as a vertical stack (flex-col) where the
+ * label is full-width on top of the content. Applying the desktop
+ * shift on smaller viewports would push content off the left edge.
+ */
+@media (min-width: 1024px) {
+  body:has([data-page-href*="updates/changelog"]) #sidebar-content,
+  body:has([data-page-href*="updates/changelog"]) :has(> #sidebar-content) {
+    display: none !important;
+  }
+
+  /*
+   * Push only the Update components leftward into the freed sidebar
+   * space. The page header (title, description, copy page button)
+   * stays at its original prose-constrained position because we don't
+   * touch #content-area or #content. The Update flex row has a fixed
+   * 160px label column + 24px gap = 184px on the left, so we shift
+   * the entire .update-container left by 184px AND grow its width by
+   * 184px. Net effect: the date pill sits in the freed sidebar area,
+   * the content column starts where the date used to be, and the
+   * right edge stays aligned with the rest of the page content.
+   */
+  body:has([data-page-href*="updates/changelog"]) .update-container {
+    margin-left: -184px !important;
+    width: calc(100% + 184px) !important;
+    max-width: none !important;
+  }
+}
+
+/* ══ LOGO ════════════════════════════════════════════════════════ */
+a[href="https://www.nango.dev"] img,
+a[href="https://www.nango.dev"] svg {
+  height: 40px !important;
+  width: auto !important;
+}
+
+/* ══ CONTENT AREA ════════════════════════════════════════════════ */
+#content-area { position: relative; z-index: 1; }
+@media (min-width: 768px) {
+  #content-area { padding-top: 6rem !important; }
+  #content-area > div:first-child { margin-top: 1.5rem !important; }
+}
+
+/* ══ API REFERENCE — right column sticky fix ════════════════════ */
+/*
+ * #content-side-layout (right-hand sticky column: cURL example on API
+ * reference pages, "On this page" TOC elsewhere) has height
+ * calc(100vh - 9.5rem) and top: 152px. On API reference pages, its
+ * flex containing block is only ~navbar-to-footer tall, so
+ * parent.height - sticky.height yields ~80px of travel — less than the
+ * navbar height. The sticky clamps and its header ends up painted
+ * behind our fixed navbar.
+ *
+ * margin-top on the flex item pushes its natural start below the
+ * navbar AND grows the containing block, giving the sticky enough
+ * slack to settle at or below 152px. On pages with tall main columns
+ * (regular docs) this is a no-op — the sticky still engages at 152.
+ */
+@media (min-width: 768px) {
+  #content-side-layout { margin-top: 6rem !important; }
+}
+
+/* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
+.dark #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 0 !important;
+}
+html:not(.dark) #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  margin-bottom: 0 !important;
+}
+.dark a.nav-anchor > div[style*="background"] { background: rgba(255, 255, 255, 0.1) !important; }
+html:not(.dark) a.nav-anchor > div[style*="background"] { background: rgba(0, 0, 0, 0.06) !important; }
+
+.dark a.nav-anchor { color: rgba(255, 255, 255, 0.55) !important; }
+.dark a.nav-anchor[class*="text-primary"] { color: rgba(255, 255, 255, 0.9) !important; }
+.dark a.nav-anchor:hover { color: #ffffff !important; }
+
+/* Increased contrast for light mode */
+html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.7) !important; }
+html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.9) !important; }
+html:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
+
+/* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
+.dark li[data-active="true"] > a { background-color: rgba(255, 255, 255, 0.07) !important; color: #ffffff !important; }
+html:not(.dark) li[data-active="true"] > a { background-color: rgba(0, 0, 0, 0.06) !important; color: #000000 !important; }
+
+.dark #sidebar-group a, .dark #sidebar-group button { color: rgba(255, 255, 255, 0.55) !important; }
+.dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 4px !important;
+}
+/* Increased contrast for light mode */
+html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button { color: rgba(0, 0, 0, 0.7) !important; }
+html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
+  color: rgba(0, 0, 0, 0.85) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  border-radius: 4px !important;
+}
+
+/* Consistent padding on all sidebar nav items */
+#sidebar-group a, #sidebar-group button {
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+}
+
+/* Indent nested pages (children of collapsible groups) */
+#sidebar-group li li a,
+#sidebar-group li li button {
+  padding-left: 20px !important;
+}
+#sidebar-group li li li a,
+#sidebar-group li li li button {
+  padding-left: 32px !important;
+}
+/* Active item */
+.dark li[data-active="true"] > a { border-radius: 4px !important; }
+html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
+
+.sidebar-group-header {
+  padding-left: 8px !important;
+}
+
+/* Desktop: uppercase small section headers */
+@media (min-width: 768px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-weight: 600 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.9) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.75) !important; }
+}
+
+/* Mobile: bold natural-size headers like production */
+@media (max-width: 767px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.9375rem !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 700 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.95) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.9) !important; }
+}
+
+/* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
+
+/* Shared button sizing — applies to both Log In and Sign Up */
+#navbar a[href="https://app.nango.dev"],
+#navbar a[href="https://app.nango.dev/signup"] {
+  padding: 7px 16px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  line-height: 1.25rem !important;
+}
+
+/* Tighten gap between the two buttons */
+#navbar a[href="https://app.nango.dev"] { margin-right: -8px !important; }
+#navbar a[href="https://app.nango.dev/signup"] { margin-left: -8px !important; }
+
+/* Log In — dark */
+.dark #navbar a[href="https://app.nango.dev"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  text-decoration: none !important;
+}
+.dark #navbar a[href="https://app.nango.dev"]:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
+/*
+ * Mintlify pins an "Ask a question..." chat-assistant input at the
+ * bottom of every doc page. The navbar already has a separate Ask AI
+ * button, so this bottom input is redundant. Mintlify doesn't expose
+ * a docs.json toggle for it.
+ *
+ * Two layers needed: the input itself uses `chat-assistant-` prefixed
+ * classes (caught by [class*="chat-assistant"]), but its outer wrapper
+ * uses only generic Tailwind classes — `rounded-2xl pointer-events-auto
+ * bg-background-light/90 ...`. That combination is distinctive enough
+ * to target without false positives on regular page content.
+ */
+#chat-assistant-textarea,
+[class*="chat-assistant"] {
+  display: none !important;
+}
+div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
+  display: none !important;
+}

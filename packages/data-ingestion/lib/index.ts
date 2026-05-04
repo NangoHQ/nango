@@ -16,15 +16,18 @@ interface RunScriptRow {
     scriptType: string;
     environmentId: number;
     environmentName: string;
+    provider?: string | undefined;
     providerConfigKey: string;
     status: string;
     syncId: string;
     syncVariant: string;
+    scriptVersion?: string | undefined;
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
     internalIntegrationId: number | null;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
+    source?: string | undefined;
 }
 
 const fields = [
@@ -37,23 +40,27 @@ const fields = [
     { name: 'scriptType', type: 'STRING' },
     { name: 'environmentId', type: 'INTEGER' },
     { name: 'environmentName', type: 'STRING' },
+    { name: 'provider', type: 'STRING' },
     { name: 'providerConfigKey', type: 'STRING' },
     { name: 'status', type: 'STRING' },
     { name: 'syncId', type: 'STRING' },
     { name: 'syncVariant', type: 'STRING' },
+    { name: 'scriptVersion', type: 'STRING' },
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
     { name: 'internalIntegrationId', type: 'INTEGER' },
     { name: 'endUserId', type: 'INTEGER' },
     { name: 'endUserUserId', type: 'STRING' },
-    { name: 'endUserOrgId', type: 'STRING' }
+    { name: 'endUserOrgId', type: 'STRING' },
+    { name: 'source', type: 'STRING' }
 ] as const;
 
 interface TypeMap {
     STRING: string;
     INTEGER: number;
     FLOAT: number;
+    BOOLEAN: boolean;
 }
 
 type RecordType<T extends readonly { name: string; type: keyof TypeMap }[]> = {
@@ -149,16 +156,19 @@ class BigQueryClient {
                 scriptType: data.scriptType,
                 environmentId: data.environmentId,
                 environmentName: data.environmentName,
+                provider: data.provider,
                 providerConfigKey: data.providerConfigKey,
                 status: data.status,
                 syncId: data.syncId,
+                scriptVersion: data.scriptVersion,
                 content: data.content,
                 runTimeInSeconds: data.runTimeInSeconds,
                 createdAt: data.createdAt,
                 internalIntegrationId: data.internalIntegrationId,
                 endUserId: data.endUser?.id,
                 endUserOrgId: data.endUser?.orgId,
-                endUserUserId: data.endUser?.endUserId
+                endUserUserId: data.endUser?.endUserId,
+                source: data.source
             };
             await this.client.dataset(this.datasetName).table(table).insert(insertData);
         } catch (err) {

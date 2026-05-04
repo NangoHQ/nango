@@ -9,11 +9,11 @@ import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
+    BillingInvoicingDetails,
     BillingPlan,
     BillingSubscription,
     BillingUsageMetrics,
     DBTeam,
-    DBUser,
     GetBillingUsageOpts
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -44,15 +44,10 @@ export class Billing {
     }
 
     async shutdown(): Promise<Result<void>> {
-        if (!this.batcher) {
-            return Ok(undefined);
+        if (this.batcher) {
+            return this.batcher.shutdown();
         }
-        const res = await this.batcher.shutdown();
-        if (res.isErr()) {
-            logger.error(`Shutdown failure: ${res.error}`);
-        }
-        logger.info(`Successful shutdown`);
-        return res;
+        return Ok(undefined);
     }
 
     add(events: BillingEvent[]): Result<void> {
@@ -69,19 +64,20 @@ export class Billing {
         return Ok(undefined);
     }
 
-    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
-        return await this.client.upsertCustomer(team, user);
+    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
+        return await this.client.getCustomer(accountId);
     }
-    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
-        return await this.client.updateCustomer(customerId, name);
+
+    async getOrCreateCustomer(accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>): Promise<Result<BillingCustomer>> {
+        return await this.client.getOrCreateCustomer(accountId, defaultTo);
+    }
+
+    async putCustomer(accountId: number, invoicingDetails: BillingInvoicingDetails): Promise<Result<BillingCustomer>> {
+        return await this.client.putCustomer(accountId, invoicingDetails);
     }
 
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         return await this.client.linkStripeToCustomer(teamId, customerId);
-    }
-
-    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
-        return await this.client.getCustomer(accountId);
     }
 
     async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {

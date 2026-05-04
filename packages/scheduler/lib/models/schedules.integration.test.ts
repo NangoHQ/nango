@@ -115,11 +115,20 @@ describe('Schedules', () => {
         await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
 
         const taskState = 'SUCCEEDED';
-        const [updated] = (await schedules.updateLastScheduledTaskState(db, { taskIds: [taskId], taskState })).unwrap();
+        const [updated] = (await schedules.scheduleNextExecution(db, { taskIds: [taskId], taskState })).unwrap();
         expect(updated?.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
         expect(updated?.lastScheduledTaskState).toBe(taskState);
         // The next execution should be set to the next due date based on the frequency
         expect(updated?.nextExecutionAt).toBeWithinMs(new Date(schedule.startsAt.getTime() + schedule.frequencyMs), 3_000);
+    });
+    it('should override next execution when nextExecutionInMs is provided', async () => {
+        const schedule = await createSchedule(db);
+        const taskId = uuidv7();
+        await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
+
+        const nextExecutionInMs = 9_999_999;
+        const [updated] = (await schedules.scheduleNextExecution(db, { taskIds: [taskId], taskState: 'SUCCEEDED', nextExecutionInMs })).unwrap();
+        expect(updated?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
     });
 });
 

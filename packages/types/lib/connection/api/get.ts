@@ -21,6 +21,7 @@ export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' 
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
     tags: Tags;
+    pausedSyncs: string[];
 };
 export type GetConnections = Endpoint<{
     Method: 'GET';
@@ -96,6 +97,7 @@ export type PostPublicConnection = Endpoint<{
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
     };
+    Error: ApiError<'connection_test_failed'> | ApiError<'connection_validation_failed'>;
     Success: ApiPublicConnectionFull;
 }>;
 

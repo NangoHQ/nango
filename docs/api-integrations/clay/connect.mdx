@@ -1,0 +1,53 @@
+---
+title: Clay - How do I link my account?
+sidebarTitle: Clay
+---
+
+# Overview
+
+To authenticate with Clay, you need:
+1. **API key** - A key that grants Nango permission to interact with Clay's API resources and services.
+2. **Workspace ID** - The unique identifier for your Clay workspace.
+
+This guide will walk you through obtaining these credentials within Clay.
+
+### Prerequisites:
+
+- You must have an account with Clay.
+
+### Instructions:
+
+#### Step 1: Finding Your API Key
+1. Log in to your [Clay](https://clay.com) account.
+2. Navigate to **Settings**.
+
+<img src="/api-integrations/clay/settings.png"/>
+
+3. Navigate to **Account** and find the **API Key** section.
+
+4. Copy your API key.
+
+<img src="/api-integrations/clay/api_key.png"/>
+
+
+#### Step 2: Finding Your Workspace ID
+
+Your Workspace ID is visible in the URL when you are logged in to Clay. Navigate to your workspace settings and look at the browser address bar:
+
+```
+https://app.clay.com/workspaces/1060661/settings/account
+```
+
+The number between `/workspaces/` and `/settings` is your **Workspace ID** (e.g. `1060661`).
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Key** and **Workspace ID**:
+1. Open the form where you need to authenticate with Clay.
+2. Enter your **API Key** and **Workspace ID** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/clay/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Clay.

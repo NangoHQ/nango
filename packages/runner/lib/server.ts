@@ -7,10 +7,10 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { heartbeatIntervalMs } from './env.js';
+import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
-import { abortControllers, locks, usage } from './state.js';
+import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -47,7 +47,7 @@ function healthProcedure() {
 function startProcedure() {
     return publicProcedure
         .input((input) => input as StartParams)
-        .mutation((arg): boolean => {
+        .mutation(async (arg): Promise<boolean> => {
             const startTime = Date.now();
             const { taskId, nangoProps, code, codeParams } = arg.input;
             logger.info('Received task', {
@@ -60,14 +60,9 @@ function startProcedure() {
                 input: codeParams
             });
 
-            // Sometimes we can receive the same job (http retry) or a job for the same sync (orchestrator miss scheduling)
-            // Here is the last safety net to be sure nothing runs in parallel
-            if (usage.hasConflictingSync(nangoProps)) {
-                logger.error('Conflicting sync detected', { syncId: nangoProps.syncId });
-                throw new Error('Conflicting sync detected');
-            }
+            // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
+            await usage.track(nangoProps, taskId);
 
-            usage.track(nangoProps, taskId);
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
             setImmediate(async () => {
@@ -77,6 +72,22 @@ function startProcedure() {
                 const heartbeatTimeoutMs = arg.input.nangoProps.heartbeatTimeoutSecs
                     ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
                     : heartbeatIntervalMs * 3;
+
+                // Poll Redis for abort flag when running with multiple replicas
+                const abortPoll = abortViaRedis
+                    ? setInterval(async () => {
+                          try {
+                              const shouldAbort = await kvStore.exists(`function:${taskId}:abort`);
+                              if (shouldAbort) {
+                                  logger.info('Aborting task via Redis poll', { taskId });
+                                  abortController.abort();
+                                  clearInterval(abortPoll!);
+                              }
+                          } catch (err) {
+                              logger.error('Error checking abort flag', { taskId, error: err });
+                          }
+                      }, abortCheckIntervalMs)
+                    : null;
 
                 const heartbeat = setInterval(async () => {
                     if (lastSuccessHeartbeatAt && lastSuccessHeartbeatAt + heartbeatTimeoutMs < Date.now()) {
@@ -92,6 +103,11 @@ function startProcedure() {
                     if (res.isOk()) {
                         lastSuccessHeartbeatAt = Date.now();
                     }
+                    try {
+                        await usage.trackForConflicts(nangoProps, { refresh: true });
+                    } catch (err) {
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
+                    }
                 }, heartbeatIntervalMs);
 
                 try {
@@ -99,16 +115,21 @@ function startProcedure() {
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;
+                    const checkpoints = execRes.isErr() ? execRes.error.checkpoints : execRes.value.checkpoints;
                     await jobsClient.putTask({
                         taskId,
                         nangoProps,
                         ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
-                        functionRuntime: 'runner'
+                        functionRuntime: 'runner',
+                        checkpoints
                     });
                 } finally {
                     clearInterval(heartbeat);
+                    if (abortPoll) {
+                        clearInterval(abortPoll);
+                    }
                     abortControllers.delete(taskId);
-                    usage.untrack(taskId);
+                    await usage.untrack(taskId);
                     logger.info(`Task ${taskId} completed`);
                 }
             });

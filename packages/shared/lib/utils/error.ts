@@ -103,6 +103,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Authentication failed. The user could not be found.';
                 break;
 
+            case 'user_suspended':
+                this.status = 400;
+                this.message = 'User account is suspended.';
+                break;
+
             case 'missing_body':
                 this.status = 400;
                 this.message = 'Missing request body.';
@@ -327,6 +332,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
                 break;
 
+            case 'deploy_script_security_rejected':
+                this.status = 400;
+                this.message = 'The deployed script was rejected by a security policy.';
+                break;
+
             case 'file_upload_error':
                 this.status = 500;
                 this.message = 'Error uploading file. Please contact support with the filename and connection details';
@@ -519,9 +529,19 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Missing webhook signature';
                 break;
 
+            case 'webhook_missing_token':
+                this.status = 401;
+                this.message = 'Missing webhook token';
+                break;
+
             case 'webhook_invalid_payload':
                 this.status = 400;
                 this.message = 'Invalid webhook payload';
+                break;
+
+            case 'webhook_missing_connection_id':
+                this.status = 400;
+                this.message = 'Webhook payload is missing nangoConnectionId';
                 break;
 
             case 'webhook_no_connection_or_existing_installation_id':
@@ -537,6 +557,26 @@ export class NangoError extends NangoInternalError {
             case 'no_default_api_secret':
                 this.status = status ?? 500;
                 this.message = 'Environment does not have a default API secret';
+                break;
+
+            case 'function_runtime_out_of_memory':
+                this.status = 500;
+                this.message = 'The function runtime ran out of memory';
+                break;
+
+            case 'function_runtime_timed_out':
+                this.status = 500;
+                this.message = 'The function runtime timed out';
+                break;
+
+            case 'function_runtime_other':
+                this.status = 500;
+                this.message = 'An unknown error occurred with the function runtime';
+                break;
+
+            case 'execution_timeout':
+                this.status = 500;
+                this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
                 break;
 
             default:

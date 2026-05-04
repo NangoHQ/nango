@@ -1,0 +1,27 @@
+---
+title: 'How to register your own Clio OAuth app'
+sidebarTitle: 'Clio Setup'
+description: 'Register an OAuth app with Clio and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Clio to obtain your OAuth credentials (Client ID & Client Secret). These are required to let your users grant your app access to their Clio account.
+
+<Steps>
+  <Step title="Register Your OAuth App">
+    1. Log in to your Clio account.
+    2. Navigate to **Settings** -> **Developer Applications**.
+    3. Click **Add** to create a new application.
+    4. Fill in the application name and description.
+    5. Set the **Redirect URI** to: `https://api.nango.dev/oauth/callback`
+    6. Save the application and note the **Client ID** and **Client Secret**.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to start building your integration.
+
+    <Note>No scopes are required for Clio's OAuth flow. Leave the scopes field empty when configuring your integration in Nango.</Note>
+  </Step>
+</Steps>
+
+For more details, see [Clio OAuth 2.0 Documentation](https://docs.developers.clio.com/api-reference/#section/Authorization/Authorization-Code-Grant).
+
+---

@@ -2,6 +2,7 @@ import type { ApiError, Endpoint } from '../api.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type PostDeployConfirmation = Endpoint<{
@@ -12,7 +13,8 @@ export type PostDeployConfirmation = Endpoint<{
         onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };
@@ -28,9 +30,11 @@ export type PostDeploy = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
+        source?: FunctionSource | undefined;
     };
     Success: SyncDeploymentResult[];
 }>;
@@ -47,7 +51,8 @@ export type PostDeployInternal = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };

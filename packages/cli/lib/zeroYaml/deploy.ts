@@ -5,13 +5,12 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { buildDefinitions } from './definitions.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { ReadableError } from './utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { hostport, isCI, parseSecretKey, printDebug } from '../utils.js';
+import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
-import { ReadableError } from './utils.js';
-import { loadSchemaJson } from '../services/model.service.js';
 
 import type { DeployOptions } from '../types.js';
 import type {
@@ -27,7 +26,7 @@ import type {
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'singleDeployMode' | 'jsonSchema'>;
+type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
 
 export async function deploy({
     fullPath,
@@ -40,14 +39,13 @@ export async function deploy({
     environmentName: string;
     interactive?: boolean;
 }): Promise<Result<boolean>> {
-    const { version, debug } = options;
+    const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
 
     let pkg: Package;
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
-        // Prepare retro-compat json
-        const def = await buildDefinitions({ fullPath, debug });
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinnerPackage.fail();
             console.log('');
@@ -55,8 +53,7 @@ export async function deploy({
             return Err(def.error);
         }
 
-        // Create deploy package
-        const postData = await createPackage({
+        const postData = await createDeployConfirmationPackage({
             parsed: def.value,
             fullPath,
             debug,
@@ -85,11 +82,14 @@ export async function deploy({
     const nangoYamlBody = '';
     const sdkVersion = `${NANGO_VERSION}-zero`;
 
+    const hostport = resolveHostport(env);
+
     // Check remote state
     const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
     let confirmation: ScriptDifferences;
     try {
         const confirmationRes = await postConfirmation({
+            hostport,
             body: { ...pkg, reconcile: false, debug, sdkVersion }
         });
         if (confirmationRes.isErr()) {
@@ -105,6 +105,7 @@ export async function deploy({
         return Err('failed');
     }
 
+    const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
     const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
     if (confirmed.isErr()) {
@@ -117,7 +118,8 @@ export async function deploy({
     const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
     try {
         const deployRes = await postDeploy({
-            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
+            hostport,
+            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion, source: deploySource }
         });
         if (deployRes.isErr()) {
             spinnerDeploy.fail();
@@ -134,7 +136,12 @@ export async function deploy({
     }
 }
 
-async function createPackage({
+/**
+ * Maps NangoYamlParsed (which is a list of integrations and its function definitions) into the shape expected by the API,
+ * while also loading the content of the related script files.
+ * It also supports filtering by integration, sync or action name for single deploys.
+ */
+async function createDeployConfirmationPackage({
     parsed,
     fullPath,
     debug,
@@ -155,7 +162,8 @@ async function createPackage({
 
     const postData: CLIDeployFlowConfig[] = [];
     const onEventScriptsByProvider: OnEventScriptsByProvider[] | undefined = optionalActionName || optionalSyncName ? undefined : []; // only load on-event scripts if we're not deploying a single sync or action
-    const singleDeployMode = Boolean(optionalSyncName || optionalActionName || optionalIntegrationId);
+    const hasSingleScript = Boolean(optionalSyncName || optionalActionName);
+    const deployMode: 'all' | 'single' | 'integration' = hasSingleScript ? 'single' : optionalIntegrationId ? 'integration' : 'all';
 
     for (const integration of parsed.integrations) {
         const { providerConfigKey, onEventScripts } = integration;
@@ -215,7 +223,9 @@ async function createPackage({
                     type: sync.type,
                     fileBody: files,
                     endpoints: sync.endpoints,
-                    webhookSubscriptions: sync.webhookSubscriptions
+                    webhookSubscriptions: sync.webhookSubscriptions,
+                    models_json_schema: sync.json_schema,
+                    features: sync.features
                 };
 
                 postData.push(body);
@@ -252,7 +262,9 @@ async function createPackage({
                     type: action.type,
                     fileBody: files,
                     endpoints: action.endpoint ? [action.endpoint] : [],
-                    track_deletes: false
+                    track_deletes: false,
+                    models_json_schema: action.json_schema,
+                    features: action.features
                 };
 
                 postData.push(body);
@@ -264,16 +276,10 @@ async function createPackage({
         return Err(new Error('No functions to deploy'));
     }
 
-    const jsonSchema = loadSchemaJson({ fullPath });
-    if (!jsonSchema) {
-        return Err(new Error('Failed to load schema.json'));
-    }
-
     return Ok({
         flowConfigs: postData,
         onEventScriptsByProvider,
-        jsonSchema,
-        singleDeployMode
+        deployMode
     });
 }
 
@@ -358,7 +364,13 @@ async function loadScriptTsFile({
 /**
  * Call Nango api to get the state of the deploy
  */
-async function postConfirmation({ body }: { body: PostDeployConfirmation['Body'] }): Promise<Result<PostDeployConfirmation['Success']>> {
+async function postConfirmation({
+    hostport,
+    body
+}: {
+    hostport: string;
+    body: PostDeployConfirmation['Body'];
+}): Promise<Result<PostDeployConfirmation['Success']>> {
     const url = new URL('/sync/deploy/confirmation', hostport);
 
     try {
@@ -390,7 +402,7 @@ async function postConfirmation({ body }: { body: PostDeployConfirmation['Body']
 /**
  * Call Nango api to actually deploy
  */
-async function postDeploy({ body }: { body: PostDeploy['Body'] }): Promise<Result<string>> {
+async function postDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<string>> {
     const url = new URL('/sync/deploy', hostport);
 
     try {
@@ -619,4 +631,9 @@ function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { 
 }
 function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: any[]; deleteItems: any[] }): string {
     return ` [${name} ${chalk.green(`+${newItems.length}`)} ${chalk.red(`-${deleteItems.length}`)}]`;
+}
+
+function resolveDeploySource(): 'standalone' | 'repo' {
+    const val = process.env['NANGO_DEPLOY_SOURCE'];
+    return val === 'standalone' ? 'standalone' : 'repo';
 }

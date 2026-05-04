@@ -12,7 +12,6 @@ export const freePlan: PlanDefinition = {
         api_rate_limit_size: 'm',
         environments_max: 2,
         has_otel: false,
-        has_sync_variants: false,
         connections_max: 10,
         records_max: 100_000,
         proxy_max: 100_000,
@@ -20,17 +19,23 @@ export const freePlan: PlanDefinition = {
         function_compute_gbms_max: 50_000_000,
         webhook_forwards_max: 100_000,
         function_logs_max: 100_000,
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         auto_idle: true,
         monthly_actions_max: 1000,
         monthly_active_records_max: 5000,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        remote_functions: false,
+        sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
-        webhook_function_runtime: 'lambda'
+        webhook_function_runtime: 'lambda',
+        on_event_function_runtime: 'lambda',
+        sync_lambda_checkpoint_required: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -47,8 +52,7 @@ export const starterV1Plan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: false,
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
@@ -66,9 +70,12 @@ export const starterV1Plan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: false,
         has_webhooks_forward: false,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -85,7 +92,7 @@ export const growthV1Plan: PlanDefinition = {
         api_rate_limit_size: 'xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -104,9 +111,12 @@ export const growthV1Plan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -121,7 +131,7 @@ export const starterV2Plan: PlanDefinition = {
     flags: {
         ...starterV1Plan.flags,
         sync_frequency_secs_min: 30,
-        has_sync_variants: true,
+
         has_webhooks_script: true,
         has_webhooks_forward: true
     }
@@ -150,7 +160,7 @@ export const enterprisePlan: PlanDefinition = {
         api_rate_limit_size: '2xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -169,9 +179,12 @@ export const enterprisePlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -188,7 +201,7 @@ export const starterLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -207,9 +220,12 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -225,7 +241,7 @@ export const scaleLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -244,9 +260,12 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 
@@ -262,7 +281,7 @@ export const growthLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
@@ -281,9 +300,12 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        remote_functions: false,
+        lambda_tenant_isolation: false
     }
 };
 

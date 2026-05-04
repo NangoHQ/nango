@@ -103,34 +103,6 @@ exports[`legacySyncModelsToJsonSchema > should handle empty models array 1`] = `
 }
 `;
 
-exports[`legacySyncModelsToJsonSchema > should handle literal types 1`] = `
-{
-  "definitions": {
-    "StatusModel": {
-      "properties": {
-        "status": {
-          "oneOf": [
-            {
-              "const": "active",
-            },
-            {
-              "const": "canceled",
-            },
-            {
-              "const": "pending",
-            },
-          ],
-        },
-      },
-      "required": [
-        "status",
-      ],
-      "type": "object",
-    },
-  },
-}
-`;
-
 exports[`legacySyncModelsToJsonSchema > should handle model with no fields 1`] = `
 {
   "definitions": {
@@ -276,28 +248,6 @@ exports[`legacySyncModelsToJsonSchema > should still reference a non-existent mo
         },
         "missing": {
           "$ref": "#/definitions/NonExistentModel",
-        },
-      },
-      "required": [
-        "id",
-        "missing",
-      ],
-      "type": "object",
-    },
-  },
-}
-`;
-
-exports[`legacySyncModelsToJsonSchema > should treat reference to a non-existent model as string 1`] = `
-{
-  "definitions": {
-    "HasMissingRef": {
-      "properties": {
-        "id": {
-          "type": "string",
-        },
-        "missing": {
-          "type": "string",
         },
       },
       "required": [

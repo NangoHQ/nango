@@ -13,7 +13,6 @@ describe('NangoSyncCLI - getConnection', () => {
         const mockDryRunService: DryRunService = {
             run: vi.fn(),
             fullPath: '',
-            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };
@@ -75,7 +74,6 @@ describe('NangoSyncCLI - batchSave', () => {
         const mockDryRunService: DryRunService = {
             run: vi.fn(),
             fullPath: '',
-            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };

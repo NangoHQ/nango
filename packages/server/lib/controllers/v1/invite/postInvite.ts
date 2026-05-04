@@ -2,16 +2,19 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { expirePreviousInvitations, inviteEmail, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, roles, zodErrorToHTTP } from '@nangohq/utils';
 
+import { envs } from '../../../env.js';
 import { sendInviteEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { hasRbac } from '../../../utils/rbac.js';
 
 import type { PostInvite } from '@nangohq/types';
 
 const validation = z
     .object({
-        emails: z.array(z.string().min(3).max(255).email())
+        emails: z.array(z.string().min(3).max(255).email()),
+        role: z.enum(roles).optional()
     })
     .strict();
 
@@ -30,8 +33,20 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
         return;
     }
 
-    const { account, user } = res.locals;
-    const body: PostInvite['Body'] = val.data;
+    const { account, user, plan } = res.locals;
+    const body = val.data;
+    const effectiveRole = body.role ?? envs.DEFAULT_USER_ROLE;
+
+    const hasRbacRes = await hasRbac({ accountId: account.id, plan });
+    if (hasRbacRes.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to check RBAC' } });
+        return;
+    }
+
+    if (!hasRbacRes.value && effectiveRole !== 'administrator') {
+        res.status(403).send({ error: { code: 'feature_disabled', message: 'Role-based access control requires a Growth plan or above' } });
+        return;
+    }
 
     const invited: string[] = [];
     for (const email of body.emails) {
@@ -43,7 +58,7 @@ export const postInvite = asyncWrapper<PostInvite>(async (req, res) => {
         const invitation = await db.knex.transaction(async (trx) => {
             await expirePreviousInvitations({ email, accountId: account.id, trx });
 
-            return await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, trx });
+            return await inviteEmail({ email, name: email, accountId: account.id, invitedByUserId: user.id, role: effectiveRole, trx });
         });
         if (!invitation) {
             res.status(500).json({

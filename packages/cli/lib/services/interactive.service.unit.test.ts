@@ -2,6 +2,7 @@ import inquirer from 'inquirer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+    inferIntegrationsFromConnectionId,
     promptForConnection,
     promptForEnvironment,
     promptForFunctionName,
@@ -125,19 +126,31 @@ describe('Interactive Service', () => {
         });
     });
 
-    it('should prompt for function to run', async () => {
-        mockedInquirer.prompt.mockResolvedValue({ func: 'my-sync' });
-        const functions = [{ name: 'my-sync', type: 'sync' }];
-        const name = await promptForFunctionToRun(functions);
-        expect(name).toBe('my-sync');
+    it('should prompt for function to run and return name + integration', async () => {
+        const selected = { name: 'my-sync', integration: 'hubspot' };
+        mockedInquirer.prompt.mockResolvedValue({ func: selected });
+        const functions = [{ name: 'my-sync', type: 'sync', integration: 'hubspot' }];
+        const result = await promptForFunctionToRun(functions);
+        expect(result).toEqual({ name: 'my-sync', integration: 'hubspot' });
         expect(mockedInquirer.prompt).toHaveBeenCalledWith([
             {
                 type: 'rawlist',
                 name: 'func',
                 message: expect.any(String),
-                choices: [{ name: 'my-sync (sync)', value: 'my-sync' }]
+                choices: [{ name: 'hubspot - my-sync (sync)', value: { name: 'my-sync', integration: 'hubspot' } }]
             }
         ]);
+    });
+
+    it('should disambiguate same-named functions across integrations', async () => {
+        const selected = { name: 'employees', integration: 'workday' };
+        mockedInquirer.prompt.mockResolvedValue({ func: selected });
+        const functions = [
+            { name: 'employees', type: 'sync', integration: 'workday' },
+            { name: 'employees', type: 'sync', integration: 'ukg-pro' }
+        ];
+        const result = await promptForFunctionToRun(functions);
+        expect(result).toEqual({ name: 'employees', integration: 'workday' });
     });
 
     it('should prompt for project path', async () => {
@@ -182,6 +195,28 @@ describe('Interactive Service', () => {
             ]);
         });
 
+        it('should pass integrationId to listConnections when provided', async () => {
+            listConnectionsMock.mockResolvedValue({
+                connections: [{ provider: 'workday', connection_id: 'wd-conn' }]
+            });
+            mockedInquirer.prompt.mockResolvedValue({ connection: 'wd-conn' });
+
+            await promptForConnection('dev', 'workday');
+
+            expect(listConnectionsMock).toHaveBeenCalledWith({ integrationId: 'workday' });
+        });
+
+        it('should pass empty object to listConnections when no integrationId is provided', async () => {
+            listConnectionsMock.mockResolvedValue({
+                connections: [{ provider: 'hubspot', connection_id: 'conn1' }]
+            });
+            mockedInquirer.prompt.mockResolvedValue({ connection: 'conn1' });
+
+            await promptForConnection('dev');
+
+            expect(listConnectionsMock).toHaveBeenCalledWith({});
+        });
+
         it('should throw an error if no connections are found', async () => {
             const mockConnections = { connections: [] };
             listConnectionsMock.mockResolvedValue(mockConnections);
@@ -191,10 +226,58 @@ describe('Interactive Service', () => {
             );
         });
 
+        it('should throw an integration-specific error when no connections found for an integrationId', async () => {
+            listConnectionsMock.mockResolvedValue({ connections: [] });
+
+            await expect(promptForConnection('dev', 'workday')).rejects.toThrow('No connections found for integration "workday"');
+        });
+
         it('should throw an error if fetching connections fails', async () => {
             listConnectionsMock.mockRejectedValue(new Error('API error'));
 
             await expect(promptForConnection('dev')).rejects.toThrow('API error');
+        });
+    });
+
+    describe('inferIntegrationsFromConnectionId', () => {
+        it('should return all matching provider_config_keys', async () => {
+            listConnectionsMock.mockResolvedValue({
+                connections: [
+                    { connection_id: 'conn-1', provider_config_key: 'workday', provider: 'workday' },
+                    { connection_id: 'conn-1', provider_config_key: 'salesforce', provider: 'salesforce' }
+                ]
+            });
+
+            const result = await inferIntegrationsFromConnectionId('conn-1', 'dev');
+
+            expect(result).toEqual(['workday', 'salesforce']);
+            expect(listConnectionsMock).toHaveBeenCalledWith({ connectionId: 'conn-1' });
+        });
+
+        it('should return a single-element array when exactly one connection matches', async () => {
+            listConnectionsMock.mockResolvedValue({
+                connections: [{ connection_id: 'conn-1', provider_config_key: 'workday', provider: 'workday' }]
+            });
+
+            const result = await inferIntegrationsFromConnectionId('conn-1', 'dev');
+
+            expect(result).toEqual(['workday']);
+        });
+
+        it('should return an empty array when no connections match', async () => {
+            listConnectionsMock.mockResolvedValue({ connections: [] });
+
+            const result = await inferIntegrationsFromConnectionId('conn-unknown', 'dev');
+
+            expect(result).toEqual([]);
+        });
+
+        it('should return an empty array and swallow errors when the API call fails', async () => {
+            listConnectionsMock.mockRejectedValue(new Error('Network error'));
+
+            const result = await inferIntegrationsFromConnectionId('conn-1', 'dev');
+
+            expect(result).toEqual([]);
         });
     });
 });

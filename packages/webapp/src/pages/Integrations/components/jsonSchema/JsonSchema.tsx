@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 import { CatalogBadge } from '../CatalogBadge';
-import { IntegrationsBadge } from '../IntegrationsBadge';
+import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { cn } from '@/utils/utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
@@ -76,7 +76,7 @@ const JsonSchemaGenericInfo: React.FC<{
             <div className="flex flex-col gap-1.5">
                 <span className="text-text-primary text-body-small-semi">{name}</span>{' '}
                 {description && <p className="text-text-tertiary text-body-small-medium">{description}</p>}
-                {defaultString && <IntegrationsBadge label="Default">{defaultString}</IntegrationsBadge>}
+                {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
             </div>
             <div className="flex gap-1 5">
                 <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>

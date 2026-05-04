@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { format, migrate as migrateRecords, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
+import { getLookbackCutoff } from './getRecords.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 const route = '/records';
@@ -27,11 +28,11 @@ describe(`GET ${route}`, () => {
     });
 
     it('should require model', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret
+            token: apiKey.secret
         });
         isError(res.json);
         expect(res.res.status).toBe(400);
@@ -44,11 +45,11 @@ describe(`GET ${route}`, () => {
     });
 
     it('should require headers', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket' }
         });
         isError(res.json);
@@ -65,10 +66,10 @@ describe(`GET ${route}`, () => {
     });
 
     it('should complain about unknown connection', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket' },
             headers: { 'connection-id': 't', 'provider-config-key': 'a' }
         });
@@ -80,11 +81,11 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get empty records', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket' },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -97,7 +98,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should get multiple page of records', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -122,7 +123,7 @@ describe(`GET ${route}`, () => {
         // Fetch first page
         const resPage1 = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', limit: 2 },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -161,7 +162,7 @@ describe(`GET ${route}`, () => {
         // Fetch second page
         const resPage2 = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', limit: 2, cursor: resPage1.json.next_cursor! },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -186,7 +187,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should filter', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -211,7 +212,7 @@ describe(`GET ${route}`, () => {
         // Added
         const resAdded = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', filter: 'added' },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -236,7 +237,7 @@ describe(`GET ${route}`, () => {
         // Updated
         const resUpdated = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', filter: 'UPDATED' },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -246,7 +247,7 @@ describe(`GET ${route}`, () => {
         // Deleted
         const resDeleted = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', filter: 'deleted' },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -256,7 +257,7 @@ describe(`GET ${route}`, () => {
         // Multiple filters
         const resMultiple = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', filter: 'added,UPDATED' },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -265,8 +266,60 @@ describe(`GET ${route}`, () => {
         expect(resMultiple.json.records).toHaveLength(3);
     });
 
+    it('should reject delta older than 12 months', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const tooOld = new Date(getLookbackCutoff().getTime() - 1).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', delta: tooOld },
+            headers: { 'connection-id': 't', 'provider-config-key': 'a' }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_query_params',
+                errors: [{ code: 'custom', message: 'must be within the last 12 months', path: ['delta'] }]
+            }
+        });
+    });
+
+    it('should reject modified_after older than 12 months', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const tooOld = new Date(getLookbackCutoff().getTime() - 1).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', modified_after: tooOld },
+            headers: { 'connection-id': 't', 'provider-config-key': 'a' }
+        });
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_query_params',
+                errors: [{ code: 'custom', message: 'must be within the last 12 months', path: ['modified_after'] }]
+            }
+        });
+    });
+
+    it('should accept delta within 12 months', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
+        const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
+        const res = await api.fetch(route, {
+            method: 'GET',
+            token: apiKey.secret,
+            query: { model: 'Ticket', delta: oneHourAgo },
+            headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
+        });
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+    });
+
     it('should query by id', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -291,7 +344,7 @@ describe(`GET ${route}`, () => {
         // One ID
         const res = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', ids: ['record2'] },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });
@@ -302,7 +355,7 @@ describe(`GET ${route}`, () => {
         // Multiple ID
         const resMulti = await api.fetch(route, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             query: { model: 'Ticket', ids: ['record2', 'record3'] },
             headers: { 'connection-id': conn.connection_id, 'provider-config-key': 'github' }
         });

@@ -1,6 +1,7 @@
 import type { AsyncActionResponse } from '../action/api.js';
 import type { ErrorPayload, SyncErrorPayload } from '../api.js';
 import type { AuthModeType, AuthOperationType } from '../auth/api.js';
+import type { CheckpointRange } from '../checkpoint/types.js';
 import type { SyncResult } from '../sync/index.js';
 
 export type WebhookTypes = 'sync' | 'auth' | 'forward' | 'async_action';
@@ -21,6 +22,7 @@ export interface NangoSyncWebhookBodyBase extends NangoWebhookBase {
     syncName: string;
     syncVariant: string;
     model: string;
+    checkpoints?: CheckpointRange | undefined;
     /** @deprecated **/
     syncType: 'INCREMENTAL' | 'INITIAL' | 'WEBHOOK';
 }

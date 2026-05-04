@@ -42,7 +42,6 @@ export type * from './scripts/on-events/db.js';
 export type * from './scripts/on-events/api.js';
 export type * from './scripts/syncs/api.js';
 export type * from './scripts/http.api.js';
-export type * from './apiStatus/api.js';
 export type * from './slackNotifications/db.js';
 export type * from './notification/active-logs/db.js';
 export type * from './connection/api/get.js';
@@ -73,12 +72,15 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
+export { ALL_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
+export type { ApiKeyScope } from './api-keys/scopes.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
 export type * from './environment/variable/index.js';
 export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
+export type * from './webhooks/dispatch.js';
 export type * from './webhooks/http.api.js';
 export type * from './flow/http.api.js';
 export type * from './flow/index.js';
@@ -96,3 +98,9 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+export type * from './functions/api.js';
+
+export type * from './lambda/index.js';
+export type * from './authz/types.js';
+
+export type * from './pubsub/events.js';

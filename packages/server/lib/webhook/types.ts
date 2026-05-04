@@ -5,7 +5,8 @@ export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
     headers: Record<string, string>,
     body: T,
-    rawBody: string
+    rawBody: string,
+    query?: Record<string, string>
 ) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
@@ -233,6 +234,18 @@ export interface PagerDutyWebhookPayload {
         client: object | null;
         data: object;
     };
+}
+
+export interface AutotaskWebhookPayload {
+    Action?: string;
+    Guid?: string;
+    EntityType?: string;
+    Id?: number;
+    Fields?: Record<string, any>;
+    EventTime?: string;
+    SequenceNumber?: number;
+    PersonId?: number;
+    [key: string]: any;
 }
 
 export interface ConnectWisePsaWebhookPayload {

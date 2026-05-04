@@ -4,6 +4,7 @@ import { nanoid } from '@nangohq/utils';
 
 import { getTestDbClient } from './db/helpers.test.js';
 import { envs } from './env.js';
+import { isDuplicateTaskNameError } from './errors.js';
 import { Scheduler } from './scheduler.js';
 
 import type { TaskProps } from './models/tasks.js';
@@ -68,6 +69,32 @@ describe('Scheduler', () => {
     });
     it('should call callback when task is created', async () => {
         await immediate(scheduler);
+        expect(callbacks.CREATED).toHaveBeenCalledOnce();
+    });
+    it('should return a duplicate-name error when an immediate task already exists', async () => {
+        const name = `dup-${nanoid()}`;
+        const groupKey = nanoid();
+
+        await immediate(scheduler, { taskProps: { name, groupKey } });
+
+        const duplicate = await scheduler.immediate({
+            name,
+            payload: {},
+            groupKey,
+            groupMaxConcurrency: 0,
+            retryMax: 1,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: 3600,
+            startedToCompletedTimeoutSecs: 3600,
+            heartbeatTimeoutSecs: 600,
+            ownerKey: null,
+            retryKey: null
+        });
+
+        expect(duplicate.isErr()).toBe(true);
+        if (duplicate.isErr()) {
+            expect(isDuplicateTaskNameError(duplicate.error)).toBe(true);
+        }
         expect(callbacks.CREATED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is started', async () => {
@@ -160,6 +187,33 @@ describe('Scheduler', () => {
         expect(scheduleAfter?.lastScheduledTaskId).toBe(task.id);
         expect(scheduleAfter?.lastScheduledTaskState).toBe('CANCELLED');
         expect(scheduleAfter?.nextExecutionAt).toEqual(new Date((scheduleAfter?.startsAt.getTime() || 0) + (scheduleAfter?.frequencyMs || 0)));
+    });
+    it('should override next execution when succeed is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.succeed({ taskId: task.id, output: {}, nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
+    });
+    it('should override next execution when fail is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.fail({ taskId: task.id, error: { message: 'failure' }, nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
+    });
+    it('should override next execution when cancel is called with nextExecutionInMs', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+        const nextExecutionInMs = 9_999_999;
+        (await scheduler.cancel({ taskId: task.id, reason: 'cancelled', nextExecutionInMs })).unwrap();
+        const [scheduleAfter] = (await scheduler.searchSchedules({ id: schedule.id, limit: 1 })).unwrap();
+        expect(scheduleAfter?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
     });
     it('should not run an immediate task for a schedule if another task is already running', async () => {
         const schedule = await recurring({ scheduler });

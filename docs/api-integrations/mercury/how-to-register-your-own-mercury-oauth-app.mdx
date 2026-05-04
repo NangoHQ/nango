@@ -1,0 +1,38 @@
+---
+title: 'How to register your own Mercury OAuth app'
+sidebarTitle: 'Mercury OAuth Setup'
+description: 'Request OAuth access from Mercury and connect your app to Nango'
+---
+
+This guide shows you how to register your own app with Mercury to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Mercury account.
+
+<Steps>
+  <Step title="Request OAuth access">
+    1. Submit Mercury's [integration request form](https://mercurytechnologies.notion.site/2b1951a7f2158076b600db0ce173317c) with:
+       - Your company name and website.
+       - Company address.
+       - A short description of your company.
+       - Details about the product you plan to integrate with Mercury.
+       - How you plan to use Mercury's API.
+    2. Mercury will review your request. Approval timelines vary; they may ask for additional information. Approval depends on security, use case fit, and regulatory considerations.
+  </Step>
+  <Step title="Provide technical setup (after approval)">
+    When your integration is approved, provide Mercury with:
+    - **Redirect URI:** `https://api.nango.dev/oauth/callback`.
+    - Links to your app's terms of service, privacy policy, and logo.
+    - Your **GPG public key** so Mercury can securely send your client credentials.
+  </Step>
+  <Step title="Receive credentials">
+    Mercury will create your OAuth2 client and securely share:
+    - **Client ID** and **Client secret**.
+    - Credentials for a **test client** that can be used with Mercury [sandbox](https://docs.mercury.com/reference/using-mercury-sandbox).
+    Save these; you will need them when configuring the Mercury integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [Mercury OAuth2 API documentation](https://docs.mercury.com/docs/integrations-with-oauth2).
+
+---

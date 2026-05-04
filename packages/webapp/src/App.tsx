@@ -4,16 +4,18 @@ import { useEffect, useRef } from 'react';
 import { Navigate, RouterProvider, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
+import { Toaster } from 'sonner';
 import { SWRConfig } from 'swr';
 
 import { PrivateRoute } from './components/PrivateRoute';
-import { Toaster } from './components/ui/toast/Toaster';
 import { useMeta } from './hooks/useMeta';
+import { useUser } from './hooks/useUser';
 import { EmailVerified } from './pages/Account/EmailVerified';
 import ForgotPassword from './pages/Account/ForgotPassword';
 import { InviteSignup } from './pages/Account/InviteSignup';
+import { ManagedEmailVerification } from './pages/Account/ManagedEmailVerification';
 import ResetPassword from './pages/Account/ResetPassword';
-import Signin from './pages/Account/Signin';
+import { Signin } from './pages/Account/Signin';
 import { Signup } from './pages/Account/Signup';
 import { VerifyEmail } from './pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
@@ -35,7 +37,7 @@ import { NotFound } from './pages/NotFound';
 import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
 import { Root } from './pages/Root';
 import { TeamBilling } from './pages/Team/Billing/Show';
-import { TeamSettings } from './pages/Team/Settings';
+import { TeamSettingsPage } from './pages/Team/Settings';
 import { UserSettings } from './pages/User/Settings';
 import { useStore } from './store';
 import { fetcher } from './utils/api';
@@ -72,6 +74,61 @@ const RedirectWithEnv = ({ path }: { path: string }) => {
 
     return <Navigate to={`/${env}/${pathWithParams}`} replace />;
 };
+
+const publicAuthRoutes = (() => {
+    if (!globalEnv.features.auth && !globalEnv.features.managedAuth) {
+        return [];
+    }
+
+    const routes = [
+        {
+            path: '/signin',
+            element: <Signin />
+        }
+    ];
+
+    if (globalEnv.features.managedAuth) {
+        routes.push({
+            path: '/signin/verify',
+            element: <ManagedEmailVerification />
+        });
+    }
+
+    if (globalEnv.features.auth) {
+        routes.push(
+            {
+                path: '/signup/:token',
+                element: <InviteSignup />
+            },
+            {
+                path: '/forgot-password',
+                element: <ForgotPassword />
+            },
+            {
+                path: '/reset-password/:token',
+                element: <ResetPassword />
+            },
+            {
+                path: '/verify-email/:uuid',
+                element: <VerifyEmail />
+            },
+            {
+                path: '/verify-email/expired/:token',
+                element: <VerifyEmailByExpiredToken />
+            },
+            {
+                path: '/signup/verification/:token',
+                element: <EmailVerified />
+            },
+            {
+                path: '/signup',
+                element: <Signup />
+            }
+        );
+    }
+
+    return routes;
+})();
 
 const router = sentryCreateBrowserRouter([
     {
@@ -202,18 +259,18 @@ const router = sentryCreateBrowserRouter([
                     },
                     {
                         path: 'team-settings',
-                        element: <TeamSettings />,
+                        element: <TeamSettingsPage />,
                         handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
-                    },
-                    {
-                        path: 'team/billing',
-                        element: <TeamBilling />,
-                        handle: { breadcrumb: 'Billing' } as BreadcrumbHandle
                     },
                     {
                         path: 'user-settings',
                         element: <UserSettings />,
                         handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'team/billing',
+                        element: <TeamBilling />,
+                        handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
                     }
                 ]
             }
@@ -239,42 +296,7 @@ const router = sentryCreateBrowserRouter([
         path: '/hn-demo',
         element: <Navigate to={'/signup'} />
     },
-    ...(globalEnv.features.auth
-        ? [
-              {
-                  path: '/signin',
-                  element: <Signin />
-              },
-              {
-                  path: '/signup/:token',
-                  element: <InviteSignup />
-              },
-              {
-                  path: '/forgot-password',
-                  element: <ForgotPassword />
-              },
-              {
-                  path: '/reset-password/:token',
-                  element: <ResetPassword />
-              },
-              {
-                  path: '/verify-email/:uuid',
-                  element: <VerifyEmail />
-              },
-              {
-                  path: '/verify-email/expired/:token',
-                  element: <VerifyEmailByExpiredToken />
-              },
-              {
-                  path: '/signup/verification/:token',
-                  element: <EmailVerified />
-              },
-              {
-                  path: '/signup',
-                  element: <Signup />
-              }
-          ]
-        : []),
+    ...publicAuthRoutes,
     {
         path: '*',
         element: <NotFound />
@@ -286,7 +308,9 @@ const App = () => {
     const signout = useSignout();
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
-    const { meta } = useMeta();
+    const { user } = useUser();
+    const { data: metaData } = useMeta(!!user);
+    const meta = metaData?.data;
 
     useEffect(() => {
         setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
@@ -326,6 +350,7 @@ const App = () => {
                 >
                     <RouterProvider router={router} />
                 </SWRConfig>
+                {/* TODO: Remove once remaining legacy toasts have been replaced */}
                 <ToastContainer />
             </TooltipProvider>
             <Toaster />

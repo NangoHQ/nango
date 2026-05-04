@@ -11,7 +11,7 @@ import { sendVerificationEmail } from '../../../helpers/email.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../utils/billing.js';
 
-import type { DBTeam, PostSignup } from '@nangohq/types';
+import type { DBTeam, PostSignup, Role } from '@nangohq/types';
 
 export const passwordSchema = z
     .string()
@@ -69,6 +69,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
     }
 
     let account: DBTeam | null;
+    let invitationRole: Role = envs.DEFAULT_USER_ROLE;
     if (token) {
         // Invitation signup
         const validToken = await getInvitation(token);
@@ -83,6 +84,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
             return;
         }
 
+        invitationRole = validToken.role;
         await acceptInvitation(token);
     } else {
         if (!envs.AUTH_ALLOW_SIGNUP) {
@@ -109,7 +111,8 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
         hashed_password: hashedPassword,
         salt,
         account_id: account.id,
-        email_verified: token ? true : false
+        email_verified: token ? true : false,
+        role: token ? invitationRole : envs.DEFAULT_USER_ROLE
     });
     if (!user) {
         res.status(500).send({ error: { code: 'error_creating_user', message: 'There was a problem creating the user. Please reach out to support.' } });

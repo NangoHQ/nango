@@ -1,65 +1,109 @@
-import useSWR from 'swr';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { apiFetch, swrFetcher } from '../utils/api';
+import { teamQueryKey } from './useTeam';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type { AcceptInvite, DeclineInvite, DeleteInvite, GetInvite, PostInvite } from '@nangohq/types';
 
 export function useInvite(token: string | undefined) {
-    const { data, error, mutate } = useSWR<GetInvite['Success'], SWRError<GetInvite['Errors']>>(token ? `/api/v1/invite/${token}` : null, swrFetcher);
+    return useQuery<
+        | {
+              status: 200;
+              json: GetInvite['Success'];
+          }
+        | {
+              status: 400;
+              json: GetInvite['Errors'];
+          },
+        APIError
+    >({
+        queryKey: ['invite', token],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/invite/${token}`);
 
-    const loading = !data && !error;
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as GetInvite['Success']
+                };
+            }
 
-    return {
-        loading,
-        error: error?.json,
-        data: data?.data,
-        mutate
-    };
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as GetInvite['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        },
+        enabled: !!token
+    });
 }
 
-export async function apiPostInvite(env: string, body: PostInvite['Body']) {
-    const res = await apiFetch(`/api/v1/invite?env=${env}`, {
-        method: 'POST',
-        body: JSON.stringify(body)
+export function usePostInvite(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PostInvite['Success'], APIError, PostInvite['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/invite?env=${env}`, {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as PostInvite['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: teamQueryKey(env) });
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as PostInvite['Reply']
-    };
 }
 
-export async function apiDeleteInvite(env: string, body: DeleteInvite['Body']) {
-    const res = await apiFetch(`/api/v1/invite?env=${env}`, {
-        method: 'DELETE',
-        body: JSON.stringify(body)
+export function useDeleteInvite(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<DeleteInvite['Success'], APIError, DeleteInvite['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch(`/api/v1/invite?env=${env}`, {
+                method: 'DELETE',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as DeleteInvite['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: teamQueryKey(env) });
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as DeleteInvite['Reply']
-    };
 }
 
-export async function apiAcceptInvite(token: string) {
-    const res = await apiFetch(`/api/v1/invite/${token}`, {
-        method: 'POST'
+export function useAcceptInvite() {
+    return useMutation<AcceptInvite['Success'], APIError, { token: string }>({
+        mutationFn: async ({ token }) => {
+            const res = await apiFetch(`/api/v1/invite/${token}`, { method: 'POST' });
+            const json = (await res.json()) as AcceptInvite['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as AcceptInvite['Reply']
-    };
 }
 
-export async function apiDeclineInvite(token: string) {
-    const res = await apiFetch(`/api/v1/invite/${token}`, {
-        method: 'DELETE'
+export function useDeclineInvite() {
+    return useMutation<DeclineInvite['Success'], APIError, { token: string }>({
+        mutationFn: async ({ token }) => {
+            const res = await apiFetch(`/api/v1/invite/${token}`, { method: 'DELETE' });
+            const json = (await res.json()) as DeclineInvite['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
     });
-
-    return {
-        res,
-        json: (await res.json()) as DeclineInvite['Reply']
-    };
 }

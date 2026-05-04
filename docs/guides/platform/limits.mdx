@@ -31,13 +31,21 @@ Different function types have varying execution and enqueuing time limits:
 
 | Function Type | Max Execution Time |
 | - | - |
-| [Syncs](/implementation-guides/use-cases/syncs/implement-a-sync) | 24 hours |
-| [Actions](/implementation-guides/use-cases/actions/implement-an-action) | 15 minutes |
-| [External webhooks](/implementation-guides/use-cases/webhooks-from-external-apis) | 1 hour |
+| [Sync functions](/guides/functions/syncs/sync-functions) | 24 hours |
+| [Action functions](/guides/functions/action-functions) | 15 minutes |
+| [Webhook functions](/guides/functions/webhook-functions) | 1 hour |
 
-### Action output limits
+### Minimum sync frequency
 
-Actions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/primitives/proxy) instead.
+The minimum sync frequency is **30 seconds**, available on all plans. You can set the frequency in the sync definition or override it per connection using the [SDK](/reference/backend/backend-sdk/node#override-sync-connection-frequency) or [API](/reference/backend/http-api/sync/update-connection-frequency).
+
+### Sync variant limits
+
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/guides/functions/syncs/sync-partitioning) for more details.
+
+### Action function output limits
+
+Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/platform/proxy-requests) instead.
 
 ## Data retention policies
 
@@ -67,7 +75,13 @@ Webhooks sent from Nango to your application have the following limits:
 - **Timeout**: 20 seconds
 - **Retries**: 2 attempts
 
-These limits apply to all webhook types: auth, syncs, async actions, and webhook forwards.
+These limits apply to all webhook types: auth, sync function completion, async action function completion, and webhook forwards.
+
+## Related guides
+
+- [Rate limits](/guides/functions/rate-limits) - handle provider throttling in functions.
+- [Sync efficiency](/guides/functions/syncs/sync-efficiency) - stay within payload and runtime limits.
+- [Security](/guides/platform/security) - review retention and access constraints.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

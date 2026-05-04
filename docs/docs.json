@@ -3,16 +3,27 @@
   "theme": "mint",
   "name": "Nango Docs",
   "colors": {
-    "primary": "#1A43DB",
-    "light": "#C7D3FE",
-    "dark": "#000000"
+    "primary": "#29abe2",
+    "light": "#71c0e2",
+    "dark": "#217ea6"
+  },
+  "fonts": {
+    "family": "Albert Sans"
   },
   "appearance": {
     "default": "system"
   },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "dark": "#0b0b0c",
+      "light": "#ffffff"
+    }
+  },
+  "css": "custom.css",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/images/Nango-Light-Mode.svg",
+    "dark": "/images/Nango-Dark-Mode.svg",
     "href": "https://www.nango.dev"
   },
   "favicon": "/favicon.png",
@@ -35,13 +46,19 @@
   "navbar": {
     "links": [
       {
-        "label": "Sign Up",
-        "href": "https://app.nango.dev/signup"
+        "label": "GitHub",
+        "type": "github",
+        "href": "https://github.com/NangoHQ/nango"
+      },
+      {
+        "label": "Log In",
+        "href": "https://app.nango.dev"
       }
     ],
     "primary": {
-      "type": "github",
-      "href": "https://github.com/nangoHQ/nango"
+      "type": "button",
+      "label": "Sign Up",
+      "href": "https://app.nango.dev/signup"
     }
   },
   "footer": {
@@ -65,160 +82,799 @@
     },
     {
       "source": "/changelog/overview",
-      "destination": "/updates/product"
+      "destination": "/updates/changelog"
     },
     {
       "source": "/changelog/dev-updates",
-      "destination": "/updates/dev"
+      "destination": "/updates/changelog"
+    },
+    {
+      "source": "/updates/product",
+      "destination": "/updates/changelog"
+    },
+    {
+      "source": "/updates/dev",
+      "destination": "/updates/changelog"
     },
     {
       "source": "/guides/mcp",
-      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+      "destination": "/guides/functions/tool-calling"
     },
     {
       "source": "/guides/use-cases/mcp-server",
-      "destination": "/implementation-guides/use-cases/tool-calling/overview"
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/overview",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/anthropic-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/vercel-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/mastra-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/google-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/langchain-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/llamaindex-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/openai-agents-sdk",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/any-llm",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling/implement-mcp-server",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/implement-a-sync",
+      "destination": "/guides/functions/syncs/sync-functions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions/implement-an-action",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions/async-actions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/checkpoints",
+      "destination": "/guides/functions/syncs/checkpoints"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/deletion-detection",
+      "destination": "/guides/functions/syncs/deletion-detection"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/realtime-syncs",
+      "destination": "/guides/functions/syncs/realtime-syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/records-cache",
+      "destination": "/guides/functions/syncs/records-cache"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs/sync-partitioning",
+      "destination": "/guides/functions/syncs/sync-partitioning"
+    },
+    {
+      "source": "/guides/primitives/proxy",
+      "destination": "/guides/platform/proxy-requests"
+    },
+    {
+      "source": "/guides/platform/ai-integration-builder",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/guides/platform/free-self-hosting/configuration",
+      "destination": "/guides/platform/self-hosting"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customer-configuration",
+      "destination": "/guides/functions/storage"
+    },
+    {
+      "source": "/implementation-guides/platform/open-telemetry-export",
+      "destination": "/guides/platform/observability"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/implement-api-auth",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/configure-integration",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/contribute-new-api",
+      "destination": "/integrations/contribute-or-request-api"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/functions-setup",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/leverage-ai-agents",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/catalog",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/customize-template",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/http-functions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/lifecycle-events",
+      "destination": "/guides/functions/event-functions"
+    },
+    {
+      "source": "/getting-started/sample-app",
+      "destination": "/getting-started/use-cases/sample-app"
+    },
+    {
+      "source": "/guides/primitives/auth",
+      "destination": "/guides/auth/auth-guide"
+    },
+    {
+      "source": "/guides/primitives/functions",
+      "destination": "/guides/functions/functions-guide"
+    },
+    {
+      "source": "/implementation-guides/use-cases/tool-calling",
+      "destination": "/getting-started/use-cases/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/use-cases/syncs",
+      "destination": "/getting-started/use-cases/syncs"
+    },
+    {
+      "source": "/implementation-guides/use-cases/actions",
+      "destination": "/getting-started/use-cases/actions"
+    },
+    {
+      "source": "/implementation-guides/use-cases/webhooks-from-external-apis",
+      "destination": "/getting-started/use-cases/webhooks-from-external-apis"
+    },
+    {
+      "source": "/implementation-guides/use-cases/unified-apis",
+      "destination": "/getting-started/use-cases/unified-apis"
+    },
+    {
+      "source": "/implementation-guides/use-cases/customer-configuration",
+      "destination": "/getting-started/use-cases/customer-configuration"
+    },
+    {
+      "source": "/implementation-guides/use-cases/implement-event-handler",
+      "destination": "/getting-started/use-cases/implement-event-handler"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/share-connect-link",
+      "destination": "/guides/auth/share-connect-link"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/connection-tags",
+      "destination": "/guides/auth/connection-tags"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/customize-connect-ui",
+      "destination": "/guides/auth/customize-connect-ui"
+    },
+    {
+      "source": "/implementation-guides/platform/auth/token-refreshing",
+      "destination": "/guides/auth/token-refreshing"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-functions",
+      "destination": "/guides/functions/syncs/sync-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-efficiency",
+      "destination": "/guides/functions/syncs/sync-efficiency"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/checkpoints",
+      "destination": "/guides/functions/syncs/checkpoints"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/records-cache",
+      "destination": "/guides/functions/syncs/records-cache"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/deletion-detection",
+      "destination": "/guides/functions/syncs/deletion-detection"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/realtime-syncs",
+      "destination": "/guides/functions/syncs/realtime-syncs"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/sync-partitioning",
+      "destination": "/guides/functions/syncs/sync-partitioning"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/action-functions",
+      "destination": "/guides/functions/action-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/webhook-functions",
+      "destination": "/guides/functions/webhook-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/event-functions",
+      "destination": "/guides/functions/event-functions"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/tool-calling",
+      "destination": "/guides/functions/tool-calling"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/storage",
+      "destination": "/guides/functions/storage"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/logging",
+      "destination": "/guides/functions/logging"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/rate-limits",
+      "destination": "/guides/functions/rate-limits"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/data-validation",
+      "destination": "/guides/functions/data-validation"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/testing",
+      "destination": "/guides/functions/testing"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/ci-cd",
+      "destination": "/guides/functions/ci-cd"
+    },
+    {
+      "source": "/implementation-guides/platform/functions/unified-apis",
+      "destination": "/guides/functions/unified-apis"
+    },
+    {
+      "source": "/implementation-guides/platform/proxy/implement-requests-proxy",
+      "destination": "/guides/platform/proxy-requests"
+    },
+    {
+      "source": "/implementation-guides/platform/webhooks-from-nango",
+      "destination": "/guides/platform/webhooks-from-nango"
+    },
+    {
+      "source": "/implementation-guides/platform/webhook-forwarding",
+      "destination": "/guides/platform/webhook-forwarding"
+    },
+    {
+      "source": "/implementation-guides/platform/common-issues",
+      "destination": "/guides/platform/common-issues"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-to-checkpoints",
+      "destination": "/guides/platform/migrations/migrate-to-checkpoints"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-from-end-user",
+      "destination": "/guides/platform/migrations/migrate-from-end-user"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-from-public-key",
+      "destination": "/guides/platform/migrations/migrate-from-public-key"
+    },
+    {
+      "source": "/implementation-guides/platform/migrations/migrate-to-zero-yaml",
+      "destination": "/guides/platform/migrations/migrate-to-zero-yaml"
+    },
+    {
+      "source": "/reference/sdks/frontend",
+      "destination": "/reference/frontend/frontend-sdk"
+    },
+    {
+      "source": "/reference/api-keys",
+      "destination": "/reference/backend/http-api/api-keys"
+    },
+    {
+      "source": "/reference/api-configuration",
+      "destination": "/integrations/api-configuration"
+    },
+    {
+      "source": "/reference/cli",
+      "destination": "/reference/functions/functions-cli"
+    },
+    {
+      "source": "/reference/functions",
+      "destination": "/reference/functions/functions-sdk"
+    },
+    {
+      "source": "/reference/api/connect/session/delete",
+      "destination": "/reference/backend/http-api/connect/session/delete"
+    },
+    {
+      "source": "/reference/api/connect/session/get",
+      "destination": "/reference/backend/http-api/connect/session/get"
+    },
+    {
+      "source": "/reference/api/connect/sessions/reconnect",
+      "destination": "/reference/backend/http-api/connect/sessions/reconnect"
+    },
+    {
+      "source": "/reference/api/connect/sessions/create",
+      "destination": "/reference/backend/http-api/connect/sessions/create"
+    },
+    {
+      "source": "/reference/api/sync/pause",
+      "destination": "/reference/backend/http-api/sync/pause"
+    },
+    {
+      "source": "/reference/api/sync/status",
+      "destination": "/reference/backend/http-api/sync/status"
+    },
+    {
+      "source": "/reference/api/sync/update-connection-frequency",
+      "destination": "/reference/backend/http-api/sync/update-connection-frequency"
+    },
+    {
+      "source": "/reference/api/sync/prune-records",
+      "destination": "/reference/backend/http-api/sync/prune-records"
+    },
+    {
+      "source": "/reference/api/sync/create-variant",
+      "destination": "/reference/backend/http-api/sync/create-variant"
+    },
+    {
+      "source": "/reference/api/sync/delete-variant",
+      "destination": "/reference/backend/http-api/sync/delete-variant"
+    },
+    {
+      "source": "/reference/api/sync/environment-variables",
+      "destination": "/reference/backend/http-api/sync/environment-variables"
+    },
+    {
+      "source": "/reference/api/sync/start",
+      "destination": "/reference/backend/http-api/sync/start"
+    },
+    {
+      "source": "/reference/api/sync/trigger",
+      "destination": "/reference/backend/http-api/sync/trigger"
+    },
+    {
+      "source": "/reference/api/sync/records-list",
+      "destination": "/reference/backend/http-api/sync/records-list"
+    },
+    {
+      "source": "/reference/api/api-keys",
+      "destination": "/reference/backend/http-api/api-keys"
+    },
+    {
+      "source": "/reference/api/scripts/config",
+      "destination": "/reference/backend/http-api/scripts/config"
+    },
+    {
+      "source": "/reference/api/action/trigger",
+      "destination": "/reference/backend/http-api/action/trigger"
+    },
+    {
+      "source": "/reference/api/connections/update-metadata",
+      "destination": "/reference/backend/http-api/connections/update-metadata"
+    },
+    {
+      "source": "/reference/api/connections/patch",
+      "destination": "/reference/backend/http-api/connections/patch"
+    },
+    {
+      "source": "/reference/api/connections/set-metadata",
+      "destination": "/reference/backend/http-api/connections/set-metadata"
+    },
+    {
+      "source": "/reference/api/connections/delete",
+      "destination": "/reference/backend/http-api/connections/delete"
+    },
+    {
+      "source": "/reference/api/connections/get",
+      "destination": "/reference/backend/http-api/connections/get"
+    },
+    {
+      "source": "/reference/api/connections/post",
+      "destination": "/reference/backend/http-api/connections/post"
+    },
+    {
+      "source": "/reference/api/connections/list",
+      "destination": "/reference/backend/http-api/connections/list"
+    },
+    {
+      "source": "/reference/api/rate-limits",
+      "destination": "/reference/backend/http-api/rate-limits"
+    },
+    {
+      "source": "/reference/api/providers/get",
+      "destination": "/reference/backend/http-api/providers/get"
+    },
+    {
+      "source": "/reference/api/providers/list",
+      "destination": "/reference/backend/http-api/providers/list"
+    },
+    {
+      "source": "/reference/api/authentication",
+      "destination": "/reference/backend/http-api/authentication"
+    },
+    {
+      "source": "/reference/api/integration/delete",
+      "destination": "/reference/backend/http-api/integration/delete"
+    },
+    {
+      "source": "/reference/api/integration/update",
+      "destination": "/reference/backend/http-api/integration/update"
+    },
+    {
+      "source": "/reference/api/integration/get",
+      "destination": "/reference/backend/http-api/integration/get"
+    },
+    {
+      "source": "/reference/api/integration/create",
+      "destination": "/reference/backend/http-api/integration/create"
+    },
+    {
+      "source": "/reference/api/integration/list",
+      "destination": "/reference/backend/http-api/integration/list"
+    },
+    {
+      "source": "/reference/api/connection/update-metadata-legacy",
+      "destination": "/reference/backend/http-api/connection/update-metadata-legacy"
+    },
+    {
+      "source": "/reference/api/connection/update-metadata",
+      "destination": "/reference/backend/http-api/connection/update-metadata"
+    },
+    {
+      "source": "/reference/api/connection/set-metadata",
+      "destination": "/reference/backend/http-api/connection/set-metadata"
+    },
+    {
+      "source": "/reference/api/connection/delete",
+      "destination": "/reference/backend/http-api/connection/delete"
+    },
+    {
+      "source": "/reference/api/connection/get",
+      "destination": "/reference/backend/http-api/connection/get"
+    },
+    {
+      "source": "/reference/api/connection/post",
+      "destination": "/reference/backend/http-api/connection/post"
+    },
+    {
+      "source": "/reference/api/connection/set-metadata-legacy",
+      "destination": "/reference/backend/http-api/connection/set-metadata-legacy"
+    },
+    {
+      "source": "/reference/api/connection/list",
+      "destination": "/reference/backend/http-api/connection/list"
+    },
+    {
+      "source": "/reference/api/proxy/patch",
+      "destination": "/reference/backend/http-api/proxy/patch"
+    },
+    {
+      "source": "/reference/api/proxy/delete",
+      "destination": "/reference/backend/http-api/proxy/delete"
+    },
+    {
+      "source": "/reference/api/proxy/get",
+      "destination": "/reference/backend/http-api/proxy/get"
+    },
+    {
+      "source": "/reference/api/proxy/post",
+      "destination": "/reference/backend/http-api/proxy/post"
+    },
+    {
+      "source": "/reference/api/proxy/put",
+      "destination": "/reference/backend/http-api/proxy/put"
+    },
+    {
+      "source": "/reference/sdks/node",
+      "destination": "/reference/backend/backend-sdk/node"
+    },
+    {
+      "source": "/reference/sdks/go",
+      "destination": "/reference/backend/backend-sdk/go"
+    },
+    {
+      "source": "/reference/sdks/php",
+      "destination": "/reference/backend/backend-sdk/php"
+    },
+    {
+      "source": "/reference/sdks/python",
+      "destination": "/reference/backend/backend-sdk/python"
+    },
+    {
+      "source": "/reference/sdks/ruby",
+      "destination": "/reference/backend/backend-sdk/ruby"
+    },
+    {
+      "source": "/reference/sdks/rust",
+      "destination": "/reference/backend/backend-sdk/rust"
+    },
+    {
+      "source": "/reference/sdks/java",
+      "destination": "/reference/backend/backend-sdk/java"
     }
   ],
   "navigation": {
     "tabs": [
       {
         "tab": "Documentation",
+        "icon": "book-open",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Getting started",
             "pages": [
               "getting-started/intro-to-nango",
-              "getting-started/quickstart"
+              "getting-started/quickstart",
+              {
+                "group": "Use cases",
+                "expanded": false,
+                "pages": [
+                  "getting-started/use-cases/tool-calling",
+                  "getting-started/use-cases/syncs",
+                  "getting-started/use-cases/actions",
+                  "getting-started/use-cases/webhooks-from-external-apis",
+                  "getting-started/use-cases/unified-apis",
+                  "getting-started/use-cases/customer-configuration",
+                  "getting-started/use-cases/implement-event-handler",
+                  "getting-started/use-cases/sample-app"
+                ]
+              }
             ]
           },
           {
-            "group": "Integration Primitives",
-            "pages": [
-              "guides/primitives/auth",
-              "guides/primitives/proxy",
-              "guides/primitives/functions"
-            ]
-          },
-          {
-            "group": "Platform",
-            "pages": [
-              "guides/platform/ai-integration-builder",
-              "guides/platform/observability",
-              "guides/platform/environments",
-              "guides/platform/limits",
-              "guides/platform/security",
-              "guides/platform/self-hosting"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Implementation Guides",
-        "groups": [
-          {
-            "group": "Use Cases",
-            "pages": [
-              "implementation-guides/use-cases/sample-app",
-              {
-                "group": "AI tool calling & MCP",
-                "pages": [
-                  "implementation-guides/use-cases/tool-calling/overview",
-                  "implementation-guides/use-cases/tool-calling/openai-sdk",
-                  "implementation-guides/use-cases/tool-calling/anthropic-sdk",
-                  "implementation-guides/use-cases/tool-calling/vercel-sdk",
-                  "implementation-guides/use-cases/tool-calling/mastra-sdk",
-                  "implementation-guides/use-cases/tool-calling/google-sdk",
-                  "implementation-guides/use-cases/tool-calling/langchain-sdk",
-                  "implementation-guides/use-cases/tool-calling/llamaindex-sdk",
-                  "implementation-guides/use-cases/tool-calling/openai-agents-sdk",
-                  "implementation-guides/use-cases/tool-calling/any-llm",
-                  "implementation-guides/use-cases/tool-calling/implement-mcp-server"
-                ]
-              },
-              {
-                "group": "Syncs, RAG & triggers",
-                "pages": [
-                  "implementation-guides/use-cases/syncs/implement-a-sync",
-                  "implementation-guides/use-cases/syncs/records-cache",
-                  "implementation-guides/use-cases/syncs/checkpoints",
-                  "implementation-guides/use-cases/syncs/deletion-detection",
-                  "implementation-guides/use-cases/syncs/realtime-syncs",
-                  "implementation-guides/use-cases/syncs/sync-partitioning"
-                ]
-              },
-              {
-                "group": "Actions",
-                "pages": [
-                  "implementation-guides/use-cases/actions/implement-an-action",
-                  "implementation-guides/use-cases/actions/async-actions"
-                ]
-              },
-              "implementation-guides/use-cases/webhooks-from-external-apis",
-              "implementation-guides/use-cases/unified-apis",
-              "implementation-guides/use-cases/customer-configuration",
-              "implementation-guides/use-cases/implement-event-handler"
-            ]
-          },
-          {
-            "group": "Platform",
+            "group": "Guides",
             "pages": [
               {
                 "group": "Auth",
+                "expanded": false,
                 "pages": [
-                  "implementation-guides/platform/auth/configure-integration",
-                  "implementation-guides/platform/auth/implement-api-auth",
-                  "implementation-guides/platform/auth/connection-tags",
-                  "implementation-guides/platform/auth/customize-connect-ui",
-                  "implementation-guides/platform/auth/contribute-new-api"
+                  "guides/auth/auth-guide",
+                  "guides/auth/share-connect-link",
+                  "guides/auth/connection-tags",
+                  "guides/auth/customize-connect-ui",
+                  "guides/auth/token-refreshing"
                 ]
               },
               {
-                "group": "Proxy",
+                "group": "Functions",
+                "expanded": false,
                 "pages": [
-                  "implementation-guides/platform/proxy/implement-requests-proxy"
+                  "guides/functions/functions-guide",
+                  {
+                    "group": "Sync functions",
+                    "pages": [
+                      "guides/functions/syncs/sync-functions",
+                      "guides/functions/syncs/sync-efficiency",
+                      "guides/functions/syncs/checkpoints",
+                      "guides/functions/syncs/records-cache",
+                      "guides/functions/syncs/deletion-detection",
+                      "guides/functions/syncs/realtime-syncs",
+                      "guides/functions/syncs/sync-partitioning"
+                    ]
+                  },
+                  "guides/functions/action-functions",
+                  "guides/functions/webhook-functions",
+                  "guides/functions/event-functions",
+                  "guides/functions/tool-calling",
+                  "guides/functions/storage",
+                  "guides/functions/logging",
+                  "guides/functions/rate-limits",
+                  "guides/functions/data-validation",
+                  "guides/functions/testing",
+                  "guides/functions/ci-cd",
+                  "guides/functions/unified-apis"
+                ]
+              },
+              {
+                "group": "Platform",
+                "expanded": false,
+                "pages": [
+                  "guides/platform/observability",
+                  "guides/platform/environments",
+                  "guides/platform/limits",
+                  "guides/platform/security",
+                  "guides/platform/self-hosting",
+                  "guides/platform/proxy-requests",
+                  "guides/platform/webhooks-from-nango",
+                  "guides/platform/webhook-forwarding",
+                  "guides/platform/common-issues",
+                  {
+                    "group": "Migrations",
+                    "pages": [
+                      "guides/platform/migrations/migrate-to-checkpoints",
+                      "guides/platform/migrations/migrate-from-end-user",
+                      "guides/platform/migrations/migrate-from-public-key",
+                      "guides/platform/migrations/migrate-to-zero-yaml"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              {
+                "group": "Frontend",
+                "pages": [
+                  "reference/frontend/frontend-sdk"
+                ]
+              },
+              {
+                "group": "Backend",
+                "pages": [
+                  {
+                    "group": "HTTP API",
+                    "icon": "cloud",
+                    "pages": [
+                      "reference/backend/http-api/api-keys",
+                      "reference/backend/http-api/authentication",
+                      "reference/backend/http-api/rate-limits",
+                      {
+                        "group": "Integrations",
+                        "pages": [
+                          "reference/backend/http-api/integration/list",
+                          "reference/backend/http-api/integration/get",
+                          "reference/backend/http-api/integration/create",
+                          "reference/backend/http-api/integration/update",
+                          "reference/backend/http-api/integration/delete"
+                        ]
+                      },
+                      {
+                        "group": "Connect",
+                        "pages": [
+                          "reference/backend/http-api/connect/sessions/create",
+                          "reference/backend/http-api/connect/sessions/reconnect",
+                          "reference/backend/http-api/connect/session/get",
+                          "reference/backend/http-api/connect/session/delete"
+                        ]
+                      },
+                      {
+                        "group": "Connections",
+                        "pages": [
+                          "reference/backend/http-api/connections/post",
+                          "reference/backend/http-api/connections/list",
+                          "reference/backend/http-api/connections/get",
+                          "reference/backend/http-api/connections/patch",
+                          "reference/backend/http-api/connections/set-metadata",
+                          "reference/backend/http-api/connections/update-metadata",
+                          "reference/backend/http-api/connections/delete"
+                        ]
+                      },
+                      {
+                        "group": "Functions",
+                        "pages": [
+                          "reference/backend/http-api/scripts/config"
+                        ]
+                      },
+                      {
+                        "group": "Syncs",
+                        "pages": [
+                          "reference/backend/http-api/sync/records-list",
+                          "reference/backend/http-api/sync/prune-records",
+                          "reference/backend/http-api/sync/trigger",
+                          "reference/backend/http-api/sync/start",
+                          "reference/backend/http-api/sync/pause",
+                          "reference/backend/http-api/sync/status",
+                          "reference/backend/http-api/sync/update-connection-frequency",
+                          "reference/backend/http-api/sync/environment-variables",
+                          "reference/backend/http-api/sync/create-variant",
+                          "reference/backend/http-api/sync/delete-variant"
+                        ]
+                      },
+                      {
+                        "group": "Actions",
+                        "pages": [
+                          "reference/backend/http-api/action/trigger"
+                        ]
+                      },
+                      {
+                        "group": "Proxy",
+                        "pages": [
+                          "reference/backend/http-api/proxy/get",
+                          "reference/backend/http-api/proxy/post",
+                          "reference/backend/http-api/proxy/put",
+                          "reference/backend/http-api/proxy/patch",
+                          "reference/backend/http-api/proxy/delete"
+                        ]
+                      },
+                      {
+                        "group": "Providers",
+                        "pages": [
+                          "reference/backend/http-api/providers/list",
+                          "reference/backend/http-api/providers/get"
+                        ]
+                      },
+                      {
+                        "group": "Deprecated",
+                        "pages": [
+                          "reference/backend/http-api/connection/list",
+                          "reference/backend/http-api/connection/get",
+                          "reference/backend/http-api/connection/post",
+                          "reference/backend/http-api/connection/set-metadata",
+                          "reference/backend/http-api/connection/set-metadata-legacy",
+                          "reference/backend/http-api/connection/update-metadata",
+                          "reference/backend/http-api/connection/update-metadata-legacy",
+                          "reference/backend/http-api/connection/delete"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "group": "Backend SDK",
+                    "icon": "cubes",
+                    "pages": [
+                      "reference/backend/backend-sdk/node",
+                      "reference/backend/backend-sdk/python",
+                      "reference/backend/backend-sdk/java",
+                      "reference/backend/backend-sdk/ruby",
+                      "reference/backend/backend-sdk/go",
+                      "reference/backend/backend-sdk/rust",
+                      "reference/backend/backend-sdk/php"
+                    ]
+                  }
                 ]
               },
               {
                 "group": "Functions",
                 "pages": [
-                  "implementation-guides/platform/functions/functions-setup",
-                  "implementation-guides/platform/functions/leverage-ai-agents",
-                  "implementation-guides/platform/functions/customize-template",
-                  "implementation-guides/platform/functions/rate-limits",
-                  "implementation-guides/platform/functions/data-validation",
-                  "implementation-guides/platform/functions/testing",
-                  "implementation-guides/platform/functions/ci-cd"
+                  "reference/functions/functions-cli",
+                  "reference/functions/functions-sdk"
                 ]
-              },
-              "implementation-guides/platform/webhooks-from-nango",
-              "implementation-guides/platform/open-telemetry-export",
-              {
-                "group": "Migrations",
-                "pages": [
-                  "implementation-guides/platform/migrations/migrate-to-checkpoints",
-                  "implementation-guides/platform/migrations/migrate-from-end-user",
-                  "implementation-guides/platform/migrations/migrate-from-public-key",
-                  "implementation-guides/platform/migrations/migrate-to-zero-yaml"
-                ]
-              },
-              "implementation-guides/platform/common-issues"
+              }
             ]
           }
         ]
       },
       {
         "tab": "APIs & Integrations",
+        "icon": "plug",
         "groups": [
           {
-            "group": "API Guides",
+            "group": "Overview",
             "pages": [
               "integrations/overview",
-              "integrations/google-security-review"
+              "integrations/api-configuration",
+              "integrations/contribute-or-request-api"
             ]
           },
           {
-            "group": "APIs & Integrations",
+            "group": "700+ APIs & Integrations",
             "pages": [
               "integrations/all/1password-scim",
               "api-integrations/3cx",
@@ -248,9 +904,10 @@
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
               "api-integrations/amazon",
-              "integrations/all/amazon-selling-partner",
-              "integrations/all/amazon-selling-partner-beta",
+              "api-integrations/amazon-selling-partner",
+              "api-integrations/amazon-selling-partner-beta",
               "api-integrations/amplitude",
+              "api-integrations/amplitude-mcp",
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
@@ -259,8 +916,10 @@
               "api-integrations/apollo",
               "integrations/all/apollo-oauth",
               "integrations/all/apple-app-store",
+              "api-integrations/apple-business-manager",
               "integrations/all/appstle-subscriptions",
               "api-integrations/asana",
+              "api-integrations/asana-mcp",
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "integrations/all/atlas-so",
@@ -271,6 +930,7 @@
               "api-integrations/atlassian-service-account-oauth2",
               "api-integrations/attention",
               "api-integrations/attio",
+              "api-integrations/avanan",
               "api-integrations/availity",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
@@ -280,9 +940,11 @@
               "integrations/all/avalara",
               "integrations/all/avalara-sandbox",
               "integrations/all/aws",
-              "integrations/all/aws-iam",
+              "api-integrations/aws-iam",
+              "api-integrations/aws-inspector2",
               "integrations/all/aws-scim",
               "integrations/all/avoma",
+              "api-integrations/axiom",
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
               "api-integrations/bamboohr",
@@ -291,6 +953,7 @@
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
+              "api-integrations/bliro",
               "integrations/all/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
@@ -300,6 +963,7 @@
               "integrations/all/blackbaud",
               "integrations/all/blackbaud-basic",
               "integrations/all/blandai",
+              "api-integrations/bing-webmasters",
               "api-integrations/bird",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
@@ -313,13 +977,13 @@
               "api-integrations/brex-api-key",
               "api-integrations/brex-staging",
               "integrations/all/brightcrowd",
-              "integrations/all/builder-io-private",
-              "integrations/all/builder-io-public",
+              "api-integrations/builder-io-private",
+              "api-integrations/builder-io-public",
               "integrations/all/buildium",
               "integrations/all/bullhorn",
               "integrations/all/builtwith",
               "integrations/all/cal-com-v1",
-              "integrations/all/cal-com-v2",
+              "api-integrations/cal-com-v2",
               "api-integrations/cal-com-oauth",
               "api-integrations/calendly",
               "integrations/all/callrail",
@@ -338,11 +1002,18 @@
               "integrations/all/checkr-partner",
               "integrations/all/checkr-partner-staging",
               "integrations/all/chorus",
+              "api-integrations/cin7-core",
               "integrations/all/circle-so",
+              "api-integrations/circleback-mcp",
               "integrations/all/clari-copilot",
+              "api-integrations/clay",
+              "api-integrations/cleverreach",
+              "api-integrations/clickhouse",
               "integrations/all/clicksend",
               "api-integrations/clickup",
               "integrations/all/clerk",
+              "api-integrations/clover",
+              "api-integrations/clio",
               "integrations/all/close",
               "api-integrations/cloudbeds",
               "api-integrations/cloudtalk",
@@ -357,10 +1028,11 @@
               "api-integrations/confluence",
               "integrations/all/confluence-basic",
               "integrations/all/confluence-data-center",
-              "integrations/all/connectwise-psa",
+              "api-integrations/connectwise-psa",
               "integrations/all/connectwise-psa-staging",
               "api-integrations/connectwise-rmm",
               "api-integrations/constant-contact",
+              "api-integrations/conta-azul",
               "integrations/all/contactout",
               "integrations/all/contentful",
               "integrations/all/contentstack",
@@ -378,9 +1050,9 @@
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
-              "integrations/all/datadog",
+              "api-integrations/datadog",
               "integrations/all/datev",
-              "integrations/all/dayforce",
+              "api-integrations/dayforce",
               "integrations/all/datto-rmm",
               "integrations/all/datto-rmm-password-grant",
               "integrations/all/deel",
@@ -399,6 +1071,7 @@
               "integrations/all/docuware",
               "api-integrations/domo",
               "api-integrations/drata",
+              "api-integrations/cisco-duo-admin",
               "integrations/all/drchrono",
               "api-integrations/dropbox",
               "integrations/all/dropbox-sign",
@@ -419,6 +1092,7 @@
               "integrations/all/epic-games",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
+              "api-integrations/etsy",
               "integrations/all/exa",
               "integrations/all/exact-online",
               "integrations/all/exist",
@@ -427,6 +1101,7 @@
               "api-integrations/fellow",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
+              "api-integrations/freepik",
               "integrations/all/factorial",
               "integrations/all/falai",
               "integrations/all/fairing",
@@ -454,6 +1129,7 @@
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
+              "api-integrations/front-api-key",
               "api-integrations/fullenrich",
               "integrations/all/float",
               "integrations/all/gainsight-cc",
@@ -462,6 +1138,7 @@
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",
               "integrations/all/gerrit",
+              "api-integrations/getty-images",
               "integrations/all/ghost-admin",
               "integrations/all/ghost-content",
               "api-integrations/github",
@@ -475,21 +1152,28 @@
               "api-integrations/google",
               "api-integrations/google-ads",
               "api-integrations/google-analytics",
+              "api-integrations/google-bigquery",
               "api-integrations/google-calendar",
-              "integrations/all/google-chat",
-              "integrations/all/google-cloud-storage",
+              "api-integrations/google-chat",
+              "api-integrations/google-cloud-storage",
+              "api-integrations/google-contacts",
               "api-integrations/google-docs",
               "api-integrations/google-drive",
+              "api-integrations/google-forms",
               "api-integrations/google-mail",
+              "api-integrations/google-maps",
               "api-integrations/google-meet",
               "integrations/all/google-play",
               "api-integrations/google-search-console",
               "api-integrations/google-sheet",
+              "api-integrations/google-tasks",
               "api-integrations/granola",
+              "api-integrations/granola-mcp",
               "api-integrations/glyphic",
+              "api-integrations/gamma",
               "api-integrations/grist",
-              "integrations/all/google-slides",
-              "integrations/all/google-workspace-admin",
+              "api-integrations/google-slides",
+              "api-integrations/google-workspace-admin",
               "integrations/all/google-service-account",
               "integrations/all/gorgias",
               "integrations/all/gorgias-basic",
@@ -513,11 +1197,15 @@
               "integrations/all/gusto",
               "integrations/all/gusto-demo",
               "integrations/all/hackerrank-work",
+              "api-integrations/halo-psa",
               "integrations/all/harvest",
               "integrations/all/health-gorilla",
               "integrations/all/heap",
               "integrations/all/helpscout-docs",
               "integrations/all/helpscout-mailbox",
+              "api-integrations/hex",
+              "api-integrations/heygen",
+              "api-integrations/heymarket",
               "integrations/all/heyreach",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
@@ -525,6 +1213,7 @@
               "integrations/all/holded",
               "integrations/all/hover",
               "api-integrations/hubspot",
+              "api-integrations/hubspot-mcp",
               "integrations/all/icypeas",
               "integrations/all/incident-io",
               "integrations/all/insightly",
@@ -553,9 +1242,11 @@
               "integrations/all/kintone",
               "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
-              "integrations/all/knowbe4",
+              "api-integrations/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
+              "api-integrations/klicktipp",
+              "api-integrations/kno-commerce",
               "integrations/all/klipfolio",
               "integrations/all/kustomer",
               "integrations/all/lagrowthmachine",
@@ -568,26 +1259,33 @@
               "integrations/all/lever-basic",
               "integrations/all/lever-basic-sandbox",
               "integrations/all/lever-sandbox",
+              "api-integrations/lightspeed-retail",
               "api-integrations/linear",
               "api-integrations/linkedin",
               "integrations/all/linkhut",
               "integrations/all/listmonk",
+              "api-integrations/listrak",
+              "api-integrations/lokalise",
+              "api-integrations/lob",
               "integrations/all/loom-scim",
               "integrations/all/loops-so",
               "integrations/all/loop-returns",
               "api-integrations/looker",
+              "api-integrations/looker-oauth",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "api-integrations/lumos",
               "integrations/all/mailchimp",
               "integrations/all/mailgun",
+              "api-integrations/mailjet",
               "integrations/all/make",
               "integrations/all/malwarebytes",
               "integrations/all/manatal",
               "integrations/all/marketo",
               "integrations/all/mcp-generic",
               "integrations/all/medallia",
-              "integrations/all/metabase",
+              "api-integrations/mercury",
+              "api-integrations/metabase",
               "api-integrations/meta-marketing-api",
               "api-integrations/microsoft",
               "integrations/all/microsoft-ads",
@@ -595,13 +1293,16 @@
               "integrations/all/microsoft-entra-id",
               "integrations/all/microsoft-excel",
               "api-integrations/microsoft-planner",
+              "api-integrations/microsoft-powerpoint",
               "integrations/all/microsoft-power-bi",
               "api-integrations/microsoft-teams",
               "api-integrations/microsoft-teams-bot",
+              "api-integrations/microsoft-word",
               "api-integrations/maximizer",
               "api-integrations/maximizer-on-premise",
+              "api-integrations/maxio",
               "integrations/all/microsoft-tenant-specific",
-              "integrations/all/microsoft-oauth2-cc",
+              "api-integrations/microsoft-oauth2-cc",
               "integrations/all/microsoft-admin",
               "integrations/all/mindbody",
               "integrations/all/minimax",
@@ -612,6 +1313,7 @@
               "integrations/all/missive",
               "api-integrations/juniper-mist",
               "integrations/all/mixpanel",
+              "api-integrations/modjo-ai",
               "api-integrations/mollie",
               "api-integrations/modmed",
               "api-integrations/monday",
@@ -641,6 +1343,7 @@
               "integrations/all/one-note",
               "integrations/all/onelogin",
               "api-integrations/oomnitza",
+              "api-integrations/orange-logic",
               "integrations/all/openai",
               "integrations/all/openai-admin",
               "integrations/all/open-hands",
@@ -653,6 +1356,7 @@
               "api-integrations/outlook",
               "integrations/all/outreach",
               "integrations/all/pagerduty",
+              "api-integrations/paligo",
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
@@ -666,10 +1370,12 @@
               "integrations/all/paycor",
               "integrations/all/paycor-sandbox",
               "integrations/all/pendo",
+              "api-integrations/pendo-oauth",
               "integrations/all/pennylane",
               "integrations/all/pennylane-company-api",
               "integrations/all/peopledatalabs",
               "api-integrations/perdoo",
+              "api-integrations/perk",
               "integrations/all/perimeter81",
               "integrations/all/perplexity",
               "integrations/all/personio",
@@ -684,8 +1390,10 @@
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
+              "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/posthog",
+              "api-integrations/posthog-oauth",
               "api-integrations/practicefusion",
               "api-integrations/printful",
               "integrations/all/prive",
@@ -694,11 +1402,16 @@
               "integrations/all/prospeo",
               "integrations/all/productboard",
               "api-integrations/procore",
+              "api-integrations/provenexpert",
+              "api-integrations/prtg-classic",
               "api-integrations/pylon",
               "integrations/all/qualtrics",
+              "api-integrations/qualia",
+              "api-integrations/quentn",
               "integrations/all/quickbase",
               "api-integrations/quickbooks",
               "api-integrations/quickbooks-sandbox",
+              "api-integrations/quipteams",
               "integrations/all/ragieai",
               "integrations/all/ramp",
               "integrations/all/ramp-sandbox",
@@ -706,7 +1419,9 @@
               "integrations/all/readwise",
               "integrations/all/readwise-reader",
               "api-integrations/reapit",
+              "api-integrations/rydoo",
               "api-integrations/recall-ai",
+              "api-integrations/reply-io",
               "api-integrations/researchdesk",
               "api-integrations/resend",
               "integrations/all/recharge",
@@ -721,6 +1436,7 @@
               "integrations/all/retell-ai",
               "integrations/all/ring-central",
               "integrations/all/ring-central-sandbox",
+              "api-integrations/ringover",
               "integrations/all/rippling",
               "integrations/all/rippling-shop-app",
               "integrations/all/rocketlane",
@@ -733,6 +1449,7 @@
               "integrations/all/sage-intacct-oauth",
               "integrations/all/sage-people",
               "api-integrations/salesforce",
+              "api-integrations/salesforce-cc",
               "api-integrations/salesforce-jwt",
               "integrations/all/salesforce-experience-cloud",
               "integrations/all/salesforce-cdp",
@@ -754,6 +1471,7 @@
               "integrations/all/segment",
               "integrations/all/semrush",
               "integrations/all/sendgrid",
+              "api-integrations/sentinelone",
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
@@ -767,19 +1485,30 @@
               "integrations/all/sharepoint-online-oauth2-cc",
               "integrations/all/shipstation",
               "integrations/all/shipstation-v2",
+              "api-integrations/shipbob-pat",
               "api-integrations/shopify",
+              "api-integrations/shopify-cc",
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
+              "api-integrations/simpro",
+              "api-integrations/simpro/connect",
               "api-integrations/slab",
               "api-integrations/slack",
+              "api-integrations/slack-mcp",
+              "api-integrations/talentlms",
               "api-integrations/tally",
+              "api-integrations/telegram",
               "api-integrations/timify",
+              "api-integrations/toggl",
               "api-integrations/torii",
+              "api-integrations/trigify-io-mcp",
+              "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
               "integrations/all/smartsheet",
@@ -797,15 +1526,19 @@
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
               "integrations/all/statista",
+              "api-integrations/stay-ai",
+              "api-integrations/stitch-mcp",
               "integrations/all/strava",
               "integrations/all/strava-web",
-              "integrations/all/streak",
+              "api-integrations/streak",
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
               "integrations/all/stripe-app-sandbox",
               "integrations/all/stripe-express",
-              "integrations/all/supabase",
+              "api-integrations/supabase",
+              "api-integrations/supabase-mcp",
+              "api-integrations/supabase-mcp-oauth",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
@@ -842,7 +1575,9 @@
               "api-integrations/twitter-v2",
               "integrations/all/typeform",
               "integrations/all/typefully",
+              "api-integrations/typefully-v2",
               "integrations/all/uber",
+              "api-integrations/ukg-pro-cc",
               "integrations/all/ukg-pro-wfm",
               "integrations/all/ukg-pro",
               "integrations/all/ukg-ready",
@@ -854,7 +1589,8 @@
               "integrations/all/valley-api-key",
               "api-integrations/vanta",
               "api-integrations/veeva-vault",
-              "integrations/all/vercel",
+              "api-integrations/vercel",
+              "api-integrations/vercel-mcp",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
@@ -863,6 +1599,8 @@
               "integrations/all/wealthbox",
               "integrations/all/webflow",
               "integrations/all/webex",
+              "api-integrations/webinarjam",
+              "api-integrations/wejam",
               "api-integrations/whatsapp-business",
               "integrations/all/whoop",
               "integrations/all/wildix-pbx",
@@ -873,10 +1611,13 @@
               "integrations/all/wordpress",
               "integrations/all/workable",
               "integrations/all/workable-oauth",
+              "api-integrations/workday-adaptive-planning",
+              "api-integrations/workday-adaptive-planning-basic",
               "api-integrations/workday-refresh-token",
               "integrations/all/workday",
               "api-integrations/workday-oauth",
               "api-integrations/workos",
+              "api-integrations/workpath",
               "integrations/all/wrike",
               "integrations/all/xai",
               "api-integrations/xero",
@@ -904,156 +1645,23 @@
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
               "integrations/all/zoominfo",
+              "api-integrations/zorus",
               "integrations/all/zuora"
             ]
           }
         ]
       },
       {
-        "tab": "Reference",
-        "groups": [
-          {
-            "group": "Reference",
-            "pages": [
-              "reference/overview"
-            ]
-          },
-          {
-            "group": "Use Integrations - Reference",
-            "pages": [
-              "reference/sdks/frontend",
-              {
-                "group": "HTTP API",
-                "icon": "cloud",
-                "pages": [
-                  "reference/api/authentication",
-                  "reference/api/rate-limits",
-                  {
-                    "group": "Integrations",
-                    "pages": [
-                      "reference/api/integration/list",
-                      "reference/api/integration/get",
-                      "reference/api/integration/create",
-                      "reference/api/integration/update",
-                      "reference/api/integration/delete"
-                    ]
-                  },
-                  {
-                    "group": "Connect",
-                    "pages": [
-                      "reference/api/connect/sessions/create",
-                      "reference/api/connect/sessions/reconnect",
-                      "reference/api/connect/session/get",
-                      "reference/api/connect/session/delete"
-                    ]
-                  },
-                  {
-                    "group": "Connections",
-                    "pages": [
-                      "reference/api/connections/post",
-                      "reference/api/connections/list",
-                      "reference/api/connections/get",
-                      "reference/api/connections/patch",
-                      "reference/api/connections/set-metadata",
-                      "reference/api/connections/update-metadata",
-                      "reference/api/connections/delete"
-                    ]
-                  },
-                  {
-                    "group": "Functions",
-                    "pages": [
-                      "reference/api/scripts/config"
-                    ]
-                  },
-                  {
-                    "group": "Syncs",
-                    "pages": [
-                      "reference/api/sync/records-list",
-                      "reference/api/sync/prune-records",
-                      "reference/api/sync/trigger",
-                      "reference/api/sync/start",
-                      "reference/api/sync/pause",
-                      "reference/api/sync/status",
-                      "reference/api/sync/update-connection-frequency",
-                      "reference/api/sync/environment-variables",
-                      "reference/api/sync/create-variant",
-                      "reference/api/sync/delete-variant"
-                    ]
-                  },
-                  {
-                    "group": "Actions",
-                    "pages": [
-                      "reference/api/action/trigger"
-                    ]
-                  },
-                  {
-                    "group": "Proxy",
-                    "pages": [
-                      "reference/api/proxy/get",
-                      "reference/api/proxy/post",
-                      "reference/api/proxy/put",
-                      "reference/api/proxy/patch",
-                      "reference/api/proxy/delete"
-                    ]
-                  },
-                  {
-                    "group": "Providers",
-                    "pages": [
-                      "reference/api/providers/list",
-                      "reference/api/providers/get"
-                    ]
-                  },
-                  {
-                    "group": "Deprecated",
-                    "pages": [
-                      "reference/api/connection/list",
-                      "reference/api/connection/get",
-                      "reference/api/connection/post",
-                      "reference/api/connection/set-metadata",
-                      "reference/api/connection/set-metadata-legacy",
-                      "reference/api/connection/update-metadata",
-                      "reference/api/connection/update-metadata-legacy",
-                      "reference/api/connection/delete"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Backend SDKs",
-                "icon": "cubes",
-                "pages": [
-                  "reference/sdks/node",
-                  "reference/sdks/python",
-                  "reference/sdks/java",
-                  "reference/sdks/ruby",
-                  "reference/sdks/go",
-                  "reference/sdks/rust",
-                  "reference/sdks/php"
-                ]
-              }
-            ]
-          },
-          {
-            "group": "Build Integrations - Reference",
-            "pages": [
-              "reference/cli",
-              "reference/functions",
-              "reference/api-configuration"
-            ]
-          }
+        "tab": "Changelog",
+        "icon": "bolt",
+        "pages": [
+          "updates/changelog"
         ]
       },
       {
-        "tab": "Updates",
-        "groups": [
-          {
-            "group": "Updates",
-            "pages": [
-              "updates/dev",
-              "updates/product"
-            ]
-          }
-        ]
+        "tab": "Support",
+        "icon": "slack",
+        "href": "https://nango.dev/slack"
       }
     ]
   },

@@ -15,12 +15,14 @@ export function connectionSimpleToApi({
     data,
     provider,
     activeLog,
-    endUser
+    endUser,
+    pausedSyncs
 }: {
     data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
     activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
+    pausedSyncs: string[];
 }): ApiConnectionSimple {
     return {
         id: data.id,
@@ -30,11 +32,12 @@ export function connectionSimpleToApi({
         errors: activeLog,
         endUser: endUser ? endUserToApi(endUser) : null,
         tags: data.tags,
+        pausedSyncs,
         created_at: String(data.created_at),
         updated_at: String(data.updated_at)
     };
 }
-export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConnectionFull {
+export function connectionFullToApi(connection: DBConnectionDecrypted, options?: { includeCredentials?: boolean }): ApiConnectionFull {
     return {
         id: connection.id,
         config_id: connection.config_id,
@@ -42,7 +45,7 @@ export function connectionFullToApi(connection: DBConnectionDecrypted): ApiConne
         connection_id: connection.connection_id,
         provider_config_key: connection.provider_config_key,
         connection_config: connection.connection_config,
-        credentials: connection.credentials,
+        credentials: options?.includeCredentials ? connection.credentials : redactCredentials(connection.credentials),
         metadata: connection.metadata,
         tags: connection.tags,
         last_fetched_at: connection.last_fetched_at ? String(connection.last_fetched_at) : null,
@@ -84,12 +87,14 @@ export function connectionFullToPublicApi({
     data,
     provider,
     activeLog,
-    endUser
+    endUser,
+    includeCredentials
 }: {
     data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
     provider: string;
     activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
+    includeCredentials: boolean;
 }): ApiPublicConnectionFull {
     return {
         id: data.id,
@@ -108,6 +113,33 @@ export function connectionFullToPublicApi({
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
-        credentials: data.credentials
+        credentials: includeCredentials ? data.credentials : ({} as DBConnectionDecrypted['credentials'])
     };
+}
+
+const NON_SENSITIVE_KEYS = new Set(['type', 'expires_at']);
+
+function redactValue(value: unknown): unknown {
+    if (value === null || value === undefined) {
+        return value;
+    }
+    if (Array.isArray(value)) {
+        return value.map(redactValue);
+    }
+    if (typeof value === 'object') {
+        return redactObject(value as Record<string, unknown>);
+    }
+    return 'REDACTED';
+}
+
+function redactObject(obj: Record<string, unknown>): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+        result[key] = NON_SENSITIVE_KEYS.has(key) ? value : redactValue(value);
+    }
+    return result;
+}
+
+export function redactCredentials(credentials: DBConnectionDecrypted['credentials']): DBConnectionDecrypted['credentials'] {
+    return redactObject(credentials as Record<string, unknown>) as DBConnectionDecrypted['credentials'];
 }

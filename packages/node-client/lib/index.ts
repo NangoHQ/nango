@@ -45,6 +45,7 @@ import type {
     PostConnectSessions,
     PostPublicConnectSessionsReconnect,
     PostPublicIntegration,
+    PostPublicQuickstartIntegration,
     PostPublicTrigger,
     PostSyncVariant,
     SignatureCredentials,
@@ -203,6 +204,12 @@ export class Nango {
 
     public async createIntegration(body: PostPublicIntegration['Body']): Promise<PostPublicIntegration['Success']> {
         const url = `${this.serverUrl}/integrations`;
+        const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    public async createQuickstartIntegration(body: PostPublicQuickstartIntegration['Body']): Promise<PostPublicQuickstartIntegration['Success']> {
+        const url = `${this.serverUrl}/integrations/quickstart`;
         const response = await this.http.post(url, body, { headers: this.enrichHeaders({}) });
         return response.data;
     }
@@ -669,7 +676,7 @@ export class Nango {
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        opts?: { reset?: boolean; emptyCache?: boolean }
+        opts?: PostPublicTrigger['Body']['opts']
     ): Promise<void>;
 
     /**
@@ -680,14 +687,14 @@ export class Nango {
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
         // eslint-disable-next-line @typescript-eslint/unified-signatures
-        syncMode?: PostPublicTrigger['Body']['sync_mode'] | boolean
+        syncMode?: PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void>;
 
     public async triggerSync(
         providerConfigKey: string,
         syncs?: (string | { name: string; variant: string })[],
         connectionId?: string,
-        optsOrSyncMode?: { reset?: boolean; emptyCache?: boolean } | PostPublicTrigger['Body']['sync_mode'] | boolean
+        optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
@@ -1090,7 +1097,17 @@ export class Nango {
 
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride, decompress, retryOn } = config;
+        const {
+            providerConfigKey,
+            connectionId,
+            method,
+            retries,
+            headers: customHeaders,
+            baseUrlOverride,
+            decompress,
+            retryOn,
+            forwardHeadersOnRedirect
+        } = config;
 
         let url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
@@ -1124,6 +1141,10 @@ export class Nango {
 
         if (retryOn) {
             headers['Retry-On'] = retryOn.join(',');
+        }
+
+        if (forwardHeadersOnRedirect !== undefined) {
+            headers['Forward-Headers-On-Redirect'] = forwardHeadersOnRedirect;
         }
 
         const options: AxiosRequestConfig = {

@@ -9,6 +9,8 @@ export interface SdkLogger {
     level: LogLevel | 'off';
 }
 
+export type ConflictResolutionMode = 'IN_MEMORY' | 'REDIS';
+
 export type ScriptType = 'sync' | 'action' | 'webhook' | 'on-event';
 
 export interface NangoProps {
@@ -40,6 +42,12 @@ export interface NangoProps {
     startedAt: Date;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
     heartbeatTimeoutSecs?: number | undefined;
+    lifecycle?:
+        | {
+              interruptAfterMs: number;
+              killAfterMs: number;
+          }
+        | undefined;
     isCLI?: boolean | undefined;
     integrationConfig?: IntegrationConfigForProxy;
 
