@@ -492,7 +492,10 @@ export function handleErrorResponse({
         errorStream.on('end', () => {
             const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
             let parsedBody: string | Record<string, string> = data;
-            if (error.response?.headers?.['content-type']?.includes('application/json')) {
+            const contentTypeHeader = error.response?.headers?.['content-type'];
+            const contentType =
+                typeof contentTypeHeader === 'string' ? contentTypeHeader : Array.isArray(contentTypeHeader) ? contentTypeHeader.join(', ') : '';
+            if (contentType.includes('application/json')) {
                 try {
                     parsedBody = JSON.parse(data);
                 } catch {
