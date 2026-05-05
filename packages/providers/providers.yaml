@@ -9171,7 +9171,7 @@ jiminny:
         region:
             type: string
             title: Region
-            description: The region your Jiminny account is hosted in (eu for app.jiminny.eu, com for app.jiminny.com)
+            description: The region your Jiminny account is hosted in.
             pattern: '^(eu|com)$'
             example: eu
             default_value: com
