@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { ENVS, parseEnvs, report } from '@nangohq/utils';
+import { report, useLambda } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -19,14 +19,12 @@ import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/t
 
 const TABLE = '_nango_environments';
 
-const envs = parseEnvs(ENVS);
-
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 /** After an environment row exists (outer transaction may still be open). Publishes keep-warm when Lambda + plan tenant isolation are enabled. */
 async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accountId: number; environmentId: number }): Promise<void> {
     try {
-        if (!envs.LAMBDA_ENABLED) {
+        if (!useLambda) {
             return;
         }
         const planRes = await getPlan(trx, { accountId });
