@@ -7,6 +7,7 @@ import { getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
 import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
+import { batchCleanupDaemon } from './daemons/batchCleanup.daemon.js';
 import { envs } from './env.js';
 import { pubsub } from './pubsub.js';
 import { server } from './server.js';
@@ -32,6 +33,7 @@ initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NA
 let api: Server;
 const autoPruning = autoPruningDaemon();
 const autoDeleting = autoDeletingDaemon();
+const batchCleanup = batchCleanupDaemon();
 
 try {
     const pubsubConnect = await pubsub.connect();
@@ -55,6 +57,7 @@ const close = once(() => {
     api.close(async () => {
         await autoPruning.abort();
         await autoDeleting.abort();
+        await batchCleanup.abort();
         await destroyLogs();
         await db.knex.destroy();
         await db.readOnly.destroy();
