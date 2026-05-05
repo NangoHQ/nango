@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { connectionService, getSync, syncManager } from '@nangohq/shared';
+import { configService, connectionService, getSync, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
@@ -65,7 +65,13 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
 
     const body: DeleteSyncVariant['Body'] = parsedBody.data;
     const params: DeleteSyncVariant['Params'] = parsedParams.data;
-    await logCtx.enrichOperation({ integrationName: body.provider_config_key, syncConfigName: params.name });
+    const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
+    await logCtx.enrichOperation({
+        integrationId: providerConfig?.id,
+        integrationName: providerConfig?.unique_key,
+        providerName: providerConfig?.provider,
+        syncConfigName: params.name
+    });
 
     if (params.variant.toLowerCase() === 'base') {
         const errResponse: ApiError<'invalid_variant'> = {

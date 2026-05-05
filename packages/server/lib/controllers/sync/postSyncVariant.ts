@@ -66,7 +66,13 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
 
     const body: PostSyncVariant['Body'] = parsedBody.data;
     const params: PostSyncVariant['Params'] = parsedParams.data;
-    await logCtx.enrichOperation({ integrationName: body.provider_config_key, syncConfigName: params.name });
+    const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
+    await logCtx.enrichOperation({
+        integrationId: providerConfig?.id,
+        integrationName: providerConfig?.unique_key,
+        providerName: providerConfig?.provider,
+        syncConfigName: params.name
+    });
 
     if (params.variant.toLowerCase() === 'base') {
         const errResponse: ApiError<'invalid_variant'> = { error: { code: 'invalid_variant', message: `Variant name "${params.variant}" is protected.` } };
@@ -117,7 +123,6 @@ export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) =>
         return;
     }
 
-    const providerConfig = await configService.getProviderConfig(body.provider_config_key, environment.id);
     if (!providerConfig) {
         const errResponse: ApiError<'unknown_provider_config'> = { error: { code: 'unknown_provider_config' } };
         res.status(400).send(errResponse);
