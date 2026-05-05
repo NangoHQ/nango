@@ -52,7 +52,7 @@ describe('GET /functions/pull', () => {
 
     it('protects the endpoint', async () => {
         const res = await api.fetch('/functions/pull', {
-            query: { integrationId: 'github', name: 'get-issues', env: 'dev' }
+            query: { integrationId: 'github', name: 'get-issues' }
         });
 
         shouldBeProtected(res);
@@ -63,7 +63,7 @@ describe('GET /functions/pull', () => {
 
         const res = await api.fetch('/functions/pull', {
             token: apiKey.secret,
-            query: { integrationId: 'missing', name: 'get-issues', env: 'dev' }
+            query: { integrationId: 'missing', name: 'get-issues' }
         });
 
         expect(res.res.status).toBe(404);
@@ -77,7 +77,7 @@ describe('GET /functions/pull', () => {
 
         const res = await api.fetch('/functions/pull', {
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'missing-function', env: 'dev' }
+            query: { integrationId: 'github', name: 'missing-function' }
         });
 
         expect(res.res.status).toBe(404);
@@ -94,7 +94,7 @@ describe('GET /functions/pull', () => {
 
         const res = await api.fetch('/functions/pull', {
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'shared-name', env: 'dev' }
+            query: { integrationId: 'github', name: 'shared-name' }
         });
 
         expect(res.res.status).toBe(409);
@@ -119,7 +119,7 @@ describe('GET /functions/pull', () => {
         // will 404 in tests (no fixture on disk), but it must NOT be 409.
         const res = await api.fetch('/functions/pull', {
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'shared-name', env: 'dev', type: 'sync' }
+            query: { integrationId: 'github', name: 'shared-name', type: 'sync' }
         });
 
         expect(res.res.status).toBe(404);

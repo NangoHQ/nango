@@ -67,7 +67,6 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
         const url = new URL('/functions/pull', resolveHostport(environmentName));
         url.searchParams.set('integrationId', integrationId);
         url.searchParams.set('name', name);
-        url.searchParams.set('env', environmentName);
         if (type) {
             url.searchParams.set('type', type);
         }
@@ -162,7 +161,10 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
             if (result.status === 'fulfilled') {
                 matches.push(result.value);
                 contentCache.set(result.value.candidatePath, result.value.content);
-            } else if (!(result.reason instanceof GitHubNotFoundError)) {
+            } else if (result.reason instanceof GitHubNotFoundError) {
+                // No file at this folder — expected when probing multiple types.
+                printDebug(`No catalog function at ${result.reason.message}`, debug);
+            } else {
                 throw result.reason;
             }
         }
@@ -170,7 +172,6 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
         if (matches.length === 0) {
             spinner.fail(`Failed to pull '${name}'`);
             console.log(chalk.red(`\nFunction '${name}' not found in catalog for integration '${integrationId}'.`));
-            console.log(chalk.gray(`Browse available templates at https://github.com/NangoHQ/integration-templates`));
             return false;
         }
 
@@ -214,7 +215,7 @@ export async function pullFromCatalog(options: PullCatalogOptions): Promise<bool
                 continue;
             }
 
-            const content = contentCache.has(file.relativePath) ? contentCache.get(file.relativePath)! : await fetchFileContent(file.relativePath, debug);
+            const content = contentCache.get(file.relativePath)!;
 
             const localPath = path.join(fullPath, file.relativePath);
             await fs.promises.mkdir(path.dirname(localPath), { recursive: true });

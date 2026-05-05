@@ -650,7 +650,8 @@ program
                 if (err instanceof MissingArgumentError) {
                     this.outputHelp();
                 }
-                process.exit(1);
+                process.exitCode = 1;
+                return;
             }
             success = await pullFunction({ ...baseOptions, environmentName });
         }

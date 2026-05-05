@@ -36,7 +36,7 @@ export class GitHubNotFoundError extends Error {
     }
 }
 
-export function getGitHubHeaders(): Record<string, string> {
+function getGitHubHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
         Accept: 'application/vnd.github.v3+json',
         'User-Agent': 'nango-cli'

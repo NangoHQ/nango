@@ -1,9 +1,10 @@
-import fs from 'fs';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import * as z from 'zod';
 
 import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, remoteFileService } from '@nangohq/shared';
-import { isEnterprise, isLocal, isTest, report, useS3, zodErrorToHTTP } from '@nangohq/utils';
+import { report, useS3, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
@@ -15,10 +16,8 @@ const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-ev
     'on-event': 'on-events'
 };
 
-const useLocalFiles = isEnterprise ? !useS3 : isLocal || isTest;
-
 async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig: DBSyncConfig; providerConfigKey: string }): Promise<string | null> {
-    if (useLocalFiles) {
+    if (!useS3) {
         const fileName = `${providerConfigKey}/${scriptTypeToFolder[syncConfig.type]}/${syncConfig.sync_name}.ts`;
         const check = localFileService.checkForIntegrationSourceFile(fileName);
         if (!check.result) {
@@ -27,7 +26,7 @@ async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig
         return await fs.promises.readFile(check.path, 'utf8');
     }
 
-    const dir = syncConfig.file_location.split('/').slice(0, -1).join('/');
+    const dir = path.dirname(syncConfig.file_location);
     try {
         return await remoteFileService.getFile(`${dir}/${syncConfig.sync_name}.ts`);
     } catch (err) {
@@ -40,7 +39,6 @@ const validationQuery = z
     .object({
         integrationId: z.string().min(1),
         name: z.string().min(1),
-        env: z.string().min(1).optional(),
         type: z.enum(['sync', 'action', 'on-event']).optional()
     })
     .strict();

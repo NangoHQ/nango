@@ -7,7 +7,6 @@ export type GetFunctionPull = Endpoint<{
     Querystring: {
         integrationId: string;
         name: string;
-        env?: string | undefined;
         type?: ScriptTypeLiteral | undefined;
     };
     Success: {
