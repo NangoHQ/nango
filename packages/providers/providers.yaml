@@ -15494,7 +15494,7 @@ salesforce:
             type: string
             title: Hostname
             description: The hostname to your Salesforce instance
-            format: hostname
+            pattern: '^(?!.*\.lightning\.(force|salesforce)\.com)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
             example: acme.my.salesforce.com
             prefix: https://
             optional: true
@@ -15525,7 +15525,7 @@ salesforce-cc:
             type: string
             title: Hostname
             description: The hostname to your Salesforce instance
-            format: hostname
+            pattern: '^(?!.*\.lightning\.(force|salesforce)\.com)[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$'
             example: acme.my.salesforce.com
             prefix: https://
 
