@@ -104,5 +104,5 @@ export type GetProviderFunctionCatalog = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/catalog';
     Querystring: { env: string; provider?: string };
-    Success: { data: NangoSyncConfig[] };
+    Success: { data: { providerConfigKey: string; functions: NangoSyncConfig[] }[] };
 }>;

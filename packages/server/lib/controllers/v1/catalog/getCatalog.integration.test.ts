@@ -45,7 +45,7 @@ describe(`GET ${route}`, () => {
         expect(res.json.error.code).toBe('invalid_query_params');
     });
 
-    it('should return all catalog functions when no provider filter is set', async () => {
+    it('should return all catalog functions grouped by provider when no provider filter is set', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'GET',
@@ -56,8 +56,11 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json.data.length).toBeGreaterThan(0);
-        for (const fn of res.json.data) {
-            expect(fn.source).toBe('catalog');
+        for (const group of res.json.data) {
+            expect(typeof group.providerConfigKey).toBe('string');
+            for (const fn of group.functions) {
+                expect(fn.source).toBe('catalog');
+            }
         }
     });
 
@@ -71,9 +74,10 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.data.length).toBeGreaterThan(0);
+        expect(res.json.data).toHaveLength(1);
+        expect(res.json.data[0]?.providerConfigKey).toBe('github');
 
-        const writeFile = res.json.data.find((value) => value.name === 'write-file');
+        const writeFile = res.json.data[0]?.functions.find((value) => value.name === 'write-file');
         expect(writeFile).toMatchObject({
             source: 'catalog',
             name: 'write-file',
