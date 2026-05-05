@@ -32,6 +32,7 @@ import { postForgotPassword } from './controllers/v1/account/postForgotPassword.
 import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
+import { getCatalog } from './controllers/v1/catalog/getCatalog.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
 import { putConnectUISettings } from './controllers/v1/connectUISettings/putConnectUISettings.js';
@@ -63,6 +64,7 @@ import { getIntegrations } from './controllers/v1/integrations/getIntegrations.j
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
@@ -226,6 +228,10 @@ web.route('/integrations/:providerConfigKey').get(webAuth, can({ action: 'read',
 web.route('/integrations/:providerConfigKey').patch(webAuth, can({ action: 'update', resource: 'integration', scopedBy: envScope }), patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, can({ action: 'delete', resource: 'integration', scopedBy: envScope }), deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
+web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunctions);
+
+// Catalog
+web.route('/catalog').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getCatalog);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);

@@ -1,4 +1,5 @@
 import type { ApiError, Endpoint } from '../api.js';
+import type { NangoSyncConfig } from '../flow/index.js';
 
 export type FunctionType = 'action' | 'sync';
 
@@ -89,4 +90,19 @@ export type PostRemoteFunctionDeploy = Endpoint<{
         deployed_functions: { name: string; version: string }[];
         output: string;
     };
+}>;
+
+export type GetIntegrationFunctions = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions';
+    Querystring: { env: string };
+    Params: { providerConfigKey: string };
+    Success: { data: NangoSyncConfig[] };
+}>;
+
+export type GetProviderFunctionCatalog = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/catalog';
+    Querystring: { env: string; provider?: string };
+    Success: { data: NangoSyncConfig[] };
 }>;
