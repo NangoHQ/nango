@@ -156,9 +156,10 @@ export class DryRunService {
 
         const def = await parseIntegrationDefinitions({ fullPath: this.fullPath, debug });
         if (def.isErr()) {
+            const message = def.error instanceof ReadableError ? def.error.toText() : def.error.message;
             console.log('');
-            console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
-            return Err(def.error);
+            console.log(def.error instanceof ReadableError ? message : chalk.red(message));
+            return Err(message);
         }
         const parsed: NangoYamlParsed = def.value;
 
@@ -404,15 +405,15 @@ export class DryRunService {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
                     if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
                         displayValidationError(err.payload);
-                        return Err(err instanceof Error ? err : new Error(err.message));
+                        return Err(err.message);
                     }
 
                     console.error(JSON.stringify(err.payload, null, 2));
-                    return Err(err instanceof Error ? err : new Error(err.message));
+                    return Err(err.message);
                 }
 
                 console.error(err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2));
-                return Err(err instanceof Error ? err : new Error(JSON.stringify(err)));
+                return Err(err instanceof Error ? err.message : JSON.stringify(err));
             }
 
             const resultOutput = [];

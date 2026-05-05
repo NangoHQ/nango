@@ -73,6 +73,18 @@ describe('remote function deploy client', () => {
         vi.clearAllMocks();
     });
 
+    it('returns deploy output when the command succeeds', async () => {
+        mocks.run.mockResolvedValueOnce({ stdout: 'Successfully deployed the functions', stderr: '' });
+
+        await expect(invokeDeploy(request)).resolves.toStrictEqual({
+            output: 'Successfully deployed the functions'
+        });
+
+        expect(mocks.write).toHaveBeenCalledTimes(2);
+        expect(mocks.run).toHaveBeenCalledTimes(1);
+        expect(mocks.kill).toHaveBeenCalledTimes(1);
+    });
+
     it('returns a compilation_error when deploy exits with the compile phase exit code', async () => {
         mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NANGO_CLI_COMPILE_ERROR_EXIT_CODE));
 

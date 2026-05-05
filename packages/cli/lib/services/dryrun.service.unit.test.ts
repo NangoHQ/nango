@@ -65,6 +65,18 @@ describe('DryRunService', () => {
         vi.clearAllMocks();
     });
 
+    it('returns a Result success when the dry run completes', async () => {
+        const service = buildService();
+        vi.spyOn(service, 'runScript').mockResolvedValue({ success: true, error: null, response: null } as any);
+
+        const result = await service.run({ sync: 'syncIssues', connectionId: 'conn-1' } as any);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toBeUndefined();
+        }
+    });
+
     it('returns a Result error when the environment is missing', async () => {
         const service = new DryRunService({ fullPath: '/tmp/nango-integrations', validation: false });
 

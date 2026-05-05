@@ -74,7 +74,7 @@ describe('remote function dryrun client', () => {
         vi.clearAllMocks();
     });
 
-    it('uses the command exit code instead of matching successful stderr output', async () => {
+    it('returns dryrun output when the command succeeds even if stderr contains error-like text', async () => {
         mocks.run.mockResolvedValueOnce({ stdout: '', stderr: '' }).mockResolvedValueOnce({
             stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}\n',
             stderr: 'An error occurred during execution\nthis text is ignored when the command exits 0\n'
