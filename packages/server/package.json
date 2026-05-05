@@ -39,7 +39,7 @@
         "@nangohq/webhooks": "file:../webhooks",
         "@nangohq/pubsub": "file:../pubsub",
         "@workos-inc/node": "6.2.0",
-        "axios": "1.15.0",
+        "axios": "1.15.2",
         "body-parser": "2.2.1",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",
