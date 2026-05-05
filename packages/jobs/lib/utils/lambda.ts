@@ -1,7 +1,7 @@
 import { envs } from '../env.js';
 
 import type { Node } from '@nangohq/fleet';
-import type { NangoProps, RoutingContext } from '@nangohq/types';
+import type { DBPlan, NangoProps, RoutingContext } from '@nangohq/types';
 
 /**
  * Fleet `routing_id` suffix when the plan uses dedicated Lambda tenant isolation.
@@ -33,13 +33,8 @@ export function getLambdaTenantId(nangoProps: NangoProps): string {
     return getLambdaTenantIdFromAccountEnv(nangoProps.team.id, nangoProps.environmentId);
 }
 
-interface PlanRoutingSlice {
-    fleet_node_routing_override: string | null;
-    lambda_tenant_isolation: boolean;
-}
-
 /** Routing id for the shared Lambda pool from plan flags (matches {@link getRoutingId} for a given plan). */
-export function getRoutingIdFromPlan(plan?: PlanRoutingSlice | null): string {
+export function getRoutingIdFromPlan(plan?: Pick<DBPlan, 'fleet_node_routing_override' | 'lambda_tenant_isolation'> | null): string {
     const tshirtSize = getTShirtSizeFromDefaultMemory();
     const prefix = plan?.fleet_node_routing_override || envs.LAMBDA_DEFAULT_PREFIX;
     const base = `${prefix}-${tshirtSize}`;

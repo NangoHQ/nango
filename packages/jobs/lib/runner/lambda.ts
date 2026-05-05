@@ -53,7 +53,7 @@ export async function invokeLambdaReadinessCheckEvent(params: { functionArn: str
     });
     try {
         const response = await lambdaClient.send(command);
-        if (response.StatusCode !== 202 && response.StatusCode !== 200) {
+        if (response.StatusCode !== 202) {
             logger.error(`Async readiness check ${params.functionArn} returned status code ${response.StatusCode}`, response);
             return Err(new Error(`Lambda async readiness unexpected status: ${response.StatusCode}`));
         }

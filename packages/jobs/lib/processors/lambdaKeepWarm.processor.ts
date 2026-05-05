@@ -23,7 +23,7 @@ export class LambdaKeepWarmProcessor {
     }
 
     public start(): void {
-        if (!useLambda || !envs.LAMBDA_ENABLED) {
+        if (!useLambda) {
             logger.info('Lambda keep-warm subscriber skipped (lambda not enabled)');
             return;
         }
@@ -89,7 +89,6 @@ async function processKeepWarm(event: LambdaKeepWarmInvokeEvent): Promise<void> 
     for (const r of results) {
         if (r.isErr()) {
             report(new Error('lambda_keep_warm_invoke_failed', { cause: r.error }), { accountId, environmentId });
-            return;
         }
     }
 }
