@@ -30,6 +30,7 @@ export interface NangoProps {
     nangoConnectionId: number;
     syncJobId?: number | undefined;
     track_deletes?: boolean;
+    emptyCache?: boolean;
     attributes?: object | undefined;
     abortSignal?: AbortSignal;
     syncConfig: DBSyncConfig;

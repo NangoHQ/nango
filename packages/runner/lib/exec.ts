@@ -228,6 +228,7 @@ export async function exec({
             }
 
             // Sync
+            await (nango as NangoSyncRunner).clearRecordsIfNeeded();
             if (isZeroYaml) {
                 const payload = def;
                 if (payload.type !== 'sync') {

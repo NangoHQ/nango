@@ -10,7 +10,7 @@ import { envs } from '../env.js';
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
-import type { JsonValue, SetOptional } from 'type-fest';
+import type { JsonObject, JsonValue, SetOptional } from 'type-fest';
 
 export const TASKS_TABLE = 'tasks';
 const TASKS_INSERT_BATCH_SIZE = 1000;
@@ -53,7 +53,7 @@ const TaskStateTransition = {
 export interface DBTask {
     readonly id: string;
     readonly name: string;
-    readonly payload: JsonValue;
+    readonly payload: JsonObject;
     readonly group_key: string;
     readonly group_max_concurrency: number;
     readonly retry_max: number;

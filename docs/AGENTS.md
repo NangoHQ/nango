@@ -106,6 +106,15 @@ Keep this glossary current as docs terminology evolves.
 - Do not repeat the same explanation across multiple pages — pick one owner and link from everywhere else.
 - Use cases may have a light orientation tone but must stay concrete.
 - Technical guides must be precise, practical, and compact.
+- Write for developers who want signal. Optimize for specificity, clarity, and insight, not fancy wording.
+- Use the most compact, simple phrasing that still preserves the technical point, similar to Paul Graham's essays.
+- Prefer concrete details over generic claims. Prefer technical detail over marketing language. Prefer real examples over abstractions.
+- Avoid theoretical claims unless they are tied to a real implementation detail, API behavior, limit, example, or tradeoff.
+- After drafting copy, review it with these questions:
+  - Is this specific enough?
+  - Would a developer learn something from this?
+  - Does this include real details, or just polished wording?
+- Copy is strong if it would still be useful with imperfect English. Copy is weak if it relies on polished wording to sound good.
 
 ## Agent accordions
 

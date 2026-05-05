@@ -1,5 +1,5 @@
 import type { TaskProps } from './models/tasks.js';
-import type { JsonValue, SetOptional } from 'type-fest';
+import type { JsonObject, JsonValue, SetOptional } from 'type-fest';
 
 export const taskStates = ['CREATED', 'STARTED', 'SUCCEEDED', 'FAILED', 'EXPIRED', 'CANCELLED'] as const;
 export type TaskState = (typeof taskStates)[number];
@@ -9,7 +9,7 @@ export type TaskNonTerminalState = Exclude<TaskState, TaskTerminalState>;
 export interface Task {
     readonly id: string;
     readonly name: string;
-    readonly payload: JsonValue;
+    readonly payload: JsonObject;
     readonly groupKey: string;
     readonly groupMaxConcurrency: number;
     readonly retryMax: number;
@@ -30,6 +30,10 @@ export interface Task {
 }
 
 export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
+export interface FromScheduleProps {
+    scheduleName: string;
+    extra: JsonObject;
+}
 export type ScheduleProps = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'nextExecutionAt'>;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -42,7 +46,7 @@ export interface Schedule {
     readonly state: ScheduleState;
     readonly startsAt: Date;
     readonly frequencyMs: number;
-    readonly payload: JsonValue;
+    readonly payload: JsonObject;
     readonly groupKey: string;
     readonly retryMax: number;
     readonly createdToStartedTimeoutSecs: number;

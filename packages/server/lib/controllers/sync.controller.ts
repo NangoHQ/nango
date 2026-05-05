@@ -133,7 +133,6 @@ class SyncController {
                 command,
                 environmentId: environment.id,
                 logCtx,
-                recordsService,
                 initiator: 'UI',
                 delete_records
             });

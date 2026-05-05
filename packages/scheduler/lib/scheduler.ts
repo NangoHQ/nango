@@ -10,7 +10,7 @@ import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger } from './utils/logger.js';
 
-import type { ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
+import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
@@ -154,7 +154,7 @@ export class Scheduler {
      * };
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
-    public async immediate(props: ImmediateProps | { scheduleName: string }): Promise<Result<Task>> {
+    public async immediate(props: ImmediateProps | FromScheduleProps): Promise<Result<Task>> {
         return this.db.transaction(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
@@ -182,7 +182,7 @@ export class Scheduler {
                 }
                 taskProps = {
                     name: `${schedule.name}:${uuidv7()}`,
-                    payload: schedule.payload,
+                    payload: { ...schedule.payload, ...props.extra },
                     groupKey: schedule.groupKey,
                     groupMaxConcurrency: 0,
                     retryMax: schedule.retryMax,
@@ -520,15 +520,15 @@ export class Scheduler {
         const abortType = 'abort';
 
         // no need to abort an abort task
-        const isAbortPayload = (payload: JsonValue) => {
-            return typeof payload === 'object' && payload !== null && !Array.isArray(payload) && 'type' in payload && payload['type'] === abortType;
+        const isAbortPayload = (payload: JsonObject) => {
+            return 'type' in payload && payload['type'] === abortType;
         };
         if (isAbortPayload(aborted.payload)) {
             return Err(`Task is already an abort task`);
         }
 
-        const payload: JsonValue = {
-            ...(aborted.payload as JsonObject),
+        const payload: JsonObject = {
+            ...aborted.payload,
             type: abortType,
             abortedTask: {
                 id: aborted.id,

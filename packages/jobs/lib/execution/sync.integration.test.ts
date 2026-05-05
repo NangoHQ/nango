@@ -201,6 +201,7 @@ const runJob = async (
         },
         ownerKey: null,
         heartbeatTimeoutSecs: 30,
+        emptyCache: false,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

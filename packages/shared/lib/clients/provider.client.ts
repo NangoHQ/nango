@@ -55,6 +55,7 @@ class ProviderClient {
             case 'heygen':
             case 'mercury':
             case 'clover':
+            case 'absorb-lms':
             case 'posthog-oauth':
                 return true;
             default:
@@ -75,7 +76,14 @@ class ProviderClient {
         }
     }
 
-    public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string, codeVerifier: string): Promise<object> {
+    public async getToken(
+        config: ProviderConfig,
+        tokenUrl: string,
+        code: string,
+        callBackUrl: string,
+        codeVerifier: string,
+        connectionConfig?: Record<string, string>
+    ): Promise<object> {
         switch (config.provider) {
             case 'braintree':
             case 'braintree-sandbox':
@@ -122,6 +130,16 @@ class ProviderClient {
                 return this.createMercuryToken(tokenUrl, code, callBackUrl, codeVerifier);
             case 'clover':
                 return this.createCloverToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
+            case 'absorb-lms':
+                return this.createAbsorbLmsToken(
+                    tokenUrl,
+                    code,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    callBackUrl,
+                    connectionConfig?.['restApiKey'],
+                    connectionConfig?.['apiVersion']
+                );
             case 'posthog-oauth':
                 return this.createPosthogOauthToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             default:
@@ -226,6 +244,16 @@ class ProviderClient {
                 return this.refreshCloverToken(interpolatedRefreshUrl!.href, credentials.refresh_token!, config.oauth_client_id);
             case 'heygen':
                 return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
+            case 'absorb-lms':
+                return this.refreshAbsorbLmsToken(
+                    interpolatedTokenUrl.href,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    connection.connection_config,
+                    config.oauth_scopes ?? '',
+                    connection.connection_config['apiVersion']
+                );
             case 'posthog-oauth':
                 return this.refreshPosthogOauthToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             default:
@@ -1202,6 +1230,73 @@ class ProviderClient {
             throw new NangoError('heygen_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('heygen_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createAbsorbLmsToken(
+        tokenUrl: string,
+        code: string,
+        client_id: string,
+        client_secret: string,
+        redirect_uri: string,
+        restApiKey: string | undefined,
+        apiVersion: string | undefined
+    ): Promise<AuthorizationTokenResponse> {
+        if (!restApiKey) throw new NangoError('missing_connection_config', { config: 'restApiKey' });
+        if (!apiVersion) throw new NangoError('missing_connection_config', { config: 'apiVersion' });
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id,
+                client_secret,
+                code,
+                redirect_uri,
+                nonce: crypto.randomUUID()
+            });
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'x-api-version': apiVersion,
+                'x-api-key': restApiKey
+            };
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+            if (response.status >= 200 && response.status < 300 && response.data) return { ...response.data };
+            throw new NangoError('absorb_lms_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('absorb_lms_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshAbsorbLmsToken(
+        tokenUrl: string,
+        refreshToken: string,
+        client_id: string,
+        client_secret: string,
+        connection_config: ConnectionConfig,
+        scope: string,
+        apiVersion: string | undefined
+    ): Promise<RefreshTokenResponse> {
+        const restApiKey = connection_config['restApiKey'];
+        if (!restApiKey) throw new NangoError('missing_connection_config', { config: 'restApiKey' });
+        if (!apiVersion) throw new NangoError('missing_connection_config', { config: 'apiVersion' });
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'refresh_token',
+                client_id,
+                client_secret,
+                refresh_token: refreshToken,
+                nonce: crypto.randomUUID(),
+                scope
+            });
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'x-api-version': apiVersion,
+                'x-api-key': restApiKey
+            };
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+            if (response.status >= 200 && response.status < 300 && response.data) return { ...response.data };
+            throw new NangoError('absorb_lms_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('absorb_lms_refresh_token_request_error', stringifyError(err));
         }
     }
 

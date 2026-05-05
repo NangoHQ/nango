@@ -82,6 +82,7 @@ export const ENVS = z.object({
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
+    PERSIST_HARD_DELETE_LIMIT: z.coerce.number().int().positive().optional().default(50_000),
     PERSIST_AUTO_PRUNING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
     PERSIST_AUTO_PRUNING_LIMIT: z.coerce.number().optional().default(1_000),
     PERSIST_AUTO_PRUNING_STALE_AFTER_MS: z.coerce
