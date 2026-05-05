@@ -82,12 +82,12 @@ if (nonOauth2Targets.length > 0) {
 if (args.verbose) {
     console.log(`Loaded ${Object.keys(providers).length} providers`);
     console.log(`Loaded ${Object.keys(providerScopes).length} scoped providers`);
-    console.log(`Detected ${oauth2Providers.length} OAuth2 providers`);
-    console.log(`Targeting ${oauth2TargetProviders.length} OAuth2 providers`);
+    console.log(`Detected ${oauth2Providers.length} OAuth2/OAuth2CC providers`);
+    console.log(`Targeting ${oauth2TargetProviders.length} OAuth2/OAuth2CC providers`);
 }
 
 if (oauth2TargetProviders.length === 0) {
-    console.log('No changed OAuth2 providers found. Nothing to do.');
+    console.log('No changed OAuth2/OAuth2CC providers found. Nothing to do.');
     process.exit(0);
 }
 
@@ -164,7 +164,7 @@ if (changed.length > 0) {
 }
 
 if (unresolved.length > 0) {
-    console.warn('These OAuth2 providers have no resolvable scope source (default_scopes or alias scopes):');
+    console.warn('These OAuth2/OAuth2CC providers have no resolvable scope source (default_scopes or alias scopes):');
     console.warn(`- ${unresolved.sort().join('\n- ')}`);
     console.warn('Empty arrays were written for those providers. Fill them manually with verified provider scopes.');
 }
@@ -327,7 +327,7 @@ function isOAuth2Provider(providerName: string, providerMap: ProvidersMap, seen 
         return isOAuth2Provider(entry.alias, providerMap, seen);
     }
 
-    return (entry as Provider).auth_mode === 'OAUTH2';
+    return (entry as Provider).auth_mode === 'OAUTH2' || (entry as Provider).auth_mode === 'OAUTH2_CC';
 }
 
 function inferScopes(providerName: string, providerMap: ProvidersMap, originalScopes: ProviderScopesMap, seen = new Set<string>()): InferenceResult {
@@ -709,8 +709,8 @@ function buildAgentPrompt(params: { providerNames: string[]; baseRef: string; pr
         '1) Only edit packages/providers/providers.scopes.yaml.',
         '2) Only change keys for the listed providers.',
         '3) Keep YAML valid. Each provider entry must be a plain YAML list (e.g. "provider:\\n  - scope1"). No nested keys like "scopes:".',
-        '4) SKIP any provider whose auth_mode in providers.yaml is NOT exactly "OAUTH2". Do not write an entry for it at all — not even an empty array.',
-        "5) For each OAuth2 provider, search for and fetch the provider's official OAuth2 scopes reference page. READ THE ENTIRE PAGE — scroll through all sections, tables, and sub-sections. Many providers organise scopes into categories (e.g. Zoho CRM lists scopes per module: Leads, Contacts, Deals, etc.) — you MUST include ALL of them.",
+        '4) SKIP any provider whose auth_mode in providers.yaml is NOT "OAUTH2" or "OAUTH2_CC". Do not write an entry for it at all — not even an empty array.',
+        "5) For each OAuth2/OAuth2CC provider, search for and fetch the provider's official OAuth2 scopes reference page. READ THE ENTIRE PAGE — scroll through all sections, tables, and sub-sections. Many providers organise scopes into categories (e.g. Zoho CRM lists scopes per module: Leads, Contacts, Deals, etc.) — you MUST include ALL of them.",
         '6) Only include scopes that are explicitly listed on that official page. Do not invent or guess scopes.',
         '7) Exclude deprecated scopes — any scope marked as deprecated, legacy, or superseded by another scope.',
         '8) Exclude scopes that are not passed via the OAuth authorization URL scope parameter. Some providers allow permissions to be configured in their developer platform/dashboard without needing them in the OAuth flow — omit those.',
