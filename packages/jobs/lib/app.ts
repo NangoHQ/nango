@@ -99,7 +99,7 @@ try {
             if (webhookDispatchConsumer) {
                 await webhookDispatchConsumer.stop();
             }
-
+            await pubsub.disconnect();
             console.info('Closed');
 
             process.exit();
