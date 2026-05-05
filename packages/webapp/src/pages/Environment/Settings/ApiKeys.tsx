@@ -118,7 +118,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                     <div className="flex items-center gap-1.5">
                         <label className="text-body-medium-semi text-text-primary">Permission</label>
                         <a
-                            href="https://nango.dev/docs/reference/api-keys#scopes"
+                            href="https://nango.dev/docs/reference/backend/http-api/api-keys#scopes"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-text-tertiary hover:text-text-primary"

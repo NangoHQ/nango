@@ -5,6 +5,7 @@ import { validateRequest } from '@nangohq/utils';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+import type { JsonObject } from 'type-fest';
 
 const path = '/v1/schedules/run';
 const method = 'POST';
@@ -14,12 +15,13 @@ export type PostScheduleRun = Endpoint<{
     Path: typeof path;
     Body: {
         scheduleName: string;
+        extra: JsonObject;
     };
     Error: ApiError<'recurring_run_failed'>;
     Success: { scheduleId: string };
 }>;
 
-const bodySchema = z.object({ scheduleName: z.string().min(1) }).strict();
+const bodySchema = z.object({ scheduleName: z.string().min(1), extra: z.record(z.string(), z.json()).default({}) }).strict();
 
 const validate = validateRequest<PostScheduleRun>({
     parseBody: (data: any) => bodySchema.parse(data)
@@ -28,7 +30,8 @@ const validate = validateRequest<PostScheduleRun>({
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostScheduleRun>) => {
         const schedule = await scheduler.immediate({
-            scheduleName: res.locals.parsedBody.scheduleName
+            scheduleName: res.locals.parsedBody.scheduleName,
+            extra: res.locals.parsedBody.extra
         });
         if (schedule.isErr()) {
             res.status(500).json({ error: { code: 'recurring_run_failed', message: schedule.error.message } });

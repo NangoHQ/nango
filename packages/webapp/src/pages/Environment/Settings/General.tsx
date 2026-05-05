@@ -108,7 +108,7 @@ export const General: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
                         <ButtonLink
-                            to="https://docs.nango.dev/guides/platform/environments#production-environments"
+                            to="https://nango.dev/docs/guides/platform/environments#production-environments"
                             size="icon"
                             variant="ghost"
                             target="_blank"
@@ -143,7 +143,7 @@ export const General: React.FC = () => {
                                         confirmVariant: 'destructive',
                                         docs: {
                                             title: 'Learn more',
-                                            url: 'https://docs.nango.dev/guides/platform/environments#production-environments'
+                                            url: 'https://nango.dev/docs/guides/platform/environments#production-environments'
                                         }
                                     })
                                 }

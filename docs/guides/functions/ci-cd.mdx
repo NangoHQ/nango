@@ -4,7 +4,7 @@ sidebarTitle: 'CI/CD'
 description: 'How to integrate Nango Function deployments into your CI/CD pipeline.'
 ---
 
-CI/CD for Nango is about keeping your [Functions](/guides/functions/overview) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
+CI/CD for Nango is about keeping your [Functions](/guides/functions/functions-guide) — sync functions, action functions, webhook functions, and event functions — in sync with your application across environments.
 
 The core principle: **deploy to Nango as part of the same pipeline step as your application**. Deploying them separately risks your app and your Functions going out of sync, which can cause subtle bugs that are hard to trace.
 
@@ -12,7 +12,7 @@ The core principle: **deploy to Nango as part of the same pipeline step as your 
 
 To deploy from CI, you need a scoped API key for each Nango environment.
 
-1. **Create API keys**: In the Nango UI, go to **Environment Settings > API Keys** and create a key for each environment (e.g., `dev` and `prod`). For CI/CD pipelines, use a key scoped to `environment:deploy` only — see the [CI/CD Deploy profile](/reference/api-keys#cicd-deploy).
+1. **Create API keys**: In the Nango UI, go to **Environment Settings > API Keys** and create a key for each environment (e.g., `dev` and `prod`). For CI/CD pipelines, use a key scoped to `environment:deploy` only — see the [CI/CD Deploy profile](/reference/backend/http-api/api-keys#cicd-deploy).
 2. **Store the keys**: Add them as secrets in your CI/CD provider. The Nango CLI reads them from these environment variables:
    - `NANGO_SECRET_KEY_DEV`
    - `NANGO_SECRET_KEY_PROD`
@@ -200,4 +200,4 @@ In CI environments, Nango automatically disables dependency updates to prevent m
 ## Related resources
 
 - [Testing integrations](/guides/functions/testing) - A comprehensive guide to testing your Nango Functions.
-- [API Keys reference](/reference/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.
+- [API Keys reference](/reference/backend/http-api/api-keys) - Available scopes and advised profiles for CI/CD and other use cases.

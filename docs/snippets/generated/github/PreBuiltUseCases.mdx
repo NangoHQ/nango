@@ -2,117 +2,117 @@
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `get-job-logs-download-url` | Get the API endpoint URL for a workflow job log download. Due to Nango proxy limitations with 302 redirects, this returns the API endpoint rather than the actual download URL. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-job-logs-download-url.ts) |
-| `get-workflow` | Retrieve metadata for a GitHub Actions workflow. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-workflow.ts) |
-| `list-workflow-runs` | List workflow runs for a repository or a specific workflow | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflow-runs.ts) |
-| `rerun-workflow-run` | Rerun a completed or failed workflow run. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/rerun-workflow-run.ts) |
-| `trigger-workflow-dispatch` | Trigger a GitHub Actions workflow_dispatch run for a workflow file or ID | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/trigger-workflow-dispatch.ts) |
+| `get-job-logs-download-url` | Get the API endpoint URL for a workflow job log download. Due to Nango proxy limitations with 302 redirects, this returns the API endpoint rather than the actual download URL. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-job-logs-download-url.ts) |
+| `get-workflow` | Retrieve metadata for a GitHub Actions workflow. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-workflow.ts) |
+| `list-workflow-runs` | List workflow runs for a repository or a specific workflow | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflow-runs.ts) |
+| `rerun-workflow-run` | Rerun a completed or failed workflow run. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/rerun-workflow-run.ts) |
+| `trigger-workflow-dispatch` | Trigger a GitHub Actions workflow_dispatch run for a workflow file or ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/trigger-workflow-dispatch.ts) |
 
 ### Branches
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `get-branch` | Retrieve branch metadata and protection status. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-branch.ts) |
-| `list-branches` | List branches for a repository with optional pagination and protected filtering. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-branches.ts) |
+| `get-branch` | Retrieve branch metadata and protection status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-branch.ts) |
+| `list-branches` | List branches for a repository with optional pagination and protected filtering. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-branches.ts) |
 
 ### Commits
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `get-commit` | Retrieve a commit with changed files and stats | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-commit.ts) |
-| `list-commits` | List commits for a repository or branch with common filters | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-commits.ts) |
+| `get-commit` | Retrieve a commit with changed files and stats | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-commit.ts) |
+| `list-commits` | List commits for a repository or branch with common filters | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-commits.ts) |
 
 ### Files
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `list-files` | Lists all the files of a Github repo given a specific branch | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/list-files.ts) |
+| `list-files` | Lists all the files of a Github repo given a specific branch | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/list-files.ts) |
 
 ### Git
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-branch` | Create a branch ref from an existing commit SHA | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-branch.ts) |
-| `create-tag-object` | Create an annotated Git tag object for a commit or object SHA. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-tag-object.ts) |
-| `get-tag-ref` | Retrieve a tag ref or branch-style Git reference | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-tag-ref.ts) |
+| `create-branch` | Create a branch ref from an existing commit SHA | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-branch.ts) |
+| `create-tag-object` | Create an annotated Git tag object for a commit or object SHA. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-tag-object.ts) |
+| `get-tag-ref` | Retrieve a tag ref or branch-style Git reference | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-tag-ref.ts) |
 
 ### Issues
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `add-issue-comment` | Create a new comment on an issue or pull request discussion thread | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/add-issue-comment.ts) |
-| `create-issue` | Open a new GitHub issue in a repository. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-issue.ts) |
-| `get-issue` | Fetch a single issue or pull request issue record by number. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-issue.ts) |
-| `list-issue-comments` | List comments attached to an issue or pull request thread | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-issue-comments.ts) |
-| `list-issues` | List repository issues with state, assignee, label, and pagination filters. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-issues.ts) |
-| `list-labels` | List repository labels with pagination | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-labels.ts) |
-| `update-issue` | Edit an issue's title, body, state, assignees, labels, or milestone. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-issue.ts) |
+| `add-issue-comment` | Create a new comment on an issue or pull request discussion thread | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/add-issue-comment.ts) |
+| `create-issue` | Open a new GitHub issue in a repository. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-issue.ts) |
+| `get-issue` | Fetch a single issue or pull request issue record by number. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-issue.ts) |
+| `list-issue-comments` | List comments attached to an issue or pull request thread | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-issue-comments.ts) |
+| `list-issues` | List repository issues with state, assignee, label, and pagination filters. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-issues.ts) |
+| `list-labels` | List repository labels with pagination | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-labels.ts) |
+| `update-issue` | Edit an issue's title, body, state, assignees, labels, or milestone. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-issue.ts) |
 
 ### Labels
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-label` | Create a repository label with name, color, and description | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-label.ts) |
-| `delete-label` | Delete a repository label by name | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-label.ts) |
-| `get-label` | Retrieve a single repository label by name. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-label.ts) |
-| `update-label` | Update a repository label's name, color, or description. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-label.ts) |
+| `create-label` | Create a repository label with name, color, and description | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-label.ts) |
+| `delete-label` | Delete a repository label by name | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-label.ts) |
+| `get-label` | Retrieve a single repository label by name. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-label.ts) |
+| `update-label` | Update a repository label's name, color, or description. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-label.ts) |
 
 ### Pull Requests
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-pull-request` | Open a pull request from one branch into another. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-pull-request.ts) |
-| `create-review-request` | Request reviewers or teams on an open pull request | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-review-request.ts) |
-| `get-review` | Retrieve a pull request review by review ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-review.ts) |
-| `list-pull-request-files` | List files changed by a pull request | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-request-files.ts) |
-| `list-pull-request-reviews` | List reviews submitted on a pull request | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-request-reviews.ts) |
-| `list-pull-requests` | List pull requests for a repository with state and branch filters | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-requests.ts) |
-| `merge-pull-request` | Merge an open pull request using the selected merge method. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/merge-pull-request.ts) |
-| `submit-pull-request-review` | Create a pull request review with approval, comment, or change request. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/submit-pull-request-review.ts) |
-| `update-pull-request` | Edit a pull request's title, body, base branch, or state. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-pull-request.ts) |
+| `create-pull-request` | Open a pull request from one branch into another. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-pull-request.ts) |
+| `create-review-request` | Request reviewers or teams on an open pull request | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-review-request.ts) |
+| `get-review` | Retrieve a pull request review by review ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-review.ts) |
+| `list-pull-request-files` | List files changed by a pull request | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-request-files.ts) |
+| `list-pull-request-reviews` | List reviews submitted on a pull request | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-request-reviews.ts) |
+| `list-pull-requests` | List pull requests for a repository with state and branch filters | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-pull-requests.ts) |
+| `merge-pull-request` | Merge an open pull request using the selected merge method. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/merge-pull-request.ts) |
+| `submit-pull-request-review` | Create a pull request review with approval, comment, or change request. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/submit-pull-request-review.ts) |
+| `update-pull-request` | Edit a pull request's title, body, base branch, or state. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-pull-request.ts) |
 
 ### Pull requests
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `get-pull-request` | Fetch a single pull request by number. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-pull-request.ts) |
+| `get-pull-request` | Fetch a single pull request by number. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-pull-request.ts) |
 
 ### Releases
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-release` | Publish a Git tag release for a repository. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-release.ts) |
-| `delete-release` | Delete a release by release ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-release.ts) |
-| `get-release` | Retrieve a single release by release ID. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-release.ts) |
-| `list-release-assets` | List assets uploaded to a repository release. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-release-assets.ts) |
-| `list-releases` | List published and draft releases for a repository. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-releases.ts) |
-| `update-release` | Edit release metadata such as name, notes, or draft state. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-release.ts) |
+| `create-release` | Publish a Git tag release for a repository. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-release.ts) |
+| `delete-release` | Delete a release by release ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-release.ts) |
+| `get-release` | Retrieve a single release by release ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-release.ts) |
+| `list-release-assets` | List assets uploaded to a repository release. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-release-assets.ts) |
+| `list-releases` | List published and draft releases for a repository. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-releases.ts) |
+| `update-release` | Edit release metadata such as name, notes, or draft state. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/update-release.ts) |
 
 ### Repositories
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-or-update-file` | Create a new file or update existing repository contents in a branch. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-or-update-file.ts) |
-| `delete-file` | Delete a file from a repository branch. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-file.ts) |
-| `get-file-contents` | Retrieve a file or directory entry from repository contents. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-file-contents.ts) |
-| `get-repository` | Retrieve repository metadata, visibility, default branch, and owner info. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-repository.ts) |
+| `create-or-update-file` | Create a new file or update existing repository contents in a branch. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/create-or-update-file.ts) |
+| `delete-file` | Delete a file from a repository branch. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/delete-file.ts) |
+| `get-file-contents` | Retrieve a file or directory entry from repository contents. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-file-contents.ts) |
+| `get-repository` | Retrieve repository metadata, visibility, default branch, and owner info. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-repository.ts) |
 
 ### Workflow Jobs
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `list-workflow-jobs` | List jobs in a workflow run attempt | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflow-jobs.ts) |
+| `list-workflow-jobs` | List jobs in a workflow run attempt | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflow-jobs.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `get-workflow-run` | Retrieve a workflow run with status and conclusion details. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-workflow-run.ts) |
-| `list-workflows` | List GitHub Actions workflows configured in a repository. | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflows.ts) |
-| `commits` | Sync commits for repositories and branches in scope | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/commits.ts) |
-| `issues` | Sync issues for one or more GitHub repositories with incremental updates based on issue activity | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues.ts) |
-| `pull-requests` | Sync pull requests for one or more GitHub repositories, including status, branches, and merge state. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/pull-requests.ts) |
-| `releases` | Sync releases for one or more GitHub repositories. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/releases.ts) |
-| `repositories` | Sync repositories visible to the authenticated GitHub user or installation. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/repositories.ts) |
-| `repository-files` | Sync file metadata for a specific repository branch using the Git trees API recursively | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/repository-files.ts) |
-| `workflow-runs` | Sync GitHub Actions workflow runs for one or more repositories. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/workflow-runs.ts) |
+| `get-workflow-run` | Retrieve a workflow run with status and conclusion details. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/get-workflow-run.ts) |
+| `list-workflows` | List GitHub Actions workflows configured in a repository. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/actions/list-workflows.ts) |
+| `commits` | Sync commits for repositories and branches in scope | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/commits.ts) |
+| `issues` | Sync issues for one or more GitHub repositories with incremental updates based on issue activity | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/issues.ts) |
+| `pull-requests` | Sync pull requests for one or more GitHub repositories, including status, branches, and merge state. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/pull-requests.ts) |
+| `releases` | Sync releases for one or more GitHub repositories. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/releases.ts) |
+| `repositories` | Sync repositories visible to the authenticated GitHub user or installation. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/repositories.ts) |
+| `repository-files` | Sync file metadata for a specific repository branch using the Git trees API recursively | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/repository-files.ts) |
+| `workflow-runs` | Sync GitHub Actions workflow runs for one or more repositories. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/github/syncs/workflow-runs.ts) |

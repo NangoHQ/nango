@@ -31,21 +31,21 @@ Different function types have varying execution and enqueuing time limits:
 
 | Function Type | Max Execution Time |
 | - | - |
-| [Sync functions](/guides/functions/sync-functions) | 24 hours |
+| [Sync functions](/guides/functions/syncs/sync-functions) | 24 hours |
 | [Action functions](/guides/functions/action-functions) | 15 minutes |
 | [Webhook functions](/guides/functions/webhook-functions) | 1 hour |
 
 ### Minimum sync frequency
 
-The minimum sync frequency is **30 seconds**, available on all plans. You can set the frequency in the sync definition or override it per connection using the [SDK](/reference/sdks/node#override-sync-connection-frequency) or [API](/reference/api/sync/update-connection-frequency).
+The minimum sync frequency is **30 seconds**, available on all plans. You can set the frequency in the sync definition or override it per connection using the [SDK](/reference/backend/backend-sdk/node#override-sync-connection-frequency) or [API](/reference/backend/http-api/sync/update-connection-frequency).
 
 ### Sync variant limits
 
-Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/guides/functions/sync-partitioning) for more details.
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit. See the [sync partitioning guide](/guides/functions/syncs/sync-partitioning) for more details.
 
 ### Action function output limits
 
-Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/platform/proxy/implement-requests-proxy) instead.
+Action functions have a maximum output payload size of **2MB**. For large payloads, use the [Proxy](/guides/platform/proxy-requests) instead.
 
 ## Data retention policies
 
@@ -80,7 +80,7 @@ These limits apply to all webhook types: auth, sync function completion, async a
 ## Related guides
 
 - [Rate limits](/guides/functions/rate-limits) - handle provider throttling in functions.
-- [Sync efficiency](/guides/functions/sync-efficiency) - stay within payload and runtime limits.
+- [Sync efficiency](/guides/functions/syncs/sync-efficiency) - stay within payload and runtime limits.
 - [Security](/guides/platform/security) - review retention and access constraints.
 
 <Tip>

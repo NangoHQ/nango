@@ -132,7 +132,7 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'sync',
             deleteFn: async () => {
-                const syncs = await getSoftDeletedSyncs({ limit, olderThan: deleteSyncsOlderThan });
+                const syncs = await getSoftDeletedSyncs({ limit: 2, olderThan: deleteSyncsOlderThan });
                 if (syncs.isErr()) {
                     throw syncs.error;
                 }

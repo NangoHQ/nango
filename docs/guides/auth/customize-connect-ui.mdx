@@ -6,13 +6,13 @@ description: 'Guide to letting your users authorize an external API from your ap
 
 <Info>
 Pre-requisites:
-- complete the [Set up an integration](/guides/auth/overview#guide) section of the Auth guide
-- generate a [Connect session token](/guides/auth/overview#guide)
+- complete the [Set up an integration](/guides/auth/auth-guide#guide) section of the Auth guide
+- generate a [Connect session token](/guides/auth/auth-guide#guide)
 </Info>
 
 ## Integrate the frontend SDK
 
-In your frontend, initiate Nango ([reference](/reference/sdks/frontend#instantiate-the-frontend-sdk)):
+In your frontend, initiate Nango ([reference](/reference/frontend/frontend-sdk#instantiate-the-frontend-sdk)):
 
 ```ts
 import Nango from '@nangohq/frontend';
@@ -20,7 +20,7 @@ import Nango from '@nangohq/frontend';
 const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
 ```
 
-Initiate the authorization flow ([reference](/reference/sdks/frontend#connect-using-the-headless-client)):
+Initiate the authorization flow ([reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client)):
 
 <Tabs>
 
@@ -93,9 +93,9 @@ For example, Zendesk has the following authorization URL, where the subdomain is
 
 `https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
 
-When using the [Connect UI](/guides/auth/overview#guide), this information is collected from the end user with an automatically-generated form.
+When using the [Connect UI](/guides/auth/auth-guide#guide), this information is collected from the end user with an automatically-generated form.
 
-But when using a custom UI, you must provide this configuration when calling `nango.auth()` ([reference](/reference/sdks/frontend#connect-using-the-headless-client)):
+But when using a custom UI, you must provide this configuration when calling `nango.auth()` ([reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client)):
 
 ```js
 nango.auth('zendesk', {
@@ -111,18 +111,18 @@ nango.auth('zendesk', {
 });
 ```
 
-This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/sdks/node#get-a-connection-with-credentials)) and API ([reference](/reference/api/connections/get)), or see it in connection details in the Nango UI.
+This _connection configuration_ is stored in the connection. You can retrieve it with the SDK ([reference](/reference/backend/backend-sdk/node#get-a-connection-with-credentials)) and API ([reference](/reference/backend/http-api/connections/get)), or see it in connection details in the Nango UI.
 
 ## Override documentation links
 
-By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect in a customer-facing application and want these links to point to your own documentation instead, you can override them per integration using the `overrides` parameter when [creating a Connect session](/reference/api/connect/sessions/create).
+By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect in a customer-facing application and want these links to point to your own documentation instead, you can override them per integration using the `overrides` parameter when [creating a Connect session](/reference/backend/http-api/connect/sessions/create).
 
 <Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
 
 <Tabs>
 
 <Tab title="Node SDK">
-See the full [SDK reference](/reference/sdks/node#create-a-connect-session) for all available parameters.
+See the full [SDK reference](/reference/backend/backend-sdk/node#create-a-connect-session) for all available parameters.
 
 ```js
 const { data } = await nango.createConnectSession({
@@ -151,7 +151,7 @@ const { data } = await nango.createConnectSession({
 </Tab>
 
 <Tab title="REST API">
-See the full [API reference](/reference/api/connect/sessions/create) for all available parameters.
+See the full [API reference](/reference/backend/http-api/connect/sessions/create) for all available parameters.
 
 ```bash
 curl --request POST \
@@ -177,7 +177,7 @@ curl --request POST \
 Replace `<INTEGRATION-ID>` with the unique name of the integration (e.g. `jira`, `slack`) and set `docs_connect` to the URL you want the info icons to link to.
 
 # Next
-Once the authorization succeeds, [_save the connection ID_](/guides/auth/overview#guide).
+Once the authorization succeeds, [_save the connection ID_](/guides/auth/auth-guide#guide).
 
 <Tip>
     **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
@@ -185,6 +185,6 @@ Once the authorization succeeds, [_save the connection ID_](/guides/auth/overvie
 
 ## Related guides
 
-- [Auth guide](/guides/auth/overview) - compare the managed Connect UI flow.
-- [Frontend SDK reference](/reference/sdks/frontend#connect-using-the-headless-client) - headless authorization methods and parameters.
+- [Auth guide](/guides/auth/auth-guide) - compare the managed Connect UI flow.
+- [Frontend SDK reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client) - headless authorization methods and parameters.
 - [Connection tags](/guides/auth/connection-tags) - attribute custom UI flows to your own users and orgs.

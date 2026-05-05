@@ -1,0 +1,284 @@
+---
+title: 'Checkpoints'
+sidebarTitle: 'Checkpoints'
+description: 'Save progress mid-run, resume after failures, and turn full syncs into incremental ones.'
+---
+
+Checkpoints let sync functions save their progress and resume from where they left off. This enables a function to fetch only new or changed data instead of re-fetching everything on each run. Checkpoints are what make sync functions **resilient to failures** and enable **incremental syncing**, the recommended approach for any non-trivial dataset.
+
+Define a `checkpoint` schema in your sync function to enable checkpoint support. If you are migrating from `nango.lastSyncDate`, see the [migration guide](/guides/platform/migrations/migrate-to-checkpoints).
+
+## Why checkpointing matters
+
+Without checkpoints, every sync run fetches the entire dataset from the external API. This works for small datasets, but quickly becomes unsustainable as data grows. Consider a Salesforce account with 500,000 contacts syncing every 15 minutes: without checkpoints, each run re-fetches all 500,000 records even if only a handful changed — consuming orders of magnitude more API calls, compute time, and memory than necessary.
+
+Checkpoints solve this by tracking how far your sync has progressed. The benefits compound:
+
+- **Performance** — Only fetch what changed. A 15-minute incremental sync processes minutes of changes, not years of history.
+- **Resilience** — If a sync fails mid-execution, the next run resumes from the last checkpoint instead of restarting from scratch.
+- **Lower costs** — Less compute time on Nango, fewer API calls against the external API's rate limits, and lower bandwidth consumption.
+- **Higher freshness** — Faster syncs mean you can run them more frequently, keeping your data closer to real-time.
+
+## Function interruption and resumption
+
+Nango reserves the right to cap the duration of a function execution. When an execution reaches the limit, Nango interrupts it gracefully and schedules the next execution to start immediately.
+
+Checkpoints are what make this seamless: the next execution should call `getCheckpoint()` and resumes from where the previous one stopped. **Without checkpoints, each execution starts from scratch**, meaning any function that takes longer than the execution cap will loop indefinitely without ever completing.
+
+<Warning>
+If your sync processes a large dataset, you must call `saveCheckpoint()` after every `batchSave`. A sync without checkpoints that exceeds the execution duration will restart from the beginning on every run and never finish.
+</Warning>
+
+The interrupt-and-resume flow:
+
+1. Sync runs, processes records, saves a checkpoint after each page.
+2. Nango interrupts the sync gracefully when the execution cap is reached (ie: after the current `saveCheckpoint()` call completes).
+3. The next execution starts immediately, calls `getCheckpoint()`, and continues from that point.
+4. This repeats until the sync finishes naturally.
+
+## How checkpoints work
+
+A checkpoint is a small payload, defined by a schema you control, that your sync saves after processing each batch of data. On the next execution, the sync reads the checkpoint to know where it left off.
+
+The typical flow is:
+
+1. Read the current checkpoint with `nango.getCheckpoint()` (returns `null` on first run).
+2. Fetch a page of data from the external API, starting from the checkpoint.
+3. Save the records to Nango's cache with `nango.batchSave()`.
+4. Save a new checkpoint with `nango.saveCheckpoint()`.
+5. Repeat until there is no more data.
+
+## Defining a checkpoint schema
+
+You define your checkpoint schema in the `createSync()` declaration using [Zod](https://zod.dev), just like your data models. The schema describes the shape of the progress marker your sync will save.
+
+Most commonly, the checkpoint is a timestamp indicating how far you've synced:
+
+```ts
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+export default createSync({
+    description: 'Sync contacts from Salesforce',
+    frequency: 'every hour',
+    checkpoint: z.object({
+        lastModifiedISO: z.string(),
+    }),
+    models: { Contact: ContactSchema },
+    exec: async (nango) => {
+        // Implementation below
+    },
+});
+```
+
+The checkpoint payload can be anything the external API gives you to track progress: a timestamp, a cursor, a page token, or any combination. You control the schema.
+
+```ts
+// Timestamp-based checkpoint
+checkpoint: z.object({ lastModifiedISO: z.string() })
+
+// Cursor-based checkpoint
+checkpoint: z.object({ nextCursor: z.string() })
+
+// Composite checkpoint
+checkpoint: z.object({ lastModifiedISO: z.string(), pageToken: z.string().optional() })
+```
+
+## Implementing an incremental sync with checkpoints
+
+Here is a complete example syncing Salesforce contacts incrementally:
+
+```ts
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const ContactSchema = z.object({
+    id: z.string(),
+    first_name: z.string(),
+    last_name: z.string(),
+    email: z.string(),
+    last_modified_date: z.string(),
+});
+
+export default createSync({
+    description: 'Sync contacts from Salesforce',
+    frequency: 'every hour',
+    checkpoint: z.object({
+        lastModifiedISO: z.string(),
+    }),
+    models: { Contact: ContactSchema },
+
+    exec: async (nango) => {
+        // 1. Read the checkpoint (null on first run)
+        const checkpoint = await nango.getCheckpoint();
+
+        let query = 'SELECT Id, FirstName, LastName, Email, LastModifiedDate FROM Contact';
+        if (checkpoint) {
+            // Only fetch records modified since the last checkpoint
+            query += ` WHERE LastModifiedDate > ${checkpoint.lastModifiedISO}`;
+        }
+        query += ' ORDER BY LastModifiedDate ASC';
+
+        for await (const records of nango.paginate({
+            endpoint: '/services/data/v53.0/query',
+            params: { q: query },
+            paginate: {
+                type: 'link',
+                response_path: 'records',
+                link_path_in_response_body: 'nextRecordsUrl',
+            },
+        })) {
+            const contacts = mapContacts(records);
+
+            // 2. Save records to the cache
+            await nango.batchSave(contacts, 'Contact');
+
+            // 3. Save checkpoint after each page
+            const lastContact = contacts[contacts.length - 1];
+            await nango.saveCheckpoint({
+                lastModifiedISO: lastContact.last_modified_date,
+            });
+        }
+    },
+});
+```
+
+The key pattern: **save records and checkpoint after every page**. This ensures that if the sync fails on page 50 of 100, the next run resumes from page 50 — not page 1.
+
+## The first sync run
+
+Even with checkpoints, the very first execution has no previous progress to resume from — `getCheckpoint()` returns `null`. This initial run fetches the entire historical dataset and is inherently more resource-intensive than subsequent runs.
+
+One strategy to manage this is to limit the backfill window. For example, if you are syncing a Notion workspace, you might only fetch pages modified in the last three months, assuming older pages are less relevant:
+
+```ts
+const checkpoint = await nango.getCheckpoint();
+const since = checkpoint?.lastModifiedISO ?? threeMonthsAgo();
+```
+
+After the initial run completes, subsequent runs are fast and incremental — only processing changes since the last checkpoint.
+
+## Implementing a full sync with checkpoints
+
+Not every sync can be incremental. Some APIs don't support filtering by modification date, so you must fetch all records on every run. Such syncs can still benefit from checkpoints for resilience: if a run is interrupted mid-dataset, the next run resumes from the last page instead of starting over.
+
+Call `clearCheckpoint()` at the end of a successful run so the next scheduled run starts from the first page.
+
+```ts
+export default createSync({
+    description: 'Sync all contacts',
+    frequency: 'every hour',
+    checkpoint: z.object({
+        nextCursor: z.string(),
+    }),
+    models: { Contact: ContactSchema },
+
+    exec: async (nango) => {
+        // Resume from the last page if this run was interrupted
+        const checkpoint = await nango.getCheckpoint();
+        let nextCursor: string | undefined = checkpoint?.nextCursor;
+
+        do {
+            const res = await nango.get({
+                endpoint: '/contacts',
+                params: { cursor: nextCursor },
+            });
+
+            const contacts = mapContacts(res.data.records);
+            await nango.batchSave(contacts, 'Contact');
+
+            nextCursor = res.data.nextCursor;
+
+            if (nextCursor) {
+                await nango.saveCheckpoint({ nextCursor });
+            }
+        } while (nextCursor);
+
+        // All pages fetched, clear checkpoint so the next run starts from the first page
+        await nango.clearCheckpoint();
+    },
+});
+```
+
+## When to sync without checkpoints
+
+For small datasets (e.g., a list of Slack users for an organization with fewer than 100 employees), a sync without checkpoint can be perfectly fine.
+
+As datasets grow, full syncs become unscalable — taking longer to run, triggering rate limits, and consuming more compute and memory. If your dataset has more than a few thousand records and the API supports pagination and/or filtering by date or cursor, use checkpoints.
+
+<Warning>
+`deleteRecordsFromPreviousExecutions()` is incompatible with checkpoints because it requires comparing the full dataset between consecutive runs. Use `trackDeletesStart`/`trackDeletesEnd` instead — see [Deletion detection](/guides/functions/syncs/deletion-detection).
+</Warning>
+
+## Checkpoints vs. cursors
+
+Both checkpoints and [cursors](/guides/functions/syncs/records-cache#cursors-and-sync-progress) are markers of sync progress, but they track different relationships:
+
+| | Checkpoint | Cursor |
+| --- | --- | --- |
+| **Direction** | Nango → external API | Your app → Nango |
+| **What it tracks** | How far Nango has synced from the external API | How far your app has fetched from Nango's records cache |
+| **Who manages it** | Your sync function, via `saveCheckpoint()` | Your application, via the `cursor` parameter on [GET /records](/reference/backend/http-api/sync/records-list) |
+| **Typical payload** | A timestamp or API cursor from the external system | An opaque string returned by Nango |
+
+Both are important: checkpoints keep your sync efficient, and cursors keep your application's data consumption efficient.
+
+## Re-syncing: resetting checkpoints and the cache
+
+When you [trigger a sync](/reference/backend/http-api/sync/trigger) manually (from the UI or API), you can control whether to preserve or reset progress:
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| `reset` | `false` | When `true`, clears the checkpoint and re-fetches the full dataset from the external API. The cache is preserved, so Nango can still distinguish new records from updated ones. |
+| `emptyCache` | `false` | When `true`, deletes all cached records before the sync runs. Must be used with `reset: true`. The sync starts completely fresh. |
+
+**Leave both off** for a standard incremental sync.
+
+**Use `reset: true`** when you want to re-fetch everything from the external API but preserve the cache for accurate change detection. This is useful when you suspect data may have been missed.
+
+**Use `reset: true` with `emptyCache: true`** when you need to start from scratch — for example, after a breaking change to your data model.
+
+<Warning>
+Resetting the checkpoint triggers a full re-sync from the external API, which takes longer and may incur higher compute costs. Clearing the cache additionally means every record will be reported as `ADDED`, your previously persisted [cursors](/guides/functions/syncs/records-cache#cursors-and-sync-progress) become invalid, and you will need to reprocess the entire dataset on your side.
+</Warning>
+
+```ts
+// Preserve checkpoint (standard incremental sync)
+await nango.triggerSync('<INTEGRATION-ID>', ['contacts'], '<CONNECTION-ID>');
+
+// Reset checkpoint, re-fetch everything, preserve cache for change detection
+await nango.triggerSync('<INTEGRATION-ID>', ['contacts'], '<CONNECTION-ID>', { reset: true });
+
+// Full reset — re-fetch everything and clear the cache
+await nango.triggerSync('<INTEGRATION-ID>', ['contacts'], '<CONNECTION-ID>', { reset: true, emptyCache: true });
+```
+
+## Observability
+
+Checkpoints are exposed in several places to help you monitor sync progress:
+
+- **Sync webhooks** — The [sync completion webhook](/guides/platform/webhooks-from-nango) includes checkpoint information, so your application knows how far the sync has progressed.
+- **Sync status API** — The [GET /sync/status](/reference/backend/http-api/sync/status) endpoint returns the current checkpoint for each sync, letting you check progress programmatically.
+- **Logs** — Checkpoint-related details are visible in the Nango dashboard logs. *(We are actively improving checkpoint visibility in the dashboard.)*
+
+## Testing checkpoints locally
+
+When developing locally with the Nango CLI, you can pass a checkpoint value to `dryrun` to simulate resuming from a previous run:
+
+```bash
+nango dryrun salesforce-contacts '<CONNECTION-ID>' --checkpoint '{"lastModifiedISO": "2024-01-15T00:00:00Z"}'
+```
+
+This lets you test that your sync correctly resumes from a checkpoint without needing to run a full initial sync first. See the [testing guide](/guides/functions/testing) for more details, including how to write unit tests for checkpoint logic.
+
+<Tip>
+**Migrating from `nango.lastSyncDate`?** Checkpoints replace it with a schema you control, mid-run granularity, and failure-resumption. Follow the [migration guide](/guides/platform/migrations/migrate-to-checkpoints) for step-by-step instructions.
+</Tip>
+
+## Reference
+
+| Function | Description |
+| --- | --- |
+| [`nango.getCheckpoint()`](/reference/functions/functions-sdk#getcheckpoint) | Retrieves the current checkpoint. Returns `null` on first run or after a reset. |
+| [`nango.saveCheckpoint()`](/reference/functions/functions-sdk#savecheckpoint) | Saves progress. Call after each batch of data. |
+| [`nango.clearCheckpoint()`](/reference/functions/functions-sdk#clearcheckpoint) | Clears the checkpoint. Use at the end of a full sync so the next run starts from the first page. Checkpoints are also automatically cleared when triggering a sync with `reset: true`. |
