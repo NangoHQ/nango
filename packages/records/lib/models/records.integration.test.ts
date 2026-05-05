@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
@@ -21,6 +21,7 @@ describe('Records service', () => {
     afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
+        await db(RECORDS_BATCH_TABLE).truncate();
     });
 
     describe('Should fetch cursor', () => {
@@ -105,14 +106,13 @@ describe('Records service', () => {
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
-        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ external_id: '1', sync_job_id: 2, decrypted: { id: '1', name: 'John Doe' } });
+        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ external_id: '1', decrypted: { id: '1', name: 'John Doe' } });
         await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
             external_id: '2',
-            sync_job_id: 2,
             decrypted: { id: '2', name: 'Jane Much Longer Name Doe' }
         });
-        await expect(fromDb(connectionId, model, '3')).resolves.toMatchObject({ external_id: '3', sync_job_id: 1, decrypted: { id: '3', name: 'Max Doe' } });
-        await expect(fromDb(connectionId, model, '4')).resolves.toMatchObject({ external_id: '4', sync_job_id: 1, decrypted: { id: '4', name: 'Mike Doe' } });
+        await expect(fromDb(connectionId, model, '3')).resolves.toMatchObject({ external_id: '3', decrypted: { id: '3', name: 'Max Doe' } });
+        await expect(fromDb(connectionId, model, '4')).resolves.toMatchObject({ external_id: '4', decrypted: { id: '4', name: 'Mike Doe' } });
 
         const updated = await updateRecords({ records: [{ id: '1', name: 'Maurice Doe' }], connectionId, environmentId, model, syncId, syncJobId: 3 });
         expect(updated).toStrictEqual({
@@ -129,7 +129,6 @@ describe('Records service', () => {
         expect(stats[model]?.size_bytes).toBe(560);
         await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
             external_id: '1',
-            sync_job_id: 3,
             decrypted: { id: '1', name: 'Maurice Doe' }
         });
     });
@@ -176,22 +175,18 @@ describe('Records service', () => {
 
                 await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
                     external_id: '1',
-                    sync_job_id: 2,
                     decrypted: { id: '1', name: 'John Doe' }
                 });
                 await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
                     external_id: '2',
-                    sync_job_id: 2,
                     decrypted: { id: '2', name: 'Jane Moe' }
                 });
                 await expect(fromDb(connectionId, model, '3')).resolves.toMatchObject({
                     external_id: '3',
-                    sync_job_id: 1,
                     decrypted: { id: '3', name: 'Max Doe' }
                 });
                 await expect(fromDb(connectionId, model, '4')).resolves.toMatchObject({
                     external_id: '4',
-                    sync_job_id: 1,
                     decrypted: { id: '4', name: 'Mike Doe' }
                 });
             });
@@ -895,9 +890,16 @@ describe('Records service', () => {
                 .where({ connection_id: connectionId, model })
                 .whereNotNull('deleted_at');
             deleted.forEach((r) => {
-                expect(r.sync_job_id).toBe(3);
                 expect(r.deleted_at).not.toBeNull();
             });
+
+            // Check that the record from generation 3 is not marked as deleted
+            const notDeleted = await db
+                .select<FormattedRecord[]>('*')
+                .from(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '5' })
+                .first();
+            expect(notDeleted?.deleted_at).toBeNull();
         });
 
         it('should not mark already deleted records', async () => {
