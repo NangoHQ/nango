@@ -1,4 +1,4 @@
-/* global document, window, requestAnimationFrame, history */
+/* global document, window, requestAnimationFrame, history, localStorage, MutationObserver */
 /* ── Changelog TOC scroll-active fallback ──────────────────────────────── */
 /*
  * Mintlify clears the TOC active highlight as soon as a section anchor
@@ -69,4 +69,57 @@
   } else {
     updateActive();
   }
+})();
+
+/* Theme sync between nango.dev (website) and nango.dev/docs (Mintlify).
+ *
+ * The two sites use different localStorage keys:
+ *   website  → localStorage.theme      ("dark" | "light" | "system")
+ *   Mintlify → localStorage.isDarkMode ("dark" | "light"; absent = OS preference)
+ *
+ * The website writes isDarkMode whenever the user explicitly picks dark/light,
+ * so Mintlify's own head script reads the correct value on page load (no flash).
+ * This script handles two remaining cases:
+ *   A) Cross-tab sync: user toggles theme on the website tab, docs tab updates.
+ *   B) Docs → website: user toggles in docs, write back to theme so the website
+ *      picks it up on the next visit.
+ */
+(function () {
+  'use strict';
+
+  var syncing = false;
+
+  // Case A: website changed theme in another tab/window
+  window.addEventListener('storage', function (e) {
+    if (e.key !== 'theme') return;
+    var t = e.newValue;
+    var isDark;
+    syncing = true;
+    if (t === 'dark' || t === 'light') {
+      isDark = t === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      localStorage.setItem('isDarkMode', t);
+    } else {
+      // 'system' or cleared — follow OS and let Mintlify use its own detection
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+      localStorage.removeItem('isDarkMode');
+    }
+    setTimeout(function () { syncing = false; }, 50);
+  });
+
+  // Case B: Mintlify toggled the dark class → write back to website's theme key
+  var observer = new MutationObserver(function () {
+    if (syncing) return;
+    var isDark = document.documentElement.classList.contains('dark');
+    var resolved = isDark ? 'dark' : 'light';
+    if (localStorage.getItem('theme') !== resolved) {
+      localStorage.setItem('theme', resolved);
+    }
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
 })();
