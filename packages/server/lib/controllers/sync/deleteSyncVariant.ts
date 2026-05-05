@@ -67,6 +67,16 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
     const params: DeleteSyncVariant['Params'] = parsedParams.data;
     await logCtx.enrichOperation({ integrationName: body.provider_config_key, syncConfigName: params.name });
 
+    if (params.variant.toLowerCase() === 'base') {
+        const errResponse: ApiError<'invalid_variant'> = {
+            error: { code: 'invalid_variant', message: `Cannot delete protected variant "${params.variant}".` }
+        };
+        res.status(400).send(errResponse);
+        await logCtx.error(errResponse.error.message ?? 'Invalid variant', { variant: params.variant });
+        await logCtx.failed();
+        return;
+    }
+
     const { response: connection, error } = await connectionService.getConnection(body.connection_id, body.provider_config_key, environment.id);
     if (error || !connection) {
         const errResponse: ApiError<'unknown_connection'> = { error: { code: 'unknown_connection' } };
