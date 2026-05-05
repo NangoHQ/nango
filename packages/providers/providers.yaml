@@ -10069,14 +10069,20 @@ kno-commerce:
     categories:
         - e-commerce
     auth_mode: OAUTH2_CC
-    token_url: https://app-api.knocommerce.com/api/oauth2/token
+    token_url: https://app-api.knocommerce.com/api/oauth2/token?grant_type=client_credentials&scope=${connectionConfig.scope}
     token_request_auth_method: basic
-    token_params:
-        grant_type: client_credentials
     proxy:
         base_url: https://app-api.knocommerce.com
     docs: https://nango.dev/docs/api-integrations/kno-commerce
     docs_connect: https://nango.dev/docs/api-integrations/kno-commerce/connect
+    connection_config:
+        scope:
+            type: string
+            title: API Scopes
+            description: Space-separated list of Kno API scopes to grant the access token. Valid values are SURVEYS, RESPONSES, QUESTIONS, and WEBHOOKS.
+            example: SURVEYS RESPONSES QUESTIONS WEBHOOKS
+            pattern: '^[A-Z]+( [A-Z]+)*$'
+            doc_section: '#step-1-creating-an-api-client'
     credentials:
         client_id:
             type: string
