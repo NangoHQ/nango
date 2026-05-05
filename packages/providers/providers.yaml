@@ -12120,7 +12120,7 @@ northbeam:
         verification:
             method: GET
             endpoints:
-                - /v2/orders
+                - /v1/exports/attribution-models
     docs: https://nango.dev/docs/api-integrations/northbeam
     docs_connect: https://nango.dev/docs/api-integrations/northbeam/connect
     connection_config:
