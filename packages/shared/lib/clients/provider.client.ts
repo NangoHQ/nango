@@ -137,8 +137,8 @@ class ProviderClient {
                     config.oauth_client_id,
                     config.oauth_client_secret,
                     callBackUrl,
-                    connectionConfig?.['restApiKey'] ?? '',
-                    connectionConfig?.['apiVersion'] ?? ''
+                    connectionConfig?.['restApiKey'],
+                    connectionConfig?.['apiVersion']
                 );
             case 'posthog-oauth':
                 return this.createPosthogOauthToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
@@ -252,7 +252,7 @@ class ProviderClient {
                     config.oauth_client_secret,
                     connection.connection_config,
                     config.oauth_scopes ?? '',
-                    (connection.connection_config as Record<string, string>)['apiVersion'] ?? ''
+                    connection.connection_config['apiVersion']
                 );
             case 'posthog-oauth':
                 return this.refreshPosthogOauthToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
@@ -1239,9 +1239,11 @@ class ProviderClient {
         client_id: string,
         client_secret: string,
         redirect_uri: string,
-        restApiKey: string,
-        apiVersion: string
+        restApiKey: string | undefined,
+        apiVersion: string | undefined
     ): Promise<AuthorizationTokenResponse> {
+        if (!restApiKey) throw new NangoError('missing_connection_config', { config: 'restApiKey' });
+        if (!apiVersion) throw new NangoError('missing_connection_config', { config: 'apiVersion' });
         try {
             const body = new URLSearchParams({
                 grant_type: 'authorization_code',
@@ -1257,7 +1259,7 @@ class ProviderClient {
                 'x-api-key': restApiKey
             };
             const response = await axios.post(tokenUrl, body.toString(), { headers });
-            if (response.status === 200 && response.data) return { ...response.data };
+            if (response.status >= 200 && response.status < 300 && response.data) return { ...response.data };
             throw new NangoError('absorb_lms_token_request_error');
         } catch (err: any) {
             throw new NangoError('absorb_lms_token_request_error', stringifyError(err));
@@ -1271,8 +1273,11 @@ class ProviderClient {
         client_secret: string,
         connection_config: ConnectionConfig,
         scope: string,
-        apiVersion: string
+        apiVersion: string | undefined
     ): Promise<RefreshTokenResponse> {
+        const restApiKey = connection_config['restApiKey'];
+        if (!restApiKey) throw new NangoError('missing_connection_config', { config: 'restApiKey' });
+        if (!apiVersion) throw new NangoError('missing_connection_config', { config: 'apiVersion' });
         try {
             const body = new URLSearchParams({
                 grant_type: 'refresh_token',
@@ -1285,10 +1290,10 @@ class ProviderClient {
             const headers = {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'x-api-version': apiVersion,
-                'x-api-key': (connection_config as Record<string, string>)['restApiKey'] ?? ''
+                'x-api-key': restApiKey
             };
             const response = await axios.post(tokenUrl, body.toString(), { headers });
-            if (response.status === 200 && response.data) return { ...response.data };
+            if (response.status >= 200 && response.status < 300 && response.data) return { ...response.data };
             throw new NangoError('absorb_lms_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('absorb_lms_refresh_token_request_error', stringifyError(err));
