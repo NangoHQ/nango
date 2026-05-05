@@ -3,11 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 import type { DBSyncConfig } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
+
+const endpoint = '/integrations/:uniqueKey/functions/:name/code';
 
 async function insertSyncConfig({
     environment_id,
@@ -41,7 +43,7 @@ async function insertSyncConfig({
     });
 }
 
-describe('GET /functions/pull', () => {
+describe(`GET ${endpoint}`, () => {
     beforeAll(async () => {
         api = await runServer();
     });
@@ -51,8 +53,10 @@ describe('GET /functions/pull', () => {
     });
 
     it('protects the endpoint', async () => {
-        const res = await api.fetch('/functions/pull', {
-            query: { integrationId: 'github', name: 'get-issues' }
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            params: { uniqueKey: 'github', name: 'get-issues' },
+            query: {}
         });
 
         shouldBeProtected(res);
@@ -61,9 +65,11 @@ describe('GET /functions/pull', () => {
     it('returns 404 when integration is not found', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 
-        const res = await api.fetch('/functions/pull', {
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
             token: apiKey.secret,
-            query: { integrationId: 'missing', name: 'get-issues' }
+            params: { uniqueKey: 'missing', name: 'get-issues' },
+            query: {}
         });
 
         expect(res.res.status).toBe(404);
@@ -75,9 +81,11 @@ describe('GET /functions/pull', () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
-        const res = await api.fetch('/functions/pull', {
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'missing-function' }
+            params: { uniqueKey: 'github', name: 'missing-function' },
+            query: {}
         });
 
         expect(res.res.status).toBe(404);
@@ -92,9 +100,11 @@ describe('GET /functions/pull', () => {
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'sync' });
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'shared-name', type: 'action' });
 
-        const res = await api.fetch('/functions/pull', {
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'shared-name' }
+            params: { uniqueKey: 'github', name: 'shared-name' },
+            query: {}
         });
 
         expect(res.res.status).toBe(409);
@@ -117,9 +127,11 @@ describe('GET /functions/pull', () => {
 
         // With --type the resolver picks the right config; the source file lookup
         // will 404 in tests (no fixture on disk), but it must NOT be 409.
-        const res = await api.fetch('/functions/pull', {
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
             token: apiKey.secret,
-            query: { integrationId: 'github', name: 'shared-name', type: 'sync' }
+            params: { uniqueKey: 'github', name: 'shared-name' },
+            query: { type: 'sync' }
         });
 
         expect(res.res.status).toBe(404);

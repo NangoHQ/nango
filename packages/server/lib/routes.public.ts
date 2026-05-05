@@ -37,10 +37,10 @@ import { getPublicEnvironmentVariables } from './controllers/environment/getVari
 import { postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
 import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
-import { getFunctionPull } from './controllers/functions/pull/getPull.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
+import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
@@ -192,6 +192,9 @@ publicAPI
     .route('/integrations/:uniqueKey')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environment:integrations:write'), deletePublicIntegration);
+publicAPI
+    .route('/integrations/:uniqueKey/functions/:name/code')
+    .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
@@ -283,9 +286,6 @@ publicAPI.use('/remote-function', jsonContentTypeMiddleware);
 publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
 publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
 publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
-
-publicAPI.use('/functions', jsonContentTypeMiddleware);
-publicAPI.route('/functions/pull').get(apiAuth, withScope('environment:deploy'), getFunctionPull);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);

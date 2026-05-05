@@ -64,9 +64,7 @@ export async function pullFunction(options: PullFunctionOptions): Promise<boolea
     try {
         await parseSecretKey(environmentName, debug);
 
-        const url = new URL('/functions/pull', resolveHostport(environmentName));
-        url.searchParams.set('integrationId', integrationId);
-        url.searchParams.set('name', name);
+        const url = new URL(`/integrations/${encodeURIComponent(integrationId)}/functions/${encodeURIComponent(name)}/code`, resolveHostport(environmentName));
         if (type) {
             url.searchParams.set('type', type);
         }

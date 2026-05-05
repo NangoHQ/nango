@@ -6,9 +6,10 @@ import * as z from 'zod';
 import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, remoteFileService } from '@nangohq/shared';
 import { report, useS3, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { DBSyncConfig, GetFunctionPull, ScriptTypeLiteral } from '@nangohq/types';
+import type { DBSyncConfig, GetPublicFunctionCode, ScriptTypeLiteral } from '@nangohq/types';
 
 const scriptTypeToFolder: Record<ScriptTypeLiteral, 'syncs' | 'actions' | 'on-events'> = {
     sync: 'syncs',
@@ -35,27 +36,39 @@ async function getFunctionTsCode({ syncConfig, providerConfigKey }: { syncConfig
     }
 }
 
+const validationParams = z
+    .object({
+        uniqueKey: providerConfigKeySchema,
+        name: scriptNameSchema
+    })
+    .strict();
+
 const validationQuery = z
     .object({
-        integrationId: z.string().min(1),
-        name: z.string().min(1),
         type: z.enum(['sync', 'action', 'on-event']).optional()
     })
     .strict();
 
-export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) => {
+export const getFunctionCode = asyncWrapper<GetPublicFunctionCode>(async (req, res) => {
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
+        return;
+    }
+
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
         return;
     }
 
-    const { integrationId, type, name } = valQuery.data;
+    const { uniqueKey, name } = valParams.data;
+    const { type } = valQuery.data;
     const { environment } = res.locals;
 
-    const providerConfig = await configService.getProviderConfig(integrationId, environment.id);
+    const providerConfig = await configService.getProviderConfig(uniqueKey, environment.id);
     if (!providerConfig || !providerConfig.id) {
-        res.status(404).send({ error: { code: 'not_found', message: `Integration '${integrationId}' not found` } });
+        res.status(404).send({ error: { code: 'not_found', message: `Integration '${uniqueKey}' not found` } });
         return;
     }
 
@@ -66,7 +79,7 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
         res.status(409).send({
             error: {
                 code: 'ambiguous_function',
-                message: `Multiple functions named '${name}' found for integration '${integrationId}'. Specify a type to disambiguate.`,
+                message: `Multiple functions named '${name}' found for integration '${uniqueKey}'. Specify a type to disambiguate.`,
                 payload: { matches: filtered.map((c) => ({ type: c.type, name: c.sync_name })) }
             }
         });
@@ -75,11 +88,11 @@ export const getFunctionPull = asyncWrapper<GetFunctionPull>(async (req, res) =>
 
     const syncConfig = filtered[0];
     if (!syncConfig) {
-        res.status(404).send({ error: { code: 'not_found', message: `Function '${name}' not found for integration '${integrationId}'` } });
+        res.status(404).send({ error: { code: 'not_found', message: `Function '${name}' not found for integration '${uniqueKey}'` } });
         return;
     }
 
-    const code = await getFunctionTsCode({ syncConfig, providerConfigKey: integrationId });
+    const code = await getFunctionTsCode({ syncConfig, providerConfigKey: uniqueKey });
     if (code === null) {
         res.status(404).send({ error: { code: 'not_found', message: `Source file for '${name}' not found` } });
         return;
