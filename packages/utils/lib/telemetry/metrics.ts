@@ -59,6 +59,7 @@ export enum Types {
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
+    WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
@@ -66,6 +67,17 @@ export enum Types {
     WEBHOOK_ASYNC_ACTION_SUCCESS = 'nango.webhook.async_action.success',
     WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
+    WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
+
+    WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',
+    WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
+    WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
+    WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
+    WEBHOOK_DISPATCH_CONSUME_SUCCESS = 'nango.webhook.dispatch_queue.consume.success',
+    WEBHOOK_DISPATCH_CONSUME_FAILURE = 'nango.webhook.dispatch_queue.consume.failure',
+    WEBHOOK_DISPATCH_POISON_PILL = 'nango.webhook.dispatch_queue.poison_pill',
+    WEBHOOK_DISPATCH_STALE = 'nango.webhook.dispatch_queue.stale',
+    WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
@@ -100,6 +112,9 @@ export enum Types {
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 
     ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
+    BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
+    BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
+    BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 

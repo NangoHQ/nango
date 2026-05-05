@@ -22,12 +22,12 @@ interface RunScriptRow {
     syncId: string;
     syncVariant: string;
     scriptVersion?: string | undefined;
-    preBuilt?: boolean | undefined;
     content: string;
     runTimeInSeconds: number;
     createdAt: number;
     internalIntegrationId: number | null;
     endUser: { id: number; endUserId: string | null; orgId: string | null } | null;
+    source?: string | undefined;
 }
 
 const fields = [
@@ -46,14 +46,14 @@ const fields = [
     { name: 'syncId', type: 'STRING' },
     { name: 'syncVariant', type: 'STRING' },
     { name: 'scriptVersion', type: 'STRING' },
-    { name: 'preBuilt', type: 'BOOLEAN' },
     { name: 'content', type: 'STRING' },
     { name: 'runTimeInSeconds', type: 'FLOAT' },
     { name: 'createdAt', type: 'INTEGER' },
     { name: 'internalIntegrationId', type: 'INTEGER' },
     { name: 'endUserId', type: 'INTEGER' },
     { name: 'endUserUserId', type: 'STRING' },
-    { name: 'endUserOrgId', type: 'STRING' }
+    { name: 'endUserOrgId', type: 'STRING' },
+    { name: 'source', type: 'STRING' }
 ] as const;
 
 interface TypeMap {
@@ -161,14 +161,14 @@ class BigQueryClient {
                 status: data.status,
                 syncId: data.syncId,
                 scriptVersion: data.scriptVersion,
-                preBuilt: data.preBuilt,
                 content: data.content,
                 runTimeInSeconds: data.runTimeInSeconds,
                 createdAt: data.createdAt,
                 internalIntegrationId: data.internalIntegrationId,
                 endUserId: data.endUser?.id,
                 endUserOrgId: data.endUser?.orgId,
-                endUserUserId: data.endUser?.endUserId
+                endUserUserId: data.endUser?.endUserId,
+                source: data.source
             };
             await this.client.dataset(this.datasetName).table(table).insert(insertData);
         } catch (err) {

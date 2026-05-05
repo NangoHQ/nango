@@ -174,7 +174,7 @@ export const ConnectUISettings = () => {
                                             <p>
                                                 You can override the theme per session from the{' '}
                                                 <StyledLink
-                                                    to="https://nango.dev/docs/reference/sdks/frontend#param-theme-override"
+                                                    to="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
                                                     icon
                                                     type="external"
                                                     className="text-s"

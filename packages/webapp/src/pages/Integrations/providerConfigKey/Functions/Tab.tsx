@@ -1,4 +1,4 @@
-import { Box, Code, ExternalLink, Info } from 'lucide-react';
+import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -77,11 +77,11 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                     <NavigationTrigger value="syncs">Syncs</NavigationTrigger>
                 </NavigationList>
                 {activeTab === 'actions' ? (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                         How to use Actions <ExternalLink />
                     </ButtonLink>
                 ) : (
-                    <ButtonLink variant="secondary" to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync" target="_blank">
+                    <ButtonLink variant="secondary" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                         How to use Syncs <ExternalLink />
                     </ButtonLink>
                 )}
@@ -120,7 +120,7 @@ const GroupedFunctionsTable: React.FC<{
                     <TableHeader className="h-8">
                         <TableRow className="h-8">
                             <TableHead className="h-8">{groupName}</TableHead>
-                            <TableHead className="h-8">{index === 0 && 'Type'}</TableHead>
+                            <TableHead className="h-8">{index === 0 && 'Source code'}</TableHead>
                             <TableHead className="h-8 text-center">{index === 0 && 'Enabled'}</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -140,14 +140,14 @@ const GroupedFunctionsTable: React.FC<{
                                     </div>
                                 </TableCell>
                                 <TableCell>
-                                    {func.pre_built ? (
+                                    {func.source === 'repo' ? (
                                         <Badge variant="gray" className="uppercase">
-                                            <Box />
-                                            Template
+                                            <FolderGit2 /> Your repo
                                         </Badge>
                                     ) : (
                                         <Badge variant="gray" className="uppercase">
-                                            <Code /> Custom
+                                            <Cloud />
+                                            Nango
                                         </Badge>
                                     )}
                                 </TableCell>

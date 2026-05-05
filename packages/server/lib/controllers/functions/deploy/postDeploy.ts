@@ -39,11 +39,12 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         name: body.function_name,
         isAction: body.function_type === 'action'
     });
-    if (existingSyncConfig && (existingSyncConfig.is_public || existingSyncConfig.pre_built)) {
+
+    if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
-                message: `Cannot overwrite pre-built function '${body.function_name}'`
+                message: `Cannot overwrite existing function '${body.function_name}'`
             }
         });
         return;

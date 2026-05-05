@@ -293,12 +293,12 @@ export async function handleActionSuccess({
         syncId: null as unknown as string,
         syncVariant: null as unknown as string,
         scriptVersion: nangoProps.syncConfig.version,
-        preBuilt: nangoProps.syncConfig.pre_built,
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
 
     void pubsub.publisher.publish({
@@ -481,12 +481,12 @@ function onFailure({
             syncId: null as unknown as string,
             syncVariant: null as unknown as string,
             scriptVersion: syncConfig?.version,
-            preBuilt: syncConfig?.pre_built,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({
