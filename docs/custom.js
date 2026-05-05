@@ -1,23 +1,20 @@
 /* global document, window, location, requestAnimationFrame */
 /* ── Changelog TOC scroll-active fallback ──────────────────────────────── */
 /*
- * Mintlify's IntersectionObserver only fires while a section heading is in
+ * Mintlify's IntersectionObserver only fires while a section anchor is in
  * the top ~15% of the viewport. Changelog <Update> blocks are many screens
- * tall, so the heading anchor leaves that strip almost immediately and
- * Mintlify clears the active highlight entirely.
+ * tall, so the anchor leaves that strip almost immediately and Mintlify
+ * clears the active highlight entirely.
  *
  * This script maintains a data-scroll-active="true" attribute on the
- * matching .toc-item element based on which heading has most recently
- * scrolled past 30% of the viewport. CSS shows it only when Mintlify has
- * no native data-active="true" item, so the two never conflict.
+ * matching .toc-item element. It resolves anchor targets directly from TOC
+ * link hrefs (which point to <div id="..."> Update containers, not headings).
+ * CSS shows the fallback only when Mintlify has no native data-active="true"
+ * item, so the two never conflict.
  */
 (function () {
   var rafPending = false;
   var currentPath = location.pathname;
-
-  function getHeadings() {
-    return Array.from(document.querySelectorAll('#content-area h2, #content-area h3'));
-  }
 
   function getTocItems() {
     return Array.from(document.querySelectorAll('#table-of-contents .toc-item'));
@@ -32,25 +29,33 @@
   function updateActive() {
     rafPending = false;
 
-    var threshold = window.innerHeight * 0.3;
-    var headings = getHeadings();
-    if (!headings.length) return;
-
-    // Find the last heading whose top edge is at or above 30% viewport height
-    var active = null;
-    for (var i = 0; i < headings.length; i++) {
-      if (headings[i].getBoundingClientRect().top <= threshold) {
-        active = headings[i];
-      }
-    }
-    if (!active) active = headings[0];
-
-    var id = active.id;
     var tocItems = getTocItems();
+    if (!tocItems.length) return;
 
+    // Build ordered list of {item, target} pairs from TOC link hrefs
+    var anchors = [];
     tocItems.forEach(function (item) {
       var link = item.querySelector('a');
-      if (link && link.getAttribute('href') === '#' + id) {
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || href.charAt(0) !== '#') return;
+      var target = document.getElementById(href.slice(1));
+      if (target) anchors.push({ item: item, target: target });
+    });
+    if (!anchors.length) return;
+
+    // The active section is the last anchor whose top edge is at or above
+    // 30% of the viewport height (i.e. it has scrolled into view past that point)
+    var threshold = window.innerHeight * 0.3;
+    var active = anchors[0];
+    for (var i = 0; i < anchors.length; i++) {
+      if (anchors[i].target.getBoundingClientRect().top <= threshold) {
+        active = anchors[i];
+      }
+    }
+
+    tocItems.forEach(function (item) {
+      if (item === active.item) {
         item.setAttribute('data-scroll-active', 'true');
       } else {
         item.removeAttribute('data-scroll-active');
