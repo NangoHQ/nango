@@ -21,6 +21,7 @@
     }
   },
   "css": "custom.css",
+  "js": "custom.js",
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",

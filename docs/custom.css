@@ -306,6 +306,20 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
+/*
+ * Show our scroll-derived active state only when Mintlify has no native
+ * active item. :not(:has(...)) ensures the two never conflict.
+ */
+#table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: #ffffff !important;
+}
+html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #000000 !important;
+}
+
 /* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
 /*
  * Mintlify pins an "Ask a question..." chat-assistant input at the
