@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { Subscriber } from '@nangohq/pubsub';
 import { getPlan } from '@nangohq/shared';
-import { getLogger, report, useLambda } from '@nangohq/utils';
+import { getLogger, report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { invokeLambdaReadinessCheckEvent } from '../runner/lambda.js';
@@ -23,13 +23,8 @@ export class LambdaKeepWarmProcessor {
     }
 
     public start(): void {
-        if (!envs.LAMBDA_KEEP_WARM_ENABLED) {
+        if (!useLambdaKeepWarm) {
             logger.info('Lambda keep-warm subscriber skipped - lambda keep-warm not enabled');
-            return;
-        }
-
-        if (!useLambda) {
-            logger.info('Lambda keep-warm subscriber skipped - lambda not enabled');
             return;
         }
 
@@ -53,7 +48,7 @@ export class LambdaKeepWarmProcessor {
 }
 
 async function processKeepWarm(event: LambdaKeepWarmInvokeEvent): Promise<void> {
-    if (!useLambda) {
+    if (!useLambdaKeepWarm) {
         return;
     }
 

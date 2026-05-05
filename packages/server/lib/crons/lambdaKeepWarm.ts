@@ -4,7 +4,7 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
 import { pubsub } from '@nangohq/shared';
-import { getLogger, metrics, report, useLambda } from '@nangohq/utils';
+import { getLogger, metrics, report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
@@ -17,12 +17,8 @@ const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
-    if (!envs.LAMBDA_KEEP_WARM_ENABLED) {
+    if (!useLambdaKeepWarm) {
         logger.info('Lambda keep-warm cron skipped - lambda keep-warm not enabled');
-        return;
-    }
-    if (!useLambda) {
-        logger.info('Lambda keep-warm cron skipped - lambda not enabled');
         return;
     }
     if (cronMinutes <= 0) {
