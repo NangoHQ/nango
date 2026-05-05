@@ -9174,7 +9174,6 @@ jiminny:
             description: The region your Jiminny account is hosted in.
             pattern: '^(eu|com)$'
             example: eu
-            default_value: com
             doc_section: '#step-1-find-your-region'
     credentials:
         apiKey:
