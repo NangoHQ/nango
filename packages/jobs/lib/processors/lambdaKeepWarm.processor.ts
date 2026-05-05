@@ -23,8 +23,13 @@ export class LambdaKeepWarmProcessor {
     }
 
     public start(): void {
+        if (!envs.LAMBDA_KEEP_WARM_ENABLED) {
+            logger.info('Lambda keep-warm subscriber skipped - lambda keep-warm not enabled');
+            return;
+        }
+
         if (!useLambda) {
-            logger.info('Lambda keep-warm subscriber skipped (lambda not enabled)');
+            logger.info('Lambda keep-warm subscriber skipped - lambda not enabled');
             return;
         }
 

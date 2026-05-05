@@ -17,10 +17,16 @@ const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
+    if (!envs.LAMBDA_KEEP_WARM_ENABLED) {
+        logger.info('Lambda keep-warm cron skipped - lambda keep-warm not enabled');
+        return;
+    }
     if (!useLambda) {
+        logger.info('Lambda keep-warm cron skipped - lambda not enabled');
         return;
     }
     if (cronMinutes <= 0) {
+        logger.info('Lambda keep-warm cron skipped - cron minutes not set');
         return;
     }
 
