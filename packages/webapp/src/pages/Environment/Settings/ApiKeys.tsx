@@ -477,7 +477,7 @@ export const ApiKeys: React.FC = () => {
     const isProd = envData?.environmentAndAccount?.environment?.is_production || false;
     const canReadSecret = can(permissions.canReadProdSecretKey) || !isProd;
     const canManageKeys = can(permissions.canWriteProdEnvironmentKeys) || !isProd;
-    const showActions = canReadSecret || canManageKeys;
+    const canMakeActions = canReadSecret || canManageKeys;
     const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 
     const apiKeys = data?.data ?? [];
@@ -527,7 +527,7 @@ export const ApiKeys: React.FC = () => {
                                 <TableHead>Scopes</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Last used</TableHead>
-                                {showActions && <TableHead>Action</TableHead>}
+                                {canMakeActions && <TableHead>Action</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -549,7 +549,7 @@ export const ApiKeys: React.FC = () => {
                                             {formatRelativeTime(key.last_used_at)}
                                         </span>
                                     </TableCell>
-                                    {showActions && (
+                                    {canMakeActions && (
                                         <TableCell>
                                             <div className="flex items-center gap-1">
                                                 {canReadSecret && <CopyButton text={key.secret} />}
