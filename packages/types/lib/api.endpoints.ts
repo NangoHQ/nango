@@ -64,7 +64,7 @@ import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
     GetIntegrationFunctions,
-    GetProviderFunctionCatalog,
+    GetProviderTemplates,
     PostRemoteFunctionCompile,
     PostRemoteFunctionDeploy,
     PostRemoteFunctionDryrun
@@ -180,7 +180,7 @@ export type PrivateApiEndpoints =
     | PostInternalConnectSessions
     | GetIntegrationFlows
     | GetIntegrationFunctions
-    | GetProviderFunctionCatalog
+    | GetProviderTemplates
     | DeleteIntegration
     | PatchIntegration
     | GetIntegration

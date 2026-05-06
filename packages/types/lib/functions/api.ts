@@ -100,9 +100,10 @@ export type GetIntegrationFunctions = Endpoint<{
     Success: { data: NangoSyncConfig[] };
 }>;
 
-export type GetProviderFunctionCatalog = Endpoint<{
+export type GetProviderTemplates = Endpoint<{
     Method: 'GET';
-    Path: '/api/v1/catalog';
-    Querystring: { env: string; provider?: string };
-    Success: { data: { providerConfigKey: string; functions: NangoSyncConfig[] }[] };
+    Path: '/api/v1/providers/:providerConfigKey/templates';
+    Querystring: { env: string };
+    Params: { providerConfigKey: string };
+    Success: { data: NangoSyncConfig[] };
 }>;
