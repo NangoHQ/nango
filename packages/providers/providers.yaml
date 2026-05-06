@@ -2,7 +2,7 @@
 1password-scim:
     display_name: 1Password (SCIM)
     categories:
-        - other
+        - iam
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.domain}/scim
@@ -1668,7 +1668,7 @@ attio:
 auth0:
     display_name: Auth0
     categories:
-        - other
+        - iam
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
     token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
@@ -1695,7 +1695,7 @@ auth0:
 auth0-cc:
     display_name: Auth0 (Client Credentials)
     categories:
-        - other
+        - iam
     auth_mode: OAUTH2_CC
     body_format: json
     token_url: https://${connectionConfig.hostname}/oauth/token
@@ -2029,6 +2029,7 @@ aws-iam:
     display_name: AWS IAM
     categories:
         - dev-tools
+        - iam
     auth_mode: BASIC
     proxy:
         base_url: https://iam.amazonaws.com
@@ -2148,6 +2149,7 @@ aws-scim:
     display_name: AWS (SCIM)
     categories:
         - dev-tools
+        - iam
     auth_mode: API_KEY
     proxy:
         base_url: ${connectionConfig.scimEndpoint}
@@ -2863,6 +2865,7 @@ breezy-hr:
     display_name: Breezy HR
     categories:
         - hr
+        - ats
     auth_mode: TWO_STEP
     body_format: json
     token_url: https://api.breezy.hr/v3/signin
@@ -3103,6 +3106,7 @@ bullhorn:
     display_name: Bullhorn
     categories:
         - hr
+        - ats
     auth_mode: OAUTH2
     authorization_url: https://auth-west.bullhornstaffing.com/oauth/authorize
     token_url: https://auth-west.bullhornstaffing.com/oauth/token
@@ -3992,7 +3996,7 @@ clerk:
     display_name: Clerk
     categories:
         - dev-tools
-        - other
+        - iam
     auth_mode: API_KEY
     proxy:
         base_url: https://api.clerk.com
@@ -4020,7 +4024,7 @@ cloudentity:
     display_name: Cloudentity
     auth_mode: OAUTH2_CC
     categories:
-        - other
+        - iam
     token_url: https://${connectionConfig.tenantID}.${connectionConfig.regionID}.authz.cloudentity.io/${connectionConfig.tenantID}/${connectionConfig.workspaceID}/oauth2/token
     scope_separator: ' '
     token_params:
@@ -4848,7 +4852,6 @@ datev:
     display_name: Datev
     categories:
         - legal
-        - hr
     auth_mode: OAUTH2
     authorization_url: https://login.datev.de/openid/authorize
     token_url: https://api.datev.de/token
@@ -5610,7 +5613,7 @@ drata:
 cisco-duo-admin:
     display_name: Cisco Duo Admin API
     categories:
-        - other
+        - iam
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}
@@ -6978,6 +6981,7 @@ freshteam:
     display_name: Freshteam
     categories:
         - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.accountName}.freshteam.com
@@ -7258,7 +7262,7 @@ grammarly:
 grammarly-scim:
     display_name: Grammarly SCIM
     categories:
-        - hr
+        - productivity
     auth_mode: API_KEY
     proxy:
         base_url: https://sso.grammarly.com
@@ -9352,6 +9356,7 @@ jazzhr:
     display_name: JazzHR
     categories:
         - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.resumatorapi.com
@@ -9600,6 +9605,7 @@ jobadder:
     display_name: Jobadder
     categories:
         - hr
+        - ats
     auth_mode: OAUTH2
     authorization_url: https://id.jobadder.com/connect/authorize
     token_url: https://id.jobadder.com/connect/token
@@ -9728,7 +9734,7 @@ jotform:
 jumpcloud:
     display_name: JumpCloud
     categories:
-        - other
+        - iam
     auth_mode: API_KEY
     proxy:
         base_url: https://console.jumpcloud.com/api
@@ -10908,6 +10914,7 @@ manatal:
     categories:
         - crm
         - hr
+        - ats
     proxy:
         base_url: https://api.manatal.com/open/v3
         verification:
@@ -11146,6 +11153,7 @@ microsoft-admin:
         - communication
         - dev-tools
         - productivity
+        - iam
     authorization_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/adminconsent
     token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
     authorization_code_param_in_callback: tenant
@@ -11356,7 +11364,7 @@ microsoft-ads:
 microsoft-entra-id:
     display_name: Microsoft Entra ID
     categories:
-        - other
+        - iam
     alias: microsoft
     docs: https://nango.dev/docs/integrations/all/microsoft-entra-id
 
@@ -12445,6 +12453,7 @@ okta:
     auth_mode: OAUTH2
     categories:
         - dev-tools
+        - iam
     authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     authorization_params:
@@ -12478,6 +12487,7 @@ okta-cc:
     display_name: Okta (Client Credentials)
     categories:
         - dev-tools
+        - iam
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
     token_request_auth_method: private_key_jwt
@@ -12528,6 +12538,7 @@ okta-preview:
     display_name: Okta (Preview)
     categories:
         - dev-tools
+        - iam
     authorization_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/authorize
     token_url: https://${connectionConfig.subdomain}.oktapreview.com/oauth2/v1/token
     proxy:
@@ -12608,6 +12619,7 @@ onelogin:
     display_name: OneLogin
     categories:
         - dev-tools
+        - iam
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.subdomain}.onelogin.com/auth/oauth2/v2/token
     token_params:
@@ -12823,8 +12835,8 @@ oracle-hcm:
 oracle-cloud-identity:
     display_name: Oracle Cloud Identity
     categories:
-        - other
         - dev-tools
+        - iam
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.serviceInstance}.identity.oraclecloud.com/oauth2/v1/token
     token_request_auth_method: basic
@@ -12877,7 +12889,7 @@ ordinal:
 ory:
     display_name: Ory
     categories:
-        - other
+        - iam
     auth_mode: OAUTH2_CC
     proxy:
         base_url: https://${connectionConfig.projectSlug}.projects.oryapis.com
@@ -13625,6 +13637,7 @@ personio-recruiting:
     display_name: Personio Recruiting
     categories:
         - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.personio.de/v1
@@ -13682,6 +13695,7 @@ pingone:
     display_name: PingOne
     categories:
         - dev-tools
+        - iam
     auth_mode: OAUTH2
     authorization_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/authorize
     token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
@@ -13720,6 +13734,7 @@ pingone-cc:
     display_name: PingOne (Client Credentials)
     categories:
         - dev-tools
+        - iam
     auth_mode: OAUTH2_CC
     token_url: https://auth.pingone.${connectionConfig.tld}/${connectionConfig.environmentId}/as/token
     scope_separator: ' '
@@ -14771,6 +14786,7 @@ recruitcrm:
     display_name: Recruitcrm
     categories:
         - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.recruitcrm.com
@@ -14838,6 +14854,7 @@ recruiterflow:
     display_name: Recruiterflow
     categories:
         - hr
+        - ats
     auth_mode: API_KEY
     proxy:
         base_url: https://api.recruiterflow.com
@@ -15818,7 +15835,7 @@ salesmsg-oauth2:
 sap-fieldglass:
     display_name: SAP Fieldglass
     categories:
-        - hr
+        - erp
     body_format: form
     auth_mode: TWO_STEP
     token_url: https://${connectionConfig.domain}/api/oauth2/v2.0/token?grant_type=client_credentials&response_type=token
@@ -20004,6 +20021,7 @@ workos:
     display_name: WorkOS
     categories:
         - productivity
+        - iam
     auth_mode: API_KEY
     proxy:
         base_url: https://api.workos.com
