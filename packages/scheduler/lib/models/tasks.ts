@@ -2,6 +2,7 @@ import { uuidv4, uuidv7 } from 'uuidv7';
 
 import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
 
+import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 import { envs } from '../env.js';
@@ -172,19 +173,31 @@ export async function create(
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
         }
         const toInsert = Array.from(toInsertPerGroup.values()).flat();
-        const inserted: Task[] = [];
+        const tasks: Task[] = [];
         while (toInsert.length) {
             const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
             const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
-            inserted.push(...batch.map(DbTask.from));
+            tasks.push(...batch.map(DbTask.from));
         }
         return Ok({
-            tasks: inserted,
+            tasks,
             cappedGroupKeys: Array.from(cappedGroupCounts.keys())
         });
     } catch (err) {
+        if (isTasksUniqueNameViolation(err)) {
+            return Err(new DuplicateTaskNameError());
+        }
         return Err(new Error(`Error creating tasks: ${stringifyError(err)}`));
     }
+}
+
+function isTasksUniqueNameViolation(err: unknown): boolean {
+    if (!err || typeof err !== 'object') {
+        return false;
+    }
+
+    const error = err as { code?: string; constraint?: string; message?: string };
+    return error.code === '23505' && error.constraint === 'tasks_unique_name';
 }
 
 // Coalesce concurrent queueSizes queries for the same group keys.

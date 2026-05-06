@@ -19,6 +19,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@aws-sdk/client-sqs": "3.993.0",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/authz": "file:../authz",
         "@nangohq/usage": "file:../usage",

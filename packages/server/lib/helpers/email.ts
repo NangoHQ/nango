@@ -54,7 +54,7 @@ export async function sendInviteEmail({
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
         email,
-        `You're Invited! Join "${he.encode(account.name)}" on Nango`,
+        `You're Invited! Join "${account.name}" on Nango`,
         `<p>Hi,</p>
 
 <p>${he.encode(user.name)} invites you to join "${he.encode(account.name)}" on Nango.</p>

@@ -4,6 +4,7 @@ import { nanoid } from '@nangohq/utils';
 
 import { getTestDbClient } from './db/helpers.test.js';
 import { envs } from './env.js';
+import { isDuplicateTaskNameError } from './errors.js';
 import { Scheduler } from './scheduler.js';
 
 import type { TaskProps } from './models/tasks.js';
@@ -68,6 +69,32 @@ describe('Scheduler', () => {
     });
     it('should call callback when task is created', async () => {
         await immediate(scheduler);
+        expect(callbacks.CREATED).toHaveBeenCalledOnce();
+    });
+    it('should return a duplicate-name error when an immediate task already exists', async () => {
+        const name = `dup-${nanoid()}`;
+        const groupKey = nanoid();
+
+        await immediate(scheduler, { taskProps: { name, groupKey } });
+
+        const duplicate = await scheduler.immediate({
+            name,
+            payload: {},
+            groupKey,
+            groupMaxConcurrency: 0,
+            retryMax: 1,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: 3600,
+            startedToCompletedTimeoutSecs: 3600,
+            heartbeatTimeoutSecs: 600,
+            ownerKey: null,
+            retryKey: null
+        });
+
+        expect(duplicate.isErr()).toBe(true);
+        if (duplicate.isErr()) {
+            expect(isDuplicateTaskNameError(duplicate.error)).toBe(true);
+        }
         expect(callbacks.CREATED).toHaveBeenCalledOnce();
     });
     it('should call callback when task is started', async () => {

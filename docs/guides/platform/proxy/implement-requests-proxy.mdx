@@ -1,0 +1,63 @@
+---
+title: 'Proxy requests'
+sidebarTitle: 'Proxy requests'
+description: 'How to use the requests proxy from Nango'
+---
+
+Use the requests proxy to make authenticated API requests to the external API.
+
+## How to use the proxy
+
+Make sure you have an [integration configured](/guides/auth/overview#guide) in your environment, and at least one [connection](/guides/auth/overview#overview) available for it.
+
+You can use the proxy with the [Node SDK](/reference/sdks/node#proxy) or [REST API](/reference/api/proxy/get):
+
+<Tabs>
+    <Tab title="Node">
+        ```typescript
+        try {
+            const res = await nango.proxy({
+                method: 'POST',
+                baseUrlOverride: 'https://api.example.com',
+                endpoint: '/external-endpoint',
+                providerConfigKey: '<string>',
+                connectionId: '<string>',
+                retries: 5, // Retries with exponential backoff (optional, default 0)
+                data: {
+                    id: 1,
+                    colorId: 'blue',
+                    selected: true
+                }
+            });
+
+            // Response was 200!
+            // See https://axios-http.com/docs/res_schema
+            console.log(res.data);
+        } catch (error) {
+            // Status of response != 200
+            // See https://axios-http.com/docs/handling_errors
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+        }
+        ```
+    </Tab>
+
+    <Tab title="cURL">
+        ```bash
+        curl -X POST -H 'Content-Type: application/json' \
+        -H 'Authorization: Bearer <NANGO-API-KEY>' \
+        -H 'Provider-Config-Key: <INTEGRATION-ID>' \
+        -H 'Connection-Id: <CONNECTION-ID>' \
+        -d '{"colorId: "blue"}' \
+        'https://api.nango.dev/proxy/<API-ENDPOINT>'
+        ```
+    </Tab>
+</Tabs>
+
+## Related guides
+
+- [Auth guide](/guides/auth/overview) - create the connection used by proxy requests.
+- [Node SDK reference](/reference/sdks/node#proxy) - proxy helper methods.
+- [Proxy API reference](/reference/api/proxy/get) - REST endpoints for proxied requests.
+- [Rate limits](/guides/functions/rate-limits) - handle provider throttling.

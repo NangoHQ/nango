@@ -78,7 +78,7 @@ description: "Updates and breaking changes for developers."
 
   ### ✨ What's new
 
-  [Sync](/implementation-guides/use-cases/syncs/realtime-syncs) functions now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync only retrieves what changed since the last checkpoint.
+  [Sync functions](/implementation-guides/platform/functions/sync-functions) now support customizable **checkpoints**, a mechanism to save progress mid-execution and enable truly resilient incremental syncing. Instead of re-fetching your entire dataset on every run, your sync function only retrieves what changed since the last checkpoint.
 
   ```ts
   // Simplified Example
@@ -110,7 +110,7 @@ description: "Updates and breaking changes for developers."
 
   - For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
   - If you use `nango.lastSyncDate`, follow the [migration guide](/implementation-guides/platform/migrations/migrate-to-checkpoints).
-  - See the full [checkpoints documentation](/implementation-guides/use-cases/syncs/checkpoints) for details.
+  - See the full [checkpoints documentation](/implementation-guides/platform/functions/checkpoints) for details.
 </Update>
 
 <Update label="January 6, 2026">
@@ -215,7 +215,7 @@ description: "Updates and breaking changes for developers."
 <Update label="October 29, 2025">
   ## Function custom logs won't be ingested by default for remote environments
 
-  Function custom logs are calls to `nango.log(...)` in your functions (actions, syncs, webhooks, and on-event handlers).
+  Function custom logs are calls to `nango.log(...)` in your functions (action functions, sync functions, webhook functions, and event functions).
 
   Starting in November, only `warn` and `error` level logs will be ingested by default for remote environments. Debug and info level logs will no longer be ingested automatically. This means that when you call `nango.log(...)` without an explicit level (which defaults to `info`), these logs will not appear in the Nango UI logs tab for remote environments.
 
@@ -328,7 +328,7 @@ description: "Updates and breaking changes for developers."
   ### 🧐 Am I impacted?
 
   - If you use actions and have a heavy output from the action. Typically the actions that have a large output are [`fetch-attachment`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/outlook/actions/fetch-attachment.ts), [`fetch-call-transcripts`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/gong/actions/fetch-call-transcripts.ts) and in general any fetching any object from an external system. We have added dedicated proxy code for such operations to help with the migration: [`fetch-document`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-drive/proxy/fetch-document.ts), [`fetch-spreadsheet`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/google-sheet/proxy/fetch-spreadsheet.ts), [`fetch-file`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/box/proxy/fetch-file.ts), [`fetch-database`](https://github.com/NangoHQ/integration-templates/blob/main/integrations/notion/proxy/fetch-database.ts)
-  - If you're using a now deprecated prebuilt template that fetches objects from an external system
+  - If you're using a now deprecated template function that fetches objects from an external system
 
   ### 💡 What should I do?
 

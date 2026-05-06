@@ -68,11 +68,10 @@ describe(`GET ${route}`, () => {
             enabled: false,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
             input: 'ActionInput_github_writefile',
-            is_public: true,
+            source: 'catalog',
             json_schema: expect.any(Object),
             last_deployed: null,
             name: 'write-file',
-            pre_built: true,
             returns: ['ActionOutput_github_writefile'],
             runs: '',
             scopes: ['repo'],
@@ -111,9 +110,8 @@ describe(`GET ${route}`, () => {
         expect(scriptWriteFile).toMatchObject({
             enabled: true,
             endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-            is_public: false,
+            source: 'repo',
             name: 'write-file',
-            pre_built: false,
             type: 'action'
         });
 
@@ -140,8 +138,6 @@ describe(`GET ${route}`, () => {
                         sync_type: 'full',
                         version: '1.0.0',
                         enabled: false,
-                        is_public: true,
-                        pre_built: true,
                         endpoints: [{ group: 'Users', method: 'GET', path: '/syncs/sync-users' }],
                         runs: 'every hour'
                     })
@@ -186,9 +182,7 @@ describe(`GET ${route}`, () => {
             expect(newTemplate).not.toBeUndefined();
             expect(newTemplate).toMatchObject({
                 enabled: false,
-                is_public: true,
                 name: 'sync-users',
-                pre_built: true,
                 returns: ['User'],
                 type: 'sync'
             });

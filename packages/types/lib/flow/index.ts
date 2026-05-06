@@ -1,6 +1,6 @@
 import type { LegacySyncModelSchema, NangoConfigMetadata } from '../deploy/incomingFlow.js';
 import type { NangoModel, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
-import type { Feature } from '../syncConfigs/db.js';
+import type { Feature, FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
 // TODO: Split by type
@@ -16,8 +16,8 @@ export interface NangoSyncConfig {
     track_deletes?: boolean;
     returns: string[];
     endpoints: NangoSyncEndpointV2[];
-    is_public?: boolean | null;
-    pre_built?: boolean | null;
+    // TODO: make required at second release for smooth rollout
+    source?: FunctionSource | undefined;
     version?: string | null;
     last_deployed?: string | null;
     id?: number;

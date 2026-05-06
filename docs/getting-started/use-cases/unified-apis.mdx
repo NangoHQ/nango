@@ -1,0 +1,45 @@
+---
+title: 'Build a unified API'
+sidebarTitle: 'Build a unified API'
+description: 'Normalize several external APIs behind your own stable product interface.'
+---
+
+API unification means turning several provider-specific APIs into one interface your product can use consistently. For example, your app might expose one `create-contact` operation even though Salesforce, HubSpot, Attio, and Pipedrive each model contacts differently.
+
+Nango helps you build unified APIs with functions you control. You define the model that fits your product, then implement provider-specific functions that map to and from that model.
+
+## When this fits
+
+Use Nango for API unification when:
+
+- Your customers use different tools for the same business object.
+- Your product wants one internal model for reads and writes.
+- You need provider-specific logic without leaking it into your app.
+- A pre-built unified API is too rigid for your schema, customers, or edge cases.
+
+Unification does not need to cover every provider feature. Often the useful path is a stable common model with explicit provider-specific extensions where needed.
+
+## Where unification is hard
+
+Some APIs expose concepts that do not map neatly to other providers. Notion's block model, customizable ATS hiring stages, or provider-specific accounting workflows may need special handling.
+
+Design the unified model around your product's needs, not around an abstract lowest common denominator. Expect optional fields, explicit fallbacks, and customer-specific configuration for custom fields or statuses.
+
+## How Nango fits in
+
+1. You define the model your product wants to use.
+2. Each provider gets functions that translate between the provider API and that model.
+3. Sync functions read external data into your model.
+4. Action functions write changes back through provider-specific logic.
+5. Your app calls the stable Nango function interface instead of branching across providers.
+
+Use [data validation](/guides/functions/data-validation) to keep provider mappings honest and catch drift close to the external API.
+
+## What to read next
+
+- [Unified APIs with functions](/guides/functions/unified-apis) - technical implementation guide for building unified models and functions.
+- [Action functions](/guides/functions/action-functions) - implement unified write operations and on-demand reads.
+- [Sync functions](/guides/functions/sync-functions) - read provider data into your unified model.
+- [Data validation](/guides/functions/data-validation) - validate models and generate schemas.
+- [Storage](/guides/functions/storage#customer-configuration-pattern) - handle custom fields and per-customer mapping.
+- [Functions SDK reference](/reference/functions) - runtime methods available inside provider-specific functions.

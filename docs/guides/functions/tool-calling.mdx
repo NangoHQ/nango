@@ -1,0 +1,374 @@
+---
+title: 'Tool calling & MCP'
+sidebarTitle: 'Tool calling & MCP'
+description: 'Expose Nango action functions to agents, LLM SDKs, and MCP clients.'
+---
+
+Tool calling in Nango happens through [action functions](/guides/functions/action-functions). Each tool is an action function that an agent, LLM SDK, or MCP client can call on demand for a specific connection.
+
+The agent chooses a tool, your application asks Nango to execute the action function for that connection, and Nango handles the external API credentials, retries, rate limits, and logs.
+
+## Prerequisites
+
+- A Nango integration configured for the external API.
+- A connection for the user whose credentials should be used.
+- One or more enabled action functions for the operations the agent may call.
+
+Build custom tools with [action functions](/guides/functions/action-functions), or enable template action functions from the [template catalog](/guides/functions/overview#template-catalog).
+
+## Common auth and execution
+
+Keep provider credentials out of the agent runtime. Your app should resolve the Nango connection for the current user, then pass only the connection ID and selected tool to Nango.
+
+```ts
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+const integrationId = 'hubspot';
+
+async function getConnectionIdForUser(userId: string) {
+    const connections = await nango.listConnections({
+        integrationId,
+        tags: { end_user_id: userId }
+    });
+
+    let connectionId = connections.connections[0]?.connection_id;
+
+    if (!connectionId) {
+        const session = await nango.createConnectSession({
+            allowed_integrations: [integrationId],
+            tags: { end_user_id: userId }
+        });
+
+        // Send this URL to the user in your app, then wait for authorization.
+        console.log(session.data.connect_link);
+
+        const connection = await nango.waitForConnection(integrationId, userId);
+        connectionId = connection!.connection_id;
+    }
+
+    return connectionId;
+}
+
+async function executeNangoTool(actionName: string, input?: unknown) {
+    const connectionId = await getConnectionIdForUser('user_123');
+
+    return await nango.triggerAction(integrationId, connectionId, actionName, input);
+}
+```
+
+The examples below focus on framework-specific tool syntax and call the shared `executeNangoTool()` helper.
+
+## Framework examples
+
+These examples expose a HubSpot `whoami` action function as a `who_am_i` tool.
+
+<Tabs>
+  <Tab title="OpenAI">
+  ```ts
+  import OpenAI from 'openai';
+
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+
+  const tools = [
+      {
+          type: 'function' as const,
+          name: 'who_am_i',
+          description: 'Get the current HubSpot user information.',
+          strict: true,
+          parameters: {
+              type: 'object',
+              properties: {},
+              required: [],
+              additionalProperties: false
+          }
+      }
+  ];
+
+  const input: any[] = [
+      {
+          role: 'user',
+          content: 'Use who_am_i and summarize the current HubSpot user.'
+      }
+  ];
+
+  const response = await client.responses.create({
+      model: 'gpt-5',
+      input,
+      tools
+  });
+
+  for (const item of response.output) {
+      if (item.type !== 'function_call' || item.name !== 'who_am_i') {
+          continue;
+      }
+
+      const result = await executeNangoTool('whoami', JSON.parse(item.arguments || '{}'));
+
+      input.push(item);
+      input.push({
+          type: 'function_call_output',
+          call_id: item.call_id,
+          output: JSON.stringify(result)
+      });
+  }
+
+  const finalResponse = await client.responses.create({
+      model: 'gpt-5',
+      input,
+      tools
+  });
+
+  console.log(finalResponse.output_text);
+  ```
+  </Tab>
+  <Tab title="Anthropic">
+  ```ts
+  import Anthropic from '@anthropic-ai/sdk';
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+
+  const tools = [
+      {
+          name: 'who_am_i',
+          description: 'Get the current HubSpot user information.',
+          input_schema: {
+              type: 'object',
+              properties: {},
+              required: []
+          }
+      }
+  ];
+
+  const messages: Anthropic.MessageParam[] = [
+      {
+          role: 'user',
+          content: 'Use who_am_i and summarize the current HubSpot user.'
+      }
+  ];
+
+  const message = await client.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1024,
+      messages,
+      tools
+  });
+
+  const toolUse = message.content.find((block) => block.type === 'tool_use');
+
+  if (toolUse?.type === 'tool_use' && toolUse.name === 'who_am_i') {
+      const result = await executeNangoTool('whoami', toolUse.input);
+
+      messages.push({ role: 'assistant', content: message.content });
+      messages.push({
+          role: 'user',
+          content: [
+              {
+                  type: 'tool_result',
+                  tool_use_id: toolUse.id,
+                  content: JSON.stringify(result)
+              }
+          ]
+      });
+
+      const finalMessage = await client.messages.create({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 1024,
+          messages,
+          tools
+      });
+
+      console.log(finalMessage.content);
+  }
+  ```
+  </Tab>
+  <Tab title="Vercel AI SDK">
+  ```ts
+  import { generateText, stepCountIs, tool } from 'ai';
+  import { openai } from '@ai-sdk/openai';
+  import { z } from 'zod';
+
+  const { text, toolResults } = await generateText({
+      model: openai('gpt-4o'),
+      prompt: 'Use who_am_i and summarize the current HubSpot user.',
+      tools: {
+          who_am_i: tool({
+              description: 'Get the current HubSpot user information.',
+              inputSchema: z.object({}),
+              execute: async () => {
+                  return await executeNangoTool('whoami');
+              }
+          })
+      },
+      stopWhen: stepCountIs(5)
+  });
+
+  console.log(text);
+  console.log(toolResults);
+  ```
+  </Tab>
+  <Tab title="LangChain">
+  ```ts
+  import { createAgent, tool } from 'langchain';
+  import { z } from 'zod';
+
+  const whoAmI = tool(
+      async () => {
+          const result = await executeNangoTool('whoami');
+          return JSON.stringify(result);
+      },
+      {
+          name: 'who_am_i',
+          description: 'Get the current HubSpot user information.',
+          schema: z.object({})
+      }
+  );
+
+  const agent = createAgent({
+      model: 'openai:gpt-5.4',
+      tools: [whoAmI]
+  });
+
+  const result = await agent.invoke({
+      messages: [
+          {
+              role: 'user',
+              content: 'Use who_am_i and summarize the current HubSpot user.'
+          }
+      ]
+  });
+
+  console.log(result.messages.at(-1)?.content);
+  ```
+  </Tab>
+  <Tab title="Mastra">
+  ```ts
+  import { openai } from '@ai-sdk/openai';
+  import { Agent } from '@mastra/core/agent';
+  import { createTool } from '@mastra/core/tools';
+  import { z } from 'zod';
+
+  const whoAmI = createTool({
+      id: 'who_am_i',
+      description: 'Get the current HubSpot user information.',
+      inputSchema: z.object({}),
+      execute: async () => {
+          return await executeNangoTool('whoami');
+      }
+  });
+
+  const agent = new Agent({
+      name: 'HubSpot Agent',
+      instructions: 'Use available tools to answer HubSpot account questions.',
+      model: openai('gpt-4o'),
+      tools: {
+          who_am_i: whoAmI
+      }
+  });
+
+  const response = await agent.generate('Use who_am_i and summarize the current HubSpot user.');
+
+  console.log(response.text);
+  ```
+  </Tab>
+</Tabs>
+
+## Programmatic tool discovery
+
+The [Get integration functions config API](/reference/api/scripts/config) returns enabled action function definitions. Use it when an agent or orchestration layer should discover available tools at runtime.
+
+```bash
+curl --request GET \
+  --url 'https://api.nango.dev/scripts/config?provider_config_key=<INTEGRATION-ID>&format=openai' \
+  --header 'Authorization: Bearer <ENV-SECRET-KEY>'
+```
+
+Use `format=nango` for Nango's native configuration shape, or `format=openai` when you want OpenAI-compatible function definitions.
+
+## Direct tool execution
+
+For SDKs that let you provide your own tool executor, define the tool schema in your app and call Nango from the executor.
+
+```ts
+import { Nango } from '@nangohq/node';
+
+const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+
+async function executeTool(connectionId: string, input: { owner: string; repo: string; title: string }) {
+    return await nango.triggerAction('github', connectionId, 'create-issue', input);
+}
+```
+
+Keep these values explicit:
+
+- `providerConfigKey` / integration ID - which integration owns the action function.
+- `connectionId` - which user's credentials the call uses.
+- Action function name - the enabled action function to execute.
+- Input payload - validated by the action function schema when configured.
+
+## MCP server
+
+Nango exposes enabled action functions through a hosted MCP server:
+
+```text
+https://api.nango.dev/mcp
+```
+
+The server supports Streamable HTTP transport. Requests must include:
+
+| Header | Value |
+| --- | --- |
+| `Authorization` | `Bearer <ENV-SECRET-KEY>` |
+| `connection-id` | The connection whose credentials should be used |
+| `provider-config-key` | The integration ID |
+
+Example client setup with the MCP TypeScript SDK:
+
+```ts
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+
+const transport = new StreamableHTTPClientTransport(new URL('https://api.nango.dev/mcp'), {
+    requestInit: {
+        headers: {
+            Authorization: `Bearer ${process.env.NANGO_SECRET_KEY}`,
+            'connection-id': '<CONNECTION-ID>',
+            'provider-config-key': '<INTEGRATION-ID>'
+        }
+    }
+});
+```
+
+For desktop clients that only support stdio, use a bridge such as `mcp-remote` and pass the same headers. Keep the header spacing exactly as required by the bridge you choose.
+
+## Auth flow for agents
+
+Agents should not receive provider credentials. Your app should:
+
+1. Check whether the user already has a Nango connection.
+2. Create a Connect session if they need to authorize.
+3. Store the resulting `connectionId` in your app.
+4. Use that `connectionId` for future tool calls.
+
+See the [Auth guide](/guides/auth/overview) and [Create Connect Session API](/reference/api/connect/sessions/create) for the end-to-end auth flow.
+
+<Accordion title="For agents">
+  If you are implementing this flow programmatically, first list or create the user's connection, then call `GET /scripts/config` to discover enabled action functions, and finally execute tools with `POST /action/trigger` or the MCP server.
+
+  Required values for every execution are the Nango secret key, integration ID, connection ID, action function name, and input payload.
+</Accordion>
+
+## Observability and safety
+
+Every action function execution appears in Nango logs. Use logs to debug failed tool calls, inspect provider requests, and review agent behavior.
+
+Keep tool names and descriptions specific. Expose only action functions the agent is allowed to call for the current user and workflow. For write operations, make action function logic idempotent before using async execution or retries.
+
+## Related references
+
+- [Action functions](/guides/functions/action-functions)
+- [Template catalog](/guides/functions/overview#template-catalog)
+- [Get integration functions config API](/reference/api/scripts/config)
+- [Trigger action API](/reference/api/action/trigger)
+- [Functions SDK reference](/reference/functions)
+- [Observability](/guides/platform/observability)

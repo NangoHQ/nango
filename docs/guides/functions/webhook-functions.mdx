@@ -1,0 +1,136 @@
+---
+title: 'Webhook functions'
+sidebarTitle: 'Webhook functions'
+description: 'Process external API webhooks inside Nango functions.'
+---
+
+Webhook functions run when an external API sends a webhook to Nango. Use them when the webhook should execute Nango-hosted logic, update records, normalize events, or mark data for later reconciliation.
+
+If your app should handle the webhook directly, use [webhook forwarding](/guides/platform/webhook-forwarding) instead.
+
+## Processing or forwarding
+
+Webhook functions and webhook forwarding both start with the same external event: a provider sends a webhook to Nango.
+
+Use a webhook function when:
+
+- Nango should run function code as soon as the provider webhook arrives.
+- The webhook should update the records cache.
+- The webhook payload needs normalization before your app sees it.
+- The event should trigger reconciliation logic inside a sync function.
+
+Use [webhook forwarding](/guides/platform/webhook-forwarding) when:
+
+- Your app already has webhook handling logic.
+- You want Nango to attribute the event to a connection and forward it.
+- The event should not run Nango function code.
+
+## How routing works
+
+External APIs send webhooks to the integration's Nango webhook URL. Find it in **Integrations > [Integration] > Webhooks**.
+
+When the provider has a webhook routing script, Nango reads the incoming payload, headers, or allowed query parameters and tries to map the event to one or more Nango connections. Provider-specific guides explain the exact routing fields when extra setup is required.
+
+If Nango can map the webhook to a connection, the webhook function runs in that connection context. If Nango cannot map the event, the event cannot safely run connection-scoped function logic; use provider-specific setup or webhook forwarding for that case.
+
+Some providers require one global webhook registration. Others require one webhook subscription per connected account, which you can automate with an [event function](/guides/functions/event-functions).
+
+<Accordion title="For agents">
+  Before implementing a webhook function, inspect the provider-specific Nango docs for webhook routing requirements. Some providers need the Nango connection ID embedded in the provider webhook payload, while others route automatically from account, team, tenant, or installation identifiers.
+
+  Do not assume an external webhook payload is already trusted or complete. Keep `onWebhook` short, idempotent, and resilient to duplicates or out-of-order delivery.
+</Accordion>
+
+## Create the function
+
+Webhook function logic usually lives on a sync function with `webhookSubscriptions` and `onWebhook`:
+
+```typescript crm/syncs/contacts.ts
+import { createSync } from 'nango';
+import * as z from 'zod';
+
+const Contact = z.object({
+    id: z.string(),
+    email: z.string().email().optional(),
+    updatedAt: z.string().optional()
+});
+
+export default createSync({
+    description: 'Sync contacts and process contact webhooks',
+    version: '1.0.0',
+    frequency: 'every hour',
+    webhookSubscriptions: ['contact.updated', 'contact.deleted'],
+    models: { Contact },
+    exec: async (nango) => {
+        // Periodic reconciliation logic. Keep this as the source of truth
+        // when provider webhooks can be missed, delayed, or partial.
+    },
+    onWebhook: async (nango, payload) => {
+        if (payload.body.event === 'contact.deleted') {
+            await nango.batchDelete([{ id: payload.body.contactId }], 'Contact');
+            return;
+        }
+
+        if (payload.body.event === 'contact.updated' && payload.body.contact) {
+            await nango.batchSave(
+                [
+                    {
+                        id: payload.body.contact.id,
+                        email: payload.body.contact.email,
+                        updatedAt: payload.body.contact.updated_at
+                    }
+                ],
+                'Contact'
+            );
+        }
+    }
+});
+```
+
+Import it from `index.ts`:
+
+```typescript index.ts
+import './crm/syncs/contacts';
+```
+
+## Register the provider webhook URL
+
+Register the integration's Nango webhook URL in the external API's developer portal. If the provider requires per-connection registration, use an event function after connection creation.
+
+For example, an event function can call the provider's webhook subscription API with the connection's credentials and store the provider webhook subscription ID in connection metadata for cleanup later.
+
+## Test and deploy
+
+Dry run the sync function's `exec` logic:
+
+```bash
+nango dryrun contacts '<CONNECTION-ID>' -e dev
+```
+
+Deploy your functions:
+
+```bash
+nango deploy
+```
+
+To deploy only this webhook-backed sync function:
+
+```bash
+nango deploy --sync contacts dev
+```
+
+Then send a test webhook from the provider dashboard, CLI, or webhook testing tool to the Nango webhook URL. Check Nango logs for the incoming webhook, routing result, and function execution.
+
+## Keep webhook processing lightweight
+
+Avoid making slow provider API calls directly from `onWebhook` unless the provider's webhook is explicitly designed for that flow. Webhooks can arrive in bursts, be retried, or arrive out of order.
+
+Prefer lightweight, idempotent handling in `onWebhook`, and let the sync function's `exec` reconcile full state.
+
+## Related guides
+
+- [Webhook forwarding](/guides/platform/webhook-forwarding)
+- [Process external webhooks](/getting-started/use-cases/webhooks-from-external-apis)
+- [Real-time syncs](/guides/functions/realtime-syncs)
+- [Event functions](/guides/functions/event-functions)
+- [Records cache](/guides/functions/records-cache)

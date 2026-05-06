@@ -24,6 +24,7 @@ import type {
     DBSyncEndpoint,
     DBSyncEndpointCreate,
     DBTeam,
+    FunctionSource,
     HTTP_METHOD,
     NangoSyncEndpointV2,
     OnEventScriptsByProvider,
@@ -74,7 +75,8 @@ export async function deploy({
     logContextGetter,
     orchestrator,
     debug,
-    sdkVersion
+    sdkVersion,
+    source
 }: {
     environment: DBEnvironment;
     account: DBTeam;
@@ -87,6 +89,7 @@ export async function deploy({
     orchestrator: Orchestrator;
     debug?: boolean;
     sdkVersion: string | undefined;
+    source: FunctionSource;
 }): Promise<ServiceResponse<SyncConfigResult | null>> {
     const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
 
@@ -115,7 +118,8 @@ export async function deploy({
             debug: Boolean(debug),
             logCtx,
             orchestrator,
-            sdkVersion
+            sdkVersion,
+            source
         });
 
         if (!success || !response) {
@@ -222,7 +226,8 @@ async function compileDeployInfo({
     debug,
     logCtx,
     orchestrator,
-    sdkVersion
+    sdkVersion,
+    source
 }: {
     flow: FlowParsed;
     /** @deprecated */
@@ -234,6 +239,7 @@ async function compileDeployInfo({
     logCtx: LogContext;
     orchestrator: Orchestrator;
     sdkVersion: string | undefined;
+    source: FunctionSource;
 }): Promise<ServiceResponse<{ idsToMarkAsInactive: number[]; syncConfig: DBSyncConfigInsert }>> {
     const {
         syncName,
@@ -257,7 +263,7 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, false);
+    const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey, source);
     let bumpedVersion = '';
 
     if (previousSyncAndActionConfig) {
@@ -369,8 +375,9 @@ async function compileDeployInfo({
         response: {
             idsToMarkAsInactive,
             syncConfig: {
-                is_public: false,
-                pre_built: false,
+                source,
+                pre_built: source === 'catalog',
+                is_public: source === 'catalog',
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,

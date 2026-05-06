@@ -1,0 +1,89 @@
+---
+title: 'Function logging'
+sidebarTitle: 'Logging'
+description: 'Use function logs for local debugging, cloud observability, and production troubleshooting.'
+---
+
+Nango records function executions in the Logs tab. You can also add custom logs from action, sync, webhook, and event functions with `nango.log()`.
+
+Use custom logs for information that helps you understand function behavior: selected filters, page counts, checkpoint values, provider identifiers, branch decisions, and recoverable errors.
+
+## Add custom logs
+
+```ts
+await nango.log('Starting contacts sync');
+await nango.log('Applying region filter', { level: 'debug' });
+await nango.log('Provider returned a partial response', { level: 'warn' });
+await nango.log('Failed to map contact', { level: 'error' });
+```
+
+If you do not pass a level, `nango.log()` uses `info`.
+
+## Log levels
+
+Nango supports these levels, from most to least verbose:
+
+| Level | Use for |
+| --- | --- |
+| `debug` | Local diagnostics, pagination details, temporary investigation logs |
+| `info` | Normal execution milestones you may want during development |
+| `warn` | Unexpected but recoverable behavior |
+| `error` | Failed operations, invalid provider responses, or errors you catch and continue from |
+| `off` | Disable custom logs |
+
+Only logs at or above the configured logger level are ingested into the Nango UI Logs tab.
+
+For example, when the logger level is `warn`, only `warn` and `error` custom logs are visible in the cloud logs.
+
+## Cloud vs local behavior
+
+| Runtime | Default custom log level | Where custom logs appear |
+| --- | --- | --- |
+| Cloud environments | `warn` | Nango UI Logs tab for logs at `warn` or `error` |
+| `nango dryrun` | `debug` | Local console for all custom log levels |
+
+This means `await nango.log('message')` is visible during local dry runs, because local dry runs default to `debug`. The same call defaults to `info`, so it is not visible in cloud logs unless you lower the configured logger level to `info` or `debug`.
+
+<Warning>
+  Cloud custom logs can affect log volume and billing. Prefer `debug` and `info` for local investigation, and use `warn` or `error` for production signals you want retained by default.
+</Warning>
+
+## Configure the logger
+
+Set the default logger level for an environment with `NANGO_LOGGER_LEVEL` in **Environment Settings > Environment Variables**:
+
+```bash
+NANGO_LOGGER_LEVEL=info
+```
+
+Valid values are `debug`, `info`, `warn`, `error`, and `off`.
+
+You can also change the logger level inside a function. This applies to `nango.log()` calls after the setting is changed:
+
+```ts
+nango.setLogger({ level: 'debug' });
+
+await nango.log('Detailed investigation log');
+
+nango.setLogger({ level: 'warn' });
+```
+
+Use function-level configuration when one run or one branch needs additional visibility. Use the environment variable when all functions in that environment should share the same threshold.
+
+## What to log
+
+Good function logs are specific and bounded:
+
+- Log the connection-specific configuration that changes behavior, such as selected folder IDs, regions, or pipeline IDs.
+- Log provider pagination progress with counts, cursors, or checkpoints, but avoid logging every record.
+- Log warnings when the provider omits optional data or returns a shape you can recover from.
+- Log errors when you catch an exception and continue, so the run is still inspectable.
+
+Avoid logging secrets, access tokens, refresh tokens, full request headers, or raw payloads that may contain sensitive customer data.
+
+## Related guides
+
+- [Observability](/guides/platform/observability)
+- [Functions SDK reference](/reference/functions#logging)
+- [Testing](/guides/functions/testing)
+- [Sync efficiency](/guides/functions/sync-efficiency)
