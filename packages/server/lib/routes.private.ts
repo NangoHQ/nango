@@ -233,7 +233,7 @@ web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ actio
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
-web.route('/providers/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getProviderTemplates);
+web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
 
 // Connections
 web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);
