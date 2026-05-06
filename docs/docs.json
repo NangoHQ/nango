@@ -641,6 +641,7 @@
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart",
+              "getting-started/build-with-ai",
               {
                 "group": "Use cases",
                 "expanded": false,

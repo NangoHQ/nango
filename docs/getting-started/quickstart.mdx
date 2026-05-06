@@ -1,83 +1,121 @@
 ---
 title: 'Quickstart'
-sidebarTitle: '🚀 Quickstart' 
-description: 'Authorize any API in minutes'
+sidebarTitle: '🚀 Quickstart'
+description: 'Authorize an API and run your first Nango function'
 ---
 
-<Note>
-  **Building with an AI coding agent?**
+This quickstart uses the GitHub API as an example, but you can choose any of Nango's [700+ supported APIs](/integrations/overview).
 
-  1. Add Nango's documentation MCP server: `https://nango.dev/docs/mcp`
-  2. Install the Nango function builder skill:
-
-  ```bash
-  npx skills add NangoHQ/skills -s building-nango-functions-locally
-  ```
-</Note>
+<Tip>
+  **Using a coding agent?** Set up the [docs MCP server](/getting-started/build-with-ai#docs-mcp-server) and [Nango skills](/getting-started/build-with-ai#skills), then click **Copy page** in the top right and paste this page into your agent.
+</Tip>
 
 <Steps>
-  <Step title="Configure an integration">
-    [Sign up](https://app.nango.dev/signup) (free, no credit card) then, on the **Integrations** tab, set up a new integration.
+  <Step title="Create a GitHub integration">
+    [Sign up](https://app.nango.dev/signup) for free, then go to the Integrations tab > Set up new integration > GitHub (User OAuth).
   </Step>
-  <Step title="Authorize the API">
-    On the **Connections** tab, create a new connection and complete the auth flow. Later, you'll embed the auth flow in your product with code like this:
-    ```typescript
-    nango.openConnectUI({ onEvent: (event) => { /* handle completion */ } });
-    ```
+
+  <Step title="Authorize GitHub">
+    Go to the Connections tab > Add Test Connection > pick your GitHub integration, and complete the auth flow.
+
+    Copy the integration ID, connection ID, and your API key in the Environment settings tab > API Keys. You will use them in the next step.
+
+    <Accordion title="For agents">
+      To create a browser auth link programmatically, call:
+
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/connect/sessions \
+        --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "tags": { "end_user_id": "quickstart-user" },
+          "allowed_integrations": ["<INTEGRATION-ID>"]
+        }'
+      ```
+
+      Send the returned `connect_link` to the user, then confirm the connection in the dashboard.
+    </Accordion>
   </Step>
-  <Step title="Access the API">
-    Retrieve the API credentials from your connection, at scale:
+
+  <Step title="Enable an action function">
+    Open your GitHub integration and enable the `get-repository` template action function.
+
+    This is a Nango Function: it runs provider-specific code with the connected GitHub account's credentials, without exposing those credentials to your app or agent.
+  </Step>
+
+  <Step title="Call the action">
+    Trigger the function from your backend:
 
     <Tabs>
-        <Tab title="Node">
-        ```typescript
-        import { Nango } from '@nangohq/node';
+      <Tab title="Node">
+      Install the SDK with `npm i @nangohq/node`, then run:
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' }); // Find in Environment Settings > API Keys
+      ```typescript
+      import { Nango } from '@nangohq/node';
 
-        const connection = await nango.getConnection(
-            '<INTEGRATION-ID>', // Find in your Integrations
-            '<CONNECTION-ID>'   // Find in your Connections
-        );
+      const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
 
-        console.log(connection.credentials);
-        ```
-        </Tab>
+      const result = await nango.triggerAction(
+          '<INTEGRATION-ID>',
+          '<CONNECTION-ID>',
+          'get-repository',
+          {
+              owner: 'NangoHQ',
+              repo: 'nango'
+          }
+      );
 
-        <Tab title="cURL">
+      console.log(result);
+      ```
+      </Tab>
 
-        ```bash
-        # <NANGO-API-KEY>: Find in Environment Settings > API Keys
-        # <INTEGRATION-ID>: Find in your Integrations
-        # <CONNECTION-ID>: Find in your Connections
-        curl -X GET \
-        -H 'Authorization: Bearer <NANGO-API-KEY>' \
-        'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>'
-        ```
-
-        </Tab>
+      <Tab title="cURL">
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/action/trigger \
+        --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        --header 'Connection-Id: <CONNECTION-ID>' \
+        --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "action_name": "get-repository",
+          "input": {
+            "owner": "NangoHQ",
+            "repo": "nango"
+          }
+        }'
+      ```
+      </Tab>
     </Tabs>
 
-    🎉 You're ready to consume any external API!
-        
+    You should receive GitHub repository details such as the repository ID, full name, visibility, default branch, and owner.
   </Step>
+
+  <Step title="Inspect the run">
+    Open the [Logs](https://app.nango.dev/dev/logs) tab to inspect the action execution, provider request, response, and any errors.
+
+    🎉 You connected an API and ran your first integration function.
+  </Step>
+
   <Step title="Next steps">
     <CardGroup cols={2}>
-        <Card title="Embed in your app" icon="code" href="/guides/auth/auth-guide#guide">
-            Embed Nango Auth in your application and let your users connect external APIs.
-        </Card>
-        <Card title="Make authenticated requests" icon="plug" href="/guides/platform/proxy-requests">
-            Use the Proxy to make authenticated API requests on behalf of your users.
-        </Card>
-        <Card title="Custom integrations" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
-            Implement custom integrations with Functions & the AI code generation.
-        </Card>
+      <Card title="Embed auth in your app" icon="lock" href="/guides/auth/auth-guide">
+        Let users connect external APIs from your product.
+      </Card>
+      <Card title="Build custom functions" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
+        Generate, test, customize, and deploy integration code.
+      </Card>
+      <Card title="Sync external data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
+        Keep external API data fresh for your product or RAG pipeline.
+      </Card>
+      <Card title="Expose tools to agents" icon="robot" href="/guides/functions/tool-calling">
+        Use action functions through tool calling and MCP.
+      </Card>
     </CardGroup>
   </Step>
 </Steps>
 
-
-
 <Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
