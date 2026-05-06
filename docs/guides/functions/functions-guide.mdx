@@ -140,20 +140,20 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     This creates a `nango-integrations/` folder with example configuration. The `.nango` subdirectory must be committed because the CLI uses it to track deployed state.
   </Step>
 
-  <Step title="Configure environment keys">
-    Add your secret keys to a `.env` file inside `nango-integrations/`:
+  <Step title="Configure API keys">
+    Add your API keys to a `.env` file inside `nango-integrations/`:
 
     ```bash
-    NANGO_SECRET_KEY_PROD='<PROD-SECRET-KEY>'
-    NANGO_SECRET_KEY_DEV='<DEV-SECRET-KEY>'
+    NANGO_API_KEY_PROD='<PROD-API-KEY>'
+    NANGO_API_KEY_DEV='<DEV-API-KEY>'
     ```
 
-    Get your secret keys from **Environment Settings > API Keys**. The CLI picks up the matching key for whichever environment you deploy to.
+    Get your API keys from **Environment Settings > API Keys**. The CLI picks up the matching key for whichever environment you deploy to.
 
-    `nango init` creates `nango-integrations/.gitignore` with `.env` ignored. Keep the `.env` file untracked so Nango secret keys are not committed.
+    `nango init` creates `nango-integrations/.gitignore` with `.env` ignored. Keep the `.env` file untracked so Nango API keys are not committed.
 
     <Note>
-      Keys are matched by environment name: `NANGO_SECRET_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
+      Keys are matched by environment name: `NANGO_API_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
     </Note>
 
     <Accordion title="Team setup">
@@ -162,14 +162,14 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
       Each engineer adds their environment's key to their local `.env`:
 
       ```bash
-      NANGO_SECRET_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
+      NANGO_API_KEY_<YOUR_ENV_NAME>='<your-personal-dev-key>'
       ```
 
       Use a shared `dev` or `staging` environment as a stable baseline written to only by CI. See the [CI/CD guide](/guides/functions/ci-cd).
     </Accordion>
 
     <Accordion title="For agents">
-      Run `nango init nango-integrations` to scaffold the folder. Ask the user for their secret key from **Environment Settings > API Keys** and write it to `nango-integrations/.env`. Confirm that `nango-integrations/.gitignore` ignores `.env`.
+      Run `nango init nango-integrations` to scaffold the folder. Ask the user for their API key from **Environment Settings > API Keys** and write it to `nango-integrations/.env`. Confirm that `nango-integrations/.gitignore` ignores `.env`.
 
       For additional context while building, add Nango's documentation MCP server (`https://nango.dev/docs/mcp`) and install the Nango function builder skill:
 
@@ -185,7 +185,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     ```
     nango-integrations/
     ├── .nango/                        # auto-managed state, commit it
-    ├── .env                           # secret keys per environment
+    ├── .env                           # API keys per environment
     ├── .gitignore                     # keeps .env and dist untracked
     ├── index.ts                       # imports every function file
     ├── package.json

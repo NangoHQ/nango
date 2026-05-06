@@ -8,17 +8,46 @@ description: 'Authorize an API and run your first Nango function'
   **Using a coding agent?** Set up the [docs MCP](/getting-started/coding-agent-setup#docs-mcp-server) and [skills](/getting-started/coding-agent-setup#skills), then copy this page as prompt.
 </Tip>
 
-This quickstart uses the GitHub API as an example, but you can choose any of Nango's [700+ supported APIs](/integrations/overview).
+This quickstart uses the GitHub API as an example, but you can choose any of the [700+ APIs](/integrations/overview).
 
 <Steps>
-  <Step title="Create a GitHub integration">
-    [Sign up](https://app.nango.dev/signup) for free, then go to the Integrations tab > Set up new integration > GitHub (User OAuth).
+  <Step title="Create an integration">
+    [Sign up](https://app.nango.dev/signup) for free, then go to the Integrations tab > Set up new integration > pick an API. This quickstart uses GitHub (User OAuth).
+
+    <Accordion title="For agents">
+      Signup cannot be automated. Ask the user to create a free Nango account in the UI first if they have not already done so, then ask for their Nango API key from the Environment settings tab > API Keys.
+
+      Use the API key as `Authorization: Bearer <NANGO-API-KEY>`. The default API key created on signup has full access and is the simplest option. If the user creates a scoped API key instead, this quickstart needs `environment:integrations:write`, `environment:connect_sessions:write`, and `environment:actions:execute`.
+
+      If the user wants another API, list providers first and use the matching `name` as the provider ID:
+
+      ```bash
+      curl --request GET \
+        --url https://api.nango.dev/providers \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
+      ```
+
+      Then create the integration with the API. For GitHub, the provider ID is `github`:
+
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/integrations \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "provider": "github",
+          "unique_key": "<INTEGRATION-ID>"
+        }'
+      ```
+
+      Use another provider ID and integration ID if you are testing with a different API. For all fields and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list) and [Create an integration API](/reference/backend/http-api/integration/create).
+    </Accordion>
   </Step>
 
-  <Step title="Authorize GitHub">
-    Go to the Connections tab > Add Test Connection > pick your GitHub integration, and complete the auth flow.
+  <Step title="Authorize the API">
+    Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow.
 
-    Copy the integration ID, connection ID, and your API key in the Environment settings tab > API Keys. You will use them in the next step.
+    Copy the integration ID, connection ID, and your Nango API key from the Environment settings tab > API Keys. You will use them in the next step.
 
     <Accordion title="For agents">
       To create a browser auth link programmatically, call:
@@ -26,7 +55,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of Nan
       ```bash
       curl --request POST \
         --url https://api.nango.dev/connect/sessions \
-        --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Content-Type: application/json' \
         --data '{
           "tags": { "end_user_id": "quickstart-user" },
@@ -34,17 +63,23 @@ This quickstart uses the GitHub API as an example, but you can choose any of Nan
         }'
       ```
 
-      Send the returned `connect_link` to the user, then confirm the connection in the dashboard.
+      Send the returned `connect_link` to the user. Once they complete authorization, confirm the connection in the dashboard or with the [List connections API](/reference/backend/http-api/connections/list).
     </Accordion>
   </Step>
 
-  <Step title="Enable an action function">
-    Open your GitHub integration and enable the `get-repository` template action function.
+  <Step title="Enable a template function">
+    Open your integration and enable a template function. For GitHub, enable the `get-repository` template.
 
-    This is a Nango Function: it runs provider-specific code with the connected GitHub account's credentials, without exposing those credentials to your app or agent.
+    This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
+
+    <Accordion title="For agents">
+      Enabling template functions is only available in the Nango dashboard at the moment, and will be accessible via API soon.
+
+      Ask the user to go to the Nango dashboard > Integrations tab > open the integration > Functions sub-tab, then deploy the template function they want to test. For this example, deploy `get-repository`.
+    </Accordion>
   </Step>
 
-  <Step title="Call the action">
+  <Step title="Call the function">
     Trigger the function from your backend:
 
     <Tabs>
@@ -54,7 +89,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of Nan
       ```typescript
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
 
       const result = await nango.triggerAction(
           '<INTEGRATION-ID>',
@@ -74,7 +109,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of Nan
       ```bash
       curl --request POST \
         --url https://api.nango.dev/action/trigger \
-        --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Connection-Id: <CONNECTION-ID>' \
         --header 'Provider-Config-Key: <INTEGRATION-ID>' \
         --header 'Content-Type: application/json' \
@@ -93,7 +128,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of Nan
   </Step>
 
   <Step title="Inspect the run">
-    Open the [Logs](https://app.nango.dev/dev/logs) tab to inspect the action execution, provider request, response, and any errors.
+    Open the [Logs](https://app.nango.dev/dev/logs) tab to inspect the function execution, provider request, response, and any errors.
 
     🎉 You connected an API and ran your first integration function.
   </Step>

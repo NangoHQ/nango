@@ -17,6 +17,14 @@ Pull requests that only change docs must have a PR title prefixed with `docs:`.
 
 Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
 
+## Use HTTP APIs in agent instructions
+
+In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.
+
+When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
+
+Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples.
+
 ## Keep link maintenance tightly scoped
 
 When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
@@ -89,7 +97,9 @@ Reference should be precise and easy to scan. Guides should link to Reference fo
 
 ## Terminology: use function type names
 
-Use `function` / `functions` as the main term throughout the docs.
+Use `function` / `functions` as the main term throughout the docs. Nango Functions are the core primitive; avoid positioning actions and syncs as separate top-level primitives.
+
+Use specific function type names only when the distinction matters for implementation, navigation, or exact API/SDK fields. For example, a quickstart can say "call the function" while the HTTP request still uses the literal `action_name` field required by the API.
 
 Use these names for function types:
 - **Sync functions** — functions that keep external API data fresh and typically persist records.
