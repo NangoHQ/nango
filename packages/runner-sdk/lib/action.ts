@@ -1,5 +1,6 @@
 import { getProvider } from '@nangohq/providers';
 
+import { getBaseUrlOverrideDenylistFromEnv, isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
 import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
@@ -469,6 +470,14 @@ export abstract class NangoActionBase<
         headers?: Record<string, string> | undefined;
         body?: string | null;
     }): Promise<Response> {
+        const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
+        if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(options.url.toString(), baseUrlOverrideDenylist)) {
+            throw new this.ActionError({
+                code: 'base_url_override_not_allowed',
+                message: 'This base URL override is not allowed by server configuration.'
+            });
+        }
+
         const props: RequestInit = {
             headers: new Headers(options.headers),
             method: options.method || 'GET'
