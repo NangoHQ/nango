@@ -111,6 +111,24 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.data.webhook_url).toStrictEqual(`${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`);
     });
 
+    it('should URI-encode integration unique_key in webhook_url path segment', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const uniqueKey = 'acme:corp';
+        await seeders.createConfigSeed(env, uniqueKey, 'google');
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey },
+            query: { include: ['webhook'] }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.unique_key).toBe(uniqueKey);
+        expect(res.json.data.webhook_url).toStrictEqual(`${getGlobalWebhookReceiveUrl()}/${env.uuid}/${encodeURIComponent(uniqueKey)}`);
+    });
+
     it('should not list other env', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
         const { env: env2 } = await seeders.seedAccountEnvAndUser();
