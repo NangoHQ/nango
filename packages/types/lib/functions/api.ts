@@ -1,5 +1,6 @@
 import type { ApiError, Endpoint } from '../api.js';
-import type { NangoSyncConfig } from '../flow/index.js';
+import type { FunctionSource } from '../syncConfigs/db.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type FunctionType = 'action' | 'sync';
 
@@ -92,12 +93,36 @@ export type PostRemoteFunctionDeploy = Endpoint<{
     };
 }>;
 
+export interface NangoFunction {
+    name: string;
+    type: FunctionType;
+    description?: string;
+    scopes?: string[];
+    input?: string;
+    returns: string[];
+    json_schema: JSONSchema7 | null;
+    /** Cron expression. Sync-only. */
+    runs?: string | null;
+    /** Sync-only. */
+    auto_start?: boolean;
+    /** Sync-only. */
+    track_deletes?: boolean;
+}
+
+export interface NangoFunctionDeployed extends NangoFunction {
+    id: number;
+    enabled: boolean;
+    /** ISO-8601 timestamp. */
+    last_deployed: string;
+    source: FunctionSource;
+}
+
 export type GetIntegrationFunctions = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
     Querystring: { env: string };
     Params: { providerConfigKey: string };
-    Success: { data: NangoSyncConfig[] };
+    Success: { data: NangoFunctionDeployed[] };
 }>;
 
 export type GetProviderTemplates = Endpoint<{
@@ -105,5 +130,5 @@ export type GetProviderTemplates = Endpoint<{
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
     Params: { providerConfigKey: string };
-    Success: { data: NangoSyncConfig[] };
+    Success: { data: NangoFunction[] };
 }>;

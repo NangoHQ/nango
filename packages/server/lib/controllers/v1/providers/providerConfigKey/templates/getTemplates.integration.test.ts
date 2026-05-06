@@ -43,16 +43,26 @@ describe(`GET ${route}`, () => {
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
         expect(res.json.data.length).toBeGreaterThan(0);
-        for (const fn of res.json.data) {
-            expect(fn.source).toBe('catalog');
-        }
 
         const writeFile = res.json.data.find((value) => value.name === 'write-file');
         expect(writeFile).toMatchObject({
-            source: 'catalog',
             name: 'write-file',
             type: 'action'
         });
+        expect(writeFile).not.toHaveProperty('runs');
+        expect(writeFile).not.toHaveProperty('auto_start');
+        expect(writeFile).not.toHaveProperty('track_deletes');
+        expect(writeFile).not.toHaveProperty('source');
+        expect(writeFile).not.toHaveProperty('id');
+
+        const issues = res.json.data.find((value) => value.name === 'issues');
+        expect(issues).toMatchObject({
+            name: 'issues',
+            type: 'sync'
+        });
+        expect(issues?.runs).toBeDefined();
+        expect(issues?.auto_start).toBeDefined();
+        expect(issues?.track_deletes).toBeDefined();
     });
 
     it('should return an empty array for a provider with no templates', async () => {

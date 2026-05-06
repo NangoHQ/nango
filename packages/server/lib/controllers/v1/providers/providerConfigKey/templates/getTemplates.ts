@@ -1,6 +1,7 @@
 import { flowService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { toNangoFunction } from '../../../../../formatters/function.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../../getProvider.js';
 
@@ -22,7 +23,7 @@ export const getProviderTemplates = asyncWrapper<GetProviderTemplates>((req, res
     const { providerConfigKey } = valParams.data;
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === providerConfigKey);
-    const data = entry ? [...entry.actions, ...entry.syncs] : [];
+    const data = entry ? [...entry.actions, ...entry.syncs].map(toNangoFunction) : [];
 
     res.status(200).send({ data });
 });

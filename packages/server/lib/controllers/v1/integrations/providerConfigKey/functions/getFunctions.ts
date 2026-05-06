@@ -1,6 +1,7 @@
 import { configService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { toNangoFunctionDeployed } from '../../../../../formatters/function.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
@@ -29,7 +30,7 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
     }
 
     const deployed = await getSyncConfigsAsStandardConfig(environment.id, providerConfigKey);
-    const data = [...(deployed?.actions ?? []), ...(deployed?.syncs ?? [])];
+    const data = [...(deployed?.actions ?? []), ...(deployed?.syncs ?? [])].map(toNangoFunctionDeployed);
 
     res.status(200).send({ data });
 });
