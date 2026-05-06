@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
 
 import { getConnectSessionToken, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -91,6 +91,24 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
         expect(res.json.data.webhook_url).toStrictEqual(null);
+    });
+
+    it('should put integration unique_key in webhook_url when it differs from provider template', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'platform-google', 'google');
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'platform-google' },
+            query: { include: ['webhook'] }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json.data.unique_key).toBe('platform-google');
+        expect(res.json.data.provider).toBe('google');
+        expect(res.json.data.webhook_url).toStrictEqual(`${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`);
     });
 
     it('should not list other env', async () => {
