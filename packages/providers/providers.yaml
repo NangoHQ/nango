@@ -5308,7 +5308,7 @@ crunchbase:
         verification:
             method: GET
             endpoints:
-                - /v4/data/entities/organizations/crunchbase
+                - /v4/data/autocompletes?query=instantly&limit=1
     docs: https://nango.dev/docs/api-integrations/crunchbase
     docs_connect: https://nango.dev/docs/api-integrations/crunchbase/connect
     credentials:
@@ -5317,6 +5317,8 @@ crunchbase:
             title: API Key
             description: Your Crunchbase API key.
             doc_section: '#step-1-get-your-api-key'
+            pattern: '^[a-zA-Z0-9]{32}$'
+            example: 0f9c************************5336
 
 dixa:
     display_name: Dixa
@@ -6971,7 +6973,7 @@ freshworks:
             format: hostname
             example: acme.myfreshworks.com
             prefix: https://
-            doc_section: '#step-1-finding-your-hostname'
+            doc_section: '#step-1-finding-your-freshworks-hostname'
         bundleAlias:
             type: string
             title: API Hostname
@@ -15134,10 +15136,6 @@ rocketreach:
         retry:
             at:
                 - 'retry-after'
-        verification:
-            method: GET
-            endpoints:
-                - /api/v2/account/
     docs: https://nango.dev/docs/api-integrations/rocketreach
     docs_connect: https://nango.dev/docs/api-integrations/rocketreach/connect
     credentials:
@@ -17396,6 +17394,8 @@ store-leads:
             title: API Key
             description: Your Store Leads API key.
             doc_section: '#step-1-generate-your-api-key'
+            pattern: '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{8}$'
+            example: a174****-****-****-****-****c6ee
 
 strava:
     display_name: Strava (Mobile)
