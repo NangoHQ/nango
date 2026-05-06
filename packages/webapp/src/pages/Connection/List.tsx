@@ -435,7 +435,7 @@ export const ConnectionList = () => {
                             <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth" type="external">
+                                <StyledLink to="https://nango.dev/docs/guides/auth/auth-guide" type="external">
                                     Nango Connect
                                 </StyledLink>
                                 , or manually here.

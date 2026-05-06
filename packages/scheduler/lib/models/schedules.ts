@@ -5,7 +5,7 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 import type { Schedule, ScheduleProps, ScheduleState, TaskState } from '../types.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 export const SCHEDULES_TABLE = 'schedules';
 
@@ -39,7 +39,7 @@ export interface DbSchedule {
     state: ScheduleState;
     readonly starts_at: Date;
     frequency: string;
-    payload: JsonValue;
+    payload: JsonObject;
     readonly group_key: string;
     readonly retry_max: number;
     readonly created_to_started_timeout_secs: number;

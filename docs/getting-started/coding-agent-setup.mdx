@@ -1,0 +1,33 @@
+---
+title: 'Coding agent setup'
+sidebarTitle: '✨ Coding agent setup'
+description: 'Give coding agents the Nango docs and function-building skills.'
+---
+
+Set up your coding agent with Nango's public docs MCP server and skills so it can help implement Nango auth and functions.
+
+This page is for coding agents that write code with you. To expose Nango integrations to your product's agents at runtime, see [Tool calling & MCP](/guides/functions/tool-calling).
+
+<a id="docs-mcp-server"></a>
+## Docs MCP server
+
+Add Nango's documentation MCP server to your coding agent:
+
+```text
+https://nango.dev/docs/mcp
+```
+
+It is public and does not require authentication.
+
+<a id="skills"></a>
+## Skills
+
+Install the Nango skills package:
+
+```bash
+npx skills add NangoHQ/skills
+```
+
+The skills teach agents how to create, test, and deploy Nango functions.
+
+You can now copy and paste Nango guides into your coding agent, or ask custom prompts, to implement Nango auth and functions in your app.

@@ -19,7 +19,7 @@ Use metadata for:
 - Values discovered during setup, such as provider webhook subscription IDs or tenant-specific identifiers.
 - Configuration shared across multiple functions for the same connection.
 
-Do not use metadata for synced datasets or large lists of records. For data replicated by sync functions, use the [records cache](/guides/functions/records-cache).
+Do not use metadata for synced datasets or large lists of records. For data replicated by sync functions, use the [records cache](/guides/functions/syncs/records-cache).
 
 ## Set and update metadata from your app
 
@@ -80,7 +80,7 @@ Set metadata after the customer chooses integration settings during onboarding o
 
 `setMetadata` replaces the metadata object. `updateMetadata` merges the provided fields into the existing object.
 
-For exact parameters and response shapes, see the [set metadata API](/reference/api/connections/set-metadata), [update metadata API](/reference/api/connections/update-metadata), [Node SDK set metadata method](/reference/sdks/node#set-connection-metadata), and [Node SDK edit metadata method](/reference/sdks/node#edit-connection-metadata).
+For exact parameters and response shapes, see the [set metadata API](/reference/backend/http-api/connections/set-metadata), [update metadata API](/reference/backend/http-api/connections/update-metadata), [Node SDK set metadata method](/reference/backend/backend-sdk/node#set-connection-metadata), and [Node SDK edit metadata method](/reference/backend/backend-sdk/node#edit-connection-metadata).
 
 ## Read metadata from your app
 
@@ -160,11 +160,11 @@ await nango.startSync('<INTEGRATION-ID>', ['contacts'], '<CONNECTION-ID>');
 
 The records cache is the storage layer for sync output. Sync functions write records with `nango.batchSave()`, `nango.batchUpdate()`, and `nango.batchDelete()`. Your app reads changed records through the records API or SDK.
 
-Use the records cache for synced external data, not for function configuration. See [Records cache](/guides/functions/records-cache).
+Use the records cache for synced external data, not for function configuration. See [Records cache](/guides/functions/syncs/records-cache).
 
 ## Related guides
 
 - [Customize per customer](/getting-started/use-cases/customer-configuration) - design the product workflow for customer-specific integration settings.
 - [Connection tags](/guides/auth/connection-tags) - distinguish attribution tags from runtime metadata.
-- [Set connection metadata API](/reference/api/connections/set-metadata) - replace metadata from your app.
-- [Update connection metadata API](/reference/api/connections/update-metadata) - patch metadata from your app.
+- [Set connection metadata API](/reference/backend/http-api/connections/set-metadata) - replace metadata from your app.
+- [Update connection metadata API](/reference/backend/http-api/connections/update-metadata) - patch metadata from your app.

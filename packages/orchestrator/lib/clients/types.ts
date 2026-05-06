@@ -16,6 +16,9 @@ interface SyncArgs {
     debug: boolean;
     connection: ConnectionJobs;
 }
+interface SyncExecutionArgs {
+    emptyCache: boolean;
+}
 interface AbortArgs {
     abortedTask: {
         id: string;
@@ -112,8 +115,8 @@ export function TaskAbort(props: TaskCommonFields & AbortArgs): TaskAbort {
     };
 }
 
-export interface TaskSync extends TaskCommon, SyncArgs {}
-export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
+export interface TaskSync extends TaskCommon, SyncArgs, SyncExecutionArgs {}
+export function TaskSync(props: TaskCommonFields & SyncArgs & SyncExecutionArgs): TaskSync {
     return {
         id: props.id,
         name: props.name,
@@ -130,6 +133,7 @@ export function TaskSync(props: TaskCommonFields & SyncArgs): TaskSync {
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,
         heartbeatTimeoutSecs: props.heartbeatTimeoutSecs,
+        emptyCache: props.emptyCache,
         isSync: (): this is TaskSync => true,
         isWebhook: (): this is TaskWebhook => false,
         isAction: (): this is TaskAction => false,

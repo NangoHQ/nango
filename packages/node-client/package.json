@@ -26,7 +26,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/types": "0.70.1",
-        "axios": "1.15.0"
+        "axios": "1.15.2"
     },
     "engines": {
         "node": ">=20.0"

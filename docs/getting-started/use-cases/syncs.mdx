@@ -33,12 +33,12 @@ The same foundation works for classic data sync, indexing, RAG ingestion, and tr
 
 ## What to read next
 
-- [Sync functions](/guides/functions/sync-functions) - build, run, and consume sync functions end to end.
-- [Records cache](/guides/functions/records-cache) - understand records, change metadata, and cursors.
-- [Checkpoints](/guides/functions/checkpoints) - make long-running functions resumable and incremental.
-- [Deletion detection](/guides/functions/deletion-detection) - surface deletes from external APIs.
-- [Real-time syncs](/guides/functions/realtime-syncs) - combine provider webhooks with polling.
-- [Sync partitioning](/guides/functions/sync-partitioning) - fan out one connection into multiple sync variants.
+- [Sync functions](/guides/functions/syncs/sync-functions) - build, run, and consume sync functions end to end.
+- [Records cache](/guides/functions/syncs/records-cache) - understand records, change metadata, and cursors.
+- [Checkpoints](/guides/functions/syncs/checkpoints) - make long-running functions resumable and incremental.
+- [Deletion detection](/guides/functions/syncs/deletion-detection) - surface deletes from external APIs.
+- [Real-time syncs](/guides/functions/syncs/realtime-syncs) - combine provider webhooks with polling.
+- [Sync partitioning](/guides/functions/syncs/sync-partitioning) - fan out one connection into multiple sync variants.
 
 <Note>
   You can also pair sync functions with Action functions for two-way sync: sync reads from the external API, then call a function on demand to write changes back.

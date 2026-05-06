@@ -2,6 +2,7 @@ import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
+import { logContextGetter } from '@nangohq/logs';
 import { isDuplicateTaskNameClientError, jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, Ok, getLogger, metrics, report } from '@nangohq/utils';
 
@@ -42,6 +43,7 @@ export interface DispatchQueueConsumerProps {
     maxMessages: number;
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
+    maxAgeMs: number;
     sqs?: SQSClient;
 }
 
@@ -54,6 +56,7 @@ export class DispatchQueueConsumer {
     private readonly maxMessages: number;
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
+    private readonly maxAgeMs: number;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -65,6 +68,7 @@ export class DispatchQueueConsumer {
         this.maxMessages = props.maxMessages;
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
+        this.maxAgeMs = props.maxAgeMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -145,7 +149,17 @@ export class DispatchQueueConsumer {
 
                 const sentTimestampMs = Number(msg.Attributes?.['SentTimestamp'] ?? '0');
                 if (sentTimestampMs > 0) {
-                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_DWELL_MS, Date.now() - sentTimestampMs, { provider: message.provider });
+                    const dwellMs = Date.now() - sentTimestampMs;
+                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_DWELL_MS, dwellMs, { provider: message.provider });
+
+                    if (this.maxAgeMs > 0 && dwellMs > this.maxAgeMs) {
+                        span.setTag('stale', true);
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_STALE, 1, { accountId: message.accountId });
+                        const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
+                        await logCtx.warn('Webhook was discarded: it spent too long in the queue and was not processed.', { dwell_ms: dwellMs });
+                        await this.tryDeleteMessage(msg.ReceiptHandle);
+                        return;
+                    }
                 }
 
                 const scheduleRes = await this.orchestratorClient.executeWebhook({

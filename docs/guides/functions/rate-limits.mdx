@@ -12,7 +12,7 @@ To maintain data freshness and avoid disruptions in your integration functions, 
 
 The simplest strategy involves retrying failed requests after waiting:
 
-When you configure HTTP requests using Nango's helper ([reference](/reference/functions#http-requests)), you can specify the number of retries:
+When you configure HTTP requests using Nango's helper ([reference](/reference/functions/functions-sdk#http-requests)), you can specify the number of retries:
 
 ```ts
 await nango.get({ endpoint: '/some-endpoint', retries: 10 });
@@ -21,10 +21,10 @@ await nango.get({ endpoint: '/some-endpoint', retries: 10 });
 This configuration enables automatic retries on receiving a `429` status code, with the retries spaced out using exponential backoff. This method is efficient because:
 
 - It uses exponential backoff to wait out the rate-limit period
-- Nango [sync functions](/guides/functions/sync-functions) can run for up to 24 hours, allowing retries to occur within this window (note that action functions and webhook functions have shorter lifespans; see [Resource limits](/guides/platform/limits))
+- Nango [sync functions](/guides/functions/syncs/sync-functions) can run for up to 24 hours, allowing retries to occur within this window (note that action functions and webhook functions have shorter lifespans; see [Resource limits](/guides/platform/limits))
 - It works for APIs without requiring any API-specific configurations
 
-Find details about HTTP request retries in the [reference](/reference/functions#http-request-retries).
+Find details about HTTP request retries in the [reference](/reference/functions/functions-sdk#http-request-retries).
 
 ## Strategy 2: Leverage rate-limit headers
 
@@ -43,10 +43,10 @@ If rate-limit headers are not already configured for an API you are using, you c
 
 ## Related guides
 
-- [Sync efficiency](/guides/functions/sync-efficiency) - avoid unnecessary provider requests.
+- [Sync efficiency](/guides/functions/syncs/sync-efficiency) - avoid unnecessary provider requests.
 - [Action functions](/guides/functions/action-functions) - design retries for idempotent actions.
 - [Resource limits](/guides/platform/limits) - understand runtime constraints.
-- [Functions SDK reference](/reference/functions#http-request-retries) - configure request retries.
+- [Functions SDK reference](/reference/functions/functions-sdk#http-request-retries) - configure request retries.
 
 <Tip>
 **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).

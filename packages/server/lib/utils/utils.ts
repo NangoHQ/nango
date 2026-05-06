@@ -37,10 +37,12 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<DBUs
         return Err(error);
     }
 
-    const user = await userService.getUserById(sessionUser.id);
+    const user = await userService.getUserById(sessionUser.id, true);
     if (!user) {
-        const error = new NangoError('user_not_found');
-        return Err(error);
+        return Err(new NangoError('user_not_found'));
+    }
+    if (user.suspended) {
+        return Err(new NangoError('user_suspended'));
     }
 
     return Ok(user);

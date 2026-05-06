@@ -3,14 +3,13 @@ import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { OtlpSpan } from '@nangohq/logs';
 import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
-import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
 import { NangoError, deserializeNangoError } from '../utils/error.js';
@@ -33,16 +32,7 @@ import type {
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
-import type {
-    AsyncActionResponse,
-    ConnectionInternal,
-    ConnectionJobs,
-    DBConnection,
-    DBConnectionDecrypted,
-    DBEnvironment,
-    DBSyncConfig,
-    DBTeam
-} from '@nangohq/types';
+import type { AsyncActionResponse, ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -234,25 +224,19 @@ export class Orchestrator {
     }
 
     async triggerWebhook<T = unknown>({
-        account,
-        environment,
-        integration,
         connection,
         webhookName,
         syncConfig,
         input,
         maxConcurrency,
-        logContextGetter
+        logCtx
     }: {
-        account: DBTeam;
-        environment: DBEnvironment;
-        integration: ProviderConfig;
         connection: ConnectionJobs;
         webhookName: string;
         syncConfig: DBSyncConfig;
         input: object;
         maxConcurrency: number;
-        logContextGetter: LogContextGetter;
+        logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
@@ -267,17 +251,6 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
-            {
-                account,
-                environment,
-                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
-            }
-        );
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         try {
             let parsedInput = null;
@@ -546,7 +519,6 @@ export class Orchestrator {
         command,
         environmentId,
         logCtx,
-        recordsService,
         initiator,
         delete_records
     }: {
@@ -557,7 +529,6 @@ export class Orchestrator {
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
-        recordsService: RecordsServiceInterface;
         initiator: string;
         delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
@@ -586,7 +557,7 @@ export class Orchestrator {
                     res = await this.client.unpauseSync({ scheduleName });
                     break;
                 case SyncCommand.RUN:
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: false } });
                     break;
                 case SyncCommand.RUN_FULL: {
                     await cancelling(syncId);
@@ -602,22 +573,7 @@ export class Orchestrator {
                         return Err(deletedCheckpoints.error);
                     }
 
-                    if (delete_records) {
-                        const syncConfig = await getSyncConfigBySyncId(syncId);
-                        for (let model of syncConfig?.models || []) {
-                            if (syncVariant !== 'base') {
-                                model = `${model}::${syncVariant}`;
-                            }
-                            const deletion = await recordsService.deleteRecords({ environmentId, connectionId, model, mode: 'hard' });
-                            if (deletion.isErr()) {
-                                void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
-                                return Err(deletion.error);
-                            }
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, deletion.value);
-                        }
-                    }
-
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: delete_records || false } });
                     break;
                 }
             }

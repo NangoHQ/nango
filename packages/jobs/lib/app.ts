@@ -11,6 +11,7 @@ import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
+import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
@@ -39,6 +40,7 @@ try {
     logger.info(`🚀 service ready at http://localhost:${port}`);
     const processor = new Processor(orchestratorUrl);
     const invocationsProcessor = new LambdaInvocationsProcessor();
+    const lambdaKeepWarmProcessor = new LambdaKeepWarmProcessor({ transport: pubsub.transport });
 
     const webhookDispatchConsumer = envs.NANGO_TASK_DISPATCH_QUEUE_URL
         ? new DispatchQueueConsumer({
@@ -48,7 +50,8 @@ try {
               consumerConcurrency: envs.NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY,
               maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
-              visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS
+              visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
           })
         : undefined;
 
@@ -96,7 +99,7 @@ try {
             if (webhookDispatchConsumer) {
                 await webhookDispatchConsumer.stop();
             }
-
+            await pubsub.disconnect();
             console.info('Closed');
 
             process.exit();
@@ -125,6 +128,7 @@ try {
     processor.start();
 
     invocationsProcessor.start();
+    lambdaKeepWarmProcessor.start();
 
     if (webhookDispatchConsumer) {
         webhookDispatchConsumer.start();

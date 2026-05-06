@@ -27,6 +27,10 @@ const tracerMocks = vi.hoisted(() => {
     };
 });
 
+const utilsMocks = vi.hoisted(() => ({
+    report: vi.fn()
+}));
+
 vi.mock('dd-trace', () => {
     return {
         default: {
@@ -37,8 +41,29 @@ vi.mock('dd-trace', () => {
     };
 });
 
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = await importOriginal();
+
+    if (!actual || typeof actual !== 'object') {
+        throw new Error('Invalid @nangohq/utils mock');
+    }
+
+    return {
+        ...actual,
+        report: utilsMocks.report,
+        metrics: {
+            Types: {
+                WEBHOOK_DISPATCH_PUBLISH_SUCCESS: 'nango.webhook.dispatch_queue.publish.success',
+                WEBHOOK_DISPATCH_PUBLISH_FAILURE: 'nango.webhook.dispatch_queue.publish.failure'
+            },
+            increment: tracerMocks.dogstatsd.increment
+        }
+    };
+});
+
 import { DispatchQueuePublisher } from './publisher.js';
 
+import type { PreparedDispatchMessage } from './publisher.js';
 import type { SQSClient, SendMessageBatchCommandOutput } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 
@@ -57,6 +82,21 @@ function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookD
         connection: { id: 42, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2 },
         payload: { hello: 'world' },
         ...overrides
+    };
+}
+
+function buildPreparedMessage({
+    messageOverrides,
+    byteSize
+}: {
+    messageOverrides?: Partial<WebhookDispatchMessage>;
+    byteSize?: number;
+} = {}): PreparedDispatchMessage {
+    const message = buildMessage(messageOverrides);
+
+    return {
+        message,
+        byteSize: byteSize ?? Buffer.byteLength(JSON.stringify(message), 'utf8')
     };
 }
 
@@ -95,6 +135,7 @@ function deferred<T>() {
 describe('DispatchQueuePublisher', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        utilsMocks.report.mockClear();
         tracerMocks.active.mockClear();
         tracerMocks.activate.mockClear();
         tracerMocks.startSpan.mockClear();
@@ -123,16 +164,16 @@ describe('DispatchQueuePublisher', () => {
         const { sqs, send } = makeSqsMock(() => ({ $metadata: {}, Successful: [], Failed: [] }));
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
         const res = await publisher.publish([], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 0, failed: 0 });
+        expect(res).toEqual({ enqueued: 0, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(0);
     });
 
     it('chunks into batches of <=10 for a 25-message input', async () => {
         const { sqs, send } = makeSqsMock((cmd) => successfulBatchResponse(cmd));
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
-        const messages = Array.from({ length: 25 }, () => buildMessage());
+        const messages = Array.from({ length: 25 }, () => buildPreparedMessage());
         const res = await publisher.publish(messages, 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 25, failed: 0 });
+        expect(res).toEqual({ enqueued: 25, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(3);
         const entryCounts = send.mock.calls.map((call) => (call[0] as SendMessageBatchCommand).input.Entries?.length);
         expect(entryCounts).toEqual([10, 10, 5]);
@@ -161,15 +202,36 @@ describe('DispatchQueuePublisher', () => {
     it('sets MessageGroupId on every entry', async () => {
         const groupId = 'account:7:env:9';
         const seen: string[] = [];
+        const bodies: string[] = [];
         const { sqs } = makeSqsMock((cmd) => {
             for (const entry of cmd.input.Entries ?? []) {
                 if (entry.MessageGroupId) seen.push(entry.MessageGroupId);
+                if (entry.MessageBody) bodies.push(entry.MessageBody);
             }
             return successfulBatchResponse(cmd);
         });
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
-        await publisher.publish([buildMessage(), buildMessage()], groupId);
+        const first = buildPreparedMessage();
+        const second = buildPreparedMessage({ messageOverrides: { activityLogId: 'log-2' } });
+
+        await publisher.publish([first, second], groupId);
         expect(seen).toEqual([groupId, groupId]);
+        expect(bodies).toEqual([JSON.stringify(first.message), JSON.stringify(second.message)]);
+    });
+
+    it('splits batches when cumulative bytes exceed the SQS request limit', async () => {
+        const { sqs, send } = makeSqsMock((cmd) => successfulBatchResponse(cmd));
+        const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
+
+        const res = await publisher.publish(
+            [buildPreparedMessage({ byteSize: 600_000 }), buildPreparedMessage({ byteSize: 300_000 }), buildPreparedMessage({ byteSize: 300_000 })],
+            'account:1:env:2'
+        );
+
+        expect(res).toEqual({ enqueued: 3, failed: 0, failedActivityLogIds: [] });
+        expect(send.mock.calls).toHaveLength(2);
+        const entryCounts = send.mock.calls.map((call) => (call[0] as SendMessageBatchCommand).input.Entries?.length);
+        expect(entryCounts).toEqual([2, 1]);
     });
 
     it('limits concurrent batch publishes to publishConcurrency', async () => {
@@ -187,7 +249,7 @@ describe('DispatchQueuePublisher', () => {
 
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q', batchSize: 1, publishConcurrency: 2 });
         const publishPromise = publisher.publish(
-            Array.from({ length: 4 }, () => buildMessage()),
+            Array.from({ length: 4 }, () => buildPreparedMessage()),
             'account:1:env:2'
         );
 
@@ -207,7 +269,7 @@ describe('DispatchQueuePublisher', () => {
         responses[2]!.resolve(successfulBatchResponse(send.mock.calls[2]![0] as SendMessageBatchCommand));
         responses[3]!.resolve(successfulBatchResponse(send.mock.calls[3]![0] as SendMessageBatchCommand));
 
-        await expect(publishPromise).resolves.toEqual({ enqueued: 4, failed: 0 });
+        await expect(publishPromise).resolves.toEqual({ enqueued: 4, failed: 0, failedActivityLogIds: [] });
     });
 
     it('retries failed entries once and reports remaining failures', async () => {
@@ -229,8 +291,15 @@ describe('DispatchQueuePublisher', () => {
         ];
         const { sqs, send } = makeSqsMock((_n, call) => responses[call]!);
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
-        const res = await publisher.publish([buildMessage(), buildMessage(), buildMessage()], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 2, failed: 1 });
+        const res = await publisher.publish(
+            [
+                buildPreparedMessage(),
+                buildPreparedMessage({ messageOverrides: { activityLogId: 'log-2' } }),
+                buildPreparedMessage({ messageOverrides: { activityLogId: 'log-3' } })
+            ],
+            'account:1:env:2'
+        );
+        expect(res).toEqual({ enqueued: 2, failed: 1, failedActivityLogIds: ['log-3'] });
         expect(send.mock.calls).toHaveLength(2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.enqueued', 2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.failed', 1);
@@ -252,12 +321,35 @@ describe('DispatchQueuePublisher', () => {
             return { $metadata: {}, Successful: [{ Id: 'm0', MessageId: 'ok', MD5OfMessageBody: 'x' }], Failed: [] };
         });
         const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
-        const res = await publisher.publish([buildMessage()], 'account:1:env:2');
-        expect(res).toEqual({ enqueued: 1, failed: 0 });
+        const res = await publisher.publish([buildPreparedMessage()], 'account:1:env:2');
+        expect(res).toEqual({ enqueued: 1, failed: 0, failedActivityLogIds: [] });
         expect(send.mock.calls).toHaveLength(2);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 1);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 1);
         expect(tracerMocks.span.setTag.mock.calls.filter(([tag]) => tag === 'error')).toHaveLength(0);
         expect(tracerMocks.activeSpan.setTag).toHaveBeenCalledWith('sqs.send.error', expect.any(Error));
+    });
+
+    it('reports malformed failed entry ids without crashing retries', async () => {
+        const { sqs } = makeSqsMock((_n, call) => {
+            if (call === 0) {
+                return {
+                    $metadata: {},
+                    Successful: [],
+                    Failed: [{ Id: 'bogus', SenderFault: false, Code: 'InternalError', Message: 'boom' }]
+                };
+            }
+
+            return {
+                $metadata: {},
+                Successful: [],
+                Failed: [{ Id: 'bogus', SenderFault: false, Code: 'InternalError', Message: 'still boom' }]
+            };
+        });
+        const publisher = new DispatchQueuePublisher({ sqs, queueUrl: 'http://q' });
+
+        const res = await publisher.publish([buildPreparedMessage()], 'account:1:env:2');
+
+        expect(res).toEqual({ enqueued: 0, failed: 1, failedActivityLogIds: [] });
     });
 });
