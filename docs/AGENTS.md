@@ -13,6 +13,18 @@ The scan must end with `success no broken links found`.
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
 
+## Use sentence case for docs titles
+
+Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
+
+## Use HTTP APIs in agent instructions
+
+In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.
+
+When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
+
+Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango API key.
+
 ## Keep link maintenance tightly scoped
 
 When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
@@ -20,6 +32,10 @@ When asked to update docs links, only edit links. In application or package code
 The only legitimate reason for a docs task to edit application or package code is to update docs URLs. When that happens, run `npx prettier --check <changed-code-files>` before pushing to catch formatting changes caused by longer or shorter URLs.
 
 Generated docs output must stay out of link-only PRs unless the user explicitly asks to include it. If a generator needs changes, update the generator or source metadata and leave the generated files for a separate generation PR.
+
+## Reference dashboard tabs by name, not URL
+
+When guiding readers to a tab in the Nango dashboard, reference the tab by its visible name instead of linking to a dashboard URL. Dashboard URLs include the environment, and that environment is not predictable across accounts.
 
 ## Never use `{#anchor}` heading-id syntax
 
@@ -81,7 +97,9 @@ Reference should be precise and easy to scan. Guides should link to Reference fo
 
 ## Terminology: use function type names
 
-Use `function` / `functions` as the main term throughout the docs.
+Use `function` / `functions` as the main term throughout the docs. Nango Functions are the core primitive; avoid positioning actions and syncs as separate top-level primitives.
+
+Use specific function type names only when the distinction matters for implementation, navigation, or exact API/SDK fields. For example, a quickstart can say "call the function" while the HTTP request still uses the literal `action_name` field required by the API.
 
 Use these names for function types:
 - **Sync functions** — functions that keep external API data fresh and typically persist records.

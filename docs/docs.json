@@ -21,6 +21,7 @@
     }
   },
   "css": "custom.css",
+  "js": "custom.js",
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
@@ -30,6 +31,7 @@
   "contextual": {
     "options": [
       "copy",
+      "mcp",
       "cursor",
       "vscode",
       "chatgpt",
@@ -640,6 +642,7 @@
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart",
+              "getting-started/coding-agent-setup",
               {
                 "group": "Use cases",
                 "expanded": false,
@@ -1127,6 +1130,7 @@
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
               "api-integrations/freshsales",
+              "api-integrations/freshworks",
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",

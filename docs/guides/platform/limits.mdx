@@ -37,7 +37,9 @@ Different function types have varying execution and enqueuing time limits:
 
 ### Minimum sync frequency
 
-The minimum sync frequency is **30 seconds**, available on all plans. You can set the frequency in the sync definition or override it per connection using the [SDK](/reference/backend/backend-sdk/node#override-sync-connection-frequency) or [API](/reference/backend/http-api/sync/update-connection-frequency).
+For polling syncs, the minimum frequency is **30 seconds**, available on all plans. You can set the frequency in the sync definition or override it per connection using the [SDK](/reference/backend/backend-sdk/node#override-sync-connection-frequency) or [API](/reference/backend/http-api/sync/update-connection-frequency).
+
+For real-time updates, use [real-time syncs](/guides/functions/syncs/realtime-syncs) which trigger from external API webhooks instead of polling.
 
 ### Sync variant limits
 

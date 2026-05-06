@@ -118,7 +118,15 @@ The Nango CLI uses the `NANGO_SECRET_KEY_<ENV>` environment variable for authent
 | CLI Command | Required Scope |
 |-------------|---------------|
 | `nango deploy` | `environment:deploy` |
-| `nango dryrun` | `environment:connections:read_credentials` + `environment:integrations:read` + `environment:proxy` |
+| `nango dryrun` | `environment:connections:read` + `environment:integrations:read` + `environment:proxy` |
+
+For most functions, `environment:connections:read` is sufficient for `nango dryrun` — Nango injects credentials into the proxy automatically, so the function does not need them in its response. Upgrade to `environment:connections:read_credentials` when the function reads credential data from the connection, including:
+
+- accessing `connection.credentials` directly (e.g. `nango.getConnection().credentials`)
+- calling `nango.getToken()` — returns the access token from `connection.credentials`
+- calling `nango.getRawTokenResponse()` — returns `connection.credentials.raw`
+
+Without `read_credentials`, these helpers return empty values because the API strips the `credentials` field from the response.
 
 The **Default - Full access** key that comes with each environment already has all required scopes for both deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
 

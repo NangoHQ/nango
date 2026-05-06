@@ -13,6 +13,7 @@ import {
     connectionService,
     errorManager,
     getProxyConfiguration,
+    pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
 import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
@@ -21,7 +22,6 @@ import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDen
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
-import { pubsub } from '../../pubsub.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { capping } from '../../utils/usage.js';
 import { featureFlags } from '../../utils/utils.js';
@@ -492,7 +492,10 @@ export function handleErrorResponse({
         errorStream.on('end', () => {
             const data = chunks.length > 0 ? Buffer.concat(chunks).toString() : '';
             let parsedBody: string | Record<string, string> = data;
-            if (error.response?.headers?.['content-type']?.includes('application/json')) {
+            const contentTypeHeader = error.response?.headers?.['content-type'];
+            const contentType =
+                typeof contentTypeHeader === 'string' ? contentTypeHeader : Array.isArray(contentTypeHeader) ? contentTypeHeader.join(', ') : '';
+            if (contentType.includes('application/json')) {
                 try {
                     parsedBody = JSON.parse(data);
                 } catch {

@@ -477,6 +477,7 @@ export const ApiKeys: React.FC = () => {
     const isProd = envData?.environmentAndAccount?.environment?.is_production || false;
     const canReadSecret = can(permissions.canReadProdSecretKey) || !isProd;
     const canManageKeys = can(permissions.canWriteProdEnvironmentKeys) || !isProd;
+    const canMakeActions = canReadSecret || canManageKeys;
     const managedSecretKey = envData?.environmentAndAccount?.managed_secret_key ?? null;
 
     const apiKeys = data?.data ?? [];
@@ -526,7 +527,7 @@ export const ApiKeys: React.FC = () => {
                                 <TableHead>Scopes</TableHead>
                                 <TableHead>Created</TableHead>
                                 <TableHead>Last used</TableHead>
-                                <TableHead>Action</TableHead>
+                                {canMakeActions && <TableHead>Action</TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -548,19 +549,26 @@ export const ApiKeys: React.FC = () => {
                                             {formatRelativeTime(key.last_used_at)}
                                         </span>
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => setSelectedKeyId(key.id)}
-                                                className="text-text-tertiary hover:text-text-primary"
-                                            >
-                                                <IconEdit stroke={1} size={16} />
-                                            </Button>
-                                            {canManageKeys && <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />}
-                                        </div>
-                                    </TableCell>
+                                    {canMakeActions && (
+                                        <TableCell>
+                                            <div className="flex items-center gap-1">
+                                                {canReadSecret && <CopyButton text={key.secret} />}
+                                                {canManageKeys && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => setSelectedKeyId(key.id)}
+                                                        className="text-text-tertiary hover:text-text-primary"
+                                                    >
+                                                        <IconEdit stroke={1} size={16} />
+                                                    </Button>
+                                                )}
+                                                {canManageKeys && (
+                                                    <DeleteApiKeyButton displayName={key.display_name} onDelete={() => void handleDelete(key.id)} />
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))}
                         </TableBody>

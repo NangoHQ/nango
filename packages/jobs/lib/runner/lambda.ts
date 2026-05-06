@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, Ok, getLogger, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
@@ -37,6 +37,63 @@ const cloudwatchLogsClient = new CloudWatchLogsClient();
 
 /** Synthetic tenant id for readiness checks on PER_TENANT Lambdas (see AWS tenant isolation invoke docs). */
 const READINESS_CHECK_TENANT_ID = 'nango-readiness';
+
+/**
+ * Async readiness invoke (`Event`) — returns after AWS accepts the invoke; use for keep-warm so SQS handlers finish quickly.
+ */
+export async function invokeLambdaReadinessCheckEvent(params: { functionArn: string; tenantId?: string | undefined }): Promise<Result<void>> {
+    const readinessCheckRequest: LambdaReadinessCheck = {
+        type: 'readiness_check'
+    };
+    const command = new InvokeCommand({
+        FunctionName: params.functionArn,
+        Payload: JSON.stringify(readinessCheckRequest),
+        InvocationType: 'Event',
+        ...(params.tenantId !== undefined && { TenantId: params.tenantId })
+    });
+    try {
+        const response = await lambdaClient.send(command);
+        if (response.StatusCode !== 202) {
+            logger.error(`Async readiness check ${params.functionArn} returned status code ${response.StatusCode}`, response);
+            return Err(new Error(`Lambda async readiness unexpected status: ${response.StatusCode}`));
+        }
+        return Ok(undefined);
+    } catch (err) {
+        logger.error(`Async readiness check invoke failed ${params.functionArn}`, err);
+        return Err(new Error(`Lambda async readiness invoke failed: ${stringifyError(err)}`, { cause: err }));
+    }
+}
+
+/**
+ * Synchronous readiness invoke (RequestResponse) — used at function creation to confirm the function responds before fleet registration.
+ * Omit `tenantId` for non–tenant-isolated functions; pass `READINESS_CHECK_TENANT_ID` for PER_TENANT when probing at creation time.
+ */
+export async function invokeLambdaReadinessCheckSync(params: { functionArn: string; tenantId?: string | undefined }): Promise<Result<void>> {
+    const readinessCheckRequest: LambdaReadinessCheck = {
+        type: 'readiness_check'
+    };
+    const command = new InvokeCommand({
+        FunctionName: params.functionArn,
+        Payload: JSON.stringify(readinessCheckRequest),
+        InvocationType: 'RequestResponse',
+        ...(params.tenantId !== undefined && { TenantId: params.tenantId })
+    });
+    try {
+        const response = await lambdaClient.send(command);
+        if (response.FunctionError) {
+            logger.error(`Error invoking readiness check function ${params.functionArn}`, response.FunctionError);
+            return Err(new Error(`Lambda readiness function error: ${response.FunctionError}`));
+        }
+        if (response.StatusCode !== 200) {
+            logger.error(`Readiness check function ${params.functionArn} returned status code ${response.StatusCode}`, response);
+            return Err(new Error(`Lambda readiness bad status: ${response.StatusCode}`));
+        }
+        return Ok(undefined);
+    } catch (err) {
+        logger.error(`Readiness check invoke failed ${params.functionArn}`, err);
+        return Err(new Error(`Lambda readiness invoke failed: ${stringifyError(err)}`, { cause: err }));
+    }
+}
 
 export function getFunctionQualifier(node: Node): string {
     //need to get the qualifier from the function url
@@ -167,28 +224,22 @@ class Lambda {
                         })
                     );
                 }
-                const readinessCheckRequest: LambdaReadinessCheck = {
-                    type: 'readiness_check'
-                };
-                const command = new InvokeCommand({
-                    FunctionName: aResult.AliasArn,
-                    Payload: JSON.stringify(readinessCheckRequest),
-                    InvocationType: 'RequestResponse',
-                    ...(perTenant && { TenantId: READINESS_CHECK_TENANT_ID })
-                });
-                const response = await lambdaClient.send(command);
-                if (response.FunctionError) {
-                    logger.error(`Error invoking readiness check function ${aResult.AliasArn}`, response.FunctionError);
+                const aliasArn = aResult.AliasArn;
+                if (!aliasArn) {
+                    logger.error(`CreateAlias returned no AliasArn for function ${name}`);
                     return;
                 }
-                if (response.StatusCode !== 200) {
-                    logger.error(`Readiness check function ${aResult.AliasArn} returned status code ${response.StatusCode}`, response);
+                const readiness = await invokeLambdaReadinessCheckSync({
+                    functionArn: aliasArn,
+                    ...(perTenant && { tenantId: READINESS_CHECK_TENANT_ID })
+                });
+                if (readiness.isErr()) {
                     return;
                 }
                 const fleetId = node.fleetId || envs.RUNNER_LAMBDA_FLEET_ID;
                 const result = await registerWithFleet(fleetId, {
                     nodeId: node.id,
-                    url: `${aResult.AliasArn}`
+                    url: aliasArn
                 });
                 if (result.isErr()) {
                     logger.error(`Error registering node ${node.id} to fleet ${fleetId}`, result.error);

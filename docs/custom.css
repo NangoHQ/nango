@@ -119,6 +119,24 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
   display: block !important;
 }
 
+/* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
+/*
+ * Show our scroll-derived active state only when Mintlify has no native
+ * active item. :not(:has(...)) ensures the two never conflict.
+ * No !important needed — the ID + pseudo-class + attribute selector
+ * chain outweighs any Tailwind utility class.
+ */
+.dark #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #000000;
+  font-weight: 500;
+}
+
 /* ══ CHANGELOG PAGE — hide left sidebar, keep TOC ════════════════ */
 /*
  * Mintlify sets data-page-href on the #content div. We use :has()

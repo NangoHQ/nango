@@ -1,10 +1,13 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
+import { report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 import customerKeyService from './customerKey.service.js';
+import { pubsub } from '../utils/pubsub.js';
+import { getPlan } from './plans/plans.js';
 import secretService from './secret.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -17,6 +20,37 @@ import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/t
 const TABLE = '_nango_environments';
 
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
+
+/** After an environment row exists (outer transaction may still be open). Publishes keep-warm when Lambda + plan tenant isolation are enabled. */
+async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accountId: number; environmentId: number }): Promise<void> {
+    try {
+        if (!useLambdaKeepWarm) {
+            return;
+        }
+        const planRes = await getPlan(trx, { accountId });
+        if (planRes.isErr()) {
+            report(new Error('lambda_keep_warm_get_plan_failed', { cause: planRes.error }), { accountId });
+            return;
+        }
+        if (!planRes.value.lambda_tenant_isolation) {
+            return;
+        }
+        const res = await pubsub.publisher.publish({
+            subject: 'lambda_keep_warm',
+            type: 'lambda_keep_warm.invoke',
+            payload: {
+                accountId,
+                environmentId,
+                provisionedConcurrency: 1
+            }
+        });
+        if (res.isErr()) {
+            report(new Error('lambda_keep_warm_publish_failed', { cause: res.error }), { accountId, environmentId });
+        }
+    } catch (err) {
+        report(err);
+    }
+}
 
 class EnvironmentService {
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
@@ -83,17 +117,17 @@ class EnvironmentService {
     }
 
     async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
-        return trx.transaction(async (trx) => {
-            const [environment] = await trx<DBEnvironment>(TABLE)
+        const environment = await trx.transaction(async (innerTrx) => {
+            const [env] = await innerTrx<DBEnvironment>(TABLE)
                 .insert({ account_id: accountId, name, is_production: name === PROD_ENVIRONMENT_NAME })
                 .returning('*');
-            if (!environment) {
-                trx.rollback();
+            if (!env) {
+                innerTrx.rollback();
                 return null;
             }
             // Invariant: Every environment always has one default key (used by runners for persist auth).
-            const created = await secretService.createSecret(trx, {
-                environmentId: environment.id,
+            const created = await secretService.createSecret(innerTrx, {
+                environmentId: env.id,
                 displayName: 'default',
                 isDefault: true
             });
@@ -101,28 +135,33 @@ class EnvironmentService {
                 throw created.error;
             }
             const secret = created.value;
-            environment.secret_key = secret.secret;
-            environment.pending_secret_key = null;
+            env.secret_key = secret.secret;
+            env.pending_secret_key = null;
 
-            const apiKey = await customerKeyService.createApiKey(trx, {
+            const apiKey = await customerKeyService.createApiKey(innerTrx, {
                 accountId: accountId,
-                environmentId: environment.id,
+                environmentId: env.id,
                 displayName: 'Default - Full access'
             });
             if (apiKey.isErr()) {
                 throw apiKey.error;
             }
 
-            const webhookKey = await customerKeyService.createWebhookSigningKey(trx, {
+            const webhookKey = await customerKeyService.createWebhookSigningKey(innerTrx, {
                 accountId: accountId,
-                environmentId: environment.id
+                environmentId: env.id
             });
             if (webhookKey.isErr()) {
                 throw webhookKey.error;
             }
 
-            return environment;
+            return env;
         });
+
+        if (environment) {
+            await onNewEnvironment(trx, { accountId, environmentId: environment.id });
+        }
+        return environment;
     }
 
     async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
