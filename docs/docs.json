@@ -30,6 +30,7 @@
   "contextual": {
     "options": [
       "copy",
+      "mcp",
       "cursor",
       "vscode",
       "chatgpt",
