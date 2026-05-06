@@ -119,7 +119,16 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
 
 ## Step-by-step guide
 
-<Tip>**Using a coding agent?** Copy this page and the specific function type guide you choose into the agent prompt.</Tip>
+<Tip>
+  **Building with an AI coding agent?**
+
+  1. Add Nango's documentation MCP server: `https://nango.dev/docs/mcp`
+  2. Install the Nango function builder skill:
+
+  ```bash
+  npx skills add NangoHQ/skills -s building-nango-functions-locally
+  ```
+</Tip>
 
 <Steps>
   <Step title="Install and initialize">
@@ -169,7 +178,11 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     <Accordion title="For agents">
       Run `nango init nango-integrations` to scaffold the folder. Ask the user for their secret key from **Environment Settings > API Keys** and write it to `nango-integrations/.env`. Confirm that `nango-integrations/.gitignore` ignores `.env`.
 
-      For additional context while building, use Nango's documentation MCP: `https://nango.dev/docs/mcp`.
+      For additional context while building, add Nango's documentation MCP server (`https://nango.dev/docs/mcp`) and install the Nango function builder skill:
+
+      ```bash
+      npx skills add NangoHQ/skills -s building-nango-functions-locally
+      ```
     </Accordion>
   </Step>
 
