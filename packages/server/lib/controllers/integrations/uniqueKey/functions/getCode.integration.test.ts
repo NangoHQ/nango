@@ -139,4 +139,49 @@ describe(`GET ${endpoint}`, () => {
         expect(res.json.error.code).toBe('not_found');
         expect(res.json.error.message).toContain('Source file');
     });
+
+    it('finds an on-event script deployed to the environment', async () => {
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+
+        // Seeder creates a script named 'test-script'. The source file lookup will 404
+        // in tests (no fixture on disk), but it must reach the file lookup — i.e. NOT 404 with a 'Function ... not found' message.
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'test-script' },
+            query: { type: 'on-event' }
+        });
+
+        expect(res.res.status).toBe(404);
+        isError(res.json);
+        expect(res.json.error.code).toBe('not_found');
+        expect(res.json.error.message).toContain('Source file');
+    });
+
+    it('returns 409 ambiguous_function when an action and an on-event script share a name', async () => {
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'github', 'github');
+
+        await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'test-script', type: 'action' });
+        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { uniqueKey: 'github', name: 'test-script' },
+            query: {}
+        });
+
+        expect(res.res.status).toBe(409);
+        isError(res.json);
+        expect(res.json.error.code).toBe('ambiguous_function');
+        expect(res.json.error.payload).toStrictEqual({
+            matches: expect.arrayContaining([
+                { type: 'action', name: 'test-script' },
+                { type: 'on-event', name: 'test-script' }
+            ])
+        });
+    });
 });
