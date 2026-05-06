@@ -79,9 +79,11 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
+    PERSIST_HARD_DELETE_LIMIT: z.coerce.number().int().positive().optional().default(50_000),
     PERSIST_AUTO_PRUNING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
     PERSIST_AUTO_PRUNING_LIMIT: z.coerce.number().optional().default(1_000),
     PERSIST_AUTO_PRUNING_STALE_AFTER_MS: z.coerce
@@ -94,6 +96,12 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
+    PERSIST_BATCH_CLEANUP_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
+    PERSIST_BATCH_CLEANUP_LIMIT: z.coerce.number().optional().default(10_000),
+    PERSIST_BATCH_CLEANUP_MAX_AGE_MS: z.coerce
+        .number()
+        .optional()
+        .default(72 * 3600 * 1000), // 72 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
@@ -429,7 +437,7 @@ export const ENVS = z.object({
             z.object({
                 topicArns: z
                     .partialRecord(
-                        z.enum(['user', 'usage', 'team']),
+                        z.enum(['user', 'usage', 'team', 'lambda_keep_warm']),
                         z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
                     )
                     .optional()
@@ -438,22 +446,23 @@ export const ENVS = z.object({
                     .record(z.string(), z.url())
                     .check((payload) => {
                         const record = payload.value;
+                        const allowedSubjects = new Set(['user', 'usage', 'team', 'lambda_keep_warm']);
                         for (const key of Object.keys(record)) {
                             const lastColon = key.lastIndexOf(':');
                             if (lastColon < 0 || lastColon === key.length - 1) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be user, usage, or team)`,
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of user, usage, team, lambda_keep_warm)`,
                                     path: [key],
                                     input: record[key]
                                 });
                                 continue;
                             }
                             const subject = key.slice(lastColon + 1);
-                            if (!(subject === 'user' || subject === 'usage' || subject === 'team')) {
+                            if (!allowedSubjects.has(subject)) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": subject after ':' must be user, usage, or team`,
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of user, usage, team, lambda_keep_warm`,
                                     path: [key],
                                     input: record[key]
                                 });
@@ -470,6 +479,9 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // Lambda
+    LAMBDA_KEEP_WARM_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY: z.coerce.number().min(1).max(10).optional().default(1),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
     LAMBDA_DEFAULT_PREFIX: z.string().optional().default('nango-runner-function'),

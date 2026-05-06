@@ -44,16 +44,20 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Guide
 
-<Tip>**Using a coding agent?** Copy the page (button top right) and paste as a prompt.</Tip>
+<Tip>
+  **Using a coding agent?** Set up the [docs MCP](/getting-started/coding-agent-setup#docs-mcp-server) and [skills](/getting-started/coding-agent-setup#skills), then copy this page as prompt.
+</Tip>
 
 <Steps>
   <Step title="Create a Nango account">
     Sign up for free (no credit card): [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
     <Accordion title="🤖 For agents">
-      Signup cannot be automated. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango secret API key — the default key created on signup has full access and is the simplest option.
+      Signup cannot be automated. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango API key from the Environment settings tab > API Keys. Use it as `Authorization: Bearer <NANGO-API-KEY>` in API requests.
 
-      If the user creates a scoped key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (step 4). See [API keys](/reference/backend/http-api/api-keys).
+      The default API key created on signup has full access and is the simplest option.
+
+      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (step 4). See [API keys](/reference/backend/http-api/api-keys).
     </Accordion>
   </Step>
 
@@ -73,9 +77,13 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
 
     <Accordion title="🤖 For agents">
-      Create the integration via [`POST /integrations`](/reference/backend/http-api/integration/create) (requires the `environment:integrations:write` scope).
+      Create the integration with the API. If you need the provider slug first, list providers and use the matching provider's `name` field:
 
-      Find the `<PROVIDER>` slug by calling [`GET /providers`](/reference/backend/http-api/providers/list) — the `name` field of each entry is a valid slug.
+      ```bash
+      curl --request GET \
+        --url https://api.nango.dev/providers \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
+      ```
 
       For OAuth providers, walk the user through registering an OAuth developer app on the provider's portal: link them to the provider's OAuth-app creation page, tell them which `Callback URL` to paste (visible in the Nango integration settings after creation), and ask them to send back the `client_id` and `client_secret` so you can pass them in the request body.
 
@@ -112,7 +120,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         </Tab>
       </Tabs>
 
-      Update credentials later with [`PATCH /integrations/{uniqueKey}`](/reference/backend/http-api/integration/update).
+      For all fields and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list), [Create an integration API](/reference/backend/http-api/integration/create), and [Update an integration API](/reference/backend/http-api/integration/update).
     </Accordion>
   </Step>
 
@@ -149,7 +157,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         ```ts
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+        const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
 
         api.post('/sessionToken', async (req, res) => {
           const { data } = await nango.createConnectSession({
@@ -300,7 +308,7 @@ Before showing integration settings, check the connection with `GET /connection`
   ```ts
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+  const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
 
   try {
     await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
@@ -333,7 +341,7 @@ Same flow as a new connection, but using a reconnect session token. Pass the ret
   ```ts
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+  const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
 
   api.post('/sessionToken', async (req, res) => {
     const { data } = await nango.createReconnectSession({

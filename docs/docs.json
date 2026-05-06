@@ -21,6 +21,7 @@
     }
   },
   "css": "custom.css",
+  "js": "custom.js",
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
@@ -30,6 +31,7 @@
   "contextual": {
     "options": [
       "copy",
+      "mcp",
       "cursor",
       "vscode",
       "chatgpt",
@@ -640,6 +642,7 @@
             "pages": [
               "getting-started/intro-to-nango",
               "getting-started/quickstart",
+              "getting-started/coding-agent-setup",
               {
                 "group": "Use cases",
                 "expanded": false,
@@ -879,6 +882,7 @@
               "integrations/all/1password-scim",
               "api-integrations/3cx",
               "api-integrations/8x8",
+              "api-integrations/absorb-lms",
               "api-integrations/accelo",
               "api-integrations/adobe-commerce",
               "integrations/all/acuity-scheduling",
@@ -1126,6 +1130,7 @@
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
               "api-integrations/freshsales",
+              "api-integrations/freshworks",
               "integrations/all/freshservice",
               "integrations/all/freshteam",
               "integrations/all/front",
@@ -1225,6 +1230,7 @@
               "integrations/all/jamf",
               "integrations/all/jamf-basic",
               "integrations/all/jazzhr",
+              "api-integrations/jiminny",
               "api-integrations/jira",
               "integrations/all/jira-basic",
               "integrations/all/jira-data-center-api-key",
@@ -1242,7 +1248,7 @@
               "integrations/all/kintone",
               "integrations/all/kintone-user-api",
               "integrations/all/keeper-scim",
-              "integrations/all/knowbe4",
+              "api-integrations/knowbe4",
               "integrations/all/klaviyo",
               "integrations/all/klaviyo-oauth",
               "api-integrations/klicktipp",

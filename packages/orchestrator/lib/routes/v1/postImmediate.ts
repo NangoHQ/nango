@@ -9,7 +9,7 @@ import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 const path = '/v1/immediate';
 const method = 'POST';
@@ -33,7 +33,7 @@ export type PostImmediate = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue & { type: TaskType };
+        args: JsonObject & { type: TaskType };
     };
     Error: ApiError<'immediate_failed' | 'duplicate_task_name'>;
     Success: { taskId: string; retryKey: string };

@@ -1,0 +1,46 @@
+---
+title: Freshworks - How do I link my account?
+sidebarTitle: Freshworks
+---
+
+# Overview
+
+To authenticate with Freshworks, you will need:
+1. **Hostname** - The hostname of your Freshworks account used for OAuth (e.g., `acme.myfreshworks.com`)
+2. **API Hostname** - The hostname of your Freshworks product used for API calls (e.g., `acme.freshservice.com`)
+
+### Prerequisites:
+
+- You must have a Freshworks account
+
+### Instructions:
+
+#### Step 1: Finding your Freshworks hostname
+
+1. Sign in to your Freshworks account at [myfreshworks.com](https://www.myfreshworks.com/).
+2. Look at the URL in your browser's address bar. Your hostname is the full domain before the first `/` — it will follow the pattern `acme.myfreshworks.com`.
+
+#### Step 2: Finding your API hostname
+
+The API hostname depends on which Freshworks product you are making API calls to:
+
+| Product | Example API hostname |
+|---------|----------------------|
+| Freshservice | `acme.freshservice.com` |
+| Freshdesk | `acme.freshdesk.com` |
+| Freshsales / CRM | `acme.myfreshworks.com` |
+| Freshchat | `acme.freshchat.com` |
+| Freshcaller | `acme.freshcaller.com` |
+
+Sign in to your Freshworks product and look at the URL to get the full domain (e.g. `acme.freshservice.com`).
+
+#### Step 3: Enter your details in the Connect UI
+
+1. Open the form where you need to authenticate with Freshworks.
+2. Enter your **Hostname** (e.g. `acme.myfreshworks.com`) in the first field.
+3. Enter your **API Hostname** (e.g. `acme.freshservice.com`) in the second field.
+4. Click **Connect** and log in to your Freshworks account when prompted.
+
+<img src="/api-integrations/freshworks/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Freshworks.

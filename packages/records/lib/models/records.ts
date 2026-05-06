@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -64,6 +64,19 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
             return true;
         }
         return isInactiveThisMonth({ last_modified_at: r.last_modified_at, previous_last_modified_at: r.previous_last_modified_at });
+    });
+}
+
+async function insertBatchEntry(
+    trx: Knex.Transaction,
+    { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
+): Promise<void> {
+    if (recordIds.length === 0) return;
+    await trx(RECORDS_BATCH_TABLE).insert({
+        connection_id: connectionId,
+        model,
+        sync_job_id: syncJobId,
+        record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
     });
 }
 
@@ -487,6 +500,13 @@ export async function upsert({
                             batchDeltaSizeInBytes = upsertDataResult.reduce((acc, r) => acc + r.new_size_bytes - r.prev_size_bytes, -totalLegacySizeInBytes);
                         }
 
+                        await insertBatchEntry(trx, {
+                            connectionId,
+                            model,
+                            syncJobId: chunk[0]!.sync_job_id,
+                            recordIds: upsertMetadata.map((r) => r.id)
+                        });
+
                         // Billing:
                         // A record is billed only once per month. ie:
                         // - If a record is inserted, it is billed
@@ -748,6 +768,13 @@ export async function update({
                         ]);
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
+
+                    await insertBatchEntry(trx, {
+                        connectionId,
+                        model,
+                        syncJobId: encryptedRecords[0]!.sync_job_id,
+                        recordIds: updated.map((r) => r.id)
+                    });
 
                     for (const record of updated) {
                         const oldRecord = oldRecords.find((old) => old.external_id === record.external_id);
@@ -1169,6 +1196,17 @@ export async function deleteOutdatedRecords({
         return Err(e);
     } finally {
         span.finish();
+    }
+}
+
+export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
+    try {
+        const count = await db(RECORDS_BATCH_TABLE)
+            .whereIn('id', db(RECORDS_BATCH_TABLE).select('id').where('created_at', '<', olderThan).limit(limit))
+            .delete();
+        return Ok(count);
+    } catch (err) {
+        return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
 }
 
