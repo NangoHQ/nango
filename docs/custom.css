@@ -73,6 +73,30 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
 #navigation-items { padding-top: 20px !important; }
 
+/* ══ TOC SCROLL-TRACKED ACTIVE — fallback for long sections ══════ */
+/*
+ * Mintlify's IntersectionObserver only marks an entry active while
+ * its anchor element is within the observed viewport strip (~top 15%).
+ * Changelog <Update> blocks can be many screens tall, so after
+ * scrolling past a heading the TOC loses its active state entirely.
+ *
+ * custom.js sets data-scroll-active="true" on the matching TOC item
+ * based on scroll position. We apply these styles only when Mintlify
+ * has no [data-active] item of its own, so the two never conflict.
+ */
+html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: rgb(0, 0, 0) !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+}
+.dark #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+}
+
 /* ══ TOC — hide scrollbar until hover ════════════════════════════ */
 /*
  * #table-of-contents has overflow-y-auto directly on it. Hide the
