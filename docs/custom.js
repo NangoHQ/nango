@@ -39,7 +39,9 @@
 
   function updateActive() {
     rafPending = false;
-    if (!cachedAnchors) cachedAnchors = buildAnchors();
+    // Don't cache empty results — TOC may not be mounted yet on a fresh
+    // SPA navigation. Keep retrying until we get a non-empty list.
+    if (!cachedAnchors || !cachedAnchors.length) cachedAnchors = buildAnchors();
     var anchors = cachedAnchors;
     if (!anchors.length) return;
 
