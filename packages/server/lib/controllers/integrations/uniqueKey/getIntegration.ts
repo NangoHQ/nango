@@ -64,7 +64,7 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
 
     const include: ApiPublicIntegrationInclude = {};
     if (queryInclude.has('webhook')) {
-        include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.provider}` : null;
+        include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.unique_key}` : null;
     }
     if (
         queryInclude.has('credentials') &&
