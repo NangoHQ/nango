@@ -473,8 +473,8 @@ export abstract class NangoActionBase<
         const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
         if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(options.url.toString(), baseUrlOverrideDenylist)) {
             throw new this.ActionError({
-                code: 'base_url_override_not_allowed',
-                message: 'This base URL override is not allowed by server configuration.'
+                code: 'url_not_allowed',
+                message: 'This URL is not allowed by server configuration.'
             });
         }
 
