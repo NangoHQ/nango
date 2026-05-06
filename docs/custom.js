@@ -15,33 +15,32 @@
 (function () {
   var rafPending = false;
   var currentPath = location.pathname;
+  var cachedAnchors = null; // built once per page, invalidated on navigation
+  var navigationWatching = false;
 
-  function getTocItems() {
-    return Array.from(document.querySelectorAll('#table-of-contents .toc-item'));
+  function buildAnchors() {
+    var result = [];
+    document.querySelectorAll('#table-of-contents .toc-item').forEach(function (item) {
+      var link = item.querySelector('a');
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || href.charAt(0) !== '#') return;
+      var target = document.getElementById(href.slice(1));
+      if (target) result.push({ item: item, target: target });
+    });
+    return result;
   }
 
   function clearScrollActive() {
-    getTocItems().forEach(function (item) {
+    document.querySelectorAll('#table-of-contents .toc-item[data-scroll-active]').forEach(function (item) {
       item.removeAttribute('data-scroll-active');
     });
   }
 
   function updateActive() {
     rafPending = false;
-
-    var tocItems = getTocItems();
-    if (!tocItems.length) return;
-
-    // Build ordered list of {item, target} pairs from TOC link hrefs
-    var anchors = [];
-    tocItems.forEach(function (item) {
-      var link = item.querySelector('a');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || href.charAt(0) !== '#') return;
-      var target = document.getElementById(href.slice(1));
-      if (target) anchors.push({ item: item, target: target });
-    });
+    if (!cachedAnchors) cachedAnchors = buildAnchors();
+    var anchors = cachedAnchors;
     if (!anchors.length) return;
 
     // The active section is the last anchor whose top edge is at or above
@@ -54,11 +53,11 @@
       }
     }
 
-    tocItems.forEach(function (item) {
-      if (item === active.item) {
-        item.setAttribute('data-scroll-active', 'true');
+    anchors.forEach(function (a) {
+      if (a === active) {
+        a.item.setAttribute('data-scroll-active', 'true');
       } else {
-        item.removeAttribute('data-scroll-active');
+        a.item.removeAttribute('data-scroll-active');
       }
     });
   }
@@ -71,6 +70,7 @@
   }
 
   function setup() {
+    cachedAnchors = null; // invalidate for the new page
     window.addEventListener('scroll', onScroll, { passive: true });
     updateActive();
   }
@@ -80,7 +80,6 @@
     clearScrollActive();
   }
 
-  // Re-run on Next.js SPA navigation (event-driven, no polling)
   function onNavigate() {
     var newPath = location.pathname;
     if (newPath !== currentPath) {
@@ -91,8 +90,12 @@
     }
   }
 
+  // Called once — patches history and listens for popstate.
+  // The popstate listener intentionally lives here (not in teardown/setup)
+  // because navigation detection must survive page transitions.
   function watchNavigation() {
-    // Patch pushState / replaceState to catch programmatic navigation
+    if (navigationWatching) return;
+    navigationWatching = true;
     var origPush = history.pushState;
     history.pushState = function () {
       origPush.apply(this, arguments);
@@ -103,7 +106,6 @@
       origReplace.apply(this, arguments);
       onNavigate();
     };
-    // Catch browser back/forward
     window.addEventListener('popstate', onNavigate);
   }
 
