@@ -1,65 +1,39 @@
-/* global document, window, location, requestAnimationFrame, history */
+/* global document, window, requestAnimationFrame, history */
 /* ── Changelog TOC scroll-active fallback ──────────────────────────────── */
 /*
- * Mintlify's IntersectionObserver only fires while a section anchor is in
- * the top ~15% of the viewport. Changelog <Update> blocks are many screens
- * tall, so the anchor leaves that strip almost immediately and Mintlify
- * clears the active highlight entirely.
+ * Mintlify clears the TOC active highlight as soon as a section anchor
+ * scrolls past the top ~15% of the viewport. Changelog <Update> blocks
+ * span many screens, so the TOC goes dark.
  *
- * This script maintains a data-scroll-active="true" attribute on the
- * matching .toc-item element. It resolves anchor targets directly from TOC
- * link hrefs (which point to <div id="..."> Update containers, not headings).
- * CSS shows the fallback only when Mintlify has no native data-active="true"
- * item, so the two never conflict.
+ * Set data-scroll-active="true" on the TOC item whose target has scrolled
+ * past 30% of the viewport. CSS only applies it when Mintlify has no
+ * native data-active item, so the two never conflict.
  */
 (function () {
   var rafPending = false;
-  var currentPath = location.pathname;
-  var cachedAnchors = null; // built once per page, invalidated on navigation
-  var navigationWatching = false;
-
-  function buildAnchors() {
-    var result = [];
-    document.querySelectorAll('#table-of-contents .toc-item').forEach(function (item) {
-      var link = item.querySelector('a');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || href.charAt(0) !== '#') return;
-      var target = document.getElementById(href.slice(1));
-      if (target) result.push({ item: item, target: target });
-    });
-    return result;
-  }
-
-  function clearScrollActive() {
-    document.querySelectorAll('#table-of-contents .toc-item[data-scroll-active]').forEach(function (item) {
-      item.removeAttribute('data-scroll-active');
-    });
-  }
 
   function updateActive() {
     rafPending = false;
-    // Don't cache empty results — TOC may not be mounted yet on a fresh
-    // SPA navigation. Keep retrying until we get a non-empty list.
-    if (!cachedAnchors || !cachedAnchors.length) cachedAnchors = buildAnchors();
-    var anchors = cachedAnchors;
-    if (!anchors.length) return;
+    var items = document.querySelectorAll('#table-of-contents .toc-item');
+    if (!items.length) return;
 
-    // The active section is the last anchor whose top edge is at or above
-    // 30% of the viewport height (i.e. it has scrolled into view past that point)
     var threshold = window.innerHeight * 0.3;
-    var active = anchors[0];
-    for (var i = 0; i < anchors.length; i++) {
-      if (anchors[i].target.getBoundingClientRect().top <= threshold) {
-        active = anchors[i];
+    var activeItem = null;
+    items.forEach(function (item) {
+      var link = item.querySelector('a');
+      var href = link && link.getAttribute('href');
+      if (!href || href.charAt(0) !== '#') return;
+      var target = document.getElementById(href.slice(1));
+      if (target && target.getBoundingClientRect().top <= threshold) {
+        activeItem = item;
       }
-    }
+    });
 
-    anchors.forEach(function (a) {
-      if (a === active) {
-        a.item.setAttribute('data-scroll-active', 'true');
+    items.forEach(function (item) {
+      if (item === activeItem) {
+        item.setAttribute('data-scroll-active', 'true');
       } else {
-        a.item.removeAttribute('data-scroll-active');
+        item.removeAttribute('data-scroll-active');
       }
     });
   }
@@ -71,53 +45,28 @@
     }
   }
 
-  function setup() {
-    cachedAnchors = null; // invalidate for the new page
-    window.addEventListener('scroll', onScroll, { passive: true });
-    updateActive();
-  }
-
-  function teardown() {
-    window.removeEventListener('scroll', onScroll);
-    clearScrollActive();
-  }
-
+  // Re-run after Next.js SPA navigation. 200ms gives the DOM time to swap.
   function onNavigate() {
-    var newPath = location.pathname;
-    if (newPath !== currentPath) {
-      currentPath = newPath;
-      teardown();
-      // Small delay to let Next.js finish swapping the DOM
-      setTimeout(setup, 200);
-    }
+    setTimeout(updateActive, 200);
   }
 
-  // Called once — patches history and listens for popstate.
-  // The popstate listener intentionally lives here (not in teardown/setup)
-  // because navigation detection must survive page transitions.
-  function watchNavigation() {
-    if (navigationWatching) return;
-    navigationWatching = true;
-    var origPush = history.pushState;
-    history.pushState = function () {
-      origPush.apply(this, arguments);
-      onNavigate();
-    };
-    var origReplace = history.replaceState;
-    history.replaceState = function () {
-      origReplace.apply(this, arguments);
-      onNavigate();
-    };
-    window.addEventListener('popstate', onNavigate);
-  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('popstate', onNavigate);
+
+  var origPush = history.pushState;
+  history.pushState = function () {
+    origPush.apply(this, arguments);
+    onNavigate();
+  };
+  var origReplace = history.replaceState;
+  history.replaceState = function () {
+    origReplace.apply(this, arguments);
+    onNavigate();
+  };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setup();
-      watchNavigation();
-    });
+    document.addEventListener('DOMContentLoaded', updateActive);
   } else {
-    setup();
-    watchNavigation();
+    updateActive();
   }
 })();
