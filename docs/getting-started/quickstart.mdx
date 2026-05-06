@@ -12,14 +12,18 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
 
 <Steps>
   <Step title="Create an integration">
-    [Sign up](https://app.nango.dev/signup) for free, then go to the Integrations tab > Set up new integration > pick an API. This quickstart uses GitHub (User OAuth).
+    [Sign up](https://app.nango.dev/signup) for free. This quickstart uses GitHub (User OAuth), which is pre-created with integration ID `github-getting-started`.
+
+    If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
 
     <Accordion title="For agents">
       Signup cannot be automated. Ask the user to create a free Nango account in the UI first if they have not already done so, then ask for their Nango API key from the Environment settings tab > API Keys.
 
-      Use the API key as `Authorization: Bearer <NANGO-API-KEY>`. The default API key created on signup has full access and is the simplest option. If the user creates a scoped API key instead, this quickstart needs `environment:integrations:write`, `environment:connect_sessions:write`, and `environment:actions:execute`.
+      Use the API key as `Authorization: Bearer <NANGO-API-KEY>`. The default API key created on signup has full access and is the simplest option. If the user creates a scoped API key instead, this quickstart needs `environment:connect_sessions:write` and `environment:actions:execute`. Add `environment:connections:list` if you confirm authorization through the API.
 
-      If the user wants another API, list providers first and use the matching `name` as the provider ID:
+      For GitHub, use the pre-created integration ID `github-getting-started`; no integration creation or OAuth developer app setup is needed.
+
+      If the user wants another API, ask them to create the integration in the Nango dashboard. You can list providers first and use the matching `name` to help them pick the right API:
 
       ```bash
       curl --request GET \
@@ -27,27 +31,16 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
         --header 'Authorization: Bearer <NANGO-API-KEY>'
       ```
 
-      Then create the integration with the API. For GitHub, the provider ID is `github`:
+      For OAuth APIs, walk the user through registering an OAuth developer app on the provider's portal, then ask them to paste the `Client ID`, `Client Secret`, and required scopes into the Nango integration settings. If the dashboard offers Nango-provided developer app credentials, they can use that option for testing. This OAuth setup can be ignored when using the GitHub example.
 
-      ```bash
-      curl --request POST \
-        --url https://api.nango.dev/integrations \
-        --header 'Authorization: Bearer <NANGO-API-KEY>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-          "provider": "github",
-          "unique_key": "<INTEGRATION-ID>"
-        }'
-      ```
-
-      Use another provider ID and integration ID if you are testing with a different API. For all fields and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list) and [Create an integration API](/reference/backend/http-api/integration/create).
+      For provider details and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list).
     </Accordion>
   </Step>
 
   <Step title="Authorize the API">
-    Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow.
+    Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow. For the GitHub example, pick `github-getting-started`.
 
-    Copy the integration ID, connection ID, and your Nango API key from the Environment settings tab > API Keys. You will use them in the next step.
+    Copy the connection ID and your Nango API key from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
 
     <Accordion title="For agents">
       To create a browser auth link programmatically, call:
@@ -59,7 +52,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
         --header 'Content-Type: application/json' \
         --data '{
           "tags": { "end_user_id": "quickstart-user" },
-          "allowed_integrations": ["<INTEGRATION-ID>"]
+          "allowed_integrations": ["github-getting-started"]
         }'
       ```
 
@@ -92,7 +85,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
       const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
 
       const result = await nango.triggerAction(
-          '<INTEGRATION-ID>',
+          'github-getting-started',
           '<CONNECTION-ID>',
           'get-repository',
           {
@@ -111,7 +104,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
         --url https://api.nango.dev/action/trigger \
         --header 'Authorization: Bearer <NANGO-API-KEY>' \
         --header 'Connection-Id: <CONNECTION-ID>' \
-        --header 'Provider-Config-Key: <INTEGRATION-ID>' \
+        --header 'Provider-Config-Key: github-getting-started' \
         --header 'Content-Type: application/json' \
         --data '{
           "action_name": "get-repository",
@@ -128,7 +121,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
   </Step>
 
   <Step title="Inspect the run">
-    Open the [Logs](https://app.nango.dev/dev/logs) tab to inspect the function execution, provider request, response, and any errors.
+    Open the Logs tab to inspect the function execution, provider request, response, and any errors.
 
     🎉 You connected an API and ran your first integration function.
   </Step>

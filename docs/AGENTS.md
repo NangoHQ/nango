@@ -23,7 +23,7 @@ In "For agents" accordions and other coding-agent-specific instructions, prefer 
 
 When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
 
-Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples.
+Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango API key.
 
 ## Keep link maintenance tightly scoped
 
