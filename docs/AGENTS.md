@@ -21,6 +21,10 @@ The only legitimate reason for a docs task to edit application or package code i
 
 Generated docs output must stay out of link-only PRs unless the user explicitly asks to include it. If a generator needs changes, update the generator or source metadata and leave the generated files for a separate generation PR.
 
+## Reference dashboard tabs by name, not URL
+
+When guiding readers to a tab in the Nango dashboard, reference the tab by its visible name instead of linking to a dashboard URL. Dashboard URLs include the environment, and that environment is not predictable across accounts.
+
 ## Never use `{#anchor}` heading-id syntax
 
 Mintlify's MDX parser treats `{...}` as a JavaScript expression and chokes on `#` inside it. A single `## Heading {#anchor}` anywhere in the docs aborts `mintlify broken-links` for the **entire site** before it can scan for actual broken links.
