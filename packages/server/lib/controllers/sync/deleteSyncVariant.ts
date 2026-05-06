@@ -8,8 +8,7 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSch
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { LogContextOrigin } from '@nangohq/logs';
-import type { ApiError, DeleteSyncVariant, OperationRowInsert, ValidationError } from '@nangohq/types';
+import type { ApiError, DeleteSyncVariant, ValidationError } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -29,8 +28,7 @@ const paramsValidation = z
 
 export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res) => {
     const { account, environment } = res.locals;
-    const logCtxData: OperationRowInsert = { operation: { type: 'sync', action: 'delete_variant' } };
-    const logCtx: LogContextOrigin = await logContextGetter.create(logCtxData, { account, environment });
+    const logCtx = await logContextGetter.create({ operation: { type: 'sync', action: 'delete_variant' } }, { account, environment });
 
     const parsedBody = bodyValidation.safeParse(req.body);
     if (!parsedBody.success) {

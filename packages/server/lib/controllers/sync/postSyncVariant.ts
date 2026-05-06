@@ -9,8 +9,7 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSch
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { LogContextOrigin } from '@nangohq/logs';
-import type { ApiError, DBConnection, OperationRowInsert, PostSyncVariant, ValidationError } from '@nangohq/types';
+import type { ApiError, DBConnection, PostSyncVariant, ValidationError } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -30,8 +29,7 @@ const paramsValidation = z
 
 export const postSyncVariant = asyncWrapper<PostSyncVariant>(async (req, res) => {
     const { account, environment, plan } = res.locals;
-    const logCtxData: OperationRowInsert = { operation: { type: 'sync', action: 'create_variant' } };
-    const logCtx: LogContextOrigin = await logContextGetter.create(logCtxData, { account, environment });
+    const logCtx = await logContextGetter.create({ operation: { type: 'sync', action: 'create_variant' } }, { account, environment });
 
     const parsedBody = bodyValidation.safeParse(req.body);
     if (!parsedBody.success) {
