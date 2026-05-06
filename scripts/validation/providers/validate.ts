@@ -150,6 +150,8 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         }
     }
 
+    const RUNTIME_DYNAMIC_KEYS = new Set(['oauth_scopes']);
+
     // Find all connectionConfig references
     const connectionConfigReferences = findConnectionConfigReferences(provider);
 
@@ -158,8 +160,9 @@ function validateProvider(providerKey: string, provider: ExtendedProvider) {
         for (const reference of connectionConfigReferences) {
             const defined = provider.connection_config && reference.key in provider.connection_config;
             const inTokenResponseMetadata = provider.token_response_metadata?.includes(reference.key);
+            const isRuntimeDynamic = RUNTIME_DYNAMIC_KEYS.has(reference.key);
 
-            if (!defined && !inTokenResponseMetadata) {
+            if (!defined && !inTokenResponseMetadata && !isRuntimeDynamic) {
                 console.error(
                     chalk.red('error'),
                     chalk.blue(providerKey),
