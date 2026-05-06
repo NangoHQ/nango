@@ -1,4 +1,4 @@
-/* global document, window, location, requestAnimationFrame */
+/* global document, window, location, requestAnimationFrame, history */
 /* ── Changelog TOC scroll-active fallback ──────────────────────────────── */
 /*
  * Mintlify's IntersectionObserver only fires while a section anchor is in
@@ -80,16 +80,31 @@
     clearScrollActive();
   }
 
-  // Re-run on Next.js SPA navigation (URL changes without full page reload)
+  // Re-run on Next.js SPA navigation (event-driven, no polling)
+  function onNavigate() {
+    var newPath = location.pathname;
+    if (newPath !== currentPath) {
+      currentPath = newPath;
+      teardown();
+      // Small delay to let Next.js finish swapping the DOM
+      setTimeout(setup, 200);
+    }
+  }
+
   function watchNavigation() {
-    setInterval(function () {
-      if (location.pathname !== currentPath) {
-        currentPath = location.pathname;
-        teardown();
-        // Small delay to let Next.js finish swapping the DOM
-        setTimeout(setup, 200);
-      }
-    }, 200);
+    // Patch pushState / replaceState to catch programmatic navigation
+    var origPush = history.pushState;
+    history.pushState = function () {
+      origPush.apply(this, arguments);
+      onNavigate();
+    };
+    var origReplace = history.replaceState;
+    history.replaceState = function () {
+      origReplace.apply(this, arguments);
+      onNavigate();
+    };
+    // Catch browser back/forward
+    window.addEventListener('popstate', onNavigate);
   }
 
   if (document.readyState === 'loading') {
