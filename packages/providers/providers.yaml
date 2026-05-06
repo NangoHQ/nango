@@ -6940,6 +6940,47 @@ freshteam:
             example: 'XtoF94LMNyKPbd5AvR1QJh'
             pattern: '^[a-zA-Z0-9_!@#$%^&*()\\-+=]+$'
 
+freshworks:
+    display_name: Freshworks
+    categories:
+        - crm
+        - support
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.hostname}/org/oauth/v2/authorize
+    token_url: https://${connectionConfig.hostname}/org/oauth/v2/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.bundleAlias}
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/freshworks
+    docs_connect: https://nango.dev/docs/api-integrations/freshworks/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Freshworks Hostname
+            description: The hostname of your Freshworks account.
+            format: hostname
+            example: acme.myfreshworks.com
+            prefix: https://
+            doc_section: '#step-1-finding-your-hostname'
+        bundleAlias:
+            type: string
+            title: API Hostname
+            description: The hostname of your Freshworks product used for API calls.
+            format: hostname
+            example: acme.freshservice.com
+            prefix: https://
+            doc_section: '#step-2-finding-your-api-hostname'
+
 front:
     display_name: Front
     categories:
