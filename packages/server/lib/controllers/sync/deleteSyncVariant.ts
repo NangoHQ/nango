@@ -8,7 +8,7 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSch
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
-import type { ApiError, DeleteSyncVariant, ValidationError } from '@nangohq/types';
+import type { DeleteSyncVariant } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -32,31 +32,27 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
 
     const parsedBody = bodyValidation.safeParse(req.body);
     if (!parsedBody.success) {
-        const errResponse: ApiError<'invalid_body', ValidationError[]> = { error: { code: 'invalid_body', errors: zodErrorToHTTP(parsedBody.error) } };
-        res.status(400).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Invalid body', { errors: errResponse.error.errors });
+        const errors = zodErrorToHTTP(parsedBody.error);
+        res.status(400).send({ error: { code: 'invalid_body', errors } });
+        await logCtx.error('Invalid body', { errors });
         await logCtx.failed();
         return;
     }
 
     const parsedParams = paramsValidation.safeParse(req.params);
     if (!parsedParams.success) {
-        const errResponse: ApiError<'invalid_uri_params', ValidationError[]> = {
-            error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(parsedParams.error) }
-        };
-        res.status(400).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Invalid URI parameters', { errors: errResponse.error.errors });
+        const errors = zodErrorToHTTP(parsedParams.error);
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors } });
+        await logCtx.error('Invalid URI parameters', { errors });
         await logCtx.failed();
         return;
     }
 
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
-        const errResponse: ApiError<'invalid_query_params', ValidationError[]> = {
-            error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) }
-        };
-        res.status(400).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Invalid query parameters', { errors: errResponse.error.errors });
+        const errors = zodErrorToHTTP(emptyQuery.error);
+        res.status(400).send({ error: { code: 'invalid_query_params', errors } });
+        await logCtx.error('Invalid query parameters', { errors });
         await logCtx.failed();
         return;
     }
@@ -72,20 +68,16 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
     });
 
     if (params.variant.toLowerCase() === 'base') {
-        const errResponse: ApiError<'invalid_variant'> = {
-            error: { code: 'invalid_variant', message: `Cannot delete protected variant "${params.variant}".` }
-        };
-        res.status(400).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Invalid variant', { variant: params.variant });
+        res.status(400).send({ error: { code: 'invalid_variant', message: `Cannot delete protected variant "${params.variant}".` } });
+        await logCtx.error('Invalid variant', { variant: params.variant });
         await logCtx.failed();
         return;
     }
 
     const { response: connection, error } = await connectionService.getConnection(body.connection_id, body.provider_config_key, environment.id);
     if (error || !connection) {
-        const errResponse: ApiError<'unknown_connection'> = { error: { code: 'unknown_connection' } };
-        res.status(400).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Unknown connection', { connection_id: body.connection_id });
+        res.status(400).send({ error: { code: 'unknown_connection' } });
+        await logCtx.error('Unknown connection', { connection_id: body.connection_id });
         await logCtx.failed();
         return;
     }
@@ -93,9 +85,8 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
 
     const sync = await getSync({ connectionId: connection.id, name: params.name, variant: params.variant });
     if (!sync) {
-        const errResponse: ApiError<'not_found'> = { error: { code: 'not_found' } };
-        res.status(404).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Sync variant not found', { sync_name: params.name, sync_variant: params.variant });
+        res.status(404).send({ error: { code: 'not_found' } });
+        await logCtx.error('Sync variant not found', { sync_name: params.name, sync_variant: params.variant });
         await logCtx.failed();
         return;
     }
@@ -104,15 +95,13 @@ export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res
     try {
         await syncManager.softDeleteSync(sync.id, environment.id, orchestrator);
     } catch {
-        const errResponse: ApiError<'failed_sync_variant_deletion'> = { error: { code: 'failed_sync_variant_deletion' } };
-        res.status(500).send(errResponse);
-        await logCtx.error(errResponse.error.message ?? 'Failed to delete sync variant', { sync_id: sync.id });
+        res.status(500).send({ error: { code: 'failed_sync_variant_deletion' } });
+        await logCtx.error('Failed to delete sync variant', { sync_id: sync.id });
         await logCtx.failed();
         return;
     }
 
-    const successResponse: DeleteSyncVariant['Success'] = { success: true };
-    res.status(200).send(successResponse);
-    await logCtx.info('Sync variant deleted successfully', { sync_id: sync.id });
+    res.status(200).send({ success: true });
+    await logCtx.info('Sync variant deleted successfully', { id: sync.id, name: sync.name, variant: sync.variant });
     await logCtx.success();
 });
