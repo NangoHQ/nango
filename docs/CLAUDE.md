@@ -13,6 +13,10 @@ The scan must end with `success no broken links found`.
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
 
+## Use sentence case for docs titles
+
+Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
+
 ## Keep link maintenance tightly scoped
 
 When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
