@@ -173,14 +173,14 @@ describe('billingEventsS3Export', () => {
                 event_name: 'proxy_test',
                 external_customer_id: '1',
                 timestamp: `${targetDay}T00:00:00.000Z`,
-                properties: { count: '14' }
+                properties: { count: 14 }
             });
             expect(rows).toContainEqual({
                 idempotency_key: `proxy_test:999:${targetDay}`,
                 event_name: 'proxy_test',
                 external_customer_id: '999',
                 timestamp: `${targetDay}T00:00:00.000Z`,
-                properties: { count: '3' }
+                properties: { count: 3 }
             });
         });
     });
@@ -199,10 +199,10 @@ describe('billingEventsS3Export', () => {
                 external_customer_id: '1',
                 timestamp: `${targetDay}T00:00:00.000Z`,
                 properties: {
-                    count: '4',
-                    'telemetry.durationMs': '400',
-                    'telemetry.customLogs': '20',
-                    'telemetry.compute': '800'
+                    count: 4,
+                    'telemetry.durationMs': 400,
+                    'telemetry.customLogs': 20,
+                    'telemetry.compute': 800
                 }
             });
         });
@@ -213,7 +213,7 @@ describe('billingEventsS3Export', () => {
         it('emits summed counts', async () => {
             const rows = await runQuery('webhook_forwards', 'webhook_forwards_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: '8' });
+            expect(rows[0]!.properties).toEqual({ count: 8 });
         });
     });
 
@@ -222,7 +222,7 @@ describe('billingEventsS3Export', () => {
         it('emits summed counts', async () => {
             const rows = await runQuery('billable_actions', 'billable_actions_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: '2' });
+            expect(rows[0]!.properties).toEqual({ count: 2 });
         });
     });
 
@@ -231,7 +231,7 @@ describe('billingEventsS3Export', () => {
         it('emits summed counts', async () => {
             const rows = await runQuery('monthly_active_records', 'monthly_active_records_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: '3' });
+            expect(rows[0]!.properties).toEqual({ count: 3 });
         });
     });
 
@@ -241,7 +241,7 @@ describe('billingEventsS3Export', () => {
         it('emits SUM(avgMerge) day-average across slices', async () => {
             const rows = await runQuery('records', 'records_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: '150' });
+            expect(rows[0]!.properties).toEqual({ count: 150 });
         });
     });
 
@@ -251,7 +251,7 @@ describe('billingEventsS3Export', () => {
         it('emits SUM(avgMerge) day-average across slices', async () => {
             const rows = await runQuery('billable_connections_v2', 'billable_connections_v2_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: '15' });
+            expect(rows[0]!.properties).toEqual({ count: 15 });
         });
     });
 
@@ -298,7 +298,7 @@ interface OrbRow {
     event_name: string;
     external_customer_id: string;
     timestamp: string;
-    properties: Record<string, string>;
+    properties: Record<string, number>;
 }
 
 async function runQuery(canonicalEventName: string, eventName: string): Promise<OrbRow[]> {

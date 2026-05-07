@@ -206,7 +206,10 @@ export function metricRowsSql({
     eventName: string;
     database?: string;
 }): string {
-    const propertyEntries = [`'count', toString(count)`, ...(metric.extraProperties ?? []).map((p) => `'${p.propertyName}', toString(${p.columnName})`)];
+    // Property values are emitted as JSON numbers (Map(String, Float64)) so Orb
+    // billable metrics aggregating with sum/average/max see numeric inputs. JSON
+    // output for integer-valued Float64s renders without a trailing `.0`.
+    const propertyEntries = [`'count', toFloat64(count)`, ...(metric.extraProperties ?? []).map((p) => `'${p.propertyName}', toFloat64(${p.columnName})`)];
 
     return `
         SELECT
