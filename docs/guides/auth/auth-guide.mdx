@@ -38,7 +38,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 ## Capabilities
 
 - **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 700+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
-- **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [build a custom UI](/guides/auth/customize-connect-ui).
+- **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
 
@@ -211,9 +211,9 @@ Once you have the connection ID, fetch credentials whenever you need them:
     <Accordion title="ℹ️ Tags">
       Tags reconcile Nango's auth-success webhook with the right user, org, or entity in your system. Most apps start with: `end_user_id`, `end_user_email`, `organization_id`.
 
-      Tags are also useful for filtering connections via the API and are displayed in the Nango UI. The special keys `end_user_email` and `end_user_display_name` are used in specific UI navigation.
+      Tags are also useful for filtering connections via the API and are displayed in the Nango UI. Set the reserved UI tag keys `end_user_display_name` and `end_user_email` to populate the connections list and connection detail page.
 
-      See [Connection tags](/guides/auth/connection-tags) for more.
+      See [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) for more.
     </Accordion>
 
     `allowed_integrations` controls what the user sees:
@@ -379,6 +379,6 @@ Once you have the connection ID, fetch credentials whenever you need them:
 ## Related guides
 
 - [Share a connect link](/guides/auth/share-connect-link) - send authorization links by email, support tools, or cross-device flows.
-- [Connection tags](/guides/auth/connection-tags) - attribute connections to users, orgs, and other entities.
-- [Customize Connect UI](/guides/auth/customize-connect-ui) - build your own authorization UI.
+- [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - store the right connection-level data in the right field.
+- [Customize Connect UI](/guides/auth/customize-connect-ui) - customize branding or build your own authorization UI.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked or expired credentials.
