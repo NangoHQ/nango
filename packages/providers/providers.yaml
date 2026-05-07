@@ -5246,7 +5246,7 @@ digitalocean:
 digits:
     display_name: Digits
     categories:
-        - finance
+        - accounting
     auth_mode: OAUTH2
     authorization_url: https://connect.digits.com/v1/oauth/authorize
     token_url: https://connect.digits.com/v1/oauth/token
@@ -5265,7 +5265,7 @@ digits:
 digits-mcp:
     display_name: Digits (MCP)
     categories:
-        - finance
+        - accounting
         - mcp
     auth_mode: MCP_OAUTH2
     client_registration: dynamic
