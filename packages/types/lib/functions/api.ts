@@ -1,8 +1,9 @@
 import type { ApiError, Endpoint } from '../api.js';
+import type { OnEventType } from '../scripts/on-events/api.js';
 import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type FunctionType = 'action' | 'sync';
+export type FunctionType = 'action' | 'sync' | 'on-event';
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -93,23 +94,38 @@ export type PostRemoteFunctionDeploy = Endpoint<{
     };
 }>;
 
-export interface NangoFunction {
+interface NangoFunctionBase {
     name: string;
-    type: FunctionType;
     description?: string;
     scopes?: string[];
+}
+
+export interface NangoSyncFunction extends NangoFunctionBase {
+    type: 'sync';
     input?: string;
     returns: string[];
     json_schema: JSONSchema7 | null;
-    /** Cron expression. Sync-only. */
-    runs?: string | null;
-    /** Sync-only. */
-    auto_start?: boolean;
-    /** Sync-only. */
-    track_deletes?: boolean;
+    /** Cron expression. */
+    runs: string | null;
+    auto_start: boolean;
+    track_deletes: boolean;
 }
 
-export interface NangoFunctionDeployed extends NangoFunction {
+export interface NangoActionFunction extends NangoFunctionBase {
+    type: 'action';
+    input?: string;
+    returns: string[];
+    json_schema: JSONSchema7 | null;
+}
+
+export interface NangoOnEventFunction extends NangoFunctionBase {
+    type: 'on-event';
+    event: OnEventType;
+}
+
+export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
+
+interface DeployedMeta {
     id: number;
     enabled: boolean;
     /** ISO-8601 timestamp. */
@@ -117,12 +133,25 @@ export interface NangoFunctionDeployed extends NangoFunction {
     source: FunctionSource;
 }
 
+export type NangoSyncFunctionDeployed = NangoSyncFunction & DeployedMeta;
+export type NangoActionFunctionDeployed = NangoActionFunction & DeployedMeta;
+export type NangoOnEventFunctionDeployed = NangoOnEventFunction & DeployedMeta;
+export type NangoFunctionDeployed = NangoSyncFunctionDeployed | NangoActionFunctionDeployed | NangoOnEventFunctionDeployed;
+
 export type GetIntegrationFunctions = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions';
-    Querystring: { env: string };
+    Querystring: {
+        env: string;
+        type?: FunctionType;
+        page?: number;
+        limit?: number;
+    };
     Params: { providerConfigKey: string };
-    Success: { data: NangoFunctionDeployed[] };
+    Success: {
+        data: NangoFunctionDeployed[];
+        pagination: { total: number; page: number; limit: number };
+    };
 }>;
 
 export type GetProviderTemplates = Endpoint<{

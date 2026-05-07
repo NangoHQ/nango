@@ -60,9 +60,10 @@ describe(`GET ${route}`, () => {
             name: 'issues',
             type: 'sync'
         });
-        expect(issues?.runs).toBeDefined();
-        expect(issues?.auto_start).toBeDefined();
-        expect(issues?.track_deletes).toBeDefined();
+        if (issues?.type !== 'sync') throw new Error('expected issues to be a sync');
+        expect(issues.runs).toBeDefined();
+        expect(issues.auto_start).toBeDefined();
+        expect(issues.track_deletes).toBeDefined();
     });
 
     it('should return an empty array for a provider with no templates', async () => {
