@@ -144,6 +144,8 @@ An accordion should contain:
 - Required arguments or configuration details
 - Important implementation notes
 
+Use `For agents` as the accordion title. Do not add emojis or other decoration to agent accordion titles.
+
 Do not add agent accordions mechanically on every page — only where a genuine programmatic path exists and an agent would need the extra references to complete the step correctly.
 
 ## Workflow for restructuring docs

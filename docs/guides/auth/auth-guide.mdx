@@ -52,7 +52,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Step title="Create a Nango account">
     Sign up for free (no credit card): [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Signup cannot be automated. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango API key from the Environment settings tab > API Keys. Use it as `Authorization: Bearer <NANGO-API-KEY>` in API requests.
 
       The default API key created on signup has full access and is the simplest option.
@@ -76,7 +76,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       </Note>
     </Accordion>
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Create the integration with the API. If you need the provider slug first, list providers and use the matching provider's `name` field:
 
       ```bash
@@ -127,7 +127,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Step title="Test the authorization">
     In the [Connections](https://app.nango.dev/dev/connections) tab, click **Add Test Connection**, pick your integration, and authorize using a test account. The new connection's credentials appear in its *Authorization* tab — securely stored and automatically refreshed.
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Skip the dashboard. Create a connect session and share the returned `connect_link` with the user — they authorize using their test account in the browser, no UI needed on your side:
 
       ```bash
@@ -242,7 +242,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     2. Enable **Send New Connection Creation Webhooks**.
     3. Handle `POST` requests on that route in your backend.
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Webhook URL configuration is dashboard-only — there is no public API for environment settings. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
     </Accordion>
 
@@ -268,7 +268,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Step title="Run the flow">
     Test the auth flow from your app and verify a connection appears in the [Connections](https://app.nango.dev/dev/connections) tab. Failed attempts are inspectable in the **Logs** tab.
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       After the user runs the flow, confirm the connection was created with [`GET /connections`](/reference/backend/http-api/connections/list) — filter by the tags you set in step 4:
 
       ```bash
