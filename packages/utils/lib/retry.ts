@@ -98,7 +98,15 @@ export async function retryWithBackoff<T extends () => any>(fn: T, options?: Bac
     return await backOff(fn, { numOfAttempts: 5, ...options });
 }
 
-export const networkError = ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'ECONNREFUSED', 'EHOSTUNREACH', 'EAI_AGAIN'];
+export const networkError = [
+    'ECONNRESET',
+    'ETIMEDOUT',
+    'ECONNABORTED',
+    'ECONNREFUSED',
+    'EHOSTUNREACH',
+    'EAI_AGAIN',
+    ...(process.env['NANGO_RETRYABLE_NETWORK_ERRORS']?.split(',') ?? [])
+];
 export const nonRetryableNetworkError = ['ENOTFOUND', 'ERRADDRINUSE'];
 export function httpRetryStrategy(error: unknown, _attemptNumber: number): boolean {
     if (!(error instanceof AxiosError)) {
