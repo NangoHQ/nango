@@ -512,18 +512,21 @@ export abstract class NangoActionBase<
             }
 
             const location = response.headers.get('Location');
-            void response.body?.cancel();
 
             if (!location) {
                 return response;
             }
 
             if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
+                void response.body?.cancel();
                 throw new this.ActionError({
                     code: 'too_many_redirects',
                     message: `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`
                 });
             }
+
+            // We're about to follow the redirect; we won't return this response, so cancel its body.
+            void response.body?.cancel();
 
             let nextUrl: URL;
             try {
@@ -553,8 +556,19 @@ export abstract class NangoActionBase<
             if (shouldSwitchToGet) {
                 method = 'GET';
                 body = undefined;
-                headerBag.delete('content-length');
-                headerBag.delete('content-type');
+                // When we rewrite to GET, drop request-body specific headers (native fetch does not forward them).
+                for (const h of [
+                    'content-length',
+                    'content-type',
+                    'content-encoding',
+                    'content-language',
+                    'content-location',
+                    'content-md5',
+                    'content-range',
+                    'transfer-encoding'
+                ]) {
+                    headerBag.delete(h);
+                }
             }
 
             currentUrl = nextUrl;
