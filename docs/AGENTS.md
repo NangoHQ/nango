@@ -9,6 +9,15 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 
 The scan must end with `success no broken links found`.
 
+## Preview docs from the docs directory
+
+When asked for a docs preview, run Mintlify directly from the workspace's `docs/` directory:
+
+```bash
+cd docs
+mintlify dev
+```
+
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
