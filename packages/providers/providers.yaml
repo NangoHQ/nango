@@ -12922,7 +12922,6 @@ paddle:
             title: API Key
             description: Your Paddle API key.
             example: pdl_live_apikey_01kpb*********************_xRs9*********************_A40
-            pattern: '^pdl_[a-z]+_apikey_[a-zA-Z0-9_]+$'
             doc_section: '#step-1-generating-your-api-key'
     connection_config:
         subdomain:
