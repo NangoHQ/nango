@@ -48,6 +48,8 @@ const UNCONTROLLED_FETCH_MAX_REDIRECTS = 20;
 
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
+const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
+
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
@@ -535,6 +537,14 @@ export abstract class NangoActionBase<
                 throw new this.ActionError({
                     code: 'invalid_redirect',
                     message: 'Redirect Location could not be parsed as a URL.'
+                });
+            }
+
+            // Native fetch rejects redirects to non-HTTP(S) schemes.
+            if (!ALLOWED_REDIRECT_PROTOCOLS.has(nextUrl.protocol)) {
+                throw new this.ActionError({
+                    code: 'invalid_redirect',
+                    message: 'Redirect Location must use http: or https:.'
                 });
             }
 

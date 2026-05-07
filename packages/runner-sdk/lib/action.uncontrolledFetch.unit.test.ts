@@ -81,6 +81,18 @@ describe('uncontrolledFetch', () => {
         delete process.env['AWS_LAMBDA_RUNTIME_API'];
     });
 
+    it('rejects redirects to non-HTTP(S) schemes', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { Location: 'data:text/plain,hello' } }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+
+        await expect(action.uncontrolledFetch({ url: new URL('https://example.com/start') })).rejects.toMatchObject({
+            type: 'action_script_runtime_error',
+            payload: { code: 'invalid_redirect' }
+        });
+    });
+
     it('blocks a redirect hop to a denylisted host', async () => {
         process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'] = JSON.stringify(['metadata.google.internal']);
         const fetchMock = vi
