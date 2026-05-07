@@ -1513,6 +1513,7 @@
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
+              "api-integrations/trigger-dev",
               "api-integrations/trigify-io-mcp",
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
