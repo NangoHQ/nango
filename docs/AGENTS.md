@@ -1,5 +1,7 @@
 # Docs guidance for AI agents
 
+This is the source of truth for docs-agent guidance. `CLAUDE.md` imports this file so shared instructions stay in one place.
+
 ## Validate links after every change that touches URLs or anchors
 
 Run `mintlify broken-links` from `docs/` before pushing any change that:
