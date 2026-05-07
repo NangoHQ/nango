@@ -68,6 +68,16 @@ To pin an anchor to a heading, use an inline HTML anchor on the line above:
 
 Browsers honor `id` attributes for fragment scrolling identically to heading-generated IDs.
 
+## Use semantic IDs for guide steps
+
+In Getting started and Guides pages, add semantic `id` props to `<Step>` components so support and sales can deep link to specific setup actions:
+
+```mdx
+<Step id="add-callback-url" title="Add the callback URL">
+```
+
+IDs must describe the stable action or outcome, not the current step number or exact title. For example, use `add-callback-url`, `configure-scopes`, or `generate-session-token`, not `step-3`. If a step is reordered or retitled but the action still exists, keep the same ID and move it with the action.
+
 ## Re-run link rewrites after pulling/merging master
 
 After every pull/merge that touches `docs/`, re-run the same sed against `docs/**/*.mdx` to bring newly imported files in line with the rename. `mintlify broken-links` may not flag these as hard failures if the old paths are kept alive via `redirects` in `docs.json` — they'll resolve via the redirect, but they're stale and should point at the canonical destination.

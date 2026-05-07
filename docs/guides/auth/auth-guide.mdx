@@ -49,7 +49,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 </Tip>
 
 <Steps>
-  <Step title="Create a Nango account">
+  <Step id="create-nango-account" title="Create a Nango account">
     Sign up for free (no credit card): [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
     <Accordion title="For agents">
@@ -61,7 +61,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Create an integration">
+  <Step id="create-integration" title="Create an integration">
     In the dashboard, open the [Integrations](https://app.nango.dev/dev/integrations) tab, click **Configure New Integration**, and pick the API.
 
     <Tip>Each API has a dedicated [Nango documentation page](/integrations/overview) with setup notes and gotchas.</Tip>
@@ -126,7 +126,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Test the authorization">
+  <Step id="test-authorization" title="Test the authorization">
     In the [Connections](https://app.nango.dev/dev/connections) tab, click **Add Test Connection**, pick your integration, and authorize using a test account. The new connection's credentials appear in its *Authorization* tab — securely stored and automatically refreshed.
 
     <Accordion title="For agents">
@@ -149,7 +149,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Configure a custom OAuth callback URL (optional, recommended)">
+  <Step id="configure-custom-oauth-callback-url" title="Configure a custom OAuth callback URL (optional, recommended)">
     For production OAuth apps, a callback URL on your own domain is recommended. Some providers show the callback domain to users.
 
     <a id="custom-oauth-callback-url-optional"></a>
@@ -164,7 +164,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Generate a session token (backend)">
+  <Step id="generate-session-token" title="Generate a session token (backend)">
     Set up a backend endpoint that your frontend will call before each authorization attempt to retrieve a session token from Nango ([API](/reference/backend/http-api/connect/sessions/create) / [Node SDK](/reference/backend/backend-sdk/node#create-a-connect-session)).
 
     You'll need an [API key](/reference/backend/http-api/api-keys) with the `environment:connect_sessions:write` scope (find it in **Environment Settings > API Keys**).
@@ -221,7 +221,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     - **Single integration** — Connect UI sends the user straight to its auth flow.
   </Step>
 
-  <Step title="Trigger the auth flow (frontend)">
+  <Step id="trigger-auth-flow" title="Trigger the auth flow (frontend)">
     Load the Nango frontend SDK, fetch the session token from your backend, and open Connect UI:
 
     <Frame caption="Connect UI authorization flow">
@@ -251,7 +251,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     The pre-built Connect UI is recommended but optional — if you need full UX control, follow [Customize Connect UI](/guides/auth/customize-connect-ui). For email/cross-device flows, see [Share a connect link](/guides/auth/share-connect-link).
   </Step>
 
-  <Step title="Listen for webhooks & save the connection ID (backend)">
+  <Step id="save-connection-id-from-webhook" title="Listen for webhooks & save the connection ID (backend)">
     When authorization succeeds, Nango generates a unique **connection ID**. You use this ID to manage the connection and retrieve its credentials. **You must store it on your side**, attached to the user/org/project that owns the connection — Nango doesn't model that ownership.
 
     Set up the webhook in **Environment Settings**:
@@ -282,7 +282,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     Persist `connectionId` against whichever entity owns the connection in your app.
   </Step>
 
-  <Step title="Build re-authorization">
+  <Step id="build-reauthorization" title="Build re-authorization">
     Credentials can become invalid when users revoke access, providers rotate refresh tokens, scopes change, or an app moves from testing to production. Re-authorization updates an existing connection's credentials while preserving its data and config. Deleting and re-creating the connection wipes that data — prefer re-authorization.
 
     Before showing integration settings, check the connection with `GET /connections/{connectionId}`:
@@ -350,7 +350,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Tabs>
   </Step>
 
-  <Step title="Run the flow">
+  <Step id="run-auth-flow" title="Run the flow">
     Test the auth flow from your app and verify a connection appears in the [Connections](https://app.nango.dev/dev/connections) tab. Failed attempts are inspectable in the **Logs** tab.
 
     <Accordion title="For agents">
