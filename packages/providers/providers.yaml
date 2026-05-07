@@ -19590,6 +19590,31 @@ vtex:
             pattern: '^[A-Z]+$'
             doc_section: '#step-2-generating-an-api-key'
 
+videoask:
+    display_name: VideoAsk
+    categories:
+        - video
+    auth_mode: OAUTH2
+    authorization_url: https://auth.videoask.com/authorize
+    token_url: https://auth.videoask.com/oauth/token
+    disable_pkce: true
+    default_scopes:
+        - openid
+        - profile
+        - email
+        - offline_access
+    authorization_params:
+        response_type: code
+        audience: https://api.videoask.com/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.videoask.com
+    docs: https://nango.dev/docs/api-integrations/videoask
+    setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
+
 wakatime:
     display_name: Wakatime
     categories:
