@@ -1,5 +1,11 @@
 # Docs guidance for AI agents
 
+This is the source of truth for docs-agent guidance. `CLAUDE.md` imports this file so shared instructions stay in one place.
+
+## Start from latest master
+
+Before creating a docs worktree or branch, fetch `origin` and base the work on the latest `origin/master`. If a branch already exists, rebase it onto current `origin/master` before opening or updating a pull request, and resolve conflicts locally before pushing.
+
 ## Validate links after every change that touches URLs or anchors
 
 Run `mintlify broken-links` from `docs/` before pushing any change that:
@@ -12,6 +18,8 @@ The scan must end with `success no broken links found`.
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
+
+Docs pull requests should be ready for review by default. Only open a draft PR when the user explicitly asks for one or the change is intentionally incomplete.
 
 ## Use sentence case for docs titles
 
@@ -143,6 +151,8 @@ An accordion should contain:
 - Relevant references (API paths, CLI commands, SDK methods)
 - Required arguments or configuration details
 - Important implementation notes
+
+Use `For agents` as the accordion title. Do not add emojis or other decoration to agent accordion titles.
 
 Do not add agent accordions mechanically on every page — only where a genuine programmatic path exists and an agent would need the extra references to complete the step correctly.
 
