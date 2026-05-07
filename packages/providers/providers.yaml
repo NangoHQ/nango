@@ -5319,6 +5319,45 @@ digitalocean:
         base_url: https://api.digitalocean.com
     docs: https://nango.dev/docs/integrations/all/digitalocean
 
+digits:
+    display_name: Digits
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://connect.digits.com/v1/oauth/authorize
+    token_url: https://connect.digits.com/v1/oauth/token
+    body_format: json
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://connect.digits.com
+    docs: https://nango.dev/docs/api-integrations/digits
+    setup_guide_url: https://nango.dev/docs/api-integrations/digits/how-to-register-your-own-digits-api-oauth-app
+
+digits-mcp:
+    display_name: Digits (MCP)
+    categories:
+        - accounting
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.digits.com/oauth/authorize
+    token_url: https://api.digits.com/oauth/token
+    registration_url: https://api.digits.com/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.digits.com
+    docs: https://nango.dev/docs/api-integrations/digits-mcp
+
 discord:
     display_name: Discord
     categories:
