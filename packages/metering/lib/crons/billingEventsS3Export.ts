@@ -37,19 +37,8 @@ export interface MetricSpec {
     extraProperties?: { propertyName: string; columnName: string }[];
 }
 
-// One row per (account, day) per event_name. Compatible Orb aggregations:
-// `sum(properties.X)` and `average(properties.X)`.
-//
-// Not supported by this architecture:
-//   - `count(events)` — Orb counts received events; we ship 1/day so it always reports 1.
-//     Migrate the Orb metric to `sum(properties.count)` to get parity.
-//   - `max(properties.X)` — sum and max don't commute. Summing per-slice maxStates
-//     overcounts the account-level peak because slice peaks happen at different
-//     timestamps. Recovering `max(account_total)` needs either a chained MV that
-//     captures per-snapshot account totals before maxing, or reading raw_events at
-//     export time. Today's `daily_*` MVs collapse the temporal axis and can't.
-//
-// Reference: https://linear.app/nango/document/orb-billable-metrics-2e0859635bc1
+// `count(events)` and `max(properties.X)` Orb aggregations are not supported by this
+// pre-aggregated layout. See https://linear.app/nango/document/orb-billable-metrics-2e0859635bc1
 export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'proxy',
