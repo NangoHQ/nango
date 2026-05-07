@@ -879,7 +879,10 @@
           {
             "group": "700+ APIs & Integrations",
             "pages": [
+              "api-integrations/1password-events",
               "integrations/all/1password-scim",
+              "api-integrations/1password-users",
+              "api-integrations/1password-users/connect",
               "api-integrations/3cx",
               "api-integrations/8x8",
               "api-integrations/absorb-lms",

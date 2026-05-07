@@ -1,4 +1,36 @@
 # yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
+1password-events:
+    display_name: 1Password (Events API)
+    categories:
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.domain}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/auth/introspect
+    docs: https://nango.dev/docs/api-integrations/1password-events
+    docs_connect: https://nango.dev/docs/api-integrations/1password-events/connect
+    connection_config:
+        domain:
+            type: string
+            title: Events API Domain
+            description: The regional Events API domain for your 1Password account.
+            example: events.1password.com
+            order: 1
+            pattern: '^events\.1password\.(com|ca|eu)$'
+    credentials:
+        apiKey:
+            type: string
+            title: Bearer Token
+            description: Your 1Password Events Reporting bearer token
+            pattern: '^eyJ[a-zA-Z0-9_-]+\.ey[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$'
+            example: eyJhbGciOiJF*************.*************CJ9.eyJ**************************************************.***********
+            doc_section: '#step-2-generate-a-bearer-token'
+
 1password-scim:
     display_name: 1Password (SCIM)
     categories:
@@ -32,6 +64,50 @@
             description: Your 1Password SCIM API Key
             secret: true
             doc_section: '#step-1-retrieve-your-1password-scim-api-key'
+
+1password-users:
+    display_name: 1Password (Users API)
+    categories:
+        - iam
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.domain}/v1beta1/users/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.domain}/v1beta1/accounts/${connectionConfig.accountId}
+    docs: https://nango.dev/docs/api-integrations/1password-users
+    docs_connect: https://nango.dev/docs/api-integrations/1password-users/connect
+    connection_config:
+        domain:
+            type: string
+            title: API Domain
+            description: The regional API domain for your 1Password account.
+            example: api.1password.com
+            pattern: '^api\.1password\.(com|ca|eu)$'
+            order: 1
+        accountId:
+            type: string
+            title: Account ID
+            description: Your 1Password account ID.
+            example: XLQMR47VZPBKJHSGWNCYFDE3T9
+            pattern: '^[A-Z0-9]{26}$'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your 1Password OAuth application Client ID.
+            format: uuid
+            example: 5ab87915-2deb-429c-a1e2-8b0495900f45
+            doc_section: '#step-3-obtain-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your 1Password OAuth application Client Secret.
+            secret: true
+            doc_section: '#step-3-obtain-your-client-credentials'
+
 3cx:
     display_name: 3CX
     categories:
