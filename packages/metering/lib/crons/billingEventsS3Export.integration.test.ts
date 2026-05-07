@@ -105,7 +105,8 @@ const functionExecutionsFixtures: ClickhouseRawUsageEvent[] = genN({
     day: targetDay,
     type: 'usage.function_executions',
     accountId: 1,
-    attributes: { telemetryBag: { durationMs: 100, customLogs: 5, proxyCalls: 1, memoryGb: 1 } }
+    // Each event: durationMs=100, customLogs=5, memoryGb=2 → compute_gbms = duration_ms × memoryGb = 200.
+    attributes: { telemetryBag: { durationMs: 100, customLogs: 5, proxyCalls: 1, memoryGb: 2 } }
 });
 
 const webhookForwardsFixtures: ClickhouseRawUsageEvent[] = genN({ n: 8, day: targetDay, type: 'usage.webhook_forward', accountId: 1 });
@@ -185,7 +186,8 @@ describe('billingEventsS3Export', () => {
     });
 
     // Counter with extra telemetry properties. Account 1 has 4 events, each with
-    // duration_ms=100 and custom_logs=5 → expected count=4, durationMs=400, customLogs=20.
+    // duration_ms=100, custom_logs=5, memoryGb=2 → count=4, durationMs=400,
+    // customLogs=20, compute=4*100*2=800.
     describe('function_executions', () => {
         it('carries count + telemetry properties', async () => {
             const rows = await runQuery('function_executions', 'function_executions_test');
@@ -199,7 +201,8 @@ describe('billingEventsS3Export', () => {
                 properties: {
                     count: '4',
                     'telemetry.durationMs': '400',
-                    'telemetry.customLogs': '20'
+                    'telemetry.customLogs': '20',
+                    'telemetry.compute': '800'
                 }
             });
         });

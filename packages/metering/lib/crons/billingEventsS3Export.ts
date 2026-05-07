@@ -56,14 +56,16 @@ export const METRICS: MetricSpec[] = [
                 account_id, day,
                 SUM(value) AS count,
                 SUM(duration_ms) AS duration_ms,
-                SUM(custom_logs) AS custom_logs
+                SUM(custom_logs) AS custom_logs,
+                SUM(compute_gbms) AS compute_gbms
             FROM ${database}.daily_function_executions
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
         `,
         extraProperties: [
             { propertyName: 'telemetry.durationMs', columnName: 'duration_ms' },
-            { propertyName: 'telemetry.customLogs', columnName: 'custom_logs' }
+            { propertyName: 'telemetry.customLogs', columnName: 'custom_logs' },
+            { propertyName: 'telemetry.compute', columnName: 'compute_gbms' }
         ]
     },
     {
@@ -136,9 +138,9 @@ export function billingEventsS3ExportCron(): void {
     }
 
     cron.schedule(`*/${cronMinutes} * * * *`, () => {
-        (async () => {
-            await exec();
-        })();
+        exec().catch((err: unknown) => {
+            logger.error('Cron tick failed unexpectedly', err);
+        });
     });
 }
 
@@ -221,11 +223,13 @@ function exportSql({ metric, day, runTimestamp, eventName }: { metric: MetricSpe
     const dayCompact = day.replace(/-/g, '');
     const url = `https://${bucket}.s3.amazonaws.com/${dayCompact}/${runTimestamp}_${eventName}.jsonl`;
 
+    // Argument order matters: ClickHouse 25.8+ docs show s3(url, format, extra_credentials(...)).
+    // Reversing the last two raises a syntax error.
     return `
         INSERT INTO FUNCTION s3(
             '${url}',
-            extra_credentials(role_arn = '${roleArn}'),
-            'JSONEachRow'
+            'JSONEachRow',
+            extra_credentials(role_arn = '${roleArn}')
         )
         ${metricRowsSql({ metric, day, eventName })}
     `;
