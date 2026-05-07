@@ -12,6 +12,7 @@ The scan must end with `success no broken links found`.
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
+Do not add `[codex]` or any other prefix before `docs:`; docs PR title checks require `docs:` to be the first characters of the title.
 
 ## Use sentence case for docs titles
 
