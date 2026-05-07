@@ -43,6 +43,11 @@ import type * as z from 'zod';
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
+/** Max hops when following redirects manually (denylist checked per hop). */
+const UNCONTROLLED_FETCH_MAX_REDIRECTS = 20;
+
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
+
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
@@ -471,24 +476,77 @@ export abstract class NangoActionBase<
         body?: string | null;
     }): Promise<Response> {
         const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
-        if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(options.url.toString(), baseUrlOverrideDenylist)) {
-            throw new this.ActionError({
-                code: 'url_not_allowed',
-                message: 'This URL is not allowed by server configuration.'
-            });
-        }
 
-        const props: RequestInit = {
-            headers: new Headers(options.headers),
-            method: options.method || 'GET'
-            // TODO: use agent
+        const throwIfDenied = (absoluteUrl: string): void => {
+            if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                throw new this.ActionError({
+                    code: 'url_not_allowed',
+                    message: 'This URL is not allowed by server configuration.'
+                });
+            }
         };
 
-        if (options.body) {
-            props.body = options.body;
-        }
+        throwIfDenied(options.url.toString());
 
-        return await fetch(options.url, props);
+        let currentUrl = new URL(options.url.href);
+        let method: HTTP_METHOD = options.method || 'GET';
+        let body: string | undefined = options.body ?? undefined;
+        const headerBag = new Headers(options.headers);
+
+        for (let redirectsFollowed = 0; ; redirectsFollowed++) {
+            const props: RequestInit = {
+                headers: new Headers(headerBag),
+                method,
+                redirect: 'manual'
+                // TODO: use agent
+            };
+
+            if (body) {
+                props.body = body;
+            }
+
+            const response = await fetch(currentUrl, props);
+
+            if (!REDIRECT_STATUS_CODES.has(response.status)) {
+                return response;
+            }
+
+            const location = response.headers.get('Location');
+            void response.body?.cancel();
+
+            if (!location) {
+                return response;
+            }
+
+            if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
+                throw new this.ActionError({
+                    code: 'too_many_redirects',
+                    message: `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`
+                });
+            }
+
+            let nextUrl: URL;
+            try {
+                nextUrl = new URL(location, currentUrl);
+            } catch {
+                throw new this.ActionError({
+                    code: 'invalid_redirect',
+                    message: 'Redirect Location could not be parsed as a URL.'
+                });
+            }
+
+            throwIfDenied(nextUrl.toString());
+
+            // Match common fetch redirect semantics: 301/302/303 use GET without body; 307/308 preserve method and body.
+            if (response.status === 303 || response.status === 301 || response.status === 302) {
+                method = 'GET';
+                body = undefined;
+                headerBag.delete('content-length');
+                headerBag.delete('Content-Length');
+            }
+
+            currentUrl = nextUrl;
+        }
     }
 
     /**
