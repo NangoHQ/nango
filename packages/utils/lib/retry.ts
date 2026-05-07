@@ -98,6 +98,16 @@ export async function retryWithBackoff<T extends () => any>(fn: T, options?: Bac
     return await backOff(fn, { numOfAttempts: 5, ...options });
 }
 
+function parseCommaSeparatedEnvList(raw: string | undefined): string[] {
+    if (!raw) {
+        return [];
+    }
+    return raw
+        .split(',')
+        .map((part) => part.trim())
+        .filter((part) => part.length > 0);
+}
+
 export const networkError = [
     'ECONNRESET',
     'ETIMEDOUT',
@@ -105,7 +115,7 @@ export const networkError = [
     'ECONNREFUSED',
     'EHOSTUNREACH',
     'EAI_AGAIN',
-    ...(process.env['NANGO_RETRYABLE_NETWORK_ERRORS']?.split(',') ?? [])
+    ...parseCommaSeparatedEnvList(process.env['NANGO_RETRYABLE_NETWORK_ERRORS'])
 ];
 export const nonRetryableNetworkError = ['ENOTFOUND', 'ERRADDRINUSE'];
 export function httpRetryStrategy(error: unknown, _attemptNumber: number): boolean {
