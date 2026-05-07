@@ -314,7 +314,7 @@ await nango.delete(config); // DELETE request
         The number of retries in case of failure (with exponential back-off). Optional, default 0.
       </ResponseField>
       <ResponseField name="retryOn" type="number[]">
-        Array of additional status codes to retry a request in addition to the 5xx, 429, ECONNRESET, ETIMEDOUT, and ECONNABORTED
+        Array of HTTP status codes to retry, in addition to those specified [below](#when-a-failed-request-is-retried).
       </ResponseField>
       <ResponseField name="baseUrlOverride" type="string">
         The API base URL. Can be omitted if the base URL is configured for this API in the [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml).
@@ -349,17 +349,26 @@ await nango.delete(config); // DELETE request
 
 ## HTTP request retries
 
-To configure retries when HTTP requests fail, use the `retries` and `retryOn` parameters in your [HTTP requests](#http-requests).
+Configure behavior with two optional fields on your [HTTP request](#http-requests) config: [`retries`](#param-retries) and [`retryOn`](#param-retry-on).
 
-The following will apply:
+### When a failed request is retried
 
-- By default, retries are performed when:
-  - HTTP Status: `>= 500`, `429`
-  - Network error: `ECONNRESET`, `ETIMEDOUT`, and `ECONNABORTED`.
-  - Pre-configured headers for providers in ([providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml)).
-- Use the `retryOn` parameter to specify an array of additional status codes to retry on.
-- By default, no retries are performed: `retries` default to `0`
-- The retry starting delay is `3000ms`, the delay between attempts is multiplied by `2` each time (exponential backoff) and is capped at `10 minutes`.
+Nango retries only when the failure looks **transient**. Exact rules depend on the integration:
+
+| Field | Condition for Retry |
+| --- | --- |
+| **Network Error** | If code is one of:<br /> `ECONNRESET`, `ETIMEDOUT`, `ECONNABORTED`, `ECONNREFUSED`, `EHOSTUNREACH`, `EAI_AGAIN` |
+| **Transient HTTP Error**  | If provider specific `proxy.retry.error_code` is configured in [providers.yaml](https://github.com/NangoHQ/nango/blob/master/packages/providers/providers.yaml), only matching statuses are retried.<br /><br />Otherwise, by default, status codes `401`, `429`, `5xx` are retried. <br /><br /> Additional status specified in [`retryOn`](#param-retry-on) are always retried in addition to the above statuses. |
+
+If nothing in the table applies, the error is **not** retried.
+
+<Note>
+Status `401` is retryable so Nango can recover after refreshing the connection with potentially updated credentials. If a `401` happens and the connection credentials **do not change** on the next fetch, Nango treats that as a definitive authentication failure and stops performing additional retries
+</Note>
+
+### Backoff
+
+Between retry attempts Nango waits with **exponential backoff**: first wait **3000ms**, then each wait doubles, capped at **10 minutes**.
 
 ## Logging
 

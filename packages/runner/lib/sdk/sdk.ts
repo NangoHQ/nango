@@ -125,7 +125,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 await this.sendLogToPersist(log);
             },
             onError: (props) => {
-                if (props.retry.reason === 'status_code_401') {
+                if (props.retry.reason.includes('code_401')) {
                     // We just want to clear the cache in case credentials have changed and keep retrying
                     this.memoizedConnections.clear();
                     if (!canRetryOn401) {
