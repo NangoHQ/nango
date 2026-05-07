@@ -883,7 +883,10 @@
           {
             "group": "700+ APIs & Integrations",
             "pages": [
+              "api-integrations/1password-events",
               "integrations/all/1password-scim",
+              "api-integrations/1password-users",
+              "api-integrations/1password-users/connect",
               "api-integrations/3cx",
               "api-integrations/8x8",
               "api-integrations/absorb-lms",
@@ -1520,6 +1523,7 @@
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
+              "api-integrations/trigger-dev",
               "api-integrations/trigify-io-mcp",
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
@@ -1604,6 +1608,7 @@
               "api-integrations/veeva-vault",
               "api-integrations/vercel",
               "api-integrations/vercel-mcp",
+              "api-integrations/videoask",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
