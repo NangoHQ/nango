@@ -18607,6 +18607,61 @@ trigify-io-mcp:
             accept: application/json,text/event-stream
     docs: https://nango.dev/docs/api-integrations/trigify-io-mcp
 
+trigger-dev:
+    display_name: Trigger.dev
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        connection_config:
+            environment: ${connectionConfig.environment}
+            projectRef: ${connectionConfig.projectRef}
+            triggerBranch: ${connectionConfig.triggerBranch}
+    docs: https://nango.dev/docs/api-integrations/trigger-dev
+    docs_connect: https://nango.dev/docs/api-integrations/trigger-dev/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Hostname
+            description: The API hostname.
+            example: api.trigger.dev
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-4-set-your-base-url'
+        projectRef:
+            type: string
+            title: Project Ref
+            description: Your Trigger.dev project identifier.
+            example: proj_1234567890
+            optional: true
+            doc_section: '#step-2-find-your-project-ref'
+        environment:
+            type: string
+            title: Environment
+            description: The target environment.
+            example: prod
+            optional: true
+            doc_section: '#step-3-find-your-environment'
+        triggerBranch:
+            type: string
+            title: Preview Branch
+            description: Target a specific preview branch for environment variable operations.
+            example: feature-xyz
+            optional: true
+            doc_section: '#step-5-set-your-preview-branch'
+    credentials:
+        apiKey:
+            type: string
+            title: Secret Key
+            description: Your Trigger.dev secret key or personal access token.
+            pattern: '^tr_(dev|prod|stg|preview|pat)_[a-zA-Z0-9]+$'
+            example: tr_dev_********************
+            doc_section: '#step-1-get-your-secret-key-or-personal-access-token'
+
 triple-whale:
     display_name: Triple Whale
     categories:
