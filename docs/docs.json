@@ -1066,6 +1066,8 @@
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
               "integrations/all/digitalocean",
+              "api-integrations/digits",
+              "api-integrations/digits-mcp",
               "api-integrations/discord",
               "integrations/all/discourse",
               "integrations/all/dixa",
