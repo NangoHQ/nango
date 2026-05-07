@@ -537,12 +537,24 @@ export abstract class NangoActionBase<
 
             throwIfDenied(nextUrl.toString());
 
-            // Match common fetch redirect semantics: 301/302/303 use GET without body; 307/308 preserve method and body.
-            if (response.status === 303 || response.status === 301 || response.status === 302) {
+            // Native fetch strips sensitive headers when redirecting to a different origin.
+            // Because we follow redirects manually, we must replicate that to avoid credential leaks.
+            if (currentUrl.origin !== nextUrl.origin) {
+                headerBag.delete('authorization');
+                headerBag.delete('proxy-authorization');
+                headerBag.delete('cookie');
+            }
+
+            // Match common fetch redirect semantics:
+            // - 303: always switch to GET (drop body)
+            // - 301/302: switch to GET only for POST (preserve PUT/PATCH/DELETE, etc.)
+            // - 307/308: preserve method and body
+            const shouldSwitchToGet = response.status === 303 || ((response.status === 301 || response.status === 302) && method.toUpperCase() === 'POST');
+            if (shouldSwitchToGet) {
                 method = 'GET';
                 body = undefined;
                 headerBag.delete('content-length');
-                headerBag.delete('Content-Length');
+                headerBag.delete('content-type');
             }
 
             currentUrl = nextUrl;
