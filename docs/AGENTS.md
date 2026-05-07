@@ -13,6 +13,8 @@ The scan must end with `success no broken links found`.
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
 
+Docs pull requests should be ready for review by default. Only open a draft PR when the user explicitly asks for one or the change is intentionally incomplete.
+
 ## Use sentence case for docs titles
 
 Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
