@@ -124,7 +124,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
 </Tip>
 
 <Steps>
-  <Step title="Install and initialize">
+  <Step id="install-and-initialize" title="Install and initialize">
     Install the Nango CLI globally:
 
     ```bash
@@ -140,7 +140,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     This creates a `nango-integrations/` folder with example configuration. The `.nango` subdirectory must be committed because the CLI uses it to track deployed state.
   </Step>
 
-  <Step title="Configure API keys">
+  <Step id="configure-api-keys" title="Configure API keys">
     Add your API keys to a `.env` file inside `nango-integrations/`. The CLI currently reads these API keys from `NANGO_SECRET_KEY_<ENV_NAME>` variables:
 
     ```bash
@@ -185,7 +185,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     </Accordion>
   </Step>
 
-  <Step title="Understand the folder layout">
+  <Step id="understand-folder-layout" title="Understand the folder layout">
     Each integration gets its own folder, with subfolders by function type. `index.ts` imports every function file you want deployed:
 
     ```
@@ -207,7 +207,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     Each new function file must be imported in `index.ts`, for example `import './github/syncs/github-issues';`.
   </Step>
 
-  <Step title="Run dev mode">
+  <Step id="run-dev-mode" title="Run dev mode">
     Keep dev mode running while you write code:
 
     ```bash
@@ -217,7 +217,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     `nango dev` continuously type-checks and compiles your function files, surfacing errors immediately.
   </Step>
 
-  <Step title="Choose a function type">
+  <Step id="choose-function-type" title="Choose a function type">
     Choose the function type by starting from the event that should cause Nango to run your logic.
 
     <a id="trigger-asynchronously"></a>
@@ -234,7 +234,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     </Tip>
   </Step>
 
-  <Step title="Build the function">
+  <Step id="build-function" title="Build the function">
     Follow the specific function type guide for implementation details:
 
     - [Sync functions](/guides/functions/syncs/sync-functions) — build scheduled data replication, checkpoints, metadata-driven parameters, and record consumption.
@@ -245,7 +245,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     For shared primitives, use [Storage](/guides/functions/storage) for connection metadata and [Data validation](/guides/functions/data-validation) for input, output, and provider response validation.
   </Step>
 
-  <Step title="Test and deploy">
+  <Step id="test-and-deploy" title="Test and deploy">
     Dry run a function against a real connection:
 
     ```bash
@@ -267,7 +267,7 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
 
-  <Step title="Receive webhooks from Nango">
+  <Step id="receive-nango-webhooks" title="Receive webhooks from Nango">
     Nango sends webhooks to your app when important events happen: a connection is created, a sync run finishes, an async action completes, or an external webhook is forwarded.
 
     Configure your app endpoint in **Environment Settings > Webhook URLs**. Webhook URLs are environment-specific, and you can configure up to two URLs per environment. Your endpoint should accept `POST` requests, verify the `X-Nango-Hmac-Sha256` signature, and return a 2xx response after processing.
