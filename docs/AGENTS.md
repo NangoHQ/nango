@@ -27,6 +27,7 @@ mintlify dev
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
+Do not add `[codex]` or any other prefix before `docs:`; docs PR title checks require `docs:` to be the first characters of the title.
 
 Docs pull requests should be ready for review by default. Only open a draft PR when the user explicitly asks for one or the change is intentionally incomplete.
 
