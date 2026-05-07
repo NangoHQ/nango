@@ -191,4 +191,26 @@ describe('uncontrolledFetch', () => {
         expect(headers.get('content-encoding')).toBeNull();
         expect(headers.get('x-test')).toBe('1');
     });
+
+    it('preserves GET on 303 redirects (no forced rewrite)', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(new Response(null, { status: 303, headers: { Location: 'https://example.com/next' } }))
+            .mockResolvedValueOnce(new Response(null, { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action } = await makeActionInstance();
+        const res = await action.uncontrolledFetch({
+            url: new URL('https://example.com/start'),
+            method: 'GET',
+            headers: { authorization: 'Bearer secret' }
+        });
+
+        expect(res.status).toBe(200);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+
+        const secondCallInit = fetchMock.mock.calls[1]![1] as RequestInit;
+        expect(secondCallInit.method).toBe('GET');
+        expect(secondCallInit.body).toBeUndefined();
+    });
 });

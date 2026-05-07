@@ -549,10 +549,13 @@ export abstract class NangoActionBase<
             }
 
             // Match common fetch redirect semantics:
-            // - 303: always switch to GET (drop body)
+            // - 303: switch to GET only if method is neither GET nor HEAD (drop body)
             // - 301/302: switch to GET only for POST (preserve PUT/PATCH/DELETE, etc.)
             // - 307/308: preserve method and body
-            const shouldSwitchToGet = response.status === 303 || ((response.status === 301 || response.status === 302) && method.toUpperCase() === 'POST');
+            const upperMethod = method.toUpperCase();
+            const shouldSwitchToGet =
+                (response.status === 303 && upperMethod !== 'GET' && upperMethod !== 'HEAD') ||
+                ((response.status === 301 || response.status === 302) && upperMethod === 'POST');
             if (shouldSwitchToGet) {
                 method = 'GET';
                 body = undefined;
