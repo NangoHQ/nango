@@ -6,6 +6,7 @@ import { DefaultTransport } from '@nangohq/pubsub';
 import { Clickhouse, getUsageTracker, migrate as migrateUsage } from '@nangohq/usage';
 import { initSentry, once, report } from '@nangohq/utils';
 
+import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
 import { envs } from './env.js';
 import { TeamProcessor } from './processors/team.js';
@@ -54,6 +55,7 @@ try {
 
     // Crons
     exportUsageCron();
+    billingEventsS3ExportCron();
 
     // Graceful shutdown
     const close = once(async () => {
