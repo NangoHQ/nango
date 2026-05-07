@@ -2,6 +2,10 @@
 
 This is the source of truth for docs-agent guidance. `CLAUDE.md` imports this file so shared instructions stay in one place.
 
+## Start from latest master
+
+Before creating a docs worktree or branch, fetch `origin` and base the work on the latest `origin/master`. If a branch already exists, rebase it onto current `origin/master` before opening or updating a pull request, and resolve conflicts locally before pushing.
+
 ## Validate links after every change that touches URLs or anchors
 
 Run `mintlify broken-links` from `docs/` before pushing any change that:
