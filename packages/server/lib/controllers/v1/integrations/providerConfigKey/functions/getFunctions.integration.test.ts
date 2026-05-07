@@ -1,66 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
-import type { DBEnvironment, DBSyncConfig, IntegrationConfig } from '@nangohq/types';
-
 const route = '/api/v1/integrations/:providerConfigKey/functions';
 let api: Awaited<ReturnType<typeof runServer>>;
-
-async function insertSyncConfig({
-    env,
-    integration,
-    name,
-    type
-}: {
-    env: DBEnvironment;
-    integration: IntegrationConfig;
-    name: string;
-    type: 'sync' | 'action';
-}): Promise<void> {
-    const now = new Date();
-    await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert({
-        environment_id: env.id,
-        sync_name: name,
-        type,
-        file_location: 'file_location',
-        nango_config_id: integration.id!,
-        version: '0.0.0',
-        source: 'repo',
-        active: true,
-        runs: type === 'sync' ? 'every day' : null,
-        track_deletes: false,
-        auto_start: false,
-        webhook_subscriptions: [],
-        enabled: true,
-        created_at: now,
-        updated_at: now,
-        models: []
-    });
-}
-
-async function insertOnEventScript({
-    integration,
-    name,
-    event = 'POST_CONNECTION_CREATION'
-}: {
-    integration: IntegrationConfig;
-    name: string;
-    event?: 'POST_CONNECTION_CREATION' | 'PRE_CONNECTION_DELETION' | 'VALIDATE_CONNECTION';
-}): Promise<void> {
-    await db.knex.from('on_event_scripts').insert({
-        config_id: integration.id!,
-        name,
-        file_location: 'file_location',
-        version: '0.0.1',
-        active: true,
-        event,
-        sdk_version: null
-    });
-}
 
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
@@ -124,12 +69,25 @@ describe(`GET ${route}`, () => {
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
-        await insertSyncConfig({ env, integration, name: 'my-sync', type: 'sync' });
-        await insertSyncConfig({ env, integration, name: 'my-action', type: 'action' });
-        await insertOnEventScript({ integration, name: 'my-on-event' });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-sync',
+            type: 'sync'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-action',
+            type: 'action'
+        });
+        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -143,22 +101,35 @@ describe(`GET ${route}`, () => {
         expect(res.json.pagination).toStrictEqual({ total: 3, page: 0, limit: 20 });
         expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
-            { name: 'my-on-event', type: 'on-event' },
+            { name: 'test-script', type: 'on-event' },
             { name: 'my-sync', type: 'sync' }
         ]);
 
         const onEventEntry = res.json.data.find((f) => f.type === 'on-event');
-        expect(onEventEntry?.event).toBe('post-connection-creation');
+        expect(onEventEntry?.type === 'on-event' && onEventEntry.event).toBe('post-connection-creation');
         expect(onEventEntry?.source).toBe('repo');
     });
 
     it('should filter by type=on-event', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
-        await insertSyncConfig({ env, integration, name: 'my-sync', type: 'sync' });
-        await insertSyncConfig({ env, integration, name: 'my-action', type: 'action' });
-        await insertOnEventScript({ integration, name: 'my-on-event' });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-sync',
+            type: 'sync'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'my-action',
+            type: 'action'
+        });
+        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -172,15 +143,22 @@ describe(`GET ${route}`, () => {
         expect(res.json.pagination).toStrictEqual({ total: 1, page: 0, limit: 20 });
         expect(res.json.data).toHaveLength(1);
         expect(res.json.data[0]?.type).toBe('on-event');
-        expect(res.json.data[0]?.name).toBe('my-on-event');
+        expect(res.json.data[0]?.name).toBe('test-script');
     });
 
     it('should paginate results', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         for (let i = 0; i < 25; i++) {
-            await insertSyncConfig({ env, integration, name: `sync-${i.toString().padStart(2, '0')}`, type: 'sync' });
+            await seeders.createSyncSeeds({
+                connectionId: connection.id,
+                environment_id: env.id,
+                nango_config_id: integration.id!,
+                sync_name: `sync-${i.toString().padStart(2, '0')}`,
+                type: 'sync'
+            });
         }
 
         const page0 = await api.fetch(route, {
