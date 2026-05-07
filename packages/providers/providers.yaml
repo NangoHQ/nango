@@ -18585,10 +18585,10 @@ trigger-dev:
         base_url: https://${connectionConfig.baseUrl}
         headers:
             authorization: Bearer ${apiKey}
-            x-trigger-branch: ${connectionConfig.triggerBranch}
         connection_config:
             environment: ${connectionConfig.environment}
             projectRef: ${connectionConfig.projectRef}
+            triggerBranch: ${connectionConfig.triggerBranch}
     docs: https://nango.dev/docs/api-integrations/trigger-dev
     docs_connect: https://nango.dev/docs/api-integrations/trigger-dev/connect
     connection_config:
@@ -18627,7 +18627,7 @@ trigger-dev:
             type: string
             title: Secret Key
             description: Your Trigger.dev secret key or personal access token.
-            pattern: '^tr_(dev|prod|pat)_[a-zA-Z0-9]+$'
+            pattern: '^tr_(dev|prod|stg|preview|pat)_[a-zA-Z0-9]+$'
             example: tr_dev_********************
             doc_section: '#step-1-get-your-secret-key-or-personal-access-token'
 
