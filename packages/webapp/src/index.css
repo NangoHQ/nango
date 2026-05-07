@@ -737,6 +737,23 @@
 .mantine-Prism-code {
     font-family: 'Geist Mono';
     background-color: var(--color-bg-surface) !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) var(--color-bg-subtle);
+}
+
+.mantine-Prism-code::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.mantine-Prism-code::-webkit-scrollbar-thumb {
+    background-color: var(--color-border-strong);
+    border-radius: 5px;
+    border: 2px solid var(--color-bg-subtle);
+}
+
+.mantine-Prism-code::-webkit-scrollbar-track {
+    background-color: var(--color-bg-subtle);
 }
 
 .scrollbar-app {

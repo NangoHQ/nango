@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { ConnectionSideInfo } from './ConnectionSideInfo';
+import { ConnectionTabLayout } from './ConnectionTabLayout';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -11,15 +11,12 @@ import { useDeleteConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['data']; providerConfigKey: string }> = ({
-    connectionData,
-    providerConfigKey
-}) => {
+export const SettingsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
     const { connection } = connectionData;
     const { data } = useEnvironment(env);
     const environment = data?.environmentAndAccount?.environment;
@@ -46,7 +43,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
     return (
         <>
             {DialogComponent}
-            <div className="flex justify-between items-start gap-11">
+            <ConnectionTabLayout connectionData={connectionData}>
                 <div className="w-full flex items-center justify-between">
                     <span className="text-body-medium-semi text-text-primary">Connection deletion</span>
                     <PermissionGate condition={canDeleteConnection} asChild>
@@ -72,9 +69,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
                         )}
                     </PermissionGate>
                 </div>
-
-                <ConnectionSideInfo connectionData={connectionData} />
-            </div>
+            </ConnectionTabLayout>
         </>
     );
 };
