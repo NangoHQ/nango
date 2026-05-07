@@ -12933,7 +12933,7 @@ paddle:
             example: api
             prefix: https://
             suffix: .paddle.com
-            doc_section: '#step-1-choosing-your-environment'
+            doc_section: '#step-2-choose-your-environment'
             order: 1
 
 passportal:
