@@ -26,15 +26,12 @@ export interface MetricSpec {
     canonicalEventName: string;
     /**
      * SQL fragment that produces rows shaped:
-     *   account_id, day, count, [extra_property_columns...]
-     * for the chosen day, GROUPed BY (account_id, day).
+     *   account_id, day, properties
+     * for the chosen day, GROUPed BY (account_id, day). `properties` must be a
+     * Map(String, Float64) so Orb billable metrics see numeric inputs (JSON
+     * output for integer-valued Float64s renders without a trailing `.0`).
      */
     select: (day: string, database: string) => string;
-    /**
-     * Extra `properties.*` keys beyond `count`. Each entry maps Orb property
-     * name -> SQL column name produced by `select`.
-     */
-    extraProperties?: { propertyName: string; columnName: string }[];
 }
 
 // `count(events)` and `max(properties.X)` Orb aggregations are not supported by this
@@ -43,7 +40,9 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'proxy',
         select: (day, database) => `
-            SELECT account_id, day, SUM(value) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
             FROM ${database}.daily_proxy
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
@@ -54,24 +53,23 @@ export const METRICS: MetricSpec[] = [
         select: (day, database) => `
             SELECT
                 account_id, day,
-                SUM(value) AS count,
-                SUM(duration_ms) AS duration_ms,
-                SUM(custom_logs) AS custom_logs,
-                SUM(compute_gbms) AS compute_gbms
+                map(
+                    'count',                toFloat64(SUM(value)),
+                    'telemetry.durationMs', toFloat64(SUM(duration_ms)),
+                    'telemetry.customLogs', toFloat64(SUM(custom_logs)),
+                    'telemetry.compute',    toFloat64(SUM(compute_gbms))
+                ) AS properties
             FROM ${database}.daily_function_executions
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
-        `,
-        extraProperties: [
-            { propertyName: 'telemetry.durationMs', columnName: 'duration_ms' },
-            { propertyName: 'telemetry.customLogs', columnName: 'custom_logs' },
-            { propertyName: 'telemetry.compute', columnName: 'compute_gbms' }
-        ]
+        `
     },
     {
         canonicalEventName: 'webhook_forwards',
         select: (day, database) => `
-            SELECT account_id, day, SUM(value) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
             FROM ${database}.daily_webhook_forwards
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
@@ -80,7 +78,9 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'billable_actions',
         select: (day, database) => `
-            SELECT account_id, day, SUM(value) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
             FROM ${database}.daily_actions
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
@@ -89,7 +89,9 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'monthly_active_records',
         select: (day, database) => `
-            SELECT account_id, day, SUM(value) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
             FROM ${database}.daily_mar
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
@@ -98,7 +100,9 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'records',
         select: (day, database) => `
-            SELECT account_id, day, ROUND(SUM(avg_val)) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(ROUND(SUM(avg_val)))) AS properties
             FROM (
                 SELECT avgMerge(value) AS avg_val, account_id, day, environment_id, integration_id, connection_id, model
                 FROM ${database}.daily_records
@@ -111,7 +115,9 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'billable_connections_v2',
         select: (day, database) => `
-            SELECT account_id, day, ROUND(SUM(avg_val)) AS count
+            SELECT
+                account_id, day,
+                map('count', toFloat64(ROUND(SUM(avg_val)))) AS properties
             FROM (
                 SELECT avgMerge(value) AS avg_val, account_id, day, environment_id, integration_id
                 FROM ${database}.daily_connections
@@ -206,18 +212,13 @@ export function metricRowsSql({
     eventName: string;
     database?: string;
 }): string {
-    // Property values are emitted as JSON numbers (Map(String, Float64)) so Orb
-    // billable metrics aggregating with sum/average/max see numeric inputs. JSON
-    // output for integer-valued Float64s renders without a trailing `.0`.
-    const propertyEntries = [`'count', toFloat64(count)`, ...(metric.extraProperties ?? []).map((p) => `'${p.propertyName}', toFloat64(${p.columnName})`)];
-
     return `
         SELECT
             concat('${eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
             '${eventName}' AS event_name,
             toString(account_id) AS external_customer_id,
             concat(toString(day), 'T00:00:00.000Z') AS timestamp,
-            map(${propertyEntries.join(', ')}) AS properties
+            properties
         FROM (${metric.select(day, database)})
     `;
 }
