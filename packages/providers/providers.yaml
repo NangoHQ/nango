@@ -4712,34 +4712,34 @@ customer-io:
     categories:
         - marketing
         - analytics
-    auth_mode: API_KEY
+    auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.customer.io
-        headers:
-            authorization: Basic ${apiKey}
-        verification:
-            method: POST
-            endpoint: /v1/identify
-            headers:
-                content-type: application/json
-            body: '{"userId":"nango-test"}'
     docs: https://nango.dev/docs/api-integrations/customer-io
     docs_connect: https://nango.dev/docs/api-integrations/customer-io/connect
     connection_config:
         subdomain:
             type: string
             title: Subdomain
-            description: Use 'cdp' for the US region or 'cdp-eu' for the EU region.
+            description: The region to where your instance is hosted.
             pattern: '^cdp(-eu)?$'
+            example: cdp
+            order: 1
             doc_section: '#step-2-choose-your-subdomain'
     credentials:
-        apiKey:
+        username:
             type: string
             title: API Key
             description: Your Customer.io Pipelines API key.
             pattern: '^[a-f0-9]{20}$'
             example: 36c7a4***********ab022a3
             doc_section: '#step-1-getting-authentication-credentials'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 cursor:
     display_name: Cursor
