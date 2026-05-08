@@ -17155,6 +17155,42 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopware:
+    display_name: Shopware (Admin API)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.shopwareUrl}/api/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.shopwareUrl}/api
+    docs: https://nango.dev/docs/api-integrations/shopware
+    docs_connect: https://nango.dev/docs/api-integrations/shopware/connect
+    credentials:
+        client_id:
+            type: string
+            title: Access key ID
+            description: The Access key ID of yout integration.
+            doc_section: '#step-2-create-a-shopware-integration'
+        client_secret:
+            type: string
+            title: Secret access key
+            description: The Secret access key of your integration.
+            secret: true
+            doc_section: '#step-2-create-a-shopware-integration'
+    connection_config:
+        shopwareUrl:
+            type: string
+            title: Shopware URL
+            description: The hostname of your Shopware instance.
+            example: myshop.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-shopware-url'
+
 shopworks:
     display_name: ShopWorks
     categories:

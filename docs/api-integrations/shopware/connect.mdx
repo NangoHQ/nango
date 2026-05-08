@@ -1,0 +1,46 @@
+---
+title: 'Shopware (Admin API) - How do I link my account?'
+sidebarTitle: 'Shopware (Admin API)'
+description: 'Create a Shopware (Admin API) integration and connect it to Nango'
+---
+
+# Overview
+
+To authenticate with the Shopware Admin API, you need:
+1. **Shopware URL** - The base URL of your Shopware instance (e.g. `myshop.example.com`)
+2. **Access key ID** - The access key ID from your Shopware integration
+3. **Secret access key** - The secret access key from your Shopware integration
+
+This guide walks you through creating a Shopware integration and connecting it to Nango.
+
+### Prerequisites
+
+- A Shopware 6 instance (version 6.3.3.0 or newer)
+- Admin access to your Shopware instance
+
+### Instructions
+
+#### Step 1: Find your Shopware URL
+
+Your Shopware URL is the hostname of your shop, for example `myshop.example.com`. You'll enter only the hostname — not a path or trailing slash.
+
+#### Step 2: Create a Shopware integration
+
+1. Log in to your Shopware admin panel.
+2. Go to **Settings** > **System** > **Integrations**.
+3. Click **Create integration**.
+4. Enter a name for the integration.
+5. Decide whether the integration should have administrator permissions, or select a specific role from the dropdown.
+6. Click **Save**.
+
+After saving, Shopware displays your **Access key ID** and **Secret access key**. Copy both values and store the secret access key in a safe place — it is only shown once. If you lose it, you can regenerate it under **Regenerate API access key**, but note that this also regenerates the access key ID.
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Shopware (Admin API).
+2. Enter your **Shopware URL**, **Access key ID**, and **Secret access key** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/shopware/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Shopware (Admin API).

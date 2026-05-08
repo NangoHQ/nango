@@ -1506,6 +1506,7 @@
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopware",
               "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
