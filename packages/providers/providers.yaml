@@ -4833,6 +4833,40 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+customer-io:
+    display_name: Customer.io
+    categories:
+        - marketing
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.customer.io
+    docs: https://nango.dev/docs/api-integrations/customer-io
+    docs_connect: https://nango.dev/docs/api-integrations/customer-io/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The region to where your instance is hosted.
+            pattern: '^cdp(-eu)?$'
+            example: cdp
+            order: 1
+            doc_section: '#step-2-choose-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Customer.io Pipelines API key.
+            pattern: '^[a-f0-9]{20}$'
+            example: 36c7a4***********ab022a3
+            doc_section: '#step-1-getting-authentication-credentials'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 cursor:
     display_name: Cursor
     categories:
