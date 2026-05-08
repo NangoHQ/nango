@@ -1152,6 +1152,7 @@ anthropic:
     categories:
         - productivity
         - dev-tools
+        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://api.anthropic.com
@@ -1721,6 +1722,7 @@ attio:
     display_name: Attio
     categories:
         - crm
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://app.attio.com/authorize
     token_url: https://app.attio.com/oauth/token
@@ -4618,7 +4620,6 @@ confluence-basic:
     display_name: Confluence (Basic Auth)
     categories:
         - knowledge-base
-        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.subdomain}.atlassian.net
@@ -12880,6 +12881,7 @@ openai:
     categories:
         - productivity
         - dev-tools
+        - popular
     auth_mode: API_KEY
     proxy:
         base_url: https://api.openai.com
@@ -13103,6 +13105,7 @@ outlook:
     display_name: Outlook
     categories:
         - communication
+        - popular
     alias: microsoft
     docs: https://nango.dev/docs/api-integrations/outlook
     setup_guide_url: https://nango.dev/docs/api-integrations/outlook/how-to-register-your-own-outlook-api-oauth-app
@@ -16239,6 +16242,7 @@ sap-odata-oauth2-cc:
     display_name: SAP S/4HANA Cloud (Client Credentials)
     categories:
         - erp
+        - popular
     token_request_auth_method: basic
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.subdomain}.authentication.${connectionConfig.region}.hana.ondemand.com/oauth/token
@@ -16713,6 +16717,7 @@ servicenow:
     display_name: ServiceNow
     categories:
         - productivity
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
     token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
@@ -16797,6 +16802,7 @@ sharepoint-online:
     categories:
         - storage
         - communication
+        - popular
     alias: microsoft
     post_connection_script: onedrivePostConnection
     docs: https://nango.dev/docs/api-integrations/sharepoint-online
@@ -17861,6 +17867,7 @@ stripe-app:
     display_name: Stripe App
     categories:
         - payment
+        - popular
     auth_mode: OAUTH2
     authorization_url: https://marketplace.stripe.com/oauth/v2/authorize
     token_url: https://api.stripe.com/v1/oauth/token
@@ -19292,6 +19299,7 @@ ukg-pro:
     display_name: UKG Pro
     categories:
         - hr
+        - popular
     auth_mode: BASIC
     proxy:
         base_url: https://${connectionConfig.hostname}
@@ -20240,7 +20248,6 @@ workday-oauth:
     display_name: Workday (OAuth)
     categories:
         - hr
-        - popular
     auth_mode: OAUTH2
     token_request_auth_method: basic
     authorization_url: https://${connectionConfig.authorizationDomain}/${connectionConfig.tenant}/authorize
@@ -20562,7 +20569,6 @@ xero-oauth2-cc:
     display_name: Xero (Client Credentials)
     categories:
         - accounting
-        - popular
     auth_mode: OAUTH2_CC
     token_url: https://identity.xero.com/connect/token
     token_request_auth_method: basic
