@@ -245,8 +245,8 @@ describe('Sync config create', () => {
 
         vi.spyOn(db.knex, 'from').mockReturnValue({
             where: vi.fn().mockReturnValue({
-                orderBy: vi.fn().mockReturnValue({
-                    first: vi.fn().mockResolvedValue(null)
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
                 })
             })
         } as any);
@@ -307,8 +307,8 @@ describe('Sync config models_json_schema handling', () => {
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'from').mockReturnValue({
             where: vi.fn().mockReturnValue({
-                orderBy: vi.fn().mockReturnValue({
-                    first: vi.fn().mockResolvedValue(null)
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
                 })
             })
         } as any);
