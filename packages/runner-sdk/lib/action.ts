@@ -44,7 +44,7 @@ const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
 /** Max hops when following redirects manually (denylist checked per hop). */
-const UNCONTROLLED_FETCH_MAX_REDIRECTS = 20;
+const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
 
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 
@@ -519,16 +519,15 @@ export abstract class NangoActionBase<
                 return response;
             }
 
+            // We're about to follow the redirect; we won't return this response, so cancel its body.
+            void response.body?.cancel();
+
             if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
-                void response.body?.cancel();
                 throw new this.ActionError({
                     code: 'too_many_redirects',
                     message: `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`
                 });
             }
-
-            // We're about to follow the redirect; we won't return this response, so cancel its body.
-            void response.body?.cancel();
 
             let nextUrl: URL;
             try {
