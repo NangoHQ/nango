@@ -1543,6 +1543,7 @@
               "api-integrations/squareup",
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
+              "api-integrations/statamic",
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
