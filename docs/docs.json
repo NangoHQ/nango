@@ -861,6 +861,7 @@
               "integrations/all/expensify",
               "api-integrations/facebook",
               "api-integrations/fellow",
+              "api-integrations/fern",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",

@@ -6345,6 +6345,34 @@ fellow:
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-api-key'
 
+fern:
+    display_name: Fern (Public API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            fern_api_key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/fern
+    docs_connect: https://nango.dev/docs/api-integrations/fern/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Fern API key
+            description: Your Fern API key.
+            doc_section: '#step-1-generate-your-fern-api-key'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Docs URL
+            description: The domain of your Fern docs site.
+            example: docs.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-docs-url'
+
 freeagent:
     display_name: FreeAgent
     categories:
