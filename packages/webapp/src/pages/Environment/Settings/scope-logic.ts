@@ -16,8 +16,11 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         group: 'Integrations',
         items: [
             { value: 'environment:integrations:list', label: 'list', credentials: 'environment:integrations:list_credentials' },
+            { value: 'environment:integrations:list_functions', label: 'list functions' },
             { value: 'environment:integrations:read', label: 'read', credentials: 'environment:integrations:read_credentials' },
-            { value: 'environment:integrations:write', label: 'write' }
+            { value: 'environment:integrations:create', label: 'create' },
+            { value: 'environment:integrations:update', label: 'update' },
+            { value: 'environment:integrations:delete', label: 'delete' }
         ]
     },
     {
@@ -25,7 +28,9 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         items: [
             { value: 'environment:connections:list', label: 'list', credentials: 'environment:connections:list_credentials' },
             { value: 'environment:connections:read', label: 'read', credentials: 'environment:connections:read_credentials' },
-            { value: 'environment:connections:write', label: 'write' }
+            { value: 'environment:connections:create', label: 'create' },
+            { value: 'environment:connections:update', label: 'update' },
+            { value: 'environment:connections:delete', label: 'delete' }
         ]
     },
     { group: 'Connect Sessions', items: [{ value: 'environment:connect_sessions:write', label: 'write' }] },
@@ -34,7 +39,9 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         items: [
             { value: 'environment:syncs:read', label: 'read' },
             { value: 'environment:syncs:execute', label: 'execute' },
-            { value: 'environment:syncs:manage', label: 'manage' }
+            { value: 'environment:syncs:update', label: 'update' },
+            { value: 'environment:syncs:variant:create', label: 'create variant' },
+            { value: 'environment:syncs:variant:delete', label: 'delete variant' }
         ]
     },
     { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
@@ -47,9 +54,40 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     },
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
-    { group: 'Config', items: [{ value: 'environment:config:read', label: 'read' }] },
+    { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
+
+// Legacy scopes kept for backward compatibility — accepted by the API but not exposed in the create-key UI.
+// See `expandLegacyScope` for the mapping to new scopes.
+export const LEGACY_SCOPES: readonly string[] = [
+    'environment:integrations:write',
+    'environment:connections:write',
+    'environment:syncs:manage',
+    'environment:config:read',
+    'environment:config:*'
+] as const;
+
+/**
+ * Expands a legacy scope into the equivalent new scopes. Used for displaying
+ * existing keys that still carry legacy scopes.
+ */
+export function expandLegacyScope(scope: string): string[] {
+    switch (scope) {
+        case 'environment:integrations:write':
+            return ['environment:integrations:create', 'environment:integrations:update', 'environment:integrations:delete'];
+        case 'environment:connections:write':
+            return ['environment:connections:create', 'environment:connections:update', 'environment:connections:delete'];
+        case 'environment:syncs:manage':
+            return ['environment:syncs:update', 'environment:syncs:variant:create', 'environment:syncs:variant:delete'];
+        case 'environment:config:read':
+            return ['environment:variables:read', 'environment:integrations:list_functions'];
+        case 'environment:config:*':
+            return ['environment:variables:read', 'environment:integrations:list_functions'];
+        default:
+            return [scope];
+    }
+}
 
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
@@ -88,7 +126,9 @@ export function groupWildcard(group: ScopeGroup): string | null {
 
 export function isScopeSelected(scope: string, selectedScopes: string[]): boolean {
     if (selectedScopes.includes(scope)) return true;
-    return selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)));
+    if (selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)))) return true;
+    // Legacy scope expansion — a legacy scope grants its mapped new scopes
+    return selectedScopes.some((s) => LEGACY_SCOPES.includes(s) && expandLegacyScope(s).includes(scope));
 }
 
 export function toggleScope(scope: string, credentialChild: string | undefined, selectedScopes: string[]): string[] {

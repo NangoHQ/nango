@@ -38,13 +38,35 @@ describe('isScopeSelected', () => {
     it('empty scopes returns false', () => {
         expect(isScopeSelected('environment:deploy', [])).toBe(false);
     });
+
+    it('legacy environment:integrations:write covers create/update/delete', () => {
+        expect(isScopeSelected('environment:integrations:create', ['environment:integrations:write'])).toBe(true);
+        expect(isScopeSelected('environment:integrations:update', ['environment:integrations:write'])).toBe(true);
+        expect(isScopeSelected('environment:integrations:delete', ['environment:integrations:write'])).toBe(true);
+    });
+
+    it('legacy environment:connections:write covers create/update/delete', () => {
+        expect(isScopeSelected('environment:connections:create', ['environment:connections:write'])).toBe(true);
+        expect(isScopeSelected('environment:connections:update', ['environment:connections:write'])).toBe(true);
+        expect(isScopeSelected('environment:connections:delete', ['environment:connections:write'])).toBe(true);
+    });
+
+    it('legacy environment:syncs:manage covers update/variant:create/variant:delete', () => {
+        expect(isScopeSelected('environment:syncs:update', ['environment:syncs:manage'])).toBe(true);
+        expect(isScopeSelected('environment:syncs:variant:create', ['environment:syncs:manage'])).toBe(true);
+        expect(isScopeSelected('environment:syncs:variant:delete', ['environment:syncs:manage'])).toBe(true);
+    });
+
+    it('legacy environment:config:read covers variables:read and integrations:list_functions', () => {
+        expect(isScopeSelected('environment:variables:read', ['environment:config:read'])).toBe(true);
+        expect(isScopeSelected('environment:integrations:list_functions', ['environment:config:read'])).toBe(true);
+    });
 });
 
 describe('expandScopes', () => {
     it('environment:* expands to all individual scopes', () => {
         const expanded = expandScopes(['environment:*']);
         expect(expanded).toEqual(ALL_INDIVIDUAL_SCOPES);
-        expect(expanded.length).toBe(21);
     });
 
     it('group wildcard expands to group scopes', () => {
@@ -52,9 +74,12 @@ describe('expandScopes', () => {
         expect(expanded).toEqual([
             'environment:integrations:list',
             'environment:integrations:list_credentials',
+            'environment:integrations:list_functions',
             'environment:integrations:read',
             'environment:integrations:read_credentials',
-            'environment:integrations:write'
+            'environment:integrations:create',
+            'environment:integrations:update',
+            'environment:integrations:delete'
         ]);
     });
 
@@ -65,7 +90,7 @@ describe('expandScopes', () => {
     it('mixed wildcards and individual scopes', () => {
         const expanded = expandScopes(['environment:integrations:*', 'environment:deploy']);
         expect(expanded).toContain('environment:integrations:list');
-        expect(expanded).toContain('environment:integrations:write');
+        expect(expanded).toContain('environment:integrations:create');
         expect(expanded).toContain('environment:deploy');
         expect(expanded).not.toContain('environment:connections:list');
     });
@@ -129,7 +154,9 @@ describe('toggleScope', () => {
         expect(result).not.toContain('environment:integrations:list_credentials');
         expect(result).toContain('environment:integrations:read');
         expect(result).toContain('environment:integrations:read_credentials');
-        expect(result).toContain('environment:integrations:write');
+        expect(result).toContain('environment:integrations:create');
+        expect(result).toContain('environment:integrations:update');
+        expect(result).toContain('environment:integrations:delete');
     });
 
     it('preserves other scopes when removing', () => {
@@ -178,7 +205,9 @@ describe('toggleCredential', () => {
         expect(result).toContain('environment:integrations:list');
         expect(result).toContain('environment:integrations:read');
         expect(result).toContain('environment:integrations:read_credentials');
-        expect(result).toContain('environment:integrations:write');
+        expect(result).toContain('environment:integrations:create');
+        expect(result).toContain('environment:integrations:update');
+        expect(result).toContain('environment:integrations:delete');
     });
 
     it('preserves other scopes', () => {
@@ -222,10 +251,10 @@ describe('toggleGroup', () => {
     });
 
     it('checking group removes individual scopes and stores wildcard', () => {
-        const result = toggleGroup(integrations, ['environment:integrations:list', 'environment:integrations:write']);
+        const result = toggleGroup(integrations, ['environment:integrations:list', 'environment:integrations:create']);
         expect(result).toEqual(['environment:integrations:*']);
         expect(result).not.toContain('environment:integrations:list');
-        expect(result).not.toContain('environment:integrations:write');
+        expect(result).not.toContain('environment:integrations:create');
     });
 
     it('preserves other scopes when toggling group', () => {
@@ -241,12 +270,20 @@ describe('allGroupScopes', () => {
         const scopes = allGroupScopes(integrations);
         expect(scopes).toContain('environment:integrations:list');
         expect(scopes).toContain('environment:integrations:list_credentials');
-        expect(scopes).toHaveLength(5);
+        expect(scopes).toContain('environment:integrations:create');
+        expect(scopes).toContain('environment:integrations:update');
+        expect(scopes).toContain('environment:integrations:delete');
     });
 
     it('groups without credentials have no extra scopes', () => {
         const syncs = SCOPE_GROUPS.find((g) => g.group === 'Syncs')!;
         const scopes = allGroupScopes(syncs);
-        expect(scopes).toEqual(['environment:syncs:read', 'environment:syncs:execute', 'environment:syncs:manage']);
+        expect(scopes).toEqual([
+            'environment:syncs:read',
+            'environment:syncs:execute',
+            'environment:syncs:update',
+            'environment:syncs:variant:create',
+            'environment:syncs:variant:delete'
+        ]);
     });
 });
