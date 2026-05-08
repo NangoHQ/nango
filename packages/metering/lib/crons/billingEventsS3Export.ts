@@ -13,7 +13,7 @@ const logger = getLogger('cron.billingEventsS3Export');
 const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
-const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX;
+const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
 const LOCK_TTL_MS_CAP = 30 * 60 * 1000; // hard cap; the export query is seconds, no reason to hold a lock for hours
