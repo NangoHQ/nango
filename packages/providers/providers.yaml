@@ -17684,7 +17684,7 @@ statamic:
         - cms
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.baseUrl}/api
+        base_url: https://${connectionConfig.baseUrl}
         headers:
             authorization: Bearer ${apiKey}
     docs: https://nango.dev/docs/api-integrations/statamic

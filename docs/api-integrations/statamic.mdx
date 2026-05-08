@@ -22,7 +22,7 @@ Connect to Statamic with Nango and see data flow in 2 minutes.
 
             ```bash
             curl "https://api.nango.dev/proxy/collections" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Statamic with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/collections',
