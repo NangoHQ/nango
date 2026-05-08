@@ -17173,13 +17173,13 @@ shopware:
             type: string
             title: Access key ID
             description: The Access key ID of yout integration.
-            doc_section: '#step-1-create-a-shopware-integration'
+            doc_section: '#step-2-create-a-shopware-integration'
         client_secret:
             type: string
             title: Secret access key
             description: The Secret access key of your integration.
             secret: true
-            doc_section: '#step-1-create-a-shopware-integration'
+            doc_section: '#step-2-create-a-shopware-integration'
     connection_config:
         shopwareUrl:
             type: string
