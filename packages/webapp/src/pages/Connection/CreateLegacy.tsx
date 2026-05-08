@@ -920,7 +920,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     <div className="flex text-white text-sm">
                                                         <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
                                                         <a
-                                                            href="https://nango.dev/docs/guides/api-authorization/authorize-in-your-app-default-ui#apis-requiring-connection-specific-configuration-for-authorization"
+                                                            href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue hover:text-text-light-blue ml-1"
@@ -1306,12 +1306,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     Integration
                                 </Link>{' '}
                                 first to create a Connection. Follow the{' '}
-                                <a
-                                    href="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
-                                    className="text-text-blue"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
+                                <a href="https://nango.dev/docs/guides/auth/auth-guide" className="text-text-blue" target="_blank" rel="noreferrer">
                                     Authorize an API guide
                                 </a>{' '}
                                 for more instructions.

@@ -1,0 +1,11 @@
+---
+title: 'Authentication'
+---
+
+Use an [API key](/reference/backend/http-api/api-keys) as a Bearer token in the `Authorization` header. API keys are managed in **Environment Settings > API Keys** in the Nango UI.
+
+```
+Authorization: Bearer <NANGO-API-KEY>
+```
+
+Each API key has [scopes](/reference/backend/http-api/api-keys#scopes) that control which endpoints it can access. A key without the required scope will receive a `403 Forbidden` response.

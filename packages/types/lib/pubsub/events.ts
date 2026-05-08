@@ -15,7 +15,18 @@ interface EventBase<TSubject extends string, TType extends string, TPayload exte
 
 // All events
 type EnforceEventBase<T extends EventBase<any, any, any>> = T;
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent>;
+// Lambda keep-warm (jobs invokes tenant-scoped readiness on shared routing pool)
+export type LambdaKeepWarmInvokeEvent = EventBase<
+    'lambda_keep_warm',
+    'lambda_keep_warm.invoke',
+    {
+        accountId: number;
+        environmentId: number;
+        provisionedConcurrency: number;
+    }
+>;
+
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent>;
 
 // User events
 export type UserCreatedEvent = EventBase<

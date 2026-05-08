@@ -1,7 +1,6 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -97,7 +96,6 @@ export const postPublicTrigger = asyncWrapper<PostPublicTrigger>(async (req, res
     }
 
     const { success, error } = await syncManager.runSyncCommand({
-        recordsService,
         orchestrator,
         environment,
         providerConfigKey,

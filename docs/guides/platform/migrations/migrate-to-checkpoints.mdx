@@ -37,7 +37,7 @@ Checkpoints also replace the `syncType: 'incremental'` field in your sync declar
 
 2. **Rigid type.** The value was always a timestamp managed by Nango. Some APIs use cursors, page tokens, or composite markers to track progress — `lastSyncDate` couldn't accommodate these.
 
-Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/functions/checkpoints).
+Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/functions/syncs/checkpoints).
 
 # Migration steps
 
@@ -185,6 +185,6 @@ Because the first post-migration run starts fresh, it may take longer than usual
 
 ## Related guides
 
-- [Checkpoints](/guides/functions/checkpoints) - understand the new checkpoint model.
-- [Sync functions](/guides/functions/sync-functions) - update sync implementations.
+- [Checkpoints](/guides/functions/syncs/checkpoints) - understand the new checkpoint model.
+- [Sync functions](/guides/functions/syncs/sync-functions) - update sync implementations.
 - [Testing](/guides/functions/testing) - test checkpoint filtering.

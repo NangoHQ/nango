@@ -173,7 +173,7 @@ If your use case requires accessing record payloads from Nango's cache beyond th
 You can delete connections through:
 
 - **Dashboard**: Navigate to the connection and click "Delete"
-- **API**: Call the [delete connection endpoint](/reference/api/connections/delete)
+- **API**: Call the [delete connection endpoint](/reference/backend/http-api/connections/delete)
 - **SDK**: Use the `deleteConnection` method in any of our backend SDKs
 
 ### Automatic cleanup
@@ -356,7 +356,7 @@ We will make reasonable efforts to communicate breaking changes in advance.
 
 Nango supports scoped API keys, allowing you to follow the principle of least privilege when granting programmatic access to your environments. Each API key can be restricted to specific operations — for example, a CI/CD pipeline key that can only deploy, or a backend service key that can read connections but not manage integrations.
 
-For details on available scopes, advised profiles, and key management, see the [API Keys reference](/reference/api-keys).
+For details on available scopes, advised profiles, and key management, see the [API Keys reference](/reference/backend/http-api/api-keys).
 
 <Tip>
 **Questions about security?** Please reach out in the [Slack community](https://nango.dev/slack) or contact security@nango.dev.
@@ -364,7 +364,7 @@ For details on available scopes, advised profiles, and key management, see the [
 
 ## Related guides
 
-- [API keys](/reference/api-keys) - create scoped keys for production access.
-- [Auth guide](/guides/auth/overview) - keep provider credentials out of your app.
+- [API keys](/reference/backend/http-api/api-keys) - create scoped keys for production access.
+- [Auth guide](/guides/auth/auth-guide) - keep provider credentials out of your app.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked OAuth credentials.
 - [Self-host Nango](/guides/platform/self-hosting) - review deployment and data ownership options.

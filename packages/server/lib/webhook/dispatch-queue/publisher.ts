@@ -1,7 +1,7 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 
-import { metrics } from '@nangohq/utils';
+import { metrics, report } from '@nangohq/utils';
 
 import { runWithConcurrencyLimit } from '../runWithConcurrencyLimit.js';
 
@@ -10,6 +10,7 @@ import type { WebhookDispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;
 const DEFAULT_PUBLISH_CONCURRENCY = 10;
+export const SQS_BATCH_MAX_BYTES = 1_048_576;
 
 export interface DispatchQueuePublisherProps {
     sqs: SQSClient;
@@ -23,6 +24,12 @@ export interface DispatchQueuePublisherProps {
 export interface PublishResult {
     enqueued: number;
     failed: number;
+    failedActivityLogIds: string[];
+}
+
+export interface PreparedDispatchMessage {
+    message: WebhookDispatchMessage;
+    byteSize: number;
 }
 
 interface BatchPublishResult extends PublishResult {
@@ -59,13 +66,13 @@ export class DispatchQueuePublisher {
      * caller can treat them as a metric/trace concern, not an HTTP 500 (provider retries
      * are worse).
      */
-    async publish(messages: WebhookDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
+    async publish(messages: PreparedDispatchMessage[], messageGroupId: string): Promise<PublishResult> {
         if (messages.length === 0) {
-            return { enqueued: 0, failed: 0 };
+            return { enqueued: 0, failed: 0, failedActivityLogIds: [] };
         }
 
         const activeSpan = tracer.scope().active();
-        const firstMessage = messages[0]!;
+        const firstMessage = messages[0]!.message;
         const batches = chunk(messages, this.batchSize);
         const span = tracer.startSpan('webhook.dispatch.publish', {
             ...(activeSpan ? { childOf: activeSpan } : {}),
@@ -88,6 +95,7 @@ export class DispatchQueuePublisher {
 
                 const enqueued = results.reduce((sum, r) => sum + r.enqueued, 0);
                 const failed = results.reduce((sum, r) => sum + r.failed, 0);
+                const failedActivityLogIds = results.flatMap((r) => r.failedActivityLogIds);
                 const retriedEntries = results.reduce((sum, r) => sum + r.retriedEntries, 0);
                 const retriedBatches = results.filter((r) => r.retriedEntries > 0).length;
 
@@ -109,7 +117,7 @@ export class DispatchQueuePublisher {
                     metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider });
                 }
 
-                return { enqueued, failed };
+                return { enqueued, failed, failedActivityLogIds };
             } catch (err) {
                 span.setTag('error', err);
                 throw err;
@@ -119,20 +127,48 @@ export class DispatchQueuePublisher {
         });
     }
 
-    private async sendBatch(batch: WebhookDispatchMessage[], messageGroupId: string): Promise<BatchPublishResult> {
+    private async sendBatch(batch: PreparedDispatchMessage[], messageGroupId: string): Promise<BatchPublishResult> {
         const entries = batch.map((message, idx) => toEntry(message, idx, messageGroupId));
 
         const first = await this.trySend(entries);
-        const failedIndices = first.failedIds.map((id) => entryIdToIndex(id));
+        const failedIndices = first.failedIds.flatMap((id) => {
+            const index = entryIdToIndex(id);
+            if (index === null) {
+                report(new Error('webhook_dispatch_invalid_failed_entry_id'), { entryId: id });
+                return [];
+            }
+
+            return [index];
+        });
+        const invalidFailedCount = first.failedIds.length - failedIndices.length;
         if (failedIndices.length === 0) {
-            return { enqueued: batch.length, failed: 0, retriedEntries: 0 };
+            return {
+                enqueued: batch.length - invalidFailedCount,
+                failed: invalidFailedCount,
+                failedActivityLogIds: [],
+                retriedEntries: 0
+            };
         }
 
         const retryEntries = failedIndices.map((i) => entries[i]).filter((e): e is SendMessageBatchRequestEntry => e !== undefined);
         const second = await this.trySend(retryEntries);
 
-        const enqueued = batch.length - second.failedIds.length;
-        return { enqueued, failed: second.failedIds.length, retriedEntries: failedIndices.length };
+        const enqueued = batch.length - invalidFailedCount - second.failedIds.length;
+        return {
+            enqueued,
+            failed: invalidFailedCount + second.failedIds.length,
+            failedActivityLogIds: second.failedIds.flatMap((id) => {
+                const index = entryIdToIndex(id);
+                if (index === null) {
+                    report(new Error('webhook_dispatch_invalid_failed_entry_id'), { entryId: id });
+                    return [];
+                }
+
+                const activityLogId = batch[index]?.message.activityLogId;
+                return activityLogId ? [activityLogId] : [];
+            }),
+            retriedEntries: failedIndices.length
+        };
     }
 
     private async trySend(entries: SendMessageBatchRequestEntry[]): Promise<{ failedIds: string[] }> {
@@ -148,10 +184,10 @@ export class DispatchQueuePublisher {
     }
 }
 
-function toEntry(message: WebhookDispatchMessage, index: number, messageGroupId: string): SendMessageBatchRequestEntry {
+function toEntry(message: PreparedDispatchMessage, index: number, messageGroupId: string): SendMessageBatchRequestEntry {
     return {
         Id: indexToEntryId(index),
-        MessageBody: JSON.stringify(message),
+        MessageBody: JSON.stringify(message.message),
         MessageGroupId: messageGroupId
     };
 }
@@ -160,14 +196,37 @@ function indexToEntryId(index: number): string {
     return `m${index}`;
 }
 
-function entryIdToIndex(id: string): number {
-    return Number.parseInt(id.slice(1), 10);
+function entryIdToIndex(id: string): number | null {
+    if (!id.startsWith('m')) {
+        return null;
+    }
+
+    const index = Number.parseInt(id.slice(1), 10);
+    return Number.isNaN(index) ? null : index;
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < items.length; i += size) {
-        chunks.push(items.slice(i, i + size));
+function chunk(items: PreparedDispatchMessage[], size: number): PreparedDispatchMessage[][] {
+    const chunks: PreparedDispatchMessage[][] = [];
+    let currentChunk: PreparedDispatchMessage[] = [];
+    let currentChunkBytes = 0;
+
+    for (const item of items) {
+        const exceedsBatchSize = currentChunk.length >= size;
+        const exceedsBatchBytes = currentChunkBytes + item.byteSize > SQS_BATCH_MAX_BYTES;
+
+        if (currentChunk.length > 0 && (exceedsBatchSize || exceedsBatchBytes)) {
+            chunks.push(currentChunk);
+            currentChunk = [];
+            currentChunkBytes = 0;
+        }
+
+        currentChunk.push(item);
+        currentChunkBytes += item.byteSize;
     }
+
+    if (currentChunk.length > 0) {
+        chunks.push(currentChunk);
+    }
+
     return chunks;
 }

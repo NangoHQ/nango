@@ -286,7 +286,8 @@ async function immediate(
     let taskProps;
     if (props && 'schedule' in props) {
         taskProps = {
-            scheduleName: props.schedule.name
+            scheduleName: props.schedule.name,
+            extra: {}
         };
     } else {
         taskProps = {

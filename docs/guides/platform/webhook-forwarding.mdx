@@ -63,19 +63,19 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 ## Configure forwarding
 
 <Steps>
-  <Step title="Configure your app webhook URL">
+  <Step id="configure-app-webhook-url" title="Configure your app webhook URL">
     In Nango, open **Environment Settings > Webhook URLs** and add your app's endpoint.
 
     Nango sends forwarded webhooks to the same URLs used for auth, sync, and async action webhooks.
   </Step>
 
-  <Step title="Register the provider webhook URL">
+  <Step id="register-provider-webhook-url" title="Register the provider webhook URL">
     In the integration page, copy the Nango webhook URL from **Integrations > [Integration] > Webhooks** and register it in the provider's developer portal.
 
     Some providers use one global webhook registration. Others require one webhook registration per connected account. Provider-specific docs explain the required setup.
   </Step>
 
-  <Step title="Handle both payload shapes">
+  <Step id="handle-forwarded-webhook-payloads" title="Handle both payload shapes">
     If the payload has `"type": "forward"`, read `connectionId`, `providerConfigKey`, and `payload`.
 
     If the payload does not have `"type": "forward"`, handle it as the raw provider payload. This can happen when the provider event cannot be attributed to a Nango connection.
@@ -92,7 +92,7 @@ Use [webhook functions](/guides/functions/webhook-functions) when Nango should u
 
 Nango retries forwarded webhooks when your app returns a non-2xx response or has a network failure. Forwarded attempts appear in Nango logs as webhook forwarding operations.
 
-For retry behavior, timeout limits, and local testing tips, see [Webhook retries & debugging](/guides/platform/webhooks-from-nango#webhook-retries-and-debugging) and [Webhook limits](/guides/platform/limits#webhook-limits).
+For retry behavior, timeout limits, and local testing tips, see [Webhook retries & debugging](/guides/platform/webhooks-from-nango#webhook-retries-debugging) and [Webhook limits](/guides/platform/limits#webhook-limits).
 
 ## Related guides
 

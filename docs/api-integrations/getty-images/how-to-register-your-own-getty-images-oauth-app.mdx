@@ -1,0 +1,33 @@
+---
+title: 'How to register your own Getty Images OAuth app'
+sidebarTitle: 'Getty Images Setup'
+description: 'Register an OAuth app with Getty Images and connect it to Nango'
+---
+
+This guide shows you how to obtain your Getty Images API credentials. These are required to let your users authorize your app to access the Getty Images API.
+
+<Steps>
+  <Step title="Log in to Getty Images">
+    Log in to your [Getty Images](https://www.gettyimages.com) account using your credentials.
+  </Step>
+  <Step title="Contact your account representative">
+    Reach out to your Getty Images account representative to discuss API access and licensing options.
+  </Step>
+  <Step title="Request an API Key and register your redirect URI">
+    Ask your account representative for an API Key linked to your license agreement. Provide them with the Nango callback URL to register as an allowed redirect URI:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+  </Step>
+  <Step title="Obtain your API Key and API Secret">
+    Once your account is set up, Getty Images will provide your **API Key** and **API Secret**. Keep these secure.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [Getty Images OAuth documentation](https://developers.gettyimages.com/docs/authorization/).
+
+---

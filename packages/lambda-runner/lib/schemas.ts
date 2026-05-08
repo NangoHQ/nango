@@ -28,6 +28,7 @@ export const nangoPropsSchema = z.object({
     nangoConnectionId: z.number(),
     syncJobId: z.number().optional(),
     track_deletes: z.boolean().optional(),
+    emptyCache: z.boolean().optional(),
     attributes: z.record(z.string(), z.any()).optional(),
     abortSignal: z.any().optional(), // AbortSignal cannot be validated
     syncConfig: z.object({

@@ -14,7 +14,7 @@ The agent chooses a tool, your application asks Nango to execute the action func
 - A connection for the user whose credentials should be used.
 - One or more enabled action functions for the operations the agent may call.
 
-Build custom tools with [action functions](/guides/functions/action-functions), or enable template action functions from the [template catalog](/guides/functions/overview#template-catalog).
+Build custom tools with [action functions](/guides/functions/action-functions), or enable template action functions from the [template catalog](/guides/functions/functions-guide#template-catalog).
 
 ## Common auth and execution
 
@@ -276,7 +276,7 @@ These examples expose a HubSpot `whoami` action function as a `who_am_i` tool.
 
 ## Programmatic tool discovery
 
-The [Get integration functions config API](/reference/api/scripts/config) returns enabled action function definitions. Use it when an agent or orchestration layer should discover available tools at runtime.
+The [Get integration functions config API](/reference/backend/http-api/scripts/config) returns enabled action function definitions. Use it when an agent or orchestration layer should discover available tools at runtime.
 
 ```bash
 curl --request GET \
@@ -350,7 +350,7 @@ Agents should not receive provider credentials. Your app should:
 3. Store the resulting `connectionId` in your app.
 4. Use that `connectionId` for future tool calls.
 
-See the [Auth guide](/guides/auth/overview) and [Create Connect Session API](/reference/api/connect/sessions/create) for the end-to-end auth flow.
+See the [Auth guide](/guides/auth/auth-guide) and [Create Connect Session API](/reference/backend/http-api/connect/sessions/create) for the end-to-end auth flow.
 
 <Accordion title="For agents">
   If you are implementing this flow programmatically, first list or create the user's connection, then call `GET /scripts/config` to discover enabled action functions, and finally execute tools with `POST /action/trigger` or the MCP server.
@@ -367,8 +367,8 @@ Keep tool names and descriptions specific. Expose only action functions the agen
 ## Related references
 
 - [Action functions](/guides/functions/action-functions)
-- [Template catalog](/guides/functions/overview#template-catalog)
-- [Get integration functions config API](/reference/api/scripts/config)
-- [Trigger action API](/reference/api/action/trigger)
-- [Functions SDK reference](/reference/functions)
+- [Template catalog](/guides/functions/functions-guide#template-catalog)
+- [Get integration functions config API](/reference/backend/http-api/scripts/config)
+- [Trigger action API](/reference/backend/http-api/action/trigger)
+- [Functions SDK reference](/reference/functions/functions-sdk)
 - [Observability](/guides/platform/observability)

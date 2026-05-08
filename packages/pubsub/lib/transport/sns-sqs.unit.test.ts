@@ -304,4 +304,22 @@ describe('SnsSqs transport', () => {
         expect(receiveCalls.length).toBeGreaterThanOrEqual(1);
         expect(receiveCalls[0]![0].input).toMatchObject({ QueueUrl: queueUrl });
     });
+
+    it('starts multiple concurrent ReceiveMessage pollers when concurrency > 1', async () => {
+        const t = createTransport();
+        await t.connect();
+
+        mockSqsSend.mockImplementation((_cmd, opts?: { abortSignal?: AbortSignal }) => {
+            return new Promise((_, reject) => {
+                opts?.abortSignal?.addEventListener('abort', () => reject(abortError()));
+            });
+        });
+
+        t.subscribe({ consumerGroup: 'billing', subject: 'usage', callback: vi.fn(), concurrency: 3 });
+        await vi.waitFor(() => {
+            const receiveCalls = mockSqsSend.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand);
+            expect(receiveCalls.length).toBeGreaterThanOrEqual(3);
+        });
+        await t.disconnect();
+    });
 });

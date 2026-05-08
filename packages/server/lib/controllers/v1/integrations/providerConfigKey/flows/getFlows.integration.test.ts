@@ -61,18 +61,18 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        const scriptWriteFile = res.json.data.flows.find((value) => value.name === 'write-file');
-        expect(scriptWriteFile).not.toBeUndefined();
-        expect(scriptWriteFile).toMatchObject({
+        const scriptCreateOrUpdateFile = res.json.data.flows.find((value) => value.name === 'create-or-update-file');
+        expect(scriptCreateOrUpdateFile).not.toBeUndefined();
+        expect(scriptCreateOrUpdateFile).toMatchObject({
             description: expect.any(String),
             enabled: false,
-            endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
-            input: 'ActionInput_github_writefile',
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }],
+            input: 'ActionInput_github_createorupdatefile',
             source: 'catalog',
             json_schema: expect.any(Object),
             last_deployed: null,
-            name: 'write-file',
-            returns: ['ActionOutput_github_writefile'],
+            name: 'create-or-update-file',
+            returns: ['ActionOutput_github_createorupdatefile'],
             runs: '',
             scopes: ['repo'],
             type: 'action',
@@ -90,10 +90,10 @@ describe(`GET ${route}`, () => {
             connectionId: connection.id,
             environment_id: env.id,
             nango_config_id: config.id!,
-            sync_name: 'write-file',
+            sync_name: 'create-or-update-file',
             type: 'action',
             models: [],
-            endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }]
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }]
         });
 
         const res = await api.fetch(route, {
@@ -105,18 +105,18 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        const scriptWriteFile = res.json.data.flows.find((value) => value.name === 'write-file');
-        expect(scriptWriteFile).not.toBeUndefined();
-        expect(scriptWriteFile).toMatchObject({
+        const scriptCreateOrUpdateFile = res.json.data.flows.find((value) => value.name === 'create-or-update-file');
+        expect(scriptCreateOrUpdateFile).not.toBeUndefined();
+        expect(scriptCreateOrUpdateFile).toMatchObject({
             enabled: true,
-            endpoints: [{ group: 'Files', method: 'PUT', path: '/files' }],
+            endpoints: [{ group: 'Repositories', method: 'POST', path: '/actions/create-or-update-file' }],
             source: 'repo',
-            name: 'write-file',
+            name: 'create-or-update-file',
             type: 'action'
         });
 
         // Should not duplicate template vs enabled
-        expect(res.json.data.flows.filter((value) => value.name === 'write-file')).toHaveLength(1);
+        expect(res.json.data.flows.filter((value) => value.name === 'create-or-update-file')).toHaveLength(1);
 
         // Should not dedup the sync with the same endpoint path
         const scriptListFile = res.json.data.flows.find((value) => value.name === 'list-files');

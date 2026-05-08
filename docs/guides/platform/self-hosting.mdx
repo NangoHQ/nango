@@ -69,7 +69,7 @@ Customers should **pin their CLI version to the `application-version`** specifie
 
 You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
 
-See the full [changelog](/updates/product) for details on each release.
+See the full [changelog](/updates/changelog) for details on each release.
 
 ## Cloud provider support
 
@@ -190,7 +190,7 @@ Nango Connect is available by default at `http://localhost:3009`.
 If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
 </Note>
 
-See [Auth](/guides/auth/overview) for the end-user connection flow.
+See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
 
 ### Persistent storage
 
@@ -262,7 +262,7 @@ NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
 After you restart the Nango server, database encryption happens automatically. The encryption key cannot currently be modified after it is set.
 
 <Warning>
-`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/sdks/frontend#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
+`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
 </Warning>
 
 #### Custom websockets path
@@ -338,4 +338,4 @@ If you are interested in the Enterprise self-hosting version, please get in touc
 
 - [Security](/guides/platform/security) - review data, encryption, and access controls.
 - [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
-- [Changelog](/updates/product) - track changes that affect self-hosted upgrades.
+- [Changelog](/updates/changelog) - track changes that affect self-hosted upgrades.

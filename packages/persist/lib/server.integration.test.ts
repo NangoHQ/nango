@@ -461,6 +461,47 @@ describe('Persist API', () => {
         });
     });
 
+    describe('deleteHardRecords', () => {
+        it('should hard delete all records for a model', async () => {
+            const model = 'DeleteHardModel';
+            await insertRecords(seed, model, [
+                { id: '1', name: 'r1' },
+                { id: '2', name: 'r2' },
+                { id: '3', name: 'r3' }
+            ]);
+
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/hard`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({ model }),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            expect(response.status).toEqual(200);
+            const body = await response.json();
+            expect(body).toMatchObject({ deletedCount: 3, hasMore: false });
+        });
+
+        it('should return 400 when model is missing', async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${seed.syncJob.id}/records/hard`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({}),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            expect(response.status).toEqual(400);
+        });
+    });
+
     describe('checkpoint', () => {
         it('should return 404 if checkpoint not found', async () => {
             const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/checkpoint?key=non-existent`, {
