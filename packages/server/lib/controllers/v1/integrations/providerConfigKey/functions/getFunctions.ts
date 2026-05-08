@@ -1,14 +1,13 @@
 import * as z from 'zod';
 
-import { configService, getSyncConfigsAsStandardConfig, onEventScriptService } from '@nangohq/shared';
+import { configService, listIntegrationFunctions } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { toNangoFunctionDeployed, toNangoFunctionDeployedFromOnEvent } from '../../../../../formatters/function.js';
 import { envSchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
-import type { GetIntegrationFunctions, NangoFunctionDeployed } from '@nangohq/types';
+import type { GetIntegrationFunctions } from '@nangohq/types';
 
 const querystringValidation = z
     .object({
@@ -42,38 +41,13 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
         return;
     }
 
-    const wantsSyncOrAction = type === 'sync' || type === 'action' || type === undefined;
-    const wantsOnEvent = type === 'on-event' || type === undefined;
+    const { rows, total } = await listIntegrationFunctions({
+        environmentId: environment.id,
+        providerConfigKey,
+        type,
+        limit,
+        offset: page * limit
+    });
 
-    const combined: NangoFunctionDeployed[] = [];
-
-    if (wantsSyncOrAction) {
-        const deployed = await getSyncConfigsAsStandardConfig(environment.id, providerConfigKey);
-        if (type !== 'action') {
-            for (const sync of deployed?.syncs ?? []) {
-                combined.push(toNangoFunctionDeployed(sync));
-            }
-        }
-        if (type !== 'sync') {
-            for (const action of deployed?.actions ?? []) {
-                combined.push(toNangoFunctionDeployed(action));
-            }
-        }
-    }
-
-    if (wantsOnEvent) {
-        const onEventScripts = await onEventScriptService.getByEnvironmentId(environment.id);
-        for (const script of onEventScripts) {
-            if (script.providerConfigKey === providerConfigKey) {
-                combined.push(toNangoFunctionDeployedFromOnEvent(script));
-            }
-        }
-    }
-
-    combined.sort((a, b) => a.type.localeCompare(b.type) || a.name.localeCompare(b.name));
-
-    const total = combined.length;
-    const data = combined.slice(page * limit, (page + 1) * limit);
-
-    res.status(200).send({ data, pagination: { total, page, limit } });
+    res.status(200).send({ data: rows, pagination: { total, page, limit } });
 });

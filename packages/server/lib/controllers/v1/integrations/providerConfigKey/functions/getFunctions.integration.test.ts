@@ -1,11 +1,32 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
+import type { DBOnEventScript } from '@nangohq/types';
+
 const route = '/api/v1/integrations/:providerConfigKey/functions';
 let api: Awaited<ReturnType<typeof runServer>>;
+
+async function insertOnEventScripts({ configId, scripts }: { configId: number; scripts: { name: string; event: DBOnEventScript['event'] }[] }) {
+    await db.knex('on_event_scripts').insert(
+        scripts.map((script, index) => ({
+            config_id: configId,
+            name: script.name,
+            file_location: `s3://tests/${configId}/${script.name}-${script.event}-${index}.js`,
+            version: '0.0.1',
+            active: true,
+            event: script.event,
+            sdk_version: '0.0.0-yaml'
+        }))
+    );
+}
+
+function toFunctionKey(fn: { type: string; name: string; event?: string }) {
+    return `${fn.type}:${fn.name}:${fn.type === 'on-event' ? fn.event : ''}`;
+}
 
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
@@ -184,6 +205,112 @@ describe(`GET ${route}`, () => {
         const page0Names = page0.json.data.map((f) => f.name);
         const page2Names = page2.json.data.map((f) => f.name);
         expect(page0Names.some((name) => page2Names.includes(name))).toBe(false);
+    });
+
+    it('should paginate on-event results deterministically when multiple scripts share the same name', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+
+        await insertOnEventScripts({
+            configId: integration.id!,
+            scripts: [
+                { name: 'shared-script', event: 'POST_CONNECTION_CREATION' },
+                { name: 'shared-script', event: 'PRE_CONNECTION_DELETION' },
+                { name: 'shared-script', event: 'VALIDATE_CONNECTION' }
+            ]
+        });
+
+        const page0 = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', type: 'on-event', page: 0, limit: 2 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(page0.json);
+        expect(page0.json.pagination).toStrictEqual({ total: 3, page: 0, limit: 2 });
+
+        const page1 = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', type: 'on-event', page: 1, limit: 2 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(page1.json);
+        expect(page1.json.pagination).toStrictEqual({ total: 3, page: 1, limit: 2 });
+
+        const page0Keys = page0.json.data.map(toFunctionKey);
+        const page1Keys = page1.json.data.map(toFunctionKey);
+
+        expect(page0Keys).toStrictEqual(['on-event:shared-script:post-connection-creation', 'on-event:shared-script:pre-connection-deletion']);
+        expect(page1Keys).toStrictEqual(['on-event:shared-script:validate-connection']);
+        expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
+    });
+
+    it('should paginate merged function listings deterministically across function tables', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'action-a',
+            type: 'action'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'action-b',
+            type: 'action'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'sync-a',
+            type: 'sync'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'sync-b',
+            type: 'sync'
+        });
+        await insertOnEventScripts({
+            configId: integration.id!,
+            scripts: [
+                { name: 'shared-script', event: 'POST_CONNECTION_CREATION' },
+                { name: 'shared-script', event: 'PRE_CONNECTION_DELETION' }
+            ]
+        });
+
+        const page0 = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', page: 0, limit: 3 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(page0.json);
+        expect(page0.json.pagination).toStrictEqual({ total: 6, page: 0, limit: 3 });
+
+        const page1 = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', page: 1, limit: 3 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+        isSuccess(page1.json);
+        expect(page1.json.pagination).toStrictEqual({ total: 6, page: 1, limit: 3 });
+
+        const page0Keys = page0.json.data.map(toFunctionKey);
+        const page1Keys = page1.json.data.map(toFunctionKey);
+
+        expect(page0Keys).toStrictEqual(['action:action-a:', 'action:action-b:', 'on-event:shared-script:post-connection-creation']);
+        expect(page1Keys).toStrictEqual(['on-event:shared-script:pre-connection-deletion', 'sync:sync-a:', 'sync:sync-b:']);
+        expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
     });
 
     it('should reject invalid type query', async () => {
