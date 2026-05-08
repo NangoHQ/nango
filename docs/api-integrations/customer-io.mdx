@@ -21,12 +21,14 @@ Connect to Customer.io Pipelines with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
+            # X-Strict-Mode: when set to 1, enables strict validation that returns proper HTTP error codes (400/401) for validation failures
             curl --request POST \
               "https://api.nango.dev/proxy/identify" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "content-type: application/json" \
+              -H "nango-proxy-X-Strict-Mode: 1" \
               -d '{"userId":"97980cfea0067","traits":{"name":"Cool Person","email":"cool.person@example.com"}}'
             ```
 
@@ -45,6 +47,8 @@ Connect to Customer.io Pipelines with Nango and see data flow in 2 minutes.
             endpoint: '/identify',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
+            // X-Strict-Mode: when set to 1, enables strict validation that returns proper HTTP error codes (400/401) for validation failures
+            headers: { 'X-Strict-Mode': '1' },
             data: {
                 userId: '97980cfea0067',
                 traits: { name: 'Cool Person', email: 'cool.person@example.com' }
