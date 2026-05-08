@@ -157,7 +157,7 @@ describe(`POST ${endpoint}`, () => {
             sync_type: 'full',
             track_deletes: false,
             updated_at: expect.any(Date),
-            version: '2.0.0',
+            version: '2.0.1',
             webhook_subscriptions: null
         });
     });
