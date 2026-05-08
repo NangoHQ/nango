@@ -284,7 +284,11 @@
     },
     {
       "source": "/implementation-guides/platform/auth/connection-tags",
-      "destination": "/guides/auth/connection-tags"
+      "destination": "/guides/auth/connection-tags-configuration-metadata"
+    },
+    {
+      "source": "/guides/auth/connection-tags",
+      "destination": "/guides/auth/connection-tags-configuration-metadata"
     },
     {
       "source": "/implementation-guides/platform/auth/customize-connect-ui",
@@ -668,7 +672,7 @@
                 "pages": [
                   "guides/auth/auth-guide",
                   "guides/auth/share-connect-link",
-                  "guides/auth/connection-tags",
+                  "guides/auth/connection-tags-configuration-metadata",
                   "guides/auth/customize-connect-ui",
                   "guides/auth/token-refreshing"
                 ]
@@ -879,7 +883,9 @@
           {
             "group": "700+ APIs & Integrations",
             "pages": [
+              "api-integrations/1password-events",
               "integrations/all/1password-scim",
+              "api-integrations/1password-users",
               "api-integrations/3cx",
               "api-integrations/8x8",
               "api-integrations/absorb-lms",
@@ -1066,6 +1072,8 @@
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
               "integrations/all/digitalocean",
+              "api-integrations/digits",
+              "api-integrations/digits-mcp",
               "api-integrations/discord",
               "integrations/all/discourse",
               "integrations/all/dixa",
@@ -1366,6 +1374,7 @@
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/paddle",
               "api-integrations/paylocity-nextgen",
               "api-integrations/paylocity",
               "integrations/all/payfit",
@@ -1503,7 +1512,6 @@
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
               "api-integrations/simpro",
-              "api-integrations/simpro/connect",
               "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/slack-mcp",
@@ -1513,6 +1521,7 @@
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
+              "api-integrations/trigger-dev",
               "api-integrations/trigify-io-mcp",
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
@@ -1597,6 +1606,7 @@
               "api-integrations/veeva-vault",
               "api-integrations/vercel",
               "api-integrations/vercel-mcp",
+              "api-integrations/videoask",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",

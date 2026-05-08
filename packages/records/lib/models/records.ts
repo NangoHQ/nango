@@ -399,7 +399,8 @@ export async function upsert({
                                     `${RECORDS_TABLE}.updated_at`,
                                     trx.raw(`incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash as has_changed`),
                                     trx.raw(`(${RECORDS_TABLE}.json IS NOT NULL OR ${RECORDS_TABLE}.pruned_at IS NOT NULL) as must_upsert_data`),
-                                    trx.raw(`COALESCE(pg_column_size(${RECORDS_TABLE}.json), 0) as legacy_size_bytes`)
+                                    trx.raw(`COALESCE(pg_column_size(${RECORDS_TABLE}.json), 0) as legacy_size_bytes`),
+                                    trx.raw(`${RECORDS_TABLE}.tableoid::regclass as partition`)
                                 )
                                     .from(RECORDS_TABLE)
                                     .where(`${RECORDS_TABLE}.connection_id`, '=', connectionId)
@@ -425,6 +426,19 @@ export async function upsert({
                                     .into(RECORDS_TABLE)
                                     .onConflict(['connection_id', 'model', 'external_id'])
                                     .merge()
+                                    // Skip the UPDATE except:
+                                    // - changed records (data_hash has changed)
+                                    // - deleted/undeleted records (deleted_at has changed)
+                                    // - legacy records (json IS NOT NULL) so data migration fires
+                                    // - pruned records (pruned_at IS NOT NULL) so pruned_at gets cleared
+                                    .whereRaw(
+                                        `(
+                                            ${RECORDS_TABLE}.data_hash IS DISTINCT FROM EXCLUDED.data_hash
+                                            OR ${RECORDS_TABLE}.deleted_at IS DISTINCT FROM EXCLUDED.deleted_at
+                                            OR ${RECORDS_TABLE}.json IS NOT NULL
+                                            OR ${RECORDS_TABLE}.pruned_at IS NOT NULL
+                                        )`
+                                    )
                                     .returning(['id', 'external_id', 'deleted_at', 'updated_at', trx.raw('tableoid::regclass as partition')]);
                                 if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
                                     const cursor = Cursor.from(merging.cursor);
@@ -433,12 +447,22 @@ export async function upsert({
                                     }
                                 }
                             })
+                            // Records skipped by the ON CONFLICT WHERE (truly unchanged, non-legacy, non-pruned)
+                            // are absent from the upsert CTE. Include them so they appear as 'unchanged' in the result.
+                            // Cursor-filtered records (has_changed = true but skipped by cursor) are excluded here
+                            // intentionally — they preserve the same behavior as before (not classified).
+                            .with('skipped', (qb) => {
+                                qb.select('id', 'external_id', 'deleted_at', 'updated_at', 'partition')
+                                    .from('existing')
+                                    .where({ has_changed: false, must_upsert_data: false })
+                                    .whereNotExists(trx('upsert').select(trx.raw('1')).whereRaw('upsert.external_id = existing.external_id'));
+                            })
                             .select<UpsertedMetadata[]>(
                                 trx.raw(`
-                                    upsert.partition as partition,
-                                    upsert.id as id,
-                                    upsert.external_id as external_id,
-                                    to_json(upsert.updated_at) as last_modified_at,
+                                    combined.partition as partition,
+                                    combined.id as id,
+                                    combined.external_id as external_id,
+                                    to_json(combined.updated_at) as last_modified_at,
                                     COALESCE(existing.has_changed OR existing.must_upsert_data, true) as needs_data_write,
                                     COALESCE(existing.legacy_size_bytes, 0) as legacy_size_bytes,
                                     CASE
@@ -449,18 +473,18 @@ export async function upsert({
                                         WHEN existing.external_id IS NULL THEN 'inserted'
                                         ELSE
                                             CASE
-                                                WHEN existing.deleted_at IS NOT NULL AND upsert.deleted_at IS NULL THEN 'undeleted'
-                                                WHEN existing.deleted_at IS NULL AND upsert.deleted_at IS NOT NULL THEN 'deleted'
+                                                WHEN existing.deleted_at IS NOT NULL AND combined.deleted_at IS NULL THEN 'undeleted'
+                                                WHEN existing.deleted_at IS NULL AND combined.deleted_at IS NOT NULL THEN 'deleted'
                                                 WHEN existing.has_changed THEN 'changed'
                                                 ELSE 'unchanged'
                                             END
                                     END as status`)
                             )
-                            .from('upsert')
-                            .leftJoin('existing', 'existing.external_id', 'upsert.external_id')
+                            .from(trx.raw('(SELECT * FROM upsert UNION ALL SELECT * FROM skipped) AS combined'))
+                            .leftJoin('existing', 'existing.external_id', 'combined.external_id')
                             .orderBy([
-                                { column: 'upsert.updated_at', order: 'asc' },
-                                { column: 'upsert.id', order: 'asc' }
+                                { column: 'combined.updated_at', order: 'asc' },
+                                { column: 'combined.id', order: 'asc' }
                             ]);
 
                         // Upsert data for:
@@ -517,7 +541,7 @@ export async function upsert({
                             connectionId,
                             model,
                             syncJobId: chunk[0]!.sync_job_id,
-                            recordIds: upsertMetadata.map((r) => r.id)
+                            recordIds: chunk.map((r) => r.id)
                         });
 
                         // Billing:
@@ -1073,7 +1097,7 @@ export async function deleteOutdatedRecords({
     connectionId,
     model,
     generation,
-    batchSize = 1000
+    batchSize = 10_000
 }: {
     environmentId: number;
     connectionId: number;
@@ -1112,24 +1136,31 @@ export async function deleteOutdatedRecords({
                             partition: string;
                         }[] = (
                             await trx.raw(
-                                `WITH to_delete AS MATERIALIZED (
-                                    SELECT ctid, id
-                                    FROM ${RECORDS_TABLE}
-                                    WHERE connection_id = ?
-                                      AND model = ?
-                                      AND sync_job_id < ?
-                                      AND deleted_at IS NULL
-                                    LIMIT ?
+                                `WITH seen AS MATERIALIZED (
+                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_BATCH_TABLE}
+                                    WHERE connection_id = :connectionId
+                                      AND model = :model
+                                      AND sync_job_id >= :generation
+                                ),
+                                to_delete AS MATERIALIZED (
+                                    SELECT r.ctid, r.id
+                                    FROM ${RECORDS_TABLE} r
+                                    LEFT JOIN seen ON seen.id = r.id
+                                    WHERE r.connection_id = :connectionId
+                                      AND r.model = :model
+                                      AND r.deleted_at IS NULL
+                                      AND seen.id IS NULL
+                                    LIMIT :batchSize
                                 )
                                 UPDATE ${RECORDS_TABLE} r
                                 SET
                                     deleted_at = current_timestamp(6),
-                                    updated_at = current_timestamp(6),
-                                    sync_job_id = ?
+                                    updated_at = current_timestamp(6)
                                 FROM to_delete
                                 WHERE r.ctid = to_delete.ctid
-                                  AND r.connection_id = ?
-                                  AND r.model = ?
+                                  AND r.id = to_delete.id
+                                  AND r.connection_id = :connectionId
+                                  AND r.model = :model
                                 RETURNING
                                   r.id,
                                   r.connection_id,
@@ -1137,7 +1168,7 @@ export async function deleteOutdatedRecords({
                                   r.external_id,
                                   COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
                                   r.tableoid::regclass as partition`,
-                                [connectionId, model, generation, batchSize, generation, connectionId, model]
+                                { connectionId, model, generation, batchSize }
                             )
                         ).rows;
 

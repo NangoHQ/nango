@@ -38,7 +38,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 ## Capabilities
 
 - **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 700+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
-- **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [build a custom UI](/guides/auth/customize-connect-ui).
+- **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
 
@@ -49,25 +49,27 @@ Once you have the connection ID, fetch credentials whenever you need them:
 </Tip>
 
 <Steps>
-  <Step title="Create a Nango account">
+  <Step id="create-nango-account" title="Create a Nango account">
     Sign up for free (no credit card): [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Signup cannot be automated. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango API key from the Environment settings tab > API Keys. Use it as `Authorization: Bearer <NANGO-API-KEY>` in API requests.
 
       The default API key created on signup has full access and is the simplest option.
 
-      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (step 4). See [API keys](/reference/backend/http-api/api-keys).
+      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
     </Accordion>
   </Step>
 
-  <Step title="Create an integration">
+  <Step id="create-integration" title="Create an integration">
     In the dashboard, open the [Integrations](https://app.nango.dev/dev/integrations) tab, click **Configure New Integration**, and pick the API.
 
     <Tip>Each API has a dedicated [Nango documentation page](/integrations/overview) with setup notes and gotchas.</Tip>
 
     <Accordion title="⚠️ OAuth developer apps">
       OAuth APIs require an OAuth developer app registered with the provider. Register one on the provider's developer portal, use the `Callback URL` shown in your Nango integration settings, then paste the `Client ID` and `Client Secret` back into Nango. Register any required scopes too.
+
+      If this integration will be used in production, complete the optional custom callback URL step below before real users connect. Retrofitting a callback URL later requires updating the provider app and can break new authorization or reconnect flows until the provider and Nango settings match.
 
       For OAuth 2.0 providers, Nango shows **suggested scopes** — auto-discovered and refreshed at least monthly. They're suggestions; you can use any scope the provider supports.
 
@@ -76,7 +78,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       </Note>
     </Accordion>
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Create the integration with the API. If you need the provider slug first, list providers and use the matching provider's `name` field:
 
       ```bash
@@ -124,10 +126,10 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Test the authorization">
+  <Step id="test-authorization" title="Test the authorization">
     In the [Connections](https://app.nango.dev/dev/connections) tab, click **Add Test Connection**, pick your integration, and authorize using a test account. The new connection's credentials appear in its *Authorization* tab — securely stored and automatically refreshed.
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Skip the dashboard. Create a connect session and share the returned `connect_link` with the user — they authorize using their test account in the browser, no UI needed on your side:
 
       ```bash
@@ -147,7 +149,22 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
   </Step>
 
-  <Step title="Generate a session token (backend)">
+  <Step id="configure-custom-oauth-callback-url" title="Configure a custom OAuth callback URL (optional, recommended)">
+    For production OAuth apps, a callback URL on your own domain is recommended. Some providers show the callback domain to users.
+
+    <a id="custom-oauth-callback-url-optional"></a>
+
+    To configure a custom callback URL:
+    1. Add an endpoint on your domain (e.g. `https://example.com/oauth-callback`) that **308-redirects** to `https://api.nango.dev/oauth/callback`, preserving all query parameters.
+    2. Update the registered callback URL with each API provider — otherwise they'll reject new authorization flows.
+    3. After confirming steps 1 and 2, update the callback URL in Nango's **Environment Settings**. Settings are per-environment, so repeat for every environment.
+
+    <Accordion title="For agents">
+      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. The Nango environment setting is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
+    </Accordion>
+  </Step>
+
+  <Step id="generate-session-token" title="Generate a session token (backend)">
     Set up a backend endpoint that your frontend will call before each authorization attempt to retrieve a session token from Nango ([API](/reference/backend/http-api/connect/sessions/create) / [Node SDK](/reference/backend/backend-sdk/node#create-a-connect-session)).
 
     You'll need an [API key](/reference/backend/http-api/api-keys) with the `environment:connect_sessions:write` scope (find it in **Environment Settings > API Keys**).
@@ -194,9 +211,9 @@ Once you have the connection ID, fetch credentials whenever you need them:
     <Accordion title="ℹ️ Tags">
       Tags reconcile Nango's auth-success webhook with the right user, org, or entity in your system. Most apps start with: `end_user_id`, `end_user_email`, `organization_id`.
 
-      Tags are also useful for filtering connections via the API and are displayed in the Nango UI. The special keys `end_user_email` and `end_user_display_name` are used in specific UI navigation.
+      Tags are also useful for filtering connections via the API and are displayed in the Nango UI. Set the reserved UI tag keys `end_user_display_name` and `end_user_email` to populate the connections list and connection detail page.
 
-      See [Connection tags](/guides/auth/connection-tags) for more.
+      See [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) for more.
     </Accordion>
 
     `allowed_integrations` controls what the user sees:
@@ -204,7 +221,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     - **Single integration** — Connect UI sends the user straight to its auth flow.
   </Step>
 
-  <Step title="Trigger the auth flow (frontend)">
+  <Step id="trigger-auth-flow" title="Trigger the auth flow (frontend)">
     Load the Nango frontend SDK, fetch the session token from your backend, and open Connect UI:
 
     <Frame caption="Connect UI authorization flow">
@@ -234,7 +251,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     The pre-built Connect UI is recommended but optional — if you need full UX control, follow [Customize Connect UI](/guides/auth/customize-connect-ui). For email/cross-device flows, see [Share a connect link](/guides/auth/share-connect-link).
   </Step>
 
-  <Step title="Listen for webhooks & save the connection ID (backend)">
+  <Step id="save-connection-id-from-webhook" title="Listen for webhooks & save the connection ID (backend)">
     When authorization succeeds, Nango generates a unique **connection ID**. You use this ID to manage the connection and retrieve its credentials. **You must store it on your side**, attached to the user/org/project that owns the connection — Nango doesn't model that ownership.
 
     Set up the webhook in **Environment Settings**:
@@ -242,7 +259,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     2. Enable **Send New Connection Creation Webhooks**.
     3. Handle `POST` requests on that route in your backend.
 
-    <Accordion title="🤖 For agents">
+    <Accordion title="For agents">
       Webhook URL configuration is dashboard-only — there is no public API for environment settings. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
     </Accordion>
 
@@ -265,11 +282,79 @@ Once you have the connection ID, fetch credentials whenever you need them:
     Persist `connectionId` against whichever entity owns the connection in your app.
   </Step>
 
-  <Step title="Run the flow">
+  <Step id="build-reauthorization" title="Build re-authorization">
+    Credentials can become invalid when users revoke access, providers rotate refresh tokens, scopes change, or an app moves from testing to production. Re-authorization updates an existing connection's credentials while preserving its data and config. Deleting and re-creating the connection wipes that data — prefer re-authorization.
+
+    Before showing integration settings, check the connection with `GET /connections/{connectionId}`:
+
+    <Tabs>
+      <Tab title="Node">
+      ```ts
+      import { Nango } from '@nangohq/node';
+
+      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+
+      try {
+        await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+        // Connection is valid.
+      } catch (error) {
+        if (error.response?.data?.error?.code === 'invalid_credentials') {
+          // Connection is invalid — show a Reconnect button.
+          displayReconnectUI();
+        }
+      }
+      ```
+      </Tab>
+      <Tab title="cURL">
+      ```bash
+      curl --request GET \
+        --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
+        --header 'Authorization: Bearer <NANGO-API-KEY>'
+      ```
+      </Tab>
+    </Tabs>
+
+    An `invalid_credentials` error means the connection failed credential refresh or validation — show an error state with a **Reconnect** button.
+
+    To trigger re-authorization, use the same frontend flow as a new connection, but generate a reconnect session token on the backend. Pass the returned token to the Frontend SDK exactly like a normal session token. On success you'll receive an `auth` webhook with `operation = override`.
+
+    <Tabs>
+      <Tab title="Node">
+      ```ts
+      import { Nango } from '@nangohq/node';
+
+      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+
+      api.post('/sessionToken', async (req, res) => {
+        const { data } = await nango.createReconnectSession({
+          connection_id: '<CONNECTION-ID>',
+          integration_id: '<INTEGRATION-ID>'
+        });
+
+        res.status(200).send({ sessionToken: data.token });
+      });
+      ```
+      </Tab>
+      <Tab title="cURL">
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/connect/sessions/reconnect \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "connection_id": "<CONNECTION-ID>",
+          "integration_id": "<INTEGRATION-ID>"
+        }'
+      ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step id="run-auth-flow" title="Run the flow">
     Test the auth flow from your app and verify a connection appears in the [Connections](https://app.nango.dev/dev/connections) tab. Failed attempts are inspectable in the **Logs** tab.
 
-    <Accordion title="🤖 For agents">
-      After the user runs the flow, confirm the connection was created with [`GET /connections`](/reference/backend/http-api/connections/list) — filter by the tags you set in step 4:
+    <Accordion title="For agents">
+      After the user runs the flow, confirm the connection was created with [`GET /connections`](/reference/backend/http-api/connections/list) — filter by the tags you set in step 5:
 
       ```bash
       curl --request GET \
@@ -287,86 +372,6 @@ Once you have the connection ID, fetch credentials whenever you need them:
   </Step>
 </Steps>
 
-## Custom OAuth callback URL (optional)
-
-By default, Nango's OAuth callback domain is `api.nango.dev`. Some APIs (Google, Zoom, …) require domain verification or display the callback domain to users — in which case you'll want a callback under your own domain like `https://yourdomain.com/oauth-callback`.
-
-1. Add an endpoint on your domain (e.g. `https://example.com/oauth-callback`) that **308-redirects** to `https://api.nango.dev/oauth/callback`, preserving all query parameters.
-2. Update the registered callback URL with each API provider — otherwise they'll reject new authorization flows.
-3. After confirming steps 1 and 2, update the callback URL in Nango's **Environment Settings**. Settings are per-environment, so repeat for every environment.
-
-## Re-authorize an existing connection
-
-Credentials can become invalid (revoked, scope changes, etc.). Re-authorization updates an existing connection's credentials while preserving its data and config. Deleting and re-creating the connection wipes that data — prefer re-authorization. **Implement re-authorization before going to production.**
-
-### Detect invalid connections
-
-Before showing integration settings, check the connection with `GET /connection`:
-
-<Tabs>
-  <Tab title="Node">
-  ```ts
-  import { Nango } from '@nangohq/node';
-
-  const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
-
-  try {
-    await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
-    // Connection is valid.
-  } catch (error) {
-    if (error.status >= 400 && error.status < 500) {
-      // Connection is invalid — show a Reconnect button.
-      displayReconnectUI();
-    }
-  }
-  ```
-  </Tab>
-  <Tab title="cURL">
-  ```bash
-  curl --request GET \
-    --url 'https://api.nango.dev/connections/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>' \
-    --header 'Authorization: Bearer <NANGO-API-KEY>'
-  ```
-  </Tab>
-</Tabs>
-
-A 4xx response means the connection is broken — show an error state with a **Reconnect** button.
-
-### Trigger re-authorization
-
-Same flow as a new connection, but using a reconnect session token. Pass the returned token to the Frontend SDK exactly like a normal session token. On success you'll receive an `auth` webhook with `operation = override`.
-
-<Tabs>
-  <Tab title="Node">
-  ```ts
-  import { Nango } from '@nangohq/node';
-
-  const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
-
-  api.post('/sessionToken', async (req, res) => {
-    const { data } = await nango.createReconnectSession({
-      connection_id: '<CONNECTION-ID>',
-      integration_id: '<INTEGRATION-ID>'
-    });
-
-    res.status(200).send({ sessionToken: data.token });
-  });
-  ```
-  </Tab>
-  <Tab title="cURL">
-  ```bash
-  curl --request POST \
-    --url https://api.nango.dev/connect/sessions/reconnect \
-    --header 'Authorization: Bearer <NANGO-API-KEY>' \
-    --header 'Content-Type: application/json' \
-    --data '{
-      "connection_id": "<CONNECTION-ID>",
-      "integration_id": "<INTEGRATION-ID>"
-    }'
-  ```
-  </Tab>
-</Tabs>
-
 <Tip>
   **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
@@ -374,6 +379,6 @@ Same flow as a new connection, but using a reconnect session token. Pass the ret
 ## Related guides
 
 - [Share a connect link](/guides/auth/share-connect-link) - send authorization links by email, support tools, or cross-device flows.
-- [Connection tags](/guides/auth/connection-tags) - attribute connections to users, orgs, and other entities.
-- [Customize Connect UI](/guides/auth/customize-connect-ui) - build your own authorization UI.
+- [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - store the right connection-level data in the right field.
+- [Customize Connect UI](/guides/auth/customize-connect-ui) - customize branding or build your own authorization UI.
 - [Token refreshing and validity](/guides/auth/token-refreshing) - handle revoked or expired credentials.
