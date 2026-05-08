@@ -57,7 +57,8 @@ describe('Sync config create', () => {
             orchestrator: mockOrchestrator,
             debug,
             sdkVersion: '0.0.0-yaml',
-            onEventScriptsByProvider: []
+            onEventScriptsByProvider: [],
+            source: 'repo'
         });
 
         expect(emptyConfig).not.toBe([]);
@@ -97,7 +98,8 @@ describe('Sync config create', () => {
             orchestrator: mockOrchestrator,
             debug,
             sdkVersion: '0.0.0-yaml',
-            onEventScriptsByProvider: []
+            onEventScriptsByProvider: [],
+            source: 'repo'
         });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
@@ -164,8 +166,7 @@ describe('Sync config create', () => {
                     enabled: true,
                     webhook_subscriptions: null,
                     attributes: {},
-                    pre_built: false,
-                    is_public: false,
+                    source: 'repo',
                     metadata: {},
                     input: null,
                     sync_type: 'full',
@@ -196,8 +197,7 @@ describe('Sync config create', () => {
                 enabled: true,
                 webhook_subscriptions: null,
                 attributes: {},
-                pre_built: false,
-                is_public: false,
+                source: 'repo',
                 metadata: {},
                 input: null,
                 sync_type: 'full',
@@ -227,8 +227,7 @@ describe('Sync config create', () => {
                 enabled: true,
                 webhook_subscriptions: null,
                 attributes: {},
-                pre_built: false,
-                is_public: false,
+                source: 'repo',
                 metadata: {},
                 input: null,
                 sync_type: 'full',
@@ -256,7 +255,8 @@ describe('Sync config create', () => {
                 orchestrator: mockOrchestrator,
                 debug,
                 sdkVersion: '0.0.0-yaml',
-                onEventScriptsByProvider: []
+                onEventScriptsByProvider: [],
+                source: 'repo'
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });
@@ -331,7 +331,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);
@@ -359,7 +360,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);
@@ -390,7 +392,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(false);
@@ -408,7 +411,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);

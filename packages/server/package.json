@@ -19,6 +19,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@aws-sdk/client-sqs": "3.993.0",
         "@modelcontextprotocol/sdk": "1.26.0",
         "@nangohq/authz": "file:../authz",
         "@nangohq/usage": "file:../usage",
@@ -36,9 +37,8 @@
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
-        "@nangohq/pubsub": "file:../pubsub",
         "@workos-inc/node": "6.2.0",
-        "axios": "1.15.0",
+        "axios": "1.15.2",
         "body-parser": "2.2.1",
         "connect-session-knex": "4.0.0",
         "cookie-parser": "1.4.7",

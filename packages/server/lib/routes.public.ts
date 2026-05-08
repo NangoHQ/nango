@@ -70,6 +70,7 @@ import { connectionCapping } from './middleware/connection-capping.middleware.js
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withAnyScope, withScope } from './middleware/scope.middleware.js';
+import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { DBPlan } from '@nangohq/types';
@@ -163,7 +164,7 @@ publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);

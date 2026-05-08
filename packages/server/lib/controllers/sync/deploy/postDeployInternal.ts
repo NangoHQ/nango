@@ -94,7 +94,8 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         aggregatedJsonSchema: body.jsonSchema,
         logContextGetter,
         sdkVersion: body.sdkVersion,
-        orchestrator
+        orchestrator,
+        source: 'catalog'
     });
 
     if (!success || !syncConfigDeployResult) {

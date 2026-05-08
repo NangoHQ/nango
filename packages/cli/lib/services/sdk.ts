@@ -34,7 +34,7 @@ function showLoggerLevelWarning() {
             called = true;
             console.log(
                 chalk.yellow(
-                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions/functions-sdk#logging'
                 )
             );
         }

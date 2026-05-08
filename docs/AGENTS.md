@@ -1,5 +1,11 @@
 # Docs guidance for AI agents
 
+This is the source of truth for docs-agent guidance. `CLAUDE.md` imports this file so shared instructions stay in one place.
+
+## Start from latest master
+
+Before creating a docs worktree or branch, fetch `origin` and base the work on the latest `origin/master`. If a branch already exists, rebase it onto current `origin/master` before opening or updating a pull request, and resolve conflicts locally before pushing.
+
 ## Validate links after every change that touches URLs or anchors
 
 Run `mintlify broken-links` from `docs/` before pushing any change that:
@@ -8,6 +14,46 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 - updates internal `/...` links
 
 The scan must end with `success no broken links found`.
+
+## Preview docs from the docs directory
+
+When asked for a docs preview, run Mintlify directly from the workspace's `docs/` directory:
+
+```bash
+cd docs
+mintlify dev
+```
+
+## Prefix docs PR titles with `docs:`
+
+Pull requests that only change docs must have a PR title prefixed with `docs:`.
+Do not add `[codex]` or any other prefix before `docs:`; docs PR title checks require `docs:` to be the first characters of the title.
+
+Docs pull requests should be ready for review by default. Only open a draft PR when the user explicitly asks for one or the change is intentionally incomplete.
+
+## Use sentence case for docs titles
+
+Use sentence case for page titles, sidebar titles, card titles, and headings. Keep proper nouns and initialisms in their standard casing, such as Nango, MCP, API, OAuth, CI/CD, and GDPR.
+
+## Use HTTP APIs in agent instructions
+
+In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.
+
+When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
+
+Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango API key.
+
+## Keep link maintenance tightly scoped
+
+When asked to update docs links, only edit links. In application or package code, a docs-link change must be limited to replacing the URL string itself. Do not make type changes, formatting changes, lint fixes, refactors, or behavior changes while touching links.
+
+The only legitimate reason for a docs task to edit application or package code is to update docs URLs. When that happens, run `npx prettier --check <changed-code-files>` before pushing to catch formatting changes caused by longer or shorter URLs.
+
+Generated docs output must stay out of link-only PRs unless the user explicitly asks to include it. If a generator needs changes, update the generator or source metadata and leave the generated files for a separate generation PR.
+
+## Reference dashboard tabs by name, not URL
+
+When guiding readers to a tab in the Nango dashboard, reference the tab by its visible name instead of linking to a dashboard URL. Dashboard URLs include the environment, and that environment is not predictable across accounts.
 
 ## Never use `{#anchor}` heading-id syntax
 
@@ -22,32 +68,82 @@ To pin an anchor to a heading, use an inline HTML anchor on the line above:
 
 Browsers honor `id` attributes for fragment scrolling identically to heading-generated IDs.
 
+## Use semantic IDs for guide steps
+
+In Getting started and Guides pages, add semantic `id` props to `<Step>` components so support and sales can deep link to specific setup actions:
+
+```mdx
+<Step id="add-callback-url" title="Add the callback URL">
+```
+
+IDs must describe the stable action or outcome, not the current step number or exact title. For example, use `add-callback-url`, `configure-scopes`, or `generate-session-token`, not `step-3`. If a step is reordered or retitled but the action still exists, keep the same ID and move it with the action.
+
 ## Re-run link rewrites after pulling/merging master
 
 After every pull/merge that touches `docs/`, re-run the same sed against `docs/**/*.mdx` to bring newly imported files in line with the rename. `mintlify broken-links` may not flag these as hard failures if the old paths are kept alive via `redirects` in `docs.json` — they'll resolve via the redirect, but they're stale and should point at the canonical destination.
 
-## Docs architecture
+## Documentation tab structure
 
-The docs have two distinct section types with different purposes:
+Keep the documentation tab organized around the reader's journey and the ownership of each topic.
 
-- **Use cases** — orientation and routing pages only. Help readers understand what problem a use case solves, when to use Nango for it, and which technical docs to follow. No step-by-step implementation blocks. Link to functions guides instead. Keep them flat (no nesting). Aim for ~100–200 lines.
-- **Functions** — technical source of truth. Owns building, testing, deploying, triggering, syncing, scheduling, checkpoints, records cache, and HTTP invocation. Step-by-step guides live here and must be end-to-end (no missing steps).
+### Getting started
+
+Getting started is the first experience with Nango. Keep it minimal, low friction, and optimized for simplicity and conviction.
+
+- **Introduction** — explain Nango in the simplest possible way. Help readers understand what Nango is and why it matters without technical depth.
+- **Quick start** — show how Nango works at a high level and create the "wow" moment quickly. Favor a smooth path over completeness.
+
+Do not overload Getting started with edge cases, limits, architecture details, or exhaustive implementation guidance. Link out to Guides and Reference for depth.
+
+### Guides
+
+Guides are the home for practical technical content and customer-orientation content. They should help readers understand Nango's primitives, platform behavior, constraints, and implementation paths.
+
+Use these ownership rules:
+
+- **Auth** — technical guides specific to Nango Auth, connection flows, auth configuration, credentials, provider setup, and auth-specific behavior.
+- **Functions** — technical guides specific to Nango Functions. This includes building, testing, deploying, CI/CD, sync functions, action functions, webhook functions, event functions, tool calling, data validation, checkpoints, records cache, and other function-only concerns.
+- **Platform** — technical guides for concepts common to Auth and Functions. This includes environments, observability, limits, security, self-hosting, webhook forwarding, and webhooks received from Nango.
+- **Use cases** — orientation and routing pages only. Start from the customer's problem or investigation context, explain when Nango is useful, and point to the right primitives, guides, and references. Use cases can lightly pitch the value, but they should not contain step-by-step implementation details or become the technical source of truth.
+
+When deciding where content belongs, ask whether it is specific to Auth, specific to Functions, or common to both. Specific content belongs under the relevant primitive; shared platform behavior belongs under Platform.
+
+Examples:
+
+- Webhook forwarding belongs under Platform.
+- Webhook functions belong under Functions.
+- Webhooks received from Nango belong under Platform.
+- Sync functions, action functions, event functions, CI/CD, testing, and data validation belong under Functions.
 
 General functions guides may mention a concept (e.g. checkpoints) but should link to the dedicated page rather than duplicating the explanation.
 
-## Terminology: use "functions" as the core primitive
+### Reference
 
-Use `function` / `functions` as the main term throughout the docs.
+Reference is the code-adjacent surface area: API endpoints, SDK methods, method signatures, schemas, parameters, return values, events, and other exact interfaces Nango exposes.
 
-Only refer to `actions` or `syncs` when the specific type distinction is technically necessary:
-- A sync is a function type that is scheduled and typically persists records.
-- An action is a function type that is triggered by HTTP or explicit calls.
+Reference should be precise and easy to scan. Guides should link to Reference for exact details, and Reference can link back to Guides when a concept needs explanation or an end-to-end implementation path.
 
-Prefer:
-> Create a function
+## Terminology: use function type names
 
-Over:
-> Create an action or sync
+Use `function` / `functions` as the main term throughout the docs. Nango Functions are the core primitive; avoid positioning actions and syncs as separate top-level primitives.
+
+Use specific function type names only when the distinction matters for implementation, navigation, or exact API/SDK fields. For example, a quickstart can say "call the function" while the HTTP request still uses the literal `action_name` field required by the API.
+
+Use these names for function types:
+- **Sync functions** — functions that keep external API data fresh and typically persist records.
+- **Action functions** — functions your app, backend job, or agent calls on demand.
+- **Webhook functions** — functions that process external API webhooks inside Nango.
+- **Event functions** — functions that run on Nango connection lifecycle events.
+
+Prefer canonical function type names over labels based on trigger mechanics.
+
+## Glossary
+
+Keep this glossary current as docs terminology evolves.
+
+- **Template** — the reusable blueprint for a Nango function. A template is code, not a deployed function. Customers can deploy a template to Nango directly or clone it into their local functions repo before customizing it.
+- **Template function** — product-facing term for a Nango-maintained, pre-built function implementation that customers can deploy from the UI, and soon via API. Use this when discussing the implementation or product workflow.
+- **Template use case** — marketing-facing term for the business need a template function solves. Use this before readers are familiar with Nango Functions.
 
 ## Content style
 
@@ -56,6 +152,15 @@ Over:
 - Do not repeat the same explanation across multiple pages — pick one owner and link from everywhere else.
 - Use cases may have a light orientation tone but must stay concrete.
 - Technical guides must be precise, practical, and compact.
+- Write for developers who want signal. Optimize for specificity, clarity, and insight, not fancy wording.
+- Use the most compact, simple phrasing that still preserves the technical point, similar to Paul Graham's essays.
+- Prefer concrete details over generic claims. Prefer technical detail over marketing language. Prefer real examples over abstractions.
+- Avoid theoretical claims unless they are tied to a real implementation detail, API behavior, limit, example, or tradeoff.
+- After drafting copy, review it with these questions:
+  - Is this specific enough?
+  - Would a developer learn something from this?
+  - Does this include real details, or just polished wording?
+- Copy is strong if it would still be useful with imperfect English. Copy is weak if it relies on polished wording to sound good.
 
 ## Agent accordions
 
@@ -66,6 +171,8 @@ An accordion should contain:
 - Relevant references (API paths, CLI commands, SDK methods)
 - Required arguments or configuration details
 - Important implementation notes
+
+Use `For agents` as the accordion title. Do not add emojis or other decoration to agent accordion titles.
 
 Do not add agent accordions mechanically on every page — only where a genuine programmatic path exists and an agent would need the extra references to complete the step correctly.
 

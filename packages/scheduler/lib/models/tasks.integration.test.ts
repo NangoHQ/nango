@@ -4,6 +4,7 @@ import { nanoid } from '@nangohq/utils';
 
 import * as tasks from './tasks.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import { isDuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 
 import type { Task, TaskState } from '../types.js';
@@ -83,6 +84,17 @@ describe('Task', () => {
         expect(res.tasks[0]?.name).toBe('Not capped');
         expect(res.tasks[1]?.name).toBe('Also not capped');
         expect(res.cappedGroupKeys).toEqual([props.groupKey]);
+    });
+    it('should error on unique-name collision', async () => {
+        const name = `dup-${nanoid()}`;
+        const first = await tasks.create(db, [{ ...props, name }]);
+        expect(first.isOk()).toBe(true);
+
+        const second = await tasks.create(db, [{ ...props, name }]);
+        expect(second.isErr()).toBe(true);
+        if (second.isErr()) {
+            expect(isDuplicateTaskNameError(second.error)).toBe(true);
+        }
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);

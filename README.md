@@ -77,12 +77,12 @@ Nango supports every common integration pattern:
 
 | Use case | Description |
 | --- | --- |
-| [**AI tool calling & MCP**](https://nango.dev/docs/implementation-guides/use-cases/tool-calling/overview) | Give AI agents the ability to act on external APIs |
-| [**Data syncing**](https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync) | One or two-way sync for RAG pipelines, indexing, and triggers |
-| [**Webhook processing**](https://nango.dev/docs/implementation-guides/use-cases/webhooks-from-external-apis) | Receive and process webhooks from external APIs reliably |
-| [**API unification**](https://nango.dev/docs/implementation-guides/use-cases/unified-apis) | Normalize APIs to your own universal schema |
-| [**Actions**](https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action) | Write data and execute operations on behalf of your users |
-| [**Per-customer config**](https://nango.dev/docs/implementation-guides/use-cases/customer-configuration) | Customize integration behavior for each customer |
+| [**AI tool calling & MCP**](https://nango.dev/docs/getting-started/use-cases/tool-calling) | Give AI agents the ability to act on external APIs |
+| [**Data syncing**](https://nango.dev/docs/guides/functions/syncs/sync-functions) | One or two-way sync for RAG pipelines, indexing, and triggers |
+| [**Webhook processing**](https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis) | Receive and process webhooks from external APIs reliably |
+| [**API unification**](https://nango.dev/docs/getting-started/use-cases/unified-apis) | Normalize APIs to your own universal schema |
+| [**Actions**](https://nango.dev/docs/guides/functions/action-functions) | Write data and execute operations on behalf of your users |
+| [**Per-customer config**](https://nango.dev/docs/getting-started/use-cases/customer-configuration) | Customize integration behavior for each customer |
 
 ## Quickstart
 
@@ -107,7 +107,7 @@ const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID
 console.log(connection.credentials);
 ```
 
-Embed the [Auth](https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth) flow in your product, make requests with the [Proxy](https://nango.dev/docs/guides/primitives/proxy), or build custom integrations with [Functions](https://nango.dev/docs/guides/primitives/functions).
+Embed the [Auth](https://nango.dev/docs/guides/auth/auth-guide) flow in your product, make requests with the [Proxy](https://nango.dev/docs/guides/platform/proxy-requests), or build custom integrations with [Functions](https://nango.dev/docs/guides/functions/functions-guide).
 
 ## Why Nango?
 
@@ -128,7 +128,7 @@ Fully operable via CLI and API. Compatible with any backend language or framewor
 
 ## Open-source vs. paid
 
-Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/free-self-hosting/configuration) with a limited feature set.
+Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/blob/master/LICENSE). The Cloud and Enterprise Self-Hosted versions give you access to all features, based on your [plan](https://www.nango.dev/pricing). You can also [self-host for free](https://nango.dev/docs/guides/platform/self-hosting#free-self-hosting) with a limited feature set.
 
 ## Contributing
 

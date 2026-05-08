@@ -37,8 +37,8 @@ export const nangoPropsSchema = z.looseObject({
         updated_at: z.coerce.date(),
         version: z.string(),
         attributes: z.record(z.string(), z.any()),
-        pre_built: z.boolean(),
-        is_public: z.boolean(),
+        // TODO: remove optional at second release for smooth rollout
+        source: z.enum(['catalog', 'standalone', 'repo']).optional(),
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),
         metadata: z.record(z.string(), z.any()),
