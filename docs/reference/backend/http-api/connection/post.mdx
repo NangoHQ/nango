@@ -9,7 +9,9 @@ openapi: 'POST /connection'
 
 ## When to use
 
-Use this API endpoint to import existing access tokens into Nango. It is mostly meant for one-off bulk imports when onboarding Nango.
+Use this API endpoint to import existing access tokens into Nango. It is mostly meant for one-off bulk imports when onboarding Nango, or for migrating existing connections when a provider introduced changes to its auth flow.
+
+If a connection with the same `connection_id` and `provider_config_key` already exists, the endpoint updates it with the provided credentials instead of creating a new one.
 
 To trigger OAuth flows with Nango, use the [Nango frontend SDK](/reference/frontend/frontend-sdk).
 
