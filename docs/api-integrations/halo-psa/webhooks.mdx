@@ -1,0 +1,154 @@
+---
+title: 'How to setup webhooks with Halo PSA on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to send Halo PSA Standard Webhooks to Nango'
+---
+
+This guide shows you how to receive Halo PSA Standard Webhooks in Nango using [Halo's webhook configuration](https://halopsa.com/guides/article/?kbid=838).
+
+## How it works
+
+Halo lets administrators create Standard Webhooks from **Configuration** > **Integrations** > **Webhooks**. Nango receives those POST requests, matches them to the connection ID you provide, and then forwards the original Halo payload to your app or runs matching sync `onWebhook` handlers.
+
+## Setup
+
+### 1. Get the Nango webhook URL
+
+Open your Halo PSA integration in the Nango dashboard and copy the **Webhook URL**.
+
+Append the Nango connection ID and a webhook type:
+
+```text
+<NANGO_WEBHOOK_URL>?connectionId=<CONNECTION_ID>&webhookType=ticket.updated
+```
+
+`webhookType` can be any subscription name you want to handle in Nango, such as `ticket.created`, `ticket.updated`, or `halo-psa`.
+
+<Note>
+You can also put these values in the Halo JSON payload instead of the URL. Use `connectionId` and `type`, or use the nested shape `nango.connectionId` and `nango.webhookType`.
+</Note>
+
+### 2. Configure a webhook secret in Nango
+
+In the Nango dashboard, open your Halo PSA integration settings and set a **Webhook Secret**.
+
+Use the same value as the Basic Auth password in Halo.
+
+<Note>
+If you leave the Nango webhook secret empty, Nango accepts Halo webhooks without checking Basic Auth. We recommend setting a secret for production.
+</Note>
+
+### 3. Create a Standard Webhook in Halo
+
+In Halo PSA:
+
+1. Go to **Configuration** > **Integrations** > **Webhooks**.
+2. Create a new webhook.
+3. Set **Webhook Type** to **Standard Webhook**.
+4. Set **Method** to **POST**.
+5. Set **Content Type** to **application/json**.
+6. Set **Payload URL** to the URL from step 1.
+7. Set **Authentication** to **Basic Auth**.
+8. Set the Basic Auth username to `nango`.
+9. Set the Basic Auth password to the Nango webhook secret from step 2.
+10. Enable the webhook.
+
+### 4. Add Halo events
+
+Add the Halo events that should call the webhook, such as ticket-created or ticket-updated events.
+
+If one Halo webhook has several events, they all use the same `webhookType` from the URL. Create separate Halo webhooks if you want Nango to receive different subscription names.
+
+### 5. Choose the payload
+
+The Halo payload can contain any JSON your sync or app needs. If you did not put connection and type in the URL, include them in the JSON:
+
+```json
+{
+  "connectionId": "<CONNECTION_ID>",
+  "type": "ticket.updated",
+  "ticket": {
+    "id": 123,
+    "summary": "Example ticket payload from your Halo webhook template"
+  }
+}
+```
+
+When Nango calls an `onWebhook` handler, it adds normalized routing details under `payload.nango`:
+
+```json
+{
+  "ticket": {
+    "id": 123
+  },
+  "nango": {
+    "connectionId": "<CONNECTION_ID>",
+    "webhookType": "ticket.updated"
+  }
+}
+```
+
+If Halo sends a batched JSON array, Nango calls `onWebhook` with:
+
+```json
+{
+  "events": [
+    { "ticket": { "id": 123 } },
+    { "ticket": { "id": 456 } }
+  ],
+  "nango": {
+    "connectionId": "<CONNECTION_ID>",
+    "webhookType": "ticket.updated"
+  }
+}
+```
+
+Forwarded webhooks keep the original Halo payload.
+
+### 6. Handle the webhook in a sync
+
+Add the same `webhookType` to `webhookSubscriptions`:
+
+```typescript
+import { createSync } from 'nango';
+import { z } from 'zod';
+
+export default createSync({
+    description: 'Keep Halo PSA tickets up to date',
+    models: {
+        Ticket: z.object({
+            id: z.number(),
+            summary: z.string().optional()
+        })
+    },
+    frequency: '1h',
+    exec: async (nango) => {
+        // Keep polling as a safety net for missed or delayed webhooks.
+    },
+    webhookSubscriptions: ['ticket.updated'],
+    onWebhook: async (nango, payload) => {
+        await nango.log(`Received ${payload.nango.webhookType} from Halo PSA`);
+
+        // Use identifiers from your Halo payload to fetch and persist the changed records.
+    }
+});
+```
+
+## Connection matching
+
+Halo webhooks are configurable and do not include a Nango connection ID by default. Nango requires one of these values:
+
+1. URL query parameter: `connectionId=<CONNECTION_ID>`
+2. JSON payload field: `"connectionId": "<CONNECTION_ID>"`
+3. JSON payload field: `"connection_id": "<CONNECTION_ID>"`
+4. JSON payload field: `"nango": {"connectionId": "<CONNECTION_ID>"}`
+
+If Nango cannot find the connection ID, it returns a `400` response and does not run sync webhook handlers.
+
+## Rollback strategy
+
+Disable or delete the Standard Webhook in Halo. This stops Halo from sending events to Nango immediately.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---
