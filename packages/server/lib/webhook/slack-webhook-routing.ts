@@ -29,6 +29,17 @@ const route: WebhookHandler = async (nango, headers, body) => {
             propName: 'team.id'
         });
 
+        // slack requires an empty 200 body for view_submission; a non-empty body
+        // https://docs.slack.dev/surfaces/modals/#close_current_view
+        if (payload['type'] === 'view_submission') {
+            return Ok({
+                content: null,
+                statusCode: 200,
+                connectionIds: response?.connectionIds || [],
+                toForward: payload
+            });
+        }
+
         return Ok({
             content: { status: 'success' },
             statusCode: 200,

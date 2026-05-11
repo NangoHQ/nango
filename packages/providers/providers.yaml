@@ -4833,6 +4833,40 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+customer-io:
+    display_name: Customer.io
+    categories:
+        - marketing
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.customer.io
+    docs: https://nango.dev/docs/api-integrations/customer-io
+    docs_connect: https://nango.dev/docs/api-integrations/customer-io/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The region to where your instance is hosted.
+            pattern: '^cdp(-eu)?$'
+            example: cdp
+            order: 1
+            doc_section: '#step-2-choose-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Customer.io Pipelines API key.
+            pattern: '^[a-f0-9]{20}$'
+            example: 36c7a4***********ab022a3
+            doc_section: '#step-1-getting-authentication-credentials'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 cursor:
     display_name: Cursor
     categories:
@@ -6531,6 +6565,34 @@ fellow:
             example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-api-key'
+
+fern:
+    display_name: Fern (Public API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            fern_api_key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/fern
+    docs_connect: https://nango.dev/docs/api-integrations/fern/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Fern API key
+            description: Your Fern API key.
+            doc_section: '#step-1-generate-your-fern-api-key'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Docs URL
+            description: The domain of your Fern docs site.
+            example: docs.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-docs-url'
 
 freeagent:
     display_name: FreeAgent
@@ -17155,6 +17217,42 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopware:
+    display_name: Shopware (Admin API)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.shopwareUrl}/api/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.shopwareUrl}/api
+    docs: https://nango.dev/docs/api-integrations/shopware
+    docs_connect: https://nango.dev/docs/api-integrations/shopware/connect
+    credentials:
+        client_id:
+            type: string
+            title: Access key ID
+            description: The Access key ID of yout integration.
+            doc_section: '#step-2-create-a-shopware-integration'
+        client_secret:
+            type: string
+            title: Secret access key
+            description: The Secret access key of your integration.
+            secret: true
+            doc_section: '#step-2-create-a-shopware-integration'
+    connection_config:
+        shopwareUrl:
+            type: string
+            title: Shopware URL
+            description: The hostname of your Shopware instance.
+            example: myshop.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-shopware-url'
+
 shopworks:
     display_name: ShopWorks
     categories:
@@ -17677,6 +17775,34 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
+
+statamic:
+    display_name: Statamic
+    categories:
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/statamic
+    docs_connect: https://nango.dev/docs/api-integrations/statamic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API token
+            description: The value of STATAMIC_API_AUTH_TOKEN in your Statamic .env file.
+            doc_section: '#step-1-enable-the-rest-api'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The hostname of your Statamic site.
+            example: mysite.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-base-url'
 
 statista:
     display_name: Statista

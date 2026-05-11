@@ -25,7 +25,7 @@
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
-    "href": "https://www.nango.dev"
+    "href": "https://nango.dev"
   },
   "favicon": "/favicon.png",
   "contextual": {
@@ -69,7 +69,7 @@
       "linkedin": "https://www.linkedin.com/company/nangohq/",
       "github": "https://github.com/NangoHQ/nango",
       "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
+      "website": "https://nango.dev/"
     }
   },
   "integrations": {
@@ -1057,6 +1057,7 @@
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
+              "api-integrations/customer-io",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
@@ -1111,6 +1112,7 @@
               "integrations/all/expensify",
               "api-integrations/facebook",
               "api-integrations/fellow",
+              "api-integrations/fern",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",
@@ -1506,6 +1508,7 @@
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopware",
               "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
@@ -1540,6 +1543,7 @@
               "api-integrations/squareup",
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
+              "api-integrations/statamic",
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
