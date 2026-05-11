@@ -394,26 +394,24 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 
 /* Sign Up — lock to Nango brand cyan */
 /*
- * Mintlify renders the primary button as TWO stacked layers:
- *   1. <a> with background = colors.primary (#29abe2)
- *   2. <span class="absolute inset-0 bg-primary-dark group-hover:opacity-[0.9]">
- *      painted on top with primary-dark (#217ea6) at full opacity, dropping
- *      to 0.9 on hover so the lighter primary shows through.
- * The visible color is therefore the SPAN, not the anchor. Setting only
- * the anchor's background has no effect because the span covers it
- * completely. Recolor the span (and the anchor underneath, for the
- * hover-opacity blend) so the button reads as #29abe3 at rest and
- * still gets Mintlify's subtle darken-on-hover via the same mechanic.
+ * The deployed Mintlify markup is a flat anchor — no overlay span,
+ * no `bg-primary-dark` layer — so the visible color comes from the
+ * anchor's own background. Set it directly to #29abe3 and use
+ * #217ea6 (Nango's brand dark from docs.json) for hover.
+ *
+ * The span rules from earlier revisions are gone on purpose: Mintlify
+ * doesn't render that overlay here, and leaving the anchor at #217ea6
+ * (the "underlay" color) was exactly why the button was painting dark.
  */
 #navbar a[href="https://app.nango.dev/signup"] {
-  background-color: #217ea6 !important;
+  background-color: #29abe3 !important;
   border: 1px solid #29abe3 !important;
   color: #ffffff !important;
 }
-#navbar a[href="https://app.nango.dev/signup"] span.absolute,
-#navbar a[href="https://app.nango.dev/signup"] span[class*="inset-0"],
-#navbar a[href="https://app.nango.dev/signup"] span[class*="bg-primary"] {
-  background-color: #29abe3 !important;
+#navbar a[href="https://app.nango.dev/signup"]:hover {
+  background-color: #217ea6 !important;
+  border-color: #217ea6 !important;
+  color: #ffffff !important;
 }
 
 /* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
