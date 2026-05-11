@@ -48,25 +48,16 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
-        // Non-env-specific pages: skip URL-based env sync but still ensure the
-        // stored env is valid, since these pages still issue env-scoped API calls.
-        if (NON_ENV_PATH_PREFIXES.some((p) => location.pathname.startsWith(p))) {
-            if (!meta.environments.find(({ name }) => name === env)) {
-                const fallback = meta.environments.find(({ name }) => name === 'dev') ?? meta.environments[0];
-                setEnv(fallback.name);
-            }
-            setNotFoundEnv(false);
-            setUnauthorizedEnv(false);
-            setReady(true);
-            return;
-        }
+        const isNonEnvPath = NON_ENV_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
 
         let currentEnv = env;
 
-        // sync path with datastore
-        const pathSplit = location.pathname.split('/');
-        if (pathSplit.length > 0 && env !== pathSplit[1]) {
-            currentEnv = pathSplit[1];
+        // sync path with datastore (skip for non-env-specific pages — env comes from the store, not the URL)
+        if (!isNonEnvPath) {
+            const pathSplit = location.pathname.split('/');
+            if (pathSplit.length > 0 && env !== pathSplit[1]) {
+                currentEnv = pathSplit[1];
+            }
         }
 
         // The store set does not match available envs
@@ -80,10 +71,11 @@ export const PrivateRoute: React.FC = () => {
                 setEnv(meta.environments[0].name);
             }
 
-            setNotFoundEnv(true);
+            // Only show the not-found page for env-specific paths
+            setNotFoundEnv(!isNonEnvPath);
         } else {
             const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
-            if (matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
+            if (!isNonEnvPath && matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
                 // User navigated directly to a production env they don't have access to
                 const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
                 setEnv(fallback ? fallback.name : meta.environments[0].name);
