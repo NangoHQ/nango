@@ -25,7 +25,6 @@ async function expandLegacyApiKeyScopes(knex) {
             UPDATE customer_keys
             SET scopes = ARRAY(SELECT DISTINCT unnest(scopes || ?::text[]))
             WHERE key_type = 'api'
-              AND deleted_at IS NULL
               AND ? = ANY(scopes)
             `,
             [newScopes, legacy]

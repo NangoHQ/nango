@@ -117,7 +117,7 @@ describe('expandLegacyApiKeyScopes', () => {
         expect(after2.sort()).toEqual(after1.sort());
     });
 
-    it('does not touch soft-deleted keys', async () => {
+    it('also expands soft-deleted keys (so they keep working if recovered)', async () => {
         const key = await createKey({
             scopes: ['environment:integrations:write'],
             deletedAt: new Date()
@@ -125,7 +125,9 @@ describe('expandLegacyApiKeyScopes', () => {
 
         await expandLegacyApiKeyScopes(db.knex);
 
-        expect(await readScopes(key.id)).toEqual(['environment:integrations:write']);
+        expect((await readScopes(key.id)).sort()).toEqual(
+            ['environment:integrations:write', 'environment:integrations:create', 'environment:integrations:update', 'environment:integrations:delete'].sort()
+        );
     });
 
     it('does not touch keys without legacy scopes', async () => {
