@@ -2722,6 +2722,13 @@ klaviyo-oauth:
     - web-feeds:read
     - web-feeds:write
 
+# source: https://developers.knocommerce.com/ (read scopes for survey responses, questions, and webhook subscriptions)
+kno-commerce:
+    - SURVEYS
+    - RESPONSES
+    - QUESTIONS
+    - WEBHOOKS
+
 # source: https://hire.lever.co/developer/documentation
 lever:
     - applications:read:admin

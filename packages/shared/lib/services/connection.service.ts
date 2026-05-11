@@ -1202,8 +1202,12 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
+        const scope =
+            connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string'
+                ? connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ')
+                : '';
         const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const url = new URL(interpolateString(strippedTokenUrl, { ...connectionConfig, oauth_scopes: scope }));
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
@@ -1211,8 +1215,7 @@ class ConnectionService {
         }
         let tokenParams = interpolatedParams && Object.keys(interpolatedParams).length > 0 ? new URLSearchParams(interpolatedParams).toString() : '';
 
-        if (connectionConfig['oauth_scopes'] && typeof connectionConfig['oauth_scopes'] === 'string') {
-            const scope = connectionConfig['oauth_scopes'].split(',').join(provider.scope_separator || ' ');
+        if (scope) {
             tokenParams += (tokenParams ? '&' : '') + `scope=${encodeURIComponent(scope)}`;
         }
 
