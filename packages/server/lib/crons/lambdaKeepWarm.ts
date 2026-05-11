@@ -13,7 +13,6 @@ import type { DBEnvironment, DBPlan } from '@nangohq/types';
 
 const logger = getLogger('cron.lambdaKeepWarm');
 
-const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
@@ -62,8 +61,6 @@ export async function exec(): Promise<void> {
                 return;
             }
 
-            const since = new Date(Date.now() - lambdaKeepWarmAccountAgeMs);
-
             const rows = await db.readOnly
                 .select<{ account_id: number; id: number; plan_name: DBPlan['name'] }[]>(
                     '_nango_environments.account_id',
@@ -73,7 +70,6 @@ export async function exec(): Promise<void> {
                 .from<DBEnvironment>('_nango_environments')
                 .join('plans', 'plans.account_id', '_nango_environments.account_id')
                 .where('_nango_environments.deleted', false)
-                .where('_nango_environments.created_at', '>=', since)
                 .where('plans.lambda_tenant_isolation', true)
                 .where((b) => {
                     b.whereNot('plans.name', 'free').orWhere((b2) => {
