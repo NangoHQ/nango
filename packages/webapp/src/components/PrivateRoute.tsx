@@ -48,8 +48,13 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
-        // Skip env validation for paths that are not environment-specific
+        // Non-env-specific pages: skip URL-based env sync but still ensure the
+        // stored env is valid, since these pages still issue env-scoped API calls.
         if (NON_ENV_PATH_PREFIXES.some((p) => location.pathname.startsWith(p))) {
+            if (!meta.environments.find(({ name }) => name === env)) {
+                const fallback = meta.environments.find(({ name }) => name === 'dev') ?? meta.environments[0];
+                setEnv(fallback.name);
+            }
             setNotFoundEnv(false);
             setUnauthorizedEnv(false);
             setReady(true);
