@@ -53,7 +53,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     <Accordion title="🤖 For agents">
       Signup cannot be automated. Ask the user to sign up at [app.nango.dev/signup](https://app.nango.dev/signup) and provide their Nango secret API key — the default key created on signup has full access and is the simplest option.
 
-      If the user creates a scoped key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (step 4). See [API keys](/reference/api-keys).
+      If the user creates a scoped key instead, this guide needs `environment:integrations:create` (step 2) and `environment:connect_sessions:write` (step 4). See [API keys](/reference/api-keys).
     </Accordion>
   </Step>
 
@@ -73,7 +73,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     </Accordion>
 
     <Accordion title="🤖 For agents">
-      Create the integration via [`POST /integrations`](/reference/api/integration/create) (requires the `environment:integrations:write` scope).
+      Create the integration via [`POST /integrations`](/reference/api/integration/create) (requires the `environment:integrations:create` scope).
 
       Find the `<PROVIDER>` slug by calling [`GET /providers`](/reference/api/providers/list) — the `name` field of each entry is a valid slug.
 
