@@ -216,18 +216,31 @@ export async function getRecords({
         }
 
         const recordIds = recordsMetadata.map((r) => r.id);
-        const recordsData = await dbRead
-            .from(RECORDS_DATA_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', recordIds)
-            .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-        const dataById = new Map(recordsData.map((r) => [r.id, r.data]));
+        const dataById = new Map<string, FormattedRecord['json']>();
+        {
+            // Drain the result rows into the Map and let the array go out of scope.
+            // Keeping both the array and the Map doubles the reference count on each
+            // encrypted blob, which prevents `dataById.delete()` below from making
+            // them eligible for GC during the loop.
+            const rows = await dbRead
+                .from(RECORDS_DATA_TABLE)
+                .where({ connection_id: connectionId, model })
+                .whereIn('id', recordIds)
+                .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+            while (rows.length > 0) {
+                const r = rows.pop()!;
+                dataById.set(r.id, r.data);
+            }
+        }
 
         const results: ReturnedRecord[] = [];
 
         // TODO: decrypt in batch
         for (const item of recordsMetadata) {
             const data = dataById.get(item.id) ?? item.json ?? {};
+            // Drop the only remaining reference to the encrypted blob so V8 can
+            // reclaim it when GC fires under heap pressure.
+            dataById.delete(item.id);
             const decryptedData = await decryptRecordData({ ...item, json: data });
             results.push({
                 ...decryptedData,
