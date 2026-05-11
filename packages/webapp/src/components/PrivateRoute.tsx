@@ -47,8 +47,9 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
-        // Skip env validation to avoid 404 for paths under /onboarding/hear-about-us
-        if (location.pathname.startsWith('/onboarding/hear-about-us')) {
+        // Skip env validation for paths that are not environment-specific
+        const nonEnvPaths = ['/onboarding/hear-about-us', '/team-settings', '/user-settings', '/team/billing'];
+        if (nonEnvPaths.some((p) => location.pathname.startsWith(p))) {
             setReady(true);
             return;
         }

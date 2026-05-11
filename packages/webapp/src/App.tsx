@@ -148,6 +148,21 @@ const router = sentryCreateBrowserRouter([
                 element: <HearAboutUs />
             },
             {
+                path: '/team-settings',
+                element: <TeamSettingsPage />,
+                handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/user-settings',
+                element: <UserSettings />,
+                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/team/billing',
+                element: <TeamBilling />,
+                handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+            },
+            {
                 path: '/:env',
                 children: [
                     {
@@ -252,25 +267,22 @@ const router = sentryCreateBrowserRouter([
                         path: 'project-settings',
                         element: <Navigate to="/environment-settings" />
                     },
-                    // Not env-specific, but uses env
+                    // Backward compat redirects for old env-prefixed URLs
                     {
                         path: 'account-settings',
-                        element: <Navigate to="/team-settings" />
+                        element: <Navigate to="/team-settings" replace />
                     },
                     {
                         path: 'team-settings',
-                        element: <TeamSettingsPage />,
-                        handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+                        element: <Navigate to="/team-settings" replace />
                     },
                     {
                         path: 'user-settings',
-                        element: <UserSettings />,
-                        handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                        element: <Navigate to="/user-settings" replace />
                     },
                     {
                         path: 'team/billing',
-                        element: <TeamBilling />,
-                        handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+                        element: <Navigate to="/team/billing" replace />
                     }
                 ]
             }
@@ -278,19 +290,7 @@ const router = sentryCreateBrowserRouter([
     },
     {
         path: '/account-settings',
-        element: <RedirectWithEnv path="team-settings" />
-    },
-    {
-        path: '/team-settings',
-        element: <RedirectWithEnv path="team-settings" />
-    },
-    {
-        path: '/team/billing',
-        element: <RedirectWithEnv path="team/billing" />
-    },
-    {
-        path: '/user-settings',
-        element: <RedirectWithEnv path="user-settings" />
+        element: <Navigate to="/team-settings" replace />
     },
     {
         path: '/hn-demo',
