@@ -35,6 +35,8 @@ export const EnvironmentDropdown: React.FC = () => {
 
     const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
 
+    const NON_ENV_PATHS = ['team-settings', 'user-settings', 'team'];
+
     const onSelect = (selected: string) => {
         if (selected === env) {
             return;
@@ -43,6 +45,11 @@ export const EnvironmentDropdown: React.FC = () => {
         setEnv(selected);
 
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
+
+        // Non-environment-specific pages — just update env in store, don't change URL
+        if (NON_ENV_PATHS.includes(pathSegments[0])) {
+            return;
+        }
 
         pathSegments[0] = selected;
 
@@ -116,7 +123,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                                 <>Contact Nango to add more</>
                                             ) : (
                                                 <>
-                                                    <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                    <StyledLink to={`/team/billing`} className="text-s">
                                                         Upgrade
                                                     </StyledLink>{' '}
                                                     to add more
