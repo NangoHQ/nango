@@ -38,6 +38,39 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
   z-index: 200 !important;
 }
 
+/* ══ SEARCH DIALOG PANEL — radius matches design system ═════════ */
+/*
+ * The headless-ui dialog panel that wraps the search box uses a
+ * larger arbitrary radius from Mintlify (≈12px) that escapes the
+ * global rounded-* override at the top of this file. Pin the panel
+ * and its inner surfaces to 4px so the corners match the search
+ * input inside, the expandable summary hover (see EXPANDABLES
+ * section), and the rest of the design system.
+ */
+[id^="headlessui-dialog-panel"],
+[id^="headlessui-dialog-panel"] > div,
+[id^="headlessui-dialog-panel"] [class*="bg-white"],
+[id^="headlessui-dialog-panel"] [class*="bg-background"] {
+  border-radius: 4px !important;
+}
+
+/* ══ EXPANDABLES — radius matches design system ═════════════════ */
+/*
+ * Mintlify <Accordion> renders as <details><summary>...</summary>...</details>.
+ * The summary's hover highlight uses a radius that doesn't match the
+ * search dialog panel. Pin both <details> and <summary> to 4px. When
+ * the accordion is open, square off the summary's bottom corners so
+ * the highlight connects cleanly to the expanded content below
+ * instead of leaving a curved gap.
+ */
+details, summary {
+  border-radius: 4px !important;
+}
+details[open] > summary {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 /*
  * z-index: 30 matches Mintlify's native z-30 class so it stays
@@ -117,6 +150,41 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
   padding: 4px 8px !important;
   border-radius: 4px !important;
   display: block !important;
+}
+
+/* ══ TOC — normalize unselected item color ══════════════════════ */
+/*
+ * Mintlify renders H2 TOC entries in #515556 and nested H3 entries
+ * in #717576. The mismatched tints make the outline read as noisy
+ * rather than hierarchical. Normalize to a single color per mode
+ * and rely on indentation (below) to convey hierarchy. Hover and
+ * active states are unchanged — they still come from the rules
+ * further down (`li[data-active="true"]` and the scroll-active
+ * fallback) which outweigh these selectors.
+ */
+html:not(.dark) #table-of-contents a {
+  color: #515556 !important;
+}
+html:not(.dark) #table-of-contents a:hover {
+  color: #000000 !important;
+}
+.dark #table-of-contents a {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark #table-of-contents a:hover {
+  color: #ffffff !important;
+}
+
+/* ══ TOC — indent H3 sub-items ══════════════════════════════════ */
+/*
+ * Mintlify nests H3 TOC entries inside <li><ul><li>...</li></ul></li>.
+ * The default render leaves H2 and H3 anchors at the same left edge,
+ * which loses the visual hierarchy now that we've unified their
+ * colors. Indent any anchor nested one level deeper than the top-
+ * level TOC list.
+ */
+#table-of-contents li li a {
+  padding-left: 20px !important;
 }
 
 /* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
@@ -322,6 +390,24 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 }
 .dark #navbar a[href="https://app.nango.dev"]:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sign Up — lock to Nango brand cyan */
+/*
+ * Mintlify drives the primary button from `colors.primary` in
+ * docs.json (currently #29abe2) but applies opacity/shade tweaks on
+ * hover and focus that drift visibly from the brand. Pin the resting
+ * color to #29abe3 explicitly, and use the existing brand dark
+ * (#217ea6 from docs.json) for hover so the transition stays on-system.
+ */
+#navbar a[href="https://app.nango.dev/signup"] {
+  background-color: #29abe3 !important;
+  border: 1px solid #29abe3 !important;
+  color: #ffffff !important;
+}
+#navbar a[href="https://app.nango.dev/signup"]:hover {
+  background-color: #217ea6 !important;
+  border-color: #217ea6 !important;
 }
 
 /* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
