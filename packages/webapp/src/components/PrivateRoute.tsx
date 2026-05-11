@@ -75,15 +75,17 @@ export const PrivateRoute: React.FC = () => {
             setNotFoundEnv(!isNonEnvPath);
         } else {
             const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
-            if (!isNonEnvPath && matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
+            if (matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
                 // User navigated directly to a production env they don't have access to
                 const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
                 setEnv(fallback ? fallback.name : meta.environments[0].name);
-                setUnauthorizedEnv(true);
+                // Only show the unauthorized page for env-specific paths
+                setUnauthorizedEnv(!isNonEnvPath);
             } else {
                 setEnv(currentEnv);
                 setUnauthorizedEnv(false);
             }
+            setNotFoundEnv(false);
         }
 
         // it's ready when datastore and path are finally reconciliated
