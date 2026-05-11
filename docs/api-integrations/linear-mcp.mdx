@@ -1,27 +1,27 @@
 ---
-title: 'Amplitude (MCP)'
-sidebarTitle: 'Amplitude (MCP)'
-description: 'Connect AI tools to Amplitude via the Model Context Protocol (MCP) to analyze product data, experiments, and user behavior'
+title: 'Linear (MCP)'
+sidebarTitle: 'Linear (MCP)'
+description: 'Connect AI tools to Linear via the Model Context Protocol (MCP) to manage issues, projects, and workflows'
 ---
 
 ## 🚀 Quickstart
 
-Connect to the Amplitude MCP server with Nango and call MCP tools in minutes. Amplitude MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
+Connect to the Linear MCP server with Nango and call MCP tools in minutes. Linear MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Amplitude (MCP)_.
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Linear (MCP)_.
     </Step>
-    <Step title="Choose region and authorize">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Amplitude. Later, you'll let your users do the same directly from your app.
+    <Step title="Authorize Linear">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Linear. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call an Amplitude MCP tool">
+    <Step title="Call a Linear MCP tool">
     Make your first MCP request (initialize handshake). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/mcp" \
+            curl "https://api.nango.dev/v2/mcp" \
               -X POST \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -54,7 +54,7 @@ Connect to the Amplitude MCP server with Nango and call MCP tools in minutes. Am
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.post({
-            endpoint: '/mcp',
+            endpoint: '/v2/mcp',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
             body: {
@@ -75,8 +75,9 @@ Connect to the Amplitude MCP server with Nango and call MCP tools in minutes. Am
         console.log(res.data);
         ```
         </Tab>
- 
+
     </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
@@ -85,11 +86,10 @@ Connect to the Amplitude MCP server with Nango and call MCP tools in minutes. Am
     </Step>
 </Steps>
 
-## 📚 Amplitude (MCP) guides
+## 📚 Linear (MCP) guides
 
-Nango uses **dynamic client registration** with Amplitude's MCP OAuth server. You do not need to register an MCP application.
+Nango uses **dynamic client registration** with Linear's MCP OAuth server. You do not need to register an MCP application.
 
-
-Official resources: [Amplitude MCP](https://amplitude.com/docs/amplitude-ai/amplitude-mcp)
+Official resources: [Linear MCP](https://linear.app/docs/mcp)
 
 ---

@@ -1145,7 +1145,7 @@ amplitude-mcp-eu:
         base_url: https://mcp.eu.amplitude.com
         headers:
             accept: application/json,text/event-stream
-    docs: https://nango.dev/docs/api-integrations/amplitude-mcp
+    docs: https://nango.dev/docs/api-integrations/amplitude-mcp-eu
 
 anthropic:
     display_name: Anthropic
@@ -10578,7 +10578,7 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/linear
+    docs: https://nango.dev/docs/api-integrations/linear-mcp
 
 linkedin:
     display_name: LinkedIn
@@ -12445,7 +12445,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/notion
+    docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
     display_name: Notion (SCIM API)
