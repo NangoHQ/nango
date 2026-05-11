@@ -25,7 +25,7 @@
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
-    "href": "https://www.nango.dev"
+    "href": "https://nango.dev"
   },
   "favicon": "/favicon.png",
   "contextual": {
@@ -69,7 +69,7 @@
       "linkedin": "https://www.linkedin.com/company/nangohq/",
       "github": "https://github.com/NangoHQ/nango",
       "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
+      "website": "https://nango.dev/"
     }
   },
   "integrations": {
