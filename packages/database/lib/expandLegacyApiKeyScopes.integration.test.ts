@@ -12,6 +12,9 @@ async function createKey({ scopes, deletedAt }: { scopes: string[]; deletedAt?: 
         .knex('_nango_accounts')
         .insert({ name: `test-account-${randomUUID()}` })
         .returning('id');
+    // Set iv/tag to non-empty placeholders so encryptDatabaseIfNeeded (run by encryption.manager test)
+    // treats these rows as already encrypted and skips them. Use a unique secret per row too.
+    const unique = randomUUID();
     const [row] = await db
         .knex('customer_keys')
         .insert({
@@ -19,10 +22,10 @@ async function createKey({ scopes, deletedAt }: { scopes: string[]; deletedAt?: 
             key_type: 'api',
             display_name: 'test',
             scopes,
-            secret: 'secret',
-            iv: '',
-            tag: '',
-            hashed: `hashed-${randomUUID()}`,
+            secret: unique,
+            iv: 'test-iv',
+            tag: 'test-tag',
+            hashed: `hashed-${unique}`,
             deleted_at: deletedAt ?? null
         })
         .returning('id');
