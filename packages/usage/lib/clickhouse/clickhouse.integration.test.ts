@@ -1,3 +1,4 @@
+import { uuidv7 } from 'uuidv7';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { Clickhouse } from './clickhouse.js';
@@ -405,7 +406,8 @@ const rnd = {
     time(date: Date): Date {
         date.setHours(rnd.number(24), rnd.number(60), rnd.number(60), 0);
         return date;
-    }
+    },
+    uuid: () => uuidv7()
 };
 
 function genEventsN({
@@ -506,6 +508,7 @@ function genEvent({
                 attributes: {
                     ...baseAttributes,
                     model: 'test',
+                    batchId: rnd.uuid(),
                     ...attributes
                 }
             };
@@ -519,6 +522,7 @@ function genEvent({
                 value,
                 attributes: {
                     ...baseAttributes,
+                    batchId: rnd.uuid(),
                     ...attributes
                 }
             };
