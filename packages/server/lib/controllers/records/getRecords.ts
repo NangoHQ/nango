@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { records } from '@nangohq/records';
@@ -99,6 +100,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         const responseSize = parseInt(res.get('content-length') || '0');
         metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
+        tracer.scope().active()?.setTag('response.size_bytes', responseSize);
     } catch {
         // ignore errors
     }
