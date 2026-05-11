@@ -44,7 +44,7 @@ describe('expandLegacyApiKeyScopes', () => {
     });
 
     afterAll(async () => {
-        await db.knex.destroy();
+        // Keep the shared db singleton open for other test files.
     });
 
     beforeEach(async () => {
