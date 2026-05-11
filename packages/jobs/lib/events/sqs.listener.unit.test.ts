@@ -13,9 +13,16 @@ vi.mock('@aws-sdk/client-sqs', () => ({
             destroy: mockDestroy
         };
     }),
-    GetQueueUrlCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
-    ReceiveMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
-    DeleteMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input }))
+    // Vitest 4: command mocks must be constructable (`function`, not `() =>`), or `new GetQueueUrlCommand(...)` breaks.
+    GetQueueUrlCommand: vi.fn().mockImplementation(function GetQueueUrlCommandMock(input: Record<string, unknown>) {
+        return { input };
+    }),
+    ReceiveMessageCommand: vi.fn().mockImplementation(function ReceiveMessageCommandMock(input: Record<string, unknown>) {
+        return { input };
+    }),
+    DeleteMessageCommand: vi.fn().mockImplementation(function DeleteMessageCommandMock(input: Record<string, unknown>) {
+        return { input };
+    })
 }));
 
 vi.mock('@nangohq/utils', async (importOriginal) => {

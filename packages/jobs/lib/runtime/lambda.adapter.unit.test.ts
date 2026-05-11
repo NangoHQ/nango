@@ -17,15 +17,21 @@ vi.mock('@aws-sdk/client-s3', () => ({
     S3Client: vi.fn().mockImplementation(function S3ClientMock() {
         return { send: mockS3Send };
     }),
-    HeadObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'HeadObjectCommand' } })),
-    PutObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'PutObjectCommand' } }))
+    HeadObjectCommand: vi.fn().mockImplementation(function HeadObjectCommandMock(input: Record<string, unknown>) {
+        return { input, constructor: { name: 'HeadObjectCommand' } };
+    }),
+    PutObjectCommand: vi.fn().mockImplementation(function PutObjectCommandMock(input: Record<string, unknown>) {
+        return { input, constructor: { name: 'PutObjectCommand' } };
+    })
 }));
 
 vi.mock('@aws-sdk/client-lambda', () => ({
     LambdaClient: vi.fn().mockImplementation(function LambdaClientMock() {
         return { send: mockLambdaSend };
     }),
-    InvokeCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'InvokeCommand' } }))
+    InvokeCommand: vi.fn().mockImplementation(function InvokeCommandMock(input: Record<string, unknown>) {
+        return { input, constructor: { name: 'InvokeCommand' } };
+    })
 }));
 
 vi.mock('../env.js', () => ({
