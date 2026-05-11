@@ -3,18 +3,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { retry } from './retry.js';
 
 describe('retry', () => {
-    const envVarName = 'NANGO_RETRYABLE_NETWORK_ERRORS';
-    const originalEnvValue = process.env[envVarName];
-
-    afterEach(() => {
-        vi.resetModules();
-        if (originalEnvValue === undefined) {
-            Reflect.deleteProperty(process.env, envVarName);
-        } else {
-            process.env[envVarName] = originalEnvValue;
-        }
-    });
-
     it('should retry', async () => {
         let count = 0;
         const result = await retry(
@@ -98,19 +86,14 @@ describe('retry', () => {
 
 describe('httpRetryStrategy', () => {
     const envVarName = 'NANGO_RETRYABLE_NETWORK_ERRORS';
-    const originalEnvValue = process.env[envVarName];
 
     afterEach(() => {
+        vi.unstubAllEnvs();
         vi.resetModules();
-        if (originalEnvValue === undefined) {
-            Reflect.deleteProperty(process.env, envVarName);
-        } else {
-            process.env[envVarName] = originalEnvValue;
-        }
     });
 
     it('should retry for a network error provided by env var', async () => {
-        process.env[envVarName] = 'E_CUSTOM_NETWORK';
+        vi.stubEnv(envVarName, 'E_CUSTOM_NETWORK');
         vi.resetModules();
 
         const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
@@ -120,7 +103,7 @@ describe('httpRetryStrategy', () => {
     });
 
     it('should trim and match env-provided codes when list has spaces after commas', async () => {
-        process.env[envVarName] = 'E_CUSTOM_NETWORK, UND_ERR_SOCKET';
+        vi.stubEnv(envVarName, 'E_CUSTOM_NETWORK, UND_ERR_SOCKET');
         vi.resetModules();
 
         const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
@@ -130,7 +113,7 @@ describe('httpRetryStrategy', () => {
     });
 
     it('should ignore empty segments in env-provided comma list', async () => {
-        process.env[envVarName] = 'E_ONE,, E_TWO ,';
+        vi.stubEnv(envVarName, 'E_ONE,, E_TWO ,');
         vi.resetModules();
 
         const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
