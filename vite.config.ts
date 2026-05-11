@@ -7,7 +7,6 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     test: {
         include: ['**/*.unit.{test,spec}.?(c|m)[jt]s?(x)'],
-        exclude: ['**/node_modules/**', '**/dist/**', '**/build/**', '.git/**'],
         setupFiles: './tests/setupFiles.ts',
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
