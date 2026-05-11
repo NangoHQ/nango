@@ -67,8 +67,30 @@ jobs:
 
             - name: Build
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build
+              run: npm run ts-build:nocheck
 
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run lint -- --quiet
+    typecheck:
+        needs: should-run
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              if: needs.should-run.outputs.should_skip != 'true'
+              with:
+                  fetch-depth: '0'
+
+            - uses: actions/setup-node@v4
+              if: needs.should-run.outputs.should_skip != 'true'
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              if: needs.should-run.outputs.should_skip != 'true'
+              run: npm ci
+
+            - name: Typecheck
+              if: needs.should-run.outputs.should_skip != 'true'
+              run: npm run typecheck

@@ -14,6 +14,8 @@
         "lint": "eslint . ",
         "lint:fix": "eslint . --fix",
         "ts-build": "tsc -b tsconfig.build.json",
+        "ts-build:nocheck": "tsc -b tsconfig.build.json --noCheck",
+        "typecheck": "tsc -b tsconfig.build.json --noEmit",
         "ts-build:docker": "tsc -b tsconfig.docker.json",
         "ts-clean": "npx rimraf packages/*/tsconfig.tsbuildinfo packages/*/dist",
         "webapp-build": "cd ./packages/webapp && npm run build && cd ../..",
