@@ -433,16 +433,17 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
  * button, so this bottom input is redundant. Mintlify doesn't expose
  * a docs.json toggle for it.
  *
- * Two layers needed: the input itself uses `chat-assistant-` prefixed
- * classes (caught by [class*="chat-assistant"]), but its outer wrapper
- * uses only generic Tailwind classes — `rounded-2xl pointer-events-auto
- * bg-background-light/90 ...`. That combination is distinctive enough
- * to target without false positives on regular page content.
+ * Two layers needed:
+ * 1. The floating input bar itself (.chat-assistant-floating-input).
+ * 2. Its rounded-2xl wrapper div — which also appears identically
+ *    inside the Ask AI sidebar panel, so the rule must be scoped to
+ *    #content-area to avoid hiding the panel's own input container.
+ *
+ * Do NOT use [class*="chat-assistant"] (hides the panel) or
+ * #chat-assistant-textarea (that ID is duplicated on the panel
+ * textarea and would hide it too).
  */
-#chat-assistant-textarea,
-[class*="chat-assistant"] {
-  display: none !important;
-}
-div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
+.chat-assistant-floating-input,
+#content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
