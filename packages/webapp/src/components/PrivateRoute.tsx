@@ -50,6 +50,8 @@ export const PrivateRoute: React.FC = () => {
         // Skip env validation for paths that are not environment-specific
         const nonEnvPaths = ['/onboarding/hear-about-us', '/team-settings', '/user-settings', '/team/billing'];
         if (nonEnvPaths.some((p) => location.pathname.startsWith(p))) {
+            setNotFoundEnv(false);
+            setUnauthorizedEnv(false);
             setReady(true);
             return;
         }
