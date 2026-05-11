@@ -28,7 +28,7 @@ export const sql = [
     )
     ENGINE = MergeTree()
     PARTITION BY toYYYYMM(day)
-    ORDER BY (account_id, day, batch_id, environment_id, integration_id, connection_id, model)
+    ORDER BY (account_id, day, batch_id)
     TTL day + INTERVAL 24 MONTH
     `,
 
@@ -62,7 +62,7 @@ export const sql = [
     )
     ENGINE = MergeTree()
     PARTITION BY toYYYYMM(day)
-    ORDER BY (account_id, day, batch_id, environment_id, integration_id)
+    ORDER BY (account_id, day, batch_id)
     TTL day + INTERVAL 24 MONTH
     `,
 
