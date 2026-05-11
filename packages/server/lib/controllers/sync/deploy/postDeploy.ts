@@ -29,15 +29,14 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
 
-    // Serialize deploys per environment: queue this deploy until any in-progress deploy finishes.
+    // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
-    const acquisitionTimeoutMs = 5 * 60 * 1000;
-    const ttlMs = 10 * 60 * 1000; // must exceed acquisitionTimeoutMs so the lock can't expire while a deploy is still running
+    const ttlMs = 10 * 60 * 1000; // max expected deploy duration
     const lockKey = `lock:deployService:deploy:${account.id}:${environment.id}`;
     let lock: Lock | undefined;
 
     try {
-        lock = await locking.tryAcquire(lockKey, ttlMs, acquisitionTimeoutMs);
+        lock = await locking.acquire(lockKey, ttlMs);
     } catch {
         const logCtx = await logContextGetter.create({ operation: { type: 'deploy', action: 'custom' } }, { account, environment });
         const error = new NangoError('concurrent_deployment');

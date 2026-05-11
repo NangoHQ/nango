@@ -132,9 +132,9 @@ describe(`POST ${endpoint}`, () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const getLockingSpy = vi.spyOn(kvstore, 'getLocking').mockResolvedValue({
-            tryAcquire: vi.fn().mockRejectedValue(new Error('Acquiring lock timed out')),
+            tryAcquire: vi.fn(),
             release: vi.fn(),
-            acquire: vi.fn(),
+            acquire: vi.fn().mockRejectedValue(new Error('Failed to acquire lock')),
             releaseAll: vi.fn(),
             hasLock: vi.fn(),
             withLock: vi.fn()
