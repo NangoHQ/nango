@@ -31,7 +31,7 @@
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/utils": "file:../utils",
         "@xmldom/xmldom": "0.8.13",
-        "ajv": "8.18.0",
+        "ajv": "8.20.0",
         "ajv-formats": "3.0.1",
         "archiver": "7.0.1",
         "axios": "1.15.2",
@@ -39,7 +39,7 @@
         "dayjs": "1.11.19",
         "dd-trace": "5.52.0",
         "exponential-backoff": "3.1.1",
-        "fast-xml-parser": "5.5.9",
+        "fast-xml-parser": "5.7.3",
         "form-data": "4.0.4",
         "he": "^1.2.0",
         "js-yaml": "4.1.1",
@@ -54,7 +54,6 @@
         "simple-oauth2": "5.1.0",
         "undici": "6.24.1",
         "uuid": "9.0.0",
-        "webflow-api": "3.3.4",
         "xml-crypto": "6.1.2",
         "zod": "4.0.5"
     },
@@ -77,7 +76,7 @@
         "knex": "3.1.0",
         "type-fest": "4.41.0",
         "typescript": "5.8.3",
-        "vitest": "3.2.4"
+        "vitest": "4.1.5"
     },
     "files": [
         "dist/**/*",

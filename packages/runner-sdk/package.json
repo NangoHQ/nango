@@ -12,7 +12,7 @@
     "dependencies": {
         "@nangohq/node": "0.70.1",
         "@nangohq/providers": "0.70.1",
-        "ajv": "8.18.0",
+        "ajv": "8.20.0",
         "ajv-formats": "3.0.1",
         "lodash-es": "4.18.1",
         "parse-link-header": "2.0.0"
@@ -22,7 +22,7 @@
         "@types/json-schema": "7.0.15",
         "axios": "1.15.2",
         "json-schema": "0.4.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.5"
     },
     "peerDependencies": {
         "zod": "4.3.6"

@@ -5,6 +5,9 @@ import * as path from 'path';
 import parseLinksHeader from 'parse-link-header';
 import { vi } from 'vitest';
 
+/** Vitest 4: `ReturnType<typeof vi.fn>` becomes `Mock<Procedure | Constructable>`, which TypeScript may not treat as callable on class fields. */
+type VitestMockFn = Mock<(...args: any[]) => any>;
+
 import { getProvider } from '@nangohq/providers';
 import { PaginationService } from '@nangohq/runner-sdk';
 
@@ -20,6 +23,7 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
 
 interface FixtureProvider {
     getBatchSaveData(modelName: string): Promise<any>;
@@ -762,23 +766,23 @@ class NangoActionMock {
     providerConfigKey: string;
     private fixtureProvider: Promise<FixtureProvider>;
 
-    log: ReturnType<typeof vi.fn>;
+    log: VitestMockFn;
     ActionError = vi.fn();
-    getConnection: ReturnType<typeof vi.fn>;
-    getMetadata: ReturnType<typeof vi.fn>;
-    updateMetadata: ReturnType<typeof vi.fn>;
-    paginate: ReturnType<typeof vi.fn>;
-    get: ReturnType<typeof vi.fn>;
-    post: ReturnType<typeof vi.fn>;
-    patch: ReturnType<typeof vi.fn>;
-    put: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-    proxy: ReturnType<typeof vi.fn>;
-    getWebhookURL: ReturnType<typeof vi.fn>;
-    zodValidateInput: ReturnType<typeof vi.fn>;
-    deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
-    trackDeletesStart: ReturnType<typeof vi.fn>;
-    trackDeletesEnd: ReturnType<typeof vi.fn>;
+    getConnection: VitestMockFn;
+    getMetadata: VitestMockFn;
+    updateMetadata: VitestMockFn;
+    paginate: VitestMockFn;
+    get: VitestMockFn;
+    post: VitestMockFn;
+    patch: VitestMockFn;
+    put: VitestMockFn;
+    delete: VitestMockFn;
+    proxy: VitestMockFn;
+    getWebhookURL: VitestMockFn;
+    zodValidateInput: VitestMockFn;
+    deleteRecordsFromPreviousExecutions: VitestMockFn;
+    trackDeletesStart: VitestMockFn;
+    trackDeletesEnd: VitestMockFn;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         this.dirname = dirname;
@@ -1133,12 +1137,12 @@ class NangoSyncMock extends NangoActionMock {
     lastSyncDate = null;
     private checkpoint: Checkpoint | null = null;
 
-    batchSave: ReturnType<typeof vi.fn>;
-    batchDelete: ReturnType<typeof vi.fn>;
-    getCheckpoint: ReturnType<typeof vi.fn>;
-    saveCheckpoint: ReturnType<typeof vi.fn>;
-    clearCheckpoint: ReturnType<typeof vi.fn>;
-    listRecords: ReturnType<typeof vi.fn>;
+    batchSave: VitestMockFn;
+    batchDelete: VitestMockFn;
+    getCheckpoint: VitestMockFn;
+    saveCheckpoint: VitestMockFn;
+    clearCheckpoint: VitestMockFn;
+    listRecords: VitestMockFn;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });

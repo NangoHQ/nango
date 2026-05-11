@@ -2,11 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Batcher } from './batcher.js';
 
+import type { Mock } from 'vitest';
+
+type BatcherProcessFn = (events: any[]) => Promise<void>;
+
 describe('Batcher', () => {
-    let mockProcess: ReturnType<typeof vi.fn>;
+    let mockProcess: Mock<BatcherProcessFn>;
 
     beforeEach(() => {
-        mockProcess = vi.fn().mockResolvedValue(undefined);
+        mockProcess = vi.fn<BatcherProcessFn>().mockResolvedValue(undefined);
         vi.useFakeTimers();
     });
 

@@ -13,6 +13,7 @@ import { PersistClient } from '../clients/persist.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -627,6 +628,14 @@ describe('listRecords', () => {
 });
 
 describe('proxy 401 invalid credentials', () => {
+    type NangoGetConnectionFn = (
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh?: boolean,
+        refreshToken?: boolean,
+        refreshGithubAppJwtToken?: boolean
+    ) => Promise<any>;
+
     const stableCredentials = {
         type: 'OAUTH2' as const,
         access_token: 'same-token',
@@ -675,14 +684,14 @@ describe('proxy 401 invalid credentials', () => {
     }
 
     let persistClient: PersistClient;
-    let getConnectionMock: ReturnType<typeof vi.fn>;
+    let getConnectionMock: Mock<NangoGetConnectionFn>;
 
     beforeEach(async () => {
         persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
 
         const nodeClient = (await import('@nangohq/node')).Nango;
-        getConnectionMock = vi.fn().mockResolvedValue({
+        getConnectionMock = vi.fn<NangoGetConnectionFn>().mockResolvedValue({
             credentials: stableCredentials
         });
         nodeClient.prototype.getConnection = getConnectionMock;

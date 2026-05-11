@@ -26,7 +26,7 @@
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "typescript": "5.8.3",
-        "vitest": "3.2.4"
+        "vitest": "4.1.5"
     },
     "files": [
         "dist/**/*"

@@ -6,12 +6,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PaginationService from './paginate.service.js';
 
 import type { CursorPagination, LinkPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { Mock } from 'vitest';
+
+/** Matches pagination `proxy` at compile time; return is `Promise<any>` so tests can pass partial response shapes. */
+type PaginationProxy = (config: UserProvidedProxyConfiguration) => Promise<any>;
 
 describe('PaginationService', () => {
     describe('cursor pagination', () => {
         let config: UserProvidedProxyConfiguration;
         let paginationConfig: CursorPagination;
-        let proxy: ReturnType<typeof vi.fn>; // Use ReturnType for type inference
+        let proxy: Mock<PaginationProxy>;
 
         beforeEach(() => {
             config = {
@@ -29,7 +33,7 @@ describe('PaginationService', () => {
                 response_path: 'data'
             };
 
-            proxy = vi.fn().mockResolvedValue({
+            proxy = vi.fn<PaginationProxy>().mockResolvedValue({
                 data: {
                     data: [{ id: 1 }],
                     pages: {
@@ -238,7 +242,7 @@ describe('PaginationService', () => {
     describe('link pagination', () => {
         let config: UserProvidedProxyConfiguration;
         let paginationConfig: LinkPagination;
-        let proxy: ReturnType<typeof vi.fn>;
+        let proxy: Mock<PaginationProxy>;
 
         beforeEach(() => {
             config = {
@@ -247,7 +251,7 @@ describe('PaginationService', () => {
                 providerConfigKey: 'test-provider-key'
             };
 
-            proxy = vi.fn();
+            proxy = vi.fn<PaginationProxy>();
         });
 
         describe('link pagination fallback logic', () => {
