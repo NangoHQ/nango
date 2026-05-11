@@ -177,14 +177,17 @@ html:not(.dark) #table-of-contents a:hover {
 
 /* ══ TOC — indent H3 sub-items ══════════════════════════════════ */
 /*
- * Mintlify nests H3 TOC entries inside <li><ul><li>...</li></ul></li>.
- * The default render leaves H2 and H3 anchors at the same left edge,
- * which loses the visual hierarchy now that we've unified their
- * colors. Indent any anchor nested one level deeper than the top-
- * level TOC list.
+ * Mintlify renders the TOC as a FLAT list — every entry is an
+ * `<li class="toc-item" data-depth="N">` sibling, not a nested
+ * <ul>. So `li li a` never matches and we have to lean on the
+ * data attribute. H2 = depth 0, H3 = depth 1, H4 = depth 2.
+ * 20px steps line up with the left sidebar's nested-page indent.
  */
-#table-of-contents li li a {
-  padding-left: 20px !important;
+#table-of-contents .toc-item[data-depth="1"] > a {
+  padding-left: 24px !important;
+}
+#table-of-contents .toc-item[data-depth="2"] > a {
+  padding-left: 40px !important;
 }
 
 /* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
@@ -392,36 +395,35 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Sign Up — lock to Nango brand cyan */
+/* Sign Up — force Nango brand cyan #29abe3 */
 /*
- * Mintlify renders TWO variants of the Sign Up button at different
- * breakpoints, and both ship in the same HTML:
- *   - Mobile: flat <a> with the background painted by the anchor itself.
- *   - Desktop: <a> with an absolutely positioned overlay
- *     <span class="absolute inset-0 bg-primary-dark rounded-xl
- *                  group-hover:opacity-[0.9]">
- *     that covers the anchor. The visible color comes from the span,
- *     not the anchor; `group-hover:opacity-[0.9]` drops the overlay
- *     to 90% on hover so the anchor color shows through slightly.
- *
- * Cover both: paint the anchor #29abe3 (handles the mobile case and
- * the hover-bleed on desktop), darken to #217ea6 on hover (mobile
- * darkens directly; desktop blends through the overlay), and recolor
- * the desktop overlay span to #29abe3 so the visible surface matches.
+ * Mintlify wraps the desktop primary button in two layers:
+ *   <a>                                      ← we set bg = #29abe3
+ *     <span class="absolute inset-0 bg-primary-dark ...">  ← Mintlify paints #217ea6
+ *     <div>Sign Up</div>
+ *   </a>
+ * Recoloring the span has been unreliable (Tailwind utility CSS
+ * specificity quirks, deploy lag), so we just remove the overlay
+ * entirely with display:none. The anchor's own background then
+ * becomes the visible color, which is exactly what we want. The
+ * mobile variant has no overlay span, so display:none on the
+ * span is a no-op there and the anchor bg wins by default.
  */
 #navbar a[href="https://app.nango.dev/signup"] {
   background-color: #29abe3 !important;
+  background-image: none !important;
   border: 1px solid #29abe3 !important;
   color: #ffffff !important;
+}
+#navbar a[href="https://app.nango.dev/signup"] > span:first-child,
+#navbar a[href="https://app.nango.dev/signup"] span.absolute,
+#navbar a[href="https://app.nango.dev/signup"] span[class*="bg-primary"] {
+  display: none !important;
 }
 #navbar a[href="https://app.nango.dev/signup"]:hover {
   background-color: #217ea6 !important;
   border-color: #217ea6 !important;
   color: #ffffff !important;
-}
-#navbar a[href="https://app.nango.dev/signup"] span.absolute,
-#navbar a[href="https://app.nango.dev/signup"] span[class*="bg-primary"] {
-  background-color: #29abe3 !important;
 }
 
 /* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
