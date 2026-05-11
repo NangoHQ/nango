@@ -1,7 +1,7 @@
 import { MantineProvider, createTheme } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { useEffect, useRef } from 'react';
-import { Navigate, RouterProvider, useParams } from 'react-router-dom';
+import { Navigate, RouterProvider, useLocation, useParams } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
@@ -62,6 +62,11 @@ const GettingStartedRoute = () => {
     }
 
     return globalEnv.isCloud ? <GettingStarted /> : <ClassicGettingStarted />;
+};
+
+const RedirectPreservingLocation = ({ to }: { to: string }) => {
+    const location = useLocation();
+    return <Navigate to={{ pathname: to, search: location.search, hash: location.hash }} replace />;
 };
 
 const RedirectWithEnv = ({ path }: { path: string }) => {
@@ -270,19 +275,19 @@ const router = sentryCreateBrowserRouter([
                     // Backward compat redirects for old env-prefixed URLs
                     {
                         path: 'account-settings',
-                        element: <Navigate to="/team-settings" replace />
+                        element: <RedirectPreservingLocation to="/team-settings" />
                     },
                     {
                         path: 'team-settings',
-                        element: <Navigate to="/team-settings" replace />
+                        element: <RedirectPreservingLocation to="/team-settings" />
                     },
                     {
                         path: 'user-settings',
-                        element: <Navigate to="/user-settings" replace />
+                        element: <RedirectPreservingLocation to="/user-settings" />
                     },
                     {
                         path: 'team/billing',
-                        element: <Navigate to="/team/billing" replace />
+                        element: <RedirectPreservingLocation to="/team/billing" />
                     }
                 ]
             }
@@ -290,7 +295,7 @@ const router = sentryCreateBrowserRouter([
     },
     {
         path: '/account-settings',
-        element: <Navigate to="/team-settings" replace />
+        element: <RedirectPreservingLocation to="/team-settings" />
     },
     {
         path: '/hn-demo',
