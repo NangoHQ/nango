@@ -14,6 +14,7 @@ import { DispatchQueueConsumer } from './consumer.js';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { Mock } from 'vitest';
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
@@ -49,11 +50,13 @@ function deferred<T>() {
     return { promise, resolve, reject };
 }
 
+type SqsSendMockFn = (command: unknown, options?: { abortSignal?: AbortSignal }) => Promise<any>;
+
 interface Harness {
     consumer: DispatchQueueConsumer;
-    sqsSend: ReturnType<typeof vi.fn>;
-    sqsDestroy: ReturnType<typeof vi.fn>;
-    orchestratorExecuteWebhook: ReturnType<typeof vi.fn>;
+    sqsSend: Mock<SqsSendMockFn>;
+    sqsDestroy: Mock<(...args: any[]) => any>;
+    orchestratorExecuteWebhook: Mock<(...args: any[]) => Promise<any>>;
 }
 
 function makeHarness(
@@ -62,7 +65,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
-        sqsSend?: ReturnType<typeof vi.fn>;
+        sqsSend?: Mock<SqsSendMockFn>;
     } = {}
 ): Harness {
     const messages = opts.messages ?? [];
@@ -76,7 +79,7 @@ function makeHarness(
 
     const sqsSend =
         opts.sqsSend ??
-        vi.fn(async (command: unknown) => {
+        vi.fn<SqsSendMockFn>(async (command: unknown) => {
             await new Promise((resolve) => setImmediate(resolve));
             if (command instanceof ReceiveMessageCommand) {
                 const messages = bodyQueue.splice(0, bodyQueue.length);
@@ -88,10 +91,10 @@ function makeHarness(
             throw new Error(`unexpected command ${String(command)}`);
         });
 
-    const sqsDestroy = vi.fn();
+    const sqsDestroy = vi.fn<(...args: any[]) => any>();
     const sqs = { send: sqsSend, destroy: sqsDestroy } as unknown as SQSClient;
 
-    const orchestratorExecuteWebhook = vi.fn();
+    const orchestratorExecuteWebhook = vi.fn<(...args: any[]) => Promise<any>>();
     orchestratorExecuteWebhook.mockResolvedValue(Ok({ taskId: 'task-1', retryKey: 'rk-1' }));
     const orchestratorClient = { executeWebhook: orchestratorExecuteWebhook } as unknown as OrchestratorClient;
 
@@ -220,7 +223,7 @@ describe('DispatchQueueConsumer', () => {
         const message = buildMessage();
         const scheduled = deferred<ReturnType<typeof Ok>>();
         let received = false;
-        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
+        const sqsSend = vi.fn<SqsSendMockFn>(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
             await new Promise((resolve) => setImmediate(resolve));
             if (command instanceof ReceiveMessageCommand) {
                 if (!received) {
@@ -277,7 +280,7 @@ describe('DispatchQueueConsumer', () => {
     it('starts one poll loop per configured consumerConcurrency', async () => {
         let receiveCalls = 0;
         const firstReceives = [deferred<void>(), deferred<void>()];
-        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
+        const sqsSend = vi.fn<SqsSendMockFn>(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
             if (command instanceof ReceiveMessageCommand) {
                 const index = receiveCalls++;
                 const pending = firstReceives[index];

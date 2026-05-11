@@ -5,10 +5,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockListen = vi.fn();
 const mockStop = vi.fn().mockResolvedValue(undefined);
 vi.mock('../events/sqs.listener.js', () => ({
-    SqsEventListener: vi.fn().mockImplementation(() => ({
-        listen: mockListen,
-        stop: mockStop
-    }))
+    // Vitest 4: class mocks must use `function`, not `() =>`, so `new SqsEventListener()` works.
+    SqsEventListener: vi.fn().mockImplementation(function SqsEventListenerMock() {
+        return {
+            listen: mockListen,
+            stop: mockStop
+        };
+    })
 }));
 
 vi.mock('../execution/operations/handler.js', () => ({

@@ -6,10 +6,13 @@ const mockSend = vi.fn();
 const mockDestroy = vi.fn();
 
 vi.mock('@aws-sdk/client-sqs', () => ({
-    SQSClient: vi.fn().mockImplementation(() => ({
-        send: mockSend,
-        destroy: mockDestroy
-    })),
+    // Vitest 4: arrow `() => ({...})` is not constructable; SQSClient is invoked with `new`.
+    SQSClient: vi.fn().mockImplementation(function SQSClientMock() {
+        return {
+            send: mockSend,
+            destroy: mockDestroy
+        };
+    }),
     GetQueueUrlCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
     ReceiveMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input })),
     DeleteMessageCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input }))
@@ -92,16 +95,19 @@ describe('SqsEventListener', () => {
     });
 
     it('passes abortSignal to ReceiveMessage and DeleteMessage send calls', async () => {
-        mockSend
-            .mockResolvedValueOnce({ QueueUrl: queueUrl })
-            .mockImplementation((cmd: { input?: { ReceiptHandle?: string } }, options?: { abortSignal?: AbortSignal }) => {
-                if (cmd.input?.ReceiptHandle != null) {
-                    return Promise.resolve(undefined);
-                }
-                return new Promise((_, reject) => {
-                    options?.abortSignal?.addEventListener('abort', () => reject(abortError()));
-                });
+        // Vitest 4: chained `.mockImplementation` replaces the prior `mockResolvedValueOnce` for *all*
+        // calls, so handle GetQueueUrl / Receive / Delete in one implementation.
+        mockSend.mockImplementation((cmd: { input?: { ReceiptHandle?: string; QueueName?: string } }, options?: { abortSignal?: AbortSignal }) => {
+            if (cmd.input?.QueueName) {
+                return Promise.resolve({ QueueUrl: queueUrl });
+            }
+            if (cmd.input?.ReceiptHandle != null) {
+                return Promise.resolve(undefined);
+            }
+            return new Promise((_, reject) => {
+                options?.abortSignal?.addEventListener('abort', () => reject(abortError()));
             });
+        });
 
         const listener = new SqsEventListener();
         const listenPromise = listener.listen('test-queue');

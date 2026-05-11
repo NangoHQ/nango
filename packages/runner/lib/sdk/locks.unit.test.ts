@@ -72,7 +72,8 @@ describe.each([
 
         it('should successfully acquire an expired lock', async () => {
             await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 2)); // Wait for the lock to expire
+            // Allow TTL to elapse (avoid flaky sub-ms timing under parallel Vitest workers).
+            await new Promise((resolve) => setTimeout(resolve, 50));
 
             const res = await locks.tryAcquireLock({ owner: 'owner2', key: 'resource1', ttlMs: 1000 });
             expect(res.unwrap()).toBe(true);

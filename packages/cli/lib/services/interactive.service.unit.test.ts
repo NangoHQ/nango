@@ -26,9 +26,12 @@ const mockedParseSecretKey = vi.spyOn(utils, 'parseSecretKey').mockResolvedValue
 
 vi.mock('@nangohq/node', () => {
     const listConnectionsMock = vi.fn();
-    const Nango = vi.fn(() => ({
-        listConnections: listConnectionsMock
-    }));
+    // Vitest 4: `new Nango()` requires a constructable mock (`function`, not arrow).
+    const Nango = vi.fn(function NangoMock() {
+        return {
+            listConnections: listConnectionsMock
+        };
+    });
     return { Nango, _listConnectionsMock: listConnectionsMock };
 });
 

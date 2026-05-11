@@ -1,14 +1,14 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { getRunnerClient } from './client.js';
 import { server } from './server.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 describe('Runner client', () => {
-    const port = 3095;
-    const serverUrl = `http://localhost:${port}`;
     let client: ReturnType<typeof getRunnerClient>;
+    let httpServer: Server;
     const nangoProps: NangoProps = {
         scriptType: 'sync',
         host: 'http://localhost:3003',
@@ -35,13 +35,31 @@ describe('Runner client', () => {
         logger: { level: 'off' }
     };
 
-    beforeAll(() => {
-        client = getRunnerClient(serverUrl, {
-            headersTimeoutMs: 3_000,
-            connectTimeoutMs: 2_000,
-            responseTimeoutMs: 5_000
+    beforeAll(async () => {
+        await new Promise<void>((resolve, reject) => {
+            httpServer = server.listen(0, '127.0.0.1', () => {
+                const addr = httpServer.address();
+                if (addr === null || typeof addr === 'string') {
+                    reject(new Error('Runner test server failed to bind'));
+                    return;
+                }
+                const { port } = addr;
+                const serverUrl = `http://127.0.0.1:${port}`;
+                client = getRunnerClient(serverUrl, {
+                    headersTimeoutMs: 3_000,
+                    connectTimeoutMs: 2_000,
+                    responseTimeoutMs: 5_000
+                });
+                resolve();
+            });
+            httpServer.on('error', reject);
         });
-        server.listen(port);
+    });
+
+    afterAll(async () => {
+        await new Promise<void>((resolve, reject) => {
+            httpServer.close((err) => (err ? reject(err) : resolve()));
+        });
     });
 
     it('should get server health', async () => {

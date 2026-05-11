@@ -14,13 +14,17 @@ const { mockS3Send, mockLambdaSend, mockEnvs } = vi.hoisted(() => ({
 }));
 
 vi.mock('@aws-sdk/client-s3', () => ({
-    S3Client: vi.fn().mockImplementation(() => ({ send: mockS3Send })),
+    S3Client: vi.fn().mockImplementation(function S3ClientMock() {
+        return { send: mockS3Send };
+    }),
     HeadObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'HeadObjectCommand' } })),
     PutObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'PutObjectCommand' } }))
 }));
 
 vi.mock('@aws-sdk/client-lambda', () => ({
-    LambdaClient: vi.fn().mockImplementation(() => ({ send: mockLambdaSend })),
+    LambdaClient: vi.fn().mockImplementation(function LambdaClientMock() {
+        return { send: mockLambdaSend };
+    }),
     InvokeCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'InvokeCommand' } }))
 }));
 
