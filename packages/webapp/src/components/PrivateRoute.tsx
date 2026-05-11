@@ -11,6 +11,7 @@ import PageEnvironmentUnauthorized from '../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../pages/PageNotFound';
 import { useStore } from '../store';
 import { useAnalyticsIdentify } from '../utils/analytics';
+import { NON_ENV_PATH_PREFIXES } from '../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
@@ -48,8 +49,7 @@ export const PrivateRoute: React.FC = () => {
         }
 
         // Skip env validation for paths that are not environment-specific
-        const nonEnvPaths = ['/onboarding/hear-about-us', '/team-settings', '/user-settings', '/team/billing'];
-        if (nonEnvPaths.some((p) => location.pathname.startsWith(p))) {
+        if (NON_ENV_PATH_PREFIXES.some((p) => location.pathname.startsWith(p))) {
             setNotFoundEnv(false);
             setUnauthorizedEnv(false);
             setReady(true);

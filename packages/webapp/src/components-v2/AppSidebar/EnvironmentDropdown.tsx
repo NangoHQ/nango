@@ -17,6 +17,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
+import { NON_ENV_PATH_PREFIXES } from '@/utils/routes';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -35,8 +36,6 @@ export const EnvironmentDropdown: React.FC = () => {
 
     const isMaxEnvironmentsReached = envs && environment.plan && envs.length >= environment.plan.environments_max;
 
-    const NON_ENV_PATHS = ['team-settings', 'user-settings', 'team'];
-
     const onSelect = (selected: string) => {
         if (selected === env) {
             return;
@@ -47,7 +46,7 @@ export const EnvironmentDropdown: React.FC = () => {
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
 
         // Non-environment-specific pages — just update env in store, don't change URL
-        if (NON_ENV_PATHS.includes(pathSegments[0])) {
+        if (NON_ENV_PATH_PREFIXES.some((p) => window.location.pathname.startsWith(p))) {
             return;
         }
 
