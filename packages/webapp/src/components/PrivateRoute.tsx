@@ -11,7 +11,7 @@ import PageEnvironmentUnauthorized from '../pages/PageEnvironmentUnauthorized';
 import PageNotFound from '../pages/PageNotFound';
 import { useStore } from '../store';
 import { useAnalyticsIdentify } from '../utils/analytics';
-import { NON_ENV_PATH_PREFIXES } from '../utils/routes';
+import { isNonEnvPath } from '../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();
@@ -48,12 +48,12 @@ export const PrivateRoute: React.FC = () => {
             return;
         }
 
-        const isNonEnvPath = NON_ENV_PATH_PREFIXES.some((p) => location.pathname.startsWith(p));
+        const nonEnvPath = isNonEnvPath(location.pathname);
 
         let currentEnv = env;
 
         // sync path with datastore (skip for non-env-specific pages — env comes from the store, not the URL)
-        if (!isNonEnvPath) {
+        if (!nonEnvPath) {
             const pathSplit = location.pathname.split('/');
             if (pathSplit.length > 0 && env !== pathSplit[1]) {
                 currentEnv = pathSplit[1];
@@ -72,7 +72,7 @@ export const PrivateRoute: React.FC = () => {
             }
 
             // Only show the not-found page for env-specific paths
-            setNotFoundEnv(!isNonEnvPath);
+            setNotFoundEnv(!nonEnvPath);
         } else {
             const matchedEnv = meta.environments.find(({ name }) => name === currentEnv);
             if (matchedEnv?.is_production && !can(permissions.canAccessProdEnvironment)) {
@@ -80,7 +80,7 @@ export const PrivateRoute: React.FC = () => {
                 const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
                 setEnv(fallback ? fallback.name : meta.environments[0].name);
                 // Only show the unauthorized page for env-specific paths
-                setUnauthorizedEnv(!isNonEnvPath);
+                setUnauthorizedEnv(!nonEnvPath);
             } else {
                 setEnv(currentEnv);
                 setUnauthorizedEnv(false);

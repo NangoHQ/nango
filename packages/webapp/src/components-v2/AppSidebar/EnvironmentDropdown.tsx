@@ -17,7 +17,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
-import { NON_ENV_PATH_PREFIXES } from '@/utils/routes';
+import { isNonEnvPath } from '@/utils/routes';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -46,7 +46,7 @@ export const EnvironmentDropdown: React.FC = () => {
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
 
         // Non-environment-specific pages — just update env in store, don't change URL
-        if (NON_ENV_PATH_PREFIXES.some((p) => window.location.pathname.startsWith(p))) {
+        if (isNonEnvPath(window.location.pathname)) {
             return;
         }
 
