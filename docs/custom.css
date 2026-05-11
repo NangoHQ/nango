@@ -463,3 +463,4 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 #content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
+
