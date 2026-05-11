@@ -1,36 +1,32 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { randomUUID } from 'crypto';
+
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from './index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { expandLegacyApiKeyScopes } = require('./migration-helpers/expandLegacyApiKeyScopes.cjs');
 
-let accountSeq = 9_000_000;
-
-async function createAccount(): Promise<number> {
-    accountSeq += 1;
-    const id = accountSeq;
-    await db.knex('_nango_accounts').insert({ id, name: `test-acct-${id}` });
-    return id;
-}
-
 async function createKey({ scopes, deletedAt }: { scopes: string[]; deletedAt?: Date }): Promise<{ id: number; accountId: number }> {
-    const accountId = await createAccount();
+    const [account] = await db
+        .knex('_nango_accounts')
+        .insert({ name: `test-account-${randomUUID()}` })
+        .returning('id');
     const [row] = await db
         .knex('customer_keys')
         .insert({
-            account_id: accountId,
+            account_id: account.id,
             key_type: 'api',
             display_name: 'test',
             scopes,
             secret: 'secret',
             iv: '',
             tag: '',
-            hashed: `hashed-${accountId}-${Date.now()}-${Math.random()}`,
+            hashed: `hashed-${randomUUID()}`,
             deleted_at: deletedAt ?? null
         })
         .returning('id');
-    return { id: row.id, accountId };
+    return { id: row.id, accountId: account.id };
 }
 
 async function readScopes(id: number): Promise<string[]> {
@@ -45,11 +41,6 @@ describe('expandLegacyApiKeyScopes', () => {
 
     afterAll(async () => {
         await db.knex.destroy();
-    });
-
-    beforeEach(async () => {
-        await db.knex('customer_keys').where('account_id', '>=', 9_000_000).delete();
-        await db.knex('_nango_accounts').where('id', '>=', 9_000_000).delete();
     });
 
     it('expands environment:integrations:write to create/update/delete', async () => {
