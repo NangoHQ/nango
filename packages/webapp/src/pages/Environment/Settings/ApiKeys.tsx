@@ -9,6 +9,7 @@ import {
     allGroupScopes,
     groupWildcard,
     isScopeSelected,
+    stripLegacyScopes,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
     toggleScope as toggleScopeFn
@@ -338,7 +339,9 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
         try {
             const updates: { keyId: number; scopes?: string[]; display_name?: string } = { keyId: apiKey.id };
             if (scopesChanged) {
-                updates.scopes = editedScopes;
+                // Drop legacy scopes from the saved payload — they're still in DB on
+                // migrated keys but should not survive an explicit save.
+                updates.scopes = stripLegacyScopes(editedScopes);
             }
             if (nameChanged) {
                 updates.display_name = editedName.trim();

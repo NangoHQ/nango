@@ -7,6 +7,7 @@ import {
     expandScopes,
     groupWildcard,
     isScopeSelected,
+    stripLegacyScopes,
     toggleCredential,
     toggleGroup,
     toggleScope
@@ -262,5 +263,32 @@ describe('allGroupScopes', () => {
             'environment:syncs:variant:create',
             'environment:syncs:variant:delete'
         ]);
+    });
+});
+
+describe('stripLegacyScopes', () => {
+    it('removes all legacy scopes', () => {
+        expect(
+            stripLegacyScopes([
+                'environment:integrations:write',
+                'environment:integrations:create',
+                'environment:integrations:update',
+                'environment:integrations:delete',
+                'environment:connections:write',
+                'environment:syncs:manage',
+                'environment:config:read',
+                'environment:config:*',
+                'environment:proxy'
+            ])
+        ).toEqual(['environment:integrations:create', 'environment:integrations:update', 'environment:integrations:delete', 'environment:proxy']);
+    });
+
+    it('passes through non-legacy scopes unchanged', () => {
+        const input = ['environment:*', 'environment:proxy', 'environment:variables:read'];
+        expect(stripLegacyScopes(input)).toEqual(input);
+    });
+
+    it('handles empty array', () => {
+        expect(stripLegacyScopes([])).toEqual([]);
     });
 });
