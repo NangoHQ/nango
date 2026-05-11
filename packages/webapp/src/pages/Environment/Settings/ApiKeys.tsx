@@ -328,7 +328,11 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
     const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
-    const hasNoScopes = editedScopes.length === 0;
+    // Migrated keys carry hidden legacy scopes in `editedScopes` (alongside the expanded new ones)
+    // until the user saves. Count only the scopes that would actually be persisted, so unchecking
+    // every visible scope flips the "Select at least one scope" warning even if a legacy entry
+    // is still lurking in the array.
+    const hasNoScopes = stripLegacyScopes(editedScopes).length === 0;
 
     const masked = `····${apiKey.secret.slice(-4)}`;
 
