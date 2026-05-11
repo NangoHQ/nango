@@ -140,9 +140,15 @@ export function toggleScope(scope: string, credentialChild: string | undefined, 
             const without = expanded.filter((s) => s !== scope && s !== credentialChild);
             const rest = selectedScopes.filter((s) => s !== matchingWildcard);
             return [...rest, ...without];
-        } else {
-            return selectedScopes.filter((s) => s !== scope && s !== credentialChild);
         }
+        const matchingLegacy = selectedScopes.find((s) => LEGACY_SCOPES.includes(s) && expandLegacyScope(s).includes(scope));
+        if (matchingLegacy) {
+            const expanded = expandLegacyScope(matchingLegacy);
+            const without = expanded.filter((s) => s !== scope && s !== credentialChild);
+            const rest = selectedScopes.filter((s) => s !== matchingLegacy);
+            return [...rest, ...without];
+        }
+        return selectedScopes.filter((s) => s !== scope && s !== credentialChild);
     } else {
         return [...selectedScopes, scope];
     }

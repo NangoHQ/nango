@@ -163,6 +163,29 @@ describe('toggleScope', () => {
         const result = toggleScope('environment:deploy', undefined, ['environment:deploy', 'environment:proxy']);
         expect(result).toEqual(['environment:proxy']);
     });
+
+    it('expands legacy scope when unchecking a scope selected via legacy alias', () => {
+        const result = toggleScope('environment:integrations:create', undefined, ['environment:integrations:write']);
+        expect(result).not.toContain('environment:integrations:write');
+        expect(result).not.toContain('environment:integrations:create');
+        expect(result).toContain('environment:integrations:update');
+        expect(result).toContain('environment:integrations:delete');
+    });
+
+    it('expands legacy syncs:manage when unchecking variant:create', () => {
+        const result = toggleScope('environment:syncs:variant:create', undefined, ['environment:syncs:manage']);
+        expect(result).not.toContain('environment:syncs:manage');
+        expect(result).not.toContain('environment:syncs:variant:create');
+        expect(result).toContain('environment:syncs:update');
+        expect(result).toContain('environment:syncs:variant:delete');
+    });
+
+    it('expands legacy config:read when unchecking variables:read', () => {
+        const result = toggleScope('environment:variables:read', undefined, ['environment:config:read']);
+        expect(result).not.toContain('environment:config:read');
+        expect(result).not.toContain('environment:variables:read');
+        expect(result).toContain('environment:integrations:list_functions');
+    });
 });
 
 describe('toggleCredential', () => {
