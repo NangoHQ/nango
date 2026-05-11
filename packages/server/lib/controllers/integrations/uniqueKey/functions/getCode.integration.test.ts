@@ -5,7 +5,7 @@ import { seeders } from '@nangohq/shared';
 
 import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
-import type { DBSyncConfig } from '@nangohq/types';
+import type { DBOnEventScript, DBSyncConfig } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -40,6 +40,21 @@ async function insertSyncConfig({
         created_at: now,
         updated_at: now,
         models: []
+    });
+}
+
+async function insertOnEventScript({ config_id, name }: { config_id: number; name: string }) {
+    const now = new Date();
+    await db.knex.from<DBOnEventScript>('on_event_scripts').insert({
+        config_id,
+        name,
+        file_location: 'file_location',
+        version: '0.0.0',
+        active: true,
+        event: 'POST_CONNECTION_CREATION',
+        sdk_version: null,
+        created_at: now,
+        updated_at: now
     });
 }
 
@@ -141,12 +156,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('finds an on-event script deployed to the environment', async () => {
-        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
-        await seeders.createConfigSeed(env, 'github', 'github');
-        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'github', 'github');
+        await insertOnEventScript({ config_id: config.id!, name: 'test-script' });
 
-        // Seeder creates a script named 'test-script'. The source file lookup will 404
-        // in tests (no fixture on disk), but it must reach the file lookup — i.e. NOT 404 with a 'Function ... not found' message.
+        // The source file lookup will 404 (no fixture on disk), but it must reach the file lookup —
+        // i.e. NOT 404 with a 'Function ... not found' message.
         const res = await api.fetch(endpoint, {
             method: 'GET',
             token: apiKey.secret,
@@ -161,11 +176,11 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('returns 409 ambiguous_function when an action and an on-event script share a name', async () => {
-        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertSyncConfig({ environment_id: env.id, nango_config_id: config.id!, sync_name: 'test-script', type: 'action' });
-        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+        await insertOnEventScript({ config_id: config.id!, name: 'test-script' });
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
