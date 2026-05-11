@@ -7,7 +7,7 @@ import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
 import customerKeyService from './customerKey.service.js';
 import { pubsub } from '../utils/pubsub.js';
-import { getPlan } from './plans/plans.js';
+import { getPlan, lambdaKeepWarmProvisionedConcurrencyMultiplier } from './plans/plans.js';
 import secretService from './secret.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import encryptionManager from '../utils/encryption.manager.js';
@@ -41,7 +41,7 @@ async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accou
             payload: {
                 accountId,
                 environmentId,
-                provisionedConcurrency: 1
+                provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(planRes.value.name)
             }
         });
         if (res.isErr()) {
