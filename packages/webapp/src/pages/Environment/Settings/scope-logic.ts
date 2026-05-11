@@ -58,37 +58,6 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 
-// Legacy scopes kept for backward compatibility — accepted by the API but not exposed in the create-key UI.
-// See `expandLegacyScope` for the mapping to new scopes.
-export const LEGACY_SCOPES: readonly string[] = [
-    'environment:integrations:write',
-    'environment:connections:write',
-    'environment:syncs:manage',
-    'environment:config:read',
-    'environment:config:*'
-] as const;
-
-/**
- * Expands a legacy scope into the equivalent new scopes. Used for displaying
- * existing keys that still carry legacy scopes.
- */
-export function expandLegacyScope(scope: string): string[] {
-    switch (scope) {
-        case 'environment:integrations:write':
-            return ['environment:integrations:create', 'environment:integrations:update', 'environment:integrations:delete'];
-        case 'environment:connections:write':
-            return ['environment:connections:create', 'environment:connections:update', 'environment:connections:delete'];
-        case 'environment:syncs:manage':
-            return ['environment:syncs:update', 'environment:syncs:variant:create', 'environment:syncs:variant:delete'];
-        case 'environment:config:read':
-            return ['environment:variables:read', 'environment:integrations:list_functions'];
-        case 'environment:config:*':
-            return ['environment:variables:read', 'environment:integrations:list_functions'];
-        default:
-            return [scope];
-    }
-}
-
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
 }
@@ -126,9 +95,7 @@ export function groupWildcard(group: ScopeGroup): string | null {
 
 export function isScopeSelected(scope: string, selectedScopes: string[]): boolean {
     if (selectedScopes.includes(scope)) return true;
-    if (selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)))) return true;
-    // Legacy scope expansion — a legacy scope grants its mapped new scopes
-    return selectedScopes.some((s) => LEGACY_SCOPES.includes(s) && expandLegacyScope(s).includes(scope));
+    return selectedScopes.some((s) => s.endsWith(':*') && scope.startsWith(s.slice(0, -1)));
 }
 
 export function toggleScope(scope: string, credentialChild: string | undefined, selectedScopes: string[]): string[] {
@@ -139,13 +106,6 @@ export function toggleScope(scope: string, credentialChild: string | undefined, 
             const expanded = ALL_INDIVIDUAL_SCOPES.filter((s) => s.startsWith(matchingWildcard.slice(0, -1)));
             const without = expanded.filter((s) => s !== scope && s !== credentialChild);
             const rest = selectedScopes.filter((s) => s !== matchingWildcard);
-            return [...rest, ...without];
-        }
-        const matchingLegacy = selectedScopes.find((s) => LEGACY_SCOPES.includes(s) && expandLegacyScope(s).includes(scope));
-        if (matchingLegacy) {
-            const expanded = expandLegacyScope(matchingLegacy);
-            const without = expanded.filter((s) => s !== scope && s !== credentialChild);
-            const rest = selectedScopes.filter((s) => s !== matchingLegacy);
             return [...rest, ...without];
         }
         return selectedScopes.filter((s) => s !== scope && s !== credentialChild);

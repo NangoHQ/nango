@@ -38,29 +38,6 @@ describe('isScopeSelected', () => {
     it('empty scopes returns false', () => {
         expect(isScopeSelected('environment:deploy', [])).toBe(false);
     });
-
-    it('legacy environment:integrations:write covers create/update/delete', () => {
-        expect(isScopeSelected('environment:integrations:create', ['environment:integrations:write'])).toBe(true);
-        expect(isScopeSelected('environment:integrations:update', ['environment:integrations:write'])).toBe(true);
-        expect(isScopeSelected('environment:integrations:delete', ['environment:integrations:write'])).toBe(true);
-    });
-
-    it('legacy environment:connections:write covers create/update/delete', () => {
-        expect(isScopeSelected('environment:connections:create', ['environment:connections:write'])).toBe(true);
-        expect(isScopeSelected('environment:connections:update', ['environment:connections:write'])).toBe(true);
-        expect(isScopeSelected('environment:connections:delete', ['environment:connections:write'])).toBe(true);
-    });
-
-    it('legacy environment:syncs:manage covers update/variant:create/variant:delete', () => {
-        expect(isScopeSelected('environment:syncs:update', ['environment:syncs:manage'])).toBe(true);
-        expect(isScopeSelected('environment:syncs:variant:create', ['environment:syncs:manage'])).toBe(true);
-        expect(isScopeSelected('environment:syncs:variant:delete', ['environment:syncs:manage'])).toBe(true);
-    });
-
-    it('legacy environment:config:read covers variables:read and integrations:list_functions', () => {
-        expect(isScopeSelected('environment:variables:read', ['environment:config:read'])).toBe(true);
-        expect(isScopeSelected('environment:integrations:list_functions', ['environment:config:read'])).toBe(true);
-    });
 });
 
 describe('expandScopes', () => {
@@ -162,29 +139,6 @@ describe('toggleScope', () => {
     it('preserves other scopes when removing', () => {
         const result = toggleScope('environment:deploy', undefined, ['environment:deploy', 'environment:proxy']);
         expect(result).toEqual(['environment:proxy']);
-    });
-
-    it('expands legacy scope when unchecking a scope selected via legacy alias', () => {
-        const result = toggleScope('environment:integrations:create', undefined, ['environment:integrations:write']);
-        expect(result).not.toContain('environment:integrations:write');
-        expect(result).not.toContain('environment:integrations:create');
-        expect(result).toContain('environment:integrations:update');
-        expect(result).toContain('environment:integrations:delete');
-    });
-
-    it('expands legacy syncs:manage when unchecking variant:create', () => {
-        const result = toggleScope('environment:syncs:variant:create', undefined, ['environment:syncs:manage']);
-        expect(result).not.toContain('environment:syncs:manage');
-        expect(result).not.toContain('environment:syncs:variant:create');
-        expect(result).toContain('environment:syncs:update');
-        expect(result).toContain('environment:syncs:variant:delete');
-    });
-
-    it('expands legacy config:read when unchecking variables:read', () => {
-        const result = toggleScope('environment:variables:read', undefined, ['environment:config:read']);
-        expect(result).not.toContain('environment:config:read');
-        expect(result).not.toContain('environment:variables:read');
-        expect(result).toContain('environment:integrations:list_functions');
     });
 });
 
