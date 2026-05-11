@@ -58,11 +58,12 @@ function formatFullDate(dateStr: string | null): string {
 }
 
 function countSelectedScopes(scopes: string[]): number {
-    if (scopes.includes('environment:*')) {
+    const visible = stripLegacyScopes(scopes);
+    if (visible.includes('environment:*')) {
         return SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).length, 0);
     }
     let count = 0;
-    for (const scope of scopes) {
+    for (const scope of visible) {
         if (scope.endsWith(':*')) {
             const prefix = scope.slice(0, -1);
             count += SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).filter((s) => s.startsWith(prefix)).length, 0);
