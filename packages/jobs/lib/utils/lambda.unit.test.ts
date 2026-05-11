@@ -11,8 +11,17 @@ vi.mock('../env.js', () => ({
     }
 }));
 
-import { getRoutingId } from './lambda.js';
+import {
+    LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX,
+    getLambdaFunctionName,
+    getLambdaTenantId,
+    getLambdaTenantIdFromAccountEnv,
+    getRoutingId,
+    getRoutingIdFromPlan,
+    isLambdaTenantIsolationRoutingId
+} from './lambda.js';
 
+import type { Node } from '@nangohq/fleet';
 import type { NangoProps, RoutingContext } from '@nangohq/types';
 
 function minimalNangoProps(): NangoProps {
@@ -29,6 +38,30 @@ function minimalNangoProps(): NangoProps {
         syncId: 'sync-1',
         syncConfig: {} as NangoProps['syncConfig']
     } as unknown as NangoProps;
+}
+
+function minimalNode(partial: Pick<Node, 'routingId' | 'id'>): Node {
+    return {
+        id: partial.id,
+        routingId: partial.routingId,
+        fleetId: 'f',
+        deploymentId: 1,
+        url: null,
+        state: 'PENDING',
+        image: 'img',
+        cpuMilli: 500,
+        memoryMb: 512,
+        storageMb: 512,
+        isTracingEnabled: false,
+        isProfilingEnabled: false,
+        idleMaxDurationMs: null,
+        executionTimeoutSecs: null,
+        provisionedConcurrency: null,
+        replicas: 1,
+        error: null,
+        createdAt: new Date(),
+        lastStateTransitionAt: new Date()
+    };
 }
 
 describe('getRoutingId', () => {
@@ -72,5 +105,74 @@ describe('getRoutingId', () => {
             routingContext
         });
         expect(result).toBe('default-prefix-S');
+    });
+
+    it(`appends ${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX} when plan.tenant_isolation is true`, () => {
+        const routingContext: RoutingContext = {
+            plan: { fleet_node_routing_override: null, lambda_tenant_isolation: true } as unknown as RoutingContext['plan'],
+            features: []
+        };
+        const result = getRoutingId({
+            nangoProps: minimalNangoProps(),
+            routingContext
+        });
+        expect(result).toBe(`default-prefix-S${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX}`);
+    });
+
+    it('combines fleet_node_routing_override with tenant_isolation', () => {
+        const routingContext: RoutingContext = {
+            plan: { fleet_node_routing_override: 'custom', lambda_tenant_isolation: true } as unknown as RoutingContext['plan'],
+            features: []
+        };
+        const result = getRoutingId({
+            nangoProps: minimalNangoProps(),
+            routingContext
+        });
+        expect(result).toBe(`custom-S${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX}`);
+    });
+});
+
+describe('isLambdaTenantIsolationRoutingId', () => {
+    it('detects tenant-isolation fleet pool routing ids', () => {
+        expect(isLambdaTenantIsolationRoutingId(`prefix-M${LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX}`)).toBe(true);
+    });
+
+    it('is false for shared pool routing ids', () => {
+        expect(isLambdaTenantIsolationRoutingId('prefix-M')).toBe(false);
+    });
+});
+
+describe('getLambdaFunctionName', () => {
+    it('uses routingId-id for shared pool', () => {
+        expect(getLambdaFunctionName(minimalNode({ routingId: 'default-M', id: 42 }))).toBe('default-M-42');
+    });
+
+    it('uses base-id-isolated for tenant-isolation pool (distinct AWS name from shared)', () => {
+        expect(getLambdaFunctionName(minimalNode({ routingId: 'default-M-isolated', id: 7 }))).toBe('default-M-7-isolated');
+    });
+});
+
+describe('getLambdaTenantId', () => {
+    it('returns team and environment scoped id', () => {
+        expect(getLambdaTenantId(minimalNangoProps())).toBe('account-1-env-1');
+    });
+});
+
+describe('getLambdaTenantIdFromAccountEnv', () => {
+    it('matches getLambdaTenantId for the same account and environment', () => {
+        expect(getLambdaTenantIdFromAccountEnv(1, 1)).toBe(getLambdaTenantId(minimalNangoProps()));
+    });
+});
+
+describe('getRoutingIdFromPlan', () => {
+    beforeEach(() => {
+        mockEnvs.LAMBDA_DEFAULT_PREFIX = 'default-prefix';
+        mockEnvs.LAMBDA_DEFAULT_MEMORY_MB = 512;
+    });
+
+    it('matches getRoutingId for the same plan slice', () => {
+        const plan = { fleet_node_routing_override: 'custom' as string | null, lambda_tenant_isolation: true };
+        const routingContext: RoutingContext = { plan: plan as RoutingContext['plan'], features: [] };
+        expect(getRoutingIdFromPlan(plan)).toBe(getRoutingId({ nangoProps: minimalNangoProps(), routingContext }));
     });
 });

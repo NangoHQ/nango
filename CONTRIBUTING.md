@@ -70,7 +70,7 @@ And deploy your changes
 nango deploy dev
 ```
 
-To know more about the CLI, check the [documentation](https://nango.dev/docs/reference/cli).
+To know more about the CLI, check the [documentation](https://nango.dev/docs/reference/functions/functions-cli).
 
 ## Proposing pull requests
 

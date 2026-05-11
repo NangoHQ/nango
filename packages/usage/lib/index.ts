@@ -6,6 +6,7 @@ import type { IUsageTracker } from './usage.js';
 
 export type { IUsageTracker as Usage } from './usage.js';
 export { Capping } from './capping.js';
+export type { ClickhouseRawUsageEvent } from './clickhouse/clickhouse.js';
 export { Clickhouse } from './clickhouse/clickhouse.js';
 export { migrate } from './clickhouse/migrate.js';
 

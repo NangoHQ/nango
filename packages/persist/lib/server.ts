@@ -14,6 +14,10 @@ import { routeHandler as putCheckpointHandler } from './routes/environment/envir
 import { route as getCursorRoute, routeHandler as getCursorHandler } from './routes/environment/environmentId/connection/connectionId/getCursor.js';
 import { route as getRecordsRoute, routeHandler as getRecordsHandler } from './routes/environment/environmentId/connection/connectionId/getRecords.js';
 import {
+    route as deleteHardRecordsRoute,
+    routeHandler as deleteHardRecordsHandler
+} from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteHardRecords.js';
+import {
     route as deleteOutdatedRecordsRoute,
     routeHandler as deleteOutdatedRecordsHandler
 } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteOutdatedRecords.js';
@@ -41,6 +45,7 @@ server.use(recordsPath, express.json({ limit: maxSizeJsonRecords }));
 server.use(getCursorRoute.path, express.json());
 server.use(getRecordsRoute.path, express.json());
 server.use(deleteOutdatedRecordsRoute.path, express.json());
+server.use(deleteHardRecordsRoute.path, express.json());
 server.use(getCheckpointRoute.path, express.json());
 
 createRoute(server, getHealthHandler);
@@ -48,6 +53,7 @@ createRoute(server, postLogHandler);
 createRoute(server, postRecordsHandler);
 createRoute(server, deleteRecordsHandler);
 createRoute(server, deleteOutdatedRecordsHandler);
+createRoute(server, deleteHardRecordsHandler);
 createRoute(server, putRecordsHandler);
 createRoute(server, getCursorHandler);
 createRoute(server, getRecordsHandler);

@@ -1,16 +1,19 @@
 import tracer from 'dd-trace';
 import * as cron from 'node-cron';
+import { uuidv7 } from 'uuidv7';
 
 import { billing as usageBilling } from '@nangohq/billing';
 import { getLocking } from '@nangohq/kvstore';
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
+import { Clickhouse } from '@nangohq/usage';
 import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
 import type { RecordsBillingEvent } from '@nangohq/types';
+import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 
 const logger = getLogger('cron.exportUsage');
 const cronMinutes = envs.CRON_EXPORT_USAGE_MINUTES;
@@ -44,11 +47,14 @@ export async function exec(): Promise<void> {
             return;
         }
 
+        const clickhouse = new Clickhouse();
+
         try {
             // TODO: get rid of billing exports which are legacy events
             await billing.exportBillableConnections();
             await observability.exportConnectionsMetrics();
             await observability.exportRecordsMetrics();
+            await usage.exportMetrics(clickhouse);
             logger.info(`✅ done`);
         } catch (err) {
             logger.error('Failed to export usage metrics', err);
@@ -57,9 +63,97 @@ export async function exec(): Promise<void> {
             }
             // only releasing the lock on error
             // and letting it expires otherwise so no other execution can occur until the next cron
+        } finally {
+            await clickhouse.shutdown();
         }
     });
 }
+
+const usage = {
+    exportMetrics: async (clickhouse: Clickhouse): Promise<void> => {
+        await tracer.trace<Promise<void>>('nango.cron.exportUsage.metrics', async (span) => {
+            try {
+                const now = new Date();
+                // Note: connectionsPerAccount is held in memory for the duration of the entire function execution
+                // While unbounded the number of account/environment/integration combinations is expected to be manageable
+                const connectionsPerAccount = new Map<string, { accountId: number; environmentId: number; integrationId: string; count: number }>();
+                for await (const page of connectionService.paginateConnections({ batchSize: 10_000 })) {
+                    if (page.isErr()) {
+                        throw page.error;
+                    }
+                    const connectionsMap = new Map(page.value.map((c) => [c.connection.id, c]));
+                    for (const { account, environment, connection } of page.value) {
+                        const key = `${account.id}:${environment.id}:${connection.provider_config_key}`;
+                        const existing = connectionsPerAccount.get(key);
+                        if (existing) {
+                            existing.count += 1;
+                        } else {
+                            connectionsPerAccount.set(key, {
+                                accountId: account.id,
+                                environmentId: environment.id,
+                                integrationId: connection.provider_config_key,
+                                count: 1
+                            });
+                        }
+                    }
+
+                    const connectionIds = page.value.map((c) => c.connection.id);
+                    for await (const recordCounts of records.paginateCounts({ connectionIds })) {
+                        if (recordCounts.isErr()) {
+                            throw recordCounts.error;
+                        }
+                        for (const recordCount of recordCounts.value) {
+                            const connection = connectionsMap.get(recordCount.connection_id);
+                            if (connection) {
+                                const res = clickhouse.addRaw([
+                                    {
+                                        ts: now.getTime(),
+                                        idempotency_key: uuidv7(),
+                                        type: 'usage.records',
+                                        value: recordCount.count,
+                                        account_id: connection.account.id,
+                                        attributes: {
+                                            environmentId: connection.environment.id,
+                                            integrationId: connection.connection.provider_config_key,
+                                            connectionId: connection.connection.connection_id,
+                                            model: recordCount.model
+                                        }
+                                    }
+                                ]);
+                                if (res.isErr()) {
+                                    throw res.error;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                const events: ClickhouseRawUsageEvent[] = Array.from(connectionsPerAccount.values()).map(
+                    ({ accountId, environmentId, integrationId, count }) => {
+                        return {
+                            ts: now.getTime(),
+                            idempotency_key: uuidv7(),
+                            type: 'usage.connections',
+                            value: count,
+                            account_id: accountId,
+                            attributes: {
+                                environmentId,
+                                integrationId
+                            }
+                        };
+                    }
+                );
+                const res = clickhouse.addRaw(events);
+                if (res.isErr()) {
+                    throw res.error;
+                }
+            } catch (err) {
+                span.setTag('error', err);
+                logger.error('Failed to export connections metrics to clickhouse', err);
+            }
+        });
+    }
+};
 
 const observability = {
     exportConnectionsMetrics: async (): Promise<void> => {
@@ -81,7 +175,7 @@ const observability = {
                             }
                         }
                     ]);
-                    // TODO: ingest into clickhouse
+
                     metrics.gauge(metrics.Types.CONNECTIONS_COUNT, count, { accountId });
                 }
             } catch (err) {

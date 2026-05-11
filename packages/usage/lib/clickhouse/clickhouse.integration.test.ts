@@ -4,7 +4,7 @@ import { Clickhouse } from './clickhouse.js';
 import { clickhouseClient } from './config.js';
 import { migrate } from './migrate.js';
 
-import type { UsageEvent } from '@nangohq/types';
+import type { ClickhouseRawUsageEvent } from './clickhouse.js';
 
 describe('Clickhouse', () => {
     const database = `usage_test`;
@@ -28,52 +28,67 @@ describe('Clickhouse', () => {
 
         beforeAll(async () => {
             await cleanup();
-            clickhouse.add([
+            clickhouse.addRaw([
                 // proxy
-                ...genEventsN({ n: 10, day: dayFromNow(), type: 'usage.proxy', accountId, properties: { success: true } }),
-                ...genEventsN({ n: 11, day: dayFromNow(1), type: 'usage.proxy', accountId, properties: { success: true } }),
-                ...genEventsN({ n: 1, day: dayFromNow(2), type: 'usage.proxy', accountId, properties: { success: true } }),
-                ...genEventsN({ n: 12, day: dayFromNow(2), type: 'usage.proxy', accountId, properties: { success: false } }), // same day but success: false
-                ...genEventsN({ n: 10, day: dayFromNow(2), type: 'usage.proxy', accountId: 999 }), // different account
-                ...genEventsN({ n: 10, day: dayFromNow(-1), type: 'usage.proxy', accountId }), // out of timeframe
+                ...genEventsN({ n: 10, date: dayFromNow(), type: 'usage.proxy', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 11, date: dayFromNow(1), type: 'usage.proxy', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 1, date: dayFromNow(2), type: 'usage.proxy', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 12, date: dayFromNow(2), type: 'usage.proxy', accountId, attributes: { success: false } }), // same day but success: false
+                ...genEventsN({ n: 10, date: dayFromNow(2), type: 'usage.proxy', accountId: 999 }), // different account
+                ...genEventsN({ n: 10, date: dayFromNow(-1), type: 'usage.proxy', accountId }), // out of timeframe
                 // functions
                 ...genEventsN({
                     n: 1,
-                    day: dayFromNow(),
+                    date: dayFromNow(),
                     type: 'usage.function_executions',
                     accountId,
-                    properties: { type: 'sync', telemetryBag: { durationMs: 10, customLogs: 10, proxyCalls: 10, memoryGb: 3 } }
+                    attributes: { type: 'sync', telemetryBag: { durationMs: 10, customLogs: 10, proxyCalls: 10, memoryGb: 3 } }
                 }),
                 ...genEventsN({
                     n: 1,
-                    day: dayFromNow(1),
+                    date: dayFromNow(1),
                     type: 'usage.function_executions',
                     accountId,
-                    properties: { type: 'sync', telemetryBag: { durationMs: 1000, customLogs: 100, proxyCalls: 100, memoryGb: 3 } }
+                    attributes: { type: 'sync', telemetryBag: { durationMs: 1000, customLogs: 100, proxyCalls: 100, memoryGb: 3 } }
                 }),
                 ...genEventsN({
                     n: 1,
-                    day: dayFromNow(1),
+                    date: dayFromNow(1),
                     type: 'usage.function_executions',
                     accountId,
-                    properties: { type: 'webhook', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 2 } }
+                    attributes: { type: 'webhook', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 2 } }
                 }),
                 ...genEventsN({
                     n: 1,
-                    day: dayFromNow(1),
+                    date: dayFromNow(1),
                     type: 'usage.function_executions',
                     accountId,
-                    properties: { type: 'action', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 0.5 } }
+                    attributes: { type: 'action', telemetryBag: { durationMs: 100, customLogs: 10, proxyCalls: 10, memoryGb: 0.5 } }
                 }),
                 // webhook_forwards
-                ...genEventsN({ n: 3, day: dayFromNow(), type: 'usage.webhook_forward', accountId, properties: { success: true } }),
-                ...genEventsN({ n: 3, day: dayFromNow(), type: 'usage.webhook_forward', accountId, properties: { success: false } }),
-                ...genEventsN({ n: 3, day: dayFromNow(1), type: 'usage.webhook_forward', accountId, properties: { success: true } })
+                ...genEventsN({ n: 3, date: dayFromNow(), type: 'usage.webhook_forward', accountId, attributes: { success: true } }),
+                ...genEventsN({ n: 3, date: dayFromNow(), type: 'usage.webhook_forward', accountId, attributes: { success: false } }),
+                ...genEventsN({ n: 3, date: dayFromNow(1), type: 'usage.webhook_forward', accountId, attributes: { success: true } }),
+                // connections
+                // day 0: average is 70
+                genEvent({ date: dayFromNow(0), type: 'usage.connections', accountId, value: 50 }),
+                genEvent({ date: dayFromNow(0), type: 'usage.connections', accountId, value: 60 }),
+                genEvent({ date: dayFromNow(0), type: 'usage.connections', accountId, value: 100 }),
+                // day 1: average is 10
+                genEvent({ date: dayFromNow(1), type: 'usage.connections', accountId, value: 20 }),
+                genEvent({ date: dayFromNow(1), type: 'usage.connections', accountId, value: 10 }),
+                genEvent({ date: dayFromNow(1), type: 'usage.connections', accountId, value: 0 }),
+                // records
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 1000, attributes: { integrationId: 'a' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } }),
+                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 1100, attributes: { integrationId: 'a' } }),
+                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'b' } })
             ]);
             await clickhouse.flush(); // force flush to make sure all events are ingested before we query
         });
         describe('with no granularity', () => {
-            it('for a single metric', async () => {
+            it('for a periodic metric', async () => {
                 const res = await clickhouse.getUsage({
                     accountId,
                     metrics: { proxy: { dimension: 'none' } },
@@ -93,6 +108,32 @@ describe('Clickhouse', () => {
                             ],
                             total: 34,
                             view_mode: 'periodic'
+                        }
+                    }
+                };
+                expect(res.unwrap()).toStrictEqual(expected);
+            });
+            it('for a cumulative metric', async () => {
+                const res = await clickhouse.getUsage({
+                    accountId,
+                    metrics: { connections: { dimension: 'none' } },
+                    granularity: 'none',
+                    timeframe: { start, end }
+                });
+                const expected = {
+                    accountId: accountId,
+                    granularity: 'none',
+                    metrics: {
+                        connections: {
+                            series: [
+                                {
+                                    // (day0=70 + day1=10) / 7 days = 11
+                                    dataPoints: [{ timeframe: { start, end }, quantity: 11 }],
+                                    total: 11
+                                }
+                            ],
+                            total: 11,
+                            view_mode: 'cumulative'
                         }
                     }
                 };
@@ -204,8 +245,8 @@ describe('Clickhouse', () => {
                         function_logs: { dimension: 'none' },
                         function_compute_gbms: { dimension: 'none' },
                         webhook_forwards: { dimension: 'none' },
-                        records: { dimension: 'connection_id' },
-                        connections: { dimension: 'integration_id' }
+                        connections: { dimension: 'none' },
+                        records: { dimension: 'integration_id' }
                     },
                     granularity: 'day',
                     timeframe: { start, end }
@@ -303,11 +344,46 @@ describe('Clickhouse', () => {
                             ],
                             total: 9,
                             view_mode: 'periodic'
-                        }
-
-                        // TODO:
+                        },
                         // connections
+                        connections: {
+                            series: [
+                                {
+                                    dataPoints: [
+                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 70 },
+                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 10 }
+                                    ],
+                                    total: 11
+                                }
+                            ],
+                            total: 11,
+                            view_mode: 'cumulative'
+                        },
                         // records
+                        records: {
+                            series: [
+                                {
+                                    dimension: 'integration_id',
+                                    dimensionValue: 'a',
+                                    dataPoints: [
+                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 1050 },
+                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 1100 }
+                                    ],
+                                    total: 307
+                                },
+                                {
+                                    dimension: 'integration_id',
+                                    dimensionValue: 'b',
+                                    dataPoints: [
+                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 500 },
+                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 500 }
+                                    ],
+                                    total: 143
+                                }
+                            ],
+                            total: 450,
+                            view_mode: 'cumulative'
+                        }
                     }
                 };
                 expect(res.unwrap()).toStrictEqual(expected);
@@ -324,42 +400,44 @@ function dayFromNow(dayOffset = 0): Date {
 }
 
 const rnd = {
-    datetime: (d: Date) => {
-        return new Date(d.getTime() + Math.floor(Math.random() * 24 * 60 * 60 * 1000));
-    },
-    number: () => Math.floor(Math.random() * 1000),
-    string: () => Math.random().toString(36).substring(6)
+    number: (exclusiveMax: number = 1000) => Math.floor(Math.random() * exclusiveMax),
+    string: () => Math.random().toString(36).substring(6),
+    time(date: Date): Date {
+        date.setHours(rnd.number(24), rnd.number(60), rnd.number(60), 0);
+        return date;
+    }
 };
 
 function genEventsN({
     n,
-    day,
+    date,
     type,
     accountId,
-    properties = {}
+    attributes = {}
 }: {
     n: number;
-    day: Date;
-    type: UsageEvent['type'];
-    accountId: UsageEvent['payload']['properties']['accountId'];
-    properties?: Partial<UsageEvent['payload']['properties']>;
-}): UsageEvent[] {
-    return Array.from({ length: n }).map((_) => genEvent({ day, type, accountId, properties }));
+    date: Date;
+    type: ClickhouseRawUsageEvent['type'];
+    accountId: ClickhouseRawUsageEvent['account_id'];
+    attributes?: Partial<ClickhouseRawUsageEvent['attributes']>;
+}): ClickhouseRawUsageEvent[] {
+    return Array.from({ length: n }).map((_) => genEvent({ date, type, accountId, attributes }));
 }
 
 function genEvent({
-    day,
+    date,
     type,
     accountId,
-    properties
+    value = 1,
+    attributes = {}
 }: {
-    day: Date;
-    type: UsageEvent['type'];
-    accountId: UsageEvent['payload']['properties']['accountId'];
-    properties: Partial<UsageEvent['payload']['properties']>;
-}): UsageEvent {
-    const baseProperties = {
-        accountId,
+    date: Date;
+    type: ClickhouseRawUsageEvent['type'];
+    accountId: ClickhouseRawUsageEvent['account_id'];
+    value?: number;
+    attributes?: Partial<ClickhouseRawUsageEvent['attributes']>;
+}): ClickhouseRawUsageEvent {
+    const baseAttributes = {
         environmentId: 1,
         environmentName: 'test',
         integrationId: 'test',
@@ -368,123 +446,84 @@ function genEvent({
     switch (type) {
         case 'usage.proxy':
             return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
+                ts: date.getTime(),
                 type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        success: true,
-                        ...baseProperties,
-                        ...properties
-                    }
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    success: true,
+                    ...baseAttributes,
+                    ...attributes
                 }
             };
 
         case 'usage.function_executions':
             return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
+                ts: date.getTime(),
                 type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        type: 'sync',
-                        functionName: 'test',
-                        telemetryBag: {
-                            durationMs: 1,
-                            customLogs: 1,
-                            proxyCalls: 1,
-                            memoryGb: 1
-                        },
-                        runtime: 'lambda',
-                        success: true,
-                        ...properties
-                    }
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    type: 'sync',
+                    functionName: 'test',
+                    telemetryBag: {
+                        durationMs: 1,
+                        customLogs: 1,
+                        proxyCalls: 1,
+                        memoryGb: 1
+                    },
+                    runtime: 'lambda',
+                    success: true,
+                    ...attributes
                 }
             };
 
         case 'usage.webhook_forward':
             return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
+                ts: date.getTime(),
                 type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        success: true,
-                        ...properties
-                    }
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    success: true,
+                    ...attributes
                 }
             };
 
         case 'usage.records':
             return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
+                ts: date.getTime(),
                 type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        syncId: rnd.string(),
-                        model: 'test',
-                        ...properties
-                    }
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    model: 'test',
+                    ...attributes
                 }
             };
 
         case 'usage.connections':
             return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
+                ts: date.getTime(),
                 type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        ...properties
-                    }
+                idempotency_key: rnd.string(),
+                account_id: accountId,
+                value,
+                attributes: {
+                    ...baseAttributes,
+                    ...attributes
                 }
             };
 
-        case 'usage.actions':
-            return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
-                type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        actionName: 'test',
-                        ...properties
-                    }
-                }
-            };
-
-        case 'usage.monthly_active_records':
-            return {
-                createdAt: rnd.datetime(day),
-                subject: 'usage',
-                type,
-                idempotencyKey: rnd.string(),
-                payload: {
-                    value: 1,
-                    properties: {
-                        ...baseProperties,
-                        model: 'test',
-                        syncId: 'test'
-                    }
-                }
-            };
+        default:
+            throw new Error(`Unsupported event type ${type}`);
     }
 }

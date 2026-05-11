@@ -4,6 +4,26 @@ import * as React from 'react';
 
 import { cn } from '@/utils/utils';
 
+// Radix can leak `body.style.pointerEvents = 'none'` when a dialog unmounts during navigation.
+// Clear that leaked body lock only after all dialog/select layers are gone.
+function restoreLeakedRadixBodyPointerEvents(ownerDocument = globalThis?.document) {
+    if (!ownerDocument) {
+        return;
+    }
+
+    requestAnimationFrame(() => {
+        if (ownerDocument.body.style.pointerEvents !== 'none') {
+            return;
+        }
+
+        if (ownerDocument.querySelector('[data-slot="dialog-content"], [data-slot="select-content"]')) {
+            return;
+        }
+
+        ownerDocument.body.style.pointerEvents = '';
+    });
+}
+
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
     return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
@@ -41,6 +61,14 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
 }) {
+    const ownerDocument = globalThis?.document;
+
+    React.useEffect(() => {
+        return () => {
+            restoreLeakedRadixBodyPointerEvents(ownerDocument);
+        };
+    }, [ownerDocument]);
+
     return (
         <DialogPortal data-slot="dialog-portal">
             <DialogOverlay />

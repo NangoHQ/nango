@@ -1,12 +1,11 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { connectionService } from '@nangohq/shared';
+import { connectionService, pubsub } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../../hooks/connection/on/pre-connection-deletion.js';
-import { pubsub } from '../../../../pubsub.js';
 import { slackService } from '../../../../services/slack.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';

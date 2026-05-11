@@ -4,7 +4,7 @@ import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
-import { Ok } from '@nangohq/utils';
+import { Ok, metrics } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
@@ -38,15 +38,22 @@ export class UsageBillingClient {
         if (cached) {
             try {
                 const parsed: BillingUsageMetrics = JSON.parse(cached);
+                metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'true' });
                 return Ok(parsed);
             } catch {
                 // ignore parse errors and proceed to fetch from API
             }
         }
+        metrics.increment(metrics.Types.BILLING_USAGE_CACHE, 1, { hit: 'false' });
 
-        // global throttling to avoid exceeding Orb usage endpoint rate limits
+        const tags = { dashboard: opts?.timeframe ? 'true' : 'false' };
+
+        // Pure Orb call latency (no queue wait, no cache lookup) — apples-to-apples for any
+        // Orb-vs-alternative-backend comparison.
+        const callOrb = metrics.time(metrics.Types.BILLING_USAGE_ORB_MS, () => this.billingClient.getUsage(subscriptionId, opts), tags);
+
         return this.throttle('usage', async () => {
-            const res = await this.billingClient.getUsage(subscriptionId, opts);
+            const res = await callOrb();
             if (res.isOk()) {
                 try {
                     await this.redis.set(cacheKey, JSON.stringify(res.value), {
@@ -55,6 +62,8 @@ export class UsageBillingClient {
                 } catch {
                     // ignore cache set errors
                 }
+            } else {
+                metrics.increment(metrics.Types.BILLING_USAGE_ORB_ERRORS, 1, tags);
             }
             return res;
         });

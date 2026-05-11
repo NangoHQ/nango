@@ -102,13 +102,13 @@ Connect to [Integration Name] with Nango and see data flow in 2 minutes.
 
 
     </Tabs>
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [quickstart](/getting-started/quickstart/embed-in-your-app) to integrate Nango in your app.
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -181,7 +181,7 @@ For more details, see [[Integration Name]'s OAuth documentation]([OAUTH_DOCS_URL
 ```mdx
 _No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/primitives/functions) independently.</Tip>
+<Tip>Not seeing the integration you need? [Build your own](https://nango.dev/docs/guides/functions/functions-guide) independently.</Tip>
 ```
 
 ## Configuration Updates

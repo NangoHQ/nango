@@ -44,10 +44,17 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
     }
 
     // Same gate as legacy getUserFromSession: excludes suspended users and matches DB truth (not stale passport user).
-    const user = await userService.getUserById(candidate.id);
+    const user = await userService.getUserById(candidate.id, true);
     if (!user) {
         res.status(401).send({
             error: { code: 'unauthorized', message: new NangoError('user_not_found').message }
+        });
+        return;
+    }
+
+    if (user.suspended) {
+        req.session.destroy(() => {
+            res.status(400).send({ error: { code: 'user_suspended' } });
         });
         return;
     }

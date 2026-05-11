@@ -8,6 +8,7 @@ import { logger } from '../logger.js';
 import type {
     Checkpoint,
     CursorOffset,
+    DeleteHardAllRecordsSuccess,
     DeleteOutdatedRecordsSuccess,
     DeleteRecordsSuccess,
     GetCheckpointSuccess,
@@ -219,6 +220,30 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to delete records: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async deleteHardAllRecords({
+        environmentId,
+        nangoConnectionId,
+        syncId,
+        syncJobId,
+        model
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        syncId: string;
+        syncJobId: number;
+        model: string;
+    }): Promise<Result<DeleteHardAllRecordsSuccess>> {
+        const res = await this.fetch<DeleteHardAllRecordsSuccess>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records/hard`,
+            data: { model }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to hard delete records: ${res.error.message}`));
         }
         return res;
     }
