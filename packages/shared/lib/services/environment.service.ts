@@ -22,7 +22,10 @@ const TABLE = '_nango_environments';
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
 
 /** After an environment row exists (outer transaction may still be open). Publishes keep-warm when Lambda + plan tenant isolation are enabled. */
-async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accountId: number; environmentId: number }): Promise<void> {
+async function onNewEnvironment(
+    trx: Knex,
+    { accountId, environmentId, isProduction }: { accountId: number; environmentId: number; isProduction: boolean }
+): Promise<void> {
     try {
         if (!useLambdaKeepWarm) {
             return;
@@ -41,7 +44,7 @@ async function onNewEnvironment(trx: Knex, { accountId, environmentId }: { accou
             payload: {
                 accountId,
                 environmentId,
-                provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(planRes.value.name)
+                provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(planRes.value.name, isProduction)
             }
         });
         if (res.isErr()) {
@@ -117,10 +120,9 @@ class EnvironmentService {
     }
 
     async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
+        const isProduction = name === PROD_ENVIRONMENT_NAME;
         const environment = await trx.transaction(async (innerTrx) => {
-            const [env] = await innerTrx<DBEnvironment>(TABLE)
-                .insert({ account_id: accountId, name, is_production: name === PROD_ENVIRONMENT_NAME })
-                .returning('*');
+            const [env] = await innerTrx<DBEnvironment>(TABLE).insert({ account_id: accountId, name, is_production: isProduction }).returning('*');
             if (!env) {
                 innerTrx.rollback();
                 return null;
@@ -159,7 +161,7 @@ class EnvironmentService {
         });
 
         if (environment) {
-            await onNewEnvironment(trx, { accountId, environmentId: environment.id });
+            await onNewEnvironment(trx, { accountId, environmentId: environment.id, isProduction });
         }
         return environment;
     }
