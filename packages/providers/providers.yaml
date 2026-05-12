@@ -12516,6 +12516,57 @@ ninjaone-rmm-oauth2:
     docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
 
+ninjaone-saas-backup:
+    display_name: NinjaOne SaaS Backup
+    categories:
+        - storage
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            reseller-token: ${connectionConfig.resellerToken}
+            authentication-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/accounts
+    docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
+    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The host from your NinjaOne SaaS Backup API URL. For https://dropsuite.us/api/, enter dropsuite.us.
+            example: dropsuite.us
+            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            prefix: https://
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-find-your-api-credentials'
+        resellerToken:
+            type: string
+            title: Reseller Token
+            description: The Reseller Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            secret: true
+            order: 2
+            doc_section: '#step-1-find-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: The Authentication Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
+
+dropsuite:
+    alias: ninjaone-saas-backup
+    display_name: Dropsuite
+    docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
+    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
+
 nocrm:
     display_name: nocrm.io
     categories:

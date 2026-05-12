@@ -1346,6 +1346,7 @@
               "integrations/all/nationbuilder",
               "integrations/all/ninjaone-rmm",
               "api-integrations/ninjaone-rmm-oauth2",
+              "api-integrations/ninjaone-saas-backup",
               "integrations/all/namely",
               "integrations/all/namely-pat",
               "api-integrations/nerdio",
