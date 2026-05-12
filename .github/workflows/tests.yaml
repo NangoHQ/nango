@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
     should-run:
-        runs-on: blacksmith-2vcpu-ubuntu-22.04
+        runs-on: blacksmith-2vcpu-ubuntu-2404
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
@@ -52,7 +52,7 @@ jobs:
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     tests:
         needs: should-run
-        runs-on: blacksmith-4vcpu-ubuntu-22.04
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         steps:
             - name: Checkout
               if: needs.should-run.outputs.should_skip != 'true'

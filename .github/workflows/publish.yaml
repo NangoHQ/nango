@@ -17,7 +17,7 @@ permissions:
 jobs:
     npm-publish:
         if: github.ref == 'refs/heads/master'
-        runs-on: blacksmith-4vcpu-ubuntu-22.04
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         steps:
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
