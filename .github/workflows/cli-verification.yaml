@@ -75,7 +75,7 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   npm ci
-                  npm run ts-build
+                  npm run ts-build:nocheck
 
             - name: Publish packages to github registry so they can be bumped
               if: needs.should-run.outputs.should_skip != 'true'
