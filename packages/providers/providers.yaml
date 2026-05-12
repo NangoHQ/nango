@@ -14221,7 +14221,6 @@ planning-center-online-pat:
         base_url: https://api.planningcenteronline.com
         headers:
             accept: application/json
-            user-agent: Nango (https://nango.dev)
         retry:
             after:
                 - 'retry-after'
