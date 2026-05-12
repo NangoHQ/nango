@@ -162,6 +162,19 @@ export const onEventScriptService = {
         return db.knex.from<DBOnEventScript>(TABLE).where({ config_id: configId, active: true, event: eventTypeMapper.toDb(event) });
     },
 
+    getByConfigAndName: async (configId: number, name: string): Promise<OnEventScript[]> => {
+        const rows = await db.knex
+            .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
+            .from(TABLE)
+            .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
+            .where({
+                [`${TABLE}.config_id`]: configId,
+                [`${TABLE}.name`]: name,
+                [`${TABLE}.active`]: true
+            });
+        return rows.map(dbMapper.from);
+    },
+
     diffChanges: async ({
         environmentId,
         onEventScriptsByProvider,

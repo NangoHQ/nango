@@ -36,6 +36,7 @@ export type OAuthBodyFormatType = OAuthBodyFormat[keyof OAuthBodyFormat];
 export interface OAuthBodyFormat {
     FORM: 'form';
     JSON: 'json';
+    QUERY: 'query';
 }
 
 export interface ConnectionUpsertResponse {
