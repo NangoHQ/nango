@@ -14240,8 +14240,8 @@ planning-center-online-pat:
     credentials:
         username:
             type: string
-            title: Application ID
-            description: The Application ID (`client_id`) for your Planning Center Personal Access Token
+            title: Client ID
+            description: The Client ID (`client_id`) for your Planning Center Personal Access Token
             doc_section: '#step-2-create-a-personal-access-token'
         password:
             type: string
