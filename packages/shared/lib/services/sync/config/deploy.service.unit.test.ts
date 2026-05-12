@@ -14,7 +14,7 @@ import remoteFileService from '../../file/remote.service.js';
 import * as SyncService from '../sync.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
-import type { CleanedIncomingFlowConfig, DBTeam } from '@nangohq/types';
+import type { CleanedIncomingFlowConfig, DBSyncConfig, DBTeam } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const orchestratorClientNoop: OrchestratorClientInterface = {
@@ -57,7 +57,8 @@ describe('Sync config create', () => {
             orchestrator: mockOrchestrator,
             debug,
             sdkVersion: '0.0.0-yaml',
-            onEventScriptsByProvider: []
+            onEventScriptsByProvider: [],
+            source: 'repo'
         });
 
         expect(emptyConfig).not.toBe([]);
@@ -97,7 +98,8 @@ describe('Sync config create', () => {
             orchestrator: mockOrchestrator,
             debug,
             sdkVersion: '0.0.0-yaml',
-            onEventScriptsByProvider: []
+            onEventScriptsByProvider: [],
+            source: 'repo'
         });
         expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
@@ -164,8 +166,7 @@ describe('Sync config create', () => {
                     enabled: true,
                     webhook_subscriptions: null,
                     attributes: {},
-                    pre_built: false,
-                    is_public: false,
+                    source: 'repo',
                     metadata: {},
                     input: null,
                     sync_type: 'full',
@@ -196,8 +197,7 @@ describe('Sync config create', () => {
                 enabled: true,
                 webhook_subscriptions: null,
                 attributes: {},
-                pre_built: false,
-                is_public: false,
+                source: 'repo',
                 metadata: {},
                 input: null,
                 sync_type: 'full',
@@ -227,8 +227,7 @@ describe('Sync config create', () => {
                 enabled: true,
                 webhook_subscriptions: null,
                 attributes: {},
-                pre_built: false,
-                is_public: false,
+                source: 'repo',
                 metadata: {},
                 input: null,
                 sync_type: 'full',
@@ -244,7 +243,14 @@ describe('Sync config create', () => {
             return Promise.resolve([]);
         });
 
-        vi.spyOn(db.knex, 'from').mockRejectedValue(new Error());
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
+                })
+            })
+        } as any);
+        vi.spyOn(db.knex, 'transaction').mockRejectedValue(new Error());
 
         await expect(
             DeployConfigService.deploy({
@@ -256,7 +262,8 @@ describe('Sync config create', () => {
                 orchestrator: mockOrchestrator,
                 debug,
                 sdkVersion: '0.0.0-yaml',
-                onEventScriptsByProvider: []
+                onEventScriptsByProvider: [],
+                source: 'repo'
             })
         ).rejects.toThrowError('Error creating sync config from a deploy. Please contact support with the sync name and connection details');
     });
@@ -297,9 +304,14 @@ describe('Sync config models_json_schema handling', () => {
     function setupInfrastructureMocks(capturedSyncConfigs: any[]) {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
-        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigsBySyncNameAndConfigId').mockResolvedValue([]);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
-        // Mock the transaction to capture the sync config being inserted into the database
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
+                })
+            })
+        } as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
             const mockTrx = {
                 from: (_table: string) => ({
@@ -331,7 +343,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);
@@ -359,7 +372,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);
@@ -390,7 +404,8 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(false);
@@ -408,12 +423,202 @@ describe('Sync config models_json_schema handling', () => {
             nangoYamlBody: '',
             logContextGetter,
             orchestrator: mockOrchestrator,
-            sdkVersion: '0.0.0-yaml'
+            sdkVersion: '0.0.0-yaml',
+            source: 'repo'
         });
 
         expect(success).toBe(true);
         expect(error).toBeNull();
         expect(capturedSyncConfigs).toHaveLength(1);
         expect(capturedSyncConfigs[0].models_json_schema).toBeNull();
+    });
+});
+
+describe('Deploy transaction - queued deploys mark previous config inactive', () => {
+    const environment = getTestEnvironment();
+    const account = getTestTeam();
+
+    const flow: CleanedIncomingFlowConfig = {
+        syncName: 'contacts',
+        type: 'sync',
+        providerConfigKey: 'google',
+        fileBody: { js: 'console.log("hi")', ts: 'export default {}' },
+        models: ['Contact'],
+        runs: null,
+        version: '1',
+        track_deletes: false,
+        endpoints: []
+    };
+
+    const mockProviderConfig = {
+        id: 1,
+        unique_key: 'google',
+        display_name: null,
+        provider: 'google',
+        oauth_client_id: '123',
+        oauth_client_secret: '123',
+        post_connection_scripts: null,
+        environment_id: 1,
+        created_at: new Date(),
+        updated_at: new Date(),
+        missing_fields: [],
+        forward_webhooks: true,
+        shared_credentials_id: null
+    };
+
+    const mockExistingConfig: DBSyncConfig = {
+        id: 99,
+        environment_id: 1,
+        sync_name: 'contacts',
+        type: 'sync',
+        file_location: '/tmp/contacts',
+        nango_config_id: 1,
+        models: ['Contact'],
+        model_schema: [],
+        active: true,
+        runs: null,
+        auto_start: true,
+        track_deletes: false,
+        version: '1',
+        enabled: true,
+        webhook_subscriptions: null,
+        attributes: {},
+        source: 'repo',
+        metadata: {},
+        input: null,
+        sync_type: 'full',
+        models_json_schema: null,
+        sdk_version: null,
+        features: [],
+        created_at: new Date(),
+        updated_at: new Date(),
+        deleted: false,
+        pre_built: false,
+        is_public: false
+    };
+
+    function mockDbKnexActiveConfig(activeConfig: DBSyncConfig | null = null) {
+        const rows = activeConfig ? [activeConfig] : [];
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue(rows)
+                })
+            })
+        } as any);
+    }
+
+    function buildMockTrx(capturedInserts: any[] = []) {
+        const whereInSpy = vi.fn().mockResolvedValue(undefined);
+        const mockTrx = {
+            raw: vi.fn().mockResolvedValue(undefined),
+            from: vi.fn().mockReturnValue({
+                update: vi.fn().mockReturnValue({ whereIn: whereInSpy }),
+                insert: vi.fn().mockImplementation((data: any) => {
+                    capturedInserts.push(...(Array.isArray(data) ? data : [data]));
+                    return { returning: vi.fn().mockResolvedValue([{ id: 100 }]) };
+                })
+            })
+        };
+        return { mockTrx, whereInSpy };
+    }
+
+    it('marks the previously active config ID as inactive in the transaction', async () => {
+        const { mockTrx, whereInSpy } = buildMockTrx();
+        mockDbKnexActiveConfig(mockExistingConfig); // activeConfig.id = 99
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
+
+        await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [flow],
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0',
+            source: 'repo'
+        });
+
+        expect(whereInSpy).toHaveBeenCalledWith('id', [99]);
+    });
+
+    it('skips the inactive update when there is no previously active config', async () => {
+        const { mockTrx, whereInSpy } = buildMockTrx();
+        mockDbKnexActiveConfig(null);
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
+
+        await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [flow],
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0',
+            source: 'repo'
+        });
+
+        expect(whereInSpy).not.toHaveBeenCalled();
+    });
+
+    it('preserves the enabled state from the previously deployed config', async () => {
+        const capturedInserts: any[] = [];
+        const { mockTrx } = buildMockTrx(capturedInserts);
+        mockDbKnexActiveConfig({ ...mockExistingConfig, enabled: false });
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue({ ...mockExistingConfig, enabled: false });
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
+
+        const { success } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [flow],
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0',
+            source: 'repo'
+        });
+
+        expect(success).toBe(true);
+        expect(capturedInserts[0].enabled).toBe(false);
+    });
+
+    it('defaults enabled to true when there is no previous config', async () => {
+        const capturedInserts: any[] = [];
+        const { mockTrx } = buildMockTrx(capturedInserts);
+        mockDbKnexActiveConfig(null);
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
+
+        await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: [flow],
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            sdkVersion: '0.0.0',
+            source: 'repo'
+        });
+
+        expect(capturedInserts[0].enabled).toBe(true);
     });
 });

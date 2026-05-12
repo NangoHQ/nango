@@ -1,0 +1,38 @@
+---
+title: 'How to register your own Freshworks OAuth app'
+sidebarTitle: 'Freshworks Setup'
+description: 'Register an OAuth app with Freshworks and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Freshworks to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Freshworks account.
+
+<Steps>
+  <Step title="Access your Freshworks account">
+    If you don't have a Freshworks account, go to [freshworks.com](https://www.freshworks.com/) and sign up for a free trial. Otherwise, log in to your existing account.
+
+    Then navigate to the [Freshworks Developer login page](https://developers.freshworks.com/). Enter your **organization URL** and click **Proceed**.
+  </Step>
+  <Step title="Open OAuth Credentials settings">
+    From the top navigation bar, click the **Settings** icon. On the Settings page, find the **OAuth Credentials** section and click **Create OAuth Credentials**.
+  </Step>
+  <Step title="Fill in app details">
+    Enter the following:
+
+    | Field | Value |
+    |-------|-------|
+    | **Name** | A short name for your app (up to 3 words). This is shown to users during the authorization flow. |
+    | **Description** | A brief description of what your app does. Also shown to users during authorization. |
+    | **Redirect URL** | `https://api.nango.dev/oauth/callback` |
+    | **Scopes** | Select the Freshworks product(s) and the specific resource permissions your integration needs. The scopes you select here are the maximum level of access your app can request — when initiating OAuth, you may include all or a subset of these scopes, but never ones not listed here. |
+  </Step>
+  <Step title="Copy your credentials">
+    Click **Create Credentials**. On the credentials page, copy the **Client ID** and **Client Secret** — you'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [Freshworks OAuth documentation](https://developers.freshworks.com/docs/oauth/).
+
+---

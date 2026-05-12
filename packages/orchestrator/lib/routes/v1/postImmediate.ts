@@ -1,5 +1,6 @@
 import * as z from 'zod';
 
+import { isDuplicateTaskNameError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
@@ -8,7 +9,7 @@ import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 const path = '/v1/immediate';
 const method = 'POST';
@@ -32,9 +33,9 @@ export type PostImmediate = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue & { type: TaskType };
+        args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed'>;
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name'>;
     Success: { taskId: string; retryKey: string };
 }>;
 
@@ -111,6 +112,16 @@ const handler = (scheduler: Scheduler) => {
             heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
+            if (isDuplicateTaskNameError(task.error)) {
+                res.status(409).json({
+                    error: {
+                        code: 'duplicate_task_name',
+                        message: task.error.message
+                    }
+                });
+                return;
+            }
+
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
             return;
         }

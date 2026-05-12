@@ -1,7 +1,6 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { records as recordsService } from '@nangohq/records';
 import { SyncCommand, errorManager, normalizedSyncParams, syncManager } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -40,7 +39,6 @@ export const postPublicSyncStart = asyncWrapper<PostPublicSyncStart>(async (req,
     const { environment } = res.locals;
 
     const resSyncCommand = await syncManager.runSyncCommand({
-        recordsService,
         orchestrator,
         environment,
         providerConfigKey: body.provider_config_key,

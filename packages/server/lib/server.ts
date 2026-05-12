@@ -14,17 +14,17 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
 import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
 import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
+import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
-import { pubsub } from './pubsub.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
 import migrate from './utils/migrate.js';
@@ -95,6 +95,7 @@ refreshConnectionsCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();
+lambdaKeepWarmCron();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();

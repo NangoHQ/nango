@@ -49,7 +49,7 @@ export const Webhooks: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Webhook URLs
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/implementation-guides/platform/webhooks-from-nango" variant="ghost" size="icon">
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="icon">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -85,7 +85,7 @@ export const Webhooks: React.FC = () => {
                     <p className="text-body-small-regular text-text-secondary">
                         Use this key to verify that webhook payloads are from Nango.{' '}
                         <a
-                            href="https://nango.dev/docs/implementation-guides/platform/webhooks-from-nango#verifying-webhooks-from-nango"
+                            href="https://nango.dev/docs/guides/platform/webhooks-from-nango#verifying-webhooks-from-nango"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-text-brand hover:underline"

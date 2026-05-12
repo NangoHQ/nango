@@ -28,6 +28,7 @@ export const nangoPropsSchema = z.object({
     nangoConnectionId: z.number(),
     syncJobId: z.number().optional(),
     track_deletes: z.boolean().optional(),
+    emptyCache: z.boolean().optional(),
     attributes: z.record(z.string(), z.any()).optional(),
     abortSignal: z.any().optional(), // AbortSignal cannot be validated
     syncConfig: z.object({
@@ -45,8 +46,8 @@ export const nangoPropsSchema = z.object({
         type: z.enum(['sync', 'action', 'on-event']),
         auto_start: z.boolean(),
         attributes: z.record(z.string(), z.any()),
-        pre_built: z.boolean(),
-        is_public: z.boolean(),
+        // TODO: remove optional at second release for smooth migration
+        source: z.enum(['catalog', 'standalone', 'repo']).optional(),
         metadata: z.record(z.string(), z.any()),
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),

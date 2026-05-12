@@ -49,7 +49,7 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
             span.setTag('nango.environmentUUID', environmentUuid);
             span.setTag('nango.providerConfigKey', providerConfigKey);
 
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
+            metrics.duration(metrics.Types.WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
             const isDisabledForThisAccount = await featureFlags.isSet('disable-external-webhooks', { distinctId: account.uuid });
             if (isDisabledForThisAccount) {
@@ -78,7 +78,10 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
                 return;
             }
 
-            metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED);
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED, 1, {
+                accountId: account.id,
+                provider: integration.provider
+            });
 
             const provider = getProvider(integration.provider);
 

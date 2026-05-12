@@ -62,7 +62,7 @@ export const patchFlowDisable = asyncWrapper<PatchFlowDisable>(async (req, res) 
     await errorNotificationService.sync.clearBySyncConfig({ sync_config_id: valParams.data.id });
 
     if (updated > 0) {
-        await syncManager.pauseSchedules({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
+        await syncManager.pauseSyncs({ syncConfigId: valParams.data.id, environmentId: environment.id, orchestrator });
         res.status(200).send({ data: { success: true } });
     } else {
         res.status(400).send({ data: { success: false } });

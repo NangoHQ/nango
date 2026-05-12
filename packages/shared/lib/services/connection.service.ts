@@ -1220,7 +1220,9 @@ class ConnectionService {
         const params = new URLSearchParams();
 
         const bodyFormat = provider.body_format || 'form';
-        headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        if (bodyFormat !== 'query') {
+            headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        }
 
         if (provider.token_request_auth_method === 'basic') {
             if (!client_secret) {
@@ -1311,12 +1313,18 @@ class ConnectionService {
             }
         }
 
+        if (bodyFormat === 'query') {
+            for (const [key, value] of params.entries()) {
+                url.searchParams.append(key, value);
+            }
+        }
+
         const fetchRes = await loggedFetch<Record<string, any>>(
             {
                 url,
                 method: 'POST',
                 headers,
-                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
                 agent
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
