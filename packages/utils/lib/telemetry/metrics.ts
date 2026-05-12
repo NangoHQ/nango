@@ -99,6 +99,7 @@ export enum Types {
 
     GET_RECORDS_COUNT = 'nango.server.getRecords.count',
     GET_RECORDS_SIZE_IN_BYTES = 'nango.server.getRecords.sizeInBytes',
+    GET_RECORDS_RESPONSE_SIZE_BYTES = 'nango.server.getRecords.responseSizeBytes',
 
     CONNECTIONS_COUNT = 'nango.connections.count',
 
@@ -149,6 +150,10 @@ export function histogram(metricName: Types, value: number): void {
 }
 
 export function duration(metricName: Types, value: number, dimensions?: Dimensions): void {
+    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
+}
+
+export function distribution(metricName: Types, value: number, dimensions?: Dimensions): void {
     tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
 }
 

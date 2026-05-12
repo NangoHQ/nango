@@ -284,6 +284,86 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
 
+    /integrations/{uniqueKey}/functions/{name}/code:
+        get:
+            summary: Get a function's source code
+            description: Returns the TypeScript source code of a function for a given integration.
+            parameters:
+                - name: uniqueKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The integration ID (unique_key) that you created in Nango.
+                - name: name
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the function.
+                - name: type
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [sync, action, on-event]
+                  description: The function type. Required to disambiguate when multiple functions share the same name.
+            responses:
+                '200':
+                    description: Successfully returned the function source code
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - type
+                                    - code
+                                properties:
+                                    type:
+                                        type: string
+                                        enum: [sync, action, on-event]
+                                        description: The function type.
+                                    code:
+                                        type: string
+                                        description: The TypeScript source code of the function.
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '409':
+                    description: Multiple functions share the same name. Specify a `type` to disambiguate.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: object
+                                        properties:
+                                            code:
+                                                type: string
+                                                enum: [ambiguous_function]
+                                            message:
+                                                type: string
+                                            payload:
+                                                type: object
+                                                properties:
+                                                    matches:
+                                                        type: array
+                                                        items:
+                                                            type: object
+                                                            required:
+                                                                - type
+                                                                - name
+                                                            properties:
+                                                                type:
+                                                                    type: string
+                                                                    enum: [sync, action, on-event]
+                                                                name:
+                                                                    type: string
+
     /connection:
         get:
             summary: List connections (deprecated)
