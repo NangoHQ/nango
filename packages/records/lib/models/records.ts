@@ -1245,10 +1245,21 @@ export async function deleteOutdatedRecords({
 
 export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
     try {
-        const count = await db(RECORDS_BATCH_TABLE)
-            .whereIn('id', db(RECORDS_BATCH_TABLE).select('id').where('created_at', '<', olderThan).limit(limit))
-            .delete();
-        return Ok(count);
+        const result = await db.raw<{ rowCount: number }>(
+            `WITH expired AS (
+                SELECT ctid
+                FROM ${RECORDS_BATCH_TABLE}
+                WHERE created_at < ?
+                ORDER BY created_at
+                LIMIT ?
+                FOR UPDATE SKIP LOCKED
+            )
+            DELETE FROM ${RECORDS_BATCH_TABLE}
+            USING expired
+            WHERE records_batch.ctid = expired.ctid`,
+            [olderThan, limit]
+        );
+        return Ok(result.rowCount);
     } catch (err) {
         return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
