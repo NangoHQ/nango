@@ -10298,6 +10298,7 @@ kno-commerce:
     auth_mode: OAUTH2_CC
     token_url: https://app-api.knocommerce.com/api/oauth2/token
     token_request_auth_method: basic
+    body_format: query
     token_params:
         grant_type: client_credentials
     proxy:
