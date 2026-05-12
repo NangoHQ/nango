@@ -3180,6 +3180,29 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+buffer:
+    display_name: Buffer
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://auth.buffer.com/auth
+    token_url: https://auth.buffer.com/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.buffer.com
+    docs: https://nango.dev/docs/integrations/all/buffer
+    setup_guide_url: https://nango.dev/docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app
+
 bullhorn:
     display_name: Bullhorn
     categories:
