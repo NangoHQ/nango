@@ -14182,6 +14182,7 @@ pivotaltracker:
 planning-center-online:
     display_name: Planning Center Online (OAuth)
     categories:
+        - crm
         - productivity
     auth_mode: OAUTH2
     authorization_url: https://api.planningcenteronline.com/oauth/authorize
@@ -14212,6 +14213,7 @@ planning-center-online:
 planning-center-online-pat:
     display_name: Planning Center Online (Personal Access Token)
     categories:
+        - crm
         - productivity
     auth_mode: BASIC
     proxy:
