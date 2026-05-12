@@ -324,7 +324,10 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 }
 
 /** Lambda keep-warm invoke count multiplier by billing plan (`plans.name`). */
-export function lambdaKeepWarmProvisionedConcurrencyMultiplier(planName: DBPlan['name']): number {
+export function lambdaKeepWarmProvisionedConcurrencyMultiplier(planName: DBPlan['name'], isProduction: DBEnvironment['is_production']): number {
+    if (!isProduction) {
+        return 1;
+    }
     switch (planName) {
         case 'free':
             return 1;

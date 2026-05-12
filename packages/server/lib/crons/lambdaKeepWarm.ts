@@ -62,10 +62,11 @@ export async function exec(): Promise<void> {
             }
 
             const rows = await db.readOnly
-                .select<{ account_id: number; id: number; plan_name: DBPlan['name'] }[]>(
+                .select<{ account_id: number; id: number; plan_name: DBPlan['name']; is_production: DBEnvironment['is_production'] }[]>(
                     '_nango_environments.account_id',
                     '_nango_environments.id',
-                    'plans.name as plan_name'
+                    'plans.name as plan_name',
+                    '_nango_environments.is_production'
                 )
                 .from<DBEnvironment>('_nango_environments')
                 .join('plans', 'plans.account_id', '_nango_environments.account_id')
@@ -84,7 +85,7 @@ export async function exec(): Promise<void> {
                     payload: {
                         accountId: row.account_id,
                         environmentId: row.id,
-                        provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(row.plan_name)
+                        provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(row.plan_name, row.is_production)
                     }
                 });
                 if (res.isErr()) {
