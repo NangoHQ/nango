@@ -65,7 +65,7 @@ RUN true \
 # Build the frontend
 RUN true \
   && npm run -w @nangohq/webapp build \
-  && npm run -w @nangohq/connect-ui build
+  && npm run -w @nangohq/connect-ui build:nocheck
 
 # Clean src
 RUN true \

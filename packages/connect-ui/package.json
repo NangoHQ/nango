@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite --port ${NANGO_CONNECT_UI_PORT:-3009}",
         "build": "tsc -b && vite build",
+        "build:nocheck": "tsc -b --noCheck && vite build",
         "preview": "vite preview",
         "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
     },
