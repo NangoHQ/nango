@@ -75,6 +75,8 @@ jobs:
     typecheck:
         needs: should-run
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
         steps:
             - uses: actions/checkout@v4
               if: needs.should-run.outputs.should_skip != 'true'
