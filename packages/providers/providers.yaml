@@ -9593,6 +9593,57 @@ itglue:
             doc_section: '#step-1-finding-your-subdomain'
             order: 1
 
+immybot:
+    display_name: ImmyBot
+    categories:
+        - dev-tools
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        scope: https://${connectionConfig.instanceSubdomain}.immy.bot/.default
+    proxy:
+        base_url: https://${connectionConfig.instanceSubdomain}.immy.bot
+        headers:
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/immybot
+    docs_connect: https://nango.dev/docs/api-integrations/immybot/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Microsoft Entra Tenant ID
+            description: The Azure tenant ID that owns the ImmyBot app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            order: 1
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        instanceSubdomain:
+            type: string
+            title: ImmyBot Instance Subdomain
+            description: The first segment of your ImmyBot instance URL.
+            pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+            example: acme
+            prefix: https://
+            suffix: .immy.bot
+            order: 2
+            doc_section: '#step-2-find-your-immybot-instance-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Application client ID from the Microsoft Entra app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret value from the Microsoft Entra app registration.
+            secret: true
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+
 intercom:
     display_name: Intercom
     categories:
