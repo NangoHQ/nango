@@ -14235,7 +14235,7 @@ planning-center-online-pat:
             headers:
                 accept: application/json
             endpoints:
-                - /people/v2/people?per_page=1
+                - /current/v2/me
     docs: https://nango.dev/docs/integrations/all/planning-center-online-pat
     docs_connect: https://nango.dev/docs/integrations/all/planning-center-online-pat/connect
     credentials:
