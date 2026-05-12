@@ -9,7 +9,7 @@ permissions:
     pull-requests: write
 jobs:
     auto-approve:
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+        runs-on: ubuntu-latest
         steps:
             - name: Check if trusted author
               id: trust_check

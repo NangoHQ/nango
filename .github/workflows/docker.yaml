@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
     should-run:
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+        runs-on: ubuntu-latest
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
@@ -49,7 +49,7 @@ jobs:
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     docker_check_job:
         needs: should-run
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+        runs-on: ubuntu-latest
         steps:
             - name: Checkout
               if: needs.should-run.outputs.should_skip != 'true'
