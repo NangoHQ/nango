@@ -322,3 +322,22 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
 
     return { ...newPlanDefinition.flags, ...overrides };
 }
+
+/** Lambda keep-warm invoke count multiplier by billing plan (`plans.name`). */
+export function lambdaKeepWarmProvisionedConcurrencyMultiplier(planName: DBPlan['name']): number {
+    switch (planName) {
+        case 'free':
+            return 1;
+        case 'starter':
+        case 'starter-legacy':
+        case 'starter-v2':
+            return 2;
+        case 'scale-legacy':
+            return 3;
+        case 'growth':
+        case 'growth-v2':
+            return 4;
+        default:
+            return 1;
+    }
+}
