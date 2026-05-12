@@ -74,34 +74,38 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const result = await records.getRecords({
-        connectionId: connection.id,
-        model: query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model,
-        modifiedAfter: query.delta || query.modified_after,
-        limit: query.limit,
-        filter: query.filter,
-        cursor: query.cursor,
-        externalIds: query.ids
-    });
+    await tracer.trace('server.getRecords', async (span) => {
+        const result = await records.getRecords({
+            connectionId: connection.id,
+            model: query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model,
+            modifiedAfter: query.delta || query.modified_after,
+            limit: query.limit,
+            filter: query.filter,
+            cursor: query.cursor,
+            externalIds: query.ids
+        });
 
-    if (result.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
-        return;
-    }
+        if (result.isErr()) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
+            return;
+        }
 
-    res.send({
-        next_cursor: result.value.next_cursor || null,
-        records: result.value.records
-    });
+        const fetchDoneAt = performance.now();
+        res.send({
+            next_cursor: result.value.next_cursor || null,
+            records: result.value.records
+        });
+        const sendDoneAt = performance.now();
 
-    try {
-        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length, { accountId: account.id });
+        const recordsCount = result.value.records.length;
         // using the response content-length header as the records size metric in order to avoid stringifying the response body
         const responseSize = parseInt(res.get('content-length') || '0');
+
+        metrics.increment(metrics.Types.GET_RECORDS_COUNT, recordsCount, { accountId: account.id });
         metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
-        tracer.scope().active()?.setTag('response.size_bytes', responseSize);
-    } catch {
-        // ignore errors
-    }
+
+        span.setTag('response.size_bytes', responseSize);
+        span.setTag('response.send_ms', sendDoneAt - fetchDoneAt);
+    });
 });
