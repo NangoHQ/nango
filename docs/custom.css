@@ -246,10 +246,26 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
 }
 
 /* ══ LOGO ════════════════════════════════════════════════════════ */
-a[href="https://www.nango.dev"] img,
-a[href="https://www.nango.dev"] svg {
-  height: 40px !important;
+/*
+ * Mintlify ships the logo with Tailwind `h-7` (28px) plus
+ * `max-w-[100%]`, which renders small next to the marketing site.
+ *
+ * Earlier this rule targeted `a[href="https://www.nango.dev"] img`,
+ * but the href in docs.json was switched to `https://nango.dev`
+ * (no `www`), so the selector silently stopped matching — that's
+ * why subsequent height bumps had no effect.
+ *
+ * Target the stable `nav-logo` class instead so the rule survives
+ * any future href change. Cover both the <img> form (current) and
+ * the <svg> form (older Mintlify builds) for safety, and clear the
+ * max-width so the logo can scale to its natural aspect ratio.
+ */
+img.nav-logo,
+svg.nav-logo,
+.nav-logo {
+  height: 36px !important;
   width: auto !important;
+  max-width: none !important;
 }
 
 /* ══ CONTENT AREA ════════════════════════════════════════════════ */
@@ -433,16 +449,18 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
  * button, so this bottom input is redundant. Mintlify doesn't expose
  * a docs.json toggle for it.
  *
- * Two layers needed: the input itself uses `chat-assistant-` prefixed
- * classes (caught by [class*="chat-assistant"]), but its outer wrapper
- * uses only generic Tailwind classes — `rounded-2xl pointer-events-auto
- * bg-background-light/90 ...`. That combination is distinctive enough
- * to target without false positives on regular page content.
+ * Two layers needed:
+ * 1. The floating input bar itself (.chat-assistant-floating-input).
+ * 2. Its rounded-2xl wrapper div — which also appears identically
+ *    inside the Ask AI sidebar panel, so the rule must be scoped to
+ *    #content-area to avoid hiding the panel's own input container.
+ *
+ * Do NOT use [class*="chat-assistant"] (hides the panel) or
+ * #chat-assistant-textarea (that ID is duplicated on the panel
+ * textarea and would hide it too).
  */
-#chat-assistant-textarea,
-[class*="chat-assistant"] {
+.chat-assistant-floating-input,
+#content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
-div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
-  display: none !important;
-}
+
