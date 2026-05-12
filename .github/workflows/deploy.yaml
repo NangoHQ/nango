@@ -33,7 +33,7 @@ on:
 jobs:
     deploy_app_ui:
         if: inputs.service == 'app_ui'
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-22.04
         environment: ${{ inputs.stage }}
         permissions:
             id-token: write
@@ -91,7 +91,7 @@ jobs:
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy_connect_ui:
         if: inputs.service == 'connect_ui'
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-22.04
         permissions:
             id-token: write
             contents: read
@@ -145,7 +145,7 @@ jobs:
                     --project "${{ vars.GCP_PROJECT_ID }}"
     deploy:
         if: inputs.service != 'runner' && inputs.service != 'connect_ui' && inputs.service != 'app_ui' && inputs.service != 'lambda'
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-2vcpu-ubuntu-22.04
         permissions:
             contents: write
             actions: write
@@ -190,7 +190,7 @@ jobs:
                   git push origin main
     deploy_runners:
         if: inputs.service == 'runner' && inputs.stage != 'replit'
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-2vcpu-ubuntu-22.04
         environment: ${{ inputs.stage }}
         steps:
             - name: Checkout
@@ -207,7 +207,7 @@ jobs:
                     --data "{ \"image\": \"nangohq/nango:${{ github.sha }}\", \"imageType\":\"docker\" }"
     deploy_lambda:
         if: inputs.service == 'lambda' && inputs.stage != 'replit'
-        runs-on: ubuntu-24.04-arm
+        runs-on: blacksmith-4vcpu-ubuntu-2404-arm
         permissions:
             id-token: write
             contents: read

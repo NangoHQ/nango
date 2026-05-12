@@ -10,7 +10,7 @@ on:
 
 jobs:
     should-run:
-        runs-on: blacksmith-4vcpu-ubuntu-22.04
+        runs-on: blacksmith-2vcpu-ubuntu-22.04
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
@@ -47,14 +47,14 @@ jobs:
 
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     compute-matrix:
-        runs-on: blacksmith-4vcpu-ubuntu-22.04
+        runs-on: blacksmith-2vcpu-ubuntu-22.04
         outputs:
             os-matrix: ${{ steps.set-os-matrix.outputs.os-matrix }}
         steps:
             - name: Set OS Matrix
               id: set-os-matrix
               run: |
-                  echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+                  echo "os-matrix=[\"blacksmith-4vcpu-ubuntu-22.04\"]" >> $GITHUB_OUTPUT
                   # TODO: fix tests on windows and re-enable
                   # echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
     tests:

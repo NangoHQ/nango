@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
     sanity-sync-job:
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-2vcpu-ubuntu-22.04
         environment: ${{ inputs.environment || 'prod-docs' }}
         steps:
             - name: Checkout
