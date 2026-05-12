@@ -87,6 +87,7 @@ export async function deployTemplate({
 
     const modelsNames = [...template.returns, template.input].filter(Boolean) as string[];
 
+    // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
     const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, integration.id!, template.name);
     if (oldConfigs.length > 0) {
         const ids = oldConfigs.map((oldConfig) => oldConfig.id);
