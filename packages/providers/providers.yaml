@@ -20063,6 +20063,28 @@ wordpress:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://nango.dev/docs/integrations/all/wordpress
 
+wordpress-mcp:
+    display_name: WordPress.com (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://public-api.wordpress.com/oauth2-1/authorize
+    token_url: https://public-api.wordpress.com/oauth2-1/token
+    registration_url: https://public-api.wordpress.com/oauth2-1/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://public-api.wordpress.com/wpcom
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/wordpress-mcp
+
 wiseagent:
     display_name: Wiseagent
     categories:

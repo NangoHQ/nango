@@ -1,0 +1,102 @@
+---
+title: 'WordPress.com (MCP)'
+sidebarTitle: 'WordPress.com (MCP)'
+description: 'Connect your application to the WordPress.com MCP server using OAuth 2.1'
+---
+
+## 🚀 Quickstart
+
+Connect to the WordPress.com MCP server with Nango and call MCP tools in minutes. WordPress.com MCP uses OAuth 2.1 with **dynamic client registration**, so no app registration is required.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to Integrations -> _Configure New Integration_ -> _WordPress.com (MCP)_.
+    </Step>
+    <Step id="authorize" title="Authorize WordPress.com">
+    Go to Connections -> _Add Test Connection_ -> _Authorize_, then log in to WordPress.com. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-mcp-tool" title="Call a WordPress.com MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/v2/mcp/v1" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/v2/mcp/v1',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the Logs tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 WordPress.com (MCP) guides
+
+Nango uses **dynamic client registration** with WordPress.com's OAuth 2.1 server. You do not need to register an application — just create the integration in Nango and authorize with your WordPress.com account.
+
+Official resources: [WordPress.com MCP documentation](https://developer.wordpress.com/docs/mcp/)
+
+## 🧩 Pre-built syncs & actions for WordPress.com (MCP)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/wordpress-mcp/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
