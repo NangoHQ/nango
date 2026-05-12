@@ -9240,13 +9240,13 @@ huntress:
         - other
     auth_mode: BASIC
     proxy:
-        base_url: https://api.huntress.io/v1
+        base_url: https://api.huntress.io
         verification:
             method: GET
             headers:
                 content-type: application/json
             endpoints:
-                - /organizations
+                - /v1/organizations
     docs: https://nango.dev/docs/api-integrations/huntress
     docs_connect: https://nango.dev/docs/api-integrations/huntress/connect
     credentials:

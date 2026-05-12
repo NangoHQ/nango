@@ -11,6 +11,8 @@ To authenticate with Huntress, you will need:
 
 Huntress recommends user API keys. User API keys mirror the permissions of the user who generates them, while the older account API key is deprecated and read-only.
 
+Huntress also publishes a [screenshot walkthrough for generating API keys](https://support.huntress.io/hc/en-us/articles/4416826761235-Generating-API-Keys).
+
 ### Prerequisites
 
 - You must have access to the Huntress console.
@@ -18,20 +20,21 @@ Huntress recommends user API keys. User API keys mirror the permissions of the u
 
 ### Instructions
 
-#### Step 1: Generate API keys
+#### Step 1: Generate user API keys
 
-1. Log in to the Huntress console.
-2. Open the API keys area for your user.
-3. Generate a new user API key and API secret.
-4. Copy the API key and API secret and store them securely. Huntress API keys are shown in the format `hk_XXXX:hs_YYYY` when used with Swagger test authentication.
+1. Log in to the [Huntress Platform](https://huntress.io) as a user with Admin privileges.
+2. Open the hamburger menu in the upper-right corner and select **API Credentials**.
+3. In the **User API Credentials** section, click **Add**.
+4. Select the user that should own the credential, enter a descriptive **Key Name**, and click **Add**.
+5. Copy the generated **API Key** and **API Secret** and store them securely. The full credential is only shown once.
 
 #### Step 2: Enter credentials in the Connect UI
 
 Once you have your **API Key** and **API Secret**:
 
 1. Open the form where you need to authenticate with Huntress.
-2. Enter your **API Key** and **API Secret** in the respective fields.
-3. Submit the form, and you should be successfully authenticated.
+2. Enter your **API Key** in the **API Key** field.
+3. Enter your **API Secret** in the **API Secret** field.
+4. Submit the form, and you should be successfully authenticated.
 
 You are now connected to Huntress.
-
