@@ -67,7 +67,7 @@ jobs:
 
             - name: Build
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build:nocheck
+              run: npm run ts-build -- --noCheck
 
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
@@ -95,4 +95,4 @@ jobs:
 
             - name: Typecheck
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run typecheck
+              run: npm run ts-build
