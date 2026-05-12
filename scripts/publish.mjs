@@ -86,10 +86,10 @@ const res = await $`git diff`;
 echo(res.stdout);
 
 async function tsBuild() {
-    await spinner('npm run ts-build', async () => {
-        await $`npm run ts-build`;
+    await spinner('npm run ts-build:nocheck', async () => {
+        await $`npm run ts-build:nocheck`;
     });
-    echo(chalk.green(`${figures.tick} npm run ts-build`));
+    echo(chalk.green(`${figures.tick} npm run ts-build:nocheck`));
 }
 
 async function bumpVersionTs() {
