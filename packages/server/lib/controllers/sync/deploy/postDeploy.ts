@@ -31,7 +31,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
-    const ttlMs = 10 * 60 * 1000; // max expected deploy duration
+    const ttlMs = process.env['DEPLOY_LOCK_TTL_MS'] ? parseInt(process.env['DEPLOY_LOCK_TTL_MS']) : 10 * 60 * 1000; // max expected deploy duration
     const lockKey = `lock:deployService:deploy:${account.id}:${environment.id}`;
     let lock: Lock | undefined;
 
