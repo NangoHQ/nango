@@ -110,12 +110,6 @@ async function insertSeenEntry(
         sync_job_id: syncJobId,
         record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
     });
-    await trx(RECORDS_SEEN_TABLE).insert({
-        connection_id: connectionId,
-        model,
-        sync_job_id: syncJobId,
-        record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-    });
 }
 
 /**
