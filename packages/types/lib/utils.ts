@@ -1,5 +1,4 @@
 export type MaybePromise<T> = Promise<T> | T;
-const _typeErrorTest: number = 'this is intentionally wrong'; // temp: testing CI typecheck isolation
 
 export type LogMethod = (...args: any[]) => any;
 export interface Logger {
