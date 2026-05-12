@@ -1,5 +1,6 @@
 import http from 'node:http';
 import https from 'node:https';
+import { finished } from 'node:stream';
 
 import followRedirects from 'follow-redirects';
 
@@ -38,7 +39,7 @@ interface NativeProtocolModule {
     request: (options: TransportOptions, callback?: TransportCallback) => ClientRequest;
 }
 
-function wrapWithSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (bytes: MeteredBytes) => void): NativeProtocolModule {
+function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (bytes: MeteredBytes) => void): NativeProtocolModule {
     return {
         request(options, callback) {
             let socketRef: Socket | undefined;
@@ -79,18 +80,13 @@ function wrapWithSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: 
             const req = nativeModule.request(options, (res) => {
                 sawResponse = true;
 
-                res.once('end', () => {
-                    emit(false);
-                });
-                res.once('error', () => {
-                    emit(true);
-                });
-                res.once('close', () => {
-                    // follow-redirects intentionally destroys 3xx response bodies
-                    // before they are fully read. That is not an unclean termination,
-                    // so treat redirect closes as clean regardless of res.complete.
-                    const isRedirect = res.statusCode !== undefined && res.statusCode >= 300 && res.statusCode < 400;
-                    emit(!res.complete && !isRedirect);
+                // follow-redirects intentionally destroys 3xx response bodies before they
+                // are fully read. That is not an unclean termination, so treat redirect
+                // closes as clean regardless of whether `finished` receives an error.
+                const isRedirect = res.statusCode !== undefined && res.statusCode >= 300 && res.statusCode < 400;
+                const cleanup = finished(res, (err) => {
+                    cleanup();
+                    emit(!!err && !isRedirect);
                 });
 
                 if (callback) {
@@ -132,8 +128,8 @@ function wrapWithSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: 
 export function createMeteringTransport(onBytes: (bytes: MeteredBytes) => void): {
     request: (options: TransportOptions, callback?: TransportCallback) => ClientRequest;
 } {
-    const meteredHttp = wrapWithSocketMetering(http, onBytes);
-    const meteredHttps = wrapWithSocketMetering(https, onBytes);
+    const meteredHttp = withSocketMetering(http, onBytes);
+    const meteredHttps = withSocketMetering(https, onBytes);
 
     const wrapped = (followRedirects as unknown as FollowRedirectsWithWrap).wrap({
         http: meteredHttp,

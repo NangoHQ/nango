@@ -117,8 +117,8 @@ async function execute(
                         oauth_client_secret: null
                     }),
                     onBytes: ({ sent, received }) => {
-                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId, source: 'credentials_verification' });
-                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId, source: 'credentials_verification' });
+                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId });
+                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId });
                     }
                 });
                 return (await proxy.request()).unwrap();

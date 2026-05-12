@@ -415,11 +415,8 @@ export async function credentialsTest({
                     oauth_client_secret: config.oauth_client_secret
                 }),
                 onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId: logCtx.accountId, source: 'credentials_verification' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, {
-                        accountId: logCtx.accountId,
-                        source: 'credentials_verification'
-                    });
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId: logCtx.accountId });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId: logCtx.accountId });
                 }
             });
 

@@ -186,6 +186,36 @@ describe('createMeteringTransport (socket bytes)', () => {
         expect(bytes.partial).toBe(true);
     });
 
+    it('marks partial=false for redirect hops (follow-redirects destroys 3xx body)', async () => {
+        handle = await startServer((req, res) => {
+            if (req.url === '/') {
+                res.writeHead(301, { location: '/final' });
+                res.end();
+            } else {
+                res.writeHead(200);
+                res.end('ok');
+            }
+        });
+
+        const { onBytes, promise } = onBytesAwaitable();
+        const hops: MeteredBytes[] = [];
+        const wrapped = (bytes: MeteredBytes) => {
+            hops.push({ ...bytes });
+            if (hops.length === 2) onBytes(bytes);
+        };
+        const transport = createMeteringTransport(wrapped);
+
+        const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
+            void drainResponse(res);
+        });
+        req.end();
+
+        await promise;
+        expect(hops).toHaveLength(2);
+        expect(hops[0]!.partial).toBe(false); // redirect hop: follow-redirects destroys body, not an error
+        expect(hops[1]!.partial).toBe(false); // final hop: clean response
+    });
+
     it('fires exactly once on connect failure', async () => {
         handle = await startServer((_req, res) => res.end());
         const port = handle.port;
