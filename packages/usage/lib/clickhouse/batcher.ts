@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 import { Err, Ok } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
@@ -7,10 +9,14 @@ import type { Result } from '@nangohq/utils';
 interface Item<T> {
     item: T;
     retries: number;
+    // Assigned on first flush, preserved across retries. Used so that retried items stay
+    // grouped together and isolated from fresh items in subsequent flushes, and passed to
+    // the process callback as an idempotency token to the storage layer.
+    retryKey?: string;
 }
 
 export class Batcher<T> {
-    private readonly process: (events: T[]) => Promise<void>;
+    private readonly process: (events: T[], opts: { retryKey: string }) => Promise<void>;
     private readonly maxBatchSize: number;
     private readonly flushInterval: number;
     private queue: Item<T>[];
@@ -20,7 +26,7 @@ export class Batcher<T> {
     private timer: NodeJS.Timeout | null;
 
     constructor(options: {
-        process: (events: T[]) => Promise<void>;
+        process: (events: T[], opts: { retryKey: string }) => Promise<void>;
         flushIntervalMs?: number;
         maxBatchSize: number;
         maxQueueSize?: number;
@@ -77,10 +83,29 @@ export class Batcher<T> {
 
         this.isFlushing = true;
 
-        const batch = this.queue.splice(0, Math.min(this.queue.length, this.maxBatchSize));
+        // Build a batch from the contiguous prefix of items sharing the same retryKey
+        // (or all having no retryKey). This isolates retried items from fresh items so
+        // the retry block content is guaranteed identical to the original attempt.
+        const targetKey = this.queue[0]?.retryKey;
+        let sliceEnd = 0;
+        while (sliceEnd < this.queue.length && sliceEnd < this.maxBatchSize && this.queue[sliceEnd]?.retryKey === targetKey) {
+            sliceEnd++;
+        }
+        const batch = this.queue.splice(0, sliceEnd);
+
+        // Assign a retryKey on first flush so it's stable across retries.
+        const retryKey = targetKey ?? randomUUID();
+        if (!targetKey) {
+            for (const it of batch) {
+                it.retryKey = retryKey;
+            }
+        }
 
         try {
-            await this.process(batch.map((data) => data.item));
+            await this.process(
+                batch.map((data) => data.item),
+                { retryKey }
+            );
 
             if (this.queue.length >= this.maxBatchSize) {
                 setImmediate(() => this.flush());

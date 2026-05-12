@@ -1,9 +1,9 @@
 import { ENVS, Err, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
+import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
-import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 
 import type { GetUsageQuery, GetUsageResult, GetUsageResultSeries } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageMetric, UsageRecordsEvent } from '@nangohq/types';
@@ -48,12 +48,17 @@ export class Clickhouse {
 
         this.client = client;
         this.batcher = new Batcher({
-            process: async (events) => {
+            process: async (events, { retryKey }) => {
                 try {
                     await client.insert({
                         table: 'raw_events',
                         values: events,
-                        format: 'JSONEachRow'
+                        format: 'JSONEachRow',
+                        // Token is stable across retries of the same logical batch, so CH
+                        // server-side dedup catches a retried INSERT even if the block
+                        // content has drifted. Paired with the cluster-wide settings in
+                        // config.ts, this propagates the dedup decision to all dependent MVs.
+                        clickhouse_settings: { insert_deduplication_token: retryKey }
                     });
                 } catch (err) {
                     logger.error(`Failed to insert usage events into Clickhouse: ${stringifyError(err)}`);

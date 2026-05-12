@@ -390,6 +390,100 @@ describe('Clickhouse', () => {
             });
         });
     });
+
+    // Verifies the CH-platform contract we depend on: when the metering Batcher retries an
+    // insert with the same insert_deduplication_token, ClickHouse dedupes at the block layer
+    // and propagates the dedup to dependent MVs (so daily_* tables don't double-count).
+    // If this test ever breaks, the entire retry-safety model is invalid.
+    describe('insert_deduplication_token contract', () => {
+        const dedupDatabase = `usage_dedup_test`;
+        const dedupClickhouse = new Clickhouse({ database: dedupDatabase });
+
+        afterAll(async () => {
+            await dedupClickhouse.shutdown();
+        });
+
+        beforeAll(async () => {
+            const client = clickhouseClient();
+            await client?.command({ query: `DROP DATABASE IF EXISTS ${dedupDatabase}` });
+            await client?.close();
+            await migrate({ database: dedupDatabase });
+        });
+
+        // Block-level dedup requires a Replicated/Shared engine (ClickHouse Cloud's
+        // SharedReplacingMergeTree). The local CH used by the testcontainer is plain
+        // ReplacingMergeTree which doesn't implement insert_deduplicate at all, so this
+        // test cannot run in CI. Verified manually in CH Cloud — see Linear doc:
+        // https://linear.app/nango/document/avg-billing-metric-issues-7831f496d326
+        it.skip('dedupes identical INSERTs with the same token (single MV firing)', async () => {
+            const client = clickhouseClient({ database: dedupDatabase });
+            if (!client) throw new Error('CLICKHOUSE_URL not set');
+
+            const token = `dedup-token-${rnd.string()}`;
+            const event = {
+                ts: dayFromNow(0).getTime(),
+                idempotency_key: rnd.string(),
+                type: 'usage.proxy' as const,
+                account_id: -999,
+                value: 100,
+                attributes: { success: true, environmentId: 1, environmentName: 'test', integrationId: 'test', connectionId: 'test' }
+            };
+
+            for (let i = 0; i < 3; i++) {
+                await client.insert({
+                    table: 'raw_events',
+                    values: [event],
+                    format: 'JSONEachRow',
+                    clickhouse_settings: { insert_deduplication_token: token }
+                });
+            }
+
+            // daily_proxy should reflect ONE MV firing — value=100, not 300.
+            const result = await client.query({
+                query: `SELECT SUM(value) AS total FROM ${dedupDatabase}.daily_proxy WHERE account_id = -999`,
+                format: 'JSONEachRow'
+            });
+            const rows = await result.json();
+            expect(Number(rows[0]?.total)).toBe(100);
+
+            await client.close();
+        });
+
+        it('does not dedupe across distinct tokens', async () => {
+            const client = clickhouseClient({ database: dedupDatabase });
+            if (!client) throw new Error('CLICKHOUSE_URL not set');
+
+            const accountId = -998;
+            const event = {
+                ts: dayFromNow(0).getTime(),
+                idempotency_key: rnd.string(),
+                type: 'usage.proxy' as const,
+                account_id: accountId,
+                value: 100,
+                attributes: { success: true, environmentId: 1, environmentName: 'test', integrationId: 'test', connectionId: 'test' }
+            };
+
+            for (let i = 0; i < 3; i++) {
+                // ts differs per iteration so each block hash differs too — pure token isolation test.
+                await client.insert({
+                    table: 'raw_events',
+                    values: [{ ...event, ts: event.ts + i }],
+                    format: 'JSONEachRow',
+                    clickhouse_settings: { insert_deduplication_token: `distinct-token-${rnd.string()}` }
+                });
+            }
+
+            // Three distinct logical inserts, each fires the MV → value=300.
+            const result = await client.query({
+                query: `SELECT SUM(value) AS total FROM ${dedupDatabase}.daily_proxy WHERE account_id = ${accountId}`,
+                format: 'JSONEachRow'
+            });
+            const rows = await result.json();
+            expect(Number(rows[0]?.total)).toBe(300);
+
+            await client.close();
+        });
+    });
 });
 
 function dayFromNow(dayOffset = 0): Date {
