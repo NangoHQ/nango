@@ -9234,6 +9234,38 @@ hover:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
 
+huntress:
+    display_name: Huntress
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.huntress.io/v1
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /organizations
+    docs: https://nango.dev/docs/api-integrations/huntress
+    docs_connect: https://nango.dev/docs/api-integrations/huntress/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Huntress API key.
+            pattern: '^hk_[A-Za-z0-9]+$'
+            example: hk_XXXXXXXXXXXXXXXX
+            doc_section: '#step-1-generate-api-keys'
+        password:
+            type: string
+            title: API Secret
+            description: Your Huntress API secret.
+            secret: true
+            pattern: '^hs_[A-Za-z0-9]+$'
+            example: hs_XXXXXXXXXXXXXXXX
+            doc_section: '#step-1-generate-api-keys'
+
 hubspot:
     display_name: HubSpot
     categories:

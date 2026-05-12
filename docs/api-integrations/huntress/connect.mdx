@@ -1,0 +1,37 @@
+---
+title: Huntress - How do I link my account?
+sidebarTitle: Huntress
+---
+
+# Overview
+
+To authenticate with Huntress, you will need:
+1. **API Key** - A Huntress API key that starts with `hk_`.
+2. **API Secret** - A Huntress API secret that starts with `hs_`.
+
+Huntress recommends user API keys. User API keys mirror the permissions of the user who generates them, while the older account API key is deprecated and read-only.
+
+### Prerequisites
+
+- You must have access to the Huntress console.
+- Your Huntress user must have the permissions required for the API resources you want to access.
+
+### Instructions
+
+#### Step 1: Generate API keys
+
+1. Log in to the Huntress console.
+2. Open the API keys area for your user.
+3. Generate a new user API key and API secret.
+4. Copy the API key and API secret and store them securely. Huntress API keys are shown in the format `hk_XXXX:hs_YYYY` when used with Swagger test authentication.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key** and **API Secret**:
+
+1. Open the form where you need to authenticate with Huntress.
+2. Enter your **API Key** and **API Secret** in the respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Huntress.
+
