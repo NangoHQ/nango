@@ -14179,6 +14179,75 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+planning-center-online:
+    display_name: Planning Center Online (OAuth)
+    categories:
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.planningcenteronline.com/oauth/authorize
+    token_url: https://api.planningcenteronline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+    docs: https://nango.dev/docs/integrations/all/planning-center-online
+    docs_connect: https://nango.dev/docs/integrations/all/planning-center-online/connect
+
+planning-center-online-pat:
+    display_name: Planning Center Online (Personal Access Token)
+    categories:
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+            endpoints:
+                - /people/v2/people?per_page=1
+    docs: https://nango.dev/docs/integrations/all/planning-center-online-pat
+    docs_connect: https://nango.dev/docs/integrations/all/planning-center-online-pat/connect
+    credentials:
+        username:
+            type: string
+            title: Application ID
+            description: The Application ID (`client_id`) for your Planning Center Personal Access Token
+            doc_section: '#step-2-create-a-personal-access-token'
+        password:
+            type: string
+            title: Secret
+            description: The Secret (`secret`) for your Planning Center Personal Access Token
+            secret: true
+            doc_section: '#step-2-create-a-personal-access-token'
+
 plain:
     display_name: Plain
     categories:

@@ -1,0 +1,40 @@
+---
+title: Planning Center Online (Personal Access Token) - How do I link my account?
+sidebarTitle: Planning Center Online (PAT)
+---
+
+# Overview
+
+Planning Center Personal Access Tokens (PATs) allow you to call the API as a single user (great for scripts and internal tooling).
+
+If you need to distribute your integration to **multiple churches**, use OAuth instead:
+
+- [Planning Center Online (OAuth)](/integrations/all/planning-center-online)
+
+### Prerequisites
+
+- You can sign in to Planning Center and generate Personal Access Tokens from your developer account.
+
+### Step 1 open personal access tokens
+
+1. Open Planning Center PAT management: `https://api.planningcenteronline.com/personal_access_tokens`
+
+Official documentation:
+
+- [Personal Access Token](https://api.planningcenteronline.com/docs/overview/authentication#personal-access-token)
+
+### Step 2 create a personal access token
+
+1. Create a new token.
+2. Copy the **Application ID** (`client_id`) and **Secret** (`secret`).
+
+These credentials authenticate via HTTP Basic Auth (equivalent to `curl -u client_id:secret ...`).
+
+### Step 3 enter credentials in Nango Connect
+
+In the Connect UI form:
+
+- **Application ID**: paste your PAT `client_id`
+- **Secret**: paste your PAT `secret`
+
+Submit the form to complete authentication.

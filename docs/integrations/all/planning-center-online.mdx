@@ -1,0 +1,153 @@
+---
+title: 'Planning Center Online (OAuth)'
+sidebarTitle: 'Planning Center Online (OAuth)'
+description: 'Access the Planning Center Online API in a few minutes'
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/planning-center-online/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/planning-center-online/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Planning Center Online (OAuth)_.
+
+        Planning Center requires you to bring your own OAuth application. Follow these [instructions](#🧑‍💻-oauth-app-setup), then add your OAuth client ID + secret and requested scopes to the integration settings in Nango.
+      </Step>
+      <Step title="Authorize Planning Center Online">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then complete the Planning Center authorization prompt.
+
+        Pick the church/organization you want this connection to access.
+      </Step>
+      <Step title="Call the Planning Center Online API">
+        Planning Center’s HTTP APIs are hosted on `https://api.planningcenteronline.com` and generally live under product namespaces like `/people/v2/...`, `/services/v2/...`, etc.
+
+        Example (People API): list people records.
+
+        Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+          <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/people/v2/people?per_page=1" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+          </Tab>
+
+          <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/people/v2/people',
+              params: { per_page: 1 },
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(res.data);
+            ```
+
+          </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+      Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Planning Center accounts.
+    </Tip>
+  </Tab>
+
+  <Tab title="🧑‍💻 OAuth app setup">
+    <Steps>
+      <Step title="Create a Planning Center developer context (org account)">
+        Planning Center OAuth apps are created from a Planning Center account that can administer OAuth applications.
+
+        If you’re building an integration for multiple churches, Planning Center recommends creating an OAuth app under an organization account you control (often your company), not an individual church account.
+
+        See Planning Center’s authentication overview for background and constraints:
+
+        - [Authentication](https://api.planningcenteronline.com/docs/overview/authentication)
+      </Step>
+
+      <Step title="Create an OAuth application">
+        Sign in and create an OAuth application in Planning Center’s developer tools:
+
+        - Developer apps / OAuth applications: `https://api.planningcenteronline.com/oauth/applications`
+
+        Configure a redirect URL for Nango:
+
+        - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+
+        Copy the **Client ID** and **Client secret** — you'll paste those into your Nango integration settings.
+
+        Choose OAuth scopes based on which Planning Center products your integration needs (People, Services, Calendar, etc.). Scopes are documented here:
+
+        - [Authentication → Application Scopes](https://api.planningcenteronline.com/docs/overview/authentication)
+      </Step>
+
+      <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to finish wiring up your integration in Nango.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Authentication overview](https://api.planningcenteronline.com/docs/overview/authentication) |
+    | | [Rate limiting](https://api.planningcenteronline.com/docs/overview/rate-limiting) |
+    | | [JSON:API overview](https://api.planningcenteronline.com/docs/overview/json-api) |
+    | Developer | [Planning Center API docs home](https://api.planningcenteronline.com/docs) |
+
+    <Note>
+      Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/planning-center-online.mdx)
+    </Note>
+  </Tab>
+
+  <Tab title="🚨 API gotchas">
+    - Access tokens expire after **2 hours**. Nango will refresh tokens using the refresh token when possible.
+    - Refresh tokens are honored for up to **90 days** without a refresh — users may need to re-authorize after longer idle periods.
+    - Planning Center enforces rate limits and returns **429** responses with a `Retry-After` header.
+    - Requests should include a descriptive **`User-Agent`**; Nango sets a default User-Agent for proxy requests.
+
+    <Note>
+      Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/planning-center-online.mdx)
+    </Note>
+  </Tab>
+</Tabs>
+
+## Going further
+
+<Card title="Planning Center Online (Personal Access Token)" icon="link" href="/integrations/all/planning-center-online-pat" horizontal>
+  Prefer Basic Auth with a Personal Access Token? Use the PAT-based integration.
+</Card>
+
+<Card title="Connect UI guide (OAuth)" icon="link" href="/integrations/all/planning-center-online/connect" horizontal>
+  Connect Planning Center Online (OAuth) using Nango Connect UI.
+</Card>
+
+<Info>
+  Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
