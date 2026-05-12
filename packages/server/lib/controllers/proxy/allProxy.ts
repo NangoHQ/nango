@@ -357,7 +357,7 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
 /**
  * Checks whether the response was compressed (`content-encoding` header was set) before axios processed it.
  */
-function checkWasContentEncoded(responseStream: AxiosResponse): boolean | undefined {
+function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined {
     const contentEncoding = responseStream.headers['content-encoding'] || '';
     // if `content-encoding` header wasn't stripped by axios, the response is compressed
     if (contentEncoding) return true;
@@ -367,7 +367,7 @@ function checkWasContentEncoded(responseStream: AxiosResponse): boolean | undefi
     if (!rawHeaders || !Array.isArray(rawHeaders)) return undefined;
 
     const ceIdx = rawHeaders.findIndex((h: unknown) => typeof h === 'string' && h.toLowerCase() === 'content-encoding');
-    // if `content-encoding` header is present in raw headers, the response was originalyl compressed and stripped by axios
+    // if `content-encoding` header is present in raw headers, the response was originally compressed and the header was stripped by axios
     return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
 }
 
@@ -375,7 +375,7 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
 
-    const wasCompressed = checkWasContentEncoded(responseStream);
+    const wasCompressed = checkWasCompressed(responseStream);
     const isChunked = transferEncoding === 'chunked';
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
