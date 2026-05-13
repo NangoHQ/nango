@@ -9,14 +9,14 @@ description: 'Integrate your application with the Planning Center Online API usi
 Connect to Planning Center Online (PAT) with Nango.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="configure-planning-center-pat-integration" title="Create the integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Planning Center Online (Personal Access Token)_.
 
         Personal Access Tokens are intended for **single-user scripting**. If you’re distributing your integration to **multiple churches**, use OAuth instead:
 
         - [Planning Center Online (OAuth)](/api-integrations/planning-center-online)
     </Step>
-    <Step title="Create a Personal Access Token">
+    <Step id="create-planning-center-personal-access-token" title="Create a Personal Access Token">
         Follow Planning Center’s PAT instructions:
 
         - [Personal Access Token](https://api.planningcenteronline.com/docs/overview/authentication#personal-access-token)
@@ -28,7 +28,7 @@ Connect to Planning Center Online (PAT) with Nango.
 
         These map to HTTP Basic Authentication (`Authorization: Basic ...`), equivalent to `curl -u client_id:secret`.
     </Step>
-    <Step title="Call the Planning Center Online API">
+    <Step id="call-planning-center-pat-api" title="Call the Planning Center Online API">
         Example (People API): list people records.
 
         Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -73,7 +73,7 @@ Connect to Planning Center Online (PAT) with Nango.
         ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-nango-for-planning-center-pat" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
     </Step>
 </Steps>
@@ -100,7 +100,7 @@ Official docs: [Planning Center API — Authentication overview](https://api.pla
 
 - PAT uses **HTTP Basic Auth** (`client_id` + `secret`), not bearer tokens.
 - PAT is **not appropriate for multi-church integrations** — use OAuth for distributed apps.
-- Planning Center requires an identifiable **`User-Agent`**. Nango sends `Nango (https://nango.dev)` by default on proxy and verification requests. To use your own string (for example your app name and support email), set optional connection metadata **`userAgent`** when you create the connection (same mechanism as other integrations’ [connection configuration](/reference/api/connection/post#body-connection-config)).
+- Planning Center may reject requests without an identifiable **`User-Agent`**. When calling the [Proxy](/guides/platform/proxy-requests), include a descriptive `User-Agent` (or your client’s equivalent forwarded header) if you see **403** responses.
 
 ## Going further
 
