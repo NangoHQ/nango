@@ -3180,6 +3180,29 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+buffer:
+    display_name: Buffer
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://auth.buffer.com/auth
+    token_url: https://auth.buffer.com/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.buffer.com
+    docs: https://nango.dev/docs/api-integrations/buffer
+    setup_guide_url: https://nango.dev/docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app
+
 bullhorn:
     display_name: Bullhorn
     categories:
@@ -15207,6 +15230,27 @@ recruiterflow:
             example: 7b0c0d****************************
             pattern: '^[a-zA-Z0-9_]+$'
 
+render-mcp:
+    display_name: Render (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mcp.render.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/render-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/render-mcp/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Render API key from Account Settings.
+            doc_section: '#step-1-create-a-render-api-key'
+            example: rnd_****************************
+            pattern: '^rnd_[A-Za-z0-9]+$'
+
 reddit:
     display_name: Reddit
     categories:
@@ -20264,6 +20308,28 @@ wordpress:
     proxy:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://nango.dev/docs/integrations/all/wordpress
+
+wordpress-mcp:
+    display_name: WordPress.com (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://public-api.wordpress.com/oauth2-1/authorize
+    token_url: https://public-api.wordpress.com/oauth2-1/token
+    registration_url: https://public-api.wordpress.com/oauth2-1/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://public-api.wordpress.com/wpcom
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/wordpress-mcp
 
 wiseagent:
     display_name: Wiseagent
