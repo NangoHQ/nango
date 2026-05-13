@@ -15086,7 +15086,7 @@ render-mcp:
             type: string
             title: API Key
             description: Your Render API key from Account Settings.
-            doc_section: '#step-1-create-an-api-key'
+            doc_section: '#step-1-create-a-render-api-key'
             example: rnd_****************************
             pattern: '^rnd_[A-Za-z0-9]+$'
 
