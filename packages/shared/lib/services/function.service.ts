@@ -71,7 +71,10 @@ export async function listFunctions({
         db.knex.from(listing).count<{ total: string }[]>('* as total').first()
     ]);
 
-    const rows = pageRows.map(toNangoFunctionDeployed);
+    const rows = pageRows.flatMap((row) => {
+        const fn = toNangoFunctionDeployed(row);
+        return fn ? [fn] : [];
+    });
     const total = countRow ? Number(countRow.total) : 0;
 
     return { rows, total };
@@ -86,16 +89,14 @@ function buildListingSubquery({
     providerConfigKey: string;
     type: FunctionType | undefined;
 }): Knex.Raw {
-    const syncConfigBranch = () => buildSyncConfigBranch({ environmentId, providerConfigKey, type: type === 'on-event' ? undefined : type });
-    const onEventBranch = () => buildOnEventBranch({ environmentId, providerConfigKey });
-
-    if (type === 'on-event') {
-        return db.knex.raw('(?) AS listing', [onEventBranch()]);
+    const branches: Knex.QueryBuilder[] = [];
+    if (type !== 'on-event') {
+        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type }));
     }
-    if (type === 'sync' || type === 'action') {
-        return db.knex.raw('(?) AS listing', [syncConfigBranch()]);
+    if (type === undefined || type === 'on-event') {
+        branches.push(buildOnEventBranch({ environmentId, providerConfigKey }));
     }
-    return db.knex.raw('(? UNION ALL ?) AS listing', [syncConfigBranch(), onEventBranch()]);
+    return branches.length === 1 ? db.knex.raw('(?) AS listing', [branches[0]]) : db.knex.raw('(? UNION ALL ?) AS listing', branches);
 }
 
 function buildSyncConfigBranch({
@@ -107,6 +108,8 @@ function buildSyncConfigBranch({
     providerConfigKey: string;
     type: 'sync' | 'action' | undefined;
 }): Knex.QueryBuilder {
+    // Casts on `source` (sync_config_source enum) and `models_json_schema` (json column)
+    // are required for UNION ALL with the on-event branch — Postgres only unions matching types.
     const query = db.knex
         .from({ sc: '_nango_sync_configs' })
         .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
@@ -118,7 +121,7 @@ function buildSyncConfigBranch({
         .select(
             'sc.id',
             db.knex.raw('sc.sync_name AS name'),
-            db.knex.raw('CAST(sc.type AS text) AS type'),
+            'sc.type',
             'sc.metadata',
             'sc.input',
             db.knex.raw('sc.models AS returns'),
@@ -133,13 +136,14 @@ function buildSyncConfigBranch({
         );
 
     if (type) {
-        query.andWhereRaw('CAST(sc.type AS text) = ?', [type]);
+        query.andWhere('sc.type', type);
     }
 
     return query;
 }
 
 function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+    // `oes.event` is a script_trigger_event enum and must be cast to text for UNION ALL.
     return db.knex
         .from({ oes: 'on_event_scripts' })
         .join({ nc: '_nango_configs' }, 'oes.config_id', 'nc.id')
@@ -165,7 +169,7 @@ function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentI
         );
 }
 
-function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed {
+function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed | undefined {
     const description = row.metadata?.description;
     const scopes = row.metadata?.scopes;
     const base = {
@@ -180,42 +184,46 @@ function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFuncti
         source: row.source
     };
 
-    if (row.type === 'sync') {
-        const out: NangoSyncFunctionDeployed = {
-            ...base,
-            type: 'sync',
-            ...(row.input !== null && { input: row.input }),
-            returns: row.returns ?? [],
-            json_schema: row.json_schema,
-            runs: row.runs,
-            auto_start: row.auto_start ?? false,
-            track_deletes: row.track_deletes ?? false,
-            ...deployedMeta
-        };
-        return out;
-    }
-
-    if (row.type === 'on-event') {
-        const apiEvent = row.event ? DB_EVENT_TO_API[row.event] : undefined;
-        if (!apiEvent) {
-            throw new Error(`Unknown on-event type for function id=${row.id}: ${row.event}`);
+    switch (row.type) {
+        case 'sync': {
+            const out: NangoSyncFunctionDeployed = {
+                ...base,
+                type: 'sync',
+                ...(row.input !== null && { input: row.input }),
+                returns: row.returns ?? [],
+                json_schema: row.json_schema,
+                runs: row.runs,
+                auto_start: row.auto_start ?? false,
+                track_deletes: row.track_deletes ?? false,
+                ...deployedMeta
+            };
+            return out;
         }
-        const out: NangoOnEventFunctionDeployed = {
-            ...base,
-            type: 'on-event',
-            event: apiEvent,
-            ...deployedMeta
-        };
-        return out;
+        case 'on-event': {
+            const apiEvent = row.event ? DB_EVENT_TO_API[row.event] : undefined;
+            if (!apiEvent) {
+                return undefined;
+            }
+            const out: NangoOnEventFunctionDeployed = {
+                ...base,
+                type: 'on-event',
+                event: apiEvent,
+                ...deployedMeta
+            };
+            return out;
+        }
+        case 'action': {
+            const out: NangoActionFunctionDeployed = {
+                ...base,
+                type: 'action',
+                ...(row.input !== null && { input: row.input }),
+                returns: row.returns ?? [],
+                json_schema: row.json_schema,
+                ...deployedMeta
+            };
+            return out;
+        }
+        default:
+            return undefined;
     }
-
-    const out: NangoActionFunctionDeployed = {
-        ...base,
-        type: 'action',
-        ...(row.input !== null && { input: row.input }),
-        returns: row.returns ?? [],
-        json_schema: row.json_schema,
-        ...deployedMeta
-    };
-    return out;
 }

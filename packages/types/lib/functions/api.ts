@@ -159,5 +159,5 @@ export type GetProviderTemplates = Endpoint<{
     Path: '/api/v1/providers/:providerConfigKey/templates';
     Querystring: { env: string };
     Params: { providerConfigKey: string };
-    Success: { data: NangoFunction[] };
+    Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
 }>;
