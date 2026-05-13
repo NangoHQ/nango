@@ -387,12 +387,11 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        if (typeof contentType === 'string' && contentType !== '') {
-            res.setHeader('Content-Type', contentType);
-        }
+        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
 
         try {
-            res.send(Buffer.concat(responseData));
+            res.write(Buffer.concat(responseData));
+            res.end();
         } catch (err) {
             void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
