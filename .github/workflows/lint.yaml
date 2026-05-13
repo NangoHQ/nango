@@ -10,7 +10,7 @@ on:
 
 jobs:
     should-run:
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+        runs-on: ubuntu-latest
         outputs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
