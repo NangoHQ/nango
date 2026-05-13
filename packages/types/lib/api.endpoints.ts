@@ -69,6 +69,7 @@ import type {
     DeletePublicIntegration,
     GetIntegration,
     GetIntegrationFlows,
+    GetPublicFunctionCode,
     GetPublicIntegration,
     GetPublicListIntegrations,
     PatchIntegration,
@@ -145,6 +146,7 @@ export type PublicApiEndpoints =
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun
     | PostRemoteFunctionDeploy
+    | GetPublicFunctionCode
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
