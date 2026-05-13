@@ -1,5 +1,11 @@
 # Docs guidance for AI agents
 
+This is the source of truth for docs-agent guidance. `CLAUDE.md` imports this file so shared instructions stay in one place.
+
+## Start from latest master
+
+Before creating a docs worktree or branch, fetch `origin` and base the work on the latest `origin/master`. If a branch already exists, rebase it onto current `origin/master` before opening or updating a pull request, and resolve conflicts locally before pushing.
+
 ## Validate links after every change that touches URLs or anchors
 
 Run `mintlify broken-links` from `docs/` before pushing any change that:
@@ -9,9 +15,21 @@ Run `mintlify broken-links` from `docs/` before pushing any change that:
 
 The scan must end with `success no broken links found`.
 
+## Preview docs from the docs directory
+
+When asked for a docs preview, run Mintlify directly from the workspace's `docs/` directory:
+
+```bash
+cd docs
+mintlify dev
+```
+
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.
+Do not add `[codex]` or any other prefix before `docs:`; docs PR title checks require `docs:` to be the first characters of the title.
+
+Docs pull requests should be ready for review by default. Only open a draft PR when the user explicitly asks for one or the change is intentionally incomplete.
 
 ## Use sentence case for docs titles
 
@@ -49,6 +67,16 @@ To pin an anchor to a heading, use an inline HTML anchor on the line above:
 ```
 
 Browsers honor `id` attributes for fragment scrolling identically to heading-generated IDs.
+
+## Use semantic IDs for guide steps
+
+In Getting started and Guides pages, add semantic `id` props to `<Step>` components so support and sales can deep link to specific setup actions:
+
+```mdx
+<Step id="add-callback-url" title="Add the callback URL">
+```
+
+IDs must describe the stable action or outcome, not the current step number or exact title. For example, use `add-callback-url`, `configure-scopes`, or `generate-session-token`, not `step-3`. If a step is reordered or retitled but the action still exists, keep the same ID and move it with the action.
 
 ## Re-run link rewrites after pulling/merging master
 
@@ -143,6 +171,8 @@ An accordion should contain:
 - Relevant references (API paths, CLI commands, SDK methods)
 - Required arguments or configuration details
 - Important implementation notes
+
+Use `For agents` as the accordion title. Do not add emojis or other decoration to agent accordion titles.
 
 Do not add agent accordions mechanically on every page — only where a genuine programmatic path exists and an agent would need the extra references to complete the step correctly.
 

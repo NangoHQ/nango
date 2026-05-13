@@ -97,8 +97,8 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_BATCH_CLEANUP_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
-    PERSIST_BATCH_CLEANUP_LIMIT: z.coerce.number().optional().default(10_000),
+    PERSIST_BATCH_CLEANUP_INTERVAL_MS: z.coerce.number().optional().default(30_000), // set to 0 to disable
+    PERSIST_BATCH_CLEANUP_LIMIT: z.coerce.number().optional().default(1_000),
     PERSIST_BATCH_CLEANUP_MAX_AGE_MS: z.coerce
         .number()
         .optional()
@@ -336,6 +336,9 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
+
+    // Network
+    NANGO_RETRYABLE_NETWORK_ERRORS: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),

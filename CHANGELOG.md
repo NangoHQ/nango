@@ -2,6 +2,234 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.2] - 2026-05-13
+
+### Added
+
+- *(integrations)* Add support for ringover (#5880) by @hassan254-prog
+- *(integrations)* Add support for supabase (mcp) (#5870) by @hassan254-prog
+- *(integrations)* Add support for looker oauth (#5856) by @hassan254-prog
+- *(webhooks)* Add support for cal.com(v2) webhook support (#5866) by @hassan254-prog
+- *(integrations)* Add support for paligo (#5891) by @hassan254-prog
+- *(webapp)* Gate auto-idling banner with PermissionGate (#5832) by @kaposke
+- *(nan-5088)* API key permissions with scoped customer keys (#5822) by @pfreixes
+- *(nan-5088)* API key permissions with scoped customer keys (#5904) by @pfreixes
+- Add cache hit rate metric for secret key hash cache (#5906) by @pfreixes
+- *(integrations)* Add support for lokalise (#5892) by @hassan254-prog
+- *(webhooks)* Add support for cal.com oauth webhooks (#5907) by @hassan254-prog
+- *(nan-5088)* API key permissions with scoped customer keys (#5911) by @pfreixes
+- *(webhooks)* Add SQS env vars (#5908) by @agusayerza
+- *(webapp)* Connection list view refresh (#5806) by @agusayerza
+- *(webapp)* Playground contextual buttons (#5882) by @agusayerza
+- Add product changelog update for API keys (CON-60) (#5932) by @sapnesh-nango
+- *(nan-5088)* Sign webhooks with customer_keys webhook signing key (#5927) by @pfreixes
+- *(integrations)* Add support for kno-commerce (#5912) by @hassan254-prog
+- *(integrations)* Add simPRO OAuth2 provider (#5915) by @ettanbazil1
+- *(integrations)* Add support for quipteams (#5926) by @hassan254-prog
+- *(integrations)* Add support for maxio (#5917) by @hassan254-prog
+- *(integrations)* Add support for northbeam (#5913) by @hassan254-prog
+- *(integrations)* Add support for hex (#5929) by @hassan254-prog
+- *(integrations)* Add support for wejam ai (#5936) by @hassan254-prog
+- *(integrations)* Add support for stitch-mcp (#5895) by @hassan254-prog
+- *(nan-5088)* Decouple customer keys from api_secrets (#5930) by @pfreixes
+- *(integrations)* Build correct authorization headers for aws-iam (#5924) by @hassan254-prog
+- Add Support tab linking to Slack community (#5947) by @bastienbeurier
+- Add account dimension to getRecords.size metric (#5781) by @TBonnin
+- *(integrations)* Add support for aws-inspector2 (#5950) by @hassan254-prog
+- Add integrations quickstart endpoint (#5933) by @marcindobry
+- *(webhook)* Add calcom connection-id to query param (#5960) by @hassan254-prog
+- Add slack webhook docs (#5964) by @hassan254-prog
+- Gate RBAC behind feature flag (#5864) by @kaposke
+- *(clickhouse)* Add support for connections and records metrics (#5886) by @TBonnin
+- *(lambda)* Isolation (#5961) by @rossmcewan
+- Add architecture, terminology, and style guidance to CLAUDE.md and AGENTS.md (#5983) by @bastienbeurier
+- *(providers)* Add webhook support for Autotask provider (#5750) by @neelS-hah
+- *(integrations)* Add support for crunchbase (#5988) by @hassan254-prog
+- *(integrations)* Add support for rocketreach (#5987) by @hassan254-prog
+- *(integrations)* Add support for ocean-io (#5986) by @hassan254-prog
+- *(integrations)* Add support for store-leads (#5985) by @hassan254-prog
+- *(integrations)* Add support for aws-multi-service provider (#5984) by @hassan254-prog
+- *(integrations)* Add support for vtex (#5981) by @hassan254-prog
+- *(webhooks)* Rate limit webhook ingress in shadow mode (#5978) by @agusayerza
+- Add and use `source` for tracking function source (#5899) by @kaposke
+- *(webapp)* Change function source terminology in ui (#5902) by @kaposke
+- Classify `standalone` deploys (#5903) by @kaposke
+- *(integrations)* Add support for epc-gov-uk (#5925) by @inmanpaul
+- *(webhooks)* Add dispatch queue publisher (NAN-5339) 1/5 (#5955) by @agusayerza
+- *(webhooks)* Add jobs dispatch queue consumer (NAN-5341) 2/5 (#5959) by @agusayerza
+- *(integrations)* Add support for modjo-ai (#6006) by @hassan254-prog
+- *(integrations)* Add support for talentlms (#5999) by @hassan254-prog
+- *(integrations)* Add support for rydoo (#5997) by @hassan254-prog
+- *(integrations)* Add support for gettyimages (#5996) by @hassan254-prog
+- *(integrations)* Add support for posthog-oauth (#5995) by @hassan254-prog
+- *(webhooks)* Switch internal-nango to publish via dispatch queue (NAN-5340) 3/5 (#5970) by @agusayerza
+- *(integrations)* Add support for etsy (#5980) by @hassan254-prog
+- *(webhook)* Discard webhook messages from the queue if they are old 5/5 (#5991) by @agusayerza
+- *(billing)* Instrument UsageBillingClient.getUsage for Orb perf observability (#6001) by @pfreixes
+- Add copywriting guidelines (#6038) by @bastienbeurier
+- *(persist)* Add endpoint to hard delete records cache 2/4 (#6017) by @TBonnin
+- Add April 2026 changelog entry (#6041) by @sapnesh-nango
+- *(integrations)* Add support for absorb-lms (#5998) by @hassan254-prog
+- Add Jiminny provider (#5944) by @adamjramirez
+- *(providers)* Use a different pattern for salesforce hostname (#6044) by @hassan254-prog
+- *(lambda)* Keep warm cron (#6004) by @rossmcewan
+- *(webapp)* Add copy button for API keys in list view (#6030) by @macko911
+- Add records_batch table (#6046) by @TBonnin
+- *(provider)* Add a new category for iam providers (#6054) by @hassan254-prog
+- *(integrations)* Add support for freshworks (#6053) by @hassan254-prog
+- Add semantic step anchors (#6065) by @bastienbeurier
+- *(persist)* Upsert and track_deletes logic refactor (#6049) by @TBonnin
+- *(integrations)* Add support for paddle (#6068) by @hassan254-prog
+- *(integrations)* Add support for videoask (#6072) by @hassan254-prog
+- *(integrations)* Add support for trigger-dev (#6075) by @hassan254-prog
+- *(integrations)* Add support for 1password events and users api (#6071) by @hassan254-prog
+- *(integrations)* Add support for digits (#6069) by @hassan254-prog
+- *(providers)* Update popular category list (#6079) by @rguldener
+- Add description to update the post connection endpoint (#6080) by @hassan254-prog
+- *(integrations)* Add support for shopware (#6082) by @hassan254-prog
+- *(integrations)* Add support for fern (#6084) by @hassan254-prog
+- *(integrations)* Add support for customer-io (#6087) by @hassan254-prog
+- *(integrations)* Add support for statamic (#6083) by @hassan254-prog
+- *(utils)* Add additional retry network error codes from env vars (#6077) by @rossmcewan
+- *(metering)* Emit batchId on records and connections cron events (#6100) by @pfreixes
+- *(records)* Per-request response size telemetry on GET /records (#6102) by @pfreixes
+- *(providers)* Add query as a new body format (#6076) by @hassan254-prog
+- *(usage)* Replace daily_records / daily_connections with typed projection MVs (#6101) by @pfreixes
+- `nango pull` command (#6015) by @kaposke
+- *(logs)* Add log type for sync variant creation/deletion (#6012) by @rbwest
+- *(providers)* Add Huntress integration (#6112) by @rjinturkar-oai
+
+### Changed
+
+- Update version in manifest by @actions-user
+- *(providers)* Replace scope validation gate with post-merge auto-sync (#5889) by @hassan254-prog
+- Update install snippet for AI actions builder (#5897) by @rguldener
+- Document scopes suggestions (#5896) by @hassan254-prog
+- Migrate google docs (#5845) by @hassan254-prog
+- *(nan-5088)* Remove dual lookup, unify auth paths (#5922) by @pfreixes
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/0aa35aa46e8dacc7c9568e2642dad1231c5c6ab8 by Victor Lang'at by @github-actions[bot]
+- Revamp navigation structure (#5937) by @bastienbeurier
+- Restore contextual copy button (#5939) by @bastienbeurier
+- Expand CI/CD guide with no-staging and Vercel preview patterns (#5938) by @bastienbeurier
+- *(nan-5088)* Remove legacy key rotation code (#5934) by @pfreixes
+- Revamp APIs & integrations tab and contribute/request API page (#5948) by @bastienbeurier
+- *(nan-5088)* Use customer API key in dashboard, support managed env var keys (#5935) by @pfreixes
+- Merge auth overview, configure, and implement guides (#5951) by @bastienbeurier
+- Revamp Functions guide and align with Auth structure (#5957) by @bastienbeurier
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ab9f3d208f9dcb70374f8a25e27aca37aa7bfa3e by Victor Lang'at by @github-actions[bot]
+- Remove slack webhook docs from navbar (#5966) by @hassan254-prog
+- *(functions)* Shorten pre-built functions callout (#5968) by @bastienbeurier
+- Normalize page titles to sentence case (#5969) by @bastienbeurier
+- Update version in manifest by @actions-user
+- Tidy Guides nav — remove Auth contribute link, move Sample app to Use cases (#5975) by @bastienbeurier
+- Restructure Use Cases — Functions guide as canonical builder (#5982) by @bastienbeurier
+- Restructure docs navigation (#6002) by @bastienbeurier
+- Restructure docs IA (#6007) by @bastienbeurier
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e77c09b6b1d2706a7a48f66f96f1cdaa8f9dd36a by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b2c2223fd4f24280dded67d8f8f16fc5fb23778e by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/5b1862f2ef2deea83d3d5ff4abc5bf6a6f15f04b by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b1c478d73f0fa2da2dcba497ece12f1c1e5f6963 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/152d1835e5291c5969c2819a46787848b9d8d472 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6abbafc3bd055d364e93319c889e92a62e1d5c41 by Victor Lang'at by @github-actions[bot]
+- Hard delete syncs and associated data after 1 day (#5993) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3ce9b9bbc480eadec135f63441252174ec3b2d4d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b7a8cb0b9369aebaf4d0b8240f7422971f16ec72 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/931927415b4c3294437e19437ef199ddb4ca7eab by Victor Lang'at by @github-actions[bot]
+- Update docs structure and verify links (#6013) by @bastienbeurier
+- Merge product and dev updates into a unified changelog (#6020) by @sapnesh-nango
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/37080453e4e5cc743537e9afc4e31753361e27a5 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/850b376bf89a6a3e8f14f081b9204bbfa8a5968d by Victor Lang'at by @github-actions[bot]
+- Update changelog subtitle (#6031) by @mintlify[bot]
+- Pass emptyCache to runner when triggering full sync with emptyCache 1/4 (#6014) by @TBonnin
+- *(runner)* Clear records before sync execution cache 3/4 (#6032) by @TBonnin
+- Pass emptyCache to runner when triggering full sync with empty cache 4/4 (#6033) by @TBonnin
+- Small docs improvements (#6051) by @rguldener
+- Clarify minimal connection scope for nango dryrun (#6050) by @pfreixes
+- Reference dashboard tabs by name (#6052) by @bastienbeurier
+- Sync dark/light mode with website (#6043) by @macko911
+- Refine getting started docs (#6056) by @bastienbeurier
+- Normalize agent accordion titles (#6062) by @bastienbeurier
+- Remove redundant related guide self-links (#6063) by @bastienbeurier
+- Update auth guide setup flow (#6064) by @bastienbeurier
+- Install specific Nango function skill (#6067) by @bastienbeurier
+- Clarify docs PR title prefix (#6066) by @bastienbeurier
+- *(docs)* Remove theme sync code from custom.js (#6058) by @macko911
+- Clarify Connect UI customization (#6073) by @bastienbeurier
+- Update providers.yaml URL to providers-yaml (#6081) by @rguldener
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2eb546ed6bccec325fbcb335d4a2c00df88ca196 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a3f417745d8fb26d9013370e0d164d4a0d6be2b0 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/71b45937f9a2868594278e9f551df6a1d23ba446 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3bb1bc3d8ed2b7fc5a51a840d5b7a96954510c06 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d179f7a68248629c21c98e8a2c29cd67148b1001 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9637e4e70bc4301bbf3d2fc5c266e7e80da9adf8 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ce3ca600854b2c1ff02fb225fe528ec76cf03efc by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/bb62736bb4811bf213f0d31937d50d5b56a1a887 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/db0d18740608c588f685e45402876eed8f113d38 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2ee7f36e753799223ca334ed55f96c89ba13de42 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3a849a062fca69eae3b142f228f47341225a2157 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9352a71dfebf35f9080fa2721577b4b0bddbb0ec by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d0f5c272bd4c7d76e83d502b7050137be14691b5 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9778b39955ba1fdf5c29f6592c84b1ab182122fd by Victor Lang'at by @github-actions[bot]
+- *(records)* Pre-classify records before upsert to skip unchanged rows (#6108) by @TBonnin
+
+### Fixed
+
+- *(local)* Fix file reference for local functions (#5869) by @rossmcewan
+- *(vulns)* Upgrade ajv in scripts (#5893) by @rossmcewan
+- *(server)* Fix remote function sandbox host and diagnostics (#5890) by @marcindobry
+- Hide floating "Ask a question" bar in docs (#5900) by @mintlify[bot]
+- Gate auto-idling trial behavior on auto_idle (#5833) by @kaposke
+- *(webapp)* Fix eventbrite logo (#5905) by @grayashh
+- Clipped cURL panel header on API reference pages (#5914) by @mintlify[bot]
+- Fix outdated import limitation and MCP URL (NAN-5358) (#5928) by @bastienbeurier
+- Mark upgrade invoices as paid instead of always crediting balance (#5883) by @ErickRDev
+- *(providers)* Sign Duo Admin requests with resolved host (#5918) by @justonf
+- Cache decrypted webhook signing key per environment (#5953) by @pfreixes
+- *(nan-5324)* Make logger reject invalid level method names (#5952) by @pfreixes
+- *(auth)* Sign up with Google from invite creates new account (#5943) by @rbwest
+- *(api)* Import a connection endpoint doesnt set metadata (#5941) by @rbwest
+- *(providers)* Allow for shopify to generate offline tokens (#5940) by @hassan254-prog
+- *(server)* Use customer key in quickstart auth test (#5965) by @marcindobry
+- *(sync)* Initiate syncs for OAuth1 (#5974) by @hassan254-prog
+- GET /records to refuse last_modified or delta older than 1 year (#5963) by @TBonnin
+- Show mintlify broken-links output when error (#5962) by @TBonnin
+- *(records)* Remove `id` from index used to delete outdated records (#5971) by @TBonnin
+- Do not chunk autodelete deletion (#5977) by @TBonnin
+- *(providers)* Remove verification script from aws-multi-service (#5990) by @hassan254-prog
+- Don't html-encode team name in invite email subject (#6005) by @hassan254-prog
+- *(test)* Use isError type guard in apiKeys integration tests (#6011) by @hassan254-prog
+- *(providers)* Deprecate domain in favor of hostname for metabase (#5909) by @hassan254-prog
+- *(webapp)* Show error message for suspended users (#5863) by @hassan254-prog
+- Soft delete syncs when disabled (#5989) by @TBonnin
+- *(webhooks)* Bypass SQS for oversize dispatch payloads 4/5 (#5976) by @agusayerza
+- Emergency fix to disable sync hard deletion by @TBonnin
+- *(server)* Stabilize getFlows tests against integration-templates churn (#6021) by @pfreixes
+- Fix TOC active item padding and hide bottom chat assistant (#6026) by @mintlify[bot]
+- *(providers)* Remove verification endpoint for knowbe4 (#6023) by @hassan254-prog
+- *(server)* Stabilize postDeploy test against airtable tables churn (#6039) by @macko911
+- *(northbeam)* Use validation endpoint that does not have required params (#6040) by @patrikdevlin
+- *(providers)* Bump shopify-partner verification to 2026-04 (#6034) by @kmclaugh
+- *(webhooks)* Fix slack interactivity webhook content-type (#6037) by @hassan254-prog
+- *(vulns)* Fix vulns (#6045) by @rossmcewan
+- Fix TOC active state on changelog for tall sections (#6042) by @macko911
+- *(runner-sdk)* Stop retry on 401 for invalid credentials with provider retry.error_code (#5992) by @rbwest
+- *(server)* Webhook url to use unique_key, not provider name (#6061) by @rbwest
+- *(server)* Stop treating application/x-www-form-urlencoded as binary (#6060) by @hassan254-prog
+- Don't skip uploading function code in local dev mode (#6059) by @TBonnin
+- *(runner-sdk)* Url deny list in uncontrolledFetch (#6055) by @rossmcewan
+- *(tests)* Bump expected airtable tables template version to 2.0.1 (#6086) by @pfreixes
+- *(records)* Release encrypted blob refs as records are consumed (#6085) by @pfreixes
+- *(webhooks)* Fix slack webhook to handle view_submission events (#6090) by @hassan254-prog
+- Fix Sign Up button color, normalize TOC, add H3 indentation, unify corner radius (#6095) by @mintlify[bot]
+- *(docs)* Link logo and website to nango.dev not www (#6094) by @macko911
+- *(docs)* Fix Ask AI sidebar panel broken by overly broad CSS rule NAN-5519 (#6103) by @macko911
+- Fix Nango logo size in navbar (#6107) by @mintlify[bot]
+- *(records)* Avoid lock contention in batch cleanup (#6111) by @TBonnin
+- *(lambda)* Select environments to keep warm (#6105) by @rossmcewan
+- *(deploy)* Prevent duplicate active sync configs from concurrent deploys (#6027) by @hassan254-prog
+- *(lambda)* Limit keep-warm multiplier to prod environments (#6119) by @rossmcewan
+
 ## [v0.70.1] - 2026-04-17
 
 ### Added
@@ -6435,6 +6663,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.2]: https://github.com/NangoHQ/nango/compare/v0.70.1..v0.70.2
 [v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
 [v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
 [v0.69.50]: https://github.com/NangoHQ/nango/compare/v0.69.49..v0.69.50

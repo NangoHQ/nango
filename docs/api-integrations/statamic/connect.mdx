@@ -1,0 +1,81 @@
+---
+title: 'Statamic - How do I link my account?'
+sidebarTitle: 'Statamic'
+description: 'Enable the Statamic REST API and connect it to Nango'
+---
+
+# Overview
+
+To authenticate with the Statamic REST API, you need:
+1. **Base URL** - The hostname of your Statamic site (e.g. `acme.example.com`)
+2. **API token** - The value of `STATAMIC_API_AUTH_TOKEN` in your Statamic `.env` file
+
+This guide walks you through enabling the REST API on your Statamic site and connecting it to Nango.
+
+### Prerequisites
+
+- A Statamic site with access to the `.env` file and `config/statamic/api.php`
+
+### Instructions
+
+#### Step 1: Enable the REST API
+
+Enable the API and generate a token in your `.env` file. There is no UI to generate a token — create one yourself using any of the following commands:
+
+```bash
+# Mac/Linux
+openssl rand -hex 32
+
+# Node
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# PHP
+php -r "echo bin2hex(random_bytes(32));"
+```
+
+Then add both variables to your `.env`:
+
+```env
+STATAMIC_API_ENABLED=true
+STATAMIC_API_AUTH_TOKEN=a3f9c1d8e6b4...
+```
+
+All resources are disabled by default. Enable the ones you need in `config/statamic/api.php`:
+
+```php
+'resources' => [
+    'collections' => true,
+    'taxonomies' => true,
+    // entries, assets, globals, forms, users, etc.
+]
+```
+
+For more granular control, you can enable specific sub-resources only:
+
+```php
+'resources' => [
+    'collections' => [
+        'articles' => true,
+        'pages' => true,
+    ],
+    'taxonomies' => true,
+]
+```
+
+<Note>
+If `STATAMIC_API_AUTH_TOKEN` is not set, the API is publicly accessible without authentication. Always set a token in production.
+</Note>
+
+#### Step 2: Find your base URL
+
+Your base URL is the hostname of your Statamic site, for example `acme.example.com`.
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Statamic.
+2. Enter your **Base URL** and **API token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/statamic/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Statamic.

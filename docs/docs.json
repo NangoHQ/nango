@@ -25,7 +25,7 @@
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
-    "href": "https://www.nango.dev"
+    "href": "https://nango.dev"
   },
   "favicon": "/favicon.png",
   "contextual": {
@@ -69,7 +69,7 @@
       "linkedin": "https://www.linkedin.com/company/nangohq/",
       "github": "https://github.com/NangoHQ/nango",
       "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
+      "website": "https://nango.dev/"
     }
   },
   "integrations": {
@@ -284,7 +284,11 @@
     },
     {
       "source": "/implementation-guides/platform/auth/connection-tags",
-      "destination": "/guides/auth/connection-tags"
+      "destination": "/guides/auth/connection-tags-configuration-metadata"
+    },
+    {
+      "source": "/guides/auth/connection-tags",
+      "destination": "/guides/auth/connection-tags-configuration-metadata"
     },
     {
       "source": "/implementation-guides/platform/auth/customize-connect-ui",
@@ -668,7 +672,7 @@
                 "pages": [
                   "guides/auth/auth-guide",
                   "guides/auth/share-connect-link",
-                  "guides/auth/connection-tags",
+                  "guides/auth/connection-tags-configuration-metadata",
                   "guides/auth/customize-connect-ui",
                   "guides/auth/token-refreshing"
                 ]
@@ -879,7 +883,9 @@
           {
             "group": "700+ APIs & Integrations",
             "pages": [
+              "api-integrations/1password-events",
               "integrations/all/1password-scim",
+              "api-integrations/1password-users",
               "api-integrations/3cx",
               "api-integrations/8x8",
               "api-integrations/absorb-lms",
@@ -1051,6 +1057,7 @@
               "integrations/all/cyberimpact",
               "integrations/all/cursor",
               "integrations/all/cursor-admin",
+              "api-integrations/customer-io",
               "integrations/all/databricks-account",
               "integrations/all/databricks-workspace",
               "integrations/all/datacandy",
@@ -1066,6 +1073,8 @@
               "integrations/all/dialpad",
               "integrations/all/dialpad-sandbox",
               "integrations/all/digitalocean",
+              "api-integrations/digits",
+              "api-integrations/digits-mcp",
               "api-integrations/discord",
               "integrations/all/discourse",
               "integrations/all/dixa",
@@ -1103,6 +1112,7 @@
               "integrations/all/expensify",
               "api-integrations/facebook",
               "api-integrations/fellow",
+              "api-integrations/fern",
               "api-integrations/freeagent",
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",
@@ -1217,6 +1227,7 @@
               "api-integrations/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
+              "api-integrations/huntress",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
               "integrations/all/icypeas",
@@ -1366,6 +1377,7 @@
               "integrations/all/passportal",
               "integrations/all/pandadoc",
               "integrations/all/pandadoc-api-key",
+              "api-integrations/paddle",
               "api-integrations/paylocity-nextgen",
               "api-integrations/paylocity",
               "integrations/all/payfit",
@@ -1497,13 +1509,13 @@
               "integrations/all/shopify-api-key",
               "integrations/all/shopify-partner",
               "integrations/all/shopify-scim",
+              "api-integrations/shopware",
               "api-integrations/shopworks",
               "integrations/all/shortcut",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
               "api-integrations/simpro",
-              "api-integrations/simpro/connect",
               "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/slack-mcp",
@@ -1513,6 +1525,7 @@
               "api-integrations/timify",
               "api-integrations/toggl",
               "api-integrations/torii",
+              "api-integrations/trigger-dev",
               "api-integrations/trigify-io-mcp",
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
@@ -1531,6 +1544,7 @@
               "api-integrations/squareup",
               "api-integrations/squareup-sandbox",
               "integrations/all/stackexchange",
+              "api-integrations/statamic",
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
@@ -1597,6 +1611,7 @@
               "api-integrations/veeva-vault",
               "api-integrations/vercel",
               "api-integrations/vercel-mcp",
+              "api-integrations/videoask",
               "integrations/all/vimeo",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",

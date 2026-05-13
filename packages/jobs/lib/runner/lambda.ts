@@ -268,6 +268,9 @@ class Lambda {
                 DD_APM_TRACING_ENABLED: String(node.isTracingEnabled),
                 DD_TRACE_ENABLED: String(node.isTracingEnabled || node.isProfilingEnabled),
                 DD_API_KEY_SECRET_ARN: envs.DD_API_KEY_SECRET_ARN || '',
+                ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
+                    ? { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }
+                    : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
                 ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }
