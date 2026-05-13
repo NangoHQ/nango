@@ -108,8 +108,8 @@ function buildSyncConfigBranch({
     providerConfigKey: string;
     type: 'sync' | 'action' | undefined;
 }): Knex.QueryBuilder {
-    // Casts on `source` (sync_config_source enum) and `models_json_schema` (json column)
-    // are required for UNION ALL with the on-event branch — Postgres only unions matching types.
+    // Cast on `source` (sync_config_source enum) is required for UNION ALL with the on-event branch —
+    // Postgres only unions matching types.
     const query = db.knex
         .from({ sc: '_nango_sync_configs' })
         .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
@@ -125,7 +125,7 @@ function buildSyncConfigBranch({
             'sc.metadata',
             'sc.input',
             db.knex.raw('sc.models AS returns'),
-            db.knex.raw('CAST(sc.models_json_schema AS jsonb) AS json_schema'),
+            db.knex.raw('sc.models_json_schema AS json_schema'),
             'sc.runs',
             'sc.auto_start',
             'sc.track_deletes',
@@ -158,7 +158,7 @@ function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentI
             db.knex.raw('NULL::jsonb AS metadata'),
             db.knex.raw('NULL::text AS input'),
             db.knex.raw('NULL::text[] AS returns'),
-            db.knex.raw('NULL::jsonb AS json_schema'),
+            db.knex.raw('NULL::json AS json_schema'),
             db.knex.raw('NULL::text AS runs'),
             db.knex.raw('NULL::boolean AS auto_start'),
             db.knex.raw('NULL::boolean AS track_deletes'),
