@@ -86,16 +86,15 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         });
 
         if (result.isErr()) {
+            span.setTag('error', result.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
             return;
         }
 
-        const fetchDoneAt = performance.now();
         res.send({
             next_cursor: result.value.next_cursor || null,
             records: result.value.records
         });
-        const sendDoneAt = performance.now();
 
         const recordsCount = result.value.records.length;
         // using the response content-length header as the records size metric in order to avoid stringifying the response body
@@ -106,6 +105,5 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
 
         span.setTag('response.size_bytes', responseSize);
-        span.setTag('response.send_ms', sendDoneAt - fetchDoneAt);
     });
 });

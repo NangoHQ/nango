@@ -105,7 +105,7 @@ export async function getRecords({
         ...(activeSpan ? { childOf: activeSpan } : {}),
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
-    let recordsCount = 0;
+    const results: ReturnedRecord[] = [];
     try {
         if (!model) {
             const error = new Error('missing_model');
@@ -234,8 +234,6 @@ export async function getRecords({
             }
         }
 
-        const results: ReturnedRecord[] = [];
-
         const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
         try {
             // TODO: decrypt in batch
@@ -275,19 +273,17 @@ export async function getRecords({
             const cursorRawElement = recordsMetadata[recordsMetadata.length - 1];
             if (cursorRawElement) {
                 const encodedCursorValue = Cursor.new(cursorRawElement);
-                recordsCount = results.length;
                 return Ok({ records: results, next_cursor: encodedCursorValue });
             }
         }
 
-        recordsCount = results.length;
         return Ok({ records: results, next_cursor: null });
     } catch (err) {
         const e = new Error(`List records error for model ${model}`, { cause: err });
         span.setTag('error', e);
         return Err(e);
     } finally {
-        span.setTag('records.count', recordsCount);
+        span.setTag('records.count', results.length);
         span.finish();
     }
 }
