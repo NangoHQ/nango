@@ -583,13 +583,20 @@ export async function upsert({
 
                         let batchDeltaSizeInBytes = 0;
                         if (recordsToUpdateData.length > 0) {
-                            const upsertDataResult = await trx
+                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
+                                if (r.needs_data_write) {
+                                    return acc + r.legacy_size_bytes;
+                                }
+                                return acc;
+                            }, 0);
+                            const [upsertDataResult] = await trx
                                 .with('prev_size', (qb) => {
                                     qb.select('id', trx.raw('pg_column_size(data) as prev_size_bytes'))
                                         .from(RECORDS_DATA_TABLE)
+                                        .where({ connection_id: connectionId, model })
                                         .whereIn(
-                                            ['connection_id', 'model', 'id'],
-                                            recordsToUpdateData.map((r) => [r.connection_id, r.model, r.id])
+                                            'id',
+                                            recordsToUpdateData.map((r) => r.id)
                                         );
                                 })
                                 .with('upsert_data', (qb) => {
@@ -606,22 +613,15 @@ export async function upsert({
                                         .merge(['data'])
                                         .returning<{ id: string; new_size_bytes: number }[]>(['id', trx.raw('pg_column_size(data) as new_size_bytes')]);
                                 })
-                                .select<{ id: string; new_size_bytes: number; prev_size_bytes: number }[]>(
-                                    'upsert_data.id',
-                                    'upsert_data.new_size_bytes',
-                                    trx.raw('COALESCE(prev_size.prev_size_bytes, 0) as prev_size_bytes')
+                                .select<{ delta_size_bytes: number | string }[]>(
+                                    trx.raw(
+                                        'COALESCE(SUM(upsert_data.new_size_bytes - COALESCE(prev_size.prev_size_bytes, 0)), 0)::double precision as delta_size_bytes'
+                                    )
                                 )
                                 .from('upsert_data')
                                 .leftJoin('prev_size', 'prev_size.id', 'upsert_data.id');
 
-                            // Calculate the delta size
-                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
-                                if (r.needs_data_write) {
-                                    return acc + r.legacy_size_bytes;
-                                }
-                                return acc;
-                            }, 0);
-                            batchDeltaSizeInBytes = upsertDataResult.reduce((acc, r) => acc + r.new_size_bytes - r.prev_size_bytes, -totalLegacySizeInBytes);
+                            batchDeltaSizeInBytes = Number(upsertDataResult?.delta_size_bytes ?? 0) - totalLegacySizeInBytes;
                         }
 
                         // insert batch entry with all seen record ids (including unchanged)
