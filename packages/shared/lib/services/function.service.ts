@@ -11,6 +11,7 @@ import type {
     OnEventType
 } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+import type { Knex } from 'knex';
 
 const DB_EVENT_TO_API: Record<string, OnEventType> = {
     POST_CONNECTION_CREATION: 'post-connection-creation',
@@ -33,22 +34,14 @@ interface SyncConfigOrOnEventScriptRow {
     last_deployed: Date;
     source: FunctionSource;
     event: string | null;
-    total: string;
 }
 
 /**
  * Lists active deployed functions for a single integration across syncs,
- * actions, and on-event scripts.
- *
- * The query merges `_nango_sync_configs` and `on_event_scripts` into one
- * result set, applies the optional type filter, and returns both the current
- * page and the total number of matching functions in a single roundtrip via
- * `COUNT(*) OVER ()`.
- *
- * Results are ordered by `(type, name, event, id)` so offset pagination stays
- * deterministic even when multiple on-event functions share the same name.
+ * actions, and on-event scripts. Pagination total is returned independently
+ * of the page so out-of-range pages still surface the correct total.
  */
-export async function listIntegrationFunctions({
+export async function listFunctions({
     environmentId,
     providerConfigKey,
     type,
@@ -61,75 +54,118 @@ export async function listIntegrationFunctions({
     limit: number;
     offset: number;
 }): Promise<{ rows: NangoFunctionDeployed[]; total: number }> {
-    const typeBinding = type ?? null;
-    const result = await db.knex.raw<{ rows: SyncConfigOrOnEventScriptRow[] }>(
-        `
-        SELECT id, name, type, metadata, input, returns, json_schema,
-               runs, auto_start, track_deletes, enabled, last_deployed, source, event,
-               COUNT(*) OVER () AS total
-        FROM (
-            SELECT
-                sc.id,
-                sc.sync_name AS name,
-                CAST(sc.type AS text) AS type,
-                sc.metadata,
-                sc.input,
-                sc.models AS returns,
-                CAST(sc.models_json_schema AS jsonb) AS json_schema,
-                sc.runs,
-                sc.auto_start,
-                sc.track_deletes,
-                sc.enabled,
-                sc.updated_at AS last_deployed,
-                CAST(sc.source AS text) AS source,
-                CAST(NULL AS text) AS event
-            FROM _nango_sync_configs sc
-            JOIN _nango_configs nc ON sc.nango_config_id = nc.id
-            WHERE nc.environment_id = ?
-              AND nc.unique_key = ?
-              AND nc.deleted = false
-              AND sc.deleted = false
-              AND sc.active = true
-              AND (CAST(? AS text) IS NULL OR CAST(sc.type AS text) = CAST(? AS text))
+    const listing = buildListingSubquery({ environmentId, providerConfigKey, type });
 
-            UNION ALL
+    const [pageRows, countRow] = await Promise.all([
+        db.knex
+            .from(listing)
+            .select<SyncConfigOrOnEventScriptRow[]>('*')
+            .orderBy([
+                { column: 'type', order: 'asc' },
+                { column: 'name', order: 'asc' },
+                { column: 'event', order: 'asc' },
+                { column: 'id', order: 'asc' }
+            ])
+            .limit(limit)
+            .offset(offset),
+        db.knex.from(listing).count<{ total: string }[]>('* as total').first()
+    ]);
 
-            SELECT
-                oes.id,
-                oes.name,
-                'on-event' AS type,
-                CAST(NULL AS jsonb) AS metadata,
-                CAST(NULL AS text) AS input,
-                CAST(NULL AS text[]) AS returns,
-                CAST(NULL AS jsonb) AS json_schema,
-                CAST(NULL AS text) AS runs,
-                CAST(NULL AS boolean) AS auto_start,
-                CAST(NULL AS boolean) AS track_deletes,
-                oes.active AS enabled,
-                oes.updated_at AS last_deployed,
-                'repo' AS source,
-                CAST(oes.event AS text) AS event
-            FROM on_event_scripts oes
-            JOIN _nango_configs nc ON oes.config_id = nc.id
-            WHERE nc.environment_id = ?
-              AND nc.unique_key = ?
-              AND nc.deleted = false
-              AND oes.active = true
-              AND (CAST(? AS text) IS NULL OR CAST(? AS text) = 'on-event')
-        ) listing
-        ORDER BY type ASC, name ASC, event ASC, id ASC
-        LIMIT ? OFFSET ?
-        `,
-        [environmentId, providerConfigKey, typeBinding, typeBinding, environmentId, providerConfigKey, typeBinding, typeBinding, limit, offset]
-    );
-
-    const rows = result.rows.map(fromSyncConfigOrOnEventRowToNangoFunctionDeployed);
-    const total = result.rows[0] ? Number(result.rows[0].total) : 0;
+    const rows = pageRows.map(toNangoFunctionDeployed);
+    const total = countRow ? Number(countRow.total) : 0;
 
     return { rows, total };
 }
 
-function fromSyncConfigOrOnEventRowToNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed {
+function buildListingSubquery({
+    environmentId,
+    providerConfigKey,
+    type
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    type: FunctionType | undefined;
+}): Knex.Raw {
+    const syncConfigBranch = () => buildSyncConfigBranch({ environmentId, providerConfigKey, type: type === 'on-event' ? undefined : type });
+    const onEventBranch = () => buildOnEventBranch({ environmentId, providerConfigKey });
+
+    if (type === 'on-event') {
+        return db.knex.raw('(?) AS listing', [onEventBranch()]);
+    }
+    if (type === 'sync' || type === 'action') {
+        return db.knex.raw('(?) AS listing', [syncConfigBranch()]);
+    }
+    return db.knex.raw('(? UNION ALL ?) AS listing', [syncConfigBranch(), onEventBranch()]);
+}
+
+function buildSyncConfigBranch({
+    environmentId,
+    providerConfigKey,
+    type
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    type: 'sync' | 'action' | undefined;
+}): Knex.QueryBuilder {
+    const query = db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .andWhere('sc.deleted', false)
+        .andWhere('sc.active', true)
+        .select(
+            'sc.id',
+            db.knex.raw('sc.sync_name AS name'),
+            db.knex.raw('CAST(sc.type AS text) AS type'),
+            'sc.metadata',
+            'sc.input',
+            db.knex.raw('sc.models AS returns'),
+            db.knex.raw('CAST(sc.models_json_schema AS jsonb) AS json_schema'),
+            'sc.runs',
+            'sc.auto_start',
+            'sc.track_deletes',
+            'sc.enabled',
+            db.knex.raw('sc.updated_at AS last_deployed'),
+            db.knex.raw('CAST(sc.source AS text) AS source'),
+            db.knex.raw('NULL::text AS event')
+        );
+
+    if (type) {
+        query.andWhereRaw('CAST(sc.type AS text) = ?', [type]);
+    }
+
+    return query;
+}
+
+function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+    return db.knex
+        .from({ oes: 'on_event_scripts' })
+        .join({ nc: '_nango_configs' }, 'oes.config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .andWhere('oes.active', true)
+        .select(
+            'oes.id',
+            'oes.name',
+            db.knex.raw(`'on-event'::text AS type`),
+            db.knex.raw('NULL::jsonb AS metadata'),
+            db.knex.raw('NULL::text AS input'),
+            db.knex.raw('NULL::text[] AS returns'),
+            db.knex.raw('NULL::jsonb AS json_schema'),
+            db.knex.raw('NULL::text AS runs'),
+            db.knex.raw('NULL::boolean AS auto_start'),
+            db.knex.raw('NULL::boolean AS track_deletes'),
+            db.knex.raw('oes.active AS enabled'),
+            db.knex.raw('oes.updated_at AS last_deployed'),
+            db.knex.raw(`'repo'::text AS source`),
+            db.knex.raw('CAST(oes.event AS text) AS event')
+        );
+}
+
+function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed {
     const description = row.metadata?.description;
     const scopes = row.metadata?.scopes;
     const base = {

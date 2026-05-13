@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { configService, listIntegrationFunctions } from '@nangohq/shared';
+import { configService, listFunctions } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../../../helpers/validation.js';
@@ -41,7 +41,7 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
         return;
     }
 
-    const { rows, total } = await listIntegrationFunctions({
+    const { rows, total } = await listFunctions({
         environmentId: environment.id,
         providerConfigKey,
         type,

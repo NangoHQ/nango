@@ -1,6 +1,6 @@
-import type { NangoFunction, NangoSyncConfig } from '@nangohq/types';
+import type { NangoActionFunction, NangoSyncConfig, NangoSyncFunction } from '@nangohq/types';
 
-export function toNangoFunction(config: NangoSyncConfig): NangoFunction {
+export function toNangoFunction(config: NangoSyncConfig): NangoSyncFunction | NangoActionFunction | undefined {
     const description = config.description ?? config.metadata?.description;
     const scopes = config.scopes ?? config.metadata?.scopes;
     const base = {
@@ -22,15 +22,15 @@ export function toNangoFunction(config: NangoSyncConfig): NangoFunction {
         };
     }
 
-    if (config.type === 'on-event') {
-        throw new Error(`toNangoFunction does not support on-event configs`);
+    if (config.type === 'action' || config.type === undefined) {
+        return {
+            ...base,
+            type: 'action',
+            ...(config.input !== undefined && { input: config.input }),
+            returns: config.returns,
+            json_schema: config.json_schema
+        };
     }
 
-    return {
-        ...base,
-        type: 'action',
-        ...(config.input !== undefined && { input: config.input }),
-        returns: config.returns,
-        json_schema: config.json_schema
-    };
+    return undefined;
 }

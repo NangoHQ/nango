@@ -313,6 +313,33 @@ describe(`GET ${route}`, () => {
         expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
     });
 
+    it('should return total even when page is out of range', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+
+        for (let i = 0; i < 3; i++) {
+            await seeders.createSyncSeeds({
+                connectionId: connection.id,
+                environment_id: env.id,
+                nango_config_id: integration.id!,
+                sync_name: `sync-${i}`,
+                type: 'sync'
+            });
+        }
+
+        const res = await api.fetch(route, {
+            method: 'GET',
+            query: { env: 'dev', type: 'sync', page: 5, limit: 10 },
+            params: { providerConfigKey: 'github' },
+            token: apiKey.secret
+        });
+
+        isSuccess(res.json);
+        expect(res.json.pagination).toStrictEqual({ total: 3, page: 5, limit: 10 });
+        expect(res.json.data).toHaveLength(0);
+    });
+
     it('should reject invalid type query', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');

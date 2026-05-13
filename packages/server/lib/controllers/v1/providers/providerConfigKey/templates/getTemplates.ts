@@ -23,7 +23,7 @@ export const getProviderTemplates = asyncWrapper<GetProviderTemplates>((req, res
     const { providerConfigKey } = valParams.data;
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === providerConfigKey);
-    const data = entry ? [...entry.actions, ...entry.syncs].map(toNangoFunction) : [];
+    const data = entry ? [...entry.actions, ...entry.syncs].map(toNangoFunction).filter((fn) => fn !== undefined) : [];
 
     res.status(200).send({ data });
 });
