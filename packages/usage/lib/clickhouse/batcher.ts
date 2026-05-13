@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, metrics } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
 
@@ -55,6 +55,7 @@ export class Batcher<T> {
 
         if (discarded > 0) {
             logger.error(`Clickhouse batcher queue full. Discarding ${discarded} items.`);
+            metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED, discarded, { reason: 'queue_full' });
         }
 
         this.queue.push(...t);
@@ -103,8 +104,8 @@ export class Batcher<T> {
         } catch (err) {
             const attempts = (this.retry?.attempts ?? 0) + 1;
             if (attempts > this.maxProcessingRetry) {
-                // TODO: push metric
                 logger.error(`Clickhouse batcher: dropping ${batch.length} items after exhausting retries.`);
+                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED, batch.length, { reason: 'failed_insert' });
                 this.retry = null;
             } else {
                 this.queue.unshift(...batch);
