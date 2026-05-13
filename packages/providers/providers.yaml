@@ -14305,6 +14305,27 @@ podium:
             title: API Version
             description: The API version of your Podium account
 
+podscribe:
+    display_name: Podscribe
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://backend.podscribe.ai/api/public
+    docs: https://nango.dev/docs/api-integrations/podscribe
+    docs_connect: https://nango.dev/docs/api-integrations/podscribe/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Podscribe account
+            pattern: '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+$'
+            example: xkPqbW**********.*********.*******T8mz
+            doc_section: '#step-1-generating-your-api-key'
+
 posthog:
     display_name: PostHog
     categories:
