@@ -16,14 +16,14 @@ Connect to the Pushpay ChMS API through Nango using HTTP Basic Authentication an
     Open **Connections**, then **Add Test Connection** → **Authorize**. Enter your church **subdomain**, **API username**, and **API password** from Pushpay ChMS (see the connect guide below). Your end users will complete the same flow from your product.
     </Step>
     <Step title="Call the Pushpay ChMS API">
-    All services are invoked on `api.php` with a `srv` query parameter. This example calls the `api_status` service (it does not increment your daily call counter). Replace the placeholders with your Nango **secret key** (from **Environment settings** in the dashboard), **integration ID**, and **connection ID**:
+    All services are invoked on `api.php` with a `srv` query parameter. This example calls the `api_status` service (it does not increment your daily call counter). Replace the placeholders with your Nango **API key** (from the dashboard: **Environment settings** → **API Keys**), **integration ID**, and **connection ID**:
 
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/api.php?srv=api_status" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -37,7 +37,7 @@ Connect to the Pushpay ChMS API through Nango using HTTP Basic Authentication an
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/api.php?srv=api_status',
