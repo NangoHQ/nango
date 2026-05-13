@@ -443,7 +443,7 @@ describe('Clickhouse', () => {
                 query: `SELECT SUM(value) AS total FROM ${dedupDatabase}.daily_proxy WHERE account_id = -999`,
                 format: 'JSONEachRow'
             });
-            const rows = await result.json();
+            const rows = await result.json<{ total: string }>();
             expect(Number(rows[0]?.total)).toBe(100);
 
             await client.close();
@@ -478,7 +478,7 @@ describe('Clickhouse', () => {
                 query: `SELECT SUM(value) AS total FROM ${dedupDatabase}.daily_proxy WHERE account_id = ${accountId}`,
                 format: 'JSONEachRow'
             });
-            const rows = await result.json();
+            const rows = await result.json<{ total: string }>();
             expect(Number(rows[0]?.total)).toBe(300);
 
             await client.close();
