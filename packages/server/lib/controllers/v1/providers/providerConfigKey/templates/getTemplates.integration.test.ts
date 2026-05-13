@@ -44,16 +44,16 @@ describe(`GET ${route}`, () => {
         isSuccess(res.json);
         expect(res.json.data.length).toBeGreaterThan(0);
 
-        const writeFile = res.json.data.find((value) => value.name === 'write-file');
-        expect(writeFile).toMatchObject({
-            name: 'write-file',
+        const createOrUpdateFile = res.json.data.find((value) => value.name === 'create-or-update-file');
+        expect(createOrUpdateFile).toMatchObject({
+            name: 'create-or-update-file',
             type: 'action'
         });
-        expect(writeFile).not.toHaveProperty('runs');
-        expect(writeFile).not.toHaveProperty('auto_start');
-        expect(writeFile).not.toHaveProperty('track_deletes');
-        expect(writeFile).not.toHaveProperty('source');
-        expect(writeFile).not.toHaveProperty('id');
+        expect(createOrUpdateFile).not.toHaveProperty('runs');
+        expect(createOrUpdateFile).not.toHaveProperty('auto_start');
+        expect(createOrUpdateFile).not.toHaveProperty('track_deletes');
+        expect(createOrUpdateFile).not.toHaveProperty('source');
+        expect(createOrUpdateFile).not.toHaveProperty('id');
 
         const issues = res.json.data.find((value) => value.name === 'issues');
         expect(issues).toMatchObject({

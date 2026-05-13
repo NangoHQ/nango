@@ -90,7 +90,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should aggregate sync, action, and on-event functions', async () => {
-        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -108,7 +108,10 @@ describe(`GET ${route}`, () => {
             sync_name: 'my-action',
             type: 'action'
         });
-        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+        await insertOnEventScripts({
+            configId: integration.id!,
+            scripts: [{ name: 'my-on-event', event: 'POST_CONNECTION_CREATION' }]
+        });
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -122,7 +125,7 @@ describe(`GET ${route}`, () => {
         expect(res.json.pagination).toStrictEqual({ total: 3, page: 0, limit: 20 });
         expect(res.json.data.map((f) => ({ name: f.name, type: f.type }))).toStrictEqual([
             { name: 'my-action', type: 'action' },
-            { name: 'test-script', type: 'on-event' },
+            { name: 'my-on-event', type: 'on-event' },
             { name: 'my-sync', type: 'sync' }
         ]);
 
@@ -132,7 +135,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should filter by type=on-event', async () => {
-        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
 
@@ -150,7 +153,10 @@ describe(`GET ${route}`, () => {
             sync_name: 'my-action',
             type: 'action'
         });
-        await seeders.createOnEventScript({ account, environment: env, providerConfigKey: 'github', sdkVersion: '0.0.0-yaml' });
+        await insertOnEventScripts({
+            configId: integration.id!,
+            scripts: [{ name: 'my-on-event', event: 'POST_CONNECTION_CREATION' }]
+        });
 
         const res = await api.fetch(route, {
             method: 'GET',
@@ -164,7 +170,7 @@ describe(`GET ${route}`, () => {
         expect(res.json.pagination).toStrictEqual({ total: 1, page: 0, limit: 20 });
         expect(res.json.data).toHaveLength(1);
         expect(res.json.data[0]?.type).toBe('on-event');
-        expect(res.json.data[0]?.name).toBe('test-script');
+        expect(res.json.data[0]?.name).toBe('my-on-event');
     });
 
     it('should paginate results', async () => {
