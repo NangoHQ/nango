@@ -65,7 +65,6 @@ describe('ProxyRequest onBytes (socket metering)', () => {
         const bytes = onBytes.mock.calls[0]![0] as MeteredBytes;
         expect(bytes.received).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody));
         expect(bytes.sent).toBeGreaterThan(0);
-        expect(bytes.partial).toBe(false);
     });
 
     it('fires onBytes for stream responseType after upstream body completes', async () => {
@@ -101,7 +100,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
         expect(onBytes.mock.calls[0]![0].received).toBeGreaterThanOrEqual(responseBody.length);
     });
 
-    it('fires onBytes with partial=true for stream responseType when connection drops mid-stream', async () => {
+    it('fires onBytes for stream responseType when connection drops mid-stream', async () => {
         handle = await startServer((_req, res) => {
             res.writeHead(200, { 'content-length': '10000' });
             res.write(Buffer.from('partial data'));
@@ -135,7 +134,6 @@ describe('ProxyRequest onBytes (socket metering)', () => {
         }
 
         expect(fires).toHaveLength(1);
-        expect(fires[0]!.partial).toBe(true);
     });
 
     it('fires onBytes exactly once for stream responseType when connection drops mid-stream', async () => {
@@ -354,7 +352,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
         expect(bytes.received).toBeGreaterThanOrEqual(Buffer.byteLength(finalBody));
     });
 
-    it('does not mark bytes count as partial on clean redirection chains', async () => {
+    it('fires onBytes once on clean redirection chains', async () => {
         handle = await startServer((req, res) => {
             if (req.url === '/start') {
                 res.writeHead(302, { location: `http://127.0.0.1:${handle!.port}/end` });
@@ -380,7 +378,5 @@ describe('ProxyRequest onBytes (socket metering)', () => {
         await proxy.request();
 
         expect(onBytes).toHaveBeenCalledTimes(1);
-        const bytes = onBytes.mock.calls[0]![0] as MeteredBytes;
-        expect(bytes.partial).toBe(false);
     });
 });

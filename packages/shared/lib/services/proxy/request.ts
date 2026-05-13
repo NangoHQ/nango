@@ -105,15 +105,12 @@ export class ProxyRequest {
                         connection: this.connection
                     });
 
-                    const byteTotals = { sent: 0, received: 0, partial: false };
+                    const byteTotals = { sent: 0, received: 0 };
 
                     if (this.onBytes) {
                         this.axiosConfig.transport = createMeteringTransport((bytes) => {
                             byteTotals.sent += bytes.sent;
                             byteTotals.received += bytes.received;
-                            if (bytes.partial) {
-                                byteTotals.partial = true;
-                            }
                         });
                     }
 
@@ -127,8 +124,8 @@ export class ProxyRequest {
 
                             // we need to wait until the stream is finished before firing onBytes, otherwise
                             // we may end up undercounting bytes transferred
-                            const cleanup = finished(res.data, (err) => {
-                                this.fireOnBytes({ sent: byteTotals.sent, received: byteTotals.received, partial: byteTotals.partial || !!err });
+                            const cleanup = finished(res.data, () => {
+                                this.fireOnBytes(byteTotals);
                                 cleanup();
                             });
                         }

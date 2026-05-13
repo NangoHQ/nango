@@ -14,15 +14,10 @@ import type { Socket } from 'node:net';
  * (typically `net.Socket` for `http:`, `tls.TLSSocket` for `https:`). They
  * approximate wire transfer including HTTP framing and (for TLS) encrypted
  * payload, not application-level decompressed bodies.
- *
- * `partial` is `true` when the hop did not complete cleanly (error, abort, or
- * connection closed before the response finished). Intentional terminations —
- * e.g. follow-redirects destroying a 3xx response body — are NOT partial.
  */
 export interface MeteredBytes {
     sent: number;
     received: number;
-    partial: boolean;
 }
 
 interface TransportOptions extends RequestOptions {
@@ -46,9 +41,8 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
             let startRead = 0;
             let startWritten = 0;
             let finalized = false;
-            let sawResponse = false;
 
-            const emit = (partial: boolean) => {
+            const emit = () => {
                 if (finalized) {
                     return;
                 }
@@ -57,8 +51,7 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
                 const sock = socketRef;
                 const bytes: MeteredBytes = {
                     sent: sock ? Math.max(0, sock.bytesWritten - startWritten) : 0,
-                    received: sock ? Math.max(0, sock.bytesRead - startRead) : 0,
-                    partial
+                    received: sock ? Math.max(0, sock.bytesRead - startRead) : 0
                 };
 
                 try {
@@ -78,15 +71,9 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
             };
 
             const req = nativeModule.request(options, (res) => {
-                sawResponse = true;
-
-                // follow-redirects intentionally destroys 3xx response bodies before they
-                // are fully read. That is not an unclean termination, so treat redirect
-                // closes as clean regardless of whether `finished` receives an error.
-                const isRedirect = res.statusCode !== undefined && res.statusCode >= 300 && res.statusCode < 400;
-                const cleanup = finished(res, (err) => {
+                const cleanup = finished(res, () => {
                     cleanup();
-                    emit(!!err && !isRedirect);
+                    emit();
                 });
 
                 if (callback) {
@@ -100,15 +87,8 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
                 req.once('socket', attachSocket);
             }
 
-            req.once('error', () => {
-                emit(true);
-            });
-
-            req.once('close', () => {
-                if (!finalized && !sawResponse) {
-                    emit(true);
-                }
-            });
+            req.once('error', emit);
+            req.once('close', emit);
 
             return req;
         }

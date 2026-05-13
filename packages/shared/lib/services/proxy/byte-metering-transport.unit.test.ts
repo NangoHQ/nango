@@ -65,7 +65,6 @@ describe('createMeteringTransport (socket bytes)', () => {
 
         const bytes = await promise;
         expect(bytes.received).toBeGreaterThanOrEqual(body.length);
-        expect(bytes.partial).toBe(false);
         expect(bytes.sent).toBeGreaterThan(0); // request line + headers
     });
 
@@ -99,7 +98,6 @@ describe('createMeteringTransport (socket bytes)', () => {
         const bytes = await promise;
         expect(bytes.sent).toBeGreaterThanOrEqual(requestBody.length);
         expect(bytes.received).toBeGreaterThan('ok'.length);
-        expect(bytes.partial).toBe(false);
     });
 
     it('counts sent bytes for headers on GET request', async () => {
@@ -163,30 +161,9 @@ describe('createMeteringTransport (socket bytes)', () => {
 
         const bytes = await promise;
         expect(bytes.received).toBeGreaterThanOrEqual(6000);
-        expect(bytes.partial).toBe(false);
     });
 
-    it('marks partial=true when the server destroys connection mid-response', async () => {
-        handle = await startServer((_req, res) => {
-            res.writeHead(200, { 'content-length': '10000' });
-            res.write(Buffer.from('partial'));
-            res.socket?.destroy();
-        });
-
-        const { onBytes, promise } = onBytesAwaitable();
-        const transport = createMeteringTransport(onBytes);
-        const req = transport.request({ host: '127.0.0.1', port: handle.port, method: 'GET', path: '/' }, (res) => {
-            res.on('data', () => {});
-            res.on('error', () => {});
-        });
-        req.on('error', () => {});
-        req.end();
-
-        const bytes = await promise;
-        expect(bytes.partial).toBe(true);
-    });
-
-    it('marks partial=false for redirect hops (follow-redirects destroys 3xx body)', async () => {
+    it('fires onBytes for redirect hops (follow-redirects destroys 3xx body)', async () => {
         handle = await startServer((req, res) => {
             if (req.url === '/') {
                 res.writeHead(301, { location: '/final' });
@@ -212,8 +189,6 @@ describe('createMeteringTransport (socket bytes)', () => {
 
         await promise;
         expect(hops).toHaveLength(2);
-        expect(hops[0]!.partial).toBe(false); // redirect hop: follow-redirects destroys body, not an error
-        expect(hops[1]!.partial).toBe(false); // final hop: clean response
     });
 
     it('fires exactly once on connect failure', async () => {
@@ -233,8 +208,7 @@ describe('createMeteringTransport (socket bytes)', () => {
         req.on('error', () => {});
         req.end();
 
-        const bytes = await promise;
-        expect(bytes.partial).toBe(true);
+        await promise;
         // give the event loop time to process any remaining error events — a duplicate fire would push to `fires` here
         await new Promise((resolve) => setTimeout(resolve, 50));
         expect(fires).toHaveLength(1);
