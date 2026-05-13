@@ -105,7 +105,7 @@ export const ENVS = z.object({
     PERSIST_BATCH_CLEANUP_MAX_AGE_MS: z.coerce
         .number()
         .optional()
-        .default(72 * 3600 * 1000), // 72 hours
+        .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
