@@ -391,6 +391,111 @@ describe('Clickhouse', () => {
             });
         });
     });
+
+    // Verifies the CH-platform contract we depend on: an insert with a stable
+    // insert_deduplication_token is rejected by the server when re-sent, so retried
+    // batches don't double-write raw_events.
+    //
+    // What we DON'T verify here: MV propagation via deduplicate_blocks_in_dependent_materialized_views.
+    // That setting only takes effect for Replicated/Shared engines, which the local CH
+    // testcontainer cannot provide (it runs plain ReplacingMergeTree / SummingMergeTree).
+    // The full retry-safety contract — including MV propagation — was verified manually
+    // against CH Cloud, see Linear doc:
+    // https://linear.app/nango/document/avg-billing-metric-issues-7831f496d326
+    describe('insert_deduplication_token contract', () => {
+        const dedupDatabase = `usage_dedup_test`;
+
+        beforeAll(async () => {
+            const client = clickhouseClient();
+            await client?.command({ query: `DROP DATABASE IF EXISTS ${dedupDatabase}` });
+            await client?.close();
+            await migrate({ database: dedupDatabase });
+
+            // Plain ReplacingMergeTree has block dedup disabled by default
+            // (non_replicated_deduplication_window=0). CH Cloud's SharedReplacingMergeTree
+            // has it enabled. Enable it here so the tests exercise real dedup; otherwise
+            // the assertions below would be vacuously true.
+            const setupClient = clickhouseClient({ database: dedupDatabase });
+            await setupClient?.command({
+                query: `ALTER TABLE ${dedupDatabase}.raw_events MODIFY SETTING non_replicated_deduplication_window = 100`
+            });
+            await setupClient?.close();
+        });
+
+        it('dedupes identical INSERTs with the same token at raw_events level', async () => {
+            const client = clickhouseClient({ database: dedupDatabase });
+            if (!client) throw new Error('CLICKHOUSE_URL not set');
+
+            const token = `dedup-token-${rnd.string()}`;
+            const accountId = -999;
+            const event = {
+                ts: dayFromNow(0).getTime(),
+                idempotency_key: rnd.string(),
+                type: 'usage.proxy' as const,
+                account_id: accountId,
+                value: 100,
+                attributes: { success: true, environmentId: 1, environmentName: 'test', integrationId: 'test', connectionId: 'test' }
+            };
+
+            for (let i = 0; i < 3; i++) {
+                await client.insert({
+                    table: 'raw_events',
+                    values: [event],
+                    format: 'JSONEachRow',
+                    clickhouse_settings: { insert_deduplication_token: token }
+                });
+            }
+
+            // count() (no FINAL) reflects what physically landed: server-side block dedup
+            // should reject inserts 2 and 3 before they reach storage. FINAL would also
+            // return 1 via ReplacingMergeTree, hiding a regression where dedup is off.
+            const result = await client.query({
+                query: `SELECT count() AS total FROM ${dedupDatabase}.raw_events WHERE account_id = ${accountId}`,
+                format: 'JSONEachRow'
+            });
+            const rows = await result.json<{ total: string }>();
+            expect(Number(rows[0]?.total)).toBe(1);
+
+            await client.close();
+        });
+
+        it('does not dedupe across distinct tokens', async () => {
+            const client = clickhouseClient({ database: dedupDatabase });
+            if (!client) throw new Error('CLICKHOUSE_URL not set');
+
+            const accountId = -998;
+            const event = {
+                ts: dayFromNow(0).getTime(),
+                idempotency_key: rnd.string(),
+                type: 'usage.proxy' as const,
+                account_id: accountId,
+                value: 100,
+                attributes: { success: true, environmentId: 1, environmentName: 'test', integrationId: 'test', connectionId: 'test' }
+            };
+
+            // Identical rows on purpose: with parent dedup enabled, if token dedup ever
+            // stopped working the identical block would collapse via block-hash dedup and
+            // the assertion would fail — catching the regression. Varying the row content
+            // would let the test pass even with broken tokens.
+            for (let i = 0; i < 3; i++) {
+                await client.insert({
+                    table: 'raw_events',
+                    values: [event],
+                    format: 'JSONEachRow',
+                    clickhouse_settings: { insert_deduplication_token: `distinct-token-${rnd.string()}` }
+                });
+            }
+
+            const result = await client.query({
+                query: `SELECT count() AS total FROM ${dedupDatabase}.raw_events WHERE account_id = ${accountId}`,
+                format: 'JSONEachRow'
+            });
+            const rows = await result.json<{ total: string }>();
+            expect(Number(rows[0]?.total)).toBe(3);
+
+            await client.close();
+        });
+    });
 });
 
 function dayFromNow(dayOffset = 0): Date {
