@@ -362,7 +362,7 @@ function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined 
     // if `content-encoding` header wasn't stripped by axios, the response is compressed
     if (contentEncoding) return true;
 
-    const rawHeaders = responseStream.request?.res?.rawHeaders ?? [];
+    const rawHeaders = responseStream.request?.res?.rawHeaders;
     // if raw headers are not available, we can't determine whether the response was compressed
     if (!rawHeaders || !Array.isArray(rawHeaders)) return undefined;
 
