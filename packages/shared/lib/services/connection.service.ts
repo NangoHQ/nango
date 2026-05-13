@@ -848,6 +848,7 @@ class ConnectionService {
 
                 return subQuery
                     .orderBy('_nango_connections.created_at', 'desc')
+                    .orderBy('_nango_connections.id', 'desc')
                     .limit(limit)
                     .offset(page * limit);
             })
@@ -873,7 +874,8 @@ class ConnectionService {
             .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
-            .orderBy('_nango_connections.created_at', 'desc');
+            .orderBy('_nango_connections.created_at', 'desc')
+            .orderBy('_nango_connections.id', 'desc');
 
         return await query;
     }
