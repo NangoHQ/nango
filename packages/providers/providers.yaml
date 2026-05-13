@@ -20950,6 +20950,30 @@ zenefits:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
 
+zigpoll:
+    display_name: Zigpoll
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://v1.zigpoll.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/zigpoll
+    docs_connect: https://nango.dev/docs/api-integrations/zigpoll/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Zigpoll private API key.
+            format: uuid
+            example: 3f7b2d4e-****-****-****-************
+            doc_section: '#step-1-get-your-api-token'
+
 zoho:
     display_name: Zoho
     categories:
