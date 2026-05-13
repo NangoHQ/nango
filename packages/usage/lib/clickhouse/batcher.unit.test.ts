@@ -21,7 +21,7 @@ describe('Batcher', () => {
             const batcher = new Batcher({ process: mockProcess, maxBatchSize: 3 });
             const res = batcher.add('item1');
             expect(res.isOk()).toBe(true);
-            expect(batcher['queue']).toEqual([{ item: 'item1', retries: 0 }]);
+            expect(batcher['queue']).toEqual(['item1']);
         });
 
         it('should return Err if queue is full', () => {
@@ -116,9 +116,8 @@ describe('Batcher', () => {
 
             await Promise.resolve(); // Allow the auto-flush to complete
 
-            expect(batcher['queue'].length).toBe(2);
-            expect(batcher['queue'][0]).toEqual(expect.objectContaining({ item: 'item1', retries: 1, retryKey: expect.any(String) }));
-            expect(batcher['queue'][1]).toEqual(expect.objectContaining({ item: 'item2', retries: 1, retryKey: expect.any(String) }));
+            expect(batcher['queue']).toEqual(['item1', 'item2']);
+            expect(batcher['retry']).toEqual(expect.objectContaining({ key: expect.any(String), size: 2, attempts: 1 }));
 
             // retrying to flush
             const res = await batcher.flush();
@@ -214,8 +213,8 @@ describe('Batcher', () => {
                 expect(res.error.message).toBe('Batcher failed to process batch');
                 expect(res.error.cause).toBe(shutdownError);
             }
-            expect(batcher['queue'].length).toBe(1);
-            expect(batcher['queue'][0]?.retries).toBe(1);
+            expect(batcher['queue']).toEqual(['item1']);
+            expect(batcher['retry']).toEqual(expect.objectContaining({ size: 1, attempts: 1 }));
         });
 
         it('should return successfully when queue is empty and not processing', async () => {
