@@ -1,0 +1,44 @@
+---
+title: 'Pushpay ChMS (API v1) — How do I link my account?'
+sidebarTitle: 'Pushpay ChMS (API v1)'
+---
+
+# Overview
+
+To connect Nango to the **Pushpay ChMS API v1**, you need:
+
+1. **Church subdomain** — the hostname prefix for your ChMS site (`https://{subdomain}.ccbchurch.com`).
+2. **API username and password** — created in **API Admin** inside Pushpay ChMS (not the API User Community login).
+
+Services, permissions, and the exact base URL for your organization are managed in Pushpay ChMS.
+
+### Prerequisites
+
+- Pushpay ChMS with API access enabled for your organization.
+- An API user with access to the services your integration will call.
+
+## Instructions
+
+### Step 1: Finding your subdomain
+
+1. Log in to Pushpay ChMS as an administrator.
+2. Open **API Admin** (location may vary by version; your implementer guide references this section).
+3. Note the HTTPS base URL for API calls. It is of the form `https://{your-subdomain}.ccbchurch.com/api.php`.
+4. The value **before** `.ccbchurch.com` is your **Church subdomain** (for example, `yourchurch` from `https://yourchurch.ccbchurch.com`).
+
+### Step 2: Create an API user
+
+1. In Pushpay ChMS, go to **API Admin**.
+2. Create a dedicated API login for this integration (recommended so access can be revoked independently).
+3. Assign only the **services** this integration needs; each login’s permissions are granular per service.
+4. Copy the **username** and **password** for use in Nango.
+
+For more detail, see Pushpay’s help article: [How to create and manage API users in ChMS](https://support.pushpay.com/s/article/How-to-Create-and-Manage-API-Users).
+
+### Step 3: Enter values in the Connect UI
+
+1. Open the Nango Connect flow (or **Add Test Connection** in the dashboard).
+2. Enter **Church subdomain**, **API username**, and **API password**.
+3. Submit the form. Nango verifies the connection with the `api_status` service.
+
+You are now connected to Pushpay ChMS (API v1).

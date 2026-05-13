@@ -1,0 +1,88 @@
+---
+title: 'Pushpay ChMS (API v1)'
+sidebarTitle: 'Pushpay ChMS (API v1)'
+description: 'Integrate your application with the Pushpay ChMS XML API (v1)'
+---
+
+## Quickstart
+
+Connect to the Pushpay ChMS API through Nango using HTTP Basic Authentication and your organization subdomain.
+
+<Steps>
+    <Step title="Create the integration">
+    Sign up at [nango.dev](https://nango.dev) if needed, then in the Nango dashboard open **Integrations**, choose **Configure New Integration**, and select **Pushpay ChMS (API v1)**.
+    </Step>
+    <Step title="Create a connection">
+    Open **Connections**, then **Add Test Connection** → **Authorize**. Enter your church **subdomain**, **API username**, and **API password** from Pushpay ChMS (see the connect guide below). Your end users will complete the same flow from your product.
+    </Step>
+    <Step title="Call the Pushpay ChMS API">
+    All services are invoked on `api.php` with a `srv` query parameter. This example calls the `api_status` service (it does not increment your daily call counter). Replace the placeholders with your Nango **secret key** (from **Environment settings** in the dashboard), **integration ID**, and **connection ID**:
+
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api.php?srv=api_status" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api.php?srv=api_status',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    Inspect proxied requests under **Logs** in the Nango dashboard.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/primitives/auth) to embed connection creation for your customers.
+
+        For credential setup in Pushpay ChMS, use the connect guide linked below.
+    </Step>
+</Steps>
+
+## Pushpay ChMS (API v1) guides
+
+- [How do I link my Pushpay ChMS account?](/api-integrations/pushpay-chms-v1/connect)  
+  Subdomain, API user, and permissions in Pushpay ChMS
+
+Official implementer guide: [Pushpay ChMS API documentation](https://designccb.s3.amazonaws.com/helpdesk/files/official_docs/api.html)
+
+Support article: [How to create and manage API users in ChMS](https://support.pushpay.com/s/article/How-to-Create-and-Manage-API-Users)
+
+## API notes
+
+- Responses are **XML**; Nango forwards the raw body from the proxy.
+- Optional `describe_api=1` on any service returns accepted parameters without counting against your daily quota.
+- Rate limits: monitor `X-RateLimit-*` headers; on HTTP `429`, honor `Retry-After`. There is also a separate **daily** limit per API user; `api_status` reports usage and does not increment the counter.
+
+## Pre-built syncs and actions
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pushpay-chms-v1/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
