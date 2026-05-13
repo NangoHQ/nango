@@ -91,7 +91,12 @@ describe('handleResponse', () => {
         };
     };
 
-    const createMockResponseStream = (data: string, contentType = 'application/json', status = 200): AxiosResponse => {
+    const createMockResponseStream = (
+        data: string,
+        contentType = 'application/json',
+        status = 200,
+        extraHeaders: Record<string, string> = {}
+    ): AxiosResponse => {
         const stream = new Readable();
         stream.push(data);
         stream.push(null);
@@ -99,7 +104,8 @@ describe('handleResponse', () => {
         return {
             status,
             headers: {
-                'content-type': contentType
+                'content-type': contentType,
+                ...extraHeaders
             },
             data: stream
         } as unknown as AxiosResponse;
@@ -155,6 +161,26 @@ describe('handleResponse', () => {
         const sentData = mockRes.getSentData();
         expect(sentData).toBeDefined();
         expect(sentData!.toString()).toBe(nonJsonPayload);
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should forward allowlisted headers (mcp-session-id, x-request-id) and drop others', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', 'application/json', 200, {
+            'mcp-session-id': 'session-abc123',
+            'x-request-id': 'req-xyz',
+            'x-ratelimit-limit': '100',
+            'x-ratelimit-remaining': '42'
+        });
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await mockRes.waitForSend();
+
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-limit', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-remaining', expect.anything());
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 });
