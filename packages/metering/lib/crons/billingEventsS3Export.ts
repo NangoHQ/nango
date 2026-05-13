@@ -99,30 +99,36 @@ export const METRICS: MetricSpec[] = [
     },
     {
         canonicalEventName: 'records',
+        // Reconstruct Orb's average(count) semantic from the typed-projection MV:
+        // inner: SUM across all slices (env/integration/connection/model) per (account, day, batch_id)
+        //        → per-firing account total. batch_id is one UUID per metering cron firing.
+        // outer: AVG across batches per (account, day)
+        //        → daily average count, matching what Orb received from the legacy HTTP path.
         select: (day, database) => `
             SELECT
                 account_id, day,
-                map('count', toFloat64(ROUND(SUM(avg_val)))) AS properties
+                map('count', toFloat64(ROUND(AVG(batch_val)))) AS properties
             FROM (
-                SELECT avgMerge(value) AS avg_val, account_id, day, environment_id, integration_id, connection_id, model
-                FROM ${database}.daily_records
+                SELECT SUM(value) AS batch_val, account_id, day, batch_id
+                FROM ${database}.daily_raw_records
                 WHERE day = toDate('${day}')
-                GROUP BY account_id, day, environment_id, integration_id, connection_id, model
+                GROUP BY account_id, day, batch_id
             )
             GROUP BY account_id, day
         `
     },
     {
         canonicalEventName: 'billable_connections_v2',
+        // Same sum-across-slices-per-batch then average-across-batches pattern as records.
         select: (day, database) => `
             SELECT
                 account_id, day,
-                map('count', toFloat64(ROUND(SUM(avg_val)))) AS properties
+                map('count', toFloat64(ROUND(AVG(batch_val)))) AS properties
             FROM (
-                SELECT avgMerge(value) AS avg_val, account_id, day, environment_id, integration_id
-                FROM ${database}.daily_connections
+                SELECT SUM(value) AS batch_val, account_id, day, batch_id
+                FROM ${database}.daily_raw_connections
                 WHERE day = toDate('${day}')
-                GROUP BY account_id, day, environment_id, integration_id
+                GROUP BY account_id, day, batch_id
             )
             GROUP BY account_id, day
         `

@@ -127,14 +127,51 @@ const marFixtures: ClickhouseRawUsageEvent[] = genN({
     attributes: { syncId: 's1', model: 'm1' }
 });
 
+// records: two batches, each with two slices (different integration_id).
+// Per-batch sum: B1 = 100+200 = 300, B2 = 50+150 = 200.
+// Cross-batch average: AVG(300, 200) = 250.
+const recordsBatch1 = '00000000-0000-0000-0000-000000000001';
+const recordsBatch2 = '00000000-0000-0000-0000-000000000002';
 const recordsFixtures: ClickhouseRawUsageEvent[] = [
-    gen({ day: targetDay, type: 'usage.records', accountId: 1, value: 100, attributes: { syncId: 's1', model: 'm1' } }),
-    gen({ day: targetDay, type: 'usage.records', accountId: 1, value: 200, attributes: { syncId: 's1', model: 'm1' } })
+    gen({
+        day: targetDay,
+        type: 'usage.records',
+        accountId: 1,
+        value: 100,
+        attributes: { integrationId: 'a', syncId: 's1', model: 'm1', batchId: recordsBatch1 }
+    }),
+    gen({
+        day: targetDay,
+        type: 'usage.records',
+        accountId: 1,
+        value: 200,
+        attributes: { integrationId: 'b', syncId: 's1', model: 'm1', batchId: recordsBatch1 }
+    }),
+    gen({
+        day: targetDay,
+        type: 'usage.records',
+        accountId: 1,
+        value: 50,
+        attributes: { integrationId: 'a', syncId: 's1', model: 'm1', batchId: recordsBatch2 }
+    }),
+    gen({
+        day: targetDay,
+        type: 'usage.records',
+        accountId: 1,
+        value: 150,
+        attributes: { integrationId: 'b', syncId: 's1', model: 'm1', batchId: recordsBatch2 }
+    })
 ];
 
+// connections: same pattern. Per-batch sum: B1 = 10+20 = 30, B2 = 5+15 = 20.
+// Cross-batch average: AVG(30, 20) = 25.
+const connectionsBatch1 = '00000000-0000-0000-0000-000000000003';
+const connectionsBatch2 = '00000000-0000-0000-0000-000000000004';
 const connectionsFixtures: ClickhouseRawUsageEvent[] = [
-    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 10 }),
-    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 20 })
+    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 10, attributes: { integrationId: 'a', batchId: connectionsBatch1 } }),
+    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 20, attributes: { integrationId: 'b', batchId: connectionsBatch1 } }),
+    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 5, attributes: { integrationId: 'a', batchId: connectionsBatch2 } }),
+    gen({ day: targetDay, type: 'usage.connections', accountId: 1, value: 15, attributes: { integrationId: 'b', batchId: connectionsBatch2 } })
 ];
 
 // ---------- tests ----------
@@ -235,23 +272,27 @@ describe('billingEventsS3Export', () => {
         });
     });
 
-    // Gauge (`AggregatingMergeTree(avgState)` source). One slice with two snapshots
-    // value=100 and value=200 → per-slice avg=150 → SUM across slices = 150.
+    // Typed projection (`daily_raw_records`). Two batches × two slices each:
+    //   B1: integration a=100 + b=200 → batch_val=300
+    //   B2: integration a=50  + b=150 → batch_val=200
+    // → AVG(300, 200) = 250. Matches Orb's average(count) semantic.
     describe('records', () => {
-        it('emits SUM(avgMerge) day-average across slices', async () => {
+        it('emits sum-across-slices-per-batch then average-across-batches', async () => {
             const rows = await runQuery('records', 'records_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: 150 });
+            expect(rows[0]!.properties).toEqual({ count: 250 });
         });
     });
 
-    // Gauge. One slice with two snapshots value=10 and value=20 → per-slice avg=15
-    // → SUM across slices = 15.
+    // Same pattern from `daily_raw_connections`:
+    //   B1: a=10 + b=20 → batch_val=30
+    //   B2: a=5  + b=15 → batch_val=20
+    // → AVG(30, 20) = 25.
     describe('billable_connections_v2', () => {
-        it('emits SUM(avgMerge) day-average across slices', async () => {
+        it('emits sum-across-slices-per-batch then average-across-batches', async () => {
             const rows = await runQuery('billable_connections_v2', 'billable_connections_v2_test');
             expect(rows).toHaveLength(1);
-            expect(rows[0]!.properties).toEqual({ count: 15 });
+            expect(rows[0]!.properties).toEqual({ count: 25 });
         });
     });
 
