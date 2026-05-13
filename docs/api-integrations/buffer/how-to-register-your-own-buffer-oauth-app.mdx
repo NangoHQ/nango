@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Buffer OAuth app'
+sidebarTitle: 'Buffer Setup'
+description: 'Register an OAuth app with Buffer and connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with Buffer to obtain your OAuth credentials. These are required to let your users grant your app access to their Buffer account.
+
+<Steps>
+  <Step title="Create a Buffer account">
+    If you don't already have a Buffer account, [sign up here](https://buffer.com/signup).
+  </Step>
+
+  <Step title="Register your OAuth app">
+    1. Log in to Buffer and go to [Settings → API](https://buffer.com/developers/apps).
+    2. Click **App Clients**.
+    3. Fill in this form.
+    4. Set the **Redirect URI** to: `https://api.nango.dev/oauth/callback`
+    6. Save the app and copy your **Client ID** and **Client Secret**.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to start building your integration.
+  </Step>
+</Steps>
+
+For more details, see the [Buffer OAuth 2.0 documentation](https://developers.buffer.com/guides/authentication.html#oauth).
+
+---
