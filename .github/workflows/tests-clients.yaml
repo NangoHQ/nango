@@ -54,10 +54,11 @@ jobs:
             - name: Set OS Matrix
               id: set-os-matrix
               run: |
-                  echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+                  echo "os-matrix=[\"blacksmith-4vcpu-ubuntu-2404\"]" >> $GITHUB_OUTPUT
                   # TODO: fix tests on windows and re-enable
                   # echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
     tests:
+        name: tests (${{ matrix.node-version }}, ubuntu-2404)
         needs:
             - should-run
             - compute-matrix

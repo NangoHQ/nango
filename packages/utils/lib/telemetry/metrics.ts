@@ -117,6 +117,7 @@ export enum Types {
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED = 'nango.billing.usage.clickhouse.batcher.dropped',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
