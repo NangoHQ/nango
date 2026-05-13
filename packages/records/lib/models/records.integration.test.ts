@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
@@ -22,6 +22,7 @@ describe('Records service', () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
         await db(RECORDS_BATCH_TABLE).truncate();
+        await db(RECORDS_SEEN_TABLE).truncate();
     });
 
     describe('Should fetch cursor', () => {
@@ -1896,6 +1897,48 @@ describe('Records service', () => {
             // hard delete removes the count entry entirely when count reaches 0
             const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBeUndefined();
+        });
+    });
+
+    describe('ensureSeenPartition', () => {
+        it('should create a partition for the given date', async () => {
+            const date = new Date('2025-01-15T00:00:00Z');
+            const res = await Records.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250115'
+            ]);
+            expect(rows[0]?.exists).toBe(true);
+        });
+
+        it('should be idempotent', async () => {
+            const date = new Date('2025-01-16T00:00:00Z');
+            const res1 = await Records.ensureSeenPartition({ date });
+            const res2 = await Records.ensureSeenPartition({ date });
+            expect(res1.isOk()).toBe(true);
+            expect(res2.isOk()).toBe(true);
+        });
+    });
+
+    describe('dropSeenPartition', () => {
+        it('should drop an existing partition', async () => {
+            const date = new Date('2025-02-10T00:00:00Z');
+            await Records.ensureSeenPartition({ date });
+
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250210'
+            ]);
+            expect(rows[0]?.exists).toBe(false);
+        });
+
+        it('should not error when partition does not exist', async () => {
+            const date = new Date('2025-02-11T00:00:00Z');
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
         });
     });
 });
