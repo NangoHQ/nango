@@ -3200,7 +3200,7 @@ buffer:
         - offline_access
     proxy:
         base_url: https://api.buffer.com
-    docs: https://nango.dev/docs/integrations/all/buffer
+    docs: https://nango.dev/docs/api-integrations/buffer
     setup_guide_url: https://nango.dev/docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app
 
 bullhorn:
