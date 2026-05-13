@@ -40,6 +40,7 @@ import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDry
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
+import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
@@ -191,6 +192,9 @@ publicAPI
     .route('/integrations/:uniqueKey')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environment:integrations:write'), deletePublicIntegration);
+publicAPI
+    .route('/integrations/:uniqueKey/functions/:name/code')
+    .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);

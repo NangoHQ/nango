@@ -74,6 +74,9 @@ const usage = {
         await tracer.trace<Promise<void>>('nango.cron.exportUsage.metrics', async (span) => {
             try {
                 const now = new Date();
+                // Shared by every records/connections event emitted in this cron run. Used downstream
+                // (NAN-5315) so the read side can sum across slices per firing and average across firings.
+                const batchId = uuidv7();
                 // Note: connectionsPerAccount is held in memory for the duration of the entire function execution
                 // While unbounded the number of account/environment/integration combinations is expected to be manageable
                 const connectionsPerAccount = new Map<string, { accountId: number; environmentId: number; integrationId: string; count: number }>();
@@ -116,7 +119,8 @@ const usage = {
                                             environmentId: connection.environment.id,
                                             integrationId: connection.connection.provider_config_key,
                                             connectionId: connection.connection.connection_id,
-                                            model: recordCount.model
+                                            model: recordCount.model,
+                                            batchId
                                         }
                                     }
                                 ]);
@@ -138,7 +142,8 @@ const usage = {
                             account_id: accountId,
                             attributes: {
                                 environmentId,
-                                integrationId
+                                integrationId,
+                                batchId
                             }
                         };
                     }

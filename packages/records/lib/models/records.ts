@@ -216,18 +216,31 @@ export async function getRecords({
         }
 
         const recordIds = recordsMetadata.map((r) => r.id);
-        const recordsData = await dbRead
-            .from(RECORDS_DATA_TABLE)
-            .where({ connection_id: connectionId, model })
-            .whereIn('id', recordIds)
-            .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
-        const dataById = new Map(recordsData.map((r) => [r.id, r.data]));
+        const dataById = new Map<string, FormattedRecord['json']>();
+        {
+            // Drain the result rows into the Map and let the array go out of scope.
+            // Keeping both the array and the Map doubles the reference count on each
+            // encrypted blob, which prevents `dataById.delete()` below from making
+            // them eligible for GC during the loop.
+            const rows = await dbRead
+                .from(RECORDS_DATA_TABLE)
+                .where({ connection_id: connectionId, model })
+                .whereIn('id', recordIds)
+                .select<{ id: string; data: FormattedRecord['json'] }[]>('id', 'data');
+            while (rows.length > 0) {
+                const r = rows.pop()!;
+                dataById.set(r.id, r.data);
+            }
+        }
 
         const results: ReturnedRecord[] = [];
 
         // TODO: decrypt in batch
         for (const item of recordsMetadata) {
             const data = dataById.get(item.id) ?? item.json ?? {};
+            // Drop the only remaining reference to the encrypted blob so V8 can
+            // reclaim it when GC fires under heap pressure.
+            dataById.delete(item.id);
             const decryptedData = await decryptRecordData({ ...item, json: data });
             results.push({
                 ...decryptedData,
@@ -367,117 +380,161 @@ export async function upsert({
                         unchangedKeys: []
                     };
                     let deltaSizeInBytes = 0;
+                    const cursor = merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor ? Cursor.from(merging.cursor) : undefined;
                     for (let i = 0; i < recordsWithoutDuplicates.length; i += BATCH_SIZE) {
                         const chunk = recordsWithoutDuplicates.slice(i, i + BATCH_SIZE);
-
-                        const upsertMetadata = await trx
-                            .with(
-                                'incoming',
-                                trx.raw(
-                                    `SELECT * FROM (VALUES ${chunk.map(() => '(?, ?)').join(', ')}) AS t(external_id, data_hash)`,
-                                    chunk.flatMap((r) => [r.external_id, r.data_hash])
-                                )
+                        const hasUpdatedAt = chunk.some((r) => r.updated_at); // updated_at is only set explicitely for soft-deleting all the records
+                        const incomingColumns = hasUpdatedAt
+                            ? 'connection_id, model, id, external_id, data_hash, sync_id, sync_job_id, deleted_at, updated_at'
+                            : 'connection_id, model, id, external_id, data_hash, sync_id, sync_job_id, deleted_at';
+                        const incomingPlaceholders = chunk
+                            .map(() =>
+                                hasUpdatedAt
+                                    ? '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::integer, ?::timestamptz, ?::timestamptz)'
+                                    : '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::integer, ?::timestamptz)'
                             )
-                            .with('existing', (qb) => {
-                                qb.select(
-                                    `${RECORDS_TABLE}.id`,
-                                    `${RECORDS_TABLE}.external_id`,
-                                    `${RECORDS_TABLE}.deleted_at`,
-                                    `${RECORDS_TABLE}.updated_at`,
-                                    trx.raw(`incoming.data_hash IS DISTINCT FROM ${RECORDS_TABLE}.data_hash as has_changed`),
-                                    trx.raw(`(${RECORDS_TABLE}.json IS NOT NULL OR ${RECORDS_TABLE}.pruned_at IS NOT NULL) as must_upsert_data`),
-                                    trx.raw(`COALESCE(pg_column_size(${RECORDS_TABLE}.json), 0) as legacy_size_bytes`),
-                                    trx.raw(`${RECORDS_TABLE}.tableoid::regclass as partition`)
-                                )
-                                    .from(RECORDS_TABLE)
-                                    .where(`${RECORDS_TABLE}.connection_id`, '=', connectionId)
-                                    .where(`${RECORDS_TABLE}.model`, '=', model)
-                                    .join('incoming', 'incoming.external_id', `${RECORDS_TABLE}.external_id`);
-                            })
-                            .with('upsert', (qb) => {
-                                qb.insert(
-                                    chunk.map((r) => ({
-                                        connection_id: r.connection_id,
-                                        model: r.model,
-                                        id: r.id,
-                                        external_id: r.external_id,
-                                        json: trx.raw(`NULL`), // record data is now stored in a separate table
-                                        data_hash: r.data_hash,
-                                        sync_id: r.sync_id,
-                                        sync_job_id: r.sync_job_id,
-                                        deleted_at: r.deleted_at,
-                                        pruned_at: null, // clear pruned_at when record is re-upserted
-                                        ...(r.updated_at ? { updated_at: r.updated_at } : {})
-                                    }))
-                                )
-                                    .into(RECORDS_TABLE)
-                                    .onConflict(['connection_id', 'model', 'external_id'])
-                                    .merge()
-                                    // Skip the UPDATE except:
-                                    // - changed records (data_hash has changed)
-                                    // - deleted/undeleted records (deleted_at has changed)
-                                    // - legacy records (json IS NOT NULL) so data migration fires
-                                    // - pruned records (pruned_at IS NOT NULL) so pruned_at gets cleared
-                                    .whereRaw(
-                                        `(
-                                            ${RECORDS_TABLE}.data_hash IS DISTINCT FROM EXCLUDED.data_hash
-                                            OR ${RECORDS_TABLE}.deleted_at IS DISTINCT FROM EXCLUDED.deleted_at
-                                            OR ${RECORDS_TABLE}.json IS NOT NULL
-                                            OR ${RECORDS_TABLE}.pruned_at IS NOT NULL
-                                        )`
+                            .join(', ');
+                        const incomingBindings = chunk.flatMap((r) => [
+                            r.connection_id,
+                            r.model,
+                            r.id,
+                            r.external_id,
+                            r.data_hash,
+                            r.sync_id,
+                            r.sync_job_id,
+                            r.deleted_at ?? null,
+                            ...(hasUpdatedAt ? [r.updated_at ?? null] : [])
+                        ]);
+                        const upsertMetadata = (
+                            await trx.raw(
+                                `
+                                WITH incoming AS (
+                                    SELECT * FROM (VALUES ${incomingPlaceholders}) AS t(${incomingColumns})
+                                ),
+                                classified AS MATERIALIZED (
+                                    SELECT
+                                        incoming.connection_id,
+                                        incoming.model,
+                                        incoming.id,
+                                        incoming.external_id,
+                                        incoming.data_hash,
+                                        incoming.sync_id,
+                                        incoming.sync_job_id,
+                                        incoming.deleted_at,
+                                        ${hasUpdatedAt ? 'incoming.updated_at,' : ''}
+                                        r.id as existing_id,
+                                        r.deleted_at as existing_deleted_at,
+                                        r.updated_at as existing_updated_at,
+                                        to_json(r.updated_at) as previous_last_modified_at,
+                                        COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
+                                        r.tableoid::regclass as existing_partition,
+                                        (r.external_id IS NULL OR incoming.data_hash IS DISTINCT FROM r.data_hash OR r.json IS NOT NULL OR r.pruned_at IS NOT NULL) as needs_data_write,
+                                        (
+                                            r.external_id IS NULL
+                                            OR (
+                                                ${cursor ? '(r.updated_at, r.id) <= (?, ?)' : 'true'}
+                                                AND (
+                                                    incoming.data_hash IS DISTINCT FROM r.data_hash
+                                                    OR incoming.deleted_at IS DISTINCT FROM r.deleted_at
+                                                    OR r.json IS NOT NULL
+                                                    OR r.pruned_at IS NOT NULL
+                                                )
+                                            )
+                                        ) as should_upsert,
+                                        CASE
+                                            WHEN r.external_id IS NULL THEN 'inserted'
+                                            WHEN r.deleted_at IS NOT NULL AND incoming.deleted_at IS NULL THEN 'undeleted'
+                                            WHEN r.deleted_at IS NULL AND incoming.deleted_at IS NOT NULL THEN 'deleted'
+                                            WHEN incoming.data_hash IS DISTINCT FROM r.data_hash THEN 'changed'
+                                            ELSE 'unchanged'
+                                        END as status
+                                    FROM incoming
+                                    LEFT JOIN ${RECORDS_TABLE} r
+                                        ON r.connection_id = ?
+                                       AND r.model = ?
+                                       AND r.external_id = incoming.external_id
+                                ),
+                                upsert AS (
+                                    INSERT INTO ${RECORDS_TABLE} (
+                                        connection_id,
+                                        model,
+                                        id,
+                                        external_id,
+                                        json,
+                                        data_hash,
+                                        sync_id,
+                                        sync_job_id,
+                                        deleted_at,
+                                        pruned_at
+                                        ${hasUpdatedAt ? ', updated_at' : ''}
                                     )
-                                    .returning(['id', 'external_id', 'deleted_at', 'updated_at', trx.raw('tableoid::regclass as partition')]);
-                                if (merging.strategy === 'ignore_if_modified_after_cursor' && merging.cursor) {
-                                    const cursor = Cursor.from(merging.cursor);
-                                    if (cursor) {
-                                        qb.whereRaw(`(${RECORDS_TABLE}.updated_at, ${RECORDS_TABLE}.id) <= (?, ?)`, [cursor.sort, cursor.id]);
-                                    }
-                                }
-                            })
-                            // Records skipped by the ON CONFLICT WHERE (truly unchanged, non-legacy, non-pruned)
-                            // are absent from the upsert CTE. Include them so they appear as 'unchanged' in the result.
-                            // Cursor-filtered records (has_changed = true but skipped by cursor) are excluded here
-                            // intentionally — they preserve the same behavior as before (not classified).
-                            .with('skipped', (qb) => {
-                                qb.select('id', 'external_id', 'deleted_at', 'updated_at', 'partition')
-                                    .from('existing')
-                                    .where({ has_changed: false, must_upsert_data: false })
-                                    .whereNotExists(trx('upsert').select(trx.raw('1')).whereRaw('upsert.external_id = existing.external_id'));
-                            })
-                            .select<UpsertedMetadata[]>(
-                                trx.raw(`
-                                    combined.partition as partition,
-                                    combined.id as id,
-                                    combined.external_id as external_id,
+                                    SELECT
+                                        connection_id,
+                                        model,
+                                        id,
+                                        external_id,
+                                        NULL::jsonb,
+                                        data_hash,
+                                        sync_id,
+                                        sync_job_id,
+                                        deleted_at,
+                                        NULL::timestamptz
+                                        ${hasUpdatedAt ? ', updated_at' : ''}
+                                    FROM classified
+                                    WHERE should_upsert
+                                    ON CONFLICT (connection_id, model, external_id)
+                                    DO UPDATE SET
+                                        id = EXCLUDED.id,
+                                        json = EXCLUDED.json,
+                                        data_hash = EXCLUDED.data_hash,
+                                        sync_id = EXCLUDED.sync_id,
+                                        sync_job_id = EXCLUDED.sync_job_id,
+                                        deleted_at = EXCLUDED.deleted_at,
+                                        pruned_at = EXCLUDED.pruned_at
+                                        ${hasUpdatedAt ? ', updated_at = EXCLUDED.updated_at' : ''}
+                                    RETURNING
+                                        id,
+                                        external_id,
+                                        updated_at,
+                                        tableoid::regclass as partition
+                                ),
+                                combined AS (
+                                    SELECT
+                                        partition,
+                                        id,
+                                        external_id,
+                                        updated_at,
+                                        true as was_upserted
+                                    FROM upsert
+                                    UNION ALL
+                                    SELECT
+                                        existing_partition as partition,
+                                        existing_id as id,
+                                        external_id,
+                                        existing_updated_at as updated_at,
+                                        false as was_upserted
+                                    FROM classified
+                                    WHERE NOT should_upsert
+                                      AND NOT needs_data_write
+                                      AND existing_id IS NOT NULL
+                                )
+                                SELECT
+                                    combined.partition,
+                                    combined.id,
+                                    combined.external_id,
                                     to_json(combined.updated_at) as last_modified_at,
-                                    COALESCE(existing.has_changed OR existing.must_upsert_data, true) as needs_data_write,
-                                    COALESCE(existing.legacy_size_bytes, 0) as legacy_size_bytes,
-                                    CASE
-                                      WHEN existing.updated_at IS NULL THEN NULL
-                                      ELSE to_json(existing.updated_at)
-                                    END as previous_last_modified_at,
-                                    CASE
-                                        WHEN existing.external_id IS NULL THEN 'inserted'
-                                        ELSE
-                                            CASE
-                                                WHEN existing.deleted_at IS NOT NULL AND combined.deleted_at IS NULL THEN 'undeleted'
-                                                WHEN existing.deleted_at IS NULL AND combined.deleted_at IS NOT NULL THEN 'deleted'
-                                                WHEN existing.has_changed THEN 'changed'
-                                                ELSE 'unchanged'
-                                            END
-                                    END as status`)
+                                    classified.previous_last_modified_at,
+                                    classified.needs_data_write,
+                                    classified.legacy_size_bytes,
+                                    CASE WHEN combined.was_upserted THEN classified.status ELSE 'unchanged' END as status
+                                FROM combined
+                                JOIN classified ON classified.external_id = combined.external_id
+                                ORDER BY combined.updated_at ASC, combined.id ASC
+                                `,
+                                [...incomingBindings, ...(cursor ? [cursor.sort, cursor.id] : []), connectionId, model]
                             )
-                            .from(trx.raw('(SELECT * FROM upsert UNION ALL SELECT * FROM skipped) AS combined'))
-                            .leftJoin('existing', 'existing.external_id', 'combined.external_id')
-                            .orderBy([
-                                { column: 'combined.updated_at', order: 'asc' },
-                                { column: 'combined.id', order: 'asc' }
-                            ]);
+                        ).rows as UpsertedMetadata[];
 
-                        // Upsert data for:
-                        // - changed/new records (has_changed)
-                        // - records whose payload is still in records.json (legacy migration)
-                        // - records whose payload was pruned and is being restored (pruned_at IS NOT NULL)
                         const needsDataWriteIds = new Set(upsertMetadata.filter((r) => r.needs_data_write).map((r) => r.id));
                         const recordsToUpdateData = encryptRecords(chunk.filter((r) => needsDataWriteIds.has(r.id)));
 
@@ -524,6 +581,7 @@ export async function upsert({
                             batchDeltaSizeInBytes = upsertDataResult.reduce((acc, r) => acc + r.new_size_bytes - r.prev_size_bytes, -totalLegacySizeInBytes);
                         }
 
+                        // insert batch entry with all seen record ids (including unchanged)
                         await insertBatchEntry(trx, {
                             connectionId,
                             model,
@@ -1232,10 +1290,21 @@ export async function deleteOutdatedRecords({
 
 export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
     try {
-        const count = await db(RECORDS_BATCH_TABLE)
-            .whereIn('id', db(RECORDS_BATCH_TABLE).select('id').where('created_at', '<', olderThan).limit(limit))
-            .delete();
-        return Ok(count);
+        const result = await db.raw<{ rowCount: number }>(
+            `WITH expired AS (
+                SELECT ctid
+                FROM ${RECORDS_BATCH_TABLE}
+                WHERE created_at < ?
+                ORDER BY created_at
+                LIMIT ?
+                FOR UPDATE SKIP LOCKED
+            )
+            DELETE FROM ${RECORDS_BATCH_TABLE}
+            USING expired
+            WHERE records_batch.ctid = expired.ctid`,
+            [olderThan, limit]
+        );
+        return Ok(result.rowCount);
     } catch (err) {
         return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
