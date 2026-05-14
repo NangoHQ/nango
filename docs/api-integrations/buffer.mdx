@@ -1,0 +1,92 @@
+---
+title: 'Buffer'
+sidebarTitle: 'Buffer'
+description: 'Connect your application to the Buffer API'
+---
+
+## 🚀 Quickstart
+
+Connect to Buffer with Nango and see data flow in minutes. You'll need to [register your own OAuth app](#-buffer-integration-guides) to get a Client ID and Secret.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to Integrations -> _Configure New Integration_ -> _Buffer_. Follow the [setup guide](/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app) to register an OAuth app and obtain your Client ID and Client Secret, then enter them in the integration settings.
+    </Step>
+    <Step title="Authorize Buffer">
+    Go to Connections -> _Add Test Connection_ -> _Authorize_, then log in to Buffer. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Buffer API">
+    Make your first request to the Buffer API (fetch your organizations). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{"query": "query GetOrganizations {\n  account {\n    organizations {\n      id\n      name\n      ownerEmail\n    }\n  }\n}"}'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: `query GetOrganizations {
+                    account {
+                        organizations {
+                            id
+                            name
+                            ownerEmail
+                        }
+                    }
+                }`
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    ✅ You're connected! Check the Logs tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Buffer integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Buffer OAuth app](/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app)
+  Register an OAuth app with Buffer and obtain credentials to connect it to Nango
+
+Official docs: [Buffer API documentation](https://developers.buffer.com/guides/introduction.html)
+
+## 🧩 Pre-built syncs & actions for Buffer
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/buffer/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

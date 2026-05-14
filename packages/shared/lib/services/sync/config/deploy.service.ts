@@ -2,7 +2,7 @@ import db, { dbNamespace } from '@nangohq/database';
 import { nangoConfigFile } from '@nangohq/nango-yaml';
 import { env, filterJsonSchemaForModels, metrics } from '@nangohq/utils';
 
-import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId, increment } from './config.service.js';
+import { getSyncAndActionConfigByParams, increment } from './config.service.js';
 import { scanCompiledDeployScript } from './deployScriptSecurityScan.js';
 import { NangoError } from '../../../utils/error.js';
 import { resolveLocalFileName } from '../../../utils/utils.js';
@@ -158,7 +158,6 @@ export async function deploy({
 
     try {
         await db.knex.transaction(async (trx) => {
-            // Mark old configs as inactive BEFORE inserting new ones
             if (idsToMarkAsInactive.length > 0) {
                 await trx.from<DBSyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInactive);
             }
@@ -300,7 +299,16 @@ async function compileDeployInfo({
     }
 
     const version = optionalVersion || bumpedVersion || '1';
-    const idsToMarkAsInactive: number[] = [];
+
+    // intentionally not filtered by source so a disabled sync stays disabled when switching sources (e.g. catalog → repo).
+    // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
+    const activeConfigs = await db.knex
+        .from<DBSyncConfig>(TABLE)
+        .where({ environment_id, sync_name: syncName, nango_config_id: config.id as number, type, active: true, deleted: false })
+        .select('id', 'enabled')
+        .orderBy('created_at', 'desc');
+    const idsToMarkAsInactive: number[] = activeConfigs.map((c) => c.id);
+    const lastSyncWasEnabled = activeConfigs[0]?.enabled ?? true;
 
     const jsFile = typeof fileBody === 'string' ? fileBody : fileBody.js;
 
@@ -345,19 +353,6 @@ async function compileDeployInfo({
         throw new NangoError('file_upload_error');
     }
 
-    const oldConfigsAll = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
-    const oldConfigs = oldConfigsAll.filter((c: DBSyncConfig) => c.type === type);
-    let lastSyncWasEnabled = true;
-
-    if (oldConfigs.length > 0) {
-        const ids = oldConfigs.map((oldConfig: DBSyncConfig) => oldConfig.id);
-        idsToMarkAsInactive.push(...ids);
-        const lastConfig = oldConfigs[oldConfigs.length - 1];
-        if (lastConfig) {
-            lastSyncWasEnabled = lastConfig.enabled;
-        }
-    }
-
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
     if (!models_json_schema && aggregatedJsonSchema) {
         // Legacy: jsonSchema for all functions were sent at the root of the body
@@ -376,8 +371,6 @@ async function compileDeployInfo({
             idsToMarkAsInactive,
             syncConfig: {
                 source,
-                pre_built: source === 'catalog',
-                is_public: source === 'catalog',
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,

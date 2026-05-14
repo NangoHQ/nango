@@ -3180,6 +3180,29 @@ builtwith:
             format: uuid
             doc_section: '#step-1-finding-your-api-key'
 
+buffer:
+    display_name: Buffer
+    categories:
+        - marketing
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://auth.buffer.com/auth
+    token_url: https://auth.buffer.com/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.buffer.com
+    docs: https://nango.dev/docs/api-integrations/buffer
+    setup_guide_url: https://nango.dev/docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app
+
 bullhorn:
     display_name: Bullhorn
     categories:
@@ -3444,6 +3467,28 @@ canva:
                 - /rest/v1/users/me
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
+
+canva-mcp:
+    display_name: Canva (MCP)
+    categories:
+        - design
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.canva.com/authorize
+    token_url: https://mcp.canva.com/token
+    registration_url: https://mcp.canva.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.canva.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/canva-mcp
 
 canvas-lms:
     display_name: Canvas LMS
@@ -4833,6 +4878,40 @@ cyberimpact:
             example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...'
             doc_section: '#step-1-creating-a-cyberimpact-api-key'
 
+customer-io:
+    display_name: Customer.io
+    categories:
+        - marketing
+        - analytics
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.customer.io
+    docs: https://nango.dev/docs/api-integrations/customer-io
+    docs_connect: https://nango.dev/docs/api-integrations/customer-io/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The region to where your instance is hosted.
+            pattern: '^cdp(-eu)?$'
+            example: cdp
+            order: 1
+            doc_section: '#step-2-choose-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Customer.io Pipelines API key.
+            pattern: '^[a-f0-9]{20}$'
+            example: 36c7a4***********ab022a3
+            doc_section: '#step-1-getting-authentication-credentials'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 cursor:
     display_name: Cursor
     categories:
@@ -5952,6 +6031,30 @@ ebay-sandbox:
         base_url: https://api.sandbox.ebay.com/
     docs: https://nango.dev/docs/integrations/all/ebay-sandbox
 
+easypost:
+    display_name: EasyPost
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.easypost.com
+    docs: https://nango.dev/docs/api-integrations/easypost
+    docs_connect: https://nango.dev/docs/api-integrations/easypost/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your EasyPost API key.
+            pattern: '^EZ(AK|TK)[a-zA-Z0-9]+$'
+            example: EZTK****************************PCHxBDQG3lpZjneEFUxKmg
+            doc_section: '#step-1-get-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
+
 e-conomic:
     display_name: e-conomic
     categories:
@@ -6531,6 +6634,34 @@ fellow:
             example: ab84bc2056614635866e4a98c153d7a1ab30541032fd433793d402f2a5db2404
             pattern: '^[a-f0-9]{64}$'
             doc_section: '#step-2-generating-your-api-key'
+
+fern:
+    display_name: Fern (Public API)
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            fern_api_key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/fern
+    docs_connect: https://nango.dev/docs/api-integrations/fern/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Fern API key
+            description: Your Fern API key.
+            doc_section: '#step-1-generate-your-fern-api-key'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Docs URL
+            description: The domain of your Fern docs site.
+            example: docs.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-docs-url'
 
 freeagent:
     display_name: FreeAgent
@@ -9172,6 +9303,38 @@ hover:
         base_url: https://api.hover.to
     docs: https://nango.dev/docs/integrations/all/hover
 
+huntress:
+    display_name: Huntress
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.huntress.io
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/organizations
+    docs: https://nango.dev/docs/api-integrations/huntress
+    docs_connect: https://nango.dev/docs/api-integrations/huntress/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Huntress API key.
+            pattern: '^hk_[A-Za-z0-9]+$'
+            example: hk_XXXXXXXXXXXXXXXX
+            doc_section: '#step-1-generate-api-keys'
+        password:
+            type: string
+            title: API Secret
+            description: Your Huntress API secret.
+            secret: true
+            pattern: '^hs_[A-Za-z0-9]+$'
+            example: hs_XXXXXXXXXXXXXXXX
+            doc_section: '#step-1-generate-api-keys'
+
 hubspot:
     display_name: HubSpot
     categories:
@@ -9691,7 +9854,7 @@ jira-data-center:
             type: string
             title: Domain
             description: The domain of your Jira Data Center account
-            pattern: '^[A-Za-z0-9.-]+(?::\d+(?:/[-A-Za-z0-9.]*)*)?$'
+            pattern: '^[a-zA-Z0-9.-]+(:\d+)?(/[a-zA-Z0-9._~-]+)*/?$'
             prefix: https://
             example: foobar.atlassian.net
 
@@ -10236,6 +10399,7 @@ kno-commerce:
     auth_mode: OAUTH2_CC
     token_url: https://app-api.knocommerce.com/api/oauth2/token
     token_request_auth_method: basic
+    body_format: query
     token_params:
         grant_type: client_credentials
     proxy:
@@ -11439,6 +11603,14 @@ microsoft-teams:
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
+
+microsoft-people:
+    display_name: Microsoft People
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-people
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-people/how-to-register-your-own-microsoft-people-api-oauth-app
 
 microsoft-word:
     display_name: Microsoft Word
@@ -14210,6 +14382,27 @@ podium:
             title: API Version
             description: The API version of your Podium account
 
+podscribe:
+    display_name: Podscribe
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://backend.podscribe.ai
+    docs: https://nango.dev/docs/api-integrations/podscribe
+    docs_connect: https://nango.dev/docs/api-integrations/podscribe/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Podscribe account
+            pattern: '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+$'
+            example: xkPqbW**********.*********.*******T8mz
+            doc_section: '#step-1-generating-your-api-key'
+
 posthog:
     display_name: PostHog
     categories:
@@ -15069,6 +15262,27 @@ recruiterflow:
             example: 7b0c0d****************************
             pattern: '^[a-zA-Z0-9_]+$'
 
+render-mcp:
+    display_name: Render (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://mcp.render.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/render-mcp
+    docs_connect: https://nango.dev/docs/api-integrations/render-mcp/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Render API key from Account Settings.
+            doc_section: '#step-1-create-a-render-api-key'
+            example: rnd_****************************
+            pattern: '^rnd_[A-Za-z0-9]+$'
+
 reddit:
     display_name: Reddit
     categories:
@@ -15283,6 +15497,31 @@ retell-ai:
             description: The API key for Retell AI
             example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             doc_section: '#step-1-finding-your-retell-ai-api-key'
+
+revivn:
+    display_name: Revivn
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.revivn.dev/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.revivn.dev
+    docs: https://nango.dev/docs/api-integrations/revivn
+    docs_connect: https://nango.dev/docs/api-integrations/revivn/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Revivn OAuth2 client ID.
+            doc_section: '#step-1-get-your-oauth2-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Revivn OAuth2 client secret.
+            secret: true
+            doc_section: '#step-1-get-your-oauth2-credentials'
 
 ring-central:
     display_name: RingCentral
@@ -16925,6 +17164,33 @@ shipbob-pat:
             pattern: '^[A-F0-9]{64}-\d+$'
             doc_section: '#step-1-generate-your-token'
 
+shippo:
+    display_name: Shippo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.goshippo.com
+        headers:
+            authorization: ShippoToken ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /parcel-templates?page=1&results=1
+    docs: https://nango.dev/docs/api-integrations/shippo
+    docs_connect: https://nango.dev/docs/api-integrations/shippo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Shippo API token (live or test).
+            pattern: '^shippo_(live|test)_[a-f0-9]+$'
+            example: shippo_live_e2848d36****************************
+            doc_section: '#step-1-get-your-api-token'
+
 shipstation:
     display_name: Shipstation (v1)
     categories:
@@ -17154,6 +17420,42 @@ shopify-scim:
             title: SCIM API Token
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
+
+shopware:
+    display_name: Shopware (Admin API)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://${connectionConfig.shopwareUrl}/api/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.shopwareUrl}/api
+    docs: https://nango.dev/docs/api-integrations/shopware
+    docs_connect: https://nango.dev/docs/api-integrations/shopware/connect
+    credentials:
+        client_id:
+            type: string
+            title: Access key ID
+            description: The Access key ID of yout integration.
+            doc_section: '#step-2-create-a-shopware-integration'
+        client_secret:
+            type: string
+            title: Secret access key
+            description: The Secret access key of your integration.
+            secret: true
+            doc_section: '#step-2-create-a-shopware-integration'
+    connection_config:
+        shopwareUrl:
+            type: string
+            title: Shopware URL
+            description: The hostname of your Shopware instance.
+            example: myshop.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-shopware-url'
 
 shopworks:
     display_name: ShopWorks
@@ -17677,6 +17979,34 @@ stackexchange:
     proxy:
         base_url: https://api.stackexchange.com
     docs: https://nango.dev/docs/integrations/all/stackexchange
+
+statamic:
+    display_name: Statamic
+    categories:
+        - cms
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/statamic
+    docs_connect: https://nango.dev/docs/api-integrations/statamic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API token
+            description: The value of STATAMIC_API_AUTH_TOKEN in your Statamic .env file.
+            doc_section: '#step-1-enable-the-rest-api'
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: The hostname of your Statamic site.
+            example: mysite.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-2-find-your-base-url'
 
 statista:
     display_name: Statista
@@ -20063,6 +20393,28 @@ wordpress:
         base_url: https://public-api.wordpress.com/rest/v1
     docs: https://nango.dev/docs/integrations/all/wordpress
 
+wordpress-mcp:
+    display_name: WordPress.com (MCP)
+    categories:
+        - cms
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://public-api.wordpress.com/oauth2-1/authorize
+    token_url: https://public-api.wordpress.com/oauth2-1/token
+    registration_url: https://public-api.wordpress.com/oauth2-1/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://public-api.wordpress.com/wpcom
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/wordpress-mcp
+
 wiseagent:
     display_name: Wiseagent
     categories:
@@ -20790,6 +21142,30 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
+
+zigpoll:
+    display_name: Zigpoll
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://v1.zigpoll.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/zigpoll
+    docs_connect: https://nango.dev/docs/api-integrations/zigpoll/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Zigpoll private API key.
+            format: uuid
+            example: 3f7b2d4e-****-****-****-************
+            doc_section: '#step-1-get-your-api-token'
 
 zoho:
     display_name: Zoho

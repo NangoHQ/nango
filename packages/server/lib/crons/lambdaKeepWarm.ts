@@ -3,17 +3,16 @@ import * as cron from 'node-cron';
 
 import db from '@nangohq/database';
 import { getLocking } from '@nangohq/kvstore';
-import { pubsub } from '@nangohq/shared';
+import { lambdaKeepWarmProvisionedConcurrencyMultiplier, pubsub } from '@nangohq/shared';
 import { getLogger, metrics, report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
-import type { DBEnvironment } from '@nangohq/types';
+import type { DBEnvironment, DBPlan } from '@nangohq/types';
 
 const logger = getLogger('cron.lambdaKeepWarm');
 
-const lambdaKeepWarmAccountAgeMs = envs.LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS;
 const cronMinutes = envs.CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES;
 
 export function lambdaKeepWarmCron(): void {
@@ -62,15 +61,22 @@ export async function exec(): Promise<void> {
                 return;
             }
 
-            const since = new Date(Date.now() - lambdaKeepWarmAccountAgeMs);
-
             const rows = await db.readOnly
-                .select<{ account_id: number; id: number }[]>('_nango_environments.account_id', '_nango_environments.id')
+                .select<{ account_id: number; id: number; plan_name: DBPlan['name']; is_production: DBEnvironment['is_production'] }[]>(
+                    '_nango_environments.account_id',
+                    '_nango_environments.id',
+                    'plans.name as plan_name',
+                    '_nango_environments.is_production'
+                )
                 .from<DBEnvironment>('_nango_environments')
                 .join('plans', 'plans.account_id', '_nango_environments.account_id')
                 .where('_nango_environments.deleted', false)
-                .where('_nango_environments.created_at', '>=', since)
-                .where('plans.lambda_tenant_isolation', true);
+                .where('plans.lambda_tenant_isolation', true)
+                .where((b) => {
+                    b.whereNot('plans.name', 'free').orWhere((b2) => {
+                        b2.where('plans.name', 'free').where('plans.trial_end_at', '>', db.readOnly.fn.now());
+                    });
+                });
 
             for (const row of rows) {
                 const res = await pubsub.publisher.publish({
@@ -79,7 +85,7 @@ export async function exec(): Promise<void> {
                     payload: {
                         accountId: row.account_id,
                         environmentId: row.id,
-                        provisionedConcurrency: 1
+                        provisionedConcurrency: lambdaKeepWarmProvisionedConcurrencyMultiplier(row.plan_name, row.is_production)
                     }
                 });
                 if (res.isErr()) {
