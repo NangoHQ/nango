@@ -14314,7 +14314,7 @@ podscribe:
     proxy:
         headers:
             authorization: Bearer ${apiKey}
-        base_url: https://backend.podscribe.ai/api/public
+        base_url: https://backend.podscribe.ai
     docs: https://nango.dev/docs/api-integrations/podscribe
     docs_connect: https://nango.dev/docs/api-integrations/podscribe/connect
     credentials:
