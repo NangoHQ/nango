@@ -17030,7 +17030,7 @@ shippo:
         headers:
             authorization: ShippoToken ${apiKey}
         retry:
-            after:
+            at:
                 - 'x-ratelimit-reset'
         verification:
             method: GET
@@ -17043,7 +17043,7 @@ shippo:
             type: string
             title: API Token
             description: Your Shippo API token (live or test).
-            pattern: '^shippo_(live|test)_[a-f0-9]+'
+            pattern: '^shippo_(live|test)_[a-f0-9]+$'
             example: shippo_live_e2848d36****************************
             doc_section: '#step-1-get-your-api-token'
 
