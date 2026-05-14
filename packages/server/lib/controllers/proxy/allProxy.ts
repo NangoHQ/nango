@@ -58,6 +58,14 @@ const schemaHeaders = z.object({
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
 
+// Headers from provider responses that Nango needs to explicitly forwards to the client.
+const PROXY_RESPONSE_HEADER_ALLOWLIST = [
+    'content-type',
+    'mcp-session-id', // MCP RFC — https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management
+    'x-request-id',
+    'x-correlation-id'
+];
+
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
@@ -347,7 +355,6 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
 }
 
 export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
-    const contentType = responseStream.headers['content-type'] || '';
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
     const contentEncoding = responseStream.headers['content-encoding'] || '';
@@ -387,8 +394,11 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        if (typeof contentType === 'string' && contentType !== '') {
-            res.setHeader('Content-Type', contentType);
+        for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
+            const value = responseStream.headers[header];
+            if (typeof value === 'string' && value !== '') {
+                res.setHeader(header, value);
+            }
         }
 
         try {

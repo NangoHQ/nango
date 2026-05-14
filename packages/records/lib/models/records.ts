@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -67,12 +67,50 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
     });
 }
 
+export async function ensureSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
+    try {
+        const day = dayjs(date).utc().startOf('day');
+        const next = day.add(1, 'day');
+        const suffix = day.format('YYYYMMDD');
+        await db.raw(
+            `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+        );
+        return Ok(undefined);
+    } catch (err) {
+        return Err(new Error('Failed to ensure seen partition', { cause: err }));
+    }
+}
+
+export async function dropSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
+    const suffix = dayjs(date).utc().startOf('day').format('YYYYMMDD');
+    try {
+        return await db.transaction(async (trx) => {
+            // advisory lock scoped to this partition date — concurrent instances skip instead of racing
+            const lockKey = stringToHash(`records_seen_drop:${suffix}`);
+            const { rows } = await trx.raw<{ rows: { lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?) as lock`, [lockKey]);
+            if (!rows?.[0]?.lock) {
+                return Ok(undefined);
+            }
+            await trx.raw(`DROP TABLE IF EXISTS "records_seen_${suffix}"`);
+            return Ok(undefined);
+        });
+    } catch (err) {
+        return Err(new Error('Failed to drop seen partition', { cause: err }));
+    }
+}
+
 async function insertBatchEntry(
     trx: Knex.Transaction,
     { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
 ): Promise<void> {
     if (recordIds.length === 0) return;
     await trx(RECORDS_BATCH_TABLE).insert({
+        connection_id: connectionId,
+        model,
+        sync_job_id: syncJobId,
+        record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
+    });
+    await trx(RECORDS_SEEN_TABLE).insert({
         connection_id: connectionId,
         model,
         sync_job_id: syncJobId,
@@ -105,6 +143,7 @@ export async function getRecords({
         ...(activeSpan ? { childOf: activeSpan } : {}),
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
+    const results: ReturnedRecord[] = [];
     try {
         if (!model) {
             const error = new Error('missing_model');
@@ -233,27 +272,30 @@ export async function getRecords({
             }
         }
 
-        const results: ReturnedRecord[] = [];
-
-        // TODO: decrypt in batch
-        for (const item of recordsMetadata) {
-            const data = dataById.get(item.id) ?? item.json ?? {};
-            // Drop the only remaining reference to the encrypted blob so V8 can
-            // reclaim it when GC fires under heap pressure.
-            dataById.delete(item.id);
-            const decryptedData = await decryptRecordData({ ...item, json: data });
-            results.push({
-                ...decryptedData,
-                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                _nango_metadata: {
-                    first_seen_at: item.first_seen_at,
-                    last_modified_at: item.last_modified_at,
-                    last_action: item.last_action,
-                    deleted_at: item.deleted_at,
-                    pruned_at: item.pruned_at,
-                    cursor: Cursor.new(item)
-                }
-            });
+        const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+        try {
+            // TODO: decrypt in batch
+            for (const item of recordsMetadata) {
+                const data = dataById.get(item.id) ?? item.json ?? {};
+                // Drop the only remaining reference to the encrypted blob so V8 can
+                // reclaim it when GC fires under heap pressure.
+                dataById.delete(item.id);
+                const decryptedData = await decryptRecordData({ ...item, json: data });
+                results.push({
+                    ...decryptedData,
+                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                    _nango_metadata: {
+                        first_seen_at: item.first_seen_at,
+                        last_modified_at: item.last_modified_at,
+                        last_action: item.last_action,
+                        deleted_at: item.deleted_at,
+                        pruned_at: item.pruned_at,
+                        cursor: Cursor.new(item)
+                    }
+                });
+            }
+        } finally {
+            decryptSpan.finish();
         }
 
         // all records for the same connection/model are in the same partition
@@ -279,6 +321,7 @@ export async function getRecords({
         span.setTag('error', e);
         return Err(e);
     } finally {
+        span.setTag('records.count', results.length);
         span.finish();
     }
 }

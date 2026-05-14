@@ -975,6 +975,7 @@
               "integrations/all/blandai",
               "api-integrations/bing-webmasters",
               "api-integrations/bird",
+              "api-integrations/buffer",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/box",
