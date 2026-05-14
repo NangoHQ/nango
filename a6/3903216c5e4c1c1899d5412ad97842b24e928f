@@ -1,0 +1,45 @@
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_66dbd92b40eb8c::t_2ba452d334f0de 15
+packages/server/lib/controllers/functions/dryrun/postDryrun.unit.test.ts
+  s_66dbd92b40eb8c::t_c6f6ec59d769d3 2-9,16-17,20-31,33-40,45-72,74-76,91-120,127-129
+  s_66dbd92b40eb8c::t_cfdb60aed36aba 32,121
+  s_66dbd92b40eb8c::t_183cd03c13c9d8 1,10-15,18-19,41-44,73,77-90,122-126
+packages/server/lib/crons/deleteOldData.ts
+  s_66dbd92b40eb8c::t_bd964a0ac10ddc 10,41,118-123
+packages/server/lib/controllers/v1/environment/apiKeys.integration.test.ts
+  s_66dbd92b40eb8c::t_b2c2b612d5010c 4,49-71,73
+  s_66dbd92b40eb8c::t_c8b15c7bf1a83e 72
+packages/shared/lib/services/account.service.integration.test.ts
+  s_66dbd92b40eb8c::t_9bb32905c615a7 175,187,189,191-197
+packages/shared/lib/services/customerKey.service.integration.test.ts
+  ai_agent 59-62
+  s_66dbd92b40eb8c::t_9de54716962e91 1-58,63-80
+packages/shared/lib/services/customerKey.service.ts
+  s_66dbd92b40eb8c::t_5a683b7b5d9439 401-418
+packages/utils/lib/environment/parse.ts
+  s_66dbd92b40eb8c::t_30ed5eb22b18d1 73
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_66dbd92b40eb8c::t_d27b13ff53e2d6 15
+packages/server/lib/services/remote-function/api-key-scopes.unit.test.ts
+  s_66dbd92b40eb8c::t_52dc92eccd9cdf 34-42
+packages/server/lib/controllers/functions/deploy/postDeploy.unit.test.ts
+  s_66dbd92b40eb8c::t_1c2a2d926b34c5 1,11-16,19-20,43-46,75,80-91,122-125
+  s_66dbd92b40eb8c::t_c98e06147f4c17 33,121
+  s_66dbd92b40eb8c::t_54f79bd308aa5f 2-10,17-18,21-32,34-42,47-74,76-79,92-120,126-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "a63903216c5e4c1c1899d5412ad97842b24e928f",
+  "prompts": {},
+  "sessions": {
+    "s_66dbd92b40eb8c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e26be-6365-7702-8506-798443f80ac2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
