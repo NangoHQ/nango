@@ -3445,6 +3445,28 @@ canva:
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
 
+canva-mcp:
+    display_name: Canva (MCP)
+    categories:
+        - design
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.canva.com/authorize
+    token_url: https://mcp.canva.com/token
+    registration_url: https://mcp.canva.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.canva.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/canva-mcp
+
 canvas-lms:
     display_name: Canvas LMS
     categories:
