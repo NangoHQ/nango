@@ -1545,7 +1545,7 @@ export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: num
 /*
  * autoDeletingCandidate
  * @desc finds a candidate connection/model for auto-deleting
- * by randomly selecting a connection/model that have NOT seen its count updated in the past staleAfterMs milliseconds.
+ * by selecting the least-recently-checked connection/model whose count has not been updated in the past staleAfterMs milliseconds.
  * @param staleAfterMs - milliseconds since last modification to consider a connection as potentially stale
  * @returns a Result containing either:
  * - candidate connection, model and environmentId
@@ -1560,11 +1560,25 @@ export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: nu
 > {
     try {
         const [candidate] = await db
-            .from(RECORD_COUNTS_TABLE)
-            .select<RecordCount[]>('*')
-            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
-            .orderByRaw('RANDOM()')
-            .limit(1);
+            .raw<{ rows: { connection_id: number; model: string; environment_id: number }[] }>(
+                `WITH candidate AS (
+                SELECT connection_id, model, environment_id
+                FROM ${RECORD_COUNTS_TABLE}
+                WHERE updated_at < NOW() - ? * INTERVAL '1 millisecond'
+                ORDER BY autodelete_checked_at ASC NULLS FIRST, connection_id ASC
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            )
+            UPDATE ${RECORD_COUNTS_TABLE} rc
+            SET autodelete_checked_at = NOW()
+            FROM candidate
+            WHERE rc.connection_id = candidate.connection_id
+              AND rc.model = candidate.model
+              AND rc.environment_id = candidate.environment_id
+            RETURNING rc.connection_id, rc.model, rc.environment_id`,
+                [staleAfterMs]
+            )
+            .then((r) => r.rows);
 
         if (candidate) {
             return Ok({

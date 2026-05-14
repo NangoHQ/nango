@@ -81,6 +81,7 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
+    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -282,6 +283,9 @@ export const ENVS = z.object({
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
+    BILLING_EVENTS_S3_BUCKET: z.string().optional(),
+    BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
+    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
