@@ -1,0 +1,56 @@
+packages/server/lib/services/remote-function/api-key-scopes.unit.test.ts
+  s_2330e21e693fd2::t_180b7c5238ac68 25
+  s_2330e21e693fd2::t_edee400c333821 26,28
+  s_2330e21e693fd2::t_b8e4057785ef73 1-24,27,29-34
+packages/shared/lib/services/account.service.ts
+  s_2330e21e693fd2::t_d6d748331dd9a1 399
+packages/utils/lib/api-key-scopes.ts
+  s_2330e21e693fd2::t_898b28300d3357 28-29
+packages/server/lib/routes.public.ts
+  s_2330e21e693fd2::t_460cfffe347874 283-284
+packages/database/lib/migrations/20260514120000_customer_keys_system_managed_expiry.cjs
+  s_2330e21e693fd2::t_b7a337a0005c4c 1-29
+packages/shared/lib/services/account.service.integration.test.ts
+  s_2330e21e693fd2::t_37ff9493662c9f 159-194
+packages/shared/lib/services/customerKey.service.ts
+  s_2330e21e693fd2::t_736a43b94535fa 24-81,108,122,130-133,135,139-171
+  s_2330e21e693fd2::t_492e671d33e9dc 206-208,239,293,305,330,354-380
+packages/webapp/src/pages/Environment/Settings/scope-logic.unit.test.ts
+  s_2330e21e693fd2::t_21865d516b5fa9 47
+packages/types/lib/api-keys/scopes.ts
+  s_2330e21e693fd2::t_ff835679311d8a 26-27
+packages/server/lib/services/remote-function/api-key-scopes.ts
+  s_2330e21e693fd2::t_c446cb9b57ceb1 1-11,13-14,16-21,23
+  s_2330e21e693fd2::t_b48a43ab710604 12,15,22
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_2330e21e693fd2::t_c46cefd8017137 1,24
+  s_2330e21e693fd2::t_10071b510c51b6 81-129
+  s_2330e21e693fd2::t_ce5878555dd69e 6,20-23,25-28
+  s_2330e21e693fd2::t_ef5cc4162f231d 2
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_2330e21e693fd2::t_95a2b3f55c1007 2,5,9,31,56-60,62-64,75,90-91
+  s_2330e21e693fd2::t_90b00ac8bc5dfc 15-16,61
+packages/types/lib/environment/db.ts
+  s_2330e21e693fd2::t_392bfd68e0a6b1 96-97
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_2330e21e693fd2::t_b56ae51efd65eb 2,5,9,31,43-47,49-51,65,86-87
+  s_2330e21e693fd2::t_a85e7babf49729 15-16,48
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_2330e21e693fd2::t_47803cc3e52523 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "58f9871d9a3964724c9a9aa1a904804698ad7fbc",
+  "prompts": {},
+  "sessions": {
+    "s_2330e21e693fd2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df3dd-11f3-7340-81cd-b2983492f4d1",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
