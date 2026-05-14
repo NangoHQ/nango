@@ -1,295 +1,114 @@
 ---
-title: 'How to set up a Microsoft Teams multitenant OAuth app'
+title: 'Set up a Microsoft Teams multitenant OAuth app'
 sidebarTitle: 'Microsoft Teams Multitenant Setup'
-description: 'A practical guide to publishing a Microsoft Teams OAuth app accessible from any tenant'
+description: 'Publish a Microsoft Teams OAuth app accessible from any tenant'
 ---
 
-This guide covers publishing a Microsoft Teams OAuth app that users from **any** Microsoft 365 tenant can authorise. It fills the gaps left by official Microsoft documentation, based on real experience going through the process.
-
-## Do I need this guide?
-
-Follow this guide if:
-
-- You are building a SaaS product that integrates with Microsoft Teams
-- You want users from external organisations to authorise your app via OAuth
-- You are calling Microsoft Graph API endpoints on behalf of users from other tenants
-
-If you only need to access your **own** tenant's Teams data, use a single-tenant app and follow the [standard setup guide](/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app) instead.
-
-## Overview
-
-There are four tracks to complete — they are partially sequential, so do not skip ahead:
-
-1. **Microsoft Partner Center enrollment + legal verification** — establishes your identity as a publisher
-2. **Azure app registration + publisher domain verification** — links your domain and MPN ID to your app
-3. **Microsoft 365 licensing** — required before Teams API endpoints will respond
-4. **Publisher verification in Entra** — shows a verified badge on your OAuth consent screen
+This guide covers everything required to publish a multitenant Microsoft Teams OAuth app — one that users from any Microsoft 365 organisation can authorise. The process goes beyond a standard app registration: you also need publisher domain verification, a Microsoft Partner Center account, and an active Microsoft 365 license.
 
 <Steps>
-  <Step id="register-app-entra" title="Register your app in Microsoft Entra">
-    1. Go to [entra.microsoft.com](https://entra.microsoft.com) and sign in as a Global Administrator.
-    2. Navigate to **App registrations → New registration**.
-    3. Fill in:
-       - **Name**: your app name
-       - **Supported account types**: select **Accounts in any organizational directory (Any Microsoft Entra ID tenant — Multitenant)**
-       - **Redirect URI**: `https://api.nango.dev/oauth/callback`
-    4. Click **Register**.
-    5. From the Overview page, note your **Application (client) ID** and **Directory (tenant) ID**.
-    6. Go to **Certificates & secrets**, create a **Client secret**, and copy the value immediately — it won't be shown again.
-    7. Go to **API permissions** and add the Microsoft Graph permissions your app needs (e.g. `Team.ReadBasic.All`, `Channel.ReadBasic.All`).
-
-    <Warning>
-      Supported account types must be set to **Multitenant**. A single-tenant app will only work for users in your own organisation.
-    </Warning>
-
-    <Accordion title="For agents">
-      Register the app via the Azure CLI:
-
-      ```bash
-      az ad app create \
-        --display-name "Your App Name" \
-        --sign-in-audience AzureADMultipleOrgs \
-        --web-redirect-uris "https://api.nango.dev/oauth/callback"
-      ```
-
-      Add Microsoft Graph permissions (replace `<APP-ID>` and `<PERMISSION-ID>`):
-
-      ```bash
-      az ad app permission add \
-        --id <APP-ID> \
-        --api 00000003-0000-0000-c000-000000000000 \
-        --api-permissions <PERMISSION-ID>=Scope
-      ```
-
-      Create a client secret:
-
-      ```bash
-      az ad app credential reset --id <APP-ID> --append
-      ```
-
-      See [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference) for permission IDs.
-    </Accordion>
+  <Step title="Register a multitenant app in Microsoft Entra">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as a Global Administrator.
+    2. In the left nav, select **Applications → App registrations**, then click **New registration**.
+    3. Fill in the registration form:
+       - **Name**: enter a name for your app.
+       - **Supported account types**: select **Accounts in any organizational directory (Any Microsoft Entra ID tenant — Multitenant)**.
+       - **Redirect URI**: select **Web** from the platform dropdown and enter your OAuth callback URL.
+    4. Click **Register**. You will land on the app's Overview page — copy the **Application (client) ID** and keep it safe.
+    5. In the left sidebar, select **Certificates & secrets**. Under **Client secrets**, click **New client secret**, enter a description, select an expiry period, and click **Add**. Copy the **Value** immediately — it is only shown once.
+    6. In the left sidebar, select **API permissions → Add a permission → Microsoft Graph → Delegated permissions**. Search for and add the permissions your app needs, then click **Add permissions**.
   </Step>
 
-  <Step id="set-up-publisher-domain" title="Set up your publisher domain">
-    Microsoft requires a verified custom domain as your publisher domain. `onmicrosoft.com` domains are **not accepted** for multitenant apps.
+  <Step title="Verify your publisher domain">
+    Microsoft requires a verified custom domain as your publisher domain. `onmicrosoft.com` domains are not accepted for multitenant apps.
 
-    **Verify your domain on the Entra tenant**
+    **Add a custom domain to your Entra tenant**
 
-    1. Go to [entra.microsoft.com](https://entra.microsoft.com) → **Settings → Domain names → Add custom domain**.
-    2. Enter your domain (e.g. `yourdomain.com`).
-    3. Add the TXT record Microsoft provides to your DNS registrar:
-       - Host: `@`
-       - Value: `MS=msXXXXXXXX` (unique to your tenant)
-       - TTL: `3600`
-    4. Wait for DNS propagation — verify at [dnschecker.org](https://dnschecker.org) using record type **TXT**.
+    1. In the [Microsoft Entra admin center](https://entra.microsoft.com), click the **Settings** (gear) icon in the top right, then select **Domain names** from the panel that opens. Alternatively, search for **Domain names** in the top search bar.
+    2. Click **Add custom domain** and enter your domain (e.g. `yourdomain.com`).
+    3. Microsoft will display a TXT record to add at your DNS registrar:
+       - **Type**: TXT
+       - **Host / Name**: `@`
+       - **Value**: the `MS=ms…` string shown
+       - **TTL**: `3600`
+    4. Add the record at your registrar, wait for propagation, then return to Entra and click **Verify**. The domain status should change to **Verified**.
 
     **Host the identity association file**
 
-    This file links your verified domain to your specific app registration.
-
-    1. Create `microsoft-identity-association.json`:
+    1. Create a file named `microsoft-identity-association.json` with your app's client ID:
 
        ```json
        {
          "associatedApplications": [
-           {
-             "applicationId": "YOUR-APP-CLIENT-ID-HERE"
-           }
+           { "applicationId": "YOUR-APP-CLIENT-ID" }
          ]
        }
        ```
 
-    2. Host it publicly at:
+    2. Host it publicly at exactly this path on your verified domain:
 
        ```
        https://yourdomain.com/.well-known/microsoft-identity-association.json
        ```
 
-       How you host it depends on your stack:
-       - **Next.js / React**: place the file in `public/.well-known/microsoft-identity-association.json`
-       - **Nginx / Apache**: place it at the equivalent path in your web root
-       - **CDN / S3**: upload with public read access
+       It must be served with `Content-Type: application/json`. Open the URL in a browser to confirm.
 
-       The file must be served with `Content-Type: application/json`. Test it by opening the URL in a browser.
+    **Link the domain to your app**
 
-    3. Back in Entra → your app registration → **Branding & properties** → click **Verify and save domain**.
-
-    <Warning>
-      Do not proceed to Step 4 until the domain is verified and saved. Publisher verification will fail without it.
-    </Warning>
+    1. Go to **App registrations**, select your app, then click **Branding & properties** in the left sidebar.
+    2. Under **Publisher domain**, you should see your verified domain listed. Select it.
+    3. Click **Verify and save**. The domain field will update to show the verified domain.
   </Step>
 
-  <Step id="partner-center-enrollment" title="Enrol in Microsoft Partner Center and complete legal verification">
-    **Create a Partner Center account**
-
+  <Step title="Enrol in Microsoft Partner Center">
     1. Go to [partner.microsoft.com](https://partner.microsoft.com) and sign in with your Microsoft work account.
-    2. If not yet enrolled, go to the [Partner Program enrollment page](https://partner.microsoft.com/en-us/dashboard/account/v3/enrollment/introduction/partnership).
-    3. Complete enrollment — the base tier is **free**.
-
-    <Warning>
-      Enrollment requires a **credit card** (even for the free tier) and a **DUNS number** — a Dun & Bradstreet identifier that verifies your organisation's existence. If you don't have a DUNS number, your company registration number can be used instead.
-    </Warning>
-
-    **Complete legal business profile verification**
-
-    After enrolling, Microsoft runs a vetting process. This is a hard blocker — you cannot complete publisher verification until it is done.
-
-    The verification has five stages:
-
-    1. Verification started
-    2. Email verification
-    3. **Identity verification** ← requires active action from you
-    4. Employment verification
-    5. Business verification
-
-    Identity verification is where most people get stuck. Microsoft displays a banner in Partner Center asking you to click **Resolve**. If you miss this, nothing progresses.
-
-    To complete it:
-
-    1. Go to [Account settings → Legal info → Verification summary](https://partner.microsoft.com/dashboard/v2/account-settings/organization/legalinfo/vetting/partner).
-    2. If you see a banner saying "Complete your identity verification", click **Resolve**.
-    3. Follow the guide to present [Verifiable Credentials](https://learn.microsoft.com/en-us/partner-center/enroll/get-verifiable-credentials) from a trusted ID verification vendor.
-
-    Once all stages are complete, your Legal Business Profile status will show **Authorized**. Only then can you proceed.
-
-    **Find your Partner ID (MPN ID)**
-
-    Go to **Account settings → Organization profile → Identifiers**.
-
-    | ID type | Description | Use for publisher verification? |
-    | --- | --- | --- |
-    | PartnerGlobal | Master organisation ID | Try this first |
-    | PartnerLocation | Location/subsidiary ID | Try if PartnerGlobal fails |
-
-    <Note>
-      Microsoft's documentation says to use PartnerLocation, but in practice PartnerGlobal has been accepted by Entra. Try whichever works — the verified badge appearing is what matters.
-    </Note>
+    2. Enrol in the [Partner Program](https://partner.microsoft.com/en-us/dashboard/account/v3/enrollment/introduction/partnership). The base tier is free but requires a **credit card** and a **DUNS number** (or company registration number if you don't have a DUNS).
+    3. After enrolling, Microsoft runs a legal business profile vetting process. Go to **Account settings → Legal info** and check the **Vetting** tab for your current verification status. The process has five stages — the one that requires your action is **Identity Verification**.
+    4. If you see a banner on the Partner Center home page or in Legal info saying "Complete your identity verification", click **Resolve** and follow the steps to submit identity credentials via a Microsoft-approved verification vendor. Missing this banner is where most people get stuck.
+    5. Wait until the Vetting status shows **Authorized** before proceeding. This typically takes 1–3 business days.
+    6. Once authorized, go to **Account settings → Organization profile → Identifiers** and copy your **Partner ID**. You will see two types — try **PartnerGlobal** first; use **PartnerLocation** if that fails in the next step.
   </Step>
 
-  <Step id="publisher-verification-entra" title="Complete publisher verification in Entra">
-    With your domain verified and Partner Center account authorized, you can now link them to your app.
+  <Step title="Complete publisher verification in Entra">
+    1. Go to **App registrations** in the [Microsoft Entra admin center](https://entra.microsoft.com) and select your app.
+    2. In the left sidebar, click **Branding & properties**.
+    3. Confirm the **Publisher domain** field shows your custom domain, not `onmicrosoft.com`.
+    4. Scroll down to the **Publisher verification** section and click **Add MPN ID to verify this publisher**.
+    5. In the panel that opens, enter your Partner ID in the **MPN ID** field and set the **Publisher display name** — this is the name users will see on the OAuth consent screen.
+    6. Click **Save**.
 
-    1. Go to [entra.microsoft.com](https://entra.microsoft.com) → **App registrations** → select your app.
-    2. Click **Branding & properties** in the left sidebar.
-    3. Confirm **Publisher domain** is set to your custom domain (not `onmicrosoft.com`).
-    4. Scroll to **Publisher verification**.
-    5. Click **Add MPN ID to verify this publisher**.
-    6. Enter your Partner ID (PartnerGlobal or PartnerLocation).
-    7. Set the **Publisher display name** — this is the name users will see on the consent screen.
-    8. Click **Save**.
-
-    If successful, a blue verified badge will appear next to your publisher display name on the OAuth consent screen.
-
-    **Common failure reasons:**
-
-    - Legal Business Profile not yet showing **Authorized** in Partner Center
-    - Publisher domain still set to `onmicrosoft.com`
-    - The account signed into Entra is not associated with the Partner Center account
-    - Using the wrong Partner ID type (try the other one)
+    When successful, a blue verified badge appears next to the publisher name on the OAuth consent screen.
   </Step>
 
-  <Step id="m365-license" title="Get a Microsoft 365 license with Teams">
-    This step is required before your tenant can call any Teams API endpoints. Without it, all requests to Teams-related Microsoft Graph endpoints return:
+  <Step title="Activate Microsoft 365 with Teams">
+    Teams API endpoints will error until your tenant has an active Microsoft 365 subscription that includes Teams.
 
-    > "Microsoft Teams hasn't been provisioned on the tenant. Ensure the tenant has a valid Office365 subscription."
-
-    This error has nothing to do with your app registration — Teams simply isn't activated on your tenant.
-
-    1. Go to [admin.microsoft.com](https://admin.microsoft.com) → **Billing → Purchase services**.
-    2. Search for **Microsoft 365 Business Standard** (~$13/user/month). A 30-day free trial with 25 licenses is available.
-    3. After subscribing, assign a license to your admin user account.
+    1. Go to [admin.microsoft.com](https://admin.microsoft.com). In the left nav, select **Billing → Purchase services**.
+    2. Search for **Microsoft 365 Business Standard** and subscribe. A 30-day free trial with 25 licenses is available at no upfront cost.
+    3. Once subscribed, go to **Users → Active users**, select your admin account, open the **Licenses and apps** tab, check **Microsoft 365 Business Standard**, and click **Save changes**.
     4. Teams will be provisioned on the tenant within a few minutes.
 
     <Warning>
-      The **Microsoft 365 Developer Program** will not work for commercial accounts. Signing up at [developer.microsoft.com](https://developer.microsoft.com) with a work/school account gives error code **41101**. The Developer Program only works with personal Microsoft accounts. Use the trial license instead — it is effectively free for 30 days.
-    </Warning>
-
-    <Warning>
-      The license must be on the **same tenant** as your app registration, not a separate tenant.
+      The Microsoft 365 Developer Program does not work for commercial work/school accounts — you will get error code 41101. Use the trial license instead.
     </Warning>
   </Step>
 
-  <Step id="test-oauth-flow" title="Test your OAuth flow">
-    With all the above complete, test the end-to-end OAuth flow.
-
-    1. Trigger the OAuth flow from your app using the standard Microsoft OAuth 2.0 endpoint:
+  <Step title="Test your OAuth flow">
+    1. Trigger the OAuth flow using `/common/` in the authorization URL — not your tenant ID:
 
        ```
        https://login.microsoftonline.com/common/oauth2/v2.0/authorize
        ```
 
-       Use `/common/` (not your tenant ID) for multitenant flows.
-
-    2. The consent screen should show:
-       - Your app name
-       - Your publisher domain
-       - The verified badge next to your publisher display name
-       - The permissions your app is requesting
-
-    3. Sign in as a user from a **different** tenant to verify cross-tenant access works.
-    4. After authorisation, call a Teams Graph API endpoint to confirm it responds correctly.
-  </Step>
-
-  <Step id="distribute-to-other-tenants" title="Distribute to other tenants">
-    For users from other organisations to use your app:
-
-    - No action is needed from you for the OAuth flow itself — any user from any tenant can now authorise your app because it is registered as multitenant with a verified publisher.
-    - However, some organisations require their **tenant admin to pre-approve** the app before individual users can consent.
-    - For Teams app distribution (tabs, bots, etc.), package a Teams app manifest via the [Teams Developer Portal](https://dev.teams.microsoft.com) and optionally submit to the [Microsoft Teams App Store](https://appsource.microsoft.com).
+    2. The consent screen should show your app name, publisher domain, and the verified badge.
+    3. Sign in as a user from a **different** tenant to confirm cross-tenant access works.
   </Step>
 </Steps>
 
-## Checklist
+<Note>
+  Some organisations require tenant admin pre-approval before individual users can consent to your app. For Teams app distribution (tabs, bots, etc.), package a manifest via the [Teams Developer Portal](https://dev.teams.microsoft.com).
+</Note>
 
-- [ ] App registered in Microsoft Entra ID with **Multitenant** account type
-- [ ] Redirect URIs configured
-- [ ] API permissions added
-- [ ] Client secret created
-- [ ] Custom domain DNS-verified on Entra tenant (TXT record added)
-- [ ] `microsoft-identity-association.json` hosted at `yourdomain.com/.well-known/`
-- [ ] Publisher domain set and verified in Entra app (Branding & properties)
-- [ ] DUNS number obtained for your organisation
-- [ ] Enrolled in Microsoft AI Cloud Partner Program (credit card + DUNS required)
-- [ ] Identity verification completed in Partner Center (click Resolve on the banner)
-- [ ] Legal Business Profile status: **Authorized**
-- [ ] Partner ID / MPN ID obtained
-- [ ] Publisher verification completed in Entra (verified badge visible)
-- [ ] Microsoft 365 license purchased/activated and assigned to admin user
-- [ ] Teams API endpoints responding correctly
-- [ ] OAuth flow tested from an external tenant
-
-## Estimated timeline
-
-| Step | Time |
-| --- | --- |
-| App registration & domain setup | 1–2 hours |
-| DUNS number registration (if needed) | 2–5 business days |
-| Partner Center enrollment | 1–2 hours (after DUNS) |
-| Legal Business Profile verification | 1–3 business days |
-| Publisher verification in Entra | Minutes (once legal is Authorized) |
-| M365 license activation | Minutes |
-| **Total** | **3–7 business days** (mostly waiting on Microsoft) |
-
-## Common errors
-
-| Error | Cause | Fix |
-| --- | --- | --- |
-| "End users cannot grant consent to newly registered multitenant apps without verified publishers" | Publisher verification not complete | Complete steps 3 and 4 |
-| "The MPN ID you provided does not exist" | Legal Business Profile not yet Authorized, or wrong account signed in | Wait for Authorized status; try both PartnerGlobal and PartnerLocation IDs |
-| "`onmicrosoft.com` publisher domains are not allowed" | Publisher domain not set to custom domain | Complete step 2 |
-| "Microsoft Teams hasn't been provisioned on the tenant" | No M365 license with Teams on the tenant | Complete step 5 |
-| Partner Center sign-in error code 41101 | Commercial account trying to use the Developer Program | Purchase an M365 license instead |
-| Publisher domain verify button greyed out | Identity association file not reachable or domain not DNS-verified | Check the file is accessible at the `.well-known` URL and the DNS TXT record has propagated |
-
-## References
-
-- [Publisher verification – Microsoft Learn](https://go.microsoft.com/fwlink/?linkid=2121525&clcid=0x9)
-- [Get verifiable credentials – Partner Center](https://learn.microsoft.com/en-us/partner-center/enroll/get-verifiable-credentials)
-- [Legal Business Profile vetting](https://partner.microsoft.com/dashboard/v2/account-settings/organization/legalinfo/vetting/partner)
-- [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference)
-- [Microsoft OAuth 2.0 for multitenant apps](https://learn.microsoft.com/en-us/entra/identity-platform/howto-convert-app-to-be-multi-tenant)
-- [Teams Developer Portal](https://dev.teams.microsoft.com)
-- [Get a DUNS number](https://www.dnb.com/duns-number/get-a-duns.html)
+For more details, see [Microsoft OAuth 2.0 for multitenant apps](https://learn.microsoft.com/en-us/entra/identity-platform/howto-convert-app-to-be-multi-tenant).
 
 ---
