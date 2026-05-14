@@ -1,15 +1,18 @@
 import db from '@nangohq/database';
-import { connectionService, secretService } from '@nangohq/shared';
+import { connectionService, customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { buildDryrunSandboxScopes } from '../../../services/remote-function/api-key-scopes.js';
 import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDryrun } from '../../../services/remote-function/dryrun-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
+import { getRemoteFunctionNangoHost, remoteFunctionDryrunSandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDryrunBodySchema } from '../validation.js';
 
 import type { PostRemoteFunctionDryrun } from '@nangohq/types';
+
+const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -25,7 +28,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
     }
 
     const body = valBody.data;
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
 
     const connectionResult = await connectionService.getConnection(body.connection_id, body.integration_id, environment.id);
     if (!connectionResult.success || !connectionResult.response) {
@@ -37,9 +40,15 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         return;
     }
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        sendStepError({ res, status: 500, error: defaultSecret.error });
+    const sandboxApiKey = await customerKeyService.createEphemeralApiKey(db.knex, {
+        accountId: account.id,
+        environmentId: environment.id,
+        displayName: 'Remote function dryrun',
+        scopes: buildDryrunSandboxScopes(res.locals['apiKeyScopes']),
+        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+    });
+    if (sandboxApiKey.isErr()) {
+        sendStepError({ res, status: 500, error: sandboxApiKey.error });
         return;
     }
 
@@ -53,7 +62,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             code: body.code,
             environment_name: environment.name,
             connection_id: body.connection_id,
-            nango_secret_key: defaultSecret.value.secret,
+            nango_secret_key: sandboxApiKey.value.secret,
             nango_host: getRemoteFunctionNangoHost(),
             ...(body.input !== undefined ? { input: body.input } : {}),
             ...(body.metadata ? { metadata: body.metadata } : {}),
@@ -74,5 +83,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+    } finally {
+        await customerKeyService.revokeEphemeralApiKey(db.knex, sandboxApiKey.value.id, environment.id);
     }
 });

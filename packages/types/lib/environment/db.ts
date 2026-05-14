@@ -93,6 +93,8 @@ export interface DBCustomerKey extends Timestamps {
     hashed: string;
     last_used_at: Date | null;
     deleted_at: Date | null;
+    expires_at: Date | null;
+    system_managed: boolean;
 }
 
 export type CustomerKeyEntityType = 'environment' | 'account';

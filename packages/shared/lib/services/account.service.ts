@@ -396,6 +396,7 @@ class AccountService {
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'
                       AND ck.deleted_at IS NULL
+                      AND (ck.expires_at IS NULL OR ck.expires_at > NOW())
                       AND ckr.entity_type = 'environment'
                     LIMIT 1
                 ),

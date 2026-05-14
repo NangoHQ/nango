@@ -23,6 +23,8 @@ export const API_KEY_SCOPES = [
     'environment:syncs:*',
     // Deploy
     'environment:deploy',
+    // Dryrun
+    'environment:dryrun',
     // Records
     'environment:records:read',
     'environment:records:write',

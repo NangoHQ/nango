@@ -21,6 +21,64 @@ class CustomerKeyService {
         const lockKey = stringToHash(`customer_key_name:${accountId}:${keyType}`);
         await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
+
+    private async insertApiKeyForEnvironment(
+        trx: Knex,
+        {
+            accountId,
+            environmentId,
+            displayName,
+            scopes,
+            expiresAt = null,
+            systemManaged = false
+        }: {
+            accountId: number;
+            environmentId: number;
+            displayName: string;
+            scopes: string[];
+            expiresAt?: Date | null;
+            systemManaged?: boolean;
+        }
+    ): Promise<DBCustomerKey> {
+        const plainText = uuid.v4();
+
+        const hashed = await this.hashSecret(plainText);
+        if (hashed.isErr()) {
+            throw hashed.error;
+        }
+
+        const customerKey = {
+            account_id: accountId,
+            key_type: 'api' as const,
+            display_name: displayName,
+            scopes,
+            secret: plainText,
+            iv: '',
+            tag: '',
+            hashed: hashed.value,
+            last_used_at: null,
+            deleted_at: null,
+            expires_at: expiresAt,
+            system_managed: systemManaged
+        } satisfies Partial<DBCustomerKey>;
+
+        const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
+
+        const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
+        if (!row) {
+            throw new NangoError('impossible_condition');
+        }
+
+        await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
+            customer_key_id: row.id,
+            entity_type: 'environment',
+            entity_id: environmentId
+        });
+
+        row.secret = plainText; // Callers expect unencrypted secret.
+        return row;
+    }
+
     public async createApiKey(
         trx: Knex,
         {
@@ -36,13 +94,6 @@ class CustomerKeyService {
         }
     ): Promise<Result<DBCustomerKey>> {
         try {
-            const plainText = uuid.v4();
-
-            const hashed = await this.hashSecret(plainText);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-
             const created = await trx.transaction(async (innerTrx) => {
                 await this.acquireNameLock(innerTrx, accountId, 'api');
 
@@ -54,6 +105,7 @@ class CustomerKeyService {
                     .where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName)
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
+                    .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .first();
 
@@ -67,6 +119,7 @@ class CustomerKeyService {
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
+                    .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .count('* as total')
                     .first();
@@ -74,38 +127,48 @@ class CustomerKeyService {
                     throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
                 }
 
-                const customerKey = {
-                    account_id: accountId,
-                    key_type: 'api' as const,
-                    display_name: displayName,
+                return await this.insertApiKeyForEnvironment(innerTrx, {
+                    accountId,
+                    environmentId,
+                    displayName,
                     scopes,
-                    secret: plainText,
-                    iv: '',
-                    tag: '',
-                    hashed: hashed.value,
-                    last_used_at: null,
-                    deleted_at: null
-                } satisfies Partial<DBCustomerKey>;
-
-                const encrypted = encryptionManager.encryptAPISecret(
-                    customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]
-                ) as typeof customerKey;
-
-                const [row] = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
-                if (!row) {
-                    throw new NangoError('impossible_condition');
-                }
-
-                await innerTrx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-                    customer_key_id: row.id,
-                    entity_type: 'environment',
-                    entity_id: environmentId
+                    systemManaged: false
                 });
-
-                return row;
             });
 
-            created.secret = plainText; // Callers expect unencrypted secret.
+            return Ok(created);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async createEphemeralApiKey(
+        trx: Knex,
+        {
+            accountId,
+            environmentId,
+            displayName,
+            scopes,
+            expiresAt
+        }: {
+            accountId: number;
+            environmentId: number;
+            displayName: string;
+            scopes: string[];
+            expiresAt: Date;
+        }
+    ): Promise<Result<DBCustomerKey>> {
+        try {
+            const created = await trx.transaction(async (innerTrx) => {
+                return await this.insertApiKeyForEnvironment(innerTrx, {
+                    accountId,
+                    environmentId,
+                    displayName: `${displayName} ${uuid.v4().slice(0, 8)}`,
+                    scopes,
+                    expiresAt,
+                    systemManaged: true
+                });
+            });
             return Ok(created);
         } catch (err) {
             return Err(err);
@@ -140,7 +203,9 @@ class CustomerKeyService {
                 tag: '',
                 hashed: hashed.value,
                 last_used_at: null,
-                deleted_at: null
+                deleted_at: null,
+                expires_at: null,
+                system_managed: false
             } satisfies Partial<DBCustomerKey>;
 
             const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
@@ -171,6 +236,7 @@ class CustomerKeyService {
                 .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
                 .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                 .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
 
@@ -224,6 +290,7 @@ class CustomerKeyService {
                     .where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName)
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
                     .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
+                    .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .whereNot(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                     .first();
@@ -235,6 +302,7 @@ class CustomerKeyService {
                 const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                     .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                     .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                    .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                     .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                     .whereExists(function () {
                         void this.select(innerTrx.raw('1'))
@@ -259,6 +327,7 @@ class CustomerKeyService {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                 .whereExists(function () {
                     void this.select(trx.raw('1'))
@@ -282,6 +351,33 @@ class CustomerKeyService {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
                 .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, false)
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .whereExists(function () {
+                    void this.select(trx.raw('1'))
+                        .from(CUSTOMER_KEYS_RELATIONS_TABLE)
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id = ${CUSTOMER_KEYS_TABLE}.id`)
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type = ?`, ['environment'])
+                        .whereRaw(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id = ?`, [envId]);
+                })
+                .update({
+                    deleted_at: trx.fn.now() as unknown as Date
+                });
+            if (updated === 0) {
+                return Err(new NangoError('no_such_api_secret', { id: keyId }));
+            }
+            return Ok();
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async revokeEphemeralApiKey(trx: Knex, keyId: number, envId: number): Promise<Result<void>> {
+        try {
+            const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_TABLE}.system_managed`, true)
                 .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
                 .whereExists(function () {
                     void this.select(trx.raw('1'))

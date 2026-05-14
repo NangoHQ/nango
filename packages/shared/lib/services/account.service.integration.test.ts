@@ -156,6 +156,42 @@ describe('Account service', () => {
         expect(bySecretKey).toBeNull();
     });
 
+    it('should return null when customer key is expired', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        await db
+            .knex('customer_keys')
+            .where({ id: apiKeys[0]!.id })
+            .update({ expires_at: new Date(Date.now() - 60 * 1000) });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: apiKeys[0]!.secret });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should hide system managed API keys from environment API key listing', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        const systemKey = await customerKeyService.createEphemeralApiKey(db.knex, {
+            accountId: account.id,
+            environmentId: environment!.id,
+            displayName: 'test ephemeral',
+            scopes: ['environment:dryrun'],
+            expiresAt: new Date(Date.now() + 60 * 1000)
+        });
+        systemKey.unwrap();
+
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        expect(apiKeys).toHaveLength(1);
+        expect(apiKeys[0]!.display_name).toBe('Default - Full access');
+    });
+
     it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });

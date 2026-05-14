@@ -1,15 +1,18 @@
 import db from '@nangohq/database';
-import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
+import { configService, customerKeyService, getSyncConfigRaw } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { remoteFunctionDeployScopes } from '../../../services/remote-function/api-key-scopes.js';
 import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
+import { getRemoteFunctionNangoHost, remoteFunctionDeploySandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDeployBodySchema } from '../validation.js';
 
 import type { PostRemoteFunctionDeploy } from '@nangohq/types';
+
+const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -25,7 +28,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
     }
 
     const body = valBody.data;
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
 
     const providerConfig = await configService.getProviderConfig(body.integration_id, environment.id);
     if (!providerConfig || !providerConfig.id) {
@@ -50,9 +53,15 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         return;
     }
 
-    const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        sendStepError({ res, status: 500, error: defaultSecret.error });
+    const sandboxApiKey = await customerKeyService.createEphemeralApiKey(db.knex, {
+        accountId: account.id,
+        environmentId: environment.id,
+        displayName: 'Remote function deploy',
+        scopes: [...remoteFunctionDeployScopes],
+        expiresAt: new Date(Date.now() + remoteFunctionDeploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+    });
+    if (sandboxApiKey.isErr()) {
+        sendStepError({ res, status: 500, error: sandboxApiKey.error });
         return;
     }
 
@@ -63,7 +72,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             function_type: body.function_type,
             code: body.code,
             environment_name: environment.name,
-            nango_secret_key: defaultSecret.value.secret,
+            nango_secret_key: sandboxApiKey.value.secret,
             nango_host: getRemoteFunctionNangoHost()
         });
         const output = parseDeploySuccessOutput(result.output);
@@ -78,5 +87,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         });
     } catch (err) {
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+    } finally {
+        await customerKeyService.revokeEphemeralApiKey(db.knex, sandboxApiKey.value.id, environment.id);
     }
 });
