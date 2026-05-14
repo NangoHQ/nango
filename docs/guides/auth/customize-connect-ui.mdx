@@ -1,0 +1,264 @@
+---
+title: 'Customize Connect UI'
+sidebarTitle: 'Customize Connect UI'
+description: 'Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.'
+---
+
+<Info>
+Pre-requisites:
+- complete the [Set up an integration](/guides/auth/auth-guide#guide) section of the Auth guide
+- generate a [Connect session token](/guides/auth/auth-guide#guide)
+</Info>
+
+Nango's pre-built [Connect UI](/guides/auth/auth-guide) is the recommended way to let users authorize integrations. It generates the right form for each API, validates required inputs, tests credentials when supported, and shows users where to find API keys or other required values.
+
+You can customize that pre-built UI with your own branding. If you need full control over every screen, you can also skip Connect UI and use Nango in a **headless auth** mode.
+
+## Customize the pre-built Connect UI
+
+You can customize the Connect UI theme from the Nango dashboard:
+
+1. Open **Environment Settings**.
+2. Go to the **Connect UI** tab.
+3. Choose the theme: light, dark, or system.
+4. Set the primary color for the light theme.
+5. Set the primary color for the dark theme.
+6. Optionally remove the **Secured by Nango** mention.
+
+These settings apply to the pre-built Connect UI that you open with [`nango.openConnectUI()`](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui).
+
+<Note>Connect UI branding customization is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+
+## Override documentation links
+
+By default, the Connect UI displays info icons that link to the Nango documentation. If you are embedding Connect UI in a customer-facing application and want these links to point to your own documentation instead, override them per integration using the `overrides` parameter when [creating a Connect session](/reference/backend/http-api/connect/sessions/create).
+
+<Note>This feature is available on the [Growth plan](https://www.nango.dev/pricing).</Note>
+
+<Tabs>
+
+<Tab title="Node SDK">
+See the full [SDK reference](/reference/backend/backend-sdk/node#create-a-connect-session) for all available parameters.
+
+```js
+const { data } = await nango.createConnectSession({
+    // Recommended: copied onto the connection and included in auth webhooks.
+    tags: {
+        end_user_id: '<END-USER-ID>',
+        end_user_email: '<END-USER-EMAIL>',
+        organization_id: '<ORGANIZATION-ID>'
+    },
+
+    allowed_integrations: ['<INTEGRATION-ID-1>', '<INTEGRATION-ID-2>'],
+    integrations_config_defaults: {
+        '<INTEGRATION-ID-1>': {
+            connection_config: {
+                '<CONFIG-KEY>': '<VALUE>'
+            }
+        }
+    },
+    overrides: {
+        '<INTEGRATION-ID-1>': {
+            docs_connect: 'https://your-docs.com/how-to-connect'
+        }
+    }
+});
+```
+</Tab>
+
+<Tab title="REST API">
+See the full [API reference](/reference/backend/http-api/connect/sessions/create) for all available parameters.
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/connect/sessions \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "tags": {
+        "end_user_id": "<END-USER-ID>",
+        "end_user_email": "<END-USER-EMAIL>"
+    },
+    "overrides": {
+        "<INTEGRATION-ID>": {
+            "docs_connect": "https://your-docs.com/how-to-connect"
+        }
+    }
+}'
+```
+</Tab>
+
+</Tabs>
+
+Replace `<INTEGRATION-ID>` with the unique name of the integration, for example `jira` or `slack`, and set `docs_connect` to the URL you want the info icons to link to.
+
+## Build your own auth UI
+
+Headless auth means you build the user-facing setup UI yourself and use the frontend SDK to pass the required values to Nango.
+
+Headless auth still uses Nango for the backend parts of auth: Nango stores credentials, refreshes OAuth tokens, manages connection records, sends auth webhooks, and lets you call APIs through the proxy or from functions. What changes is the setup experience your user sees before the connection is created.
+
+## What changes with headless auth
+
+For OAuth APIs, calling `nango.auth()` opens the external API's login popup directly. Your user skips the Nango pre-authorization screen. This is useful when you want a shorter flow, but it also means you must collect any provider-specific inputs that the Nango Connect UI would normally ask for first.
+
+For API key, Basic Auth, and other non-OAuth flows, there is no external login popup. You must build the form that collects the user's credentials, validate field formats in your own UI, and pass the credentials to `nango.auth()`. Nango can still reject invalid credentials when the integration supports credential checks, but your UI owns the input fields, error messages, and setup guidance.
+
+Some APIs also require **connection configuration** in addition to credentials. For example, an API might need a subdomain, domain, tenant ID, region, or account-specific base URL to build the authorization URL or make future API requests. Connect UI collects these fields automatically. With headless auth, your UI must collect them and pass them programmatically.
+
+See [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) for the difference between connection configuration, metadata, and tags.
+
+## Use the frontend SDK for headless auth
+
+In your frontend, initiate Nango ([reference](/reference/frontend/frontend-sdk#instantiate-the-frontend-sdk)):
+
+```ts
+import Nango from '@nangohq/frontend';
+
+const nango = new Nango({ connectSessionToken: '<CONNECT-SESSION-TOKEN>' });
+```
+
+Then create the connection with `nango.auth()` ([reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client)):
+
+<Tabs>
+
+<Tab title="OAuth">
+
+For OAuth, `nango.auth()` opens the external API's login popup directly.
+
+```js
+nango
+    .auth('<INTEGRATION-ID>')
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+
+</Tab>
+
+<Tab title="API key">
+
+For API key auth, collect the API key in your own UI, then pass it to Nango.
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', {
+        credentials: {
+            apiKey: '<END-USER-API-KEY>'
+        }
+    })
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+
+</Tab>
+
+<Tab title="Basic Auth">
+
+For Basic Auth, collect the username and password in your own UI, then pass them to Nango.
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', {
+        credentials: {
+            username: '<END-USER-USERNAME>',
+            password: '<END-USER-PASSWORD>'
+        }
+    })
+    .then((result) => {
+        // Show success UI.
+    })
+    .catch((error) => {
+        // Show failure UI.
+    });
+```
+</Tab>
+
+</Tabs>
+
+## Pass connection configuration
+
+Some APIs require connection-specific configuration to authorize or make API requests later. Zendesk is a common example: the OAuth authorization URL includes the user's Zendesk subdomain:
+
+`https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new`
+
+With Connect UI, Nango asks for this value in an automatically generated form. With headless auth, collect it in your own UI and pass it as `params`:
+
+```js
+nango.auth('zendesk', {
+    params: { subdomain: '<ZENDESK-SUBDOMAIN>' }
+});
+```
+
+You can also set default connection configuration when you create the Connect session. This is useful when your backend already knows a required value:
+
+<Tabs>
+
+<Tab title="Node SDK">
+
+```js
+const { data } = await nango.createConnectSession({
+    allowed_integrations: ['<INTEGRATION-ID>'],
+    integrations_config_defaults: {
+        '<INTEGRATION-ID>': {
+            connection_config: {
+                '<CONFIG-KEY>': '<VALUE>'
+            }
+        }
+    }
+});
+```
+</Tab>
+
+<Tab title="REST API">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/connect/sessions \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "allowed_integrations": ["<INTEGRATION-ID>"],
+    "integrations_config_defaults": {
+      "<INTEGRATION-ID>": {
+        "connection_config": {
+          "<CONFIG-KEY>": "<VALUE>"
+        }
+      }
+    }
+  }'
+```
+</Tab>
+
+</Tabs>
+
+In some cases, you might want to override scopes at the connection level. Pass the scopes to `nango.auth()`:
+
+```js
+nango.auth('<INTEGRATION-ID>', {
+    params: { oauth_scopes_override: 'custom-connection-scope' }
+});
+```
+
+Nango stores this connection configuration on the connection. You can retrieve it with the SDK ([reference](/reference/backend/backend-sdk/node#get-a-connection-with-credentials)) or API ([reference](/reference/backend/http-api/connections/get)), or see it in connection details in the Nango UI.
+
+## Next
+
+Once authorization succeeds, [_save the connection ID_](/guides/auth/auth-guide#guide).
+
+<Tip>
+    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
+
+## Related guides
+
+- [Auth guide](/guides/auth/auth-guide) - compare the managed Connect UI flow.
+- [Frontend SDK reference](/reference/frontend/frontend-sdk#connect-using-the-headless-client) - headless authorization methods and parameters.
+- [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata) - understand connection-level storage.

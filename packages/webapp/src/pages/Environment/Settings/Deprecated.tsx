@@ -53,12 +53,7 @@ export const DeprecatedSettings: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Public key
-                        <ButtonLink
-                            target="_blank"
-                            to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
-                            variant="ghost"
-                            size="icon"
-                        >
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" variant="ghost" size="icon">
                             <ExternalLink />
                         </ButtonLink>
                     </div>
@@ -72,12 +67,7 @@ export const DeprecatedSettings: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         HMAC
-                        <ButtonLink
-                            target="_blank"
-                            to="https://nango.dev/docs/implementation-guides/migrations/migrate-from-public-key"
-                            variant="ghost"
-                            size="icon"
-                        >
+                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" variant="ghost" size="icon">
                             <ExternalLink />
                         </ButtonLink>
                     </div>

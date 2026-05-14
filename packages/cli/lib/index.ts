@@ -20,6 +20,7 @@ import { DryRunService } from './services/dryrun.service.js';
 import { Ensure } from './services/ensure.service.js';
 import { create } from './services/function-create.service.js';
 import { inferIntegrationsFromConnectionId } from './services/interactive.service.js';
+import { pullFromCatalog, pullFunction } from './services/pull.service.js';
 import { generateTests } from './services/test.service.js';
 import verificationService from './services/verification.service.js';
 import { MissingArgumentError } from './utils/errors.js';
@@ -33,7 +34,7 @@ import { initZero } from './zeroYaml/init.js';
 import { ReadableError } from './zeroYaml/utils.js';
 
 import type { DeployOptions, GlobalOptions } from './types.js';
-import type { NangoYamlParsed } from '@nangohq/types';
+import type { NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -584,6 +585,82 @@ program
             process.exitCode = 1;
         }
     });
+program
+    .command('pull')
+    .description("Pull a function's TypeScript source from your environment or from the public catalog")
+    .argument('<integration>', 'Integration name')
+    .argument('<name>', 'Function name')
+    .option('-c, --catalog', 'Pull from the public catalog')
+    .option('-e, --env <environment>', 'Pull from a deployed function in this environment')
+    .option('-s, --sync', 'Disambiguate to a sync when multiple functions share the name')
+    .option('-a, --action', 'Disambiguate to an action when multiple functions share the name')
+    .option('--on-event', 'Disambiguate to an on-event script when multiple functions share the name')
+    .option('-f, --force', 'Overwrite existing files without prompting', false)
+    .action(async function (this: Command, integration: string, name: string) {
+        const { debug, autoConfirm, force, interactive } = this.opts<GlobalOptions & { force: boolean }>();
+        const opts = this.opts<{
+            catalog?: boolean;
+            env?: string;
+            sync?: boolean;
+            action?: boolean;
+            onEvent?: boolean;
+        }>();
+        const fullPath = process.cwd();
+
+        const precheck = await verificationService.ensureZeroYaml({ fullPath, debug });
+        if (!precheck) return;
+
+        if (opts.catalog && opts.env) {
+            console.error(chalk.red('Specify only one of --catalog or --env <environment>.'));
+            console.error(chalk.gray('Examples:'));
+            console.error(chalk.gray('  nango pull github list-repos --catalog'));
+            console.error(chalk.gray('  nango pull github list-repos --env dev'));
+            process.exitCode = 1;
+            return;
+        }
+
+        const typeFlags = [opts.sync && 'sync', opts.action && 'action', opts.onEvent && 'on-event'].filter(Boolean) as ScriptTypeLiteral[];
+        if (typeFlags.length > 1) {
+            console.error(chalk.red('Specify at most one of --sync, --action, --on-event.'));
+            process.exitCode = 1;
+            return;
+        }
+        const type = typeFlags[0];
+
+        const baseOptions = {
+            fullPath,
+            integrationId: integration,
+            name,
+            type,
+            debug,
+            force,
+            autoConfirm,
+            interactive
+        };
+
+        let success: boolean;
+        if (opts.catalog) {
+            success = await pullFromCatalog(baseOptions);
+        } else {
+            let environmentName: string;
+            try {
+                environmentName = await new Ensure(interactive).environment(opts.env, debug);
+            } catch (err: any) {
+                console.error(chalk.red(err.message));
+                if (err instanceof MissingArgumentError) {
+                    this.outputHelp();
+                }
+                process.exitCode = 1;
+                return;
+            }
+            success = await pullFunction({ ...baseOptions, environmentName });
+        }
+
+        if (!success) {
+            process.exitCode = 1;
+        }
+    });
+
 program
     .command('cli-location', { hidden: true })
     .alias('cli')

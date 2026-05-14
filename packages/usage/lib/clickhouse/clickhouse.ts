@@ -1,9 +1,9 @@
 import { ENVS, Err, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
+import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
-import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 
 import type { GetUsageQuery, GetUsageResult, GetUsageResultSeries } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageMetric, UsageRecordsEvent } from '@nangohq/types';
@@ -48,12 +48,17 @@ export class Clickhouse {
 
         this.client = client;
         this.batcher = new Batcher({
-            process: async (events) => {
+            process: async (events, { retryKey }) => {
                 try {
                     await client.insert({
                         table: 'raw_events',
                         values: events,
-                        format: 'JSONEachRow'
+                        format: 'JSONEachRow',
+                        // Token is stable across retries of the same logical batch, so CH
+                        // server-side dedup catches a retried INSERT even if the block
+                        // content has drifted. Paired with the cluster-wide settings in
+                        // config.ts, this propagates the dedup decision to all dependent MVs.
+                        clickhouse_settings: { insert_deduplication_token: retryKey }
                     });
                 } catch (err) {
                     logger.error(`Failed to insert usage events into Clickhouse: ${stringifyError(err)}`);
@@ -134,27 +139,23 @@ export class Clickhouse {
                     }
                     case 'records':
                     case 'connections': {
-                        // Gauge metrics (ie: snapshot emitted at interval)
-                        // Quantity is considered to be the average of all snapshots for a given day
-                        // Two-level query to correctly aggregate across sub-groups:
-                        //   inner: avgMerge accross all dimensions ORDER BY key
-                        //   outer: SUM per requested dimension: avg(A)+avg(B) = avg(A+B)
-                        const innerGroupBy = (() => {
-                            switch (metric) {
-                                case 'records':
-                                    return `account_id, day, environment_id, integration_id, connection_id, model`;
-                                case 'connections':
-                                    return `account_id, day, environment_id, integration_id`;
-                            }
-                        })();
+                        // Gauge metrics, sampled by the metering observability cron.
+                        // Three-level query reconstructs Orb's `average(count)` semantic:
+                        //   inner:  SUM(value) per (account, day, batch_id, dimension)
+                        //           → per-firing account total at the dimension grain
+                        //   middle: AVG(batch_val) per (account, day, dimension)
+                        //           → day-average of those firings
+                        //   outer:  SUM(day_avg) per (account, dimension) optionally /day_count
+                        //           → period or per-day result, same shape the avg-then-sum
+                        //           branch used to produce
                         const startDate = query.timeframe.start.toISOString().split('T')[0];
                         const endDate = query.timeframe.end.toISOString().split('T')[0];
                         const quantityExpr = (() => {
                             switch (query.granularity) {
                                 case 'none':
-                                    return `ROUND(SUM(avg_val) / GREATEST(1, dateDiff('day', toDate('${startDate}'), toDate('${endDate}'))))`;
+                                    return `ROUND(SUM(day_avg) / GREATEST(1, dateDiff('day', toDate('${startDate}'), toDate('${endDate}'))))`;
                                 case 'day':
-                                    return `ROUND(SUM(avg_val))`;
+                                    return `ROUND(SUM(day_avg))`;
                             }
                         })();
                         const sql = `
@@ -164,13 +165,19 @@ export class Clickhouse {
                                 ${dimensionSelect} AS dimension
                             FROM (
                                 SELECT
-                                    avgMerge(value) AS avg_val,
-                                    ${innerGroupBy}
-                                FROM ${this.database}.${tableForMetric(metric)}
-                                WHERE account_id = ${query.accountId}
-                                AND day >= toDate('${startDate}')
-                                AND day < toDate('${endDate}')
-                                GROUP BY ${innerGroupBy}
+                                    AVG(batch_val) AS day_avg,
+                                    account_id, day ${dimensionGroupBy}
+                                FROM (
+                                    SELECT
+                                        SUM(value) AS batch_val,
+                                        account_id, day, batch_id ${dimensionGroupBy}
+                                    FROM ${this.database}.${tableForMetric(metric)}
+                                    WHERE account_id = ${query.accountId}
+                                    AND day >= toDate('${startDate}')
+                                    AND day < toDate('${endDate}')
+                                    GROUP BY account_id, day, batch_id ${dimensionGroupBy}
+                                )
+                                GROUP BY account_id, day ${dimensionGroupBy}
                             )
                             GROUP BY account_id ${granularityGroupBy(query)} ${dimensionGroupBy}
                             ORDER BY account_id ${granularityOrderBy(query)} ${dimensionOrderBy}

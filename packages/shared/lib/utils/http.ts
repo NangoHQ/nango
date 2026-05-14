@@ -42,10 +42,11 @@ export async function loggedFetch<TBody>(
     }
 
     const createdAt = new Date();
+    const redactedUrl = redactURL({ url: url.href, valuesToFilter: options.valuesToFilter });
     const requestLog: MessageHTTPRequest = {
         headers: redactHeaders({ headers: headers }),
         method: props.method!,
-        url: redactURL({ url: url.href, valuesToFilter: options.valuesToFilter }),
+        url: redactedUrl,
         body: body ? redactObjectOrString({ data: body, valuesToFilter: options.valuesToFilter }) : undefined
     };
     try {
@@ -59,7 +60,7 @@ export async function loggedFetch<TBody>(
         }
 
         if (res.status >= 300) {
-            void options.logCtx.http(`${props.method} ${url.href}`, {
+            void options.logCtx.http(`${props.method} ${redactedUrl}`, {
                 request: requestLog,
                 response: { code: res.status, headers: redactHeaders({ headers: res.headers }) },
                 context: options.context,
@@ -67,7 +68,7 @@ export async function loggedFetch<TBody>(
                 meta: { body }
             });
         } else {
-            void options.logCtx.http(`${props.method} ${url.href}`, {
+            void options.logCtx.http(`${props.method} ${redactedUrl}`, {
                 request: requestLog,
                 response: { code: res.status, headers: redactHeaders({ headers: res.headers }) },
                 context: options.context,
@@ -83,7 +84,7 @@ export async function loggedFetch<TBody>(
             error = err.cause;
         }
 
-        void options.logCtx.http(`${props.method} ${url.href}`, {
+        void options.logCtx.http(`${props.method} ${redactedUrl}`, {
             level: 'error',
             request: requestLog,
             response: undefined,

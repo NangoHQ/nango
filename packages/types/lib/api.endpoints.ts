@@ -62,13 +62,20 @@ import type {
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
-import type { PostRemoteFunctionCompile, PostRemoteFunctionDeploy, PostRemoteFunctionDryrun } from './functions/api.js';
+import type {
+    GetIntegrationFunctions,
+    GetProviderTemplates,
+    PostRemoteFunctionCompile,
+    PostRemoteFunctionDeploy,
+    PostRemoteFunctionDryrun
+} from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
     GetIntegration,
     GetIntegrationFlows,
+    GetPublicFunctionCode,
     GetPublicIntegration,
     GetPublicListIntegrations,
     PatchIntegration,
@@ -145,6 +152,7 @@ export type PublicApiEndpoints =
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun
     | PostRemoteFunctionDeploy
+    | GetPublicFunctionCode
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -171,6 +179,8 @@ export type PrivateApiEndpoints =
     | SearchFilters
     | PostInternalConnectSessions
     | GetIntegrationFlows
+    | GetIntegrationFunctions
+    | GetProviderTemplates
     | DeleteIntegration
     | PatchIntegration
     | GetIntegration

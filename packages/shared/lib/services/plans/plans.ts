@@ -246,6 +246,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
                 break;
             }
             // BOOLEAN FLAGS - keep override if different
+            case 'lambda_tenant_isolation':
             case 'sync_lambda_checkpoint_required': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
@@ -320,4 +321,26 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
     }
 
     return { ...newPlanDefinition.flags, ...overrides };
+}
+
+/** Lambda keep-warm invoke count multiplier by billing plan (`plans.name`). */
+export function lambdaKeepWarmProvisionedConcurrencyMultiplier(planName: DBPlan['name'], isProduction: DBEnvironment['is_production']): number {
+    if (!isProduction) {
+        return 1;
+    }
+    switch (planName) {
+        case 'free':
+            return 1;
+        case 'starter':
+        case 'starter-legacy':
+        case 'starter-v2':
+            return 2;
+        case 'scale-legacy':
+            return 3;
+        case 'growth':
+        case 'growth-v2':
+            return 4;
+        default:
+            return 1;
+    }
 }

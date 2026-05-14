@@ -1,10 +1,10 @@
 {
   "latest": {
-    "imageVersion": "1.5.1",
+    "imageVersion": "1.5.2",
     "appVersion": "0.70.1",
-    "commitHash": "5e931ac80c6e6adbf14149249f00c4d068fd0a64",
-    "releaseDate": "2026-04-28T15:23:01.145Z",
-    "comparisonUrl": "https://github.com/NangoHQ/nango/compare/2724cf5b6dab04a7040919dc1e693ff08c84d4e3...5e931ac80c6e6adbf14149249f00c4d068fd0a64"
+    "commitHash": "fd331f09bfdff10d6fb7c1c292c9a56fbebf44ef",
+    "releaseDate": "2026-05-11T07:48:37.644Z",
+    "comparisonUrl": "https://github.com/NangoHQ/nango/compare/5e931ac80c6e6adbf14149249f00c4d068fd0a64...fd331f09bfdff10d6fb7c1c292c9a56fbebf44ef"
   },
   "history": [
     {
@@ -160,6 +160,13 @@
       "commitHash": "2724cf5b6dab04a7040919dc1e693ff08c84d4e3",
       "releaseDate": "2026-04-17T09:08:59.798Z",
       "comparisonUrl": "https://github.com/NangoHQ/nango/compare/7bdd3e5684ad84dc74922c40c516528c7ff33ae4...2724cf5b6dab04a7040919dc1e693ff08c84d4e3"
+    },
+    {
+      "imageVersion": "1.5.1",
+      "appVersion": "0.70.1",
+      "commitHash": "5e931ac80c6e6adbf14149249f00c4d068fd0a64",
+      "releaseDate": "2026-04-28T15:23:01.145Z",
+      "comparisonUrl": "https://github.com/NangoHQ/nango/compare/2724cf5b6dab04a7040919dc1e693ff08c84d4e3...5e931ac80c6e6adbf14149249f00c4d068fd0a64"
     }
   ]
 }

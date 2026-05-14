@@ -35,6 +35,11 @@ export interface DeleteOutdatedRecordsSuccess {
     deletedKeys: string[];
 }
 
+export interface DeleteHardAllRecordsSuccess {
+    deletedCount: number;
+    hasMore: boolean;
+}
+
 export interface GetCursorSuccess {
     cursor?: string;
 }

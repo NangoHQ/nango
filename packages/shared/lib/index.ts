@@ -27,6 +27,7 @@ export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
 export * from './services/connections/credentials/refresh.js';
+export * from './services/function.service.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
@@ -60,6 +61,8 @@ export * from './utils/utils.js';
 export * from './utils/error.js';
 
 export { getRoutes as getOtlpRoutes } from './otlp/otlp.js';
+
+export { pubsub } from './utils/pubsub.js';
 
 export {
     ErrorSourceEnum,

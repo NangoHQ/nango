@@ -78,7 +78,11 @@ export class ProxyRequest {
                     // Useful for example to refresh connection's credentials
                     this.connection = await this.getConnection();
 
-                    if (this.connection.credentials.type === 'OAUTH1') {
+                    const proxyHeaders = this.config.provider.proxy?.headers;
+                    const headersNeedOAuthAppCredentials =
+                        proxyHeaders &&
+                        Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
+                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials) {
                         this.integrationConfig = await this.getIntegrationConfig();
                     }
 
@@ -144,8 +148,19 @@ export class ProxyRequest {
         return await axios.request(axiosConfig);
     }
 
+    private buildValuesToFilter(): string[] {
+        const values: string[] = this.connection ? Object.values(this.connection.credentials).filter((v): v is string => typeof v === 'string') : [];
+        if (this.integrationConfig?.oauth_client_secret) {
+            values.push(this.integrationConfig.oauth_client_secret);
+        }
+        if (this.integrationConfig?.oauth_client_id) {
+            values.push(this.integrationConfig.oauth_client_id);
+        }
+        return values;
+    }
+
     private async logErrorResponse({ error, retryAttempt, start }: { error: unknown; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
-        const valuesToFilter = this.connection ? Object.values(this.connection.credentials) : [];
+        const valuesToFilter = this.buildValuesToFilter();
         const redactedURL = redactURL({ url: this.axiosConfig?.url || '', valuesToFilter });
         const endedAt = new Date();
 
@@ -196,7 +211,7 @@ export class ProxyRequest {
     }
 
     private async logResponse({ response, retryAttempt, start }: { response: AxiosResponse; retryAttempt: RetryAttemptArgument; start: Date }): Promise<void> {
-        const valuesToFilter = this.connection ? Object.values(this.connection.credentials) : [];
+        const valuesToFilter = this.buildValuesToFilter();
         const safeHeaders = redactHeaders({ headers: this.axiosConfig?.headers, valuesToFilter });
         const redactedURL = redactURL({ url: this.axiosConfig?.url || '', valuesToFilter });
         const endedAt = new Date();
