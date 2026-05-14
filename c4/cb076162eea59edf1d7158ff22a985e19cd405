@@ -1,0 +1,1935 @@
+docs/snippets/generated/freshworks/freshworks-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/dayforce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/entrata/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aws/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-power-bi/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/statamic/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/loops-so/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/confluence-data-center/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sophos-central/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fern/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/maximizer/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/snapchat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/evaluagent/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/metabase/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-10
+docs/snippets/generated/sentry-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-sheet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-16,22-28,34-37,43-44
+docs/snippets/generated/paylocity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/tailscale/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/statamic.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-80
+docs/snippets/generated/addepar/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/firefish/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tldv/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wildix-pbx/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+packages/persist/lib/daemons/batchCleanup.daemon.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-52
+docs/snippets/generated/adobe-workfront/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/shopware/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-46
+docs/snippets/generated/google-slides/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/servicem8/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/custom.js
+  s_c4d4db50307ef7::t_e795863a4861c0 1-72
+docs/snippets/generated/aws-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/timely/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pennylane/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13-15,21-23,29-31
+docs/snippets/generated/apollo-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/one-drive/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-9,14-15,21-60
+docs/api-integrations/digits/how-to-register-your-own-digits-api-oauth-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-78
+docs/snippets/generated/asana-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/apaleo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/precisefp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/youtube/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-22,28-35,41-44,50-56
+docs/snippets/generated/bill-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/recruitee/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/slab/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gitlab-pat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vercel-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/discord/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sap-fieldglass/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/scrapedo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/github-app-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17
+docs/snippets/generated/checkr-partner-staging/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+packages/pubsub/lib/transport/sns-sqs.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 31-38,184-187
+docs/snippets/generated/readwise/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/spotify/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/customer-io/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/medallia/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/snowflake/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/copper/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/auth/share-connect-link.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 70
+docs/snippets/generated/modmed/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/3cx/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/drupal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/smartsheet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/snippets/generated/personio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rydoo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aimfox-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twitch/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/snowflake-jwt/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/1password-users/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/salesloft/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/brex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/strava-web/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/getting-started/intro-to-nango.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 4,9,11,13,15,17,19-21,24-29,32-33,37-38,41,44-45,47-48,50-51,53-54,56-57,59-60,64,67-68,70-71,73-74,76-77,81,83-87
+docs/snippets/generated/sentry/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/looker-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/slack-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/greenhouse-harvest/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/integrations/overview.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 17
+docs/snippets/generated/upsales/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tailscale-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/miro/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesforce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1,5-7,9,13,15,19,21,25-27,29,33-86,92-100
+docs/snippets/generated/ukg-ready/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+packages/runner-sdk/lib/action.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 3,46-52,480-488,491-504,506-587
+docs/snippets/generated/webflow/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wordpress-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/braintree-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/document360/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wiza/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/namely-pat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/sharepoint-online-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/jiminny/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-49
+docs/api-integrations/workday-adaptive-planning-basic/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 29-30
+docs/snippets/generated/orange-logic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+.github/workflows/tests-clients.yaml
+  s_c4d4db50307ef7::t_e795863a4861c0 57,61
+docs/snippets/generated/podium/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lessonly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/affinity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/platform/observability.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 58,61
+docs/snippets/generated/freshbooks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/teamwork/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/smartrecruiters-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mimecast/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+.github/workflows/lint.yaml
+  s_c4d4db50307ef7::t_e795863a4861c0 51
+docs/snippets/generated/smugmug/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/absorb-lms/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-42
+docs/snippets/generated/paddle/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/connectwise-rmm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pingone/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/refiner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vimeo-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/persist/lib/server.integration.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 464-504
+docs/snippets/generated/jira-data-center/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/customer-io.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-92
+docs/snippets/generated/getty-images/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopify-partner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jazzhr/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesforce-experience-cloud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/nerdio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/yandex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-bigquery/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/emarsys-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/squareup-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/utils/lambda.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 4,26-30,33,36-39,41,47-51
+packages/records/lib/models/records.integration.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 5,24-25,110,115-116,896-903,1902-1941
+docs/snippets/generated/tremendous-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/1password-users/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-77
+docs/snippets/generated/bird/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/firstbase/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fellow/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/reference/backend/http-api/connection/post.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 12-14
+docs/snippets/generated/gusto/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14
+docs/snippets/generated/lattice/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/ninjaone-rmm-oauth2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zendesk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1,5,7,11-49,55-61,67-77,83-93
+docs/snippets/generated/oracle-hcm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11
+docs/snippets/generated/videoask/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/adp-run/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner-sdk/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,13-14,21,23
+docs/snippets/generated/freeagent-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/reddit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/custom.css
+  s_c4d4db50307ef7::t_e795863a4861c0 41-73,109-247,249-266,268,411-466
+docs/api-integrations/1password-events/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-67
+docs/guides/functions/storage.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 168
+docs/snippets/generated/apollo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/github-pat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/persist/lib/routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/deleteHardRecords.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-99
+docs/snippets/generated/google-analytics/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ocean-io/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/absorb-lms/how-to-register-your-own-absorb-lms-api-oauth-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-23
+docs/snippets/generated/brevo-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/osu/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pagerduty/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pingboard/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/reference/backend/http-api/connections/post.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 12-14
+docs/snippets/generated/datev/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/clicksend/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-12
+docs/snippets/generated/quentn/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vercel/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bamboohr-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13,19
+docs/snippets/generated/xero/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-17,23-26,32-35,41,47-49,55-58,64-65,71-74,80-81,87-97
+docs/snippets/generated/zendesk-sell/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/providers/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,19
+docs/api-integrations/digits.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-82
+docs/snippets/generated/clerk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/dropbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-25,31-38,44-45,51-54
+docs/snippets/generated/clio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/keap/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/listmonk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pipedrive/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/snippets/generated/google-ads/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/app.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 14,43,102,131
+docs/guides/platform/webhook-forwarding.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 66,72,78
+docs/snippets/generated/rippling/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/grammarly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6
+docs/snippets/generated/clover/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/1password-events/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/anrok/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/snippets/generated/avanan/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/heyreach/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/juniper-mist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/videoask/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/adp-workforce-now/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/freshworks/freshworks-oauth/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-42
+docs/snippets/generated/sendgrid/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/persist/lib/server.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 17-19,48,56
+docs/snippets/generated/freepik/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/smartlead-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/klipfolio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/recruiterflow/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-9,15,21-26,32,38,44
+docs/snippets/generated/heygen/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/netsuite-tba/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-14,20-22,28,34-36,42-44,50-51,57-58
+docs/snippets/generated/clickhouse/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/printful/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/keeper-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/meta-marketing-api/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/etsy/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/blandai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopify-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/index.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 24,38,596-671
+packages/records/lib/models/records.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 7,70-120,146,258-298,324,426,429-437,439-562,564-577,579-580,627-634,897-903,1188,1227-1241,1246,1249-1251,1259,1332-1352
+docs/snippets/generated/databricks-account/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trigify-io-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sage-hr/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/greenhouse-job-board/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jobdiva/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/guru-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/brex-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-forms/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/procore/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vtex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/veeva-vault/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rippling-shop-app/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fortnox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/razorpay/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/roam-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mural/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-play/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/avalara/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+packages/runner/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 29
+docs/snippets/generated/okta-preview/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-13,19
+docs/snippets/generated/shopify/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/google-docs/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wise-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/splitwise/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-planner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-contacts/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/integrations/contribute-or-request-api.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 29
+packages/node-client/lib/version.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1
+docs/snippets/generated/companycam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/codeclimate/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/kintone/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/openai-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cal-com-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/practicefusion/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/digits/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/tapclicks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workday-adaptive-planning-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/pubsub/lib/transport/transport.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 10-11
+docs/snippets/generated/terraform/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cal-com-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6
+docs/snippets/generated/next-cloud-ocs/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/ramp-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/chorus/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/metering/lib/app.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 9,58
+docs/snippets/generated/stripe-app/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+packages/nango-yaml/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,20
+docs/snippets/generated/setmore/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tiktok-personal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tremendous/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/boldsign/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shipstation-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twitter/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wakatime/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/unipile/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/huntress/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/beehiiv/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-bigin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wave-accounting/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sellsy-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sentinelone/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/hover/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workday/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17,23
+docs/snippets/generated/workday-adaptive-planning/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/amazon-selling-partner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-service-account/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/loom-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/servicenow-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/qualia/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 63-64
+docs/snippets/generated/attio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12,18-20,26-28,34-35,41-42,48-52,58-59,65-69
+docs/snippets/generated/unauthenticated/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner/lib/sdk/sdk.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 128,617-655
+docs/snippets/generated/jotform/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/metering/lib/crons/billingEventsS3Export.integration.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-358
+docs/api-integrations/buffer.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-92
+docs/snippets/generated/grist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/adyen/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fiserv/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/odoo-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/statamic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/attention/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jira-data-center-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/apify/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/hackerrank-work/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-13,19-20
+docs/snippets/generated/thrivecart-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/elevio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/clickup/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/quickbooks-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-16,22-25,31-33,39-50,56-60,66-69,75-78,84-86,92-101,103,107-109,111,115-133
+docs/snippets/generated/personio-recruiting/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopware/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/factorial/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/auth0/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/coda/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/justworks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/simpro/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twitter-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/box/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-12,18-20
+docs/snippets/generated/zoominfo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/paddle.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-82
+docs/snippets/generated/1password-events/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+packages/persist/lib/app.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 10,36,60
+docs/snippets/generated/cloudtalk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/whoop/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/linkedin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11
+docs/snippets/generated/digitalocean/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/basecamp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17,23-24
+docs/snippets/generated/greenhouse-ingestion/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mollie/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/perk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopify-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cisco-duo-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jumpcloud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/customer-io/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-51
+docs/snippets/generated/intuit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tiktok-accounts/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/uber/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/functions/functions-guide.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 120,122-124,127,143-144,147-148,151,153,157-162,171,178-180,182-184,188,194,210,220,237,248,270
+docs/snippets/generated/valley-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/atlas-so/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/brightcrowd/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/reference/backend/http-api/api-keys.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 121-129
+docs/snippets/generated/pendo-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/torii/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/1password-users.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-81
+packages/node-client/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,28-29
+docs/snippets/generated/adp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/recall-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/dixa/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/listrak/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/checkout-com/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/skio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wrike/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/acuity-scheduling/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trello-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/grafana/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/e-conomic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner-sdk/lib/baseUrlOverrideDenylist.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-121
+docs/snippets/generated/prtg-classic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/supabase-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-teams-bot/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/updates/changelog.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-1837
+packages/orchestrator/lib/clients/client.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 157-158
+docs/snippets/generated/qualtrics/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bamboohr/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fanvue/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mindbody/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fairing/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/oomnitza/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/auvik/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/azure-devops/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/crunchbase/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/getting-started/coding-agent-setup.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-33
+docs/snippets/generated/sap-concur/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/greenhouse-harvest-partner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pivotaltracker/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/contentful/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ghost-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cyberimpact/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/availity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ecu360/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/halo-psa/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/builder-io-public/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aircall-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/render-mcp/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/sage-intacct-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+packages/logs/lib/models/helpers.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 123-124
+docs/snippets/generated/notion/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-16,22-24,26,30-34,40-44,50-60,66-68,74-87
+docs/snippets/generated/wordpress/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/xero-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoom/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-13,19-22
+docs/snippets/generated/mailgun/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesmsg-oauth2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+CHANGELOG.md
+  s_c4d4db50307ef7::t_e795863a4861c0 5-232,6666
+docs/api-integrations/absorb-lms.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-84
+docs/snippets/generated/ory/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rocketlane/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/amazon-selling-partner-beta/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/providers/providers.yaml
+  s_c4d4db50307ef7::t_e795863a4861c0 2-33,37,67-110,181-226,1155,1725,1749,1776,2110,2230,2946,3183-3205,3210,4100,4128,4859-4892,5380-5418,5533,5542-5543,5791,6592-6619,7187,7216-7256,7509,9260-9291,9635,9656-9688,9884,10013,10229,10237-10238,10356,11194,11433,11644,12487,12733,12767,12818,12899,13002,13117,13170,13226,13346-13376,13950,14008,14047,15099,15167,15190-15210,15914,15945,16165,16384,16859,16944,17254,17297-17332,17856-17883,17969-17970,18073,18935-18989,19505,20005-20029,20269-20290,20523
+docs/snippets/generated/holded/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/dialpad/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/digits-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/google-workspace-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/onelogin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/squareup/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/oracle-cloud-identity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/demodesk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/calendly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-16
+docs/snippets/generated/bing-webmasters/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bill/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/databricks-workspace/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/fiber-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/miro-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/personio-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesforce-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1,5-7,9,13,15,19,21,25-27,29,33-86,92-100
+docs/snippets/generated/dialpad-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/semrush/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ringover/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/jiminny.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-80
+docs/snippets/generated/woocommerce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6
+docs/snippets/generated/egnyte/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/linear/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-20,26-30,36,42-54,60-62,68-72,78-79,85-87,93,99-109
+package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 4
+docs/snippets/generated/freshservice/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/elevenlabs/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/kustomer/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/webex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,43-46,51,80
+docs/snippets/generated/lever-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-18,24,30-39,45-46,52-54,60-61,67
+docs/snippets/generated/findymail/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pinterest/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ukg-pro/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/researchdesk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesmsg/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/toggl/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 41-42
+docs/snippets/generated/highlevel/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/addepar-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/guru/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+.github/workflows/tests.yaml
+  s_c4d4db50307ef7::t_e795863a4861c0 53,55,79-99
+docs/snippets/generated/kintone-user-api/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/envoy/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pleo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/figma/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/records/lib/constants.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 4-5
+docs/snippets/generated/bitly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/contactout/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-search-console/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/crowdstrike/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zorus/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-tenant-specific/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twinfield/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/chattermill/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/services/pull.service.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-170
+docs/snippets/generated/stripe-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cloudbeds/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/connectwise-psa-staging/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paddle/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/tsheetsteam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/yotpo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-29
+docs/snippets/generated/gainsight-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/freshteam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gerrit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-gemini/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aws-iam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/lokalise/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mailjet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/greenhouse-harvest-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/trigger-dev.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-82
+docs/snippets/generated/namely/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/quickbooks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-16,22-25,31-33,39-50,56-60,66-69,75-78,84-86,92-101,103,107-109,111,115-133
+packages/records/lib/db/migrations/20260505000100_create_records_batch.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-20
+docs/snippets/generated/huntress/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/api-integrations/huntress.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-83
+docs/snippets/generated/zoho-mail/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/snippets/generated/sellercloud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/front/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6
+packages/jobs/lib/execution/sync.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 119,197
+docs/snippets/generated/circle-so/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/knowbe4/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-64
+docs/snippets/generated/axiom/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mip-cloud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/auth/customize-connect-ui.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 2,4,13-111,121,127,142,144,165,171,186,188,192,200,208,210,225,228-232,234,236,242-252,254,264
+docs/snippets/generated/drchrono/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sharepoint-online-v1/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/CLAUDE.md
+  s_c4d4db50307ef7::t_e795863a4861c0 1,3,5
+docs/snippets/generated/datadog/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/microsoft-ads/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/employment-hero/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/metering/lib/crons/billingEventsS3Export.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-259
+docs/snippets/generated/todoist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/okta/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-13,19
+docs/snippets/generated/segment/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/runtime/runtimes.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 42-45
+docs/api-integrations/freshworks/how-to-register-your-own-freshworks-api-oauth-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-38
+docs/snippets/generated/granola-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 37
+docs/snippets/generated/apple-app-store/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-excel/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/greenhouse-onboarding/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sage/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lob/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/triple-whale/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/maximizer-on-premise/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-chat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/statamic/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-81
+docs/snippets/generated/freshsales/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/devin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/buildium/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sedna/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-mail/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-16,22-25,31-32,38,44-48,54-62,68,74-76,82-95,101-105,111-112,118-123
+docs/api-integrations/wordpress-mcp.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-102
+docs/snippets/generated/glyphic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rapidapi/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-desk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/folk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/freeagent/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mailchimp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/reapit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cursor-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jamf-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ramp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/callrail/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-meet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/stitch-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/render-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/mercury/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-crm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/api-integrations/freshworks/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-46
+docs/snippets/generated/facebook/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/asana/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-17,23-27,33-35,41-45,51-63,69-71,77-79,85-86,92-99
+docs/snippets/generated/battlenet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/deel-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/hubspot/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-18,24-32,38-43,49-55,61,67-68,74-78,84,90-91,97,103,109,115-118,124-130,136-141,147
+docs/snippets/generated/1password-users/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/adobe-umapi/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/loop-returns/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/docuware/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/braintree/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/klaviyo-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/kno-commerce/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 23-24
+docs/snippets/generated/adp-workforce-now-next-gen/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paylocity-nextgen/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/active-campaign/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/teamleader/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/unanet/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-13,19-23
+docs/snippets/generated/docusign-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/google-tasks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/nyne-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-recruit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/fern/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-44
+docs/snippets/generated/kno-commerce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ebay/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aws-multi-service/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gumroad/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/recharge/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6
+docs/snippets/generated/jira/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-12,18,24,30,36-52,58-59,65-68,74-75,81-83,89,95-97,103-111
+docs/snippets/generated/salesforce-cdp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/insightly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/amplitude/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gusto-demo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14
+docs/snippets/generated/xai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/copper-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesforce-jwt/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ebay-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fathom-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-books/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zapier-nla/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sedna-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paychex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/blackbaud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/chargebee/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/braze/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/dropbox-sign/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-calendar/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8,14-16,22,28,34-43,49,55-72,78-81,87,93-95
+docs/snippets/generated/heap/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sap-odata-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paycom/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/shortcut/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/services/pull.service.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-241
+docs/snippets/generated/thrivecart-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/cisco-duo-admin/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 47
+docs/snippets/generated/openai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/streak/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/checkr-partner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-9
+docs/snippets/generated/pipedream/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bigcommerce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tally/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/digits-mcp.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-90
+docs/api-integrations/freshworks.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-85
+docs/snippets/generated/falai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/momentum-io/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ticktick/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jira-data-center-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gebruder-weiss/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/trigger-dev/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-83
+docs/snippets/generated/codegen/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-entra-id/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cal-com-v1/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/missive/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twenty-crm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-business-central/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pylon/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trello/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/quickbase/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wiseagent/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/orchestrator/lib/clients/types.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 19-21,118-119,136
+docs/snippets/generated/lever-basic-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-18,24,30-39,45-46,52-54,60-61,67
+docs/snippets/generated/datacandy/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/drata/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/twenty-crm-self-hosted/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ukg-pro-wfm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner/lib/sdk/sdk.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 2,628-755
+docs/snippets/generated/affinity-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bettercontact/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jiminny/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/ukg-pro-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/amplitude-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fillout-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/orchestrator/lib/routes/v1/schedules/postRun.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 8,18,24,33-34
+docs/snippets/generated/productboard/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ring-central/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-12,18-20
+docs/snippets/generated/twitter-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/nationbuilder/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aws-inspector2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rootly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paycor/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/float/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pendo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/booking-com/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/checkout-com-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vanta/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/exa/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/pubsub/lib/transport/sns-sqs.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 307-324
+packages/runner/lib/clients/persist.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 11,227-246
+docs/snippets/generated/outlook/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-58,63-68
+docs/snippets/generated/payfit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sellsy/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/survey-monkey/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner-sdk/lib/sync.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 21,34-35
+docs/snippets/generated/gamma/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/talentlms/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cin7-core/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/orchestrator/lib/clients/validate.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 38,133-134
+docs/snippets/generated/incident-io/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/airtable/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-54,59-65,71-76,82-86
+docs/snippets/generated/exist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/supabase/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/lambda-runner/lib/schemas.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 31
+docs/snippets/generated/customer-io/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/netsuite/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/fern.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-80
+docs/snippets/generated/zoho-people/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/roller/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/wealthbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zuora/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sharepoint-online/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-9
+docs/snippets/generated/posthog-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/coros-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/checkhq/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cloudflare/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/figjam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-calendar/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/coros/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mcp-generic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/slack/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-11,17-26,32,38,44-46,52-61,67-68,74-76,82-85,91,97,103-104,110-117,123
+docs/snippets/generated/clari-copilot/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/hubspot-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pipedream-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/render-mcp/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/api-integrations/shopware.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-80
+docs/snippets/generated/fitbit/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/adobe-commerce/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/apple-business-manager/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/canvas-lms/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/absorb-lms/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/certn-partner/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/circleback-mcp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/exact-online/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13-14,20-21
+docs/snippets/generated/jobadder/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sage-intacct/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zenefits/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/adp-lyric/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/oura/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/atlassian-service-account-oauth2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aircall/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/twilio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-inventory/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/autotask/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paycor-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/utils/githubTemplates.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-259
+docs/snippets/generated/emarsys/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/canva/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/stripe/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/auth0-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ordinal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paypal-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/anthropic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workday-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zapier-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-maps/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ring-central-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-12,18-20
+docs/snippets/generated/servicenow/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/crisp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bitdefender/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/lumos/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sap-business-one/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/typefully/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/recruitcrm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/signnow/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/epic-games/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/auth/auth-guide.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 41,47-49,52,55-58,60,64,72-73,81-82,84-88,125,129,132,152-167,177,214,216,224,254,262,285-353,356-357,382-383
+docs/snippets/generated/workpath/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/notion-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/persist/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 27
+docs/snippets/generated/freshdesk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13-15,21-22
+docs/snippets/generated/readwise-reader/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/manatal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ashby/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-9,15-16,22,28,34
+docs/guides/auth/connection-tags-configuration-metadata.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-359
+docs/snippets/generated/candis/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/odoo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/docusign/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/trigger-dev/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-40
+docs/snippets/generated/prospeo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trafft/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jiminny/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/posthog/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gitlab/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/azure-blob-storage/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pax8/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/orchestrator/lib/routes/v1/postRecurring.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 11,36
+docs/snippets/generated/autodesk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/contentstack/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pennylane-company-api/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rock-gym-pro/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lastpass/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/gem/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-15,21,27,33,39,45
+docs/snippets/generated/microsoft-word/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/looker/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/blackbaud-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/spotify-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/utils/integrationFiles.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-51
+packages/cli/lib/version.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1
+docs/snippets/generated/instagram/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/utils/lambda.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 14-22,160-176
+packages/metering/lib/crons/usage.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 77-79,122-123,145-146
+docs/snippets/generated/ghost-content/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/breezy-hr/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lightspeed-retail/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/make/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shipstation/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/digits/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/fern/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/conductorone/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jamf/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/highlevel-white-label/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zapier/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/platform/migrations/migrate-from-end-user.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 74,125
+docs/snippets/generated/knowbe4/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/rocketreach/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/squarespace/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/execution/sync.integration.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 204
+docs/snippets/generated/builder-io-private/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/zoho-invoice/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/platform/limits.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 40-42
+docs/snippets/generated/clay/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fiserv-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trigger-dev/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/sap-success-factors/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12,18
+docs/snippets/generated/atlassian-government-cloud/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-powerpoint/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/appstle-subscriptions/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/resend/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/strava/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/garmin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gong-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13
+docs/snippets/generated/pandadoc-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/hibob-service-user/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11
+docs/snippets/generated/ecu360-production/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/videoask.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-82
+docs/snippets/generated/shipbob-pat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/typefully-v2/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/records/lib/db/migrations/20260512000100_create_records_seen.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-29
+docs/snippets/generated/canva-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bliro/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pingone-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/statista/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/render-mcp.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-105
+docs/snippets/generated/kandji/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/reply-io/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/getting-started/quickstart.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3-4,7-12,14-37,39-60,63-76,78-80,82-83,85,87-95,97-99,101-117,120-126,128-129,131-142,148-149
+docs/snippets/generated/heymarket/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/one-note/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/absorb-lms/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/github/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-9,15-16,22-23,29,35-37,43-49,55-58,64-72,78,84-89,95-98,104,110-118
+docs/snippets/generated/icypeas/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/platform/migrations/migrate-from-public-key.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 114-115
+packages/jobs/lib/runner/kubernetes.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 419-421
+docs/snippets/generated/deel/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workos/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/snipe-it/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/retell-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/stackexchange/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workable-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/klicktipp/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/perplexity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/1password-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/algolia/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/confluence-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google-drive/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-16,22,28-29,35-38,44-52,58-59,65-69,75-78
+docs/snippets/generated/lever-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-18,24,30-39,45-46,52-54,60-61,67
+docs/snippets/generated/provenexpert/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/records/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 22
+docs/snippets/generated/klaviyo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/modjo-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner/lib/sdk/locks.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1,16,19-22,79-80,154-155,168,174,179-180,188-189
+docs/snippets/generated/shopware/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/buffer/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/telegram/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/utils/integrationFiles.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-98
+docs/snippets/generated/close/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tumblr/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jobvite/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/signnow-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/orchestrator/lib/routes/v1/postImmediate.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 12,36
+docs/snippets/generated/cursor/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/hex/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/microsoft-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/northbeam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cloudentity/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/minimax/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/linkhut/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner-sdk/lib/action.uncontrolledFetch.unit.test.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-228
+docs/snippets/generated/amazon/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fathom/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/aimfox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/spec.yaml
+  s_c4d4db50307ef7::t_e795863a4861c0 287-366
+docs/snippets/generated/passportal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-23
+docs/snippets/generated/coupa-compass/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lagrowthmachine/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/perdoo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/avoma/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/marketo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fillout/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/helpscout-mailbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/trakstar-hire/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/discourse/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-14
+docs/snippets/generated/paligo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/datto-rmm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/front-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/commercetools/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/intercom/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1,5-85,91-100
+docs/snippets/generated/maxio/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/private-api-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workday-refresh-token/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/webinarjam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/vimeo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/guides/platform/self-hosting.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 72,341
+docs/snippets/generated/lemlist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/runner/lib/exec.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 231
+docs/snippets/generated/stripe-express/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/teamtailor/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/atlassian/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/builtwith/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/canny/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/epc-gov-uk/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/google/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/sap-odata-oauth2-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/yahoo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bullhorn/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/pandadoc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/domo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/8x8/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fullenrich/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/bitbucket/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gong/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13
+docs/snippets/generated/stay-ai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/typeform/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/itglue/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/freshworks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-3
+docs/snippets/generated/wordpress-mcp/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/peopledatalabs/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopify-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/qualia/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/reference/functions/functions-sdk.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 317,352,354,356-371
+docs/snippets/generated/wejam/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/valley/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/jira-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11-13
+docs/snippets/generated/outreach/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/nocrm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/one-drive-personal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/api-integrations/1password-events.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-81
+docs/snippets/generated/greenhouse/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/store-leads/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tiktok-ads/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/okta-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/prive/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/open-hands/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/brex-staging/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/timify/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/paypal/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/tableau/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mixpanel/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/grammarly-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/adobe/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/certn/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/cli/lib/services/clone.service.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 6-7,74,136
+docs/snippets/generated/grain-api-key/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/runner/lambda.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 21,41-97,227-229,232-236,242,271-273
+docs/snippets/generated/lever/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17-18,24,30-39,45-46,52-54,60-61,67
+docs/snippets/generated/avalara-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-8
+docs/snippets/generated/asana-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/cleverreach/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/perimeter81/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/ninjaone-rmm/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/harvest/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/helpscout-docs/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/frontend/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,18
+docs/snippets/generated/gorgias-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-14
+docs/getting-started/use-cases/sample-app.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 30,33,50,70,86,101,123,132,139
+docs/snippets/generated/greenhouse-basic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7
+docs/snippets/generated/anthropic-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/sage-people/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/instantly/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/malwarebytes/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/docs.json
+  s_c4d4db50307ef7::t_e795863a4861c0 24,28,34,72,87,91-99,287-291,649,675,886,888,891,978,1061,1077-1078,1116,1144,1231,1245,1263,1381,1513,1529,1548,1615,1679-1680
+docs/snippets/generated/figma-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/conta-azul/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/mip-on-premise/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/freshworks/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-42
+docs/snippets/generated/monday/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/crisp-plugin-install/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+packages/jobs/lib/processors/lambdaKeepWarm.processor.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 1-94
+docs/snippets/generated/jobber/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/supabase-mcp-oauth/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/plain/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/shopworks/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+managed-manifest.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,5-7,163-169
+docs/snippets/generated/google-cloud-storage/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/quipteams/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ironclad/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/salesforce-cc/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/paddle/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-57
+docs/snippets/generated/digits-mcp/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/connectwise-psa/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/fireflies/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/microsoft-teams/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17
+docs/snippets/generated/atlassian-admin/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/onlogist/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/atlassian-service-account-api-token/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/lucid-scim/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/github-app/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5,11,17
+docs/snippets/generated/airtable-pat/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-54,59-65,71-76,82-86
+docs/api-integrations/knowbe4.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-82
+docs/snippets/generated/expensify/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-7,13
+docs/snippets/generated/greenhouse-assessment/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/health-gorilla/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/redtail-crm-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/api-integrations/huntress/connect.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-54
+docs/snippets/generated/buffer/PreBuiltTooling.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 1-41
+docs/snippets/generated/datto-rmm-password-grant/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/eventbrite/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/ragieai/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/stripe-app-sandbox/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/granola/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/constant-contact/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/accelo/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/workable/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-18
+docs/snippets/generated/toggl/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/gorgias/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5-6,12-14
+docs/snippets/generated/grain/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/replicate/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/private-api-bearer/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/leadmagic/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/luma/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 5
+docs/snippets/generated/whatsapp-business/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+docs/snippets/generated/schwab/PreBuiltUseCases.mdx
+  s_c4d4db50307ef7::t_e795863a4861c0 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "c4cb076162eea59edf1d7158ff22a985e19cd405",
+  "prompts": {},
+  "sessions": {
+    "s_c4d4db50307ef7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
