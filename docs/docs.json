@@ -1092,6 +1092,7 @@
               "integrations/all/e-conomic",
               "integrations/all/ebay",
               "integrations/all/ebay-sandbox",
+              "api-integrations/easypost",
               "api-integrations/ecu360",
               "api-integrations/ecu360-production",
               "integrations/all/egnyte",
