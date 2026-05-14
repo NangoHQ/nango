@@ -143,6 +143,7 @@ export async function getRecords({
         ...(activeSpan ? { childOf: activeSpan } : {}),
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
+    const results: ReturnedRecord[] = [];
     try {
         if (!model) {
             const error = new Error('missing_model');
@@ -271,27 +272,30 @@ export async function getRecords({
             }
         }
 
-        const results: ReturnedRecord[] = [];
-
-        // TODO: decrypt in batch
-        for (const item of recordsMetadata) {
-            const data = dataById.get(item.id) ?? item.json ?? {};
-            // Drop the only remaining reference to the encrypted blob so V8 can
-            // reclaim it when GC fires under heap pressure.
-            dataById.delete(item.id);
-            const decryptedData = await decryptRecordData({ ...item, json: data });
-            results.push({
-                ...decryptedData,
-                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                _nango_metadata: {
-                    first_seen_at: item.first_seen_at,
-                    last_modified_at: item.last_modified_at,
-                    last_action: item.last_action,
-                    deleted_at: item.deleted_at,
-                    pruned_at: item.pruned_at,
-                    cursor: Cursor.new(item)
-                }
-            });
+        const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+        try {
+            // TODO: decrypt in batch
+            for (const item of recordsMetadata) {
+                const data = dataById.get(item.id) ?? item.json ?? {};
+                // Drop the only remaining reference to the encrypted blob so V8 can
+                // reclaim it when GC fires under heap pressure.
+                dataById.delete(item.id);
+                const decryptedData = await decryptRecordData({ ...item, json: data });
+                results.push({
+                    ...decryptedData,
+                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                    _nango_metadata: {
+                        first_seen_at: item.first_seen_at,
+                        last_modified_at: item.last_modified_at,
+                        last_action: item.last_action,
+                        deleted_at: item.deleted_at,
+                        pruned_at: item.pruned_at,
+                        cursor: Cursor.new(item)
+                    }
+                });
+            }
+        } finally {
+            decryptSpan.finish();
         }
 
         // all records for the same connection/model are in the same partition
@@ -317,6 +321,7 @@ export async function getRecords({
         span.setTag('error', e);
         return Err(e);
     } finally {
+        span.setTag('records.count', results.length);
         span.finish();
     }
 }
