@@ -1,0 +1,46 @@
+packages/server/lib/services/remote-function/dryrun-client.unit.test.ts
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 48
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 94,118
+  s_c4d4db50307ef7::t_cdf624208c85cd 49
+packages/server/lib/services/remote-function/cli-exit-codes.ts
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 32,34,42,44
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 1
+  s_c4d4db50307ef7::t_cdf624208c85cd 3
+packages/server/tsconfig.json
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 42-43
+packages/cli/lib/index.ts
+  s_c4d4db50307ef7::t_cdf624208c85cd 16
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 15
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 237,243,312,383,390,396,419,466,476,482,488
+packages/runner-sdk/lib/index.ts
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 8
+package-lock.json
+  ai_agent 36533
+packages/runner-sdk/lib/cliExitCodes.ts
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 1-5
+packages/server/lib/services/remote-function/deploy-client.unit.test.ts
+  s_c4d4db50307ef7::t_516fe1fcc28ab1 103
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 90
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 48
+  s_c4d4db50307ef7::t_cdf624208c85cd 49
+managed-manifest.json
+  s_c4d4db50307ef7::t_96029735a578ad 2-172
+packages/server/package.json
+  s_c4d4db50307ef7::t_7f5ac0cf3711d3 37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "1cf9da3a2401b3399957e7ac344d78601315c681",
+  "prompts": {},
+  "sessions": {
+    "s_c4d4db50307ef7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
