@@ -354,20 +354,40 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
     return forwardedHeaders;
 }
 
+/**
+ * Checks whether the response was compressed (`content-encoding` header was set) before axios processed it.
+ */
+function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined {
+    const contentEncoding = responseStream.headers['content-encoding'] || '';
+    // if `content-encoding` header wasn't stripped by axios, the response is compressed
+    if (contentEncoding) return true;
+
+    const rawHeaders = responseStream.request?.res?.rawHeaders;
+    // if raw headers are not available, we can't determine whether the response was compressed
+    if (!rawHeaders || !Array.isArray(rawHeaders)) return undefined;
+
+    const ceIdx = rawHeaders.findIndex((h: unknown) => typeof h === 'string' && h.toLowerCase() === 'content-encoding');
+    // if `content-encoding` header is present in raw headers, the response was originally compressed and the header was stripped by axios
+    return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
+}
+
 export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
-    const contentEncoding = responseStream.headers['content-encoding'] || '';
 
     const isChunked = transferEncoding === 'chunked';
-    const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
-    if (isChunked || isEncoded || isAttachmentOrInline) {
+    if (isChunked || isAttachmentOrInline) {
+        const passthroughHeaders = Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders;
+        if (checkWasCompressed(responseStream)) {
+            // axios decompressed the response, so the `content-length` header is no longer valid
+            delete passthroughHeaders['content-length'];
+        }
         const passThroughStream = new PassThrough();
         responseStream.data.pipe(passThroughStream);
         passThroughStream.pipe(res);
-        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
+        res.writeHead(responseStream.status, passthroughHeaders);
 
         metrics.increment(metrics.Types.PROXY_SUCCESS);
         await logCtx.success();
