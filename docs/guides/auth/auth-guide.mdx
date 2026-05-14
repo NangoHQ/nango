@@ -66,7 +66,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
     <Tip>Each API has a dedicated [Nango documentation page](/integrations/overview) with setup notes and gotchas.</Tip>
 
-    <Accordion title="⚠️ OAuth developer apps">
+    <Accordion title="⚠️ OAuth app setup">
       OAuth APIs require an OAuth developer app registered with the provider. Register one on the provider's developer portal, use the `Callback URL` shown in your Nango integration settings, then paste the `Client ID` and `Client Secret` back into Nango. Register any required scopes too.
 
       If this integration will be used in production, complete the optional custom callback URL step below before real users connect. Retrofitting a callback URL later requires updating the provider app and can break new authorization or reconnect flows until the provider and Nango settings match.
