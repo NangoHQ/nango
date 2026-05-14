@@ -64,12 +64,9 @@ class RemoteFileService {
         destinationPath: string;
         destinationLocalFileName: string;
     }): Promise<string | null> {
-        if (isEnterprise && !this.useS3) {
+        if (!this.useS3) {
             localFileService.putIntegrationFile({ fileName: destinationLocalFileName, fileContent: content });
 
-            return '_LOCAL_FILE_';
-        }
-        if (!this.useS3) {
             return '_LOCAL_FILE_';
         }
 

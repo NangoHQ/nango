@@ -11,7 +11,7 @@ description: 'Authorize an API and run your first Nango function'
 This quickstart uses the GitHub API as an example, but you can choose any of the [700+ APIs](/integrations/overview).
 
 <Steps>
-  <Step title="Create an integration">
+  <Step id="create-integration" title="Create an integration">
     [Sign up](https://app.nango.dev/signup) for free. This quickstart uses GitHub (User OAuth), which is pre-created with integration ID `github-getting-started`.
 
     If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
@@ -37,7 +37,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     </Accordion>
   </Step>
 
-  <Step title="Authorize the API">
+  <Step id="authorize-api" title="Authorize the API">
     Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow. For the GitHub example, pick `github-getting-started`.
 
     Copy the connection ID and your Nango API key from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
@@ -60,7 +60,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     </Accordion>
   </Step>
 
-  <Step title="Enable a template function">
+  <Step id="enable-template-function" title="Enable a template function">
     Open your integration and enable a template function. For GitHub, enable the `get-repository` template.
 
     This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
@@ -72,7 +72,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     </Accordion>
   </Step>
 
-  <Step title="Call the function">
+  <Step id="call-function" title="Call the function">
     Trigger the function from your backend:
 
     <Tabs>
@@ -120,13 +120,13 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     You should receive GitHub repository details such as the repository ID, full name, visibility, default branch, and owner.
   </Step>
 
-  <Step title="Inspect the run">
+  <Step id="inspect-run" title="Inspect the run">
     Open the Logs tab to inspect the function execution, provider request, response, and any errors.
 
     🎉 You connected an API and ran your first integration function.
   </Step>
 
-  <Step title="Next steps">
+  <Step id="choose-next-steps" title="Next steps">
     <CardGroup cols={2}>
       <Card title="Embed auth in your app" icon="lock" href="/guides/auth/auth-guide">
         Let users connect external APIs from your product.

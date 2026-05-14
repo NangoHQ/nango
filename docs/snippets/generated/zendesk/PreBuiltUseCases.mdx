@@ -1,37 +1,93 @@
-### Categories
+### Articles
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-category` | Create a category within the help center | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-category.ts) |
-| `categories` | Fetches a list of help center categories | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/categories.ts) |
+| `list-articles` | List Zendesk Help Center articles with pagination | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-articles.ts) |
 
-### Sections
+### Groups
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-section` | Create a section within a category in the help center | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-section.ts) |
-| `sections` | Fetches a list of sections in Help center from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/sections.ts) |
+| `get-group` | Retrieve a group by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-group.ts) |
+| `list-groups` | List support groups | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-groups.ts) |
+| `groups` | Sync support groups from Zendesk. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/groups.ts) |
+
+### Help Center
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-category` | Create a Zendesk Help Center category | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-category.ts) |
+| `create-section` | Create a Zendesk Help Center section | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-section.ts) |
+| `get-article` | Retrieve a Zendesk Help Center article by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-article.ts) |
+
+### Macros
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-macros` | List ticket macros available to the account | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-macros.ts) |
+
+### Organizations
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-organization` | Create an organization in Zendesk Support | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-organization.ts) |
+| `get-organization` | Retrieve an organization by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-organization.ts) |
+| `list-organizations` | List organizations in Zendesk Support. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-organizations.ts) |
+| `update-organization` | Update an existing organization in Zendesk. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/update-organization.ts) |
+
+### Ticket Fields
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-ticket-field` | Retrieve a ticket field by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-ticket-field.ts) |
+
+### Ticket Forms
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-ticket-form` | Retrieve a ticket form by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-ticket-form.ts) |
+| `list-ticket-forms` | List ticket forms for the account. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-ticket-forms.ts) |
 
 ### Tickets
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-ticket` | Create a Zendesk ticket | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-ticket.ts) |
-| `tickets` | Fetches a list of tickets from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/tickets.ts) |
+| `create-ticket` | Create a support ticket in Zendesk | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-ticket.ts) |
+| `get-ticket-comments` | List comments for a ticket. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-ticket-comments.ts) |
+| `get-ticket` | Retrieve a ticket by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-ticket.ts) |
+| `list-ticket-fields` | List ticket fields for the account. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-ticket-fields.ts) |
+| `list-tickets` | List tickets in Zendesk Support | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-tickets.ts) |
+| `search-tickets` | Search tickets with Zendesk search syntax. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/search-tickets.ts) |
+| `update-ticket` | Update an existing ticket and optionally add a comment | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/update-ticket.ts) |
 
 ### Users
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-user` | Create an admin or agent user in Zendesk. Defaults to agent if a role is not provided | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-user.ts) |
-| `delete-user` | Delete a user in Zendesk | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/delete-user.ts) |
+| `create-user` | Create a user in Zendesk Support. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/create-user.ts) |
+| `delete-user` | Delete a Zendesk user | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/delete-user.ts) |
+| `get-user` | Retrieve a user by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/get-user.ts) |
+| `list-users` | List users in Zendesk Support. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-users.ts) |
+| `update-user` | Update an existing user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/update-user.ts) |
+
+### Views
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-views` | List ticket views for the account | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/list-views.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-article` | Fetch a single full help center article | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/fetch-article.ts) |
-| `fetch-articles` | Fetch all help center articles metadata | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/fetch-articles.ts) |
-| `search-tickets` | An action that performs a search for tickets in Zendesk based on the specified filter. It can take up to a few minutes for new tickets and users to be indexed for search. If new resources don't appear in your search results, wait a few minutes and try again. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/actions/search-tickets.ts) |
-| `articles` | Fetches a list of articles in Help center from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/articles.ts) |
-| `users` | Fetches a list of admin or agent users from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/users.ts) |
+| `articles` | Sync Zendesk Help Center articles | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/articles.ts) |
+| `categories` | Sync Zendesk Help Center categories | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/categories.ts) |
+| `macros` | Sync ticket macros from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/macros.ts) |
+| `organizations` | Sync organizations from Zendesk using incremental export | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/organizations.ts) |
+| `sections` | Sync Zendesk Help Center sections | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/sections.ts) |
+| `ticket-comments` | Sync comments for tickets in scope | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/ticket-comments.ts) |
+| `ticket-fields` | Sync ticket field definitions from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/ticket-fields.ts) |
+| `ticket-forms` | Sync ticket forms from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/ticket-forms.ts) |
+| `tickets` | Sync tickets from Zendesk Support | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/tickets.ts) |
+| `users` | Sync users from Zendesk Support using incremental cursor-based exports | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/users.ts) |
+| `views` | Sync ticket views from Zendesk | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/zendesk/syncs/views.ts) |

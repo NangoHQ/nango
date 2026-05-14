@@ -63,6 +63,7 @@ import { getIntegrations } from './controllers/v1/integrations/getIntegrations.j
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
 import { getIntegrationFlows } from './controllers/v1/integrations/providerConfigKey/flows/getFlows.js';
+import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
@@ -86,6 +87,7 @@ import { getBillingUsage } from './controllers/v1/plans/usage/getBillingUsage.js
 import { getUsage } from './controllers/v1/plans/usage/getUsage.js';
 import { getProviderItem } from './controllers/v1/providers/getProvider.js';
 import { getProvidersList } from './controllers/v1/providers/getProviders.js';
+import { getProviderTemplates } from './controllers/v1/providers/providerConfigKey/templates/getTemplates.js';
 import { deleteStripePaymentMethod } from './controllers/v1/stripe/payment_methods/deletePaymentMethod.js';
 import { getStripePaymentMethods } from './controllers/v1/stripe/payment_methods/getPaymentMethods.js';
 import { postStripeCollectPayment } from './controllers/v1/stripe/payment_methods/postCollectPayment.js';
@@ -226,10 +228,12 @@ web.route('/integrations/:providerConfigKey').get(webAuth, can({ action: 'read',
 web.route('/integrations/:providerConfigKey').patch(webAuth, can({ action: 'update', resource: 'integration', scopedBy: envScope }), patchIntegration);
 web.route('/integrations/:providerConfigKey').delete(webAuth, can({ action: 'delete', resource: 'integration', scopedBy: envScope }), deleteIntegration);
 web.route('/integrations/:providerConfigKey/flows').get(webAuth, getIntegrationFlows);
+web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunctions);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);
 web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
+web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
 
 // Connections
 web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);

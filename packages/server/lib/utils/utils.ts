@@ -289,6 +289,8 @@ export function getOrchestrator() {
 
 export function isBinaryContentType(contentType: string | undefined): boolean {
     if (!contentType) return false;
+    const base = contentType.split(';')[0]!.trim().toLowerCase();
+    if (base === 'application/json' || base === 'application/x-www-form-urlencoded') return false;
     return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
 }
 

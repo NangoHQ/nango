@@ -1,0 +1,41 @@
+---
+title: Shippo - How do I link my account?
+sidebarTitle: Shippo
+---
+
+# Overview
+
+To authenticate with Shippo, you will need:
+1. **API Token** - A Shippo API token (live or test) that grants Nango access to your account.
+
+Shippo issues two token types:
+- **Live tokens** — prefix `shippo_live_`, used for production.
+- **Test tokens** — prefix `shippo_test_`, used for development and testing.
+
+### Prerequisites
+
+- You must have a Shippo account. [Sign up](https://goshippo.com) if you don't have one.
+
+### Instructions
+
+#### Step 1: Get your API token
+
+1. Log in and go to the [Shippo API config page](https://portal.goshippo.com/api-config/api).
+2. Generate the token type that matches your use case:
+   - **Test token** (`shippo_test_...`) — for development and testing, no real shipments or charges.
+   - **Live token** (`shippo_live_...`) — for production, real shipments and billing apply.
+3. Copy the generated token and store it securely.
+
+<img src="/api-integrations/shippo/generate_api_key.png"/>
+
+
+#### Step 2: Enter your API token in the Connect UI
+
+1. Open the form where you need to authenticate with Shippo.
+2. Paste your API token into the **API Token** field.
+3. Submit the form. You are now connected to Shippo.
+
+
+<img src="/api-integrations/shippo/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Shippo.

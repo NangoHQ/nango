@@ -70,6 +70,9 @@ export type UsageRecordsEvent = UsageEventBase<
         properties: {
             syncId: string;
             model: string;
+            // Set by the metering observability cron only. Groups all events emitted by a single
+            // cron firing so the read side can reconstruct per-firing account totals.
+            batchId?: string;
         };
     }
 >;
@@ -99,6 +102,11 @@ export type UsageConnectionsEvent = UsageEventBase<
     'usage.connections',
     {
         value: number;
+        properties: {
+            // Set by the metering observability cron only. Groups all events emitted by a single
+            // cron firing so the read side can reconstruct per-firing account totals.
+            batchId?: string;
+        };
     }
 >;
 

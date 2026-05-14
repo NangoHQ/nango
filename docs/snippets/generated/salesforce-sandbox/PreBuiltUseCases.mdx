@@ -1,49 +1,100 @@
-### Accounts
+### Composite
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-account` | Create a single account in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-account.ts) |
-| `delete-account` | Delete a single account in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-account.ts) |
-| `update-account` | Update a single account in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-account.ts) |
-| `accounts` | Fetches a list of accounts from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/accounts.ts) |
+| `composite-batch-request` | Execute multiple independent Salesforce REST subrequests in one batch call | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/composite-batch-request.ts) |
+| `composite-graph-request` | Execute a dependent graph of subrequests in one composite graph call. Supports up to 500 subrequests across multiple graphs with automatic rollback on failure. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/composite-graph-request.ts) |
+| `composite-request` | Execute multiple Salesforce REST subrequests in one composite call. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/composite-request.ts) |
 
-### Contacts
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `create-contact` | Create a single contact in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-contact.ts) |
-| `delete-contact` | Delete a single contact in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-contact.ts) |
-| `update-contact` | Update a single contact in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-contact.ts) |
-| `contacts` | Fetches a list of contacts from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/contacts.ts) |
-
-### Leads
+### Identity
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-lead` | Create a single lead in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-lead.ts) |
-| `delete-lead` | Delete a single lead in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-lead.ts) |
-| `update-lead` | Update a single lead in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-lead.ts) |
-| `leads` | Fetches a list of leads from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/leads.ts) |
+| `get-current-user` | Retrieve the current Salesforce user and org identity context. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-current-user.ts) |
 
-### Opportunities
+### Limits
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-opportunity` | Create a single opportunity in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-opportunity.ts) |
-| `delete-opportunity` | Delete a single opportunity in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-opportunity.ts) |
-| `update-opportunity` | Update a single opportunity in salesforce | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-opportunity.ts) |
-| `opportunities` | Fetches a list of opportunities from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/opportunities.ts) |
+| `get-limits` | Retrieve current org API usage and platform limits | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-limits.ts) |
 
-### Users
+### Metadata
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `whoami` | Fetch current user information | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/whoami.ts) |
+| `describe-global` | List available sObject types and global metadata for the org. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/describe-global.ts) |
+| `describe-sobject` | Retrieve schema metadata for a specific sObject type | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/describe-sobject.ts) |
+| `get-sobject-basic-info` | Retrieve basic metadata for a specific sObject type including object properties, recent items, and URIs for related resources. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-sobject-basic-info.ts) |
+
+### Query
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `query-all-records` | Run a SOQL query that also includes deleted and archived records. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/query-all-records.ts) |
+| `query-records` | Run a SOQL query and return matching records | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/query-records.ts) |
+| `retrieve-query-more` | Continue a SOQL query using a nextRecordsUrl locator | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/retrieve-query-more.ts) |
+
+### Quick Actions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-quick-actions` | List quick actions available in the org or on an sObject | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/list-quick-actions.ts) |
+
+### Recent Items
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-recent-items` | List recently viewed records visible to the authenticated user | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/list-recent-items.ts) |
+
+### Records
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-record` | Create a Salesforce sObject record for a specified object type. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-record.ts) |
+| `delete-record` | Delete a Salesforce sObject record by type and record ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-record.ts) |
+| `get-record-by-external-id` | Retrieve a record by external ID field and value. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-record-by-external-id.ts) |
+| `get-record` | Retrieve a Salesforce record by object type and record ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-record.ts) |
+| `update-record-by-external-id` | Update a record by external ID field and value. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-record-by-external-id.ts) |
+| `update-record` | Partially update a Salesforce record by object type and record ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-record.ts) |
+| `upsert-record` | Create or update a Salesforce record using an external ID field. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/upsert-record.ts) |
+
+### Resources
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-available-resources` | Discover supported Salesforce REST resource versions and root URLs. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/list-available-resources.ts) |
+
+### SObject Collections
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-sobject-collection` | Create multiple sObject records in one collection request. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/create-sobject-collection.ts) |
+
+### Search
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `parameterized-search-records` | Run a parameterized search request across Salesforce objects. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/parameterized-search-records.ts) |
+| `search-records` | Run a SOSL search across searchable Salesforce objects | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/search-records.ts) |
+
+### sObject Collections
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-sobject-collection` | Delete multiple records in one sObject collection request. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/delete-sobject-collection.ts) |
+| `update-sobject-collection` | Update multiple records in one sObject collection request | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/update-sobject-collection.ts) |
+| `upsert-sobject-collection` | Upsert multiple records using external IDs in one collection request | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/upsert-sobject-collection.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `fetch-fields` | Fetch available task fields, child relationships and validation rules. If the input is not specified then it defaults back to "Task" Data Validation: Parses all incoming data with Zod. Does not fail on parsing error will instead log parse error and return result. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/fetch-fields.ts) |
-| `articles` | Fetches a list of articles from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/articles.ts) |
-| `tickets` | Fetches a list of tickets from salesforce | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/tickets.ts) |
+| `get-quick-action-defaults` | Retrieve default field values for a quick action | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/actions/get-quick-action-defaults.ts) |
+| `accounts` | Sync Salesforce Account records with a practical default field set | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/accounts.ts) |
+| `articles` | Sync Salesforce knowledge articles with title, content, and modified timestamps | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/articles.ts) |
+| `cases` | Sync Salesforce Case records with common service and status fields. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/cases.ts) |
+| `contacts` | Sync Salesforce Contact records with a practical default field set | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/contacts.ts) |
+| `opportunities` | Sync Salesforce Opportunity records with amount, stage, close date, and owner fields. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/opportunities.ts) |
+| `records-by-soql` | Sync arbitrary Salesforce records from a caller-provided SOQL query | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/records-by-soql.ts) |
+| `tickets` | Sync Salesforce case tickets with core fields and related conversation context. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/tickets.ts) |
+| `users` | Sync Salesforce User records with profile, email, and active state fields. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/salesforce/syncs/users.ts) |

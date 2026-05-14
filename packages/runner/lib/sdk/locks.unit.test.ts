@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryKVStore } from '@nangohq/kvstore';
 
@@ -13,7 +13,12 @@ describe.each([
     let locks: Locks;
 
     beforeEach(() => {
+        vi.useFakeTimers();
         locks = createLocks();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
     describe('tryAcquireLock input validation', () => {
         it('should fail to acquire a lock with an empty key', async () => {
@@ -71,8 +76,8 @@ describe.each([
         });
 
         it('should successfully acquire an expired lock', async () => {
-            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 2)); // Wait for the lock to expire
+            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 100 });
+            vi.advanceTimersByTime(101);
 
             const res = await locks.tryAcquireLock({ owner: 'owner2', key: 'resource1', ttlMs: 1000 });
             expect(res.unwrap()).toBe(true);
@@ -146,8 +151,8 @@ describe.each([
         });
 
         it('should return false if the locks is expired', async () => {
-            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 10)); // Wait for the lock to expire
+            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 100 });
+            vi.advanceTimersByTime(101);
 
             const res = await locks.hasLock({ owner: 'owner1', key: 'resource1' });
             expect(res.unwrap()).toBe(false);
@@ -160,17 +165,19 @@ describe('KVLocks race regressions', () => {
     let locks: KVLocks;
 
     beforeEach(() => {
+        vi.useFakeTimers();
         store = new InMemoryKVStore();
         locks = new KVLocks(store);
     });
 
     afterEach(async () => {
+        vi.useRealTimers();
         await store.destroy();
     });
 
     it('releaseLock by a former owner must not remove the lock after another owner acquired post-expiry', async () => {
-        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff', ttlMs: 25 })).unwrap()).toBe(true);
-        await new Promise((r) => setTimeout(r, 80));
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff', ttlMs: 100 })).unwrap()).toBe(true);
+        vi.advanceTimersByTime(101);
         expect((await locks.tryAcquireLock({ owner: 'owner2', key: 'handoff', ttlMs: 10_000 })).unwrap()).toBe(true);
 
         expect((await locks.releaseLock({ owner: 'owner1', key: 'handoff' })).unwrap()).toBe(false);
@@ -178,8 +185,8 @@ describe('KVLocks race regressions', () => {
     });
 
     it('tryAcquireLock by a former owner must not take the lock after another owner acquired post-expiry', async () => {
-        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff-acq', ttlMs: 25 })).unwrap()).toBe(true);
-        await new Promise((r) => setTimeout(r, 80));
+        expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff-acq', ttlMs: 100 })).unwrap()).toBe(true);
+        vi.advanceTimersByTime(101);
         expect((await locks.tryAcquireLock({ owner: 'owner2', key: 'handoff-acq', ttlMs: 10_000 })).unwrap()).toBe(true);
 
         expect((await locks.tryAcquireLock({ owner: 'owner1', key: 'handoff-acq', ttlMs: 10_000 })).unwrap()).toBe(false);

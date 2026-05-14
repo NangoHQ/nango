@@ -29,10 +29,9 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
     const body: PostDeploy['Body'] = val.data;
     const { environment, account, plan } = res.locals;
 
-    // we don't allow concurrent deploys so we need to lock this
-    // and reject this deploy if there is already a deploy in progress
+    // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
     const locking = await getLocking();
-    const ttlMs = 60 * 1000;
+    const ttlMs = process.env['DEPLOY_LOCK_TTL_MS'] ? parseInt(process.env['DEPLOY_LOCK_TTL_MS']) : 10 * 60 * 1000; // max expected deploy duration
     const lockKey = `lock:deployService:deploy:${account.id}:${environment.id}`;
     let lock: Lock | undefined;
 
@@ -49,65 +48,64 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         return;
     }
 
-    const {
-        success,
-        error,
-        response: syncConfigDeployResult
-    } = await deploy({
-        environment,
-        account,
-        flows: cleanIncomingFlow(body.flowConfigs),
-        nangoYamlBody: body.nangoYamlBody,
-        onEventScriptsByProvider: body.onEventScriptsByProvider,
-        debug: body.debug,
-        aggregatedJsonSchema: body.jsonSchema,
-        logContextGetter,
-        sdkVersion: body.sdkVersion,
-        orchestrator,
-        source: body.source ?? ('repo' as const)
-    });
+    try {
+        const {
+            success,
+            error,
+            response: syncConfigDeployResult
+        } = await deploy({
+            environment,
+            account,
+            flows: cleanIncomingFlow(body.flowConfigs),
+            nangoYamlBody: body.nangoYamlBody,
+            onEventScriptsByProvider: body.onEventScriptsByProvider,
+            debug: body.debug,
+            aggregatedJsonSchema: body.jsonSchema,
+            logContextGetter,
+            sdkVersion: body.sdkVersion,
+            orchestrator,
+            source: body.source ?? 'repo'
+        });
 
-    if (plan && !plan.trial_end_at && plan.auto_idle) {
-        await startTrial(db.knex, plan);
-        productTracking.track({ name: 'account:trial:started', team: account });
-    }
+        if (plan && !plan.trial_end_at && plan.auto_idle) {
+            await startTrial(db.knex, plan);
+            productTracking.track({ name: 'account:trial:started', team: account });
+        }
 
-    if (!success || !syncConfigDeployResult) {
+        if (!success || !syncConfigDeployResult) {
+            errorManager.errResFromNangoErr(res, error);
+            return;
+        }
+
+        if (body.reconcile) {
+            const logCtx = syncConfigDeployResult.logCtx;
+            const success = await getAndReconcileDifferences({
+                environmentId: environment.id,
+                flows: body.flowConfigs,
+                performAction: body.reconcile,
+                debug: body.debug,
+                deployMode: body.deployMode,
+                logCtx,
+                logContextGetter,
+                orchestrator
+            });
+            if (!success) {
+                res.status(500).send({
+                    error: {
+                        code: 'server_error',
+                        message: 'There was an error deploying syncs, please check the activity tab and report this issue to support'
+                    }
+                });
+                return;
+            }
+        }
+
+        productTracking.track({ name: 'deploy:success', team: account });
+
+        res.send(syncConfigDeployResult.result);
+    } finally {
         if (lock) {
             await locking.release(lock);
         }
-        errorManager.errResFromNangoErr(res, error);
-        return;
     }
-
-    if (body.reconcile) {
-        const logCtx = syncConfigDeployResult.logCtx;
-        const success = await getAndReconcileDifferences({
-            environmentId: environment.id,
-            flows: body.flowConfigs,
-            performAction: body.reconcile,
-            debug: body.debug,
-            deployMode: body.deployMode,
-            logCtx,
-            logContextGetter,
-            orchestrator
-        });
-        if (!success) {
-            if (lock) {
-                await locking.release(lock);
-            }
-            res.status(500).send({
-                error: { code: 'server_error', message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' }
-            });
-            return;
-        }
-    }
-
-    productTracking.track({ name: 'deploy:success', team: account });
-
-    if (lock) {
-        await locking.release(lock);
-    }
-
-    res.send(syncConfigDeployResult.result);
 });
