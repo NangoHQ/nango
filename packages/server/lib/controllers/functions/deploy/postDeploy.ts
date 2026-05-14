@@ -12,7 +12,7 @@ import { remoteFunctionDeployBodySchema } from '../validation.js';
 
 import type { PostRemoteFunctionDeploy } from '@nangohq/types';
 
-const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
+const sandboxApiKeyTimeoutBufferMs = 5 * 60 * 1000;
 
 export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);

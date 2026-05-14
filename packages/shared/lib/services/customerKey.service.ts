@@ -398,6 +398,24 @@ class CustomerKeyService {
         }
     }
 
+    public async deleteExpiredSystemManagedApiKeys(trx: Knex, { limit, olderThan }: { limit: number; olderThan: number }): Promise<number> {
+        const dateThreshold = new Date();
+        dateThreshold.setDate(dateThreshold.getDate() - olderThan);
+
+        return await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+            .whereIn('id', function (sub) {
+                void sub
+                    .select('id')
+                    .from<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                    .where('key_type', 'api')
+                    .where('system_managed', true)
+                    .whereNotNull('expires_at')
+                    .where('expires_at', '<=', dateThreshold.toISOString())
+                    .limit(limit);
+            })
+            .delete();
+    }
+
     private async hashSecret(plainText: string): Promise<Result<string>> {
         try {
             if (!encryptionManager.shouldEncrypt()) {

@@ -70,6 +70,7 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_JOBS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
+    CRON_DELETE_OLD_SYSTEM_MANAGED_CUSTOMER_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
     CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
     CRON_DELETE_OLD_SYNCS_MAX_DAYS: z.coerce.number().optional().default(1),

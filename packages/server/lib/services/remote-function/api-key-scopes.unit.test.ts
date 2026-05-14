@@ -31,4 +31,13 @@ describe('remote function API key scopes', () => {
             'environment:proxy'
         ]);
     });
+
+    it('keeps wildcard caller scopes and avoids duplicate baseline scopes', () => {
+        expect(buildDryrunSandboxScopes(['environment:*', 'environment:proxy'])).toStrictEqual([
+            'environment:*',
+            'environment:proxy',
+            'environment:connections:read',
+            'environment:integrations:read'
+        ]);
+    });
 });

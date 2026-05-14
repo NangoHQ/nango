@@ -172,7 +172,7 @@ describe('Account service', () => {
         expect(bySecretKey).toBeNull();
     });
 
-    it('should hide system managed API keys from environment API key listing', async () => {
+    it('should retrieve account context with a system managed customer key', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
@@ -184,12 +184,17 @@ describe('Account service', () => {
             scopes: ['environment:dryrun'],
             expiresAt: new Date(Date.now() + 60 * 1000)
         });
-        systemKey.unwrap();
+        const key = systemKey.unwrap();
 
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const bySecretKey = await accountService.getAccountContext({ secretKey: key.secret });
 
-        expect(apiKeys).toHaveLength(1);
-        expect(apiKeys[0]!.display_name).toBe('Default - Full access');
+        expect(bySecretKey?.account.id).toBe(account.id);
+        expect(bySecretKey?.environment.id).toBe(environment!.id);
+        expect(bySecretKey?.auth).toStrictEqual({
+            source: 'customer_key',
+            scopes: ['environment:dryrun'],
+            apiKeyId: key.id
+        });
     });
 
     it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {

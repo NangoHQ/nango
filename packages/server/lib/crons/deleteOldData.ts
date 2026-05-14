@@ -7,6 +7,7 @@ import { getLocking } from '@nangohq/kvstore';
 import {
     configService,
     connectionService,
+    customerKeyService,
     deleteExpiredInvitations,
     deleteJobsByDate,
     environmentService,
@@ -37,6 +38,7 @@ const deleteJobsOlderThan = envs.CRON_DELETE_OLD_JOBS_MAX_DAYS;
 
 const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS;
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
+const deleteSystemManagedCustomerKeysOlderThan = envs.CRON_DELETE_OLD_SYSTEM_MANAGED_CUSTOMER_KEYS_MAX_DAYS;
 const deleteOauthSessionOlderThan = envs.CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS;
 const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
 const deleteSyncsOlderThan = envs.CRON_DELETE_OLD_SYNCS_MAX_DAYS;
@@ -111,6 +113,14 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'private keys',
             deleteFn: async () => await deleteExpiredPrivateKeys(db.knex, { olderThan: deletePrivateKeysOlderThan, limit })
+        });
+
+        // Delete system managed API keys after they have been expired for the retention window.
+        await batchDelete({
+            ...opts,
+            name: 'system managed API keys',
+            deleteFn: async () =>
+                await customerKeyService.deleteExpiredSystemManagedApiKeys(db.knex, { olderThan: deleteSystemManagedCustomerKeysOlderThan, limit })
         });
 
         // Delete oauth sessions

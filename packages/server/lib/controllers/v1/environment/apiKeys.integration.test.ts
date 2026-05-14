@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -45,6 +45,32 @@ describe('API Keys endpoints', () => {
                 secret: expect.any(String),
                 created_at: expect.any(String)
             });
+        });
+
+        it('should not list system managed api keys', async () => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+            const systemKey = await customerKeyService.createEphemeralApiKey(db.knex, {
+                accountId: account.id,
+                environmentId: env.id,
+                displayName: 'Remote function dryrun',
+                scopes: ['environment:dryrun'],
+                expiresAt: new Date(Date.now() + 60 * 1000)
+            });
+            const key = systemKey.unwrap();
+
+            const res = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'GET',
+                // @ts-expect-error query params are required
+                query: { env: env.name },
+                session
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toHaveLength(1);
+            expect(res.json.data.map((apiKey: { id: number }) => apiKey.id)).not.toContain(key.id);
+            expect(res.json.data[0]!.display_name).toBe('Default - Full access');
         });
     });
 
