@@ -45,7 +45,8 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 
-import { NANGO_CLI_COMPILE_ERROR_EXIT_CODE, NANGO_CLI_DEPLOY_ERROR_EXIT_CODE } from './cli-exit-codes.js';
+import { NangoCliExitCode } from '@nangohq/runner-sdk';
+
 import { invokeDeploy } from './deploy-client.js';
 
 import type { RemoteFunctionError } from './helpers.js';
@@ -86,7 +87,7 @@ describe('remote function deploy client', () => {
     });
 
     it('returns a compilation_error when deploy exits with the compile phase exit code', async () => {
-        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NANGO_CLI_COMPILE_ERROR_EXIT_CODE));
+        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NangoCliExitCode.CompileError));
 
         await expect(invokeDeploy(request)).rejects.toMatchObject({
             code: 'compilation_error',
@@ -99,9 +100,7 @@ describe('remote function deploy client', () => {
     });
 
     it('returns a deployment_error when deploy exits with the deploy phase exit code regardless of output text', async () => {
-        mocks.run.mockRejectedValueOnce(
-            new mocks.CommandExitError('command failed', 'Found 1 error from deployment API', '', NANGO_CLI_DEPLOY_ERROR_EXIT_CODE)
-        );
+        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'Found 1 error from deployment API', '', NangoCliExitCode.DeployError));
 
         await expect(invokeDeploy(request)).rejects.toMatchObject({
             code: 'deployment_error',

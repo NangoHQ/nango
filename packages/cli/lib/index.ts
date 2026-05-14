@@ -12,8 +12,9 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
+import { NangoCliExitCode } from '@nangohq/runner-sdk';
+
 import { getVersionOutput } from './cli.js';
-import { NANGO_CLI_COMPILE_ERROR_EXIT_CODE, NANGO_CLI_DEPLOY_ERROR_EXIT_CODE, NANGO_CLI_DRYRUN_ERROR_EXIT_CODE } from './exit-codes.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
 import { generate as generateDocs } from './services/docs.service.js';
@@ -233,13 +234,13 @@ program
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
             return;
         }
 
         const res = await compileAllFunctions({ fullPath, debug, interactive });
         if (res.isErr()) {
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
         }
     });
 
@@ -308,7 +309,7 @@ program
             const definitions = await parseIntegrationDefinitions({ fullPath, debug });
             if (definitions.isErr()) {
                 console.error(chalk.red('Could not build function definitions to select from.'));
-                process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+                process.exitCode = NangoCliExitCode.DryrunError;
                 return;
             }
 
@@ -379,20 +380,20 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
-            process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.DryrunError;
             return;
         }
 
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
             return;
         }
 
         const res = await compileAllFunctions({ fullPath, debug, interactive });
         if (res.isErr()) {
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
             return;
         }
 
@@ -415,7 +416,7 @@ program
             diagnostics
         });
         if (resDryRun.isErr()) {
-            process.exitCode = NANGO_CLI_DRYRUN_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.DryrunError;
             return;
         }
     });
@@ -462,7 +463,7 @@ program
             if (err instanceof MissingArgumentError) {
                 this.help();
             }
-            process.exitCode = NANGO_CLI_DEPLOY_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.DeployError;
             return;
         }
 
@@ -472,19 +473,19 @@ program
         const resCheck = await checkAndSyncPackageJson({ fullPath, debug, dependencyUpdate });
         if (resCheck.isErr()) {
             console.log(chalk.red('Failed to check and sync package.json. Exiting'));
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
             return;
         }
 
         const resCompile = await compileAllFunctions({ fullPath, debug, interactive });
         if (resCompile.isErr()) {
-            process.exitCode = NANGO_CLI_COMPILE_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.CompileError;
             return;
         }
 
         const res = await deploy({ fullPath, options, environmentName: environment });
         if (res.isErr()) {
-            process.exitCode = NANGO_CLI_DEPLOY_ERROR_EXIT_CODE;
+            process.exitCode = NangoCliExitCode.DeployError;
             return;
         }
     });

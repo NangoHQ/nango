@@ -1,9 +1,6 @@
-import type { FunctionErrorCode } from '@nangohq/types';
+import { NangoCliExitCode } from '@nangohq/runner-sdk';
 
-// Keep in sync with packages/cli/lib/exit-codes.ts.
-export const NANGO_CLI_COMPILE_ERROR_EXIT_CODE = 10;
-export const NANGO_CLI_DEPLOY_ERROR_EXIT_CODE = 11;
-export const NANGO_CLI_DRYRUN_ERROR_EXIT_CODE = 12;
+import type { FunctionErrorCode } from '@nangohq/types';
 
 export function getCommandExitCode(error: unknown): number | undefined {
     if (!error || typeof error !== 'object') {
@@ -32,9 +29,9 @@ export function getCommandExitCode(error: unknown): number | undefined {
 
 export function getDeployErrorCode(error: unknown): Extract<FunctionErrorCode, 'compilation_error' | 'deployment_error'> {
     switch (getCommandExitCode(error)) {
-        case NANGO_CLI_COMPILE_ERROR_EXIT_CODE:
+        case NangoCliExitCode.CompileError:
             return 'compilation_error';
-        case NANGO_CLI_DEPLOY_ERROR_EXIT_CODE:
+        case NangoCliExitCode.DeployError:
         default:
             return 'deployment_error';
     }
@@ -42,9 +39,9 @@ export function getDeployErrorCode(error: unknown): Extract<FunctionErrorCode, '
 
 export function getDryrunErrorCode(error: unknown): Extract<FunctionErrorCode, 'compilation_error' | 'dryrun_error'> {
     switch (getCommandExitCode(error)) {
-        case NANGO_CLI_COMPILE_ERROR_EXIT_CODE:
+        case NangoCliExitCode.CompileError:
             return 'compilation_error';
-        case NANGO_CLI_DRYRUN_ERROR_EXIT_CODE:
+        case NangoCliExitCode.DryrunError:
         default:
             return 'dryrun_error';
     }

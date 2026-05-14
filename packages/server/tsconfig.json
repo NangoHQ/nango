@@ -39,6 +39,9 @@
             "path": "../records"
         },
         {
+            "path": "../runner-sdk"
+        },
+        {
             "path": "../orchestrator"
         },
         {

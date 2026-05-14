@@ -45,7 +45,8 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 
-import { NANGO_CLI_COMPILE_ERROR_EXIT_CODE, NANGO_CLI_DRYRUN_ERROR_EXIT_CODE } from './cli-exit-codes.js';
+import { NangoCliExitCode } from '@nangohq/runner-sdk';
+
 import { invokeDryrun } from './dryrun-client.js';
 
 import type { RemoteFunctionError } from './helpers.js';
@@ -90,7 +91,7 @@ describe('remote function dryrun client', () => {
     it('returns a dryrun_error when the dryrun command exits non-zero', async () => {
         mocks.run
             .mockResolvedValueOnce({ stdout: '', stderr: '' })
-            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'stdout failure', 'stderr failure', NANGO_CLI_DRYRUN_ERROR_EXIT_CODE));
+            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'stdout failure', 'stderr failure', NangoCliExitCode.DryrunError));
 
         await expect(invokeDryrun(request)).rejects.toMatchObject({
             code: 'dryrun_error',
@@ -114,7 +115,7 @@ describe('remote function dryrun client', () => {
     it('returns a compilation_error when dryrun exits with the compile phase exit code', async () => {
         mocks.run
             .mockResolvedValueOnce({ stdout: '', stderr: '' })
-            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NANGO_CLI_COMPILE_ERROR_EXIT_CODE));
+            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NangoCliExitCode.CompileError));
 
         await expect(invokeDryrun(request)).rejects.toMatchObject({
             code: 'compilation_error',
