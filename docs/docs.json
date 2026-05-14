@@ -1001,6 +1001,7 @@
               "integrations/all/canny",
               "api-integrations/candis",
               "integrations/all/canva",
+              "api-integrations/canva-mcp",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
               "integrations/all/certn",
