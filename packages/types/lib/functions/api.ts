@@ -144,6 +144,7 @@ export type GetIntegrationFunctions = Endpoint<{
     Querystring: {
         env: string;
         type?: FunctionType;
+        search?: string;
         page?: number;
         limit?: number;
     };

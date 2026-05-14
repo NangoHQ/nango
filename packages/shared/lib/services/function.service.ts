@@ -45,16 +45,18 @@ export async function listFunctions({
     environmentId,
     providerConfigKey,
     type,
+    search,
     limit,
     offset
 }: {
     environmentId: number;
     providerConfigKey: string;
     type: FunctionType | undefined;
+    search: string | undefined;
     limit: number;
     offset: number;
 }): Promise<{ rows: NangoFunctionDeployed[]; total: number }> {
-    const listing = buildListingSubquery({ environmentId, providerConfigKey, type });
+    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search });
 
     const [pageRows, countRow] = await Promise.all([
         db.knex
@@ -83,18 +85,20 @@ export async function listFunctions({
 function buildListingSubquery({
     environmentId,
     providerConfigKey,
-    type
+    type,
+    search
 }: {
     environmentId: number;
     providerConfigKey: string;
     type: FunctionType | undefined;
+    search: string | undefined;
 }): Knex.Raw {
     const branches: Knex.QueryBuilder[] = [];
     if (type !== 'on-event') {
-        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type }));
+        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type, search }));
     }
     if (type === undefined || type === 'on-event') {
-        branches.push(buildOnEventBranch({ environmentId, providerConfigKey }));
+        branches.push(buildOnEventBranch({ environmentId, providerConfigKey, search }));
     }
     return branches.length === 1 ? db.knex.raw('(?) AS listing', [branches[0]]) : db.knex.raw('(? UNION ALL ?) AS listing', branches);
 }
@@ -102,11 +106,13 @@ function buildListingSubquery({
 function buildSyncConfigBranch({
     environmentId,
     providerConfigKey,
-    type
+    type,
+    search
 }: {
     environmentId: number;
     providerConfigKey: string;
     type: 'sync' | 'action' | undefined;
+    search: string | undefined;
 }): Knex.QueryBuilder {
     // Cast on `source` (sync_config_source enum) is required for UNION ALL with the on-event branch —
     // Postgres only unions matching types.
@@ -139,12 +145,24 @@ function buildSyncConfigBranch({
         query.andWhere('sc.type', type);
     }
 
+    if (search) {
+        query.andWhereILike('sc.sync_name', `%${escapeLikePattern(search)}%`);
+    }
+
     return query;
 }
 
-function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+function buildOnEventBranch({
+    environmentId,
+    providerConfigKey,
+    search
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    search: string | undefined;
+}): Knex.QueryBuilder {
     // `oes.event` is a script_trigger_event enum and must be cast to text for UNION ALL.
-    return db.knex
+    const query = db.knex
         .from({ oes: 'on_event_scripts' })
         .join({ nc: '_nango_configs' }, 'oes.config_id', 'nc.id')
         .where('nc.environment_id', environmentId)
@@ -167,6 +185,17 @@ function buildOnEventBranch({ environmentId, providerConfigKey }: { environmentI
             db.knex.raw(`'repo'::text AS source`),
             db.knex.raw('CAST(oes.event AS text) AS event')
         );
+
+    if (search) {
+        query.andWhereILike('oes.name', `%${escapeLikePattern(search)}%`);
+    }
+
+    return query;
+}
+
+// Escapes the LIKE wildcard meta-characters so user input is matched literally.
+function escapeLikePattern(value: string): string {
+    return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }
 
 function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed | undefined {
