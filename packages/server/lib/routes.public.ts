@@ -284,8 +284,8 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 publicAPI.use('/remote-function', jsonContentTypeMiddleware);
 publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, postRemoteFunctionDryrun);
-publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, postRemoteFunctionDeploy);
+publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, withScope('environment:dryrun'), postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, withScope('environment:deploy'), postRemoteFunctionDeploy);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);

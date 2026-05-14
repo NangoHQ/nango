@@ -91,6 +91,9 @@ export interface DBCustomerKey extends Timestamps {
     iv: string;
     tag: string;
     hashed: string;
+    sandbox_signing_secret: string | null;
+    sandbox_signing_secret_iv: string;
+    sandbox_signing_secret_tag: string;
     last_used_at: Date | null;
     deleted_at: Date | null;
 }

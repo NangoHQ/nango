@@ -48,6 +48,18 @@ export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
+export {
+    buildSandboxApiKeyScopes,
+    createSandboxApiKeyToken,
+    createSandboxSigningSecret,
+    decryptSandboxSigningSecret,
+    encryptSandboxSigningSecret,
+    isSandboxApiKey,
+    parseSandboxApiKeyToken,
+    sandboxApiKeyBaseScopes,
+    sandboxApiKeyPrefix,
+    verifySandboxApiKeyToken
+} from './services/customer-key-sandbox-token.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';
