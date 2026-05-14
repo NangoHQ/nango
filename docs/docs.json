@@ -1412,6 +1412,7 @@
               "integrations/all/plain",
               "api-integrations/pleo",
               "integrations/all/podium",
+              "api-integrations/podscribe",
               "api-integrations/posthog",
               "api-integrations/posthog-oauth",
               "api-integrations/practicefusion",
