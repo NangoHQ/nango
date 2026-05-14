@@ -6002,7 +6002,7 @@ easypost:
             description: Your EasyPost API key.
             pattern: '^EZ(AK|TK)[a-zA-Z0-9]+$'
             example: EZTK****************************PCHxBDQG3lpZjneEFUxKmg
-            doc_section: '#v2api_keys'
+            doc_section: '#step-1-get-your-api-key'
         password:
             type: string
             title: ''
