@@ -15468,6 +15468,31 @@ retell-ai:
             example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             doc_section: '#step-1-finding-your-retell-ai-api-key'
 
+revivn:
+    display_name: Revivn
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.revivn.dev/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.revivn.dev
+    docs: https://nango.dev/docs/api-integrations/revivn
+    docs_connect: https://nango.dev/docs/api-integrations/revivn/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Revivn OAuth2 client ID.
+            doc_section: '#step-1-get-your-oauth2-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Revivn OAuth2 client secret.
+            secret: true
+            doc_section: '#step-1-get-your-oauth2-credentials'
+
 ring-central:
     display_name: RingCentral
     categories:
