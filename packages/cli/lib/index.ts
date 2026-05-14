@@ -12,9 +12,8 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
-import { NangoCliExitCode } from '@nangohq/utils';
-
 import { getVersionOutput } from './cli.js';
+import { NangoCliExitCode } from './exit-codes.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';
 import { cloneTemplate } from './services/clone.service.js';
 import { generate as generateDocs } from './services/docs.service.js';

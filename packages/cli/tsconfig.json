@@ -12,9 +12,6 @@
             "path": "../types"
         },
         {
-            "path": "../utils"
-        },
-        {
             "path": "../nango-yaml"
         }
     ],

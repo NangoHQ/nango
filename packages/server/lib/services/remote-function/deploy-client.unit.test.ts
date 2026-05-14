@@ -45,8 +45,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 
-import { NangoCliExitCode } from '@nangohq/utils';
-
+import { NangoCliExitCode } from './cli-exit-codes.js';
 import { invokeDeploy } from './deploy-client.js';
 
 import type { RemoteFunctionError } from './helpers.js';

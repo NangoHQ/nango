@@ -1,6 +1,11 @@
-import { NangoCliExitCode } from '@nangohq/utils';
-
 import type { FunctionErrorCode } from '@nangohq/types';
+
+// Keep in sync with packages/cli/lib/exit-codes.ts.
+export const NangoCliExitCode = {
+    CompileError: 10,
+    DeployError: 11,
+    DryrunError: 12
+} as const;
 
 export function getCommandExitCode(error: unknown): number | undefined {
     if (!error || typeof error !== 'object') {
