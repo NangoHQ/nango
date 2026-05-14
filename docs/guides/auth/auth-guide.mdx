@@ -372,6 +372,19 @@ Once you have the connection ID, fetch credentials whenever you need them:
   </Step>
 </Steps>
 
+## Nango developer apps vs. your own OAuth app
+
+Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup. They work in production too, but we strongly recommend registering your own OAuth app before going live.
+
+Reasons to register your own:
+- **Whitelabel auth** — with Nango's app, users authorize Nango instead of your product.
+- **Scopes** — Nango developer apps have fixed scopes. Your own app supports any scope the provider exposes.
+- **Callback URL** — Nango developer apps use Nango's callback. Your own app supports a [custom callback URL](#custom-oauth-callback-url-optional) on your domain.
+- **Marketplace listings** — provider marketplaces require your own developer app.
+- **Advanced API features** — some provider features are only available to first-party apps.
+- **Revocation risk** — most providers don't allow shared credentials. Nango developer apps may be revoked by the provider at any time.
+- **Portability** — only your own developer app lets you export access and refresh tokens and move off Nango without users re-authorizing.
+
 <Tip>
   **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
