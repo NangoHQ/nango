@@ -1,0 +1,139 @@
+---
+title: 'Generic API Key'
+sidebarTitle: 'Generic API Key'
+description: 'Integrate your application with APIs that authenticate with a single API key'
+---
+
+## 🚀 Quickstart
+
+Connect to any single API key API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Generic API Key_.
+
+    Configure the upstream base URL and how Nango should present the stored API key to the upstream API. For example, if the upstream API expects `Authorization: Bearer <key>`, set:
+
+    - Base URL: `https://api.example.com`
+    - API key placement: `Header`
+    - Header name: `Authorization`
+    - Value format: `Bearer {apiKey}`
+    </Step>
+    <Step title="Connect an account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> enter the API key for the upstream API.
+
+    Nango stores this API key securely. Your application does not receive the raw API key through normal proxy usage.
+    </Step>
+    <Step title="Call the upstream API">
+    Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/<ENDPOINT>" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/<ENDPOINT>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Do not send the upstream API key in this request. Nango retrieves the stored key for the connection and injects it into the upstream request according to the integration configuration.
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Generic API Key Integration Guides
+
+Use this integration when the upstream API authenticates with one API key and the key must be stored in Nango instead of being passed by your caller on every proxy request.
+
+This integration is intended for private APIs or public APIs that Nango does not support yet. If Nango already has a provider-specific integration for the API, use that integration instead. Provider-specific integrations include better setup guidance, provider-specific connection fields, verification behavior, and pre-built functions where available.
+
+Nango blocks Generic API Key integration creation when the configured base URL exactly matches a supported API key provider's static base URL.
+
+### Integration configuration fields
+
+| Field | Required | Description |
+| --- | --- | --- |
+| Base URL | Yes | The upstream API root URL. Proxy endpoints are resolved relative to this URL. |
+| API key placement | Yes | Where Nango should inject the stored API key. Use `Header` for HTTP headers or `Query parameter` for URL query parameters. |
+| Header name / Query parameter name | Yes | The exact header or query parameter name expected by the upstream API. |
+| Value format | Yes | The value Nango sends upstream. Include `{apiKey}` where the stored API key should be inserted. |
+| Verification endpoint | No | A relative endpoint, such as `/v1/me`, that Nango can call after credential entry to validate the API key. Leave it empty to skip verification. |
+| Verification method | Only when using a verification endpoint | The HTTP method for the verification request. Use `GET` unless the upstream API requires `POST`. |
+
+### Auth presentation examples
+
+Use the upstream API documentation to decide the placement, name, and value format.
+
+| Upstream API expects | Placement | Name | Value format |
+| --- | --- | --- | --- |
+| `x-api-key: <key>` | Header | `x-api-key` | `{apiKey}` |
+| `x-ai-calls-api-key: <key>` | Header | `x-ai-calls-api-key` | `{apiKey}` |
+| `Authorization: Bearer <key>` | Header | `Authorization` | `Bearer {apiKey}` |
+| `Authorization: Api-Key <key>` | Header | `Authorization` | `Api-Key {apiKey}` |
+| `Authorization: Token token=<key>` | Header | `Authorization` | `Token token={apiKey}` |
+| `?api_key=<key>` | Query parameter | `api_key` | `{apiKey}` |
+
+### How proxy requests work
+
+When your application calls Nango's proxy, it sends only the Nango secret key, integration ID, connection ID, endpoint, and request payload. Nango then:
+
+1. Loads the stored API key for the connection.
+2. Builds the configured header or query parameter from the value format.
+3. Sends the request to the upstream API.
+4. Returns the upstream response to your application without exposing the stored API key.
+
+For example, if the integration is configured with:
+
+- Base URL: `https://api.example.com`
+- API key placement: `Header`
+- Header name: `Authorization`
+- Value format: `Bearer {apiKey}`
+
+Then this proxy request:
+
+```bash
+curl "https://api.nango.dev/proxy/v1/customers" \
+  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+  -H "Connection-Id: <CONNECTION-ID>"
+```
+
+is sent upstream as a request to `https://api.example.com/v1/customers` with `Authorization: Bearer <stored-api-key>`.
+
+## 🧩 Pre-built syncs & actions for Generic API Key
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/generic-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

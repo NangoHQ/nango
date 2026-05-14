@@ -412,7 +412,8 @@ export async function credentialsTest({
                 },
                 getIntegrationConfig: () => ({
                     oauth_client_id: config.oauth_client_id,
-                    oauth_client_secret: config.oauth_client_secret
+                    oauth_client_secret: config.oauth_client_secret,
+                    custom: config.custom
                 })
             });
 

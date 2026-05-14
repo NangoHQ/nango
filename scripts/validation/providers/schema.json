@@ -211,6 +211,26 @@
                         "base_url": {
                             "type": "string"
                         },
+                        "auth": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["type", "placement", "name", "value_template"],
+                            "properties": {
+                                "type": {
+                                    "type": "string",
+                                    "enum": ["api_key"]
+                                },
+                                "placement": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value_template": {
+                                    "type": "string"
+                                }
+                            }
+                        },
                         "connection_config": {
                             "type": "object",
                             "additionalProperties": true

@@ -114,6 +114,88 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should require generic_api_key config for generic-api-key integrations', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: { provider: 'generic-api-key', useSharedCredentials: false }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'invalid_body', message: 'Missing generic_api_key configuration' }
+        });
+    });
+
+    it('should reject generic-api-key integrations for already supported API key providers', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'generic-api-key',
+                useSharedCredentials: false,
+                generic_api_key: {
+                    base_url: 'https://api.github.com/',
+                    placement: 'header',
+                    name: 'Authorization',
+                    value_template: 'Bearer {apiKey}'
+                }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                message:
+                    'Nango already supports this API through the Github (Personal Access Token) (github-pat) integration. Generic API Key is intended for private APIs or public APIs that Nango does not support yet. Use the provider-specific integration instead.'
+            }
+        });
+    });
+
+    it('should create a generic-api-key integration with auth presentation config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: env.name },
+            token: apiKey.secret,
+            body: {
+                provider: 'generic-api-key',
+                useSharedCredentials: false,
+                generic_api_key: {
+                    base_url: 'https://api.example.com',
+                    placement: 'header',
+                    name: 'Authorization',
+                    value_template: 'Bearer {apiKey}',
+                    verification: {
+                        method: 'GET',
+                        endpoint: '/v1/me'
+                    }
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toMatchObject({
+            data: {
+                provider: 'generic-api-key',
+                unique_key: 'generic-api-key',
+                custom: {
+                    generic_api_key_base_url: 'https://api.example.com',
+                    generic_api_key_placement: 'header',
+                    generic_api_key_name: 'Authorization',
+                    generic_api_key_value_template: 'Bearer {apiKey}',
+                    generic_api_key_verification_method: 'GET',
+                    generic_api_key_verification_endpoint: '/v1/me'
+                }
+            }
+        });
+    });
+
     it('should create an integration with custom integrationId', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {

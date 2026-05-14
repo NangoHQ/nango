@@ -11,6 +11,7 @@ export type ApiPublicIntegration = Merge<
     ApiTimestamps
 > & {
     logo: string;
+    generic_api_key?: ApiPublicGenericApiKeyConfig | undefined;
 } & ApiPublicIntegrationInclude;
 export interface ApiPublicIntegrationInclude {
     webhook_url?: string | null;
@@ -24,6 +25,19 @@ export interface ApiPublicIntegrationInclude {
           }
         | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null }
         | null;
+}
+
+export interface ApiPublicGenericApiKeyConfig {
+    base_url: string;
+    placement: 'header' | 'query';
+    name: string;
+    value_template: string;
+    verification?:
+        | {
+              method?: 'GET' | 'POST' | undefined;
+              endpoint: string;
+          }
+        | undefined;
 }
 
 export type GetPublicListIntegrations = Endpoint<{
@@ -44,6 +58,7 @@ export type PostPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        generic_api_key?: ApiPublicGenericApiKeyConfig | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -81,6 +96,7 @@ export type PatchPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        generic_api_key?: ApiPublicGenericApiKeyConfig | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
@@ -186,6 +202,8 @@ export interface InstallPluginAuthBody {
     password?: string | undefined;
 }
 
+export type GenericApiKeyAuthPresentationBody = ApiPublicGenericApiKeyConfig;
+
 export type IntegrationAuthBody =
     | OAuthAuthBody
     | OAuth2CCAuthBody
@@ -207,6 +225,7 @@ export type PostIntegration = Endpoint<{
         displayName?: string | undefined;
         forward_webhooks?: boolean | undefined;
         auth?: IntegrationAuthBody | undefined;
+        generic_api_key?: GenericApiKeyAuthPresentationBody | undefined;
     };
     Success: {
         data: ApiIntegration;
@@ -238,6 +257,7 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
+        | { generic_api_key: GenericApiKeyAuthPresentationBody }
         | IntegrationAuthBody;
     Success: {
         data: {

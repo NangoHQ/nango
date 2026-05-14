@@ -95,8 +95,12 @@ export function redactURL({ url, valuesToFilter }: { url: string; valuesToFilter
         if (value === '') {
             return curr;
         }
-        return curr.replace(value, 'REDACTED');
+        return getUrlRedactionValues(value).reduce((urlWithRedactions, redactionValue) => urlWithRedactions.replaceAll(redactionValue, 'REDACTED'), curr);
     }, url);
+}
+
+function getUrlRedactionValues(value: string): string[] {
+    return Array.from(new Set([value, encodeURIComponent(value), new URLSearchParams({ value }).toString().replace(/^value=/, '')]));
 }
 
 export function redactObjectOrString<TData extends string | Record<string, any>>({ data, valuesToFilter }: { data: TData; valuesToFilter: string[] }): TData {

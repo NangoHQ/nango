@@ -21,6 +21,13 @@ export interface ProviderAlias {
     };
 }
 
+export interface ProviderApiKeyProxyAuth {
+    type: 'api_key';
+    placement: string;
+    name: string;
+    value_template: string;
+}
+
 export interface SimplifiedJSONSchema {
     type: 'string';
     title: string;
@@ -45,6 +52,7 @@ export interface BaseProvider {
     installation?: 'outbound';
     proxy?: {
         base_url: string;
+        auth?: ProviderApiKeyProxyAuth;
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;

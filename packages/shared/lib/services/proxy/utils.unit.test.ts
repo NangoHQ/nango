@@ -375,6 +375,141 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it.each([
+        ['x-ai-calls-api-key', '{apiKey}', { 'x-ai-calls-api-key': 'api-key-value' }],
+        ['authorization', 'Api-Key {apiKey}', { authorization: 'Api-Key api-key-value' }],
+        ['authorization', 'Bearer {apiKey}', { authorization: 'Bearer api-key-value' }],
+        ['authorization', 'Token token={apiKey}', { authorization: 'Token token=api-key-value' }]
+    ])('should construct generic API key auth header %s', (name, valueTemplate, expected) => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.example.com',
+                    auth: {
+                        type: 'api_key',
+                        placement: '${integrationConfig.custom.generic_api_key_placement}',
+                        name: '${integrationConfig.custom.generic_api_key_name}',
+                        value_template: '${integrationConfig.custom.generic_api_key_value_template}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.example.com/test',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' }
+            }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: {
+                    generic_api_key_placement: 'header',
+                    generic_api_key_name: name,
+                    generic_api_key_value_template: valueTemplate
+                }
+            }
+        });
+
+        expect(result).toEqual(expected);
+    });
+
+    it('should not let caller headers override generic API key auth headers', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.example.com',
+                    auth: {
+                        type: 'api_key',
+                        placement: '${integrationConfig.custom.generic_api_key_placement}',
+                        name: '${integrationConfig.custom.generic_api_key_name}',
+                        value_template: '${integrationConfig.custom.generic_api_key_value_template}'
+                    }
+                }
+            },
+            headers: {
+                authorization: 'caller-value'
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.example.com/test',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' }
+            }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: {
+                    generic_api_key_placement: 'header',
+                    generic_api_key_name: 'Authorization',
+                    generic_api_key_value_template: 'Bearer {apiKey}'
+                }
+            }
+        });
+
+        expect(result).toEqual({ authorization: 'Bearer api-key-value' });
+    });
+
+    it('should not interpolate the raw API key value after insertion', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.example.com',
+                    auth: {
+                        type: 'api_key',
+                        placement: 'header',
+                        name: 'Authorization',
+                        value_template: 'Bearer {apiKey}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.example.com/test',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: '${connectionConfig.should_not_replace}' },
+                connection_config: { should_not_replace: 'replaced-secret' }
+            })
+        });
+
+        expect(result).toEqual({ authorization: 'Bearer ${connectionConfig.should_not_replace}' });
+    });
+
+    it('should reject generic API key auth header templates without apiKey placeholder', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://api.example.com',
+                    auth: {
+                        type: 'api_key',
+                        placement: 'header',
+                        name: 'Authorization',
+                        value_template: 'Bearer static'
+                    }
+                }
+            }
+        });
+
+        expect(() =>
+            buildProxyHeaders({
+                config,
+                url: 'https://api.example.com/test',
+                connection: getTestConnection({
+                    credentials: { type: 'API_KEY', apiKey: 'api-key-value' }
+                })
+            })
+        ).toThrow(new ProxyError('invalid_proxy_auth', 'API key proxy auth value template must include {apiKey}'));
+    });
+
     it('should correctly insert headers with dynamic values for signature based', () => {
         const config = getDefaultProxy({
             provider: {
@@ -732,6 +867,99 @@ describe('buildProxyURL', () => {
         });
 
         expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
+    });
+
+    it('should insert generic API key auth as a query param', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com/',
+                    auth: {
+                        type: 'api_key',
+                        placement: '${integrationConfig.custom.generic_api_key_placement}',
+                        name: '${integrationConfig.custom.generic_api_key_name}',
+                        value_template: '${integrationConfig.custom.generic_api_key_value_template}'
+                    }
+                }
+            },
+            baseUrlOverride: 'https://override.com'
+        });
+
+        const result = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: {
+                    generic_api_key_placement: 'query',
+                    generic_api_key_name: 'api_key',
+                    generic_api_key_value_template: '{apiKey}'
+                }
+            }
+        });
+
+        expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
+    });
+
+    it('should not let caller params override generic API key auth query params', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com/',
+                    auth: {
+                        type: 'api_key',
+                        placement: '${integrationConfig.custom.generic_api_key_placement}',
+                        name: '${integrationConfig.custom.generic_api_key_name}',
+                        value_template: '${integrationConfig.custom.generic_api_key_value_template}'
+                    }
+                }
+            },
+            baseUrlOverride: 'https://override.com',
+            params: {
+                api_key: 'caller-value'
+            }
+        });
+
+        const result = buildProxyURL({
+            config,
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'sweet-secret-token' }
+            }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: {
+                    generic_api_key_placement: 'query',
+                    generic_api_key_name: 'api_key',
+                    generic_api_key_value_template: '{apiKey}'
+                }
+            }
+        });
+
+        expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
+    });
+
+    it('should reject base URL override for managed proxy auth', () => {
+        const res = getProxyConfiguration({
+            externalConfig: {
+                providerConfigKey: 'provider-1',
+                endpoint: '/api/test',
+                baseUrlOverride: 'https://override.com'
+            },
+            internalConfig: {
+                providerName: 'generic-api-key'
+            }
+        });
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toStrictEqual(new ProxyError('base_url_override_not_allowed', 'Base URL override is not supported for managed proxy auth'));
+        }
     });
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {

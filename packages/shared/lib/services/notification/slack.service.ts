@@ -711,7 +711,8 @@ export class SlackService {
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
-                    oauth_client_secret: integration.oauth_client_secret
+                    oauth_client_secret: integration.oauth_client_secret,
+                    custom: integration.custom
                 })
             });
             const join = await proxy.request();
@@ -784,7 +785,8 @@ export class SlackService {
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
-                    oauth_client_secret: integration.oauth_client_secret
+                    oauth_client_secret: integration.oauth_client_secret,
+                    custom: integration.custom
                 })
             });
             const slackMessage = await proxy.request();

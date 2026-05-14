@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
 import {
+    genericApiKeyIntegrationConfigSchema,
     integrationDisplayNameSchema,
     integrationForwardWebhooksSchema,
     privateKeySchema,
@@ -97,7 +98,8 @@ export const integrationBaseBodySchema = z
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
         displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        generic_api_key: genericApiKeyIntegrationConfigSchema.optional()
     })
     .strict();
 

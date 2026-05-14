@@ -4,6 +4,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
+import { findSupportedApiKeyProvidersByBaseUrl, getGenericApiKeySupportedProviderMessage } from '../../../helpers/genericApiKey.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
@@ -45,6 +46,23 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
     if ('auth' in body && body.auth && 'authType' in body.auth && body.auth.authType !== provider.auth_mode) {
         res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
         return;
+    }
+
+    if (body.provider === 'generic-api-key' && !body.generic_api_key) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'Missing generic_api_key configuration' } });
+        return;
+    }
+
+    if (body.provider !== 'generic-api-key' && body.generic_api_key) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'generic_api_key is only supported for generic-api-key integrations' } });
+        return;
+    }
+    if (body.generic_api_key) {
+        const matches = findSupportedApiKeyProvidersByBaseUrl(body.generic_api_key.base_url);
+        if (matches.length > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: getGenericApiKeySupportedProviderMessage(matches) } });
+            return;
+        }
     }
 
     let integration: IntegrationConfig;

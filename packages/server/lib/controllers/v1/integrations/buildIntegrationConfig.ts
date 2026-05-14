@@ -1,6 +1,8 @@
 import { configService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
+import { genericApiKeyConfigToCustom } from '../../../helpers/validation.js';
+
 import type { DBCreateIntegration, PostIntegration } from '@nangohq/types';
 
 async function getUniqueKey(key: string, environmentId: number): Promise<string> {
@@ -37,6 +39,13 @@ export async function buildIntegrationConfig(body: PostIntegration['Body'], envi
     if ('webhookSecret' in body && body.webhookSecret) {
         config.custom = {
             webhookSecret: body.webhookSecret
+        };
+    }
+
+    if (body.generic_api_key) {
+        config.custom = {
+            ...config.custom,
+            ...genericApiKeyConfigToCustom(body.generic_api_key)
         };
     }
 

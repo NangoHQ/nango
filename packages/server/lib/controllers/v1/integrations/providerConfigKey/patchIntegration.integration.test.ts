@@ -103,4 +103,158 @@ describe(`PATCH ${endpoint}`, () => {
             data: { success: true }
         });
     });
+
+    it('should update generic-api-key auth presentation config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'generic-api-key', 'generic-api-key', {
+            custom: {
+                generic_api_key_base_url: 'https://api.old.com',
+                generic_api_key_placement: 'header',
+                generic_api_key_name: 'Authorization',
+                generic_api_key_value_template: 'Bearer {apiKey}',
+                generic_api_key_verification_method: 'GET',
+                generic_api_key_verification_endpoint: '/old-verify'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'generic-api-key' },
+            body: {
+                generic_api_key: {
+                    base_url: 'https://api.example.com',
+                    placement: 'query',
+                    name: 'api_key',
+                    value_template: '{apiKey}',
+                    verification: {
+                        method: 'POST',
+                        endpoint: '/verify'
+                    }
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: { success: true }
+        });
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'generic-api-key' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json).toMatchObject({
+            data: {
+                integration: {
+                    custom: {
+                        generic_api_key_base_url: 'https://api.example.com',
+                        generic_api_key_placement: 'query',
+                        generic_api_key_name: 'api_key',
+                        generic_api_key_value_template: '{apiKey}',
+                        generic_api_key_verification_method: 'POST',
+                        generic_api_key_verification_endpoint: '/verify'
+                    }
+                }
+            }
+        });
+    });
+
+    it('should clear generic-api-key verification config when omitted from update', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'generic-api-key', 'generic-api-key', {
+            custom: {
+                generic_api_key_base_url: 'https://api.old.com',
+                generic_api_key_placement: 'header',
+                generic_api_key_name: 'Authorization',
+                generic_api_key_value_template: 'Bearer {apiKey}',
+                generic_api_key_verification_method: 'GET',
+                generic_api_key_verification_endpoint: '/old-verify'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'generic-api-key' },
+            body: {
+                generic_api_key: {
+                    base_url: 'https://api.example.com',
+                    placement: 'query',
+                    name: 'api_key',
+                    value_template: '{apiKey}'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: { success: true }
+        });
+
+        const resGet = await api.fetch(endpoint, {
+            method: 'GET',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'generic-api-key' }
+        });
+
+        isSuccess(resGet.json);
+        expect(resGet.json).toMatchObject({
+            data: {
+                integration: {
+                    custom: {
+                        generic_api_key_base_url: 'https://api.example.com',
+                        generic_api_key_placement: 'query',
+                        generic_api_key_name: 'api_key',
+                        generic_api_key_value_template: '{apiKey}',
+                        generic_api_key_verification_method: '',
+                        generic_api_key_verification_endpoint: ''
+                    }
+                }
+            }
+        });
+    });
+
+    it('should reject generic-api-key auth presentation updates for already supported API key providers', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'generic-api-key', 'generic-api-key', {
+            custom: {
+                generic_api_key_base_url: 'https://api.example.com',
+                generic_api_key_placement: 'header',
+                generic_api_key_name: 'Authorization',
+                generic_api_key_value_template: 'Bearer {apiKey}'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            query: { env: env.name },
+            token: apiKey.secret,
+            params: { providerConfigKey: 'generic-api-key' },
+            body: {
+                generic_api_key: {
+                    base_url: 'https://api.github.com',
+                    placement: 'header',
+                    name: 'Authorization',
+                    value_template: 'Bearer {apiKey}'
+                }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                message:
+                    'Nango already supports this API through the Github (Personal Access Token) (github-pat) integration. Generic API Key is intended for private APIs or public APIs that Nango does not support yet. Use the provider-specific integration instead.'
+            }
+        });
+    });
 });

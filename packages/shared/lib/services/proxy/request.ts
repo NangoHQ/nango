@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { Err, Ok, axiosInstance as axios, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
 
 import { getProxyRetryFromErr } from './retry.js';
-import { ProxyError, getAxiosConfiguration } from './utils.js';
+import { ProxyError, getAxiosConfiguration, getProxyAuthValuesToFilter, proxyNeedsIntegrationConfig } from './utils.js';
 
 import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration, ConnectionForProxy, IntegrationConfigForProxy, MaybePromise, MessageRowInsert } from '@nangohq/types';
@@ -78,11 +78,7 @@ export class ProxyRequest {
                     // Useful for example to refresh connection's credentials
                     this.connection = await this.getConnection();
 
-                    const proxyHeaders = this.config.provider.proxy?.headers;
-                    const headersNeedOAuthAppCredentials =
-                        proxyHeaders &&
-                        Object.values(proxyHeaders).some((v) => typeof v === 'string' && (v.includes('${clientId}') || v.includes('${clientSecret}')));
-                    if (this.connection.credentials.type === 'OAUTH1' || headersNeedOAuthAppCredentials) {
+                    if (this.connection.credentials.type === 'OAUTH1' || proxyNeedsIntegrationConfig(this.config.provider)) {
                         this.integrationConfig = await this.getIntegrationConfig();
                     }
 
@@ -156,6 +152,13 @@ export class ProxyRequest {
         if (this.integrationConfig?.oauth_client_id) {
             values.push(this.integrationConfig.oauth_client_id);
         }
+        values.push(
+            ...getProxyAuthValuesToFilter({
+                provider: this.config.provider,
+                connection: this.connection,
+                integrationConfig: this.integrationConfig
+            })
+        );
         return values;
     }
 

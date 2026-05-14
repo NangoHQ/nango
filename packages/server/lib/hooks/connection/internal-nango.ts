@@ -47,10 +47,11 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     if (integration) {
                         return {
                             oauth_client_id: integration.oauth_client_id,
-                            oauth_client_secret: integration.oauth_client_secret
+                            oauth_client_secret: integration.oauth_client_secret,
+                            custom: integration.custom
                         };
                     }
-                    return { oauth_client_id: null, oauth_client_secret: null };
+                    return { oauth_client_id: null, oauth_client_secret: null, custom: null };
                 }
             });
             const response = (await proxyInstance.request()).unwrap();

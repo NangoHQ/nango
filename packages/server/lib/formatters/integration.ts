@@ -32,14 +32,49 @@ export function integrationToPublicApi({
     provider: Provider;
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
+    const genericApiKey = integration.provider === 'generic-api-key' ? genericApiKeyCustomToApi(integration.custom) : undefined;
+
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
         display_name: integration.display_name || provider.display_name,
         logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
+        ...(genericApiKey ? { generic_api_key: genericApiKey } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),
         updated_at: integration.updated_at.toISOString()
+    };
+}
+
+function genericApiKeyCustomToApi(custom: IntegrationConfig['custom']): ApiPublicIntegration['generic_api_key'] {
+    if (!custom) {
+        return undefined;
+    }
+
+    const baseUrl = custom['generic_api_key_base_url'];
+    const placement = custom['generic_api_key_placement'];
+    const name = custom['generic_api_key_name'];
+    const valueTemplate = custom['generic_api_key_value_template'];
+    if (!baseUrl || (placement !== 'header' && placement !== 'query') || !name || !valueTemplate) {
+        return undefined;
+    }
+
+    const method = custom['generic_api_key_verification_method'];
+    const endpoint = custom['generic_api_key_verification_endpoint'];
+
+    return {
+        base_url: baseUrl,
+        placement,
+        name,
+        value_template: valueTemplate,
+        ...(endpoint
+            ? {
+                  verification: {
+                      ...(method === 'GET' || method === 'POST' ? { method } : {}),
+                      endpoint
+                  }
+              }
+            : {})
     };
 }

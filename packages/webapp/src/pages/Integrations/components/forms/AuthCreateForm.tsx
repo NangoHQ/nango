@@ -1,6 +1,7 @@
 import { AppAuthCreateForm } from './AppAuthCreateForm';
 import { CustomAuthCreateForm } from './CustomAuthCreateForm';
 import { DefaultCreateForm } from './DefaultCreateForm';
+import { GenericApiKeyCreateForm } from './GenericApiKeyCreateForm';
 import { InstallPluginAuthCreateForm } from './InstallPluginAuthCreateForm';
 import { McpGenericCreateForm } from './McpGenericCreateForm';
 import { McpOAuthCreateForm } from './McpOAuthCreateForm';
@@ -15,6 +16,10 @@ interface Props {
 
 export const AuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
     const authMode = provider.authMode;
+
+    if (provider.name === 'generic-api-key') {
+        return <GenericApiKeyCreateForm provider={provider} onSubmit={onSubmit} />;
+    }
 
     switch (authMode) {
         case 'OAUTH1':

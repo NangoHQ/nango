@@ -90,7 +90,8 @@ export const nangoPropsSchema = z.object({
     integrationConfig: z
         .object({
             oauth_client_id: z.string().nullable(),
-            oauth_client_secret: z.string().nullable()
+            oauth_client_secret: z.string().nullable(),
+            custom: z.record(z.string(), z.string()).nullable().optional()
         })
         .optional()
 });
