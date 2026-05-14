@@ -1,0 +1,61 @@
+import * as z from 'zod';
+
+import { configService, getFunction } from '@nangohq/shared';
+import { zodErrorToHTTP } from '@nangohq/utils';
+
+import { envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
+import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+
+import type { GetIntegrationFunction } from '@nangohq/types';
+
+const querystringValidation = z
+    .object({
+        env: envSchema,
+        type: z.enum(['sync', 'action', 'on-event']).optional()
+    })
+    .strict();
+
+const paramsValidation = z
+    .object({
+        providerConfigKey: providerConfigKeySchema,
+        functionName: z.string().min(1).max(255)
+    })
+    .strict();
+
+export const getIntegrationFunction = asyncWrapper<GetIntegrationFunction>(async (req, res) => {
+    const queryStringValues = querystringValidation.safeParse(req.query);
+    if (!queryStringValues.success) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringValues.error) } });
+        return;
+    }
+
+    const valParams = paramsValidation.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
+        return;
+    }
+
+    const { environment } = res.locals;
+    const { providerConfigKey, functionName } = valParams.data;
+    const { type } = queryStringValues.data;
+
+    const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
+    if (!integration) {
+        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
+        return;
+    }
+
+    const fn = await getFunction({
+        environmentId: environment.id,
+        providerConfigKey,
+        name: functionName,
+        type
+    });
+
+    if (!fn) {
+        res.status(404).send({ error: { code: 'not_found', message: 'Function does not exist' } });
+        return;
+    }
+
+    res.status(200).send({ data: fn });
+});
