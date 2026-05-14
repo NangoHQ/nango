@@ -1027,6 +1027,10 @@ export async function deleteRecords({
                 await acquireAdvisoryLock(trx, { name: 'lock_records_delete', connectionId, model });
             }
 
+            // Each batch starts right after the last processed record
+            // so the index scan doesn't re-traverse dead tuples from prior batches
+            let from: { updated_at: string; id: string } | null = null;
+
             do {
                 const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
                 if (toDelete <= 0) {
@@ -1043,6 +1047,9 @@ export async function deleteRecords({
                             { column: 'id', order: 'asc' }
                         ])
                         .limit(toDelete);
+                    if (from) {
+                        subQuery.whereRaw('(updated_at, id) > (?, ?)', [from.updated_at, from.id]);
+                    }
                     if (decodedCursor) {
                         // Delete records up to and including the cursor position
                         subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
@@ -1127,6 +1134,11 @@ export async function deleteRecords({
                 const lastDeletedRecord = res[res.length - 1];
                 if (lastDeletedRecord) {
                     lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
+                    // Soft delete sets updated_at = now, so RETURNING gives the new value.
+                    // Using it as a cursor would place us past all remaining records
+                    if (mode !== 'soft') {
+                        from = { updated_at: lastDeletedRecord.updated_at, id: lastDeletedRecord.id };
+                    }
                 }
 
                 if (paginatedRecords < toDelete) {
