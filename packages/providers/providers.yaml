@@ -15385,7 +15385,6 @@ revivn:
         - other
     auth_mode: OAUTH2_CC
     token_url: https://api.revivn.dev/oauth/token
-    token_request_auth_method: body
     token_params:
         grant_type: client_credentials
     proxy:
