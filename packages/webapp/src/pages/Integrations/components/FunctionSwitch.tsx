@@ -12,10 +12,10 @@ import { Switch } from '@/components-v2/ui/switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 
-import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
+import type { ApiError, ApiIntegration, NangoActionFunctionDeployed, NangoSyncFunctionDeployed } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: NangoSyncConfig;
+    flow: NangoSyncFunctionDeployed | NangoActionFunctionDeployed;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
@@ -137,7 +137,7 @@ export const FunctionSwitch: React.FC<{
                 {(allowed) => (
                     <Switch
                         name="script"
-                        checked={flow.enabled === true}
+                        checked={flow.enabled}
                         className="cursor-pointer"
                         disabled={loading || !allowed}
                         onClick={(e) => {

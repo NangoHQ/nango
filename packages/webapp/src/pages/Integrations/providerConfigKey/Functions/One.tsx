@@ -1,7 +1,7 @@
 import { Download, ExternalLink, Info } from 'lucide-react';
 import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
@@ -22,7 +22,8 @@ import { Skeleton } from '@/components-v2/ui/skeleton';
 import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
+import { useGetIntegration } from '@/hooks/useIntegration';
+import { useGetIntegrationFunction } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -30,7 +31,10 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { openPlaygroundWithContext } from '@/utils/playground';
 
+import type { FunctionType } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const FUNCTION_TYPES = new Set<FunctionType>(['sync', 'action', 'on-event']);
 
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
@@ -40,13 +44,21 @@ export const FunctionsOne: React.FC = () => {
     const debugMode = useStore((state) => state.debugMode);
     const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const integrationData = integrationResponse?.data;
-    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
-    const flowsData = flowsResponse?.data;
 
-    const func = flowsData?.flows.find((flow) => flow.name === functionName);
+    const [searchParams] = useSearchParams();
+    const typeParam = searchParams.get('type');
+    const typeFilter: FunctionType | undefined = typeParam && FUNCTION_TYPES.has(typeParam as FunctionType) ? (typeParam as FunctionType) : undefined;
+
+    const { data: functionResponse, isLoading: functionLoading } = useGetIntegrationFunction({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: typeFilter
+    });
+    const func = functionResponse?.data;
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
-        if (!func || !func.input || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.input || !func.json_schema) {
             return null;
         }
         const { input, json_schema } = func;
@@ -59,7 +71,7 @@ export const FunctionsOne: React.FC = () => {
     }, [func]);
 
     const outputSchemas: { name: string; schema: JSONSchema7 }[] | null = useMemo(() => {
-        if (!func || !func.returns || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.returns || !func.json_schema) {
             return null;
         }
         const { returns, json_schema } = func;
@@ -78,7 +90,7 @@ export const FunctionsOne: React.FC = () => {
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
-    const isLoading = integrationLoading || flowsLoading;
+    const isLoading = integrationLoading || functionLoading;
 
     const downloadCode = useCallback(async () => {
         if (!func || !func.enabled || !func.id) {
@@ -176,7 +188,7 @@ export const FunctionsOne: React.FC = () => {
                                     Playground <ExternalLink />
                                 </Button>
                             </ConditionalTooltip>
-                            <FunctionSwitch flow={func} integration={integrationData.integration} />
+                            {(func.type === 'sync' || func.type === 'action') && <FunctionSwitch flow={func} integration={integrationData.integration} />}
                         </div>
                     </div>
 
@@ -187,19 +199,13 @@ export const FunctionsOne: React.FC = () => {
                             <span>{func.type}</span>
                         </KeyValueBadge>
                         <KeyValueBadge label="Source code">{func.source === 'repo' ? 'your repo' : 'Nango'}</KeyValueBadge>
-                        {func.sync_type && (
-                            <KeyValueBadge label="Sync type">
-                                <span>{func.sync_type}</span>
-                            </KeyValueBadge>
-                        )}
-                        {func.runs && (
+                        {func.type === 'sync' && func.runs && (
                             <KeyValueBadge label="Frequency">
                                 <span>{func.runs}</span>
                             </KeyValueBadge>
                         )}
-                        {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
-                        {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
-                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
+                        {func.type === 'sync' && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
+                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
