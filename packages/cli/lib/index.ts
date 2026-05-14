@@ -12,7 +12,7 @@ import { Command } from 'commander';
 import * as dotenv from 'dotenv';
 import figlet from 'figlet';
 
-import { NangoCliExitCode } from '@nangohq/runner-sdk';
+import { NangoCliExitCode } from '@nangohq/utils';
 
 import { getVersionOutput } from './cli.js';
 import { migrateToZeroYaml } from './migrations/toZeroYaml.js';

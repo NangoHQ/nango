@@ -34,7 +34,6 @@
         "@nangohq/nango-yaml": "file:../nango-yaml",
         "@nangohq/providers": "file:.../providers",
         "@nangohq/records": "file:../records",
-        "@nangohq/runner-sdk": "file:../runner-sdk",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",

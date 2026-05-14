@@ -45,7 +45,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 
-import { NangoCliExitCode } from '@nangohq/runner-sdk';
+import { NangoCliExitCode } from '@nangohq/utils';
 
 import { invokeDeploy } from './deploy-client.js';
 

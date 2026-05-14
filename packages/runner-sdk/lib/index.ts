@@ -5,7 +5,6 @@ export * from './errors.js';
 export * from './sync.js';
 export * from './scripts.js';
 export * from './checkpoint.js';
-export * from './cliExitCodes.js';
 import PaginationService from './paginate.service.js';
 
 export { PaginationService };

@@ -1,4 +1,4 @@
-import { NangoCliExitCode } from '@nangohq/runner-sdk';
+import { NangoCliExitCode } from '@nangohq/utils';
 
 import type { FunctionErrorCode } from '@nangohq/types';
 
