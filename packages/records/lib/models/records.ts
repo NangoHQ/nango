@@ -1208,6 +1208,10 @@ export async function deleteOutdatedRecords({
     try {
         const deletedIds: string[] = [];
         let hasMore = true;
+        // Cursor as id: each batch starts right after the last processed record so the
+        // index scan doesn't re-traverse dead tuples from prior batches
+        // updated_at can't be used as cursor here since the soft delete sets it to now.
+        let lastId: string | null = null;
         // NOTE: deletion is intentionally not atomic. Each batch is its own transaction so that
         // long-running deletes (e.g. millions of records) don't hold a single DB connection and
         // row locks for the entire duration, which was causing timeouts and stalling other queries.
@@ -1244,6 +1248,8 @@ export async function deleteOutdatedRecords({
                                       AND r.model = :model
                                       AND r.deleted_at IS NULL
                                       AND seen.id IS NULL
+                                      AND (:lastId::text IS NULL OR r.id > :lastId)
+                                    ORDER BY r.id
                                     LIMIT :batchSize
                                 )
                                 UPDATE ${RECORDS_TABLE} r
@@ -1262,7 +1268,7 @@ export async function deleteOutdatedRecords({
                                   r.external_id,
                                   COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
                                   r.tableoid::regclass as partition`,
-                                { connectionId, model, generation, batchSize }
+                                { connectionId, model, generation, batchSize, lastId }
                             )
                         ).rows;
 
@@ -1310,6 +1316,8 @@ export async function deleteOutdatedRecords({
             if (batchResult.length < batchSize) {
                 hasMore = false;
             }
+
+            lastId = batchResult[batchResult.length - 1]?.id ?? lastId;
 
             if (!partition && batchResult[0]?.partition) {
                 partition = batchResult[0].partition;
