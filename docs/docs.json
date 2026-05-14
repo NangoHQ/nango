@@ -1314,6 +1314,7 @@
               "api-integrations/microsoft-planner",
               "api-integrations/microsoft-powerpoint",
               "integrations/all/microsoft-power-bi",
+              "api-integrations/microsoft-people",
               "api-integrations/microsoft-teams",
               "api-integrations/microsoft-teams-bot",
               "api-integrations/microsoft-word",

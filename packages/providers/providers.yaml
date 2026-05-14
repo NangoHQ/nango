@@ -11582,6 +11582,14 @@ microsoft-teams:
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
 
+microsoft-people:
+    display_name: Microsoft People
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-people
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-people/how-to-register-your-own-microsoft-people-api-oauth-app
+
 microsoft-word:
     display_name: Microsoft Word
     categories:
