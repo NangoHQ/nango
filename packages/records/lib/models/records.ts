@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -99,17 +99,11 @@ export async function dropSeenPartition({ date }: { date: Date }): Promise<Resul
     }
 }
 
-async function insertBatchEntry(
+async function insertSeenEntry(
     trx: Knex.Transaction,
     { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
 ): Promise<void> {
     if (recordIds.length === 0) return;
-    await trx(RECORDS_BATCH_TABLE).insert({
-        connection_id: connectionId,
-        model,
-        sync_job_id: syncJobId,
-        record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-    });
     await trx(RECORDS_SEEN_TABLE).insert({
         connection_id: connectionId,
         model,
@@ -625,7 +619,7 @@ export async function upsert({
                         }
 
                         // insert batch entry with all seen record ids (including unchanged)
-                        await insertBatchEntry(trx, {
+                        await insertSeenEntry(trx, {
                             connectionId,
                             model,
                             syncJobId: chunk[0]!.sync_job_id,
@@ -894,7 +888,7 @@ export async function update({
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
-                    await insertBatchEntry(trx, {
+                    await insertSeenEntry(trx, {
                         connectionId,
                         model,
                         syncJobId: encryptedRecords[0]!.sync_job_id,
@@ -1225,7 +1219,7 @@ export async function deleteOutdatedRecords({
                         }[] = (
                             await trx.raw(
                                 `WITH seen AS MATERIALIZED (
-                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_BATCH_TABLE}
+                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
                                       AND sync_job_id >= :generation
@@ -1328,28 +1322,6 @@ export async function deleteOutdatedRecords({
         return Err(e);
     } finally {
         span.finish();
-    }
-}
-
-export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
-    try {
-        const result = await db.raw<{ rowCount: number }>(
-            `WITH expired AS (
-                SELECT ctid
-                FROM ${RECORDS_BATCH_TABLE}
-                WHERE created_at < ?
-                ORDER BY created_at
-                LIMIT ?
-                FOR UPDATE SKIP LOCKED
-            )
-            DELETE FROM ${RECORDS_BATCH_TABLE}
-            USING expired
-            WHERE records_batch.ctid = expired.ctid`,
-            [olderThan, limit]
-        );
-        return Ok(result.rowCount);
-    } catch (err) {
-        return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
 }
 

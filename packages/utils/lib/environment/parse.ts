@@ -98,13 +98,12 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_BATCH_CLEANUP_INTERVAL_MS: z.coerce
+    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
         .number()
         .positive()
         .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
         .default(1 * 3600 * 1000),
-    PERSIST_BATCH_CLEANUP_LIMIT: z.coerce.number().optional().default(1_000),
-    PERSIST_BATCH_CLEANUP_MAX_AGE_MS: z.coerce
+    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
         .number()
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
