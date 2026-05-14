@@ -375,14 +375,13 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
 
-    const wasCompressed = checkWasCompressed(responseStream);
     const isChunked = transferEncoding === 'chunked';
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
-    if (isChunked || wasCompressed || isAttachmentOrInline) {
+    if (isChunked || isAttachmentOrInline) {
         const passthroughHeaders = Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders;
-        if (wasCompressed) {
-            // axios decompressed the response, so the `content-length` is no longer valid
+        if (checkWasCompressed(responseStream)) {
+            // axios decompressed the response, so the `content-length` header is no longer valid
             delete passthroughHeaders['content-length'];
         }
         const passThroughStream = new PassThrough();
