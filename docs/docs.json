@@ -25,7 +25,7 @@
   "logo": {
     "light": "/images/Nango-Light-Mode.svg",
     "dark": "/images/Nango-Dark-Mode.svg",
-    "href": "https://www.nango.dev"
+    "href": "https://nango.dev"
   },
   "favicon": "/favicon.png",
   "contextual": {
@@ -69,7 +69,7 @@
       "linkedin": "https://www.linkedin.com/company/nangohq/",
       "github": "https://github.com/NangoHQ/nango",
       "slack": "https://nango.dev/slack",
-      "website": "https://www.nango.dev/"
+      "website": "https://nango.dev/"
     }
   },
   "integrations": {
@@ -975,6 +975,7 @@
               "integrations/all/blandai",
               "api-integrations/bing-webmasters",
               "api-integrations/bird",
+              "api-integrations/buffer",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/box",
@@ -1227,6 +1228,7 @@
               "api-integrations/highlevel-white-label",
               "integrations/all/holded",
               "integrations/all/hover",
+              "api-integrations/huntress",
               "api-integrations/hubspot",
               "api-integrations/hubspot-mcp",
               "integrations/all/icypeas",

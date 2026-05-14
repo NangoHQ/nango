@@ -2,90 +2,132 @@
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-account` | Creates a single account in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-account.ts) |
-| `update-account` | Updates a single account in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-account.ts) |
-| `accounts` | Fetches all accounts in QuickBooks. Handles both active and archived accounts, saving or deleting them based on their status. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/accounts.ts) |
-
-### Bill Payments
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `bill-payments` | Fetches all QuickBooks bill payments | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.ts) |
+| `create-account` | Create a QuickBooks Online chart of accounts entry. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-account.ts) |
+| `get-account` | Retrieve an account by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-account.ts) |
+| `list-accounts` | List accounts with the QuickBooks query endpoint | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-accounts.ts) |
+| `update-account` | Update an account using its current SyncToken | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-account.ts) |
 
 ### Bills
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-bill` | Creates a single bill in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-bill.ts) |
-| `bills` | Fetches all QuickBooks bills | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.ts) |
+| `create-bill` | Create a vendor bill with expense or item lines | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-bill.ts) |
+| `get-bill` | Retrieve a bill by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-bill.ts) |
+| `update-bill` | Update a bill using its current SyncToken | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-bill.ts) |
 
 ### Credit Memos
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-credit-memo` | Creates a single credit memo in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-credit-memo.ts) |
-| `update-credit-memo` | Updates a single credit memo in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-credit-memo.ts) |
-| `credit-memos` | Fetches all QuickBooks credit memos | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.ts) |
+| `create-credit-memo` | Create a QuickBooks credit memo. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-credit-memo.ts) |
+| `get-credit-memo` | Retrieve a QuickBooks credit memo by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-credit-memo.ts) |
+| `list-credit-memos` | List QuickBooks credit memos. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-credit-memos.ts) |
+| `update-credit-memo` | Update a QuickBooks credit memo | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-credit-memo.ts) |
 
 ### Customers
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-customer` | Creates a single customer in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-customer.ts) |
-| `update-customer` | Update a single customer in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-customer.ts) |
-| `customers` | Fetches all QuickBooks customers. Handles both active and archived customers, saving or deleting them based on their status. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/customers.ts) |
+| `create-customer` | Create a customer record in QuickBooks Online | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-customer.ts) |
+| `get-customer` | Retrieve a customer by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-customer.ts) |
+| `list-customers` | List customers with the QuickBooks query endpoint. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-customers.ts) |
 
 ### Deposits
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `deposits` | Fetches all QuickBooks deposits | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.ts) |
+| `create-deposit` | Create a bank deposit transaction | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-deposit.ts) |
+| `get-deposit` | Retrieve a deposit by ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-deposit.ts) |
+| `list-deposits` | List deposits with the QuickBooks query endpoint. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-deposits.ts) |
+| `update-deposit` | Update a deposit using its current SyncToken. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-deposit.ts) |
+
+### Estimates
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-estimate` | Retrieve an estimate by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-estimate.ts) |
+| `list-estimates` | List estimates with the QuickBooks query endpoint | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-estimates.ts) |
+| `update-estimate` | Update an existing estimate in QuickBooks with sparse update support. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-estimate.ts) |
 
 ### Invoices
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-invoice` | Creates a single invoice in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-invoice.ts) |
-| `update-invoice` | Updates a single invoice in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-invoice.ts) |
-| `invoices` | Fetches all invoices in QuickBooks. Handles both active and voided invoices, saving or deleting them based on their status. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/invoices.ts) |
+| `create-invoice` | Create a customer invoice with line items | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-invoice.ts) |
+| `get-invoice` | Retrieve an invoice by ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-invoice.ts) |
+| `list-invoices` | List invoices with the QuickBooks query endpoint | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-invoices.ts) |
+| `send-invoice` | Email an invoice using QuickBooks delivery settings | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/send-invoice.ts) |
+| `update-invoice` | Update an invoice using its current SyncToken | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-invoice.ts) |
 
 ### Items
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-item` | Creates a single item in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-item.ts) |
-| `update-item` | Update a single item in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-item.ts) |
-| `items` | Fetches all items in QuickBooks. Handles both active and archived items, saving or deleting them based on their status. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/items.ts) |
+| `create-item` | Create a product or service item | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-item.ts) |
+| `get-item` | Retrieve an item by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-item.ts) |
+| `list-items` | List items with the QuickBooks query endpoint. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-items.ts) |
+| `update-item` | Update a QuickBooks item using its current SyncToken with sparse update support. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-item.ts) |
 
 ### Journal Entries
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-journal-entry` | Creates a single journal entry in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-journal-entry.ts) |
-| `update-journal-entry` | Update a single journal entry in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-journal-entry.ts) |
-| `journal-entries` | Fetch all journal entries in QuickBooks | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.ts) |
+| `create-journal-entry` | Create a QuickBooks journal entry | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-journal-entry.ts) |
+| `get-journal-entry` | Retrieve a QuickBooks journal entry by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-journal-entry.ts) |
+| `list-journal-entries` | List QuickBooks journal entries with optional filtering and pagination. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-journal-entries.ts) |
+| `update-journal-entry` | Update a QuickBooks journal entry. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-journal-entry.ts) |
 
 ### Payments
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-payment` | Creates a single payment in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-payment.ts) |
-| `payments` | Fetches all payments in QuickBooks. Handles both active and voided payments, saving or deleting them based on their status. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/payments.ts) |
+| `create-payment` | Record a customer payment against invoices | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-payment.ts) |
+| `list-payments` | List payments using the QuickBooks query endpoint. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-payments.ts) |
+| `update-payment` | Update a payment using its current SyncToken. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-payment.ts) |
 
 ### Purchase Orders
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-purchase-order` | Creates a single purchase order in QuickBooks. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-purchase-order.ts) |
+| `create-purchase-order` | Create a QuickBooks purchase order | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-purchase-order.ts) |
+| `get-purchase-order` | Retrieve a QuickBooks purchase order by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-purchase-order.ts) |
+| `list-purchase-orders` | List QuickBooks purchase orders | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-purchase-orders.ts) |
+| `update-purchase-order` | Update a QuickBooks purchase order | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-purchase-order.ts) |
 
-### Purchases
-
-| Function name | Description | Type | Source code |
-| - | - | - | - |
-| `purchases` | Fetches all QuickBooks purchases | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.ts) |
-
-### Transfers
+### Query
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `transfers` | Fetches all QuickBooks transfers | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.ts) |
+| `query-entities` | Run a custom QuickBooks SQL-like query over supported entities | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/query-entities.ts) |
+
+### Vendors
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-vendor` | Retrieve a vendor by ID | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-vendor.ts) |
+| `list-vendors` | List vendors with the QuickBooks query endpoint. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-vendors.ts) |
+| `update-vendor` | Update a vendor using its current SyncToken | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-vendor.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-estimate` | Create an estimate for a customer in QuickBooks Online. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-estimate.ts) |
+| `create-vendor` | Create a vendor record in QuickBooks Online. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/create-vendor.ts) |
+| `get-payment` | Retrieve a payment by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/get-payment.ts) |
+| `list-bills` | List bills with the QuickBooks query endpoint | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/list-bills.ts) |
+| `update-customer` | Update a customer using its current SyncToken. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/actions/update-customer.ts) |
+| `accounts` | Sync chart of accounts records from QuickBooks Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/accounts.ts) |
+| `bill-payments` | Sync QuickBooks bill payments | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bill-payments.ts) |
+| `bills` | Sync vendor bills from QuickBooks Online. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/bills.ts) |
+| `credit-memos` | Sync QuickBooks credit memos | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/credit-memos.ts) |
+| `customers` | Sync customer records from QuickBooks Online. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/customers.ts) |
+| `deposits` | Sync deposit transactions from QuickBooks Online. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/deposits.ts) |
+| `estimates` | Sync customer estimates from QuickBooks Online. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/estimates.ts) |
+| `invoices` | Sync invoices from QuickBooks Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/invoices.ts) |
+| `items` | Sync product and service items from QuickBooks Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/items.ts) |
+| `journal-entries` | Sync QuickBooks journal entries | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/journal-entries.ts) |
+| `payments` | Sync customer payments from QuickBooks Online. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/payments.ts) |
+| `purchases` | Sync QuickBooks purchase transactions | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/purchases.ts) |
+| `transfers` | Sync QuickBooks transfers | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/transfers.ts) |
+| `vendors` | Sync vendor records from QuickBooks Online | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/quickbooks/syncs/vendors.ts) |

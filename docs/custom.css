@@ -38,6 +38,39 @@ pre, code, kbd, input, select, textarea, button { border-radius: 4px !important;
   z-index: 200 !important;
 }
 
+/* ══ SEARCH DIALOG PANEL — radius matches design system ═════════ */
+/*
+ * The headless-ui dialog panel that wraps the search box uses a
+ * larger arbitrary radius from Mintlify (≈12px) that escapes the
+ * global rounded-* override at the top of this file. Pin the panel
+ * and its inner surfaces to 4px so the corners match the search
+ * input inside, the expandable summary hover (see EXPANDABLES
+ * section), and the rest of the design system.
+ */
+[id^="headlessui-dialog-panel"],
+[id^="headlessui-dialog-panel"] > div,
+[id^="headlessui-dialog-panel"] [class*="bg-white"],
+[id^="headlessui-dialog-panel"] [class*="bg-background"] {
+  border-radius: 4px !important;
+}
+
+/* ══ EXPANDABLES — radius matches design system ═════════════════ */
+/*
+ * Mintlify <Accordion> renders as <details><summary>...</summary>...</details>.
+ * The summary's hover highlight uses a radius that doesn't match the
+ * search dialog panel. Pin both <details> and <summary> to 4px. When
+ * the accordion is open, square off the summary's bottom corners so
+ * the highlight connects cleanly to the expanded content below
+ * instead of leaving a curved gap.
+ */
+details, summary {
+  border-radius: 4px !important;
+}
+details[open] > summary {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
 /* ══ NAVBAR ══════════════════════════════════════════════════════ */
 /*
  * z-index: 30 matches Mintlify's native z-30 class so it stays
@@ -119,6 +152,44 @@ html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0,
   display: block !important;
 }
 
+/* ══ TOC — normalize unselected item color ══════════════════════ */
+/*
+ * Mintlify renders H2 TOC entries in #515556 and nested H3 entries
+ * in #717576. The mismatched tints make the outline read as noisy
+ * rather than hierarchical. Normalize to a single color per mode
+ * and rely on indentation (below) to convey hierarchy. Hover and
+ * active states are unchanged — they still come from the rules
+ * further down (`li[data-active="true"]` and the scroll-active
+ * fallback) which outweigh these selectors.
+ */
+html:not(.dark) #table-of-contents a {
+  color: #515556 !important;
+}
+html:not(.dark) #table-of-contents a:hover {
+  color: #000000 !important;
+}
+.dark #table-of-contents a {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark #table-of-contents a:hover {
+  color: #ffffff !important;
+}
+
+/* ══ TOC — indent H3 sub-items ══════════════════════════════════ */
+/*
+ * Mintlify renders the TOC as a FLAT list — every entry is an
+ * `<li class="toc-item" data-depth="N">` sibling, not a nested
+ * <ul>. So `li li a` never matches and we have to lean on the
+ * data attribute. H2 = depth 0, H3 = depth 1, H4 = depth 2.
+ * 20px steps line up with the left sidebar's nested-page indent.
+ */
+#table-of-contents .toc-item[data-depth="1"] > a {
+  padding-left: 24px !important;
+}
+#table-of-contents .toc-item[data-depth="2"] > a {
+  padding-left: 40px !important;
+}
+
 /* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
 /*
  * Show our scroll-derived active state only when Mintlify has no native
@@ -175,10 +246,26 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
 }
 
 /* ══ LOGO ════════════════════════════════════════════════════════ */
-a[href="https://www.nango.dev"] img,
-a[href="https://www.nango.dev"] svg {
-  height: 40px !important;
+/*
+ * Mintlify ships the logo with Tailwind `h-7` (28px) plus
+ * `max-w-[100%]`, which renders small next to the marketing site.
+ *
+ * Earlier this rule targeted `a[href="https://www.nango.dev"] img`,
+ * but the href in docs.json was switched to `https://nango.dev`
+ * (no `www`), so the selector silently stopped matching — that's
+ * why subsequent height bumps had no effect.
+ *
+ * Target the stable `nav-logo` class instead so the rule survives
+ * any future href change. Cover both the <img> form (current) and
+ * the <svg> form (older Mintlify builds) for safety, and clear the
+ * max-width so the logo can scale to its natural aspect ratio.
+ */
+img.nav-logo,
+svg.nav-logo,
+.nav-logo {
+  height: 36px !important;
   width: auto !important;
+  max-width: none !important;
 }
 
 /* ══ CONTENT AREA ════════════════════════════════════════════════ */
@@ -324,6 +411,37 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* Sign Up — force Nango brand cyan #29abe3 */
+/*
+ * Mintlify wraps the desktop primary button in two layers:
+ *   <a>                                      ← we set bg = #29abe3
+ *     <span class="absolute inset-0 bg-primary-dark ...">  ← Mintlify paints #217ea6
+ *     <div>Sign Up</div>
+ *   </a>
+ * Recoloring the span has been unreliable (Tailwind utility CSS
+ * specificity quirks, deploy lag), so we just remove the overlay
+ * entirely with display:none. The anchor's own background then
+ * becomes the visible color, which is exactly what we want. The
+ * mobile variant has no overlay span, so display:none on the
+ * span is a no-op there and the anchor bg wins by default.
+ */
+#navbar a[href="https://app.nango.dev/signup"] {
+  background-color: #29abe3 !important;
+  background-image: none !important;
+  border: 1px solid #29abe3 !important;
+  color: #ffffff !important;
+}
+#navbar a[href="https://app.nango.dev/signup"] > span:first-child,
+#navbar a[href="https://app.nango.dev/signup"] span.absolute,
+#navbar a[href="https://app.nango.dev/signup"] span[class*="bg-primary"] {
+  display: none !important;
+}
+#navbar a[href="https://app.nango.dev/signup"]:hover {
+  background-color: #217ea6 !important;
+  border-color: #217ea6 !important;
+  color: #ffffff !important;
+}
+
 /* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
 /*
  * Mintlify pins an "Ask a question..." chat-assistant input at the
@@ -331,16 +449,18 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
  * button, so this bottom input is redundant. Mintlify doesn't expose
  * a docs.json toggle for it.
  *
- * Two layers needed: the input itself uses `chat-assistant-` prefixed
- * classes (caught by [class*="chat-assistant"]), but its outer wrapper
- * uses only generic Tailwind classes — `rounded-2xl pointer-events-auto
- * bg-background-light/90 ...`. That combination is distinctive enough
- * to target without false positives on regular page content.
+ * Two layers needed:
+ * 1. The floating input bar itself (.chat-assistant-floating-input).
+ * 2. Its rounded-2xl wrapper div — which also appears identically
+ *    inside the Ask AI sidebar panel, so the rule must be scoped to
+ *    #content-area to avoid hiding the panel's own input container.
+ *
+ * Do NOT use [class*="chat-assistant"] (hides the panel) or
+ * #chat-assistant-textarea (that ID is duplicated on the panel
+ * textarea and would hide it too).
  */
-#chat-assistant-textarea,
-[class*="chat-assistant"] {
+.chat-assistant-floating-input,
+#content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
-div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
-  display: none !important;
-}
+

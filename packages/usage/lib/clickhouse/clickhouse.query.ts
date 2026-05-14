@@ -92,9 +92,9 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'webhook_forwards':
             return `daily_webhook_forwards`;
         case 'records':
-            return `daily_records`;
+            return `daily_raw_records`;
         case 'connections':
-            return `daily_connections`;
+            return `daily_raw_connections`;
     }
 }
 
@@ -110,6 +110,8 @@ export function quantityForMetric(metric: UsageMetric): string {
             return `SUM(compute_gbms)`;
         case 'records':
         case 'connections':
-            return `avgMerge(value)`;
+            // Records and connections build their own SQL in `clickhouse.ts` (three-level
+            // sum-then-avg over the raw projection MVs). This branch isn't reached for them.
+            return `SUM(value)`;
     }
 }
