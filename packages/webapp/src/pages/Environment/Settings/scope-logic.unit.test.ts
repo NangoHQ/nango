@@ -44,7 +44,7 @@ describe('expandScopes', () => {
     it('environment:* expands to all individual scopes', () => {
         const expanded = expandScopes(['environment:*']);
         expect(expanded).toEqual(ALL_INDIVIDUAL_SCOPES);
-        expect(expanded.length).toBe(21);
+        expect(expanded.length).toBe(22);
     });
 
     it('group wildcard expands to group scopes', () => {
