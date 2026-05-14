@@ -6009,6 +6009,30 @@ ebay-sandbox:
         base_url: https://api.sandbox.ebay.com/
     docs: https://nango.dev/docs/integrations/all/ebay-sandbox
 
+easypost:
+    display_name: EasyPost
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.easypost.com
+    docs: https://nango.dev/docs/api-integrations/easypost
+    docs_connect: https://nango.dev/docs/api-integrations/easypost/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your EasyPost API key.
+            pattern: '^EZ(AK|TK)[a-zA-Z0-9]+$'
+            example: EZTK****************************PCHxBDQG3lpZjneEFUxKmg
+            doc_section: '#step-1-get-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
+
 e-conomic:
     display_name: e-conomic
     categories:
