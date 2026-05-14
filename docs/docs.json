@@ -1501,6 +1501,7 @@
               "api-integrations/sharepoint-online",
               "integrations/all/sharepoint-online-v1",
               "integrations/all/sharepoint-online-oauth2-cc",
+              "api-integrations/shippo",
               "integrations/all/shipstation",
               "integrations/all/shipstation-v2",
               "api-integrations/shipbob-pat",

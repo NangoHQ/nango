@@ -17020,6 +17020,33 @@ shipbob-pat:
             pattern: '^[A-F0-9]{64}-\d+$'
             doc_section: '#step-1-generate-your-token'
 
+shippo:
+    display_name: Shippo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.goshippo.com
+        headers:
+            authorization: ShippoToken ${apiKey}
+        retry:
+            after:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /parcel-templates?page=1&results=1
+    docs: https://nango.dev/docs/api-integrations/shippo
+    docs_connect: https://nango.dev/docs/api-integrations/shippo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Shippo API token (live or test).
+            pattern: '^shippo_(live|test)_[a-f0-9]+'
+            example: shippo_live_e2848d36****************************
+            doc_section: '#step-1-get-your-api-token'
+
 shipstation:
     display_name: Shipstation (v1)
     categories:
