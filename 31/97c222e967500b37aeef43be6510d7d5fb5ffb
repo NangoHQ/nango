@@ -1,0 +1,22 @@
+packages/cli/lib/index.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 24,38,595-670
+packages/server/lib/services/remote-function/cli-exit-codes.ts
+  s_c4d4db50307ef7::t_cdf624208c85cd 1
+  s_c4d4db50307ef7::t_27e3cf2cfdd31b 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "3197c222e967500b37aeef43be6510d7d5fb5ffb",
+  "prompts": {},
+  "sessions": {
+    "s_c4d4db50307ef7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

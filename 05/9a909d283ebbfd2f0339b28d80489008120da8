@@ -1,0 +1,19 @@
+packages/cli/lib/index.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 24,38,596-671
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "059a909d283ebbfd2f0339b28d80489008120da8",
+  "prompts": {},
+  "sessions": {
+    "s_c4d4db50307ef7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

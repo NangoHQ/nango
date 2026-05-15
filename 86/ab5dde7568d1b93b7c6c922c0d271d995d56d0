@@ -1,0 +1,34 @@
+packages/cli/lib/index.ts
+  s_c4d4db50307ef7::t_e795863a4861c0 24,38,596-671
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 236,242,311,382,389,395,418,465,475,481,487
+  s_c4d4db50307ef7::t_27e3cf2cfdd31b 16
+packages/server/lib/services/remote-function/deploy-client.unit.test.ts
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 89
+  s_c4d4db50307ef7::t_516fe1fcc28ab1 102
+  s_c4d4db50307ef7::t_27e3cf2cfdd31b 48
+packages/cli/package.json
+  s_c4d4db50307ef7::t_e795863a4861c0 3,43-46,51,80
+packages/server/lib/services/remote-function/dryrun-client.unit.test.ts
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 93,117
+  s_c4d4db50307ef7::t_27e3cf2cfdd31b 48
+packages/server/lib/services/remote-function/cli-exit-codes.ts
+  s_c4d4db50307ef7::t_cdf624208c85cd 1
+  s_c4d4db50307ef7::t_d0fdaa5bfae322 37,39,47,49
+  s_c4d4db50307ef7::t_27e3cf2cfdd31b 3-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "86ab5dde7568d1b93b7c6c922c0d271d995d56d0",
+  "prompts": {},
+  "sessions": {
+    "s_c4d4db50307ef7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df2d5-21a8-7113-bfec-a67a775d13ca",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
