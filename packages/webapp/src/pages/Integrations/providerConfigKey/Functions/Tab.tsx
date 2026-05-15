@@ -1,4 +1,4 @@
-import { BookOpen, Cloud, Code, FolderGit2, Info, LibraryBig, Plus, Search } from 'lucide-react';
+import { Cloud, Code, FolderGit2, Info, LibraryBig, Plus, Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,9 +8,8 @@ import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert.js';
 import { EmptyCard } from '@/components-v2/EmptyCard.js';
-import { StyledLink } from '@/components-v2/StyledLink';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button } from '@/components-v2/ui/button';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { ComboboxSelect } from '@/components-v2/ui/combobox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/dropdown-menu';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
@@ -118,20 +117,14 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
             ) : showEmptyNoFilters ? (
                 <EmptyCard>
                     <h3 className="text-title-body text-text-primary">No functions deployed in this integrationyet</h3>
-                    <p className="text-text-secondary text-body-medium-regular text-center">
-                        Browse the template catalog or learn how to author your own in the{' '}
-                        <StyledLink icon to="https://nango.dev/docs/guides/functions/functions-guide" type="external">
-                            functions guide
-                        </StyledLink>
-                        .
-                    </p>
+                    <p className="text-text-secondary text-body-medium-regular text-center">Browse the template catalog or build your own custom functions.</p>
                     <div className="flex items-center gap-2">
                         <Button type="button" onClick={onBrowseTemplates}>
                             <LibraryBig /> Browse templates
                         </Button>
-                        <Button type="button" variant="secondary" onClick={onBrowseTemplates}>
-                            <BookOpen /> Functions guide
-                        </Button>
+                        <ButtonLink to="https://nango.dev/docs/guides/functions/functions-guide" target="_blank" variant="secondary">
+                            <Code /> Build custom
+                        </ButtonLink>
                     </div>
                 </EmptyCard>
             ) : (
@@ -169,12 +162,28 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                     <Plus /> New
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="w-64">
                                 <DropdownMenuItem onSelect={onBrowseTemplates}>
-                                    <LibraryBig /> Browse catalog
+                                    <div className="flex items-center gap-4">
+                                        <LibraryBig />
+                                        <div className="">
+                                            <span className="text-text-primary text-body-medium-medium">Browse catalog</span>
+                                            <p className="text-text-secondary text-body-small-regular">
+                                                Browse a list of pre-built functions that may fit your use case.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onSelect={onBuildCustom}>
-                                    <Code /> Build custom
+                                    <div className="flex items-center gap-4">
+                                        <Code />
+                                        <div className="">
+                                            <span className="text-text-primary text-body-medium-medium">Build custom</span>
+                                            <p className="text-text-secondary text-body-small-regular">
+                                                Bring your own code or leverage AI agents to build for your use case.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
