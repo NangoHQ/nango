@@ -1,0 +1,87 @@
+packages/shared/lib/services/customerKey.service.ts
+  s_3149120bc775e1::t_fa1122982abbca 5-10,37,61,63,133,143,146,150,154,156-169,172-181,183,186
+  s_2330e21e693fd2::t_736a43b94535fa 30-36,38-60,62,64-82,129-132,137-142,144-145,147-149,151-153,155
+packages/server/lib/routes.integration.test.ts
+  s_3149120bc775e1::t_6062acfb9ccab4 3-4,79-95
+packages/shared/lib/utils/encryption.manager.ts
+  s_3149120bc775e1::t_c54f4228a0a0c8 286-297,299-304,306-312
+packages/server/lib/routes.public.ts
+  s_2330e21e693fd2::t_460cfffe347874 287-288
+packages/shared/lib/services/account.service.ts
+  s_3149120bc775e1::t_a7426aff8fa5bf 569-571
+  s_3149120bc775e1::t_87a424e97b8c7b 487-568,572-611
+  s_3149120bc775e1::t_fc02bdd9d5243c 4-10,31
+  s_3149120bc775e1::t_73eef6c7e1445a 280-282
+packages/server/lib/middleware/access.middleware.ts
+  s_3149120bc775e1::t_21b22f4baa89c2 55,116-117,121,395-396
+  s_3149120bc775e1::t_1b4be96c07266c 118-120,397-399
+  s_3149120bc775e1::t_035415eae84bbe 33,61
+  s_3149120bc775e1::t_2d3921b3f82e85 64
+  s_3149120bc775e1::t_52d3026ece1def 123
+packages/utils/lib/api-key-scopes.ts
+  s_2330e21e693fd2::t_898b28300d3357 28-29
+packages/shared/lib/services/customer-key-sandbox-token.unit.test.ts
+  s_3149120bc775e1::t_969d44aebdb850 1-8,10-44,48-53,55-75
+  s_3149120bc775e1::t_ef470454b5e9c9 47
+  s_3149120bc775e1::t_3b40f886ab329a 45-46
+  s_3149120bc775e1::t_a5e0adb2bb2a95 9,54
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_3149120bc775e1::t_6330a2663d3e2c 42-48,67
+  s_2330e21e693fd2::t_a85e7babf49729 14-15,50
+  s_2330e21e693fd2::t_b56ae51efd65eb 2,8,49,51-53
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_2330e21e693fd2::t_10071b510c51b6 81-129
+  s_2330e21e693fd2::t_ef5cc4162f231d 2
+  s_2330e21e693fd2::t_ce5878555dd69e 6,20-23,25-28
+  s_2330e21e693fd2::t_c46cefd8017137 1,24
+packages/webapp/src/pages/Environment/Settings/scope-logic.unit.test.ts
+  s_2330e21e693fd2::t_21865d516b5fa9 47
+packages/shared/lib/services/customer-key-sandbox-token.service.ts
+  s_3149120bc775e1::t_aa9cddb991df2e 1-111,120-140,151-153,155-162
+  s_3149120bc775e1::t_13d671d81e0466 141
+  s_3149120bc775e1::t_d08d67c6dcf75b 142-150,154
+  s_3149120bc775e1::t_9682c45dc9c335 112-119
+packages/types/lib/api-keys/scopes.ts
+  s_2330e21e693fd2::t_ff835679311d8a 26-27
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_2330e21e693fd2::t_47803cc3e52523 41
+packages/types/lib/environment/db.ts
+  s_3149120bc775e1::t_8897f70f25345f 94-96
+packages/server/lib/utils/express.ts
+  s_3149120bc775e1::t_4bb636ed935165 35-36
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_2330e21e693fd2::t_90b00ac8bc5dfc 14-15,63
+  s_2330e21e693fd2::t_95a2b3f55c1007 2,8,62,64-66
+  s_3149120bc775e1::t_e2ce28621aa4fc 55-61,77
+packages/shared/lib/index.ts
+  s_3149120bc775e1::t_e64b7303ac3f3f 51-62
+packages/database/lib/migrations/20260514120000_customer_keys_sandbox_signing_secret.cjs
+  s_3149120bc775e1::t_1bc4b2ea947d4d 1-25
+packages/shared/lib/services/account.service.integration.test.ts
+  s_2330e21e693fd2::t_37ff9493662c9f 160-161,209-211,219,221-224,226-228,230,238,240,277-278
+  s_3149120bc775e1::t_c610ea685833a1 159,162-208,212-218,220,225,229,231-237,239,241-276
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "7284f52994e930a8aa2e33704c9bf3d0debfcda5",
+  "prompts": {},
+  "sessions": {
+    "s_2330e21e693fd2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df3dd-11f3-7340-81cd-b2983492f4d1",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}
