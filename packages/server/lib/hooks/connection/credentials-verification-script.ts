@@ -37,7 +37,7 @@ async function execute(
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
     connectionConfig: ConnectionConfig,
-    accountId: number
+    _accountId: number
 ) {
     const { provider: providerName, unique_key: providerConfigKey } = config;
 
@@ -117,8 +117,8 @@ async function execute(
                         oauth_client_secret: null
                     }),
                     onBytes: ({ sent, received }) => {
-                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId });
-                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId });
+                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { source: 'credential_verification_hook' });
+                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { source: 'credential_verification_hook' });
                     }
                 });
                 return (await proxy.request()).unwrap();

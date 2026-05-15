@@ -13,7 +13,7 @@ export interface InternalNango {
     getIntegration: () => Promise<Config | null>;
 }
 
-export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, accountId: number): InternalNango {
+export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, _accountId: number): InternalNango {
     const internalConfig: InternalProxyConfiguration = {
         providerName
     };
@@ -54,8 +54,8 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     return { oauth_client_id: null, oauth_client_secret: null };
                 },
                 onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId });
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { source: 'connection_hook' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { source: 'connection_hook' });
                 }
             });
             const response = (await proxyInstance.request()).unwrap();

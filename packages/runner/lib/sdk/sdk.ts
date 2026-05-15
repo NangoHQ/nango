@@ -102,7 +102,6 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
-        const accountId = this.accountId;
 
         let canRetryOn401 = true;
         let prevConnection: ApiPublicConnectionFull | undefined;
@@ -154,8 +153,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
             },
             onBytes: ({ sent, received }) => {
-                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { accountId });
-                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { accountId });
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { source: 'runner' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { source: 'runner' });
             }
         });
         const response = (await proxy.request()).unwrap();
