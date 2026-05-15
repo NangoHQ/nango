@@ -56,28 +56,14 @@ This guide covers everything required to publish a multitenant Microsoft Teams O
     **Link the domain to your app**
 
     1. Go to **App registrations**, select your app, then click **Branding & properties** in the left sidebar.
-    2. Under **Publisher domain**, you should see your verified domain listed. Select it.
+    2. Under **Publisher domain**, select your verified domain.
     3. Click **Verify and save**. The domain field will update to show the verified domain.
   </Step>
 
-  <Step title="Enrol in Microsoft Partner Center">
-    1. Go to [partner.microsoft.com](https://partner.microsoft.com) and sign in with your Microsoft work account.
-    2. Enrol in the [Partner Program](https://partner.microsoft.com/en-us/dashboard/account/v3/enrollment/introduction/partnership). The base tier is free. You will be asked for company details — you can enter these manually; a DUNS number is not required.
-    3. After enrolling, Microsoft runs a legal business profile vetting process. Go to **Account settings → Legal info** and check the **Vetting** tab for your current verification status. The process has five stages — the one that requires your action is **Identity Verification**.
-    4. If you see a banner on the Partner Center home page or in Legal info saying "Complete your identity verification", click **Resolve** and follow the steps to submit identity credentials via a Microsoft-approved verification vendor. Missing this banner is where most people get stuck.
-    5. Wait until the Vetting status shows **Authorized** before proceeding. This typically takes 1–3 business days.
-    6. Once authorized, go to **Account settings → Organization profile → Identifiers** and copy your **Partner ID**. You will see two types — try **PartnerGlobal** first; use **PartnerLocation** if that fails in the next step.
-  </Step>
+  <Step title="Complete publisher verification">
+    Microsoft requires publisher verification before users from external tenants can consent without an "unverified app" warning. This involves enrolling in the Microsoft AI Cloud Partner Program and linking your Partner ID to your Entra app.
 
-  <Step title="Complete publisher verification in Entra">
-    1. Go to **App registrations** in the [Microsoft Entra admin center](https://entra.microsoft.com) and select your app.
-    2. In the left sidebar, click **Branding & properties**.
-    3. Confirm the **Publisher domain** field shows your custom domain, not `onmicrosoft.com`.
-    4. Scroll down to the **Publisher verification** section and click **Add MPN ID to verify this publisher**.
-    5. In the panel that opens, enter your Partner ID in the **MPN ID** field and set the **Publisher display name** — this is the name users will see on the OAuth consent screen.
-    6. Click **Save**.
-
-    When successful, a blue verified badge appears next to the publisher name on the OAuth consent screen.
+    [Follow the publisher verification guide](/api-integrations/microsoft-shared/microsoft-publisher-verification) to complete this step.
   </Step>
 
   <Step title="Activate Microsoft 365 with Teams">
