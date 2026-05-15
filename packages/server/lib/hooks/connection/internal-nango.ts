@@ -54,8 +54,8 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     return { oauth_client_id: null, oauth_client_secret: null };
                 },
                 onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { source: 'server_connection_hook' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { source: 'server_connection_hook' });
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_connection_hook' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_connection_hook' });
                 }
             });
             const response = (await proxyInstance.request()).unwrap();
