@@ -1,0 +1,46 @@
+---
+title: Bugsink - How do I link my account?
+sidebarTitle: Bugsink
+---
+
+# Overview
+
+To authenticate with Bugsink, you will need:
+1. **Base URL** - The URL of your Bugsink instance, without a trailing slash.
+2. **API Key** - A Bugsink API key that Nango will send as a bearer token.
+
+### Prerequisites
+
+- You must have access to a Bugsink instance.
+- You must have a Bugsink API key with access to the teams, projects, issues, events, and releases you want to proxy through Nango.
+
+### Instructions
+
+#### Step 1: Find your Bugsink base URL
+
+Use the origin URL of your Bugsink instance. For example:
+
+```text
+https://bugs.example.com
+```
+
+Do not include the `/api/canonical/0` API path. Nango adds that path automatically.
+
+#### Step 2: Create or copy an API key
+
+In Bugsink, create or copy an API key for the account or user that should be used for API access.
+
+Nango sends this key with each proxied request using:
+
+```http
+Authorization: Bearer <API_KEY>
+```
+
+#### Step 3: Enter your connection details in the Connect UI
+
+1. Open the form where you need to authenticate with Bugsink.
+2. Enter your **Base URL**.
+3. Paste your **API Key**.
+4. Submit the form.
+
+You are now connected to Bugsink.

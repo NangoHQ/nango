@@ -1099,6 +1099,7 @@
               "api-integrations/bing-webmasters",
               "api-integrations/bird",
               "api-integrations/buffer",
+              "api-integrations/bugsink",
               "integrations/all/boldsign",
               "integrations/all/booking-com",
               "api-integrations/box",

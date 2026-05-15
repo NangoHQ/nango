@@ -3203,6 +3203,39 @@ buffer:
     docs: https://nango.dev/docs/api-integrations/buffer
     setup_guide_url: https://nango.dev/docs/api-integrations/buffer/how-to-register-your-own-buffer-oauth-app
 
+bugsink:
+    display_name: Bugsink
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api/canonical/0
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /teams/
+    docs: https://nango.dev/docs/api-integrations/bugsink
+    docs_connect: https://nango.dev/docs/api-integrations/bugsink/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your Bugsink instance URL, without a trailing slash.
+            example: https://bugs.example.com
+            format: uri
+            pattern: '^https?://.*[^/]$'
+            order: 1
+            doc_section: '#step-1-find-your-bugsink-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Bugsink API key.
+            doc_section: '#step-2-create-or-copy-an-api-key'
+
 bullhorn:
     display_name: Bullhorn
     categories:
