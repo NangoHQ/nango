@@ -72,15 +72,20 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
     CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
+    CRON_DELETE_OLD_SYNCS_MAX_DAYS: z.coerce.number().optional().default(1),
+    CRON_DELETE_OLD_SYNCS_LIMIT: z.coerce.number().optional().default(25),
     CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
+    CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
+    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
+    PERSIST_HARD_DELETE_LIMIT: z.coerce.number().int().positive().optional().default(50_000),
     PERSIST_AUTO_PRUNING_INTERVAL_MS: z.coerce.number().optional().default(5_000), // set to 0 to disable
     PERSIST_AUTO_PRUNING_LIMIT: z.coerce.number().optional().default(1_000),
     PERSIST_AUTO_PRUNING_STALE_AFTER_MS: z.coerce
@@ -93,6 +98,15 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
+    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
+        .default(1 * 3600 * 1000),
+    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
+        .number()
+        .optional()
+        .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
@@ -268,6 +282,9 @@ export const ENVS = z.object({
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
+    BILLING_EVENTS_S3_BUCKET: z.string().optional(),
+    BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
+    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -323,6 +340,9 @@ export const ENVS = z.object({
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
+
+    // Network
+    NANGO_RETRYABLE_NETWORK_ERRORS: z.string().optional(),
 
     // Logodev
     PUBLIC_LOGODEV_KEY: z.string().optional(),
@@ -428,7 +448,7 @@ export const ENVS = z.object({
             z.object({
                 topicArns: z
                     .partialRecord(
-                        z.enum(['user', 'usage', 'team']),
+                        z.enum(['user', 'usage', 'team', 'lambda_keep_warm']),
                         z.string().regex(/^arn:aws(?:-[a-z0-9]+)*:sns:[a-z0-9-]+:\d{12}:.+$/, 'must be a valid AWS SNS topic ARN')
                     )
                     .optional()
@@ -437,22 +457,23 @@ export const ENVS = z.object({
                     .record(z.string(), z.url())
                     .check((payload) => {
                         const record = payload.value;
+                        const allowedSubjects = new Set(['user', 'usage', 'team', 'lambda_keep_warm']);
                         for (const key of Object.keys(record)) {
                             const lastColon = key.lastIndexOf(':');
                             if (lastColon < 0 || lastColon === key.length - 1) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be user, usage, or team)`,
+                                    message: `Invalid queueUrls key "${key}": expected consumerGroup:subject (subject must be one of user, usage, team, lambda_keep_warm)`,
                                     path: [key],
                                     input: record[key]
                                 });
                                 continue;
                             }
                             const subject = key.slice(lastColon + 1);
-                            if (!(subject === 'user' || subject === 'usage' || subject === 'team')) {
+                            if (!allowedSubjects.has(subject)) {
                                 payload.issues.push({
                                     code: 'custom',
-                                    message: `Invalid queueUrls key "${key}": subject after ':' must be user, usage, or team`,
+                                    message: `Invalid queueUrls key "${key}": subject after ':' must be one of user, usage, team, lambda_keep_warm`,
                                     path: [key],
                                     input: record[key]
                                 });
@@ -469,6 +490,9 @@ export const ENVS = z.object({
     NANGO_ACTIVEMQ_CONNECT_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
 
     // Lambda
+    LAMBDA_KEEP_WARM_ENABLED: z.stringbool().optional().default(false),
+    LAMBDA_KEEP_WARM_ACCOUNT_AGE_MS: z.coerce.number().default(24 * 60 * 60 * 1000),
+    LAMBDA_KEEP_WARM_SUBSCRIBE_CONCURRENCY: z.coerce.number().min(1).max(10).optional().default(1),
     LAMBDA_DEFAULT_TIMEOUT_BILLING_SECS: z.coerce.number().optional().default(10),
     LAMBDA_ENABLED: z.stringbool().optional().default(false),
     LAMBDA_DEFAULT_PREFIX: z.string().optional().default('nango-runner-function'),
@@ -538,6 +562,8 @@ export const ENVS = z.object({
 
     // WEBHOOK INGRESS
     WEBHOOK_INGRESS_USE_DISPATCH_QUEUE: z.stringbool().optional().default(false),
+    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_PER_MIN: z.coerce.number().min(0).optional().default(4000),
+    NANGO_WEBHOOK_INGRESS_RATE_LIMIT_ENFORCE: z.stringbool().optional().default(false),
 
     // TASK DISPATCH QUEUE
     NANGO_TASK_DISPATCH_QUEUE_URL: z.url().optional(),
@@ -547,7 +573,8 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
     NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
-    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
+    NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
+    NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
 
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),

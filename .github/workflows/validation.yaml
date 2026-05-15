@@ -81,7 +81,8 @@ jobs:
               run: |
                   npm install -g mintlify
                   cd docs
-                  if ! mintlify broken-links | grep -q "no broken links found"; then
-                    echo "Broken links found in documentation"
+                  broken_links_output=$(mintlify broken-links 2>&1) || true
+                  if ! echo "$broken_links_output" | grep -q "no broken links found"; then
+                    echo "$broken_links_output"
                     exit 1
                   fi

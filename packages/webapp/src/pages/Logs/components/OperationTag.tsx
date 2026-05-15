@@ -9,6 +9,8 @@ import {
     IconRefresh,
     IconSettings,
     IconSettingsAutomation,
+    IconStack2,
+    IconTrash,
     IconX
 } from '@tabler/icons-react';
 
@@ -32,6 +34,8 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                             {operation.action === 'request_run_full' && <IconPlayerPlay className="w-3.5 h-3.5" />}
                             {operation.action === 'unpause' && <IconClockPlay className="w-3.5 h-3.5" />}
                             {operation.action === 'run' && <IconRefresh className="w-3.5 h-3.5" />}
+                            {operation.action === 'create_variant' && <IconStack2 className="w-3.5 h-3.5" />}
+                            {operation.action === 'delete_variant' && <IconTrash className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
 
@@ -54,9 +58,11 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
                 </div>
             </Tooltip.TooltipTrigger>
-            <Tooltip.TooltipContent align="start">
-                <p>{message}</p>
-            </Tooltip.TooltipContent>
+            <Tooltip.TooltipPortal>
+                <Tooltip.TooltipContent align="start" className="text-white">
+                    <p>{message}</p>
+                </Tooltip.TooltipContent>
+            </Tooltip.TooltipPortal>
         </Tooltip.Tooltip>
     );
 };

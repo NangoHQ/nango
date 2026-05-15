@@ -8,7 +8,7 @@ import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { setAbortFlag } from '../execution/operations/abort.js';
-import { getRoutingId } from '../utils/lambda.js';
+import { getLambdaTenantId, getRoutingId } from '../utils/lambda.js';
 
 import type { RuntimeAdapter } from './adapter.js';
 import type { Fleet } from '@nangohq/fleet';
@@ -183,7 +183,10 @@ export class LambdaRuntimeAdapter implements RuntimeAdapter {
                 FunctionName: func.arn,
                 Payload: payload.value,
                 //InvocationType is Event for async invocation, RequestResponse for sync invocation
-                InvocationType: 'Event'
+                InvocationType: 'Event',
+                ...(params.routingContext?.plan?.lambda_tenant_isolation && {
+                    TenantId: getLambdaTenantId(params.nangoProps)
+                })
             });
             await client.send(command);
             return Ok(true);

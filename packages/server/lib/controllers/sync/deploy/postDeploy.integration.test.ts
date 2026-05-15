@@ -1,5 +1,6 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import * as kvstore from '@nangohq/kvstore';
 import { envs } from '@nangohq/logs';
 import { getSyncConfigsAsStandardConfig, seeders } from '@nangohq/shared';
 
@@ -127,6 +128,46 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
     });
 
+    it('should return 409 when a concurrent deployment is already in progress', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+
+        const getLockingSpy = vi.spyOn(kvstore, 'getLocking').mockResolvedValue({
+            tryAcquire: vi.fn(),
+            release: vi.fn(),
+            acquire: vi.fn().mockRejectedValue(new Error('Failed to acquire lock')),
+            releaseAll: vi.fn(),
+            hasLock: vi.fn(),
+            withLock: vi.fn()
+        } as any);
+
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: {
+                    debug: false,
+                    flowConfigs: [],
+                    nangoYamlBody: '',
+                    onEventScriptsByProvider: [],
+                    reconcile: false,
+                    deployMode: 'all'
+                }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(409);
+            expect(res.json).toStrictEqual({
+                error: {
+                    code: 'concurrent_deployment',
+                    message: 'A deployment is already in progress. Please wait for the current deployment to finish.',
+                    payload: {}
+                }
+            });
+        } finally {
+            getLockingSpy.mockRestore();
+        }
+    });
+
     describe('deploy', () => {
         let env: DBEnvironment;
         let apiKey: DBCustomerKey;
@@ -214,11 +255,10 @@ describe(`POST ${endpoint}`, () => {
                             endpoints: [{ method: 'GET', path: '/path', group: null }],
                             input: 'Input',
                             sdk_version: expect.any(String),
-                            is_public: false,
+                            source: 'repo',
                             last_deployed: expect.toBeIsoDate(),
                             returns: ['Output'],
                             scopes: [],
-                            pre_built: false,
                             runs: 'every day',
                             name: 'test',
                             sync_type: 'full',

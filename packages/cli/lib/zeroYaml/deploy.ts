@@ -105,6 +105,7 @@ export async function deploy({
         return Err('failed');
     }
 
+    const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
     const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
     if (confirmed.isErr()) {
@@ -118,7 +119,7 @@ export async function deploy({
     try {
         const deployRes = await postDeploy({
             hostport,
-            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion }
+            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion, source: deploySource }
         });
         if (deployRes.isErr()) {
             spinnerDeploy.fail();
@@ -630,4 +631,9 @@ function summaryMessageColumns({ name, newItems, updatedItems, deleteItems }: { 
 }
 function shortSummaryMessage({ name, newItems, deleteItems }: { name: string; newItems: any[]; deleteItems: any[] }): string {
     return ` [${name} ${chalk.green(`+${newItems.length}`)} ${chalk.red(`-${deleteItems.length}`)}]`;
+}
+
+function resolveDeploySource(): 'standalone' | 'repo' {
+    const val = process.env['NANGO_DEPLOY_SOURCE'];
+    return val === 'standalone' ? 'standalone' : 'repo';
 }

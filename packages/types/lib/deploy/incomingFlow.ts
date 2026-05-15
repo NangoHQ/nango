@@ -39,7 +39,6 @@ export interface PreBuiltAction {
     metadata?: NangoConfigMetadata | undefined;
     providerConfigKey: string;
     provider: string;
-    is_public: boolean;
     public_route: string;
     name: string;
     syncName?: string; // legacy
@@ -59,7 +58,6 @@ export interface PreBuiltSync {
     track_deletes: boolean;
     providerConfigKey: string;
     provider: string;
-    is_public: boolean;
     public_route: string;
     name: string;
     syncName?: string; // legacy

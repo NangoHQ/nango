@@ -15,7 +15,7 @@ import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { apiGetCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
+import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
@@ -305,11 +305,11 @@ const PlanChangeDialog: React.FC<{
         }
 
         refInterval.current = setInterval(async () => {
-            const res = await apiGetCurrentPlan(env);
-            if ('error' in res.json) {
+            const json = await fetchCurrentPlan(env).catch(() => null);
+            if (!json) {
                 return;
             }
-            if (res.json.data.name !== selectedPlan.plan.code) {
+            if (json.data.name !== selectedPlan.plan.code) {
                 setLongWait(true);
                 return;
             }
@@ -345,11 +345,11 @@ const PlanChangeDialog: React.FC<{
         }
 
         refInterval.current = setInterval(async () => {
-            const res = await apiGetCurrentPlan(env);
-            if ('error' in res.json) {
+            const json = await fetchCurrentPlan(env).catch(() => null);
+            if (!json) {
                 return;
             }
-            if (res.json.data.orb_future_plan !== selectedPlan.plan.code) {
+            if (json.data.orb_future_plan !== selectedPlan.plan.code) {
                 setLongWait(true);
                 return;
             }

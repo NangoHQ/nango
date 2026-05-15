@@ -94,7 +94,7 @@ export type PostSignin = Endpoint<{
         email: string;
         password: string;
     };
-    Error: ApiError<'email_not_verified'> | ApiError<'unauthorized'>;
+    Error: ApiError<'email_not_verified'> | ApiError<'user_suspended'> | ApiError<'unauthorized'>;
     Success: {
         user: ApiUser;
     };

@@ -45,7 +45,7 @@ export async function deployTemplate({
 
     const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
-    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, true);
+    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, 'catalog');
     if (exists) {
         return Err(new NangoError('template_already_deployed'));
     }
@@ -87,6 +87,7 @@ export async function deployTemplate({
 
     const modelsNames = [...template.returns, template.input].filter(Boolean) as string[];
 
+    // select all active rows, not just .first(), so any duplicates left by prior races are also cleaned up.
     const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, integration.id!, template.name);
     if (oldConfigs.length > 0) {
         const ids = oldConfigs.map((oldConfig) => oldConfig.id);
@@ -113,8 +114,7 @@ export async function deployTemplate({
         auto_start: template.type === 'sync' ? !!template.auto_start : false,
         attributes: {},
         metadata: { description: template.description, scopes: template.scopes },
-        pre_built: true,
-        is_public: true,
+        source: 'catalog',
         enabled: true,
         webhook_subscriptions: null,
         models_json_schema: template.json_schema,

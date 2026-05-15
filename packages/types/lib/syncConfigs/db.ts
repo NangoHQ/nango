@@ -5,6 +5,8 @@ import type { JSONSchema7 } from 'json-schema';
 
 export type Feature = 'checkpoints';
 
+export type FunctionSource = 'catalog' | 'standalone' | 'repo';
+
 export interface DBSyncConfig extends TimestampsAndDeleted {
     id: number;
     sync_name: string;
@@ -20,8 +22,7 @@ export interface DBSyncConfig extends TimestampsAndDeleted {
     type: ScriptTypeLiteral;
     auto_start: boolean;
     attributes: object;
-    pre_built: boolean;
-    is_public: boolean;
+    source: FunctionSource;
     metadata: NangoConfigMetadata;
     input: string | null;
     /** @deprecated **/

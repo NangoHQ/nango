@@ -80,6 +80,12 @@ for (const docsPath of docsPaths) {
                 console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
             }
 
+            // MCP providers don't have pre-built templates — skip snippet generation.
+            if (maybeAliased.categories?.includes('mcp')) {
+                providersHandled.push(provider);
+                continue;
+            }
+
             const isAlias = !!(maybeAliased as any)['alias'];
             const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider], isAlias);
             await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');
@@ -197,7 +203,7 @@ function useCasesSnippet(useCases: any) {
 ${endpoints
     .map(
         (endpoint) =>
-            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](/implementation-guides/use-cases/${endpoint.type}s/${endpoint.type === 'sync' ? 'implement-a-sync' : 'implement-an-action'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
+            `| \`${endpoint.functionName}\` | ${endpoint.description?.replaceAll('\n', ' ') ?? ''} | [${endpoint.type === 'sync' ? 'Sync' : 'Action'}](${endpoint.type === 'sync' ? '/guides/functions/syncs/sync-functions' : '/guides/functions/action-functions'}) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/${endpoint.script}.ts) |`
     )
     .join('\n')}
             `.trim();
@@ -210,7 +216,7 @@ ${endpoints
 function emptyUseCases() {
     return `_No pre-built syncs or actions available yet._
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>`;
+<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>`;
 }
 
 interface Endpoint {

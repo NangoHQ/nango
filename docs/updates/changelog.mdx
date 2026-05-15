@@ -1,0 +1,346 @@
+---
+title: "Changelog"
+sidebarTitle: "Changelog"
+description: "Important developer & product updates, including deprecations & breaking changes."
+---
+
+<Update label="May 5, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="50 new APIs in April">
+      - [Apple Business Manager](/api-integrations/apple-business-manager)
+      - [AWS Inspector2](/api-integrations/aws-inspector2)
+      - [AWS Multi-Service](/api-integrations/aws-multi-service)
+      - [Bing Webmasters](/api-integrations/bing-webmasters)
+      - [Cin7 Core](/api-integrations/cin7-core)
+      - [Cisco Duo Admin API](/api-integrations/cisco-duo-admin)
+      - [ClickHouse](/api-integrations/clickhouse)
+      - [Clover](/api-integrations/clover)
+      - [Crunchbase](/api-integrations/crunchbase)
+      - [Energy Performance Certificates (Gov.UK)](/api-integrations/epc-gov-uk)
+      - [Etsy](/api-integrations/etsy)
+      - [Freepik](/api-integrations/freepik)
+      - [Getty Images](/api-integrations/getty-images)
+      - [Google Maps](/api-integrations/google-maps)
+      - [Halo PSA](/api-integrations/halo-psa)
+      - [Hex](/api-integrations/hex)
+      - [Kno Commerce](/api-integrations/kno-commerce)
+      - [Listrak](/api-integrations/listrak)
+      - [Lob](/api-integrations/lob)
+      - [Lokalise](/api-integrations/lokalise)
+      - [Looker (OAuth)](/api-integrations/looker-oauth)
+      - [Maxio](/api-integrations/maxio)
+      - [Modjo AI](/api-integrations/modjo-ai)
+      - [Northbeam](/api-integrations/northbeam)
+      - [Ocean.io](/api-integrations/ocean-io)
+      - [Orange Logic](/api-integrations/orange-logic)
+      - [Paligo](/api-integrations/paligo)
+      - [Pendo (OAuth)](/api-integrations/pendo-oauth)
+      - [Perk](/api-integrations/perk)
+      - [PostHog (OAuth)](/api-integrations/posthog-oauth)
+      - [PRTG Classic](/api-integrations/prtg-classic)
+      - [Qualia](/api-integrations/qualia)
+      - [Quipteams](/api-integrations/quipteams)
+      - [Ringover](/api-integrations/ringover)
+      - [RocketReach](/api-integrations/rocketreach)
+      - [Rydoo](/api-integrations/rydoo)
+      - [SentinelOne](/api-integrations/sentinelone)
+      - [Shopify (Client Credentials)](/api-integrations/shopify-cc)
+      - [simPRO](/api-integrations/simpro)
+      - [Stay AI](/api-integrations/stay-ai)
+      - [Stitch (MCP)](/api-integrations/stitch-mcp)
+      - [Store Leads](/api-integrations/store-leads)
+      - [Supabase (MCP OAuth)](/api-integrations/supabase-mcp-oauth)
+      - [TalentLMS](/api-integrations/talentlms)
+      - [VTEX](/api-integrations/vtex)
+      - [WeJam AI](/api-integrations/wejam)
+      - [Workday Adaptive Planning](/api-integrations/workday-adaptive-planning)
+      - [Workday Adaptive Planning (Basic Auth)](/api-integrations/workday-adaptive-planning-basic)
+      - [Workpath](/api-integrations/workpath)
+      - [Zorus](/api-integrations/zorus)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in April:
+
+  - [The emergence of just-in-time integrations](https://www.nango.dev/blog/just-in-time-integrations)
+  - [Introducing the Nango API integrations builder skill](https://www.nango.dev/blog/nango-api-integrations-builder-skill)
+  - [How to build a real-time Google Calendar API integration](https://www.nango.dev/blog/how-to-build-a-real-time-google-calendar-api-integration)
+  - [Best API integration platforms to use with Claude Code, Cursor, and Codex (2026)](https://www.nango.dev/blog/best-api-integration-platforms-claude-code-cursor-codex)
+  - [Best agentic API integrations platform in 2026](https://www.nango.dev/blog/best-agentic-api-integrations-platform)
+</Update>
+---
+
+<Update label="April 22, 2026">
+  ## API keys
+
+  We replaced environment secret keys with API keys. Previously, every environment had a single secret key with full access to all endpoints. You can now issue multiple keys and grant only the scopes each use case requires.
+
+  ![API keys page](/images/changelog/api-keys.jpg)
+
+  Key details:
+
+  - **Scoped permissions:** Choose **Full access** or **Custom** scopes when creating a key. Limit keys to specific operations like deploys, reading connections, or triggering actions.
+  - **Safe rotation:** Create a replacement key, swap it into your service, watch the **Last used** column to confirm the old key is no longer in use, then delete it.
+  - **RBAC-aware:** [Support role](/guides/platform/security#team-and-roles) members can only see the last four digits and scopes for troubleshooting, but cannot reveal key values.
+  - **No migration required:** Your existing secret keys continue to work as API keys without any changes.
+
+  Each endpoint in the [API reference](/reference/backend/http-api/integration/list) now lists the scopes it requires. See the [API keys documentation](/reference/backend/http-api/api-keys) for the full scope list and advised profiles.
+</Update>
+---
+
+<Update label="April 22, 2026">
+  ## API keys
+
+  We replaced environment secret keys with API keys. Previously, every environment had a single secret key with full access to all endpoints. You can now issue multiple keys and grant only the scopes each use case requires.
+
+  ![API keys page](/images/changelog/api-keys.jpg)
+
+  Key details:
+
+  - **Scoped permissions:** Choose **Full access** or **Custom** scopes when creating a key. Limit keys to specific operations like deploys, reading connections, or triggering actions.
+  - **Safe rotation:** Create a replacement key, swap it into your service, watch the **Last used** column to confirm the old key is no longer in use, then delete it.
+  - **RBAC-aware:** [Support role](/guides/platform/security#team-and-roles) members can only see the last four digits and scopes for troubleshooting, but cannot reveal key values.
+  - **No migration required:** Your existing secret keys continue to work as API keys without any changes.
+
+  Each endpoint in the [API reference](/reference/api/integration/list) now lists the scopes it requires. See the [API keys documentation](/reference/api-keys) for the full scope list and advised profiles.
+</Update>
+---
+
+<Update label="April 14, 2026">
+  ## Playground
+
+  We added a Playground to the Nango dashboard. You can now trigger [actions](/getting-started/use-cases/actions) and [syncs](/getting-started/use-cases/syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
+
+  ![Playground](/images/changelog/playground.gif)
+
+  - ***Enabled* functions only:** The function dropdown shows only functions that are enabled for the selected integration.
+  - **Input validation:** Required fields are validated before execution. Missing inputs are flagged immediately without triggering a run.
+  - **Inline results and errors:** Execution results, timing, and error codes (e.g., invalid credentials) are displayed directly in the panel.
+  - **Jump to logs:** Navigate to the filtered [logs](/guides/platform/observability#overview-of-nango-logs) view for any execution directly from the result.
+  - **Permission-gated:** Playground access in production environments respects your team's [roles](/guides/platform/security#team-and-roles).
+</Update>
+---
+
+<Update label="March 27, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="34 new APIs in March">
+      - [Amplitude (MCP US)](/api-integrations/amplitude-mcp)
+      - [Avanan](/api-integrations/avanan)
+      - [Axiom](/api-integrations/axiom)
+      - [Bliro](/api-integrations/bliro)
+      - [Circleback (MCP)](/api-integrations/circleback-mcp)
+      - [Clay](/api-integrations/clay)
+      - [CleverReach](/api-integrations/cleverreach)
+      - [Clio](/api-integrations/clio)
+      - [Conta Azul](/api-integrations/conta-azul)
+      - [Front (API Key)](/api-integrations/front-api-key)
+      - [Google Contacts](/api-integrations/google-contacts)
+      - [Google Tasks](/api-integrations/google-tasks)
+      - [Heymarket](/api-integrations/heymarket)
+      - [KlickTipp](/api-integrations/klicktipp)
+      - [Lightspeed Retail (X-Series)](/api-integrations/lightspeed-retail)
+      - [Mailjet](/api-integrations/mailjet)
+      - [Microsoft PowerPoint](/api-integrations/microsoft-powerpoint)
+      - [Microsoft Word](/api-integrations/microsoft-word)
+      - [Pleo](/api-integrations/pleo)
+      - [ProvenExpert](/api-integrations/provenexpert)
+      - [Quentn](/api-integrations/quentn)
+      - [Reply.io](/api-integrations/reply-io)
+      - [Salesforce (Client Credentials)](/api-integrations/salesforce-cc)
+      - [ShipBob (Personal Access Token)](/api-integrations/shipbob-pat)
+      - [ShopWorks](/api-integrations/shopworks)
+      - [Slack (MCP)](/api-integrations/slack-mcp)
+      - [Supabase (MCP)](/api-integrations/supabase-mcp)
+      - [Telegram](/api-integrations/telegram)
+      - [Trigify IO (MCP)](/api-integrations/trigify-io-mcp)
+      - [Triple Whale](/api-integrations/triple-whale)
+      - [Toggl Track](/api-integrations/toggl)
+      - [Typefully (API v2)](/api-integrations/typefully-v2)
+      - [Vercel (MCP)](/api-integrations/vercel-mcp)
+      - [WebinarJam](/api-integrations/webinarjam)
+    </Accordion>
+  </AccordionGroup>
+
+  ## Role-based access control (RBAC)
+
+  We added role-based access control to the Nango dashboard. You can now assign one of three roles when inviting team members:
+
+  | **Full Access** | **Support** | **Contributor** |
+  | - | - | - |
+  | Unrestricted access across all environments. Manages account settings, billing, and team. | Read-only production access without sensitive credentials. Full access in non-production. | Non-production environments only. No production access. |
+
+  ![RBAC Team Invite Roles](/images/changelog/rbac-team-invite-roles.jpg)
+
+  Key details:
+
+  - **Production flag:** Mark any environment as production in **Environment Settings > General**. Once set, Support members get read-only access and Contributors lose access entirely.
+  - **API access is unaffected:** Roles apply to dashboard access only. Any caller with a valid secret key retains full API access.
+
+  Available on the Growth and Enterprise plans. See the [Team & roles documentation](/guides/platform/security#team-and-roles).
+
+  ## New blog posts
+
+  New posts from the Nango team in March:
+
+  - [Launching RBAC and our commitment to the enterprise](https://www.nango.dev/blog/launching-rbac-and-our-commitment-to-the-enterprise)
+  - [What we learned building 200+ API integrations with OpenCode](https://www.nango.dev/blog/learned-building-200-api-integrations-with-opencode)
+  - [How to build reliable tool calls for AI agents integrating with external APIs](https://www.nango.dev/blog/build-reliable-tool-calls-for-ai-agents-integrating-with-external-apis)
+</Update>
+
+---
+
+<Update label="March 16, 2026">
+  ## Deprecation of `schema.ts` and `schema.json` generation
+
+  Running `nango compile` or `nango deploy` currently generates three files under `.nango/`: `schema.ts`, `schema.json`, and `nango.json`. We will stop generating `schema.ts` and `schema.json`. The `nango.json` file remains unchanged.
+
+  Effective **April 16, 2026**.
+
+  **Am I impacted?**
+
+  - If you import TypeScript types from `.nango/schema.ts` in your application code (e.g., to type SDK calls like `nango.listRecords<MyModel>(...)`).
+  - If you consume `.nango/schema.json` for runtime data validation or code generation.
+
+  ### Migrating off `schema.ts`
+
+  Export the types directly from your sync/action files using `z.infer`, then import them in your application code.
+
+  **Before:**
+
+  ```ts
+  import type { GithubIssue } from './nango-integrations/.nango/schema';
+  import Nango from '@nangohq/node';
+
+  const nango = new Nango({ secretKey: '...' });
+  const issues = await nango.listRecords<GithubIssue>({ ... });
+  ```
+
+  **After:**
+
+  1. In your sync/action file, export the inferred type:
+
+     ```ts
+     // In: github/syncs/fetchIssues.ts
+     export type GithubIssue = z.infer<typeof issueSchema>;
+     ```
+  2. Import it in your application code:
+
+     ```ts
+     import type { GithubIssue } from './nango-integrations/github/syncs/fetchIssues';
+
+     const issues = await nango.listRecords<GithubIssue>({ ... });
+     ```
+
+  If your types are already defined with `z.infer` but not exported, you only need to add the `export` keyword.
+
+  ### Migrating off `schema.json`
+
+  JSON schemas are now available per sync/action inside `.nango/nango.json` via the `json_schema` property. This replaces the top-level `schema.json`, which had naming conflicts when models across integrations shared the same name.
+
+  To generate JSON Schema programmatically, Zod v4 supports this natively with [`z.toJSONSchema()`](https://zod.dev/json-schema?id=ztojsonschema):
+
+  ```ts
+  import { z } from 'zod';
+  import { issueSchema } from './nango-integrations/github/syncs/fetchIssues';
+
+  const jsonSchema = z.toJSONSchema(issueSchema);
+  ```
+
+  See the [data validation guide](/guides/functions/data-validation) for more details on working with Zod schemas in Nango.
+</Update>
+
+---
+
+<Update label="February 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="37 new APIs in February">
+      - [Attention](/api-integrations/attention)
+      - [Cal.com (OAuth)](/api-integrations/cal-com-oauth)
+      - [Candis](/api-integrations/candis)
+      - [CloudTalk](/api-integrations/cloudtalk)
+      - [Cloudflare](/api-integrations/cloudflare)
+      - [ConnectWise RMM](/api-integrations/connectwise-rmm)
+      - [Domo](/api-integrations/domo)
+      - [Fiber AI](/api-integrations/fiber-ai)
+      - [FullEnrich](/api-integrations/fullenrich)
+      - [Granola](/api-integrations/granola)
+      - [Granola (MCP)](/api-integrations/granola-mcp)
+      - [Glyphic](/api-integrations/glyphic)
+      - [Gamma](/api-integrations/gamma)
+      - [Google BigQuery](/api-integrations/google-bigquery)
+      - [Google Forms](/api-integrations/google-forms)
+      - [HeyGen](/api-integrations/heygen)
+      - [HubSpot (MCP)](/api-integrations/hubspot-mcp)
+      - [Mercury](/api-integrations/mercury)
+      - [Microsoft Teams Bot](/api-integrations/microsoft-teams-bot)
+      - [Microsoft Planner](/api-integrations/microsoft-planner)
+      - [Maximizer (Cloud)](/api-integrations/maximizer)
+      - [Maximizer (On-Premise)](/api-integrations/maximizer-on-premise)
+      - [NinjaOne RMM (OAuth2)](/api-integrations/ninjaone-rmm-oauth2)
+      - [Nyne AI](/api-integrations/nyne-ai)
+      - [Okta (Client Credentials)](/api-integrations/okta-cc)
+      - [Ordinal](/api-integrations/ordinal)
+      - [Printful](/api-integrations/printful)
+      - [ResearchDesk](/api-integrations/researchdesk)
+      - [Resend](/api-integrations/resend)
+      - [Salesforce (JWT)](/api-integrations/salesforce-jwt)
+      - [Salesmsg (PAT)](/api-integrations/salesmsg)
+      - [Salesmsg (OAuth2)](/api-integrations/salesmsg-oauth2)
+      - [Sellercloud](/api-integrations/sellercloud)
+      - [Tally](/api-integrations/tally)
+      - [Timify](/api-integrations/timify)
+      - [UKG Pro HCM (Client Credentials)](/api-integrations/ukg-pro-cc)
+      - [Upsales](/api-integrations/upsales)
+    </Accordion>
+  </AccordionGroup>
+  <a id="february-5,-2026"></a>
+  <a id="february-5-2026"></a>
+  ## Sync checkpoints
+
+  We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
+
+  Previously, a failed sync would restart from the beginning of its execution cycle, potentially wasting time processing data that had already been synced. You can now set a `checkpoint` field with a custom comparison object and use `nango.getCheckpoint()` and `nango.saveCheckpoint()` directly in your function code to track progress at a granular level.
+
+  ```typescript
+  // Simplified Example
+  export default createSync({
+      frequency: 'every hour',
+      checkpoint: z.object({ lastModifiedISO: z.string() }),
+      models: { Contact: ContactSchema },
+  
+      exec: async (nango) => {
+          const checkpoint = await nango.getCheckpoint();
+  
+          const contacts = await fetchContacts({ since: checkpoint?.lastModifiedISO });
+          await nango.batchSave(contacts, 'Contact');
+  
+          await nango.saveCheckpoint({ lastModifiedISO: contacts.at(-1).lastModifiedISO });
+      },
+  });
+  ```
+
+  Checkpoints are optional; not using them implies the function will always run from scratch. See the [Sync checkpoints documentation](/guides/functions/syncs/checkpoints).
+
+  **No breaking changes:** Existing syncs without a `checkpoint` declaration continue to run as full syncs. For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
+
+  **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. If you use `nango.lastSyncDate` for incremental syncing, we recommend migrating — checkpoints are more resilient, more flexible, and will be the primary supported path going forward. There is no deprecation timeline for `nango.lastSyncDate`, but new improvements will only land on checkpoints. Follow the [Migration guide](/guides/platform/migrations/migrate-to-checkpoints).
+
+  ## Serverless runtime for execution
+
+  We overhauled the underlying execution infrastructure to be fully serverless.
+
+  [Function](/guides/functions/functions-guide) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
+
+  This change is at the infrastructure level; your function code and APIs are unaffected.
+
+  ## AI skill for building integrations
+
+  We released a new AI skill for writing and testing Nango [Actions](/getting-started/use-cases/actions) & [Syncs ](/getting-started/use-cases/syncs)using your favorite AI coding agent.
+
+  The skill is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
+
+  ![Building Nango integrations with Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
+
+  The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/auth/auth-guide) to use it, or continue using your [custom UI](/guides/auth/customize-connect-ui) without interruption.

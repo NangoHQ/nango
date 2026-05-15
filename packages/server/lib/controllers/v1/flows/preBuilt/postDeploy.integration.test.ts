@@ -72,8 +72,8 @@ describe(`POST ${endpoint}`, () => {
             environment_id: env.id,
             file_location: '_LOCAL_FILE_',
             id: expect.any(Number),
-            input: 'SyncMetadata_airtable_tables',
-            is_public: true,
+            input: null,
+            source: 'catalog',
             metadata: {
                 description: expect.any(String),
                 scopes: ['schema.bases:read']
@@ -81,10 +81,6 @@ describe(`POST ${endpoint}`, () => {
             model_schema: null,
             models_json_schema: {
                 definitions: {
-                    SyncMetadata_airtable_tables: {
-                        additionalProperties: false,
-                        type: 'object'
-                    },
                     Table: {
                         additionalProperties: false,
                         properties: {
@@ -115,7 +111,7 @@ describe(`POST ${endpoint}`, () => {
                                             type: 'string'
                                         }
                                     },
-                                    required: ['id', 'description', 'name', 'type'],
+                                    required: ['id', 'name', 'type'],
                                     type: 'object'
                                 },
                                 type: 'array'
@@ -149,20 +145,19 @@ describe(`POST ${endpoint}`, () => {
                                 type: 'array'
                             }
                         },
-                        required: ['baseId', 'baseName', 'id', 'name', 'views', 'fields', 'primaryFieldId'],
+                        required: ['id', 'name', 'baseId', 'baseName', 'primaryFieldId', 'fields', 'views'],
                         type: 'object'
                     }
                 }
             },
             nango_config_id: integration.id!,
-            pre_built: true,
             runs: 'every day',
             sdk_version: expect.any(String),
             features: expect.any(Array),
             sync_type: 'full',
             track_deletes: false,
             updated_at: expect.any(Date),
-            version: '1.0.0',
+            version: '2.0.1',
             webhook_subscriptions: null
         });
     });

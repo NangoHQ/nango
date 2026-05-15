@@ -1,0 +1,34 @@
+---
+title: PostHog (OAuth) - How do I link my account?
+sidebarTitle: PostHog (OAuth)
+---
+
+# Overview
+
+To connect with PostHog OAuth, you need:
+1. **Subdomain** – The region prefix of your PostHog Cloud account (e.g. `us` or `eu`).
+
+This guide walks you through finding your subdomain.
+
+### Step 1: Finding your subdomain
+
+Your PostHog subdomain matches the region your organization was created in:
+
+| PostHog Cloud URL | Subdomain value |
+|---|---|
+| `https://us.posthog.com` | `us` |
+| `https://us.i.posthog.com` (dedicated US) | `us.i` |
+| `https://eu.posthog.com` | `eu` |
+| `https://eu.i.posthog.com` (dedicated EU) | `eu.i` |
+
+You can confirm your region by checking the URL in your browser after logging in to PostHog.
+
+### Step 2: Enter your subdomain in Nango
+
+1. Open the PostHog (OAuth) connection form in Nango.
+2. Enter the subdomain value in the **Subdomain** field.
+3. Click **Connect** and authorize access to your PostHog account.
+
+<img src="/api-integrations/posthog-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to PostHog (OAuth).

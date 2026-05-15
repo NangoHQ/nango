@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -127,7 +127,8 @@ describe('API Keys endpoints', () => {
             });
 
             expect(res.res.status).toBe(400);
-            expect((res.json as any).error.code).toBe('resource_capped');
+            isError(res.json);
+            expect(res.json.error.code).toBe('resource_capped');
         });
     });
 
@@ -199,6 +200,7 @@ describe('API Keys endpoints', () => {
             );
 
             expect(patchRes.res.status).toBe(404);
+            isError(patchRes.json);
             expect(patchRes.json.error.code).toBe('not_found');
         });
     });
@@ -304,6 +306,7 @@ describe('API Keys endpoints', () => {
             );
 
             expect(deleteRes.res.status).toBe(404);
+            isError(deleteRes.json);
             expect(deleteRes.json.error.code).toBe('not_found');
         });
     });
@@ -370,7 +373,7 @@ describe('API Keys endpoints', () => {
 
     describe('RBAC', () => {
         it('should deny production_support from creating keys on prod', async () => {
-            const { env, user } = await seeders.seedAccountEnvAndUser();
+            const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
             await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
             await db.knex('_nango_users').where({ id: user.id }).update({ role: 'production_support' });
 
@@ -387,7 +390,7 @@ describe('API Keys endpoints', () => {
         });
 
         it('should allow production_support to list keys on prod but mask secrets', async () => {
-            const { env, user } = await seeders.seedAccountEnvAndUser();
+            const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
             await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
             await db.knex('_nango_users').where({ id: user.id }).update({ role: 'production_support' });
 
@@ -409,7 +412,7 @@ describe('API Keys endpoints', () => {
         });
 
         it('should deny production_support from updating scopes on prod', async () => {
-            const { env, user } = await seeders.seedAccountEnvAndUser();
+            const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
             await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
 
             // Get the default key id
@@ -438,7 +441,7 @@ describe('API Keys endpoints', () => {
         });
 
         it('should deny production_support from deleting keys on prod', async () => {
-            const { env, user } = await seeders.seedAccountEnvAndUser();
+            const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
             await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
 
             const keys = await db
@@ -465,7 +468,7 @@ describe('API Keys endpoints', () => {
         });
 
         it('should allow admin full access on prod', async () => {
-            const { env, user } = await seeders.seedAccountEnvAndUser();
+            const { env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
             await db.knex('_nango_environments').where({ id: env.id }).update({ is_production: true });
             // user is already administrator by default
 

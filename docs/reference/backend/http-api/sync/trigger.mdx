@@ -1,0 +1,8 @@
+---
+title: 'Trigger sync(s)'
+openapi: 'POST /sync/trigger'
+---
+
+<Info>
+  Requires an API key with the `environment:syncs:execute` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+Use `reset` to clear the checkpoint and re-fetch all data, or `reset` with `emptyCache` to start completely fresh. See the [checkpoints guide](/guides/functions/syncs/checkpoints#re-syncing-resetting-checkpoints-and-the-cache) for details.

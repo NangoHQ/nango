@@ -33,6 +33,8 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
                 'NO_COLOR=1',
                 '-e',
                 'NANGO_DEPLOY_AUTO_CONFIRM=true',
+                '-e',
+                'NANGO_DEPLOY_SOURCE=standalone',
                 '--add-host',
                 'host.docker.internal:host-gateway',
                 remoteFunctionLocalImage,
