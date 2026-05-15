@@ -44,6 +44,7 @@ COPY packages/billing/package.json ./packages/billing/package.json
 COPY packages/pubsub/package.json ./packages/pubsub/package.json
 COPY packages/usage/package.json ./packages/usage/package.json
 COPY packages/email/package.json ./packages/email/package.json
+COPY packages/feature-flags/package.json ./packages/feature-flags/package.json
 COPY packages/metering/package.json ./packages/metering/package.json
 COPY packages/lambda-runner/package.json ./packages/lambda-runner/package.json
 COPY package*.json  ./
