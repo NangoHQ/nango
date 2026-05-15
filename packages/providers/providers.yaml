@@ -1218,6 +1218,34 @@ anthropic-admin:
             title: API Key
             description: The Admin API key for your Anthropic account
 
+anvil:
+    display_name: Anvil
+    categories:
+        - legal
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://app.useanvil.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/anvil
+    docs_connect: https://nango.dev/docs/api-integrations/anvil/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Anvil API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: rj8T3fa*************************
+            doc_section: '#step-1-finding-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
+
 apaleo:
     display_name: Apaleo
     categories:

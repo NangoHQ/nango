@@ -922,6 +922,7 @@
               "integrations/all/anrok",
               "integrations/all/anthropic",
               "integrations/all/anthropic-admin",
+              "api-integrations/anvil",
               "integrations/all/apaleo",
               "integrations/all/apify",
               "api-integrations/apollo",
