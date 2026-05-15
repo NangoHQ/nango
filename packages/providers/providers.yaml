@@ -1238,7 +1238,7 @@ anvil:
             description: Your Anvil API key
             pattern: '^[A-Za-z0-9]+$'
             example: rj8T3fa*************************
-            doc_section: '#step-1-generating-your-api-key'
+            doc_section: '#step-1-finding-your-api-key'
         password:
             type: string
             title: ''
