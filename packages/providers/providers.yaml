@@ -20944,19 +20944,21 @@ zendesk-api-key:
             suffix: .zendesk.com
             prefix: https://
             order: 1
-            doc_section: '#finding-your-subdomain'
+            doc_section: '#step-1-finding-your-subdomain'
     credentials:
         username:
             type: string
             title: Email Address
             description: Your Zendesk account email address.
             format: email
+            doc_section: '#step-3-generate-an-api-token'
         password:
             type: string
             title: API Token
             description: Your Zendesk API token.
             example: 'SDMWuOoZ******************************9CMz'
             pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-3-generate-an-api-token'
 
 zendesk-sell:
     display_name: Zendesk Sell
