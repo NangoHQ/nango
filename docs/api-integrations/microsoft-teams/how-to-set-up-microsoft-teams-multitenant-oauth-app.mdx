@@ -4,7 +4,7 @@ sidebarTitle: 'Microsoft Teams Multitenant Setup'
 description: 'Publish a Microsoft Teams OAuth app accessible from any tenant'
 ---
 
-This guide covers everything required to publish a multitenant Microsoft Teams OAuth app — one that users from any Microsoft 365 organisation can authorise. The process goes beyond a standard app registration: you also need publisher domain verification, a Microsoft Partner Center account, and an active Microsoft 365 license.
+This guide covers everything required to publish a multitenant Microsoft Teams OAuth app — one that users from any Microsoft 365 organisation can authorise. The process goes beyond a standard app registration: you also need publisher domain verification and a Microsoft Partner Center account.
 
 <Steps>
   <Step title="Register a multitenant app in Microsoft Entra">
@@ -66,19 +66,6 @@ This guide covers everything required to publish a multitenant Microsoft Teams O
     [Follow the publisher verification guide](/api-integrations/microsoft-shared/microsoft-publisher-verification) to complete this step.
   </Step>
 
-  <Step title="Activate Microsoft 365 with Teams">
-    Teams API endpoints will error until your tenant has an active Microsoft 365 subscription that includes Teams.
-
-    1. Go to [admin.microsoft.com](https://admin.microsoft.com). In the left nav, select **Billing → Purchase services**.
-    2. Search for **Microsoft 365 Business Standard** and subscribe. A 30-day free trial with 25 licenses is available at no upfront cost.
-    3. Once subscribed, go to **Users → Active users**, select your admin account, open the **Licenses and apps** tab, check **Microsoft 365 Business Standard**, and click **Save changes**.
-    4. Teams will be provisioned on the tenant within a few minutes.
-
-    <Warning>
-      The Microsoft 365 Developer Program does not work for commercial work/school accounts — you will get error code 41101. Use the trial license instead.
-    </Warning>
-  </Step>
-
   <Step title="Test your OAuth flow">
     1. Trigger the OAuth flow using `/common/` in the authorization URL — not your tenant ID:
 
@@ -93,6 +80,10 @@ This guide covers everything required to publish a multitenant Microsoft Teams O
 
 <Note>
   Some organisations require tenant admin pre-approval before individual users can consent to your app. For Teams app distribution (tabs, bots, etc.), package a manifest via the [Teams Developer Portal](https://dev.teams.microsoft.com).
+</Note>
+
+<Note>
+  Teams Graph API licensing is enforced per-API at the accessing user and tenant level — it is not something you set up in your publisher tenant. If a user's tenant lacks the required license for a specific API, Microsoft returns a licensing error on that request. See [Microsoft's Teams API licensing](https://learn.microsoft.com/en-us/graph/teams-licenses) for details.
 </Note>
 
 For more details, see [Microsoft OAuth 2.0 for multitenant apps](https://learn.microsoft.com/en-us/entra/identity-platform/howto-convert-app-to-be-multi-tenant).
