@@ -67,19 +67,33 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
     });
 }
 
-export async function ensureSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
-    try {
+export const ensureSeenPartition = (() => {
+    const seenPartitionPromises = new Map<string, Promise<void>>();
+    return async ({ date }: { date: Date }): Promise<Result<void>> => {
         const day = dayjs(date).utc().startOf('day');
-        const next = day.add(1, 'day');
         const suffix = day.format('YYYYMMDD');
-        await db.raw(
-            `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-        );
-        return Ok(undefined);
-    } catch (err) {
-        return Err(new Error('Failed to ensure seen partition', { cause: err }));
-    }
-}
+
+        let promise = seenPartitionPromises.get(suffix);
+        try {
+            if (!promise) {
+                const next = day.add(1, 'day');
+                promise = db
+                    .raw(
+                        `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                    )
+                    .then(() => undefined);
+                seenPartitionPromises.set(suffix, promise);
+            }
+            await promise;
+            return Ok(undefined);
+        } catch (err) {
+            if (seenPartitionPromises.get(suffix) === promise) {
+                seenPartitionPromises.delete(suffix);
+            }
+            return Err(new Error('Failed to ensure seen partition', { cause: err }));
+        }
+    };
+})();
 
 export async function dropSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
     const suffix = dayjs(date).utc().startOf('day').format('YYYYMMDD');
@@ -104,6 +118,10 @@ async function insertSeenEntry(
     { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
 ): Promise<void> {
     if (recordIds.length === 0) return;
+    const ensureRes = await ensureSeenPartition({ date: new Date() });
+    if (ensureRes.isErr()) {
+        throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
+    }
     await trx(RECORDS_SEEN_TABLE).insert({
         connection_id: connectionId,
         model,
