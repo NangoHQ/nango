@@ -20915,6 +20915,49 @@ zendesk:
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
 
+zendesk-api-key:
+    display_name: Zendesk (API Token)
+    categories:
+        - support
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zendesk.com
+        headers:
+            authorization: 'Basic ${base64(${credentials.username}/token:${credentials.password})}'
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/users.json?per_page=1&page=1
+    docs: https://nango.dev/docs/api-integrations/zendesk-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/zendesk-api-key/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Zendesk Domain
+            description: The subdomain of your Zendesk account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            suffix: .zendesk.com
+            prefix: https://
+            order: 1
+            doc_section: '#finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: Your Zendesk account email address.
+            format: email
+        password:
+            type: string
+            title: API Token
+            description: Your Zendesk API token.
+            example: 'SDMWuOoZ******************************9CMz'
+            pattern: '^[A-Za-z0-9]+$'
+
 zendesk-sell:
     display_name: Zendesk Sell
     categories:
