@@ -17,7 +17,9 @@ export type CodeBlockProps = {
     title?: string;
     language: PrismProps['language'];
     code: string;
+    copyable?: boolean;
     icon?: React.ReactNode;
+    headerElement?: React.ReactNode;
     displayLanguage?: string;
     highlightedLines?: number[];
     secret?: boolean;
@@ -34,7 +36,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     title,
     code,
     language,
+    copyable = true,
     icon,
+    headerElement,
     displayLanguage,
     highlightedLines,
     secret,
@@ -67,6 +71,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <header className="flex justify-between items-center py-1.5 px-3 bg-surface-panel-inset rounded-t">
                 <span className="text-text-muted text-s">{title}</span>
                 <div className="flex gap-2 items-center">
+                    {headerElement && headerElement}
                     {displayLanguage && (
                         <Badge variant="gray" className="uppercase">
                             {icon && icon}
@@ -93,7 +98,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
                             {isSecretVisible ? <EyeOff /> : <Eye />}
                         </IconButton>
                     )}
-                    <CopyButton text={code} />
+                    {copyable && <CopyButton text={code} />}
                 </div>
             </header>
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>

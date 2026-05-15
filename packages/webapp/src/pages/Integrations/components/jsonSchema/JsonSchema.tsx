@@ -9,7 +9,7 @@ import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToStri
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 
-export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ schema }) => {
+export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7; invertColors?: boolean }> = ({ schema, invertColors = false }) => {
     if (!isObjectSchema(schema)) {
         return (
             <div className="flex flex-col gap-1.5">
@@ -23,7 +23,7 @@ export const JsonSchemaTopLevelObject: React.FC<{ schema: JSONSchema7 }> = ({ sc
         <div className="flex flex-col gap-1.5">
             {Object.entries(schema.properties || {}).map(([name, property]) => (
                 <TopLevelWrapper key={name}>
-                    <JsonSchema name={name} schema={property as JSONSchema7} isRequired={schema.required?.includes(name)} depth={0} />
+                    <JsonSchema name={name} schema={property as JSONSchema7} isRequired={schema.required?.includes(name)} depth={invertColors ? 1 : 0} />
                 </TopLevelWrapper>
             ))}
         </div>
@@ -72,16 +72,16 @@ const JsonSchemaGenericInfo: React.FC<{
     const defaultString =
         typeof defaultValue === 'string' || typeof defaultValue === 'number' || typeof defaultValue === 'boolean' ? String(defaultValue) : null;
     return (
-        <div className="w-full flex flex-row items-center justify-between gap-1.5">
-            <div className="flex flex-col gap-1.5">
-                <span className="text-text-strong text-body-small-semi">{name}</span>{' '}
-                {description && <p className="text-text-muted text-body-small-medium">{description}</p>}
-                {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
+        <div className="w-full flex flex-col gap-1.5">
+            <div className="flex flex-row items-start justify-between">
+                <span className="text-text-primary text-body-small-semi">{name}</span>{' '}
+                <div className="flex gap-1.5">
+                    <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
+                    {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
+                </div>
             </div>
-            <div className="flex gap-1 5">
-                <CatalogBadge variant={depth % 2 === 0 ? 'dark' : 'light'}>{type}</CatalogBadge>
-                {isRequired && <CatalogBadge variant="red">required</CatalogBadge>}
-            </div>
+            {description && <p className="text-text-tertiary text-body-small-medium">{description}</p>}
+            {defaultString && <KeyValueBadge label="Default">{defaultString}</KeyValueBadge>}
         </div>
     );
 };
@@ -160,7 +160,10 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
             <Collapsible.Content asChild>
                 <div className={cn('group/collapsible p-4 pt-0 rounded-b', depth % 2 === 0 ? 'bg-surface-canvas' : 'bg-surface-panel')}>
                     {Object.entries(properties || {}).map(([name, property]) => (
-                        <div key={name} className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}>
+                        <div
+                            key={name}
+                            className={cn('px-4 py-2 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-extra-strong' : 'border-border-default')}
+                        >
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>
                     ))}
@@ -177,5 +180,5 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
 };
 
 const TopLevelWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    return <div className="p-4 bg-surface-panel rounded flex flex-col gap-3">{children}</div>;
+    return <div className="p-2 bg-bg-elevated rounded flex flex-col gap-2">{children}</div>;
 };
