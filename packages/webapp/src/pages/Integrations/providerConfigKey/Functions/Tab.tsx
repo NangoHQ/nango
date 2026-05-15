@@ -78,8 +78,8 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     const sentinelRef = useInfiniteScroll({ hasNextPage, isFetchingNextPage, fetchNextPage });
 
     const onBrowseTemplates = useCallback(() => {
-        // TODO: navigate to /:env/integrations/:uniqueKey/templates once that screen exists.
-    }, []);
+        navigate(`/${env}/integrations/${integration.unique_key}/templates`);
+    }, [env, integration.unique_key, navigate]);
 
     const onBuildCustom = useCallback(() => {
         // TODO: open the custom-function authoring flow once it exists.
