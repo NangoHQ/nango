@@ -3,7 +3,7 @@ import { ExternalLink, Search, Upload } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
@@ -13,6 +13,7 @@ import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
+import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Badge } from '@/components-v2/ui/badge';
@@ -139,7 +140,7 @@ export const Templates: React.FC = () => {
     return (
         <DashboardLayout fullWidth className="h-full flex flex-col gap-6 p-0">
             <Helmet>
-                <title>Browse templates - Nango</title>
+                <title>Templates - Nango</title>
             </Helmet>
 
             <div className="flex gap-6 w-full flex-1 min-h-0 pl-11">
@@ -151,7 +152,7 @@ export const Templates: React.FC = () => {
                             <span className="text-text-primary text-body-large-semi">
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
-                            <span className="text-text-tertiary text-body-medium-regular">/ Browse templates</span>
+                            <span className="text-text-tertiary text-body-medium-regular">Templates</span>
                         </div>
                     ) : (
                         <div className="inline-flex items-center gap-2.5 shrink-0 pl-11 pt-11">
@@ -345,6 +346,23 @@ const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onD
                 ) : (
                     <span className="text-text-secondary text-body-medium-regular">No scopes required.</span>
                 )}
+            </section>
+
+            <section className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                    <Link
+                        to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                        target="_blank"
+                        className="text-text-tertiary text-body-small-medium inline-flex items-center gap-1.5"
+                    >
+                        Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                    </Link>
+                </div>
+                <LineSnippet
+                    className="bg-bg-surface border border-border-muted"
+                    snippet={`nango pull --catalog ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
+                />
             </section>
 
             <Tabs defaultValue={!inputSchema && outputSchemas.length > 0 ? 'output' : 'input'} className="gap-4">
