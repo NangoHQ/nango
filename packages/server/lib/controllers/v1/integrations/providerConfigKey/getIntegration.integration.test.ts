@@ -27,13 +27,13 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should return integration details', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             params: { providerConfigKey: 'github' }
         });
 
@@ -44,14 +44,14 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should return stored webhookSecret', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Set a webhookSecret via PATCH
         await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             params: { providerConfigKey: 'github' },
             body: { webhookSecret: 'my-webhook-secret' }
         });
@@ -59,7 +59,7 @@ describe(`GET ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             params: { providerConfigKey: 'github' }
         });
 
@@ -68,12 +68,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should return 404 for non-existent integration', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             params: { providerConfigKey: 'non-existent' }
         });
 
