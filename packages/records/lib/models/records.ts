@@ -1135,8 +1135,9 @@ export async function deleteRecords({
                 if (lastDeletedRecord) {
                     lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
                     // Soft delete sets updated_at = now, so RETURNING gives the new value.
-                    // Using it as a cursor would place us past all remaining records
-                    if (mode !== 'soft') {
+                    // Using it as a cursor would place us past all remaining records.
+                    // dryRun doesn't modify updated_at, so cursor advancement is safe there.
+                    if (mode !== 'soft' || dryRun) {
                         from = { updated_at: lastDeletedRecord.updated_at, id: lastDeletedRecord.id };
                     }
                 }
