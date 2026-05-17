@@ -47,6 +47,16 @@ The speed also depends on you: If you fix vulnerabilities fast, and follow up da
 If you are pressed for time and want more tips to speed things up, [reach out to us](https://nango.dev/slack). We are happy to help 1:1.
 
 <Info>
+    Google's Workspace developer relations team shares these reference timelines, with no formal SLA:
+
+    - Brand verification only: 2-3 business days
+    - Sensitive scopes: ~10 business days
+    - Restricted scopes: 6 weeks officially, ~10 weeks on average across all reviews
+
+    These are unconditional averages. The ranges above assume you follow this guide and respond to Google within a day.
+</Info>
+
+<Info>
     If you use restricted scopes, the CASA assessment and app verification needs to be [renewed annually](https://support.google.com/cloud/answer/13463816?hl=en&ref_topic=13460882&sjid=6878633552635075588-EU). Unless you had major changes in your functionality, the renewal will be much easier.
 </Info>
 
@@ -97,12 +107,14 @@ For apps that need both a Google review and CASA verification these restrictions
 ### Tips for development
 
 - Only request scopes you need right now. If you need additional scopes in the future, add them then.
-    - Google reviewers will test this and reject your application if you ask for scopes you don't use
+    - Google reviewers will test this and reject your application if you ask for scopes you don't use.
+    - This applies to scopes for any of your upcoming features that aren't shipped yet. Resubmit a supplementary verification when the feature lands.
 - Use a separate OAuth app (on a different Google Cloud project) for your own development & testing. It gets its own 100 test users.
 - Keep the restricted scopes count minimal and user-scoped.
     - If you ask for 10+ restricted scopes (anecdotal), or domain-wide delegation, Google may ask you to become CASA Tier 3 verified.
-    - CASA Tier 3 is exponentially more work and costly, compared to Tier 2
+    - CASA Tier 3 is exponentially more work and costly, compared to Tier 2.
 - Test users are permanent: You cannot reset the counter or remove test users. Make sure you use the 100 test users wisely.
+- If your app trains AI on Google user data, only user-specific personal models are allowed. Generalized model training on Workspace user data is prohibited by Google's [Workspace API user data and developer policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy), regardless of company size. See [AI and data use rules](#ai-and-data-use-rules) for what you need to disclose.
 
 ## Step 2: Prepare for review
 
@@ -116,13 +128,109 @@ Both the "Brand verification requirements" and "Sensitive and Restricted Scope R
     Google takes 24-48h to answer emails. A good demo video and precise answers will save you days of back-and-forth with your reviewer.
 </Tip>
 
-Most importantly:
-* Switch to a [custom callback URL in Nango](/guides/primitives/auth#custom-oauth-callback-url-optional), and verify the domain of your callback URL in your Google Cloud project.
-* Make sure your contact details in the Google Cloud console project are up to date. All communication is sent there!
-* Prepare a [demo video](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=2.%20App%20functionality%20demonstration%20video) exactly as requested by Google (shows end to end flow, including OAuth flow, etc.)
-* For each scope you request, prepare a [detailed justification](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=Request%20narrowest%20scopes) which includes:
-    * An explanation why narrower scopes would not work, including specifics on what functionality would not work as intended. Read Google's sample justification.
-    * This and the demo video are the most frequent sources of back-and-forth communication.
+### Know these answers before you start
+
+Reviewers will ask each of these, and slow answers stall the review:
+
+- **What does the app do and is it an [acceptable use case](https://support.google.com/cloud/answer/13805798)?** Anything on Google's prohibited list won't get approved no matter how good the rest of your submission is.
+- **Why each requested scope, and why won't a narrower one work?** See [Scope justifications](#scope-justifications) below.
+- **Who controls DNS for the domains in your submission?** Google verifies ownership of your homepage domain *and* its subdomains, usually via a CNAME or TXT record.
+- **Who internally owns your privacy policy and public webpages?** If a reviewer asks you to update language and your legal team takes weeks, your review takes weeks.
+
+### Set the right contact email
+
+The contact email on the OAuth consent screen is the only channel Google's Trust & Safety team uses. They open one email thread per review and ignore anything outside it.
+
+- Use a monitored alias or shared inbox (e.g. `oauth-review@yourcompany.com`), never a personal address, `info@`, or `sales@`.
+- Add at least one editor on the GCP project so a second person can see incoming emails.
+- Reviews have stalled for weeks because all the listed recipients had left the company. Set yourself a reminder to refresh these addresses before each review and each annual renewal.
+
+### Verify ownership of your callback domain
+
+Switch to a [custom callback URL in Nango](/guides/primitives/auth#custom-oauth-callback-url-optional), and verify the domain of your callback URL in your Google Cloud project. Domain verification is one of the first checks reviewers run.
+
+### Make sure to submit the form after changes
+
+Google's verification form has a known pitfall: when you go back to fix an issue, the "Submit" button sits below the fold. Clicking the per-error "Proceed" buttons updates your answers but does *not* re-submit.
+
+If days pass with no acknowledgement email from Trust & Safety, you probably never submitted. Scroll to the bottom of the form and click **Submit**.
+
+### Make your scopes match everywhere
+
+Reviewers check that the scopes on your OAuth consent screen match the scopes in:
+
+- The **Data Access** page in Google Cloud Console.
+- Your **Marketplace SDK** configuration (if you publish a Workspace add-on).
+- Your **Add-on manifest** (if you use Apps Script).
+
+Any mismatch is a guaranteed rejection. A mismatch also breaks your app at runtime, so fix it in both places.
+
+### Demo video
+
+Prepare a [demo video](https://support.google.com/cloud/answer/13464321?hl=en&ref_topic=13460882&sjid=4120114855682251882-EU#:~:text=2.%20App%20functionality%20demonstration%20video) exactly as Google requests. Any screen recording tool works and production polish isn't required, but completeness is. Reviewers use it to confirm each requested scope is actually used.
+
+The video must show:
+
+- The **end-to-end OAuth flow** inside your app, including the actual Google consent screen with the exact scopes you're requesting. A previously approved scope set won't pass.
+- **Every feature** that uses each requested scope, demonstrated from the user's perspective.
+
+### Scope justifications
+
+For each scope, write a justification that names the scope, the feature using it, and why a narrower scope won't work. One sentence per non-sensitive scope, several for restricted scopes.
+
+Sample acceptable: *"My app will use https://www.googleapis.com/auth/calendar.readonly to show a user's calendar data on the scheduling screen so users can manage their schedule and sync with Google Calendar."*
+
+Sample unacceptable: *"My app wants to show users their calendar."* Too vague, no feature link, no reason narrower scopes fail.
+
+The demo video plus the justifications cause most of the back-and-forth. A short screen recording attached to right justification often closes the loop in one round.
+
+### AI and data use rules
+
+Google's [Workspace API user data and developer policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy) absolutely prohibits using Workspace user data to train generalized AI or ML models. This applies to every company, regardless of size.
+
+User-specific personal models are allowed: for example, an agent only accessible to the user it was trained on. Drafting Gmail replies for a user is allowed but may require a restricted scope.
+
+If you use AI on Workspace data, you must:
+
+- Document AI use in the feature itself, in the consent flow, and in any prompt or dialog preceding an ask or transfer.
+- Add an affirmative statement to your privacy policy (or homepage) describing the use and confirming you don't use the data for training. See [Privacy policy](#privacy-policy) below.
+- Check the [Application Use Cases list](https://support.google.com/cloud/answer/13805798) before building: prohibited use cases will not pass review.
+
+### Branding and product names
+
+Reviewers will reject submissions that misuse Google product names. 
+
+Two rules to follow:
+
+- Use the official product name with the trademark symbol on first use: "Google Chat™", "Google Docs™", "Google Sheets™", "Google Drive™".
+- Don't use descriptive substitutes like "Google's replacement for Hangouts" or "Google's current messaging app". They aren't trademarks Google recognizes.
+
+Good listing example: *"LumApps for Google Chat™"*. Check the [Marketplace branding guidelines](https://developers.google.com/workspace/marketplace/terms/branding) for the rules reviewers enforce. The [Google Workspace Partner Advantage](https://cloud.google.com/partners/become-a-partner) program offers further branding support for accepted partners.
+
+### Homepage requirements
+
+"Homepage" is ambiguous in Google's instructions. Three different pages can qualify, and reviewers expect different ones in different contexts:
+
+- Your **company top-level domain** (e.g. `yourcompany.com`).
+- The **Marketplace listing** page for the app.
+- The **in-app home** of a Chat add-on or similar, when applicable.
+
+The page you provide must be:
+
+- **Public** and reachable when the review starts (not behind login).
+- On a **domain you own**, not a Google Play Store, Facebook, or other third-party page.
+- Relevant to the app under review. If it's a generic landing page, link from there to an app-specific page that covers privacy and functionality.
+
+### Privacy policy
+
+Your privacy policy must include the affirmative statement required by the [Workspace API user data and developer policy](https://developers.google.com/workspace/workspace-api-user-data-developer-policy) (the "Limited Use" disclosure) and must clearly disclose how (and where) you store user data.
+
+Two patterns Google's DevRel team highlights as good examples:
+
+- **Add a section to your global privacy policy.** OpenText added a dedicated "API Services" section that covers all their Google integrations.
+- **Create a dedicated page.** Zoho built a separate Google Workspace privacy page that covers the integrations end to end.
+
+Either approach works. If you train AI on Workspace data (or if reviewers think you might) include an affirmative statement that you don't use the data for generalized model training.
 
 ### Additional prep for CASA Tier 2 assessment
 
@@ -170,6 +278,15 @@ Now go to _Verification Center_ in the navbar and you should see a form to start
 
 You may get emails from Google asking for more details. We recommend answering quickly, but diligently. Google answers within 24-48h, the fewer loops you need, the faster your app will get verified.
 
+<Tip>
+    Two separate Google teams handle your review and they don't share tickets:
+
+    - **OAuth Trust & Safety** handles scopes, justifications, and the security review. They communicate only via the email thread on your contact email and won't take calls.
+    - **Marketplace** handles your listing, branding, and language. They're more reachable and will sometimes hop on a chat or call to resolve issues.
+
+    Check the Verification Center regularly, it's the only place where you'll see when your OAuth verification finishes and you've moved on to the Marketplace check.
+</Tip>
+
 Note that the [test mode restrictions](#test-mode-restrictions) remain until your verification is complete.
 
 ## Step 4: Start the CASA assessment
@@ -177,6 +294,12 @@ Note that the [test mode restrictions](#test-mode-restrictions) remain until you
 If a CASA assessment is required, you will get an email from Google shortly after starting the App verification process. If nothing arrives after a few days, reach out to Google.
 
 Forward this email to your CASA vendor. Some vendors will only let you start the assessment once they have the email from Google.
+
+<Tip>
+    [CASA](https://appdefensealliance.dev/casa) is an industry standard administered by the App Defense Alliance, not a Google-only requirement. If you already have a valid Letter of Validation from a CASA assessment for AWS or Azure, you can submit that. Google accepts it as long as it hasn't expired. 
+    
+    Note the original validity is 12 months from the original assessment date, not from your Google submission.
+</Tip>
 
 The CASA Tier 2 assessment has two parts:
 
@@ -210,8 +333,35 @@ Once verified, Google will remove the "unverified" step from your OAuth flow and
 
 Congrats, you are now live! 🎉
 
+## After verification
+
+A few things change once you're live, and a few things you'll deal with on every release.
+
+### Handle granular OAuth consent
+
+As of January 2026, all apps using Google scopes are moved to granular consent: users see each scope as a separate checkbox and can grant a subset of what your app requested.
+
+Your app must handle a partial grant cleanly. When a request fails with `insufficient_authorized_scopes` or a similar permission error, you have three options:
+
+- Show an inline error explaining the missing scope.
+- Trigger an incremental authorization request to add the missing scope on the fly.
+- Re-check granted scopes on app start and prompt the user to re-authorize anything missing before they hit the broken feature.
+
+Pick the one that makes sense for the feature. Don't crash, and don't silently swallow the error — both will surface as user complaints.
+
+### Updates without new scopes are fast
+
+When you ship a new version that doesn't add new scopes, the OAuth re-verification is essentially a rubber stamp and often completes in a couple of days. Plan accordingly.
+
+When you do add scopes, you usually don't redo the full CASA assessment within the 12-month validity window. Google may ask your assessor to spot-check the change, especially if a new restricted scope materially expands what your app can do.
+
 <Warning>
     Don't forget the annual revalidation!
 
-    You _should_ receive an email from Google 90 days before the validation is due. But make sure to set yourself a reminder. The validation will auto-expire with no additional reminders!
+    For restricted scopes, Google requires you to redo the CASA assessment every 12 months. Plan for it:
+
+    - You _should_ receive an email from Google 90 days before the validation is due. Not that the email goes to the contact address on the OAuth consent screen, so keep it monitored.
+    - Set your own reminder 60-90 days before expiry. Renewal is much faster than the initial assessment (typically a couple of weeks) but only if you start early.
+    - If your Letter of Validation is about to expire and renewal is actively in progress, you can request a ~30-day extension from Google.
+    - If the LoV expires without active renewal, your app drops out of the Marketplace and the "unverified" screen comes back with no further warning.
 </Warning>
