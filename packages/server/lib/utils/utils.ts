@@ -13,7 +13,7 @@ import type { Result } from '@nangohq/utils';
 import type { Request } from 'express';
 
 const BINARY_CONTENT_TYPES = [
-    'image/png',
+    'image/',
     'video/',
     'audio/',
     'application/',
