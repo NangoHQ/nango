@@ -1,0 +1,40 @@
+---
+title: 'How to register your own Planning Center OAuth app'
+sidebarTitle: 'Planning Center OAuth setup'
+description: 'Register an OAuth application with Planning Center and connect it to Nango'
+---
+
+This guide shows you how to create a Planning Center OAuth application and obtain **Client ID** and **Client secret** credentials for your Nango integration.
+
+Planning Center OAuth apps are created from a Planning Center account that can administer OAuth applications. If you’re building an integration for **multiple churches**, Planning Center recommends creating an OAuth app under an organization account you control (often your company), not an individual church account.
+
+<Steps>
+  <Step id="review-planning-center-authentication" title="Review Planning Center authentication">
+    See Planning Center’s authentication overview for background and constraints:
+
+    - [Authentication](https://api.planningcenteronline.com/docs/overview/authentication)
+  </Step>
+  <Step id="create-planning-center-oauth-application" title="Create an OAuth application">
+    1. Open Planning Center OAuth applications: `https://api.planningcenteronline.com/oauth/applications`
+    2. Create a new OAuth application.
+    3. Set the redirect URL for Nango:
+
+       - **Redirect URI**: `https://api.nango.dev/oauth/callback`
+
+    4. Copy the **Client ID** and **Client secret** — you’ll paste these into your Nango integration settings.
+  </Step>
+  <Step id="configure-planning-center-oauth-scopes" title="Configure scopes">
+    Scopes map to Planning Center products (People, Services, Calendar, etc.). Choose the scopes your integration needs.
+
+    Official scope list:
+
+    - [Planning Center authentication docs — Application Scopes](https://api.planningcenteronline.com/docs/overview/authentication)
+  </Step>
+  <Step id="planning-center-oauth-next-steps" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to finish wiring up your integration in Nango.
+  </Step>
+</Steps>
+
+For more details, see the [Planning Center API documentation](https://api.planningcenteronline.com/docs).
+
+---

@@ -4087,6 +4087,20 @@ pipedrive:
     - webhooks:full
     - webhooks:read
 
+# source: https://api.planningcenteronline.com/docs/overview/authentication
+planning-center-online:
+    - api
+    - calendar
+    - check_ins
+    - giving
+    - groups
+    - home
+    - openid
+    - people
+    - publishing
+    - registrations
+    - services
+
 # source: https://get.pleo.io/v2/docs/oauth2-authentication (Pleo OAuth2 scopes not publicly documented)
 pleo: []
 

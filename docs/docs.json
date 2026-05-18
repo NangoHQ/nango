@@ -1416,6 +1416,8 @@
               "integrations/all/pipedream-oauth2-cc",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
+              "api-integrations/planning-center-online",
+              "api-integrations/planning-center-online-pat",
               "api-integrations/pleo",
               "integrations/all/podium",
               "api-integrations/podscribe",
