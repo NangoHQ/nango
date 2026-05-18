@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 import { billing, getStripe } from '@nangohq/billing';
-import { plansList, productTracking } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { plansList, productTracking, startTrial } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -151,6 +152,10 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             report(resDowngrade.error);
             res.status(500).send({ error: { code: 'server_error' } });
             return;
+        }
+
+        if (newPlan.code === 'free') {
+            await startTrial(db.knex, plan);
         }
 
         res.status(200).send({

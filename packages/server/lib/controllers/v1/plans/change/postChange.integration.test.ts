@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { productTracking, seeders, updatePlan } from '@nangohq/shared';
+import { TRIAL_DURATION, getPlan, productTracking, seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
@@ -589,6 +589,88 @@ describe(`POST ${route}`, () => {
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
             expect(res.json.data).toStrictEqual({ success: true });
+        });
+
+        it('should restart trial when downgrading to free from a paid plan', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const expiredTrialEnd = new Date(Date.now() - 86400 * 1000);
+            await updatePlan(db.knex, {
+                id: plan.id,
+                name: 'starter-v2',
+                orb_subscription_id: 'sub_123',
+                trial_start_at: new Date(Date.now() - 20 * 86400 * 1000),
+                trial_end_at: expiredTrialEnd,
+                trial_extension_count: 2,
+                trial_expired: true,
+                trial_end_notified_at: new Date()
+            });
+
+            const mockSubscription: BillingSubscription = {
+                id: 'sub_123',
+                planExternalId: 'plan_123'
+            };
+
+            getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
+            downgradeSpy.mockResolvedValue(Ok(undefined));
+
+            const beforeRequest = Date.now();
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { orbId: 'free' }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(res.json.data).toStrictEqual({ success: true });
+
+            const updatedPlan = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
+            expect(updatedPlan.trial_expired).toBe(false);
+            expect(updatedPlan.trial_end_notified_at).toBeNull();
+            expect(updatedPlan.trial_extension_count).toBe(3);
+            expect(updatedPlan.trial_end_at!.getTime()).toBeGreaterThanOrEqual(beforeRequest + TRIAL_DURATION - 1000);
+            expect(updatedPlan.trial_end_at!.getTime()).toBeLessThanOrEqual(Date.now() + TRIAL_DURATION + 1000);
+        });
+
+        it('should not restart trial when downgrading to another paid plan', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const trialEndAt = new Date(Date.now() + 5 * 86400 * 1000);
+            await updatePlan(db.knex, {
+                id: plan.id,
+                name: 'growth-v2',
+                orb_subscription_id: 'sub_123',
+                stripe_customer_id: 'cus_123',
+                stripe_payment_id: 'pm_123',
+                trial_start_at: new Date(Date.now() - 10 * 86400 * 1000),
+                trial_end_at: trialEndAt,
+                trial_extension_count: 1,
+                trial_expired: false
+            });
+
+            const mockSubscription: BillingSubscription = {
+                id: 'sub_123',
+                planExternalId: 'plan_123'
+            };
+
+            getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
+            downgradeSpy.mockResolvedValue(Ok(undefined));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { orbId: 'starter-v2' }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(res.json.data).toStrictEqual({ success: true });
+
+            const updatedPlan = (await getPlan(db.knex, { accountId: plan.account_id })).unwrap();
+            expect(updatedPlan.trial_end_at?.getTime()).toBe(trialEndAt.getTime());
+            expect(updatedPlan.trial_extension_count).toBe(1);
+            expect(updatedPlan.trial_expired).toBe(false);
         });
 
         it('should handle downgrade billing service errors', async () => {
