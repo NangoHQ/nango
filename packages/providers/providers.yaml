@@ -14317,6 +14317,48 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+pushpay-chms-v1:
+    display_name: Pushpay ChMS (API v1)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ccbchurch.com
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            headers:
+                accept: 'application/xml, text/xml;q=0.9, */*;q=0.8'
+            endpoints:
+                - /api.php?srv=api_status
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v1
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v1/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for your Pushpay ChMS site.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            order: 1
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API username
+            description: The API login created in Pushpay ChMS API Admin.
+            doc_section: '#step-2-create-an-api-user'
+        password:
+            type: string
+            title: API password
+            description: The password for your Pushpay ChMS API user.
+            doc_section: '#step-2-create-an-api-user'
+
 plain:
     display_name: Plain
     categories:

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pushpay logo Dot RGB Dark Blue — template for Nango (corner registration marks removed) -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="62" height="62" viewBox="0 0 1200 1200" xml:space="preserve" overflow="hidden">
+<style type="text/css">
+	.st0{fill:#1E2851;}
+</style>
+<g>
+	<path class="st0" d="M736,324H592.6L485.9,875.6h94.6l32.1-171.6h106.8c119,0,218.5-72.5,218.5-203.2
+		C937.8,405.3,875.8,324,736,324z M711.8,619.6h-83L670,409.1h70.1c56.5,0,103,30,103,94.7C843.2,580.1,783.3,619.6,711.8,619.6z"/>
+	<polygon class="st0" points="492,324 385.3,875.6 430,875.6 536.4,324 	"/>
+	<polygon class="st0" points="391.3,324 284.5,875.6 329.2,875.6 435.6,324 	"/>
+	<path class="st0" d="M600,10C274.2,10,10,274.2,10,600c0,325.8,264.2,590,590,590c325.8,0,590-264.2,590-590
+		C1190,274.2,925.8,10,600,10z M600,1149.1c-303.2,0-549.1-245.8-549.1-549.1S296.8,50.9,600,50.9s549.1,245.8,549.1,549.1
+		S903.2,1149.1,600,1149.1z"/>
+</g>
+</svg>
