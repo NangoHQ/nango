@@ -74,7 +74,7 @@ export function getSimpleOAuth2ClientConfig(
         auth: authSection,
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
-            bodyFormat: authConfig.body_format || 'form',
+            bodyFormat: authConfig.body_format === 'json' ? 'json' : 'form',
             // @ts-expect-error seems unused ?
             scopeSeparator: provider.scope_separator || ' '
         }

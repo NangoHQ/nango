@@ -122,7 +122,9 @@ export const typesOptions = [
             { name: 'Full execution triggered', value: 'sync:request_run_full' },
             { name: 'Sync execution cancelled', value: 'sync:cancel' },
             { name: 'Sync schedule paused', value: 'sync:pause' },
-            { name: 'Sync schedule resumed', value: 'sync:unpause' }
+            { name: 'Sync schedule resumed', value: 'sync:unpause' },
+            { name: 'Sync variant created', value: 'sync:create_variant' },
+            { name: 'Sync variant deleted', value: 'sync:delete_variant' }
         ]
     },
     {
@@ -155,6 +157,8 @@ export const typesList = Object.keys({
     'events:validate_connection': null,
     'proxy:call': null,
     'sync:cancel': null,
+    'sync:create_variant': null,
+    'sync:delete_variant': null,
     'sync:init': null,
     'sync:pause': null,
     'sync:request_run': null,

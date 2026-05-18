@@ -1,0 +1,142 @@
+---
+title: 'Anvil'
+sidebarTitle: 'Anvil'
+description: 'Integrate your application with the Anvil API'
+---
+
+## 🚀 Quickstart
+
+Connect to Anvil with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Anvil_.
+    </Step>
+    <Step title="Authorize Anvil">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Anvil API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Anvil API">
+    Let's generate a PDF from Markdown as your first request. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/api/v1/generate-pdf" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "title": "Example Invoice",
+                "type": "markdown",
+                "data": [
+                  { "label": "Name", "content": "Sally Smith" },
+                  { "content": "Lorem **ipsum** dolor sit _amet_...", "fontSize": 12, "textColor": "#616161" }
+                ],
+                "fontSize": 16,
+                "textColor": "#171717"
+              }' \
+              --output invoice.pdf
+            ```
+
+            The response is binary PDF bytes — use `--output` to save it as a file.
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import fs from 'fs';
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/v1/generate-pdf',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                title: 'Example Invoice',
+                type: 'markdown',
+                data: [
+                    { label: 'Name', content: 'Sally Smith' },
+                    { content: 'Lorem **ipsum** dolor sit _amet_...', fontSize: 12, textColor: '#616161' },
+                    {
+                        table: {
+                            rows: [
+                                ['Description', 'Quantity', 'Price'],
+                                ['4x Large Widgets', '4', '$40.00'],
+                                ['10x Medium Sized Widgets in dark blue', '10', '$100.00'],
+                                ['6x Small Widgets in white', '6', '$60.00']
+                            ],
+                            columnOptions: [
+                                { align: 'left', width: '60%' },
+                                { align: 'center', width: '100px' },
+                                { align: 'right' }
+                            ],
+                            firstRowHeaders: true,
+                            rowGridlines: true,
+                            columnGridlines: true,
+                            verticalAlign: 'center'
+                        }
+                    }
+                ],
+                page: {
+                    width: '612px',
+                    height: '792px',
+                    marginTop: '30px',
+                    marginBottom: '30px',
+                    marginLeft: '60px',
+                    marginRight: '60px',
+                    pageCount: 'bottomCenter'
+                },
+                fontSize: 16,
+                textColor: '#171717',
+                includeTimestamp: true,
+                logo: {
+                    src: 'https://example.com/mtnlogo.png',
+                    maxWidth: 200,
+                    maxHeight: 200
+                }
+            },
+            responseType: 'arraybuffer'
+        });
+
+        // Response is binary PDF bytes — save as binary
+        fs.writeFileSync('invoice.pdf', Buffer.from(res.data), { encoding: null });
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own API key, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Anvil integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/anvil/connect)  
+  Connect your Anvil account using your API key
+
+Official docs: [Anvil API documentation](https://www.useanvil.com/docs/api/getting-started)
+
+## 🧩 Pre-built syncs & actions for Anvil
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/anvil/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

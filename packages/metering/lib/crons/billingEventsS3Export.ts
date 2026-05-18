@@ -1,0 +1,259 @@
+import tracer from 'dd-trace';
+import * as cron from 'node-cron';
+
+import { getLocking } from '@nangohq/kvstore';
+import { clickhouseClient } from '@nangohq/usage';
+import { getLogger } from '@nangohq/utils';
+
+import { envs } from '../env.js';
+
+import type { Lock } from '@nangohq/kvstore';
+
+const logger = getLogger('cron.billingEventsS3Export');
+const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
+const bucket = envs.BILLING_EVENTS_S3_BUCKET;
+const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
+const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
+
+const LOCK_KEY = 'lock:cron:billingEventsS3Export';
+const LOCK_TTL_MS_CAP = 30 * 60 * 1000; // hard cap; the export query is seconds, no reason to hold a lock for hours
+const lockTtlMs = Math.min(cronMinutes * 60 * 1000 * 0.8, LOCK_TTL_MS_CAP);
+
+const DEFAULT_DATABASE = 'usage';
+
+export interface MetricSpec {
+    /** Canonical Orb event_name; the suffix is appended at SQL gen time. */
+    canonicalEventName: string;
+    /**
+     * SQL fragment that produces rows shaped:
+     *   account_id, day, properties
+     * for the chosen day, GROUPed BY (account_id, day). `properties` must be a
+     * Map(String, Float64) so Orb billable metrics see numeric inputs (JSON
+     * output for integer-valued Float64s renders without a trailing `.0`).
+     */
+    select: (day: string, database: string) => string;
+}
+
+// `count(events)` and `max(properties.X)` Orb aggregations are not supported by this
+// pre-aggregated layout. See https://linear.app/nango/document/orb-billable-metrics-2e0859635bc1
+export const METRICS: MetricSpec[] = [
+    {
+        canonicalEventName: 'proxy',
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
+            FROM ${database}.daily_proxy
+            WHERE day = toDate('${day}')
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'function_executions',
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map(
+                    'count',                toFloat64(SUM(value)),
+                    'telemetry.durationMs', toFloat64(SUM(duration_ms)),
+                    'telemetry.customLogs', toFloat64(SUM(custom_logs)),
+                    'telemetry.compute',    toFloat64(SUM(compute_gbms))
+                ) AS properties
+            FROM ${database}.daily_function_executions
+            WHERE day = toDate('${day}')
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'webhook_forwards',
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
+            FROM ${database}.daily_webhook_forwards
+            WHERE day = toDate('${day}')
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'billable_actions',
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
+            FROM ${database}.daily_actions
+            WHERE day = toDate('${day}')
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'monthly_active_records',
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(SUM(value))) AS properties
+            FROM ${database}.daily_mar
+            WHERE day = toDate('${day}')
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'records',
+        // Reconstruct Orb's average(count) semantic from the typed-projection MV:
+        // inner: SUM across all slices (env/integration/connection/model) per (account, day, batch_id)
+        //        → per-firing account total. batch_id is one UUID per metering cron firing.
+        // outer: AVG across batches per (account, day)
+        //        → daily average count, matching what Orb received from the legacy HTTP path.
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(ROUND(AVG(batch_val)))) AS properties
+            FROM (
+                SELECT SUM(value) AS batch_val, account_id, day, batch_id
+                FROM ${database}.daily_raw_records
+                WHERE day = toDate('${day}')
+                GROUP BY account_id, day, batch_id
+            )
+            GROUP BY account_id, day
+        `
+    },
+    {
+        canonicalEventName: 'billable_connections_v2',
+        // Same sum-across-slices-per-batch then average-across-batches pattern as records.
+        select: (day, database) => `
+            SELECT
+                account_id, day,
+                map('count', toFloat64(ROUND(AVG(batch_val)))) AS properties
+            FROM (
+                SELECT SUM(value) AS batch_val, account_id, day, batch_id
+                FROM ${database}.daily_raw_connections
+                WHERE day = toDate('${day}')
+                GROUP BY account_id, day, batch_id
+            )
+            GROUP BY account_id, day
+        `
+    }
+];
+
+export function billingEventsS3ExportCron(): void {
+    if (cronMinutes <= 0) {
+        logger.info(`Skipping (CRON_BILLING_EVENTS_S3_EXPORT_MINUTES=${cronMinutes})`);
+        return;
+    }
+    if (!bucket || !roleArn) {
+        logger.warning(`Skipping (BILLING_EVENTS_S3_BUCKET or BILLING_EVENTS_S3_WRITER_ROLE_ARN not set)`);
+        return;
+    }
+    if (!envs.CLICKHOUSE_URL) {
+        logger.warning(`Skipping (CLICKHOUSE_URL not set)`);
+        return;
+    }
+
+    cron.schedule(`*/${cronMinutes} * * * *`, () => {
+        exec().catch((err: unknown) => {
+            logger.error('Cron tick failed unexpectedly', err);
+        });
+    });
+}
+
+export async function exec(): Promise<void> {
+    await tracer.trace<Promise<void>>('nango.cron.billingEventsS3Export', async () => {
+        logger.info(`Starting`);
+        await withLock(async () => {
+            const client = clickhouseClient();
+            if (!client) {
+                logger.error(`Clickhouse client not configured`);
+                return;
+            }
+            try {
+                const day = yesterdayUTC();
+                const runTimestamp = nowCompactUTC();
+                for (const metric of METRICS) {
+                    const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
+                    const sql = exportSql({ metric, day, runTimestamp, eventName });
+                    logger.info(`Exporting ${eventName} for day=${day}`);
+                    await client.command({ query: sql });
+                }
+                logger.info(`✅ done`);
+            } catch (err) {
+                logger.error('Failed to export billing events to S3', err);
+            } finally {
+                await client.close();
+            }
+        });
+    });
+}
+
+async function withLock(fn: () => Promise<void>): Promise<void> {
+    const locking = await getLocking();
+    let lock: Lock;
+    try {
+        lock = await locking.acquire(LOCK_KEY, lockTtlMs);
+    } catch {
+        logger.info(`Could not acquire lock, skipping`);
+        return;
+    }
+    logger.info(`Lock acquired`);
+    try {
+        await fn();
+    } finally {
+        await locking.release(lock);
+    }
+}
+
+/**
+ * Returns the SELECT that produces Orb-shaped rows for one metric and one day.
+ * Used both as the body of the `INSERT INTO FUNCTION s3(...)` envelope at
+ * production runtime, and directly by the integration test (querying it via
+ * `client.query` and asserting on the rows).
+ */
+export function metricRowsSql({
+    metric,
+    day,
+    eventName,
+    database = DEFAULT_DATABASE
+}: {
+    metric: MetricSpec;
+    day: string;
+    eventName: string;
+    database?: string;
+}): string {
+    return `
+        SELECT
+            concat('${eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
+            '${eventName}' AS event_name,
+            toString(account_id) AS external_customer_id,
+            concat(toString(day), 'T00:00:00.000Z') AS timestamp,
+            properties
+        FROM (${metric.select(day, database)})
+    `;
+}
+
+function exportSql({ metric, day, runTimestamp, eventName }: { metric: MetricSpec; day: string; runTimestamp: string; eventName: string }): string {
+    const dayCompact = day.replace(/-/g, '');
+    const url = `https://${bucket}.s3.amazonaws.com/${dayCompact}/${runTimestamp}_${eventName}.jsonl`;
+
+    // Argument order matters: ClickHouse 25.8+ docs show s3(url, format, extra_credentials(...)).
+    // Reversing the last two raises a syntax error.
+    return `
+        INSERT INTO FUNCTION s3(
+            '${url}',
+            'JSONEachRow',
+            extra_credentials(role_arn = '${roleArn}')
+        )
+        ${metricRowsSql({ metric, day, eventName })}
+    `;
+}
+
+function yesterdayUTC(): string {
+    const d = new Date();
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function nowCompactUTC(): string {
+    return new Date()
+        .toISOString()
+        .replace(/[-:]/g, '')
+        .replace(/\.\d{3}Z$/, 'Z'); // YYYYMMDDTHHMMSSZ
+}
