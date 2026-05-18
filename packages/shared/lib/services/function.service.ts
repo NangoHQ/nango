@@ -1,4 +1,5 @@
 import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
 import type {
     FunctionSource,
@@ -10,6 +11,7 @@ import type {
     NangoSyncFunctionDeployed,
     OnEventType
 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
 
@@ -80,6 +82,43 @@ export async function listFunctions({
     const total = countRow ? Number(countRow.total) : 0;
 
     return { rows, total };
+}
+
+/**
+ * Fetches a single deployed function by name within a provider config.
+ * If `type` is omitted and multiple types share the same name, the first
+ * match by the listing's stable order is returned.
+ */
+export async function getFunction({
+    environmentId,
+    providerConfigKey,
+    name,
+    type
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+    name: string;
+    type: FunctionType | undefined;
+}): Promise<Result<NangoFunctionDeployed | undefined>> {
+    try {
+        const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
+
+        const row = await db.knex
+            .from(listing)
+            .select<SyncConfigOrOnEventScriptRow[]>('*')
+            .where('name', name)
+            .orderBy([
+                { column: 'type', order: 'asc' },
+                { column: 'name', order: 'asc' },
+                { column: 'event', order: 'asc' },
+                { column: 'id', order: 'asc' }
+            ])
+            .first();
+
+        return Ok(row ? toNangoFunctionDeployed(row) : undefined);
+    } catch (err) {
+        return Err(new Error('failed_to_get_function', { cause: err }));
+    }
 }
 
 function buildListingSubquery({
