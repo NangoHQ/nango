@@ -1,0 +1,54 @@
+---
+title: ImmyBot - How do I link my account?
+sidebarTitle: ImmyBot
+---
+
+# Overview
+
+To authenticate with ImmyBot, you need:
+
+1. **Microsoft Entra Tenant ID** - The Azure tenant ID that owns your ImmyBot app registration
+2. **ImmyBot Instance Subdomain** - The first segment of your ImmyBot instance URL
+3. **Client ID** - The Application client ID from your Microsoft Entra app registration
+4. **Client Secret** - A client secret value from your Microsoft Entra app registration
+
+### Prerequisites:
+
+- Access to your ImmyBot tenant as an administrator.
+- Permission to create or manage Microsoft Entra app registrations.
+- Permission to add the Enterprise App object ID as an admin user in ImmyBot People.
+
+### Instructions:
+
+##### Step 1: Create or find your Microsoft Entra app registration
+
+In Microsoft Entra:
+
+1. Create an app registration for ImmyBot API access, or open an existing app registration.
+2. Copy the **Directory (tenant) ID**.
+3. Copy the **Application (client) ID**.
+4. Create a client secret and copy the secret **Value**.
+5. Find the matching Enterprise App and copy its **Object ID**.
+6. In ImmyBot, add the Enterprise App object ID as an admin user in People.
+
+<Note>
+Store the Client Secret securely. Azure only shows the client secret value once.
+</Note>
+
+##### Step 2: Find your ImmyBot instance subdomain
+
+Open your ImmyBot instance URL. The subdomain is the first segment before `.immy.bot`.
+
+For example, if your ImmyBot URL is `https://acme.immy.bot`, enter `acme`.
+
+##### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with ImmyBot.
+2. Enter:
+   - **Microsoft Entra Tenant ID**
+   - **ImmyBot Instance Subdomain**
+   - **Client ID**
+   - **Client Secret**
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to ImmyBot.
