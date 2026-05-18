@@ -84,6 +84,34 @@ export async function listFunctions({
     return { rows, total };
 }
 
+/*
+ * Returns a slim list of active deployed sync/action functions for an integration,
+ * intended for cross-referencing the template catalog with what is already deployed.
+ *
+ * Unlike `listFunctions`, this is unpaginated and excludes on-event scripts —
+ * the templates catalog contains only syncs and actions, so callers building a
+ * `(name, type) -> deployed` lookup only need those two types.
+ */
+export async function listDeployedFunctionsMeta({
+    environmentId,
+    providerConfigKey
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+}): Promise<{ name: string; type: 'sync' | 'action'; id: number; enabled: boolean; last_deployed: Date; source: FunctionSource }[]> {
+    return db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .andWhere('sc.deleted', false)
+        .andWhere('sc.active', true)
+        .select<
+            { name: string; type: 'sync' | 'action'; id: number; enabled: boolean; last_deployed: Date; source: FunctionSource }[]
+        >('sc.id', db.knex.raw('sc.sync_name AS name'), 'sc.type', 'sc.enabled', db.knex.raw('sc.updated_at AS last_deployed'), 'sc.source');
+}
+
 /**
  * Fetches a single deployed function by name within a provider config.
  * If `type` is omitted and multiple types share the same name, the first

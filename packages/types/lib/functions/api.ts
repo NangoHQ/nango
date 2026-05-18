@@ -125,7 +125,7 @@ export interface NangoOnEventFunction extends NangoFunctionBase {
 
 export type NangoFunction = NangoSyncFunction | NangoActionFunction | NangoOnEventFunction;
 
-interface DeployedMeta {
+export interface DeployedMeta {
     id: number;
     enabled: boolean;
     /** ISO-8601 timestamp. */
@@ -169,4 +169,14 @@ export type GetProviderTemplates = Endpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
+}>;
+
+export type NangoFunctionTemplate = (NangoSyncFunction | NangoActionFunction) & { deployed?: DeployedMeta };
+
+export type GetIntegrationTemplates = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/templates';
+    Querystring: { env: string };
+    Params: { providerConfigKey: string };
+    Success: { data: NangoFunctionTemplate[] };
 }>;

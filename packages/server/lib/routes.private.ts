@@ -67,6 +67,7 @@ import { getIntegrationFunction } from './controllers/v1/integrations/providerCo
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { getIntegrationTemplates } from './controllers/v1/integrations/providerConfigKey/templates/getTemplates.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
@@ -235,6 +236,7 @@ web.route('/integrations/:providerConfigKey/functions/:functionName').get(
     can({ action: 'read', resource: 'flow', scopedBy: envScope }),
     getIntegrationFunction
 );
+web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);
