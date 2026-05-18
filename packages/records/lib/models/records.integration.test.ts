@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
@@ -21,7 +21,6 @@ describe('Records service', () => {
     afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
-        await db(RECORDS_BATCH_TABLE).truncate();
         await db(RECORDS_SEEN_TABLE).truncate();
     });
 
@@ -1018,7 +1017,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 15,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1026,7 +1026,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 25,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res3.environmentId,
@@ -1034,7 +1035,8 @@ describe('Records service', () => {
                         model: res3.model,
                         count: 35,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1063,7 +1065,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 10,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1071,7 +1074,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 30,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1708,12 +1712,12 @@ describe('Records service', () => {
             expect(candidate).toBeNull();
         });
 
-        it('should randomly select candidates', async () => {
+        it('should rotate across candidates', async () => {
             const oneDay = 24 * 60 * 60 * 1000;
             const syncId = uuid.v4();
+            const total = 5;
 
-            // Insert multiple stale record counts
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < total; i++) {
                 const connectionId = rnd.number();
                 const environmentId = rnd.number();
                 const model = rnd.string();
@@ -1726,14 +1730,15 @@ describe('Records service', () => {
                     .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
             }
 
+            // Each call should advance to a different candidate; after `total` calls all must have been seen
             const candidates = new Set<string>();
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < total; i++) {
                 const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
                 if (candidate) {
                     candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
                 }
             }
-            expect(candidates.size).toBeGreaterThan(1);
+            expect(candidates.size).toBe(total);
         });
     });
     describe('payload migration', () => {

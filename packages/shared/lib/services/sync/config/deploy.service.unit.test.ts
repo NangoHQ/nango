@@ -492,9 +492,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         features: [],
         created_at: new Date(),
         updated_at: new Date(),
-        deleted: false,
-        pre_built: false,
-        is_public: false
+        deleted: false
     };
 
     function mockDbKnexActiveConfig(activeConfig: DBSyncConfig | null = null) {

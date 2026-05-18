@@ -1,17 +1,59 @@
-### Messsages
+### Channels
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `messages` | Continuously fetches messages from Microsoft Teams channels and chats. Details: incremental sync, goes back 10 days on first sync, metadata tracks last sync per channel/chat. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/messages.ts) |
+| `create-channel-message` | Post a root message in a channel | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-channel-message.ts) |
+| `create-channel-tab` | Add a tab to a channel. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-channel-tab.ts) |
+| `create-channel` | Create a channel in a team. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-channel.ts) |
+| `delete-channel` | Delete a channel from a team | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/delete-channel.ts) |
+| `get-channel-message` | Retrieve a channel message by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/get-channel-message.ts) |
+| `get-channel` | Retrieve a channel by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/get-channel.ts) |
+| `list-channel-messages` | List root messages in a channel. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-channel-messages.ts) |
+| `list-channel-replies` | List replies under a channel message thread | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-channel-replies.ts) |
+| `list-channel-tabs` | List tabs configured on a channel. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-channel-tabs.ts) |
+| `list-channels` | List channels in a team. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-channels.ts) |
+| `update-channel` | Update mutable channel properties. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/update-channel.ts) |
 
-### Org Units
+### Chats
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `org-units` | Continuously fetches groups from either Microsoft 365 or Azure Active Directory. Details: full refresh, support deletes, goes back all time, metadata is not required. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/org-units.ts) |
+| `create-chat-message` | Send a message in a chat | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-chat-message.ts) |
+| `create-chat` | Create a one-on-one or group chat. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-chat.ts) |
+| `get-chat-message` | Retrieve a chat message by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/get-chat-message.ts) |
+| `list-chat-members` | List members in a chat | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-chat-members.ts) |
+| `list-chat-messages` | List messages in a chat. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-chat-messages.ts) |
+| `list-chats` | List chats for a user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-chats.ts) |
 
-### Users
+### Messages
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `users` | Continuously fetches users from either Microsoft 365 or Azure Active Directory given specified groups to sync. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/users.ts) |
+| `reply-to-channel-message` | Reply to a channel message thread. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/reply-to-channel-message.ts) |
+
+### Teams
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-team-member` | Add a member to a team | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/add-team-member.ts) |
+| `create-team` | Create a team from a template or existing group. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/create-team.ts) |
+| `get-team` | Retrieve a team by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/get-team.ts) |
+| `list-joined-teams` | List teams the user has joined | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-joined-teams.ts) |
+| `list-team-members` | List members in a team. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/list-team-members.ts) |
+| `remove-team-member` | Remove a member from a team. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/remove-team-member.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-chat` | Retrieve a chat by ID. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/actions/get-chat.ts) |
+| `channel-message-replies` | Sync replies for selected channel message threads | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/channel-message-replies.ts) |
+| `channel-messages` | Sync root channel messages for selected channels | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/channel-messages.ts) |
+| `chat-members` | Sync member rosters for chats | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/chat-members.ts) |
+| `chat-messages` | Sync chat messages across user chats. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/chat-messages.ts) |
+| `chats` | Sync chats available to the user. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/chats.ts) |
+| `joined-teams` | Sync the teams joined by a user | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/joined-teams.ts) |
+| `org-units` | Sync Microsoft 365 or Entra groups used as organizational units | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/org-units.ts) |
+| `team-channels` | Sync channels for selected teams. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/team-channels.ts) |
+| `team-members` | Sync team membership rosters | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/team-members.ts) |
+| `users` | Sync directory users relevant to Microsoft Teams workspaces | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/microsoft-teams/syncs/users.ts) |
