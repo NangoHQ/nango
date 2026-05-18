@@ -25,7 +25,7 @@
         "@nangohq/utils": "file:../utils",
         "@nangohq/pubsub": "file:../pubsub",
         "dayjs": "1.11.19",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.103.0",
         "express": "5.1.0",
         "qs": "6.15.0",
         "zod": "4.0.5"
