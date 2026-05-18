@@ -1,30 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Check, ChevronRight, ExternalLink, Eye, Search, Upload } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
-import { CodeBlock } from '@/components-v2/CodeBlock';
+import { DeployedStatus } from './DeployedStatus';
+import { TemplateDetail } from './TemplateDetail';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
-import { LineSnippet } from '@/components-v2/LineSnippet';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { AlertButton } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { ComboboxSelect } from '@/components-v2/ui/combobox';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
-import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
@@ -36,27 +26,9 @@ import { APIError } from '@/utils/api';
 import { cn } from '@/utils/utils';
 
 import type { ComboboxOption } from '@/components-v2/ui/combobox';
-import type { ApiError, DeployedMeta, NangoFunctionTemplate } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type { ApiError, NangoFunctionTemplate } from '@nangohq/types';
 
 type Template = NangoFunctionTemplate;
-
-const DeployedStatus: React.FC<{ deployed: DeployedMeta }> = ({ deployed }) => {
-    if (deployed.source === 'catalog') {
-        return (
-            <span className="inline-flex items-center gap-0.5 text-feedback-success-fg text-body-small-regular">
-                <Check className="size-3" />
-                Deployed
-            </span>
-        );
-    }
-    return (
-        <span className="inline-flex items-center gap-0.5 text-feedback-warning-fg text-body-small-regular">
-            <AlertTriangle className="size-3" />
-            Exists
-        </span>
-    );
-};
 
 const TYPE_FILTER_VALUES = ['sync', 'action'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -66,10 +38,6 @@ const TYPE_OPTIONS: ComboboxOption<TypeFilterValue>[] = [
     { value: 'action', label: 'Action' }
 ];
 
-function isTypeFilterValue(value: string): value is TypeFilterValue {
-    return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
-}
-
 const DEPLOYED_FILTER_VALUES = ['deployed', 'not-deployed'] as const;
 type DeployedFilterValue = (typeof DEPLOYED_FILTER_VALUES)[number];
 
@@ -78,9 +46,7 @@ const DEPLOYED_OPTIONS: ComboboxOption<DeployedFilterValue>[] = [
     { value: 'not-deployed', label: 'Not deployed' }
 ];
 
-function isDeployedFilterValue(value: string): value is DeployedFilterValue {
-    return (DEPLOYED_FILTER_VALUES as readonly string[]).includes(value);
-}
+const isOneOf = <T extends string>(values: readonly T[], v: string): v is T => (values as readonly string[]).includes(v);
 
 export const Templates: React.FC = () => {
     const { providerConfigKey } = useParams();
@@ -103,10 +69,11 @@ export const Templates: React.FC = () => {
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
     const [rawTypeFilter, setTypeFilter] = useQueryState('typeFilter', parseAsString.withDefault(''));
-    const typeFilter: TypeFilterValue | undefined = rawTypeFilter && isTypeFilterValue(rawTypeFilter) ? rawTypeFilter : undefined;
+    const typeFilter: TypeFilterValue | undefined = rawTypeFilter && isOneOf(TYPE_FILTER_VALUES, rawTypeFilter) ? rawTypeFilter : undefined;
 
     const [rawDeployedFilter, setDeployedFilter] = useQueryState('deployedFilter', parseAsString.withDefault(''));
-    const deployedFilter: DeployedFilterValue | undefined = rawDeployedFilter && isDeployedFilterValue(rawDeployedFilter) ? rawDeployedFilter : undefined;
+    const deployedFilter: DeployedFilterValue | undefined =
+        rawDeployedFilter && isOneOf(DEPLOYED_FILTER_VALUES, rawDeployedFilter) ? rawDeployedFilter : undefined;
 
     const [selectedName, setSelectedName] = useQueryState('template', parseAsString);
     const [selectedType, setSelectedType] = useQueryState('type', parseAsString);
@@ -126,24 +93,16 @@ export const Templates: React.FC = () => {
         });
     }, [templates, debouncedSearch, typeFilter, deployedFilter]);
 
+    // Render-time fallback: prefer the URL-selected template if it's visible, otherwise the first match.
+    // No effect / URL writes here — the URL only changes when the user explicitly clicks an item.
     const selected = useMemo<Template | null>(() => {
-        if (!selectedName || !selectedType) return null;
-        return filteredTemplates.find((t) => t.name === selectedName && t.type === selectedType) ?? null;
+        if (filteredTemplates.length === 0) return null;
+        if (selectedName && selectedType) {
+            const match = filteredTemplates.find((t) => t.name === selectedName && t.type === selectedType);
+            if (match) return match;
+        }
+        return filteredTemplates[0];
     }, [filteredTemplates, selectedName, selectedType]);
-
-    useEffect(() => {
-        if (templatesLoading) return;
-        if (filteredTemplates.length === 0) {
-            if (selectedName !== null) void setSelectedName(null);
-            if (selectedType !== null) void setSelectedType(null);
-            return;
-        }
-        if (!selected) {
-            const fallback = filteredTemplates[0];
-            void setSelectedName(fallback.name);
-            void setSelectedType(fallback.type);
-        }
-    }, [templatesLoading, filteredTemplates, selected, selectedName, selectedType, setSelectedName, setSelectedType]);
 
     const { mutateAsync: deployFlow, isPending: isDeploying } = usePreBuiltDeployFlow(env, integrationData?.integration.unique_key ?? '');
 
@@ -190,7 +149,6 @@ export const Templates: React.FC = () => {
 
             <div className="flex gap-6 w-full flex-1 min-h-0 pl-11">
                 <div className="flex flex-col gap-6 w-[420px] shrink-0 min-h-0">
-                    {/** Header */}
                     {integrationData ? (
                         <div className="inline-flex items-center gap-2.5 shrink-0 pt-6">
                             <IntegrationLogo provider={integrationData.integration.provider} className="size-10.5" />
@@ -200,7 +158,7 @@ export const Templates: React.FC = () => {
                             <span className="text-text-tertiary text-body-medium-regular">Templates</span>
                         </div>
                     ) : (
-                        <div className="inline-flex items-center gap-2.5 shrink-0 pl-11 pt-11">
+                        <div className="inline-flex items-center gap-2.5 shrink-0 pt-6">
                             <Skeleton className="size-10.5" />
                             <Skeleton className="w-36 h-6" />
                         </div>
@@ -311,211 +269,5 @@ export const Templates: React.FC = () => {
                 </div>
             </div>
         </DashboardLayout>
-    );
-};
-
-interface TemplateDetailProps {
-    template: Template;
-    provider: string;
-    deployedFunctionPath: string;
-    onDeploy: () => void;
-    isDeploying: boolean;
-}
-
-const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, deployedFunctionPath, onDeploy, isDeploying }) => {
-    const { confirm, DialogComponent } = useConfirmDialog();
-    const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
-
-    const onRedeployClick = () => {
-        void confirm({
-            title: 'Redeploy this template?',
-            description: `This will overwrite the existing deployed ${template.type} "${template.name}".`,
-            confirmButtonText: 'Redeploy',
-            confirmVariant: 'primary',
-            icon: <AlertTriangle />,
-            onConfirm: onDeploy
-        });
-    };
-    const rawCodeUrl = `${INTEGRATION_TEMPLATES_RAW_URL}/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
-    const {
-        data: code,
-        isLoading: isCodeLoading,
-        error: codeError
-    } = useQuery<string>({
-        queryKey: ['template-code', provider, template.type, template.name],
-        queryFn: async () => {
-            const res = await fetch(rawCodeUrl);
-            if (!res.ok) throw new Error(`Failed to load template source (${res.status})`);
-            return await res.text();
-        },
-        retry: false,
-        staleTime: 5 * 60 * 1000
-    });
-
-    const inputSchema = useMemo<JSONSchema7 | null>(() => {
-        if (!template.input || !template.json_schema) return null;
-        const schema = template.json_schema.definitions?.[template.input] ?? null;
-        if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
-        return schema as JSONSchema7;
-    }, [template]);
-
-    const outputSchemas = useMemo<{ name: string; schema: JSONSchema7 }[]>(() => {
-        if (!template.returns || !template.json_schema) return [];
-        return template.returns
-            .map((name) => {
-                const schema = template.json_schema?.definitions?.[name] ?? null;
-                if (!schema || isNullSchema(schema as JSONSchema7) || isObjectWithNoProperties(schema as JSONSchema7)) return null;
-                return { name, schema: schema as JSONSchema7 };
-            })
-            .filter((item): item is { name: string; schema: JSONSchema7 } => item !== null);
-    }, [template]);
-
-    return (
-        <div className="flex flex-col gap-6 p-6 rounded-md border border-border-muted bg-bg-elevated">
-            <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-2">
-                    <div className="inline-flex items-center gap-2">
-                        <span className="text-text-primary text-body-large-semi">{template.name}</span>
-                        <Badge variant="gray" className="uppercase">
-                            {template.type}
-                        </Badge>
-                    </div>
-                    {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
-                </div>
-                <div className="inline-flex items-center gap-3 shrink-0">
-                    {template.deployed && <DeployedStatus deployed={template.deployed} />}
-                    {template.deployed ? (
-                        <>
-                            <ButtonLink to={deployedFunctionPath} variant="ghost">
-                                <Eye />
-                                View
-                            </ButtonLink>
-                            <Button type="button" variant="secondary" onClick={onRedeployClick} disabled={isDeploying}>
-                                <Upload />
-                                {isDeploying ? 'Deploying…' : 'Redeploy template'}
-                            </Button>
-                        </>
-                    ) : (
-                        <Button type="button" onClick={onDeploy} disabled={isDeploying}>
-                            <Upload />
-                            {isDeploying ? 'Deploying…' : 'Deploy template'}
-                        </Button>
-                    )}
-                </div>
-            </div>
-
-            {DialogComponent}
-
-            {template.type === 'sync' && (
-                <div className="flex flex-wrap gap-4 gap-y-2">
-                    {template.runs && (
-                        <KeyValueBadge label="Frequency">
-                            <span>{template.runs}</span>
-                        </KeyValueBadge>
-                    )}
-                    <KeyValueBadge label="Auto start">{template.auto_start ? 'yes' : 'no'}</KeyValueBadge>
-                </div>
-            )}
-
-            <section className="flex flex-col gap-2">
-                <span className="text-text-primary text-body-medium-semi">Required scopes</span>
-                {template.scopes && template.scopes.length > 0 ? (
-                    <div className="flex flex-wrap gap-1.5">
-                        {template.scopes.map((scope) => (
-                            <Badge key={scope} variant="gray">
-                                {scope}
-                            </Badge>
-                        ))}
-                    </div>
-                ) : (
-                    <span className="text-text-secondary text-body-medium-regular">No scopes required.</span>
-                )}
-            </section>
-
-            <Collapsible asChild>
-                <section className="flex flex-col gap-2">
-                    <CollapsibleTrigger className="flex items-center justify-between gap-2 cursor-pointer group">
-                        <span className="text-text-primary text-body-medium-semi">Customize this template</span>
-                        <ChevronRight className="size-4.5 text-text-tertiary transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="flex flex-col gap-2">
-                        <LineSnippet
-                            className="bg-bg-surface border border-border-muted"
-                            snippet={`nango pull --catalog ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
-                        />
-                        <Link
-                            to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
-                            target="_blank"
-                            className="text-text-tertiary text-body-small-medium inline-flex items-center gap-1.5 w-fit"
-                        >
-                            Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                        </Link>
-                    </CollapsibleContent>
-                </section>
-            </Collapsible>
-
-            <Tabs defaultValue={!inputSchema && outputSchemas.length > 0 ? 'output' : 'input'} className="gap-4">
-                <TabsList className="w-fit gap-0">
-                    <TabsTrigger value="input">Input</TabsTrigger>
-                    <TabsTrigger value="output">Output</TabsTrigger>
-                    <TabsTrigger value="code">Code</TabsTrigger>
-                </TabsList>
-                <TabsContent value="input" className="flex flex-col gap-4">
-                    {inputSchema ? (
-                        <JsonSchemaTopLevelObject schema={inputSchema} />
-                    ) : (
-                        <EmptyCard>
-                            <span className="text-text-secondary text-body-medium-regular">No inputs.</span>
-                        </EmptyCard>
-                    )}
-                </TabsContent>
-                <TabsContent value="output" className="flex flex-col gap-4">
-                    {outputSchemas.length > 0 ? (
-                        <Navigation defaultValue={outputSchemas[0].name} orientation="horizontal">
-                            {outputSchemas.length > 1 && (
-                                <NavigationList>
-                                    {outputSchemas.map((o) => (
-                                        <NavigationTrigger key={o.name} value={o.name}>
-                                            {o.name}
-                                        </NavigationTrigger>
-                                    ))}
-                                </NavigationList>
-                            )}
-                            {outputSchemas.map((o) => (
-                                <NavigationContent key={o.name} value={o.name}>
-                                    <JsonSchemaTopLevelObject schema={o.schema} />
-                                </NavigationContent>
-                            ))}
-                        </Navigation>
-                    ) : (
-                        <EmptyCard>
-                            <span className="text-text-secondary text-body-medium-regular">No outputs.</span>
-                        </EmptyCard>
-                    )}
-                </TabsContent>
-                <TabsContent value="code" className="flex flex-col gap-4">
-                    {isCodeLoading ? (
-                        <Skeleton className="w-full h-96" />
-                    ) : codeError || !code ? (
-                        <EmptyCard>
-                            <span className="text-text-secondary text-body-medium-regular">Failed to load source code.</span>
-                        </EmptyCard>
-                    ) : (
-                        <CodeBlock
-                            title={`${template.name}.ts`}
-                            language="typescript"
-                            code={code}
-                            copyable={false}
-                            headerElement={
-                                <ButtonLink to={githubUrl} variant="secondary" target="_blank">
-                                    View on GitHub
-                                    <ExternalLink />
-                                </ButtonLink>
-                            }
-                        />
-                    )}
-                </TabsContent>
-            </Tabs>
-        </div>
     );
 };
