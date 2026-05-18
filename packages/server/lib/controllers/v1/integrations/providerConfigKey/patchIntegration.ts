@@ -2,10 +2,12 @@ import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
+import { findSupportedApiKeyProvidersByBaseUrl, getGenericApiKeySupportedProviderMessage } from '../../../../helpers/genericApiKey.js';
+import { genericApiKeyConfigToCustom } from '../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 
-import type { PatchIntegration } from '@nangohq/types';
+import type { ApiPublicGenericApiKeyConfig, PatchIntegration } from '@nangohq/types';
 
 export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -47,6 +49,19 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
 
     const body: PatchIntegration['Body'] = valBody.data;
 
+    if ('generic_api_key' in body && body.generic_api_key && integration.provider !== 'generic-api-key') {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'generic_api_key is only supported for generic-api-key integrations' } });
+        return;
+    }
+    if ('generic_api_key' in body && body.generic_api_key) {
+        const genericApiKey = body.generic_api_key as ApiPublicGenericApiKeyConfig;
+        const matches = findSupportedApiKeyProvidersByBaseUrl(genericApiKey.base_url);
+        if (matches.length > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: getGenericApiKeySupportedProviderMessage(matches) } });
+            return;
+        }
+    }
+
     // Integration ID
     if ('integrationId' in body && body.integrationId) {
         const exists = await configService.getIdByProviderConfigKey(environment.id, body.integrationId);
@@ -72,6 +87,14 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
     // Forward webhooks
     if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
         integration.forward_webhooks = body.forward_webhooks;
+    }
+
+    if ('generic_api_key' in body && body.generic_api_key) {
+        const genericApiKey = body.generic_api_key as ApiPublicGenericApiKeyConfig;
+        integration.custom = {
+            ...integration.custom,
+            ...genericApiKeyConfigToCustom(genericApiKey)
+        };
     }
 
     // Credentials

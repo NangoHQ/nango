@@ -43,7 +43,7 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
 }
 
 export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
-export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret'>;
+export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress: boolean;

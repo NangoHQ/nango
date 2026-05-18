@@ -22,6 +22,8 @@ import type {
     IntegrationConfigForProxy,
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
+    Provider,
+    ProviderApiKeyProxyAuth,
     ProviderOAuth1,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
@@ -35,6 +37,8 @@ type ProxyErrorCode =
     | 'unknown_provider'
     | 'unsupported_provider'
     | 'invalid_query_params'
+    | 'invalid_proxy_auth'
+    | 'base_url_override_not_allowed'
     | 'unknown_error'
     | 'failed_to_get_connection'
     | 'invalid_certificate_or_key_format'
@@ -88,7 +92,7 @@ export function getAxiosConfiguration({
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
 }): AxiosRequestConfig {
-    const url = buildProxyURL({ config: proxyConfig, connection });
+    const url = buildProxyURL({ config: proxyConfig, connection, integrationConfig });
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
@@ -167,6 +171,23 @@ export function getAxiosConfiguration({
     return axiosConfig;
 }
 
+function proxyValueUsesIntegrationConfig(value: unknown): boolean {
+    return typeof value === 'string' && (value.includes('${integrationConfig.') || value.includes('${clientId}') || value.includes('${clientSecret}'));
+}
+
+export function proxyNeedsIntegrationConfig(provider: Provider): boolean {
+    const proxy = provider.proxy;
+    if (!proxy) {
+        return false;
+    }
+
+    if (proxy.auth) {
+        return true;
+    }
+
+    return [proxy.base_url, ...Object.values(proxy.headers || {}), ...Object.values(proxy.query || {})].some((value) => proxyValueUsesIntegrationConfig(value));
+}
+
 export function getProxyConfiguration({
     externalConfig,
     internalConfig
@@ -204,6 +225,9 @@ export function getProxyConfiguration({
 
     if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
         return Err(new ProxyError('unsupported_provider'));
+    }
+    if (provider.proxy?.auth && baseUrlOverride) {
+        return Err(new ProxyError('base_url_override_not_allowed', 'Base URL override is not supported for managed proxy auth'));
     }
 
     if (!baseUrlOverride && provider.proxy?.base_url && endpoint.includes(provider.proxy.base_url)) {
@@ -260,7 +284,15 @@ export function getProxyConfiguration({
 /**
  * Construct URL
  */
-export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
+export function buildProxyURL({
+    config,
+    connection,
+    integrationConfig
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}) {
     const { provider: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
     let apiBase = config.baseUrlOverride || templateApiBase;
@@ -283,7 +315,8 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
     const fullEndpoint = interpolateIfNeeded(combinedUrl, {
         ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
-        ...connection.credentials
+        ...connection.credentials,
+        integrationConfig
     });
 
     let url = new URL(fullEndpoint);
@@ -318,6 +351,16 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             }
         }
     }
+
+    const proxyAuth = resolveApiKeyProxyAuth({
+        auth: config.provider.proxy?.auth,
+        connection,
+        integrationConfig
+    });
+    if (proxyAuth?.placement === 'query') {
+        url.searchParams.set(proxyAuth.name, proxyAuth.value);
+    }
+
     return url.toString();
 }
 
@@ -577,5 +620,91 @@ export function buildProxyHeaders({
         headers = { ...headers, ...config.headers };
     }
 
+    const proxyAuth = resolveApiKeyProxyAuth({
+        auth: config.provider.proxy?.auth,
+        connection,
+        integrationConfig
+    });
+    if (proxyAuth?.placement === 'header') {
+        headers[proxyAuth.name.toLowerCase() as Lowercase<string>] = proxyAuth.value;
+    }
+
     return headers;
+}
+
+function resolveApiKeyProxyAuth({
+    auth,
+    connection,
+    integrationConfig
+}: {
+    auth?: ProviderApiKeyProxyAuth | undefined;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): { placement: 'header' | 'query'; name: string; value: string } | null {
+    if (!auth) {
+        return null;
+    }
+    if (auth.type !== 'api_key') {
+        throw new ProxyError('invalid_proxy_auth', 'Unsupported proxy auth type');
+    }
+    if (connection.credentials.type !== 'API_KEY') {
+        throw new ProxyError('invalid_proxy_auth', 'API key proxy auth requires API_KEY credentials');
+    }
+
+    const replacers = {
+        credentials: connection.credentials,
+        ...(connection.credentials as unknown as Record<string, string>),
+        connectionConfig: connection.connection_config,
+        connection_config: connection.connection_config,
+        integrationConfig
+    };
+    const placement = interpolateIfNeeded(auth.placement, replacers);
+    const name = interpolateIfNeeded(auth.name, replacers);
+    const template = interpolateIfNeeded(auth.value_template, {
+        connectionConfig: connection.connection_config,
+        connection_config: connection.connection_config,
+        integrationConfig
+    });
+
+    if (placement !== 'header' && placement !== 'query') {
+        throw new ProxyError('invalid_proxy_auth', 'API key proxy auth placement must be header or query');
+    }
+    if (!/^[A-Za-z0-9_-]+$/.test(name)) {
+        throw new ProxyError('invalid_proxy_auth', 'API key proxy auth name contains unsupported characters');
+    }
+    if (/[\r\n]/.test(template)) {
+        throw new ProxyError('invalid_proxy_auth', 'API key proxy auth value template contains unsupported characters');
+    }
+    if (!template.includes('{apiKey}') && !template.includes('${apiKey}')) {
+        throw new ProxyError('invalid_proxy_auth', 'API key proxy auth value template must include {apiKey}');
+    }
+
+    const value = template.replaceAll('{apiKey}', connection.credentials.apiKey).replaceAll('${apiKey}', connection.credentials.apiKey);
+
+    return { placement, name, value };
+}
+
+export function getProxyAuthValuesToFilter({
+    provider,
+    connection,
+    integrationConfig
+}: {
+    provider: Provider;
+    connection?: ConnectionForProxy | undefined;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): string[] {
+    if (!connection) {
+        return [];
+    }
+
+    try {
+        const proxyAuth = resolveApiKeyProxyAuth({
+            auth: provider.proxy?.auth,
+            connection,
+            integrationConfig
+        });
+        return proxyAuth ? [proxyAuth.value] : [];
+    } catch {
+        return [];
+    }
 }

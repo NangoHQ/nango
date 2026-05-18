@@ -150,7 +150,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 return connection;
             },
             getIntegrationConfig: () => {
-                return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
+                return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null, custom: null };
             }
         });
         const response = (await proxy.request()).unwrap();

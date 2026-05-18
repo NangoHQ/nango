@@ -1,5 +1,6 @@
 import { AppAuthSettings } from './AppAuthSettings';
 import { CustomAuthSettings } from './CustomAuthSettings';
+import { GenericApiKeySettings } from './GenericApiKeySettings';
 import { InstallPluginSettings } from './InstallPluginSettings';
 import { McpGenericSettings } from './McpGenericSettings';
 import { McpOAuthSettings } from './McpOAuthSettings';
@@ -10,6 +11,10 @@ import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
 export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
     const authMode = data.template.auth_mode;
+
+    if (data.integration.provider === 'generic-api-key') {
+        return <GenericApiKeySettings data={data} environment={environment} />;
+    }
 
     switch (authMode) {
         case 'OAUTH1':

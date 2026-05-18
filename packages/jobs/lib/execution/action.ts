@@ -156,7 +156,8 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.provider === 'generic-api-key' ? providerConfig.custom : null
             }
         };
 

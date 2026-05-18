@@ -1,10 +1,13 @@
 import * as z from 'zod';
 
-import { configService, getProvider, sharedCredentialsService } from '@nangohq/shared';
+import { configService, encryptionManager, getProvider, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../formatters/integration.js';
+import { findSupportedApiKeyProvidersByBaseUrl, getGenericApiKeySupportedProviderMessage } from '../../helpers/genericApiKey.js';
 import {
+    genericApiKeyConfigToCustom,
+    genericApiKeyIntegrationConfigSchema,
     integrationCredentialsSchema,
     integrationDisplayNameSchema,
     integrationForwardWebhooksSchema,
@@ -25,7 +28,8 @@ const baseValidationBody = z
     .strict();
 
 const validationBody = baseValidationBody.extend({
-    credentials: integrationCredentialsSchema.optional()
+    credentials: integrationCredentialsSchema.optional(),
+    generic_api_key: genericApiKeyIntegrationConfigSchema.optional()
 });
 
 const quickstartAuthModes = new Set(['OAUTH1', 'OAUTH2']);
@@ -63,6 +67,21 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         res.status(400).send({ error: { code: 'invalid_body', message: 'Missing credentials' } });
         return;
     }
+    if (body.provider === 'generic-api-key' && !body.generic_api_key) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'Missing generic_api_key configuration' } });
+        return;
+    }
+    if (body.provider !== 'generic-api-key' && body.generic_api_key) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'generic_api_key is only supported for generic-api-key integrations' } });
+        return;
+    }
+    if (body.generic_api_key) {
+        const matches = findSupportedApiKeyProvidersByBaseUrl(body.generic_api_key.base_url);
+        if (matches.length > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: getGenericApiKeySupportedProviderMessage(matches) } });
+            return;
+        }
+    }
 
     const exists = await configService.getProviderConfig(body.unique_key, environment.id);
     if (exists) {
@@ -79,7 +98,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         provider: body.provider,
         display_name: body.display_name || null,
         unique_key: body.unique_key,
-        custom: null,
+        custom: body.generic_api_key ? genericApiKeyConfigToCustom(body.generic_api_key) : null,
         missing_fields: [],
         forward_webhooks: body.forward_webhooks ?? true,
         shared_credentials_id: null
@@ -126,8 +145,10 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
         return;
     }
 
+    const decryptedResult = encryptionManager.decryptProviderConfig(result as unknown as Parameters<typeof encryptionManager.decryptProviderConfig>[0])!;
+
     res.status(200).send({
-        data: integrationToPublicApi({ integration: result, provider })
+        data: integrationToPublicApi({ integration: decryptedResult, provider })
     });
 });
 

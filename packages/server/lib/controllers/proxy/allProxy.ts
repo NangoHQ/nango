@@ -12,6 +12,7 @@ import {
     configService,
     connectionService,
     errorManager,
+    getProvider,
     getProxyConfiguration,
     pubsub,
     refreshOrTestCredentials
@@ -149,6 +150,16 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             });
             return;
         }
+        const provider = getProvider(integration.provider);
+        if (provider?.proxy?.auth && baseUrlOverride) {
+            res.status(400).send({
+                error: {
+                    code: 'base_url_override_not_allowed',
+                    message: 'Base URL override is not supported for managed proxy auth.'
+                }
+            });
+            return;
+        }
 
         const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
         if (connectionRes.error || !connectionRes.response) {
@@ -267,7 +278,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             },
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
-                oauth_client_secret: integration.oauth_client_secret
+                oauth_client_secret: integration.oauth_client_secret,
+                custom: integration.custom
             })
         });
 

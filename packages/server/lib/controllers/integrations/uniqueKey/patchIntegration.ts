@@ -1,11 +1,14 @@
 import * as z from 'zod';
 
-import { configService, connectionService, getProvider } from '@nangohq/shared';
+import { configService, connectionService, encryptionManager, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
 import { integrationToPublicApi } from '../../../formatters/integration.js';
+import { findSupportedApiKeyProvidersByBaseUrl, getGenericApiKeySupportedProviderMessage } from '../../../helpers/genericApiKey.js';
 import {
+    genericApiKeyConfigToCustom,
+    genericApiKeyIntegrationConfigSchema,
     integrationCredentialsSchema,
     integrationDisplayNameSchema,
     integrationForwardWebhooksSchema,
@@ -21,6 +24,7 @@ const validationBody = z
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
         forward_webhooks: integrationForwardWebhooksSchema,
+        generic_api_key: genericApiKeyIntegrationConfigSchema.optional(),
         custom: z.record(z.string(), z.string()).optional()
     })
     .strict();
@@ -63,6 +67,17 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
         return;
     }
+    if (body.generic_api_key && integration.provider !== 'generic-api-key') {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'generic_api_key is only supported for generic-api-key integrations' } });
+        return;
+    }
+    if (body.generic_api_key) {
+        const matches = findSupportedApiKeyProvidersByBaseUrl(body.generic_api_key.base_url);
+        if (matches.length > 0) {
+            res.status(400).send({ error: { code: 'invalid_body', message: getGenericApiKeySupportedProviderMessage(matches) } });
+            return;
+        }
+    }
 
     // Integration ID
     if (body.unique_key) {
@@ -96,6 +111,13 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         integration.custom = {
             ...integration.custom,
             ...custom
+        };
+    }
+
+    if (body.generic_api_key) {
+        integration.custom = {
+            ...integration.custom,
+            ...genericApiKeyConfigToCustom(body.generic_api_key)
         };
     }
 
@@ -148,7 +170,9 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         }
     }
     const update = await configService.editProviderConfig(integration, provider);
+    const decryptedUpdate = encryptionManager.decryptProviderConfig(update as unknown as Parameters<typeof encryptionManager.decryptProviderConfig>[0])!;
+
     res.status(200).send({
-        data: integrationToPublicApi({ integration: update, provider })
+        data: integrationToPublicApi({ integration: decryptedUpdate, provider })
     });
 });

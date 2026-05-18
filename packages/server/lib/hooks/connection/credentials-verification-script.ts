@@ -11,6 +11,7 @@ import type {
     ConnectionConfig,
     DBConnectionDecrypted,
     InstallPluginCredentials,
+    IntegrationConfigForProxy,
     InternalProxyConfiguration,
     JwtCredentials,
     SignatureCredentials,
@@ -28,6 +29,7 @@ const handlers: VerificationScriptHandlersMap = verificationscriptHandlers as un
 
 export interface InternalNango {
     getConnection: () => DBConnectionDecrypted;
+    getIntegrationConfig: () => IntegrationConfigForProxy;
     proxy: <T = any>({ method, endpoint, data, headers, params, baseUrlOverride }: UserProvidedProxyConfiguration) => Promise<AxiosResponse<T> | AxiosError>;
 }
 
@@ -96,6 +98,11 @@ async function execute(
 
         const internalNango: InternalNango = {
             getConnection: () => connection,
+            getIntegrationConfig: () => ({
+                oauth_client_id: config.oauth_client_id,
+                oauth_client_secret: config.oauth_client_secret,
+                custom: config.custom
+            }),
             proxy: async (requestConfig) => {
                 const proxyConfig = getProxyConfiguration({
                     externalConfig: { ...externalConfig, ...requestConfig },
@@ -112,7 +119,8 @@ async function execute(
                     },
                     getIntegrationConfig: () => ({
                         oauth_client_id: null,
-                        oauth_client_secret: null
+                        oauth_client_secret: null,
+                        custom: config.custom
                     })
                 });
                 return (await proxy.request()).unwrap();

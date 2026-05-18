@@ -1,4 +1,25 @@
 # yaml-language-server: $schema=./../../scripts/validation/providers/schema.json
+generic-api-key:
+    display_name: Generic API Key
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${integrationConfig.custom.generic_api_key_base_url}
+        auth:
+            type: api_key
+            placement: ${integrationConfig.custom.generic_api_key_placement}
+            name: ${integrationConfig.custom.generic_api_key_name}
+            value_template: ${integrationConfig.custom.generic_api_key_value_template}
+    credentials_verification_script: genericApiKeyCredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/generic-api-key
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: API key for the upstream API.
+            secret: true
+
 1password-events:
     display_name: 1Password (Events API)
     categories:

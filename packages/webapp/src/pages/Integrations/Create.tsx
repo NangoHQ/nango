@@ -14,6 +14,7 @@ import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
 
 import type { PostIntegration } from '@nangohq/types';
 
@@ -36,8 +37,16 @@ export const CreateIntegration = () => {
         try {
             const response = await postIntegration(data);
             navigate(`/${env}/integrations/${response.data.unique_key}/settings`);
-        } catch {
-            toast({ title: 'Failed to create integration', variant: 'error' });
+        } catch (err) {
+            const apiErrorMessage = getApiErrorMessage(err);
+            const message = apiErrorMessage ?? 'Failed to create integration';
+            if (provider.name === 'generic-api-key') {
+                if (!apiErrorMessage) {
+                    toast({ title: message, variant: 'error' });
+                }
+                throw new Error(message);
+            }
+            toast({ title: message, variant: 'error' });
         }
     };
 
@@ -109,3 +118,11 @@ export const CreateIntegration = () => {
         </DashboardLayout>
     );
 };
+
+function getApiErrorMessage(err: unknown): string | null {
+    if (err instanceof APIError && err.json?.error?.message) {
+        return err.json.error.message;
+    }
+
+    return null;
+}

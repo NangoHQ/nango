@@ -57,6 +57,12 @@ describe('redactURL', () => {
         expect(redactURL({ url: 'https://example.com/test?apiKey=foobar', valuesToFilter: ['foobar'] })).toBe('https://example.com/test?apiKey=REDACTED');
     });
 
+    it('should redact url-encoded values', () => {
+        expect(redactURL({ url: 'https://example.com/test?apiKey=foo+bar%2Bbaz%2Fqux%3D', valuesToFilter: ['foo bar+baz/qux='] })).toBe(
+            'https://example.com/test?apiKey=REDACTED'
+        );
+    });
+
     it('should not redact the url if no values to filter', () => {
         expect(redactURL({ url: 'https://example.com/test', valuesToFilter: [] })).toBe('https://example.com/test');
     });

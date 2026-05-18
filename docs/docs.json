@@ -1191,6 +1191,7 @@
               "api-integrations/granola-mcp",
               "api-integrations/glyphic",
               "api-integrations/gamma",
+              "api-integrations/generic-api-key",
               "api-integrations/grist",
               "api-integrations/google-slides",
               "api-integrations/google-workspace-admin",

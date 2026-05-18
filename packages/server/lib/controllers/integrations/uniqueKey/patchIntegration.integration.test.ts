@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { configService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -70,6 +70,87 @@ describe(`PATCH ${endpoint}`, () => {
                 unique_key: 'github',
                 updated_at: expect.toBeIsoDate(),
                 forward_webhooks: true
+            }
+        });
+    });
+
+    it('should update generic API key auth presentation config', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-api', 'generic-api-key', {
+            custom: {
+                generic_api_key_base_url: 'https://api.old.com',
+                generic_api_key_placement: 'header',
+                generic_api_key_name: 'Authorization',
+                generic_api_key_value_template: 'Bearer {apiKey}',
+                generic_api_key_verification_method: 'GET',
+                generic_api_key_verification_endpoint: '/old-verify'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { uniqueKey: 'my-api' },
+            body: {
+                generic_api_key: {
+                    base_url: 'https://api.example.com',
+                    placement: 'query',
+                    name: 'api_key',
+                    value_template: '{apiKey}'
+                }
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.data.generic_api_key).toStrictEqual({
+            base_url: 'https://api.example.com',
+            placement: 'query',
+            name: 'api_key',
+            value_template: '{apiKey}'
+        });
+
+        const config = await configService.getProviderConfig('my-api', env.id);
+        expect(config?.custom).toMatchObject({
+            generic_api_key_base_url: 'https://api.example.com',
+            generic_api_key_placement: 'query',
+            generic_api_key_name: 'api_key',
+            generic_api_key_value_template: '{apiKey}',
+            generic_api_key_verification_method: '',
+            generic_api_key_verification_endpoint: ''
+        });
+    });
+
+    it('should reject generic API key base URL updates for already supported API key providers', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'my-api', 'generic-api-key', {
+            custom: {
+                generic_api_key_base_url: 'https://api.example.com',
+                generic_api_key_placement: 'header',
+                generic_api_key_name: 'Authorization',
+                generic_api_key_value_template: 'Bearer {apiKey}'
+            }
+        });
+
+        const res = await api.fetch(endpoint, {
+            method: 'PATCH',
+            token: apiKey.secret,
+            params: { uniqueKey: 'my-api' },
+            body: {
+                generic_api_key: {
+                    base_url: 'https://api.github.com',
+                    placement: 'header',
+                    name: 'Authorization',
+                    value_template: 'Bearer {apiKey}'
+                }
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                message:
+                    'Nango already supports this API through the Github (Personal Access Token) (github-pat) integration. Generic API Key is intended for private APIs or public APIs that Nango does not support yet. Use the provider-specific integration instead.'
             }
         });
     });

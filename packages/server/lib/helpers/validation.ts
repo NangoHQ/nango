@@ -92,6 +92,49 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
     { error: () => ({ message: 'invalid credentials object' }) }
 );
 
+export const genericApiKeyIntegrationConfigSchema = z
+    .object({
+        base_url: z.url().refine((value) => new URL(value).protocol === 'https:', { message: 'Must be an HTTPS URL' }),
+        placement: z.enum(['header', 'query']),
+        name: z
+            .string()
+            .min(1)
+            .max(255)
+            .regex(/^[A-Za-z0-9_-]+$/),
+        value_template: z
+            .string()
+            .min(1)
+            .max(2048)
+            .refine((value) => !/[\r\n]/.test(value), { message: 'Must not contain newlines' })
+            .refine((value) => value.includes('{apiKey}') || value.includes('${apiKey}'), {
+                message: 'Must include {apiKey}'
+            }),
+        verification: z
+            .object({
+                method: z.enum(['GET', 'POST']).optional(),
+                endpoint: z
+                    .string()
+                    .min(1)
+                    .max(2048)
+                    .refine((value) => value.startsWith('/'), { message: 'Must be a relative path starting with /' })
+                    .refine((value) => !value.startsWith('//'), { message: 'Must be a relative path' })
+            })
+            .strict()
+            .optional()
+    })
+    .strict();
+
+export function genericApiKeyConfigToCustom(config: z.infer<typeof genericApiKeyIntegrationConfigSchema>): Record<string, string> {
+    return {
+        generic_api_key_base_url: config.base_url,
+        generic_api_key_placement: config.placement,
+        generic_api_key_name: config.name,
+        generic_api_key_value_template: config.value_template,
+        generic_api_key_verification_method: config.verification?.method || '',
+        generic_api_key_verification_endpoint: config.verification?.endpoint || ''
+    };
+}
+
 export const sharedCredentialsSchema = z
     .object({
         name: providerNameSchema,
