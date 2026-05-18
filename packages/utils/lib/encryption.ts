@@ -23,11 +23,18 @@ export class Encryption {
 
     // The imported CryptoKey is identical across calls, so cache it for the
     // lifetime of the instance. importKey costs ~5–10 µs per call and adds up
-    // in record-decryption loops.
+    // in record-decryption loops. If it rejects, drop the cached promise so
+    // the next call retries instead of getting the poisoned rejection.
     private getCryptoKey(): Promise<CryptoKey> {
         if (!this.cryptoKeyPromise) {
             const keyBuffer = Buffer.from(this.key, this.encoding);
-            this.cryptoKeyPromise = crypto.subtle.importKey('raw', keyBuffer, { name: this.algorithm.async }, false, ['encrypt', 'decrypt']);
+            const p = crypto.subtle.importKey('raw', keyBuffer, { name: this.algorithm.async }, false, ['encrypt', 'decrypt']);
+            p.catch(() => {
+                if (this.cryptoKeyPromise === p) {
+                    this.cryptoKeyPromise = undefined;
+                }
+            });
+            this.cryptoKeyPromise = p;
         }
         return this.cryptoKeyPromise;
     }
