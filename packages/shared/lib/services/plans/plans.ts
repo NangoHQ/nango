@@ -174,6 +174,15 @@ export async function handlePlanChanged(
                   trial_expired: null
               }
             : {}),
+        ...(isDowngrade && !isNewPaid
+            ? {
+                  trial_start_at: currentPlan.value.trial_start_at || new Date(),
+                  trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+                  trial_end_notified_at: null,
+                  trial_extension_count: currentPlan.value.trial_extension_count + 1,
+                  trial_expired: false
+              }
+            : {}),
         ...mergedFlags
     });
 
