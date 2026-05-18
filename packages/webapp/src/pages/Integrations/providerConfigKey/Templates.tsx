@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ExternalLink, Search, Upload } from 'lucide-react';
+import { ChevronRight, ExternalLink, Search, Upload } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -8,6 +8,7 @@ import { useDebounce } from 'react-use';
 
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { CodeBlock } from '@/components-v2/CodeBlock';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { EmptyCard } from '@/components-v2/EmptyCard';
@@ -16,6 +17,7 @@ import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
+import { AlertButton } from '@/components-v2/ui/alert';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { ComboboxSelect } from '@/components-v2/ui/combobox';
@@ -119,8 +121,16 @@ export const Templates: React.FC = () => {
                 scriptName: selected.name,
                 type: selected.type
             });
-            toast({ title: `${selected.name} deployed successfully`, variant: 'success' });
-            navigate(`/${env}/integrations/${integrationData.integration.unique_key}/functions/${encodeURIComponent(selected.name)}?type=${selected.type}`);
+            const functionPath = `/${env}/integrations/${integrationData.integration.unique_key}/functions/${encodeURIComponent(selected.name)}?type=${selected.type}`;
+            toast({
+                title: `${selected.name} deployed successfully`,
+                variant: 'success',
+                action: (
+                    <AlertButton variant="success-secondary" onClick={() => navigate(functionPath)}>
+                        View
+                    </AlertButton>
+                )
+            });
         } catch (err) {
             const message = err instanceof APIError ? (err.json as ApiError<string>).error.message : undefined;
             toast({ title: 'Failed to deploy template', description: message, variant: 'error' });
@@ -223,16 +233,6 @@ export const Templates: React.FC = () => {
                                                 </div>
                                                 {t.description && (
                                                     <span className="text-text-secondary text-body-small-regular line-clamp-1">{t.description}</span>
-                                                )}
-                                                {t.scopes && t.scopes.length > 0 && (
-                                                    <div className="flex flex-wrap items-center gap-1">
-                                                        {t.scopes.slice(0, 3).map((scope) => (
-                                                            <Badge key={scope} variant="gray">
-                                                                {scope.length > 15 ? `…${scope.slice(-15)}` : scope}
-                                                            </Badge>
-                                                        ))}
-                                                        {t.scopes.length > 3 && <Badge variant="gray">+{t.scopes.length - 3}</Badge>}
-                                                    </div>
                                                 )}
                                             </button>
                                         </li>
@@ -348,22 +348,27 @@ const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onD
                 )}
             </section>
 
-            <section className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-2">
-                    <span className="text-text-primary text-body-medium-semi">Customize this template</span>
-                    <Link
-                        to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
-                        target="_blank"
-                        className="text-text-tertiary text-body-small-medium inline-flex items-center gap-1.5"
-                    >
-                        Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                    </Link>
-                </div>
-                <LineSnippet
-                    className="bg-bg-surface border border-border-muted"
-                    snippet={`nango pull --catalog ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
-                />
-            </section>
+            <Collapsible asChild>
+                <section className="flex flex-col gap-2">
+                    <CollapsibleTrigger className="flex items-center justify-between gap-2 cursor-pointer group">
+                        <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                        <ChevronRight className="size-4.5 text-text-tertiary transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="flex flex-col gap-2">
+                        <LineSnippet
+                            className="bg-bg-surface border border-border-muted"
+                            snippet={`nango pull --catalog ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
+                        />
+                        <Link
+                            to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                            target="_blank"
+                            className="text-text-tertiary text-body-small-medium inline-flex items-center gap-1.5 w-fit"
+                        >
+                            Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                        </Link>
+                    </CollapsibleContent>
+                </section>
+            </Collapsible>
 
             <Tabs defaultValue={!inputSchema && outputSchemas.length > 0 ? 'output' : 'input'} className="gap-4">
                 <TabsList className="w-fit gap-0">
