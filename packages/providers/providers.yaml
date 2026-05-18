@@ -14258,7 +14258,7 @@ pushpay-chms-v1:
         subdomain:
             type: string
             title: Church subdomain
-            description: The subdomain for your Pushpay ChMS site (the part before .ccbchurch.com shown in API Admin).
+            description: The subdomain for your Pushpay ChMS site.
             example: yourchurch
             pattern: '^[a-zA-Z0-9-]+$'
             order: 1
