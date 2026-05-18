@@ -1,10 +1,9 @@
 import * as z from 'zod';
 
-import { accountService } from '@nangohq/shared';
+import { accountService, pubsub } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { teamToApi } from '../../../formatters/team.js';
-import { pubsub } from '../../../pubsub.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PutTeam } from '@nangohq/types';

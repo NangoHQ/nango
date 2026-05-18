@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
 import { usePostInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
+import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
@@ -30,6 +31,8 @@ export const AddTeamMemberButton = () => {
     const { toast } = useToast();
     const { can } = usePermissions();
     const canManageTeam = can(permissions.canManageTeam);
+    const { data: currentPlan } = useApiGetCurrentPlan(env);
+    const hasRBAC = planHasRbac(currentPlan?.data);
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -100,13 +103,13 @@ export const AddTeamMemberButton = () => {
                                 <Controller
                                     control={form.control}
                                     name="role"
-                                    render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} />}
+                                    render={({ field }) => <RoleSelect value={field.value} onChange={field.onChange} hasRBAC={hasRBAC} />}
                                 />
                             </div>
                         </form>
                     </Form>
 
-                    <StyledLink to="https://docs.nango.dev/guides/platform/security#team-and-roles" type="external" icon>
+                    <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
                         Learn more about roles and permissions
                     </StyledLink>
                 </div>

@@ -62,19 +62,28 @@ import type {
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
-import type { PostRemoteFunctionCompile, PostRemoteFunctionDeploy, PostRemoteFunctionDryrun } from './functions/api.js';
+import type {
+    GetIntegrationFunction,
+    GetIntegrationFunctions,
+    GetProviderTemplates,
+    PostRemoteFunctionCompile,
+    PostRemoteFunctionDeploy,
+    PostRemoteFunctionDryrun
+} from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
     DeleteIntegration,
     DeletePublicIntegration,
     GetIntegration,
     GetIntegrationFlows,
+    GetPublicFunctionCode,
     GetPublicIntegration,
     GetPublicListIntegrations,
     PatchIntegration,
     PatchPublicIntegration,
     PostIntegration,
-    PostPublicIntegration
+    PostPublicIntegration,
+    PostPublicQuickstartIntegration
 } from './integration/api.js';
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
@@ -130,6 +139,7 @@ export type PublicApiEndpoints =
     | PostPublicConnectTelemetry
     | PutPublicSyncConnectionFrequency
     | PostPublicIntegration
+    | PostPublicQuickstartIntegration
     | PatchPublicIntegration
     | GetAsyncActionResult
     | PostPublicOauthOutboundAuthorization
@@ -143,6 +153,7 @@ export type PublicApiEndpoints =
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun
     | PostRemoteFunctionDeploy
+    | GetPublicFunctionCode
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -169,6 +180,9 @@ export type PrivateApiEndpoints =
     | SearchFilters
     | PostInternalConnectSessions
     | GetIntegrationFlows
+    | GetIntegrationFunction
+    | GetIntegrationFunctions
+    | GetProviderTemplates
     | DeleteIntegration
     | PatchIntegration
     | GetIntegration

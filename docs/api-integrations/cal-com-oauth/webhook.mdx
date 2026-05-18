@@ -10,7 +10,7 @@ This guide shows you how to receive real-time Cal.com webhooks in Nango. Cal.com
 
 1. You call the Cal.com webhooks API to register a subscription, passing your Nango webhook URL and a `payloadTemplate` that embeds the Nango connection ID as a static field.
 2. When an event occurs, Cal.com sends a signed POST request to Nango with an `x-cal-signature-256` header.
-3. Nango verifies the signature and reads `nangoConnectionId` from the payload to identify the connection.
+3. Nango verifies the signature and resolves `nangoConnectionId` — first from the `?nangoConnectionId=` query parameter on the webhook URL, then from the `nangoConnectionId` field in the payload body.
 4. Nango routes the event to that connection's webhook script and forwards the full payload to your app.
 
 ## Setup
@@ -91,7 +91,12 @@ Replace:
 - **&lt;YOUR-WEBHOOK-SECRET&gt;** — the webhook secret configured on your Cal.com (OAuth) integration in Nango
 
 <Note>
-  The `nangoConnectionId` field in the payload template is a **static string** — it is the same for every event sent by this subscription. Each Cal.com user/connection needs its own subscription with its own `nangoConnectionId`.
+  There are two ways to pass `nangoConnectionId` to Nango:
+
+  - **Query parameter:** append `?nangoConnectionId=<CONNECTION-ID>` to the Nango webhook URL you register as `subscriberUrl`. This avoids embedding the ID in the payload template entirely.
+  - **Payload body (fallback):** include a `"nangoConnectionId":"<CONNECTION-ID>"` field in the `payloadTemplate`, as shown above.
+
+  Either way, each Cal.com user/connection needs its own subscription so the correct connection ID is passed for every event.
 </Note>
 
 For the full list of available triggers, see the [Cal.com webhook documentation](https://cal.com/docs/developing/guides/automation/webhooks).

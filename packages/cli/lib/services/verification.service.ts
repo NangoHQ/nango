@@ -44,7 +44,7 @@ class VerificationService {
         if (!precheck.isZeroYaml) {
             console.error(
                 chalk.red(
-                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/implementation-guides/platform/migrations/migrate-to-zero-yaml'
+                    'The `nango.yaml` configuration file is deprecated. See the migration guide to Zero YAML: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml'
                 )
             );
             process.exitCode = 1;

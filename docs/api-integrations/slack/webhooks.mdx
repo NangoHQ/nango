@@ -1,0 +1,103 @@
+---
+title: 'How to setup webhooks with Slack on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to set up Slack webhooks using the Events API and Nango'
+---
+
+This guide shows you how to receive real-time Slack events in Nango using the [Slack Events API](https://api.slack.com/apis/connections/events-api). You configure Nango's webhook URL directly in your Slack app settings, and Nango routes incoming events to the correct connection.
+
+## How it works
+
+The Slack Events API delivers events via HTTP POST to a URL you register in your app. The flow is:
+
+1. You register the Nango webhook URL as the **Request URL** in your Slack app's Event Subscriptions settings.
+2. Slack sends a one-time URL verification challenge; Nango responds automatically.
+3. When a subscribed event occurs (e.g. a message is posted), Slack sends the event payload to Nango.
+4. Nango extracts the `team_id` from the payload and matches the event to the correct connection, then forwards it to your app.
+
+## Setup
+
+### 1. Get your webhook URL
+
+Copy the webhook URL from your Slack integration page in the Nango dashboard, under the **Webhook URL** section.
+
+### 2. Register the URL in your Slack app
+
+1. Go to your app at [api.slack.com/apps](https://api.slack.com/apps) and select your app.
+2. In the left sidebar, click **Event Subscriptions**.
+3. Toggle **Enable Events** to **On**.
+4. Paste your Nango webhook URL into the **Request URL** field.
+5. Slack will immediately send a `url_verification` challenge — Nango handles this automatically and Slack will show a green checkmark.
+
+### 3. Subscribe to events
+
+Still on the **Event Subscriptions** page, expand **Subscribe to bot events** (or **Subscribe to events on behalf of users** for user-scoped events) and add the events you want to receive, for example:
+
+| Event | Description |
+|-------|-------------|
+| `message.channels` | A message was posted to a public channel |
+| `message.im` | A message was posted in a DM |
+| `channel_created` | A channel was created |
+| `team_join` | A new member joined the workspace |
+
+Click **Save Changes**.
+
+### 4. Handle forwarded webhooks
+
+When a Slack event arrives, Nango matches it to the correct connection using the `team_id` in the payload and forwards it to your system. Example structure:
+
+```json
+{
+  "from": "slack",
+  "providerConfigKey": "slack",
+  "type": "forward",
+  "connectionId": "connection-123",
+  "payload": {
+    "token": "...",
+    "team_id": "T012AB3CD",
+    "api_app_id": "A0MDYCDME",
+    "event": {
+      "type": "message",
+      "channel": "C1234567890",
+      "user": "U2147483697",
+      "text": "Hello!",
+      "ts": "1355517523.000005"
+    },
+    "type": "event_callback",
+    "event_id": "Ev0MDYGDKJ",
+    "event_time": 1355517523
+  }
+}
+```
+
+After receiving the webhook, you can trigger a sync or take action for that connection:
+
+```bash
+curl -X POST "https://api.nango.dev/sync/trigger" \
+  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sync_mode": "incremental",
+    "connection_id": "<CONNECTION_ID>",
+    "provider_config_key": "slack",
+    "syncs": ["messages"]
+  }'
+```
+
+<Note>
+If you prefer Nango to automatically run a sync when the webhook arrives (instead of forwarding it to your app), you can enable webhook processing in a sync script using `webhookSubscriptions` and `onWebhook`.
+
+See: [Real-time syncs](/implementation-guides/use-cases/syncs/realtime-syncs)
+</Note>
+
+## Connection matching
+
+Nango matches incoming Slack webhooks to a connection using the `team_id` field in the event payload (falling back to `team.id` for some event shapes). This is set automatically when a user authorizes the Slack integration, no extra metadata is required.
+
+<Warning>
+If Nango cannot match the incoming webhook to a connection (e.g. the workspace was connected under a different integration key), the raw Slack payload is forwarded as-is — without the Nango wrapper (`from`, `providerConfigKey`, `type`, `connectionId`, or `payload` fields). Make sure your consumer handles both shapes.
+</Warning>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

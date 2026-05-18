@@ -125,7 +125,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 await this.sendLogToPersist(log);
             },
             onError: (props) => {
-                if (props.retry.reason === 'status_code_401') {
+                if (props.retry.reason.includes('code_401')) {
                     // We just want to clear the cache in case credentials have changed and keep retrying
                     this.memoizedConnections.clear();
                     if (!canRetryOn401) {
@@ -151,6 +151,10 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             },
             getIntegrationConfig: () => {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
+            },
+            onBytes: ({ sent, received }) => {
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'runner' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'runner' });
             }
         });
         const response = (await proxy.request()).unwrap();
@@ -612,6 +616,47 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         await this.checkpointing.clearCheckpoint(key);
 
         return res.value;
+    }
+
+    public async clearRecordsIfNeeded(): Promise<void> {
+        if (!this.emptyCache) {
+            return;
+        }
+        for (const model of this.syncConfig?.models || []) {
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Clearing records for model ${model}...`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+            let hasMore = true;
+            let deletedCount = 0;
+            while (hasMore) {
+                this.throwIfAbortedOrKilled();
+                const res = await this.persistClient.deleteHardAllRecords({
+                    model: this.modelFullName(model),
+                    environmentId: this.environmentId,
+                    nangoConnectionId: this.nangoConnectionId!,
+                    syncId: this.syncId!,
+                    syncJobId: this.syncJobId!
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                deletedCount += res.value.deletedCount;
+                hasMore = res.value.hasMore;
+            }
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Cleared ${deletedCount} records for model ${model}.`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+        }
     }
 
     private async fetchRecordsPage<T extends Record<string, any>>(

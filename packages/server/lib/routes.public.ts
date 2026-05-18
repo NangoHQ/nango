@@ -38,8 +38,9 @@ import { postRemoteFunctionCompile } from './controllers/functions/compile/postC
 import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
 import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
-import { postPublicIntegration } from './controllers/integrations/postIntegration.js';
+import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
+import { getFunctionCode } from './controllers/integrations/uniqueKey/functions/getCode.js';
 import { getPublicIntegration } from './controllers/integrations/uniqueKey/getIntegration.js';
 import { patchPublicIntegration } from './controllers/integrations/uniqueKey/patchIntegration.js';
 import { getMcp, postMcp } from './controllers/mcp/mcp.js';
@@ -70,6 +71,7 @@ import { connectionCapping } from './middleware/connection-capping.middleware.js
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withAnyScope, withScope } from './middleware/scope.middleware.js';
+import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { DBPlan } from '@nangohq/types';
@@ -163,7 +165,7 @@ publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth
 publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
 publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
 
-publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(postWebhook);
+publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
@@ -184,11 +186,15 @@ publicAPI
     .route('/integrations')
     .get(connectSessionOrApiAuth, withAnyScope('environment:integrations:list', 'environment:integrations:list_credentials'), getPublicListIntegrations);
 publicAPI.route('/integrations').post(apiAuth, withScope('environment:integrations:write'), postPublicIntegration);
+publicAPI.route('/integrations/quickstart').post(apiAuth, withScope('environment:integrations:write'), postPublicQuickstartIntegration);
 publicAPI.route('/integrations/:uniqueKey').patch(apiAuth, withScope('environment:integrations:write'), patchPublicIntegration);
 publicAPI
     .route('/integrations/:uniqueKey')
     .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getPublicIntegration);
 publicAPI.route('/integrations/:uniqueKey').delete(apiAuth, withScope('environment:integrations:write'), deletePublicIntegration);
+publicAPI
+    .route('/integrations/:uniqueKey/functions/:name/code')
+    .get(apiAuth, withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'), getFunctionCode);
 
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);

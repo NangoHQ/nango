@@ -25,9 +25,10 @@ import {
 import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
 import { ResponseCollector } from './response-collector.service.js';
 import * as nangoScript from '../sdkScripts.js';
-import { displayValidationError } from '../utils/errors.js';
-import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
+import { displayValidationError } from '../utils/errors.js';
+import { Err, Ok } from '../utils/result.js';
+import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
 
@@ -40,6 +41,7 @@ import type {
     NangoYamlParsed,
     ParsedNangoAction,
     ParsedNangoSync,
+    Result,
     ScriptFileType,
     SdkLogger
 } from '@nangohq/types';
@@ -106,15 +108,16 @@ export class DryRunService {
         this.returnOutput = returnOutput;
     }
 
-    public async run(options: RunArgs, debug = false): Promise<string | undefined> {
+    public async run(options: RunArgs, debug = false): Promise<Result<string | undefined>> {
         let syncName = '';
         let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata, rawStubbedCheckpoint, syncVariant;
 
         const environment = options.optionalEnvironment || this.environment;
 
         if (!environment) {
-            console.log(chalk.red('Environment is required'));
-            return;
+            const message = 'Environment is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         await parseSecretKey(environment, debug);
@@ -136,8 +139,9 @@ export class DryRunService {
         }
 
         if (!syncName) {
-            console.log(chalk.red('Sync name is required'));
-            return;
+            const message = 'Sync name is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         if (!syncVariant) {
@@ -145,21 +149,24 @@ export class DryRunService {
         }
 
         if (!connectionId) {
-            console.log(chalk.red('Connection id is required'));
-            return;
+            const message = 'Connection id is required';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         const def = await parseIntegrationDefinitions({ fullPath: this.fullPath, debug });
         if (def.isErr()) {
+            const message = def.error instanceof ReadableError ? def.error.toText() : def.error.message;
             console.log('');
-            console.log(def.error instanceof ReadableError ? def.error.toText() : chalk.red(def.error.message));
-            return;
+            console.log(def.error instanceof ReadableError ? message : chalk.red(message));
+            return Err(message);
         }
         const parsed: NangoYamlParsed = def.value;
 
         if (options.optionalProviderConfigKey && !parsed.integrations.some((inte) => inte.providerConfigKey === options.optionalProviderConfigKey)) {
-            console.log(chalk.red(`Integration "${options.optionalProviderConfigKey}" does not exist`));
-            return;
+            const message = `Integration "${options.optionalProviderConfigKey}" does not exist`;
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         let providerConfigKey: string | undefined;
@@ -178,8 +185,9 @@ export class DryRunService {
                     continue;
                 }
                 if (scriptInfo) {
-                    console.log(chalk.red(`Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`));
-                    return;
+                    const message = `Multiple integrations contain a script named "${syncName}". Please use "--integration-id"`;
+                    console.log(chalk.red(message));
+                    return Err(message);
                 }
                 scriptInfo = script;
                 providerConfigKey = integration.providerConfigKey;
@@ -192,8 +200,9 @@ export class DryRunService {
                         continue;
                     }
                     if (isOnEventScript) {
-                        console.log(chalk.red(`Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`));
-                        return;
+                        const message = `Multiple integrations contain a post connection script named "${syncName}". Please use "--integration-id"`;
+                        console.log(chalk.red(message));
+                        return Err(message);
                     }
                     isOnEventScript = true;
                     providerConfigKey = integration.providerConfigKey;
@@ -202,19 +211,16 @@ export class DryRunService {
         }
 
         if ((!scriptInfo && !isOnEventScript) || !providerConfigKey) {
-            console.log(
-                chalk.red(
-                    `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`
-                )
-            );
-            return;
+            const message = `No script matched "${syncName}"${options.optionalProviderConfigKey ? ` for integration "${options.optionalProviderConfigKey}"` : ''}`;
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         if (debug && scriptInfo) {
             printDebug(`Found integration ${providerConfigKey}, ${scriptInfo.type} ${scriptInfo.name} `);
         }
 
-        const nangoConnection = await getConnection(
+        const nangoConnectionRes = await getConnection(
             providerConfigKey,
             connectionId,
             {
@@ -223,9 +229,15 @@ export class DryRunService {
             },
             debug
         );
+        if (nangoConnectionRes.isErr()) {
+            console.log(chalk.red(nangoConnectionRes.error.message));
+            return Err(nangoConnectionRes.error);
+        }
+        const nangoConnection = nangoConnectionRes.value;
         if (!nangoConnection) {
-            console.log(chalk.red('Connection not found'));
-            return;
+            const message = 'Connection not found';
+            console.log(chalk.red(message));
+            return Err(message);
         }
 
         if (debug) {
@@ -233,11 +245,15 @@ export class DryRunService {
         }
 
         const resConfig = await getConfig(providerConfigKey, debug);
-        if (!resConfig || !resConfig.data) {
-            return;
+        if (resConfig.isErr()) {
+            console.log(chalk.red(resConfig.error.message));
+            return Err(resConfig.error);
+        }
+        if (!resConfig.value.data) {
+            return Err(`Integration "${providerConfigKey}" config is empty`);
         }
 
-        const { provider } = resConfig.data;
+        const { provider } = resConfig.value.data;
         if (debug) {
             printDebug(`Provider found: ${provider}`);
         }
@@ -269,7 +285,7 @@ export class DryRunService {
             const result = parseJsonArg(actionInput, 'input');
             if (!result.ok) {
                 console.log(chalk.red(result.message));
-                return;
+                return Err(result.message);
             }
             normalizedInput = result.value;
         }
@@ -278,7 +294,7 @@ export class DryRunService {
             const result = parseJsonArg(rawStubbedMetadata, 'metadata');
             if (!result.ok) {
                 console.log(chalk.red(result.message));
-                return;
+                return Err(result.message);
             }
             stubbedMetadata = result.value;
         }
@@ -289,9 +305,15 @@ export class DryRunService {
             const result = parseJsonArg(rawStubbedCheckpoint, 'checkpoint');
             if (!result.ok) {
                 console.log(chalk.red(result.message));
-                return;
+                return Err(result.message);
             }
-            stubbedCheckpoint = validateCheckpoint(result.value);
+            try {
+                stubbedCheckpoint = validateCheckpoint(result.value);
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Invalid checkpoint';
+                console.log(chalk.red(message));
+                return Err(message);
+            }
         }
 
         const responseCollector = new ResponseCollector();
@@ -317,9 +339,8 @@ export class DryRunService {
                 created_at: new Date(),
                 updated_at: new Date(),
                 attributes: {},
-                is_public: false,
+                source: 'repo',
                 metadata: {},
-                pre_built: false,
                 sdk_version: null,
                 features: [],
                 sync_type: lastSyncDate ? 'incremental' : 'full',
@@ -384,15 +405,15 @@ export class DryRunService {
                     console.error(chalk.red(err.message), chalk.gray(`(${err.code})`));
                     if (err.code === 'invalid_action_output' || err.code === 'invalid_action_input' || err.type === 'invalid_sync_record') {
                         displayValidationError(err.payload);
-                        return;
+                        return Err(err.message);
                     }
 
                     console.error(JSON.stringify(err.payload, null, 2));
-                    return;
+                    return Err(err.message);
                 }
 
                 console.error(err instanceof Error ? JSON.stringify(err, ['name', 'message'], 2) : JSON.stringify(err, null, 2));
-                return;
+                return Err(err instanceof Error ? err.message : JSON.stringify(err));
             }
 
             const resultOutput = [];
@@ -471,12 +492,12 @@ export class DryRunService {
             }
 
             if (this.returnOutput) {
-                return resultOutput.join('\n');
+                return Ok(resultOutput.join('\n'));
             }
 
-            process.exit(0);
-        } catch {
-            process.exit(1);
+            return Ok(undefined);
+        } catch (err) {
+            return Err(err instanceof Error ? err : new Error('Dry run failed'));
         }
     }
 

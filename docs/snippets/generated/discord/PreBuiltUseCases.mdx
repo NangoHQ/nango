@@ -1,3 +1,83 @@
-_No pre-built syncs or actions available yet._
+### Channels
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-channel` | Create a channel in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-channel.ts) |
+| `create-reaction` | Add a reaction to a Discord message. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-reaction.ts) |
+| `delete-channel` | Delete or archive a channel in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-channel.ts) |
+| `get-channel` | Retrieve a single channel from Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-channel.ts) |
+| `list-channels` | List channels from a Discord guild (server) | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-channels.ts) |
+| `update-channel` | Update a Discord channel. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-channel.ts) |
+
+### Guild Members
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-guild-member` | Delete or archive a guild member in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-guild-member.ts) |
+| `get-guild-member` | Retrieve a single guild member from Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-guild-member.ts) |
+
+### Guilds
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-guild-member-role` | Assign a role to a guild member. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/add-guild-member-role.ts) |
+| `delete-guild` | Leave a guild in Discord. Note: Discord does not allow bots to delete guilds via the API; use this action to have the bot leave a guild instead. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-guild.ts) |
+| `get-guild` | Retrieve a single guild from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-guild.ts) |
+| `list-guild-members` | List guild members from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-guild-members.ts) |
+| `list-guilds` | List guilds from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-guilds.ts) |
+| `remove-guild-member-role` | Remove a role from a guild member | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/remove-guild-member-role.ts) |
+| `update-guild-member` | Update a guild member in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-guild-member.ts) |
+| `update-guild` | Update a guild in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-guild.ts) |
+
+### Messages
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-message` | Create a message in Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-message.ts) |
+| `delete-message` | Delete or archive a message in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-message.ts) |
+| `get-message` | Retrieve a single message from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-message.ts) |
+| `list-messages` | List messages from a Discord channel with optional pagination filters | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-messages.ts) |
+| `update-message` | Update a message in Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-message.ts) |
+
+### Reactions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-reaction` | Remove a reaction from a Discord message. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-reaction.ts) |
+
+### Roles
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-role` | Create a role in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-role.ts) |
+| `delete-role` | Delete a role in a Discord guild | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-role.ts) |
+| `get-role` | Retrieve a single role from Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-role.ts) |
+| `list-roles` | List roles from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-roles.ts) |
+| `update-role` | Update a role in Discord | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-role.ts) |
+
+### Threads
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-thread-from-message` | Start a Discord thread from an existing message | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-thread-from-message.ts) |
+
+### Webhooks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-webhook` | Create a webhook in a Discord channel | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/create-webhook.ts) |
+| `delete-webhook` | Delete a webhook in Discord permanently | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/delete-webhook.ts) |
+| `get-webhook` | Retrieve a single webhook from Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/get-webhook.ts) |
+| `list-webhooks` | List webhooks from a Discord channel | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/list-webhooks.ts) |
+| `update-webhook` | Update a webhook in Discord. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/actions/update-webhook.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `channels` | Sync channels from Discord | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/channels.ts) |
+| `guild-members` | Sync guild members from Discord | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/guild-members.ts) |
+| `guilds` | Sync guilds from Discord. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/guilds.ts) |
+| `messages` | Sync messages from Discord. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/messages.ts) |
+| `roles` | Sync roles from Discord | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/roles.ts) |
+| `webhooks` | Sync webhooks from Discord. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/discord/syncs/webhooks.ts) |

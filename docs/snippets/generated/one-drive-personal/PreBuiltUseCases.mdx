@@ -1,5 +1,59 @@
+### Drive
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-drive` | Retrieve the personal drive metadata | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/get-drive.ts) |
+| `search-items` | Search drive items by keyword. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/search-items.ts) |
+
+### Drive Items
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-children` | List items under a folder in OneDrive Personal. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/list-children.ts) |
+| `list-versions` | List versions for a file. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/list-versions.ts) |
+| `update-item` | Update mutable file or folder metadata. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/update-item.ts) |
+
+### DriveItems
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-item` | Delete a file or folder from OneDrive | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/delete-item.ts) |
+
 ### Files
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `user-files-selection` | Fetch selected files and folders from a user's OneDrive personal account based on provided metadata. | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/syncs/user-files-selection.ts) |
+| `create-folder` | Create a folder in the personal OneDrive | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/create-folder.ts) |
+| `create-upload-session` | Start a resumable upload session for a large file to OneDrive personal drive. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/create-upload-session.ts) |
+| `download-item-content` | Download the binary content of a file | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/download-item-content.ts) |
+| `list-permissions` | List sharing permissions on an item | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/list-permissions.ts) |
+| `move-item` | Move or rename a file or folder in OneDrive Personal. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/move-item.ts) |
+
+### Items
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-item` | Retrieve a file or folder by ID or path. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/get-item.ts) |
+
+### Permissions
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-permission` | Remove a sharing permission from an item. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/delete-permission.ts) |
+| `invite-recipients` | Grant item access to recipients and optionally send invitations. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/invite-recipients.ts) |
+
+### Sharing
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-sharing-link` | Create a share link for a file or folder in OneDrive. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/create-sharing-link.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-permission` | Retrieve a sharing permission on an item. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/get-permission.ts) |
+| `upload-small-file` | Upload a small file in a single request. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/actions/upload-small-file.ts) |
+| `folder-children` | Sync children for selected folders | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/syncs/folder-children.ts) |
+| `user-files-selection` | Sync selected OneDrive files from metadata | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/syncs/user-files-selection.ts) |
+| `user-files` | Sync file metadata from the personal OneDrive | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/one-drive-personal/syncs/user-files.ts) |

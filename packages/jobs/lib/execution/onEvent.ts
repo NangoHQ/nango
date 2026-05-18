@@ -90,10 +90,9 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             webhook_subscriptions: [],
             attributes: {},
             input: null,
-            is_public: false,
+            source: 'repo',
             metadata: {},
             models_json_schema: null,
-            pre_built: false,
             sync_type: null,
             sdk_version: task.sdkVersion,
             features: [],
@@ -205,7 +204,8 @@ export async function handleOnEventSuccess({
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
     void pubsub.publisher.publish({
         subject: 'usage',
@@ -313,7 +313,8 @@ function onFailure({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({

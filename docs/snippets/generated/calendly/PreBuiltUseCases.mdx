@@ -1,16 +1,73 @@
+### Event Invitees
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `list-event-invitees` | List event invitees from Calendly | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-event-invitees.ts) |
+
+### Event Types
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-event-type` | Retrieve a single event type from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-event-type.ts) |
+| `list-event-types` | List event types from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-event-types.ts) |
+
+### Events
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-event-invitee` | Retrieve a single event invitee from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-event-invitee.ts) |
+
+### Organization Memberships
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-organization-membership` | Retrieve a single organization membership from Calendly | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-organization-membership.ts) |
+| `list-organization-memberships` | List organization memberships from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-organization-memberships.ts) |
+
+### Organizations
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-current-organization` | Fetch the authenticated user organization | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-current-organization.ts) |
+
+### Routing Forms
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-routing-form` | Retrieve a single routing form from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-routing-form.ts) |
+| `list-routing-forms` | List routing forms from Calendly | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-routing-forms.ts) |
+
+### Scheduled Events
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-scheduled-event` | Retrieve a single scheduled event from Calendly | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-scheduled-event.ts) |
+| `list-scheduled-events` | List scheduled events from Calendly. Returns a paginated list of events with optional filters for date range, status, and invitee email. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-scheduled-events.ts) |
+
 ### Users
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-user` | Creates a user in Calendly | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/create-user.ts) |
-| `delete-user` | Deletes a user in Calendly | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/delete-user.ts) |
-| `whoami` | Fetch current user information | [Action](/implementation-guides/use-cases/actions/implement-an-action) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/whoami.ts) |
-| `users` | Fetches a list of users from Calendly | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/users.ts) |
+| `create-user` | Invite a user to the Calendly organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/create-user.ts) |
+| `delete-user` | Remove a user from the Calendly organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/delete-user.ts) |
+| `get-current-user` | Fetch the authenticated Calendly user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-current-user.ts) |
+
+### Webhooks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-webhook-subscription` | Create a webhook subscription in Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/create-webhook-subscription.ts) |
+| `delete-webhook-subscription` | Delete or archive a webhook subscription in Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/delete-webhook-subscription.ts) |
+| `get-webhook-subscription` | Retrieve a single webhook subscription from Calendly. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/get-webhook-subscription.ts) |
+| `list-webhook-subscriptions` | List webhook subscriptions from Calendly | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/actions/list-webhook-subscriptions.ts) |
 
 ### Others
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `event-invitees` | For all events (active and canceled) retrieve the event invitees | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/event-invitees.ts) |
-| `event-types` | Retrieve all event types per a user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/event-types.ts) |
-| `events` | Retrieve all events per a user | [Sync](/implementation-guides/use-cases/syncs/implement-a-sync) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/events.ts) |
+| `event-invitees` | Sync event invitees from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/event-invitees.ts) |
+| `event-types` | Sync event types from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/event-types.ts) |
+| `organization-memberships` | Sync organization memberships from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/organization-memberships.ts) |
+| `routing-forms` | Sync routing forms from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/routing-forms.ts) |
+| `scheduled-events` | Sync scheduled events from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/scheduled-events.ts) |
+| `webhook-subscriptions` | Sync webhook subscriptions from Calendly | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/calendly/syncs/webhook-subscriptions.ts) |

@@ -1,5 +1,6 @@
 import { getProvider } from '@nangohq/providers';
 
+import { getBaseUrlOverrideDenylistFromEnv, isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
 import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
@@ -42,6 +43,13 @@ import type * as z from 'zod';
 const MEMOIZED_CONNECTION_TTL = 60000;
 const MEMOIZED_INTEGRATION_TTL = 10 * 60 * 1000;
 
+/** Max hops when following redirects manually (denylist checked per hop). */
+const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
+
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
+
+const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
+
 export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 'providerConfigKey' | 'connectionId'> & {
     providerConfigKey?: string;
     connectionId?: string;
@@ -74,6 +82,7 @@ export abstract class NangoActionBase<
         | undefined;
 
     public isCLI: NangoProps['isCLI'];
+    public accountId: number;
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -94,6 +103,7 @@ export abstract class NangoActionBase<
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
         this.environmentId = config.environmentId;
+        this.accountId = config.team.id;
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
@@ -469,17 +479,114 @@ export abstract class NangoActionBase<
         headers?: Record<string, string> | undefined;
         body?: string | null;
     }): Promise<Response> {
-        const props: RequestInit = {
-            headers: new Headers(options.headers),
-            method: options.method || 'GET'
-            // TODO: use agent
+        const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
+
+        const throwIfDenied = (absoluteUrl: string): void => {
+            if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                throw new this.ActionError({
+                    code: 'url_not_allowed',
+                    message: 'This URL is not allowed by server configuration.'
+                });
+            }
         };
 
-        if (options.body) {
-            props.body = options.body;
-        }
+        throwIfDenied(options.url.toString());
 
-        return await fetch(options.url, props);
+        let currentUrl = new URL(options.url.href);
+        let method: HTTP_METHOD = options.method || 'GET';
+        let body: string | undefined = options.body ?? undefined;
+        const headerBag = new Headers(options.headers);
+
+        for (let redirectsFollowed = 0; ; redirectsFollowed++) {
+            const props: RequestInit = {
+                headers: new Headers(headerBag),
+                method,
+                redirect: 'manual'
+                // TODO: use agent
+            };
+
+            if (body) {
+                props.body = body;
+            }
+
+            const response = await fetch(currentUrl, props);
+
+            if (!REDIRECT_STATUS_CODES.has(response.status)) {
+                return response;
+            }
+
+            const location = response.headers.get('Location');
+
+            if (!location) {
+                return response;
+            }
+
+            // We're about to follow the redirect; we won't return this response, so cancel its body.
+            void response.body?.cancel();
+
+            if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
+                throw new this.ActionError({
+                    code: 'too_many_redirects',
+                    message: `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`
+                });
+            }
+
+            let nextUrl: URL;
+            try {
+                nextUrl = new URL(location, currentUrl);
+            } catch {
+                throw new this.ActionError({
+                    code: 'invalid_redirect',
+                    message: 'Redirect Location could not be parsed as a URL.'
+                });
+            }
+
+            // Native fetch rejects redirects to non-HTTP(S) schemes.
+            if (!ALLOWED_REDIRECT_PROTOCOLS.has(nextUrl.protocol)) {
+                throw new this.ActionError({
+                    code: 'invalid_redirect',
+                    message: 'Redirect Location must use http: or https:.'
+                });
+            }
+
+            throwIfDenied(nextUrl.toString());
+
+            // Native fetch strips sensitive headers when redirecting to a different origin.
+            // Because we follow redirects manually, we must replicate that to avoid credential leaks.
+            if (currentUrl.origin !== nextUrl.origin) {
+                headerBag.delete('authorization');
+                headerBag.delete('proxy-authorization');
+                headerBag.delete('cookie');
+            }
+
+            // Match common fetch redirect semantics:
+            // - 303: switch to GET only if method is neither GET nor HEAD (drop body)
+            // - 301/302: switch to GET only for POST (preserve PUT/PATCH/DELETE, etc.)
+            // - 307/308: preserve method and body
+            const upperMethod = method.toUpperCase();
+            const shouldSwitchToGet =
+                (response.status === 303 && upperMethod !== 'GET' && upperMethod !== 'HEAD') ||
+                ((response.status === 301 || response.status === 302) && upperMethod === 'POST');
+            if (shouldSwitchToGet) {
+                method = 'GET';
+                body = undefined;
+                // When we rewrite to GET, drop request-body specific headers (native fetch does not forward them).
+                for (const h of [
+                    'content-length',
+                    'content-type',
+                    'content-encoding',
+                    'content-language',
+                    'content-location',
+                    'content-md5',
+                    'content-range',
+                    'transfer-encoding'
+                ]) {
+                    headerBag.delete(h);
+                }
+            }
+
+            currentUrl = nextUrl;
+        }
     }
 
     /**

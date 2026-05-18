@@ -1,7 +1,8 @@
-import type { ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
 import type { IntegrationConfig } from './db.js';
 import type { AuthModeType, AuthModes } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
+import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
 import type { Merge } from 'type-fest';
 
@@ -49,6 +50,20 @@ export type PostPublicIntegration = Endpoint<{
     };
 }>;
 
+export type PostPublicQuickstartIntegration = Endpoint<{
+    Method: 'POST';
+    Path: '/integrations/quickstart';
+    Body: {
+        provider: string;
+        unique_key: string;
+        display_name?: string | undefined;
+        forward_webhooks?: boolean | undefined;
+    };
+    Success: {
+        data: ApiPublicIntegration;
+    };
+}>;
+
 export type GetPublicIntegration = Endpoint<{
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
@@ -77,6 +92,23 @@ export type DeletePublicIntegration = Endpoint<{
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
     Success: { success: true };
+}>;
+
+export type GetPublicFunctionCode = Endpoint<{
+    Method: 'GET';
+    Path: '/integrations/:uniqueKey/functions/:name/code';
+    Params: {
+        uniqueKey: string;
+        name: string;
+    };
+    Querystring: {
+        type?: ScriptTypeLiteral | undefined;
+    };
+    Success: {
+        type: ScriptTypeLiteral;
+        code: string;
+    };
+    Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
 export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;

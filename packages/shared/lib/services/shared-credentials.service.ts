@@ -4,6 +4,7 @@ import { Err, Ok, nanoid } from '@nangohq/utils';
 import configService from './config.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 
+import type { Knex } from '@nangohq/database';
 import type {
     DBSharedCredentials,
     IntegrationConfig,
@@ -14,7 +15,27 @@ import type {
     SharedCredentialsInputDto
 } from '@nangohq/types';
 
+async function getLatestSharedCredentialsRecordByName({
+    name,
+    trx = db.knex
+}: {
+    name: string;
+    trx?: Knex.Transaction | Knex;
+}): Promise<DBSharedCredentials | undefined> {
+    return await trx.select('*').from<DBSharedCredentials>('providers_shared_credentials').where('name', name).orderBy('created_at', 'desc').first();
+}
+
 class SharedCredentialsService {
+    async getLatestSharedCredentialsByName(name: string): Promise<Result<DBSharedCredentials | null>> {
+        try {
+            const sharedCredentials = await getLatestSharedCredentialsRecordByName({ name });
+
+            return Ok(sharedCredentials ?? null);
+        } catch (err) {
+            return Err(new Error('failed_to_get_shared_credentials_by_name', { cause: err }));
+        }
+    }
+
     async createPreprovisionedProvider({
         providerName,
         environment_id,
@@ -32,12 +53,10 @@ class SharedCredentialsService {
     }): Promise<Result<IntegrationConfig>> {
         try {
             const config = await db.knex.transaction(async (trx) => {
-                const sharedCredentials = await trx
-                    .select('*')
-                    .from<DBSharedCredentials>('providers_shared_credentials')
-                    .where('name', shared_credentials_name ?? providerName)
-                    .orderBy('created_at', 'desc')
-                    .first();
+                const sharedCredentials = await getLatestSharedCredentialsRecordByName({
+                    name: shared_credentials_name ?? providerName,
+                    trx
+                });
 
                 if (!sharedCredentials) {
                     throw new Error('shared_credentials_not_found');

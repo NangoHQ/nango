@@ -173,7 +173,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             <div className="border-t-[0.5px] border-border-strong w-full"></div>
                         </div>
 
-                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} />
+                        <GoogleButton text="Sign up with Google" setServerErrorMessage={setServerErrorMessage} token={token} />
                     </div>
                 )}
 

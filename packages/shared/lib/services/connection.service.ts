@@ -231,7 +231,7 @@ class ConnectionService {
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
                     environment_id: encryptedConnection.environment_id,
-                    metadata: encryptedConnection.connection_config,
+                    metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
                     last_refresh_success: encryptedConnection.last_refresh_success,
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
@@ -847,7 +847,10 @@ class ConnectionService {
                 }
 
                 return subQuery
-                    .orderBy('_nango_connections.created_at', 'desc')
+                    .orderBy([
+                        { column: '_nango_connections.created_at', order: 'desc' },
+                        { column: '_nango_connections.id', order: 'desc' }
+                    ])
                     .limit(limit)
                     .offset(page * limit);
             })
@@ -873,7 +876,10 @@ class ConnectionService {
             .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
-            .orderBy('_nango_connections.created_at', 'desc');
+            .orderBy([
+                { column: '_nango_connections.created_at', order: 'desc' },
+                { column: '_nango_connections.id', order: 'desc' }
+            ]);
 
         return await query;
     }
@@ -1220,7 +1226,9 @@ class ConnectionService {
         const params = new URLSearchParams();
 
         const bodyFormat = provider.body_format || 'form';
-        headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        if (bodyFormat !== 'query') {
+            headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        }
 
         if (provider.token_request_auth_method === 'basic') {
             if (!client_secret) {
@@ -1311,12 +1319,18 @@ class ConnectionService {
             }
         }
 
+        if (bodyFormat === 'query') {
+            for (const [key, value] of params.entries()) {
+                url.searchParams.append(key, value);
+            }
+        }
+
         const fetchRes = await loggedFetch<Record<string, any>>(
             {
                 url,
                 method: 'POST',
                 headers,
-                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
                 agent
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
