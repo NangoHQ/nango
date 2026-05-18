@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { configService, getFunction } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
@@ -45,17 +45,23 @@ export const getIntegrationFunction = asyncWrapper<GetIntegrationFunction>(async
         return;
     }
 
-    const fn = await getFunction({
+    const fnResult = await getFunction({
         environmentId: environment.id,
         providerConfigKey,
         name: functionName,
         type
     });
 
-    if (!fn) {
+    if (fnResult.isErr()) {
+        report(fnResult.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to get function' } });
+        return;
+    }
+
+    if (!fnResult.value) {
         res.status(404).send({ error: { code: 'not_found', message: 'Function does not exist' } });
         return;
     }
 
-    res.status(200).send({ data: fn });
+    res.status(200).send({ data: fnResult.value });
 });
