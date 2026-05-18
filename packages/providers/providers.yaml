@@ -12525,8 +12525,8 @@ ninjaone-saas-backup:
     proxy:
         base_url: https://${connectionConfig.apiHost}
         headers:
-            reseller-token: ${connectionConfig.resellerToken}
-            authentication-token: ${apiKey}
+            x-reseller-token: ${connectionConfig.resellerToken}
+            x-access-token: ${apiKey}
         verification:
             method: GET
             endpoints:
