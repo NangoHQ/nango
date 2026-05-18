@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -67,19 +67,33 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
     });
 }
 
-export async function ensureSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
-    try {
+export const ensureSeenPartition = (() => {
+    const seenPartitionPromises = new Map<string, Promise<void>>();
+    return async ({ date }: { date: Date }): Promise<Result<void>> => {
         const day = dayjs(date).utc().startOf('day');
-        const next = day.add(1, 'day');
         const suffix = day.format('YYYYMMDD');
-        await db.raw(
-            `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-        );
-        return Ok(undefined);
-    } catch (err) {
-        return Err(new Error('Failed to ensure seen partition', { cause: err }));
-    }
-}
+
+        let promise = seenPartitionPromises.get(suffix);
+        try {
+            if (!promise) {
+                const next = day.add(1, 'day');
+                promise = db
+                    .raw(
+                        `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                    )
+                    .then(() => undefined);
+                seenPartitionPromises.set(suffix, promise);
+            }
+            await promise;
+            return Ok(undefined);
+        } catch (err) {
+            if (seenPartitionPromises.get(suffix) === promise) {
+                seenPartitionPromises.delete(suffix);
+            }
+            return Err(new Error('Failed to ensure seen partition', { cause: err }));
+        }
+    };
+})();
 
 export async function dropSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
     const suffix = dayjs(date).utc().startOf('day').format('YYYYMMDD');
@@ -99,17 +113,15 @@ export async function dropSeenPartition({ date }: { date: Date }): Promise<Resul
     }
 }
 
-async function insertBatchEntry(
+async function insertSeenEntry(
     trx: Knex.Transaction,
     { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
 ): Promise<void> {
     if (recordIds.length === 0) return;
-    await trx(RECORDS_BATCH_TABLE).insert({
-        connection_id: connectionId,
-        model,
-        sync_job_id: syncJobId,
-        record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
-    });
+    const ensureRes = await ensureSeenPartition({ date: new Date() });
+    if (ensureRes.isErr()) {
+        throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
+    }
     await trx(RECORDS_SEEN_TABLE).insert({
         connection_id: connectionId,
         model,
@@ -583,13 +595,20 @@ export async function upsert({
 
                         let batchDeltaSizeInBytes = 0;
                         if (recordsToUpdateData.length > 0) {
-                            const upsertDataResult = await trx
+                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
+                                if (r.needs_data_write) {
+                                    return acc + r.legacy_size_bytes;
+                                }
+                                return acc;
+                            }, 0);
+                            const [upsertDataResult] = await trx
                                 .with('prev_size', (qb) => {
                                     qb.select('id', trx.raw('pg_column_size(data) as prev_size_bytes'))
                                         .from(RECORDS_DATA_TABLE)
+                                        .where({ connection_id: connectionId, model })
                                         .whereIn(
-                                            ['connection_id', 'model', 'id'],
-                                            recordsToUpdateData.map((r) => [r.connection_id, r.model, r.id])
+                                            'id',
+                                            recordsToUpdateData.map((r) => r.id)
                                         );
                                 })
                                 .with('upsert_data', (qb) => {
@@ -606,26 +625,19 @@ export async function upsert({
                                         .merge(['data'])
                                         .returning<{ id: string; new_size_bytes: number }[]>(['id', trx.raw('pg_column_size(data) as new_size_bytes')]);
                                 })
-                                .select<{ id: string; new_size_bytes: number; prev_size_bytes: number }[]>(
-                                    'upsert_data.id',
-                                    'upsert_data.new_size_bytes',
-                                    trx.raw('COALESCE(prev_size.prev_size_bytes, 0) as prev_size_bytes')
+                                .select<{ delta_size_bytes: number | string }[]>(
+                                    trx.raw(
+                                        'COALESCE(SUM(upsert_data.new_size_bytes - COALESCE(prev_size.prev_size_bytes, 0)), 0)::double precision as delta_size_bytes'
+                                    )
                                 )
                                 .from('upsert_data')
                                 .leftJoin('prev_size', 'prev_size.id', 'upsert_data.id');
 
-                            // Calculate the delta size
-                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
-                                if (r.needs_data_write) {
-                                    return acc + r.legacy_size_bytes;
-                                }
-                                return acc;
-                            }, 0);
-                            batchDeltaSizeInBytes = upsertDataResult.reduce((acc, r) => acc + r.new_size_bytes - r.prev_size_bytes, -totalLegacySizeInBytes);
+                            batchDeltaSizeInBytes = Number(upsertDataResult?.delta_size_bytes ?? 0) - totalLegacySizeInBytes;
                         }
 
                         // insert batch entry with all seen record ids (including unchanged)
-                        await insertBatchEntry(trx, {
+                        await insertSeenEntry(trx, {
                             connectionId,
                             model,
                             syncJobId: chunk[0]!.sync_job_id,
@@ -894,7 +906,7 @@ export async function update({
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
-                    await insertBatchEntry(trx, {
+                    await insertSeenEntry(trx, {
                         connectionId,
                         model,
                         syncJobId: encryptedRecords[0]!.sync_job_id,
@@ -1033,6 +1045,10 @@ export async function deleteRecords({
                 await acquireAdvisoryLock(trx, { name: 'lock_records_delete', connectionId, model });
             }
 
+            // Each batch starts right after the last processed record
+            // so the index scan doesn't re-traverse dead tuples from prior batches
+            let from: { updated_at: string; id: string } | null = null;
+
             do {
                 const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
                 if (toDelete <= 0) {
@@ -1049,6 +1065,9 @@ export async function deleteRecords({
                             { column: 'id', order: 'asc' }
                         ])
                         .limit(toDelete);
+                    if (from) {
+                        subQuery.whereRaw('(updated_at, id) > (?, ?)', [from.updated_at, from.id]);
+                    }
                     if (decodedCursor) {
                         // Delete records up to and including the cursor position
                         subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
@@ -1133,6 +1152,12 @@ export async function deleteRecords({
                 const lastDeletedRecord = res[res.length - 1];
                 if (lastDeletedRecord) {
                     lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
+                    // Soft delete sets updated_at = now, so RETURNING gives the new value.
+                    // Using it as a cursor would place us past all remaining records.
+                    // dryRun doesn't modify updated_at, so cursor advancement is safe there.
+                    if (mode !== 'soft' || dryRun) {
+                        from = { updated_at: lastDeletedRecord.updated_at, id: lastDeletedRecord.id };
+                    }
                 }
 
                 if (paginatedRecords < toDelete) {
@@ -1202,6 +1227,10 @@ export async function deleteOutdatedRecords({
     try {
         const deletedIds: string[] = [];
         let hasMore = true;
+        // Cursor as id: each batch starts right after the last processed record so the
+        // index scan doesn't re-traverse dead tuples from prior batches
+        // updated_at can't be used as cursor here since the soft delete sets it to now.
+        let lastId: string | null = null;
         // NOTE: deletion is intentionally not atomic. Each batch is its own transaction so that
         // long-running deletes (e.g. millions of records) don't hold a single DB connection and
         // row locks for the entire duration, which was causing timeouts and stalling other queries.
@@ -1225,7 +1254,7 @@ export async function deleteOutdatedRecords({
                         }[] = (
                             await trx.raw(
                                 `WITH seen AS MATERIALIZED (
-                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_BATCH_TABLE}
+                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
                                       AND sync_job_id >= :generation
@@ -1238,6 +1267,8 @@ export async function deleteOutdatedRecords({
                                       AND r.model = :model
                                       AND r.deleted_at IS NULL
                                       AND seen.id IS NULL
+                                      AND (:lastId::text IS NULL OR r.id > :lastId)
+                                    ORDER BY r.id
                                     LIMIT :batchSize
                                 )
                                 UPDATE ${RECORDS_TABLE} r
@@ -1256,7 +1287,7 @@ export async function deleteOutdatedRecords({
                                   r.external_id,
                                   COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
                                   r.tableoid::regclass as partition`,
-                                { connectionId, model, generation, batchSize }
+                                { connectionId, model, generation, batchSize, lastId }
                             )
                         ).rows;
 
@@ -1305,6 +1336,8 @@ export async function deleteOutdatedRecords({
                 hasMore = false;
             }
 
+            lastId = batchResult[batchResult.length - 1]?.id ?? lastId;
+
             if (!partition && batchResult[0]?.partition) {
                 partition = batchResult[0].partition;
             }
@@ -1328,28 +1361,6 @@ export async function deleteOutdatedRecords({
         return Err(e);
     } finally {
         span.finish();
-    }
-}
-
-export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
-    try {
-        const result = await db.raw<{ rowCount: number }>(
-            `WITH expired AS (
-                SELECT ctid
-                FROM ${RECORDS_BATCH_TABLE}
-                WHERE created_at < ?
-                ORDER BY created_at
-                LIMIT ?
-                FOR UPDATE SKIP LOCKED
-            )
-            DELETE FROM ${RECORDS_BATCH_TABLE}
-            USING expired
-            WHERE records_batch.ctid = expired.ctid`,
-            [olderThan, limit]
-        );
-        return Ok(result.rowCount);
-    } catch (err) {
-        return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
 }
 

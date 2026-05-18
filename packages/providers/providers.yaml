@@ -1145,7 +1145,7 @@ amplitude-mcp-eu:
         base_url: https://mcp.eu.amplitude.com
         headers:
             accept: application/json,text/event-stream
-    docs: https://nango.dev/docs/api-integrations/amplitude-mcp
+    docs: https://nango.dev/docs/api-integrations/amplitude-mcp-eu
 
 anthropic:
     display_name: Anthropic
@@ -1217,6 +1217,34 @@ anthropic-admin:
             type: string
             title: API Key
             description: The Admin API key for your Anthropic account
+
+anvil:
+    display_name: Anvil
+    categories:
+        - legal
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://app.useanvil.com
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/anvil
+    docs_connect: https://nango.dev/docs/api-integrations/anvil/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your Anvil API key
+            pattern: '^[A-Za-z0-9]+$'
+            example: rj8T3fa*************************
+            doc_section: '#step-1-finding-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            default_value: ''
+            hidden: true
 
 apaleo:
     display_name: Apaleo
@@ -3467,6 +3495,28 @@ canva:
                 - /rest/v1/users/me
     docs: https://nango.dev/docs/integrations/all/canva
     token_request_auth_method: basic
+
+canva-mcp:
+    display_name: Canva (MCP)
+    categories:
+        - design
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.canva.com/authorize
+    token_url: https://mcp.canva.com/token
+    registration_url: https://mcp.canva.com/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.canva.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/canva-mcp
 
 canvas-lms:
     display_name: Canvas LMS
@@ -6008,6 +6058,30 @@ ebay-sandbox:
     proxy:
         base_url: https://api.sandbox.ebay.com/
     docs: https://nango.dev/docs/integrations/all/ebay-sandbox
+
+easypost:
+    display_name: EasyPost
+    categories:
+        - e-commerce
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.easypost.com
+    docs: https://nango.dev/docs/api-integrations/easypost
+    docs_connect: https://nango.dev/docs/api-integrations/easypost/connect
+    credentials:
+        username:
+            type: string
+            title: API Key
+            description: Your EasyPost API key.
+            pattern: '^EZ(AK|TK)[a-zA-Z0-9]+$'
+            example: EZTK****************************PCHxBDQG3lpZjneEFUxKmg
+            doc_section: '#step-1-get-your-api-key'
+        password:
+            type: string
+            title: ''
+            description: ''
+            hidden: true
+            default_value: ''
 
 e-conomic:
     display_name: e-conomic
@@ -10696,7 +10770,7 @@ linear-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/linear
+    docs: https://nango.dev/docs/api-integrations/linear-mcp
 
 linkedin:
     display_name: LinkedIn
@@ -11557,6 +11631,14 @@ microsoft-teams:
     post_connection_script: microsoftTeamsPostConnection
     docs: https://nango.dev/docs/api-integrations/microsoft-teams
     setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-teams/how-to-register-your-own-microsoft-teams-api-oauth-app
+
+microsoft-people:
+    display_name: Microsoft People
+    categories:
+        - productivity
+    alias: microsoft
+    docs: https://nango.dev/docs/api-integrations/microsoft-people
+    setup_guide_url: https://nango.dev/docs/api-integrations/microsoft-people/how-to-register-your-own-microsoft-people-api-oauth-app
 
 microsoft-word:
     display_name: Microsoft Word
@@ -12563,7 +12645,7 @@ notion-mcp:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/api-integrations/notion
+    docs: https://nango.dev/docs/api-integrations/notion-mcp
 
 notion-scim:
     display_name: Notion (SCIM API)
@@ -14370,6 +14452,27 @@ podium:
             title: API Version
             description: The API version of your Podium account
 
+podscribe:
+    display_name: Podscribe
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            authorization: Bearer ${apiKey}
+        base_url: https://backend.podscribe.ai
+    docs: https://nango.dev/docs/api-integrations/podscribe
+    docs_connect: https://nango.dev/docs/api-integrations/podscribe/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Podscribe account
+            pattern: '^[a-zA-Z0-9]+\.[a-zA-Z0-9]+\.[a-zA-Z0-9_-]+$'
+            example: xkPqbW**********.*********.*******T8mz
+            doc_section: '#step-1-generating-your-api-key'
+
 posthog:
     display_name: PostHog
     categories:
@@ -15464,6 +15567,31 @@ retell-ai:
             description: The API key for Retell AI
             example: key-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
             doc_section: '#step-1-finding-your-retell-ai-api-key'
+
+revivn:
+    display_name: Revivn
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://api.revivn.dev/oauth/token
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.revivn.dev
+    docs: https://nango.dev/docs/api-integrations/revivn
+    docs_connect: https://nango.dev/docs/api-integrations/revivn/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Revivn OAuth2 client ID.
+            doc_section: '#step-1-get-your-oauth2-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Revivn OAuth2 client secret.
+            secret: true
+            doc_section: '#step-1-get-your-oauth2-credentials'
 
 ring-central:
     display_name: RingCentral
@@ -17105,6 +17233,33 @@ shipbob-pat:
             example: 6E4647BB**************************806E464161FBB996DD8E87EEA86DB926-1
             pattern: '^[A-F0-9]{64}-\d+$'
             doc_section: '#step-1-generate-your-token'
+
+shippo:
+    display_name: Shippo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.goshippo.com
+        headers:
+            authorization: ShippoToken ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /parcel-templates?page=1&results=1
+    docs: https://nango.dev/docs/api-integrations/shippo
+    docs_connect: https://nango.dev/docs/api-integrations/shippo/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Shippo API token (live or test).
+            pattern: '^shippo_(live|test)_[a-f0-9]+$'
+            example: shippo_live_e2848d36****************************
+            doc_section: '#step-1-get-your-api-token'
 
 shipstation:
     display_name: Shipstation (v1)
@@ -21023,6 +21178,51 @@ zendesk:
             prefix: https://
             doc_section: '#step-1-finding-your-subdomain'
 
+zendesk-api-key:
+    display_name: Zendesk (API Token)
+    categories:
+        - support
+        - ticketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zendesk.com
+        headers:
+            authorization: 'Basic ${base64(${credentials.username}/token:${credentials.password})}'
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v2/users.json?per_page=1&page=1
+    docs: https://nango.dev/docs/api-integrations/zendesk-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/zendesk-api-key/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Zendesk Domain
+            description: The subdomain of your Zendesk account.
+            pattern: '^[a-z0-9_-]+$'
+            example: acme
+            suffix: .zendesk.com
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-finding-your-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Email Address
+            description: Your Zendesk account email address.
+            format: email
+            doc_section: '#step-3-generate-an-api-token'
+        password:
+            type: string
+            title: API Token
+            description: Your Zendesk API token.
+            example: 'SDMWuOoZ******************************9CMz'
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-3-generate-an-api-token'
+
 zendesk-sell:
     display_name: Zendesk Sell
     categories:
@@ -21057,6 +21257,30 @@ zenefits:
     proxy:
         base_url: https://api.zenefits.com
     docs: https://nango.dev/docs/integrations/all/zenefits
+
+zigpoll:
+    display_name: Zigpoll
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://v1.zigpoll.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /me
+    docs: https://nango.dev/docs/api-integrations/zigpoll
+    docs_connect: https://nango.dev/docs/api-integrations/zigpoll/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Zigpoll private API key.
+            format: uuid
+            example: 3f7b2d4e-****-****-****-************
+            doc_section: '#step-1-get-your-api-token'
 
 zoho:
     display_name: Zoho
