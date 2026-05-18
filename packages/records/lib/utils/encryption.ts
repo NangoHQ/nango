@@ -4,17 +4,12 @@ import { envs } from '../env.js';
 
 import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types.js';
 
-let encryption: Encryption | null = null;
-
 function getEncryption(): Encryption {
-    if (!encryption) {
-        const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
-        if (!encryptionKey) {
-            throw new Error('NANGO_ENCRYPTION_KEY is not set');
-        }
-        encryption = new Encryption(encryptionKey);
+    const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
+    if (!encryptionKey) {
+        throw new Error('NANGO_ENCRYPTION_KEY is not set');
     }
-    return encryption;
+    return new Encryption(encryptionKey);
 }
 
 function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is EncryptedRecordData {
