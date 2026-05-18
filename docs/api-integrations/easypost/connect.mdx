@@ -1,0 +1,42 @@
+---
+title: EasyPost - How do I link my account?
+sidebarTitle: EasyPost
+---
+
+# Overview
+
+To authenticate with EasyPost, you will need:
+1. **API Key** — An EasyPost API key that grants Nango access to your account.
+
+EasyPost provides two key types:
+- **Test key** — for development and testing, no real shipments or charges.
+- **Production key** — for live operations, real shipments and billing apply.
+
+<Note>
+Before you can access API keys, EasyPost requires you to set up an EasyPost Wallet and add a ship-from address on your account. These steps tie all transactions to a verified location.
+</Note>
+
+### Prerequisites
+
+- You must have an EasyPost account. [Sign up](https://www.easypost.com/signup) if you don't have one.
+
+### Instructions
+
+#### Step 1: Get your API key
+
+1. Log in to the [EasyPost Dashboard](https://app.easypost.com/account/settings?tab=api-keys).
+2. If you don't have a key, click **Add Additional API Key**, select the key type (Test or Production), and your key will be generated — copy it.
+
+<img src="/api-integrations/easypost/api_key_generate.png"/>
+
+
+#### Step 2: Enter your API key in the Connect UI
+
+1. Open the form where you need to authenticate with EasyPost.
+2. Paste your API key into the **API Key** field.
+3. Submit the form. You are now connected to EasyPost.
+
+
+<img src="/api-integrations/easypost/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to EasyPost.

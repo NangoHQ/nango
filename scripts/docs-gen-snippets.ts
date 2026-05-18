@@ -80,6 +80,12 @@ for (const docsPath of docsPaths) {
                 console.log(`Docs link doesn't match provider name: ${docLink} !== ${provider}`);
             }
 
+            // MCP providers don't have pre-built templates — skip snippet generation.
+            if (maybeAliased.categories?.includes('mcp')) {
+                providersHandled.push(provider);
+                continue;
+            }
+
             const isAlias = !!(maybeAliased as any)['alias'];
             const toolingSnippet = preBuiltToolingSnippet(providerConfig, useCases[provider], isAlias);
             await fs.writeFile(`${snippetPath}/PreBuiltTooling.mdx`, toolingSnippet, 'utf-8');

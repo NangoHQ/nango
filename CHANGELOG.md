@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.3] - 2026-05-15
+
+### Added
+
+- *(usage)* Enable MV dedup propagation on ClickHouse inserts (#6122) by @pfreixes
+- *(records)* Add records_seen partitioned table 1/3 (#6124) by @TBonnin
+- *(integrations)* Add support for buffer (#6120) by @hassan254-prog
+- *(proxy)* Add a header allow list to forward proxy headers (#6131) by @hassan254-prog
+- *(integrations)* Add support for render mcp (#6117) by @hassan254-prog
+- *(integrations)* Add support for wordpress mcp (#6118) by @hassan254-prog
+- Add env var to control how many old syncs to delete (#6138) by @TBonnin
+- *(records)* Add trace instrumentation for GET /records phases (#6114) by @pfreixes
+- *(connections)* Add id as secondary sort key in listConnections (#6132) by @macko911
+- *(metering)* Add ClickHouse -> S3 -> Orb billing events export cron (#6070) by @pfreixes
+- *(server)* New (private) function listing endpoints (deployed & templates) (#6091) by @kaposke
+- *(integrations)* Add support for shippo (#6142) by @hassan254-prog
+- *(integrations)* Add support for easypost (#6143) by @hassan254-prog
+- *(integrations)* Add support for zigpoll (#6144) by @hassan254-prog
+- *(integrations)* Add support for podscribe (#6145) by @hassan254-prog
+- *(integrations)* Add support for revivn (#6147) by @hassan254-prog
+- *(integrations)* Add support for microsoft-people (#6148) by @hassan254-prog
+- *(integrations)* Add support for canva mcp (#6149) by @hassan254-prog
+- Return CLI exit codes for remote functions (#6025) by @marcindobry
+
+### Changed
+
+- *(ci)* Switch workflows to Blacksmith 4-core runners (#6106) by @macko911
+- *(ci)* Parallelize unit and integration tests (#6141) by @macko911
+- *(records)* Faster autodelete candidate query (#6150) by @TBonnin
+- Explain Nango developer apps vs. your own OAuth app (#6153) by @rguldener
+- Cleanup fields replaced by function source (#6109) by @kaposke
+- *(records)* Use records_seen instead of records_batch  2/3 (#6125) by @TBonnin
+- *(records)* Optimize records size calculation (#6134) by @TBonnin
+- *(records)* Drop records_batch table 3/3 (#6126) by @TBonnin
+- Clean up mcp provider docs (#6097) by @hassan254-prog
+- Surface API setup guides and reorder Slack tip in auth guide (#6160) by @rguldener
+
+### Fixed
+
+- *(runner)* Use fake timers in lock expiry tests (#6140) by @macko911
+- *(proxy)* Strip stale content-length for decompressed responses (#6121) by @ErickRDev
+- *(jira-data-center)* Update domain pattern for Jira Data Center  (#6135) by @kishenpateldotwork
+- CancellableDaemon tick shouldn't be fire and forget (#6151) by @TBonnin
+- Validate jwt.decode() tenant ID before using in URL construction (#6018) by @calebcgates
+
 ## [v0.70.2] - 2026-05-13
 
 ### Added
@@ -6663,6 +6708,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.3]: https://github.com/NangoHQ/nango/compare/v0.70.2..v0.70.3
 [v0.70.2]: https://github.com/NangoHQ/nango/compare/v0.70.1..v0.70.2
 [v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
 [v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0
