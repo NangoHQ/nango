@@ -21,6 +21,15 @@ export interface FunctionRow {
     event: string | null;
 }
 
+export interface DeployedFunctionMetaRow {
+    id: number;
+    name: string;
+    type: 'sync' | 'action';
+    enabled: boolean;
+    last_deployed: Date;
+    source: FunctionSource;
+}
+
 export async function findActiveByEnvironment({
     environmentId,
     providerConfigKey,
@@ -55,6 +64,34 @@ export async function findActiveByEnvironment({
 
     const total = countRow ? Number(countRow.total) : 0;
     return { rows: pageRows, total };
+}
+
+/**
+ * Returns a slim list of active deployed sync/action functions for an integration,
+ * intended for cross-referencing the template catalog with what is already deployed.
+ *
+ * Unpaginated and excludes on-event scripts — the templates catalog contains only
+ * syncs and actions, so callers building a `(name, type) -> deployed` lookup only
+ * need those two types.
+ */
+export async function findActiveDeployedMeta({
+    environmentId,
+    providerConfigKey
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+}): Promise<DeployedFunctionMetaRow[]> {
+    return db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .andWhere('sc.deleted', false)
+        .andWhere('sc.active', true)
+        .select<
+            DeployedFunctionMetaRow[]
+        >('sc.id', db.knex.raw('sc.sync_name AS name'), 'sc.type', 'sc.enabled', db.knex.raw('sc.updated_at AS last_deployed'), 'sc.source');
 }
 
 export async function findActiveByName({
