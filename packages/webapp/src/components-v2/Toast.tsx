@@ -8,6 +8,7 @@ interface ToastProps {
     description?: string;
     variant: 'success' | 'error' | 'warning' | 'info';
     id: string | number;
+    action?: React.ReactNode;
 }
 
 const iconMap = {
@@ -17,7 +18,7 @@ const iconMap = {
     info: <Info />
 };
 
-export const Toast = ({ title, description, variant, id }: ToastProps) => {
+export const Toast = ({ title, description, variant, id, action }: ToastProps) => {
     const icon = iconMap[variant];
 
     return (
@@ -33,6 +34,7 @@ export const Toast = ({ title, description, variant, id }: ToastProps) => {
             )}
 
             <AlertActions>
+                {action}
                 <AlertButton variant={`${variant}-secondary`} className="border-none" onClick={() => sonnerToast.dismiss(id)}>
                     <X />
                 </AlertButton>
