@@ -14269,7 +14269,7 @@ pushpay-chms-v1:
         username:
             type: string
             title: API username
-            description: The API login created in Pushpay ChMS API Admin (not your API User Community account).
+            description: The API login created in Pushpay ChMS API Admin.
             doc_section: '#step-2-create-an-api-user'
         password:
             type: string
