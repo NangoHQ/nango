@@ -4,6 +4,33 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="May 18, 2026">
+  ## Sync and action runtime migration to serverless execution
+
+  We are migrating all sync executions to our serverless AWS Lambda runtime, and introducing a **10-minute execution limit** per run.
+  This gives us better autoscaling, more predictable execution isolation, and a simpler runtime model across Nango Cloud environments.
+  Lambda has a hard timeout, so long-running syncs and actions must checkpoint work and continue across runs instead of relying on a single long execution.
+
+  **Timeline:**
+
+  - **Now**: All sync and webhook executions have already been migrated. We are now migrating all sync executions for accounts without long running syncs.
+  - **Next 3-6 months**: We will progressively migrate accounts with long-running syncs by assisting with migration to checkpoints. We will announce milestones in this changelog and coordinate directly with impacted accounts.
+
+  **Am I impacted?**
+
+  - All accounts using syncs without checkpoints are impacted and should migrate to checkpoint-based progress. Short running syncs will still continue working without issue after migrating to lambdas, but it is still recommended to implement checkpoints.
+  - We will be reaching out directly to affected accounts to assist in the migration.
+
+  **What to do:**
+
+  - Migrate all syncs to use checkpoints using the [migration guide and associated skill](/guides/platform/migrations/migrate-to-checkpoints#migrate-with-skill)
+  
+  If you do not want to migrate yet or cannot migrate within the timeline, please reach out and we will find a workable path with you.
+
+</Update>
+
+---
+
 <Update label="May 5, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="50 new APIs in April">
