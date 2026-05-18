@@ -2,7 +2,7 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { GetIntegrationFunction, GetIntegrationFunctions, GetProviderTemplates } from '@nangohq/types';
+import type { GetIntegrationFunction, GetIntegrationFunctions, GetIntegrationTemplates } from '@nangohq/types';
 
 interface UseGetIntegrationFunctionsArgs {
     env: string;
@@ -86,21 +86,21 @@ export function useGetIntegrationFunction({ env, providerConfigKey, name, type }
     });
 }
 
-interface UseGetProviderTemplatesArgs {
+interface UseGetIntegrationTemplatesArgs {
     env: string;
     providerConfigKey: string;
 }
 
-export function useGetProviderTemplates({ env, providerConfigKey }: UseGetProviderTemplatesArgs) {
-    return useQuery<GetProviderTemplates['Success'], APIError>({
-        queryKey: ['providers', providerConfigKey, 'templates', { env }],
-        queryFn: async (): Promise<GetProviderTemplates['Success']> => {
+export function useGetIntegrationTemplates({ env, providerConfigKey }: UseGetIntegrationTemplatesArgs) {
+    return useQuery<GetIntegrationTemplates['Success'], APIError>({
+        queryKey: ['integrations', env, providerConfigKey, 'templates'],
+        queryFn: async (): Promise<GetIntegrationTemplates['Success']> => {
             const usp = new URLSearchParams();
             usp.set('env', env);
 
-            const res = await apiFetch(`/api/v1/providers/${encodeURIComponent(providerConfigKey)}/templates?${usp.toString()}`, { method: 'GET' });
+            const res = await apiFetch(`/api/v1/integrations/${encodeURIComponent(providerConfigKey)}/templates?${usp.toString()}`, { method: 'GET' });
 
-            const json = (await res.json()) as GetProviderTemplates['Reply'];
+            const json = (await res.json()) as GetIntegrationTemplates['Reply'];
             if (!res.ok || 'error' in json) {
                 throw new APIError({ res, json });
             }

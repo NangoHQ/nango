@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, ExternalLink, Search, Upload } from 'lucide-react';
+import { AlertTriangle, Check, ChevronRight, ExternalLink, Eye, Search, Upload } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -24,9 +24,10 @@ import { ComboboxSelect } from '@/components-v2/ui/combobox';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePreBuiltDeployFlow } from '@/hooks/useFlow';
 import { useGetIntegration } from '@/hooks/useIntegration';
-import { useGetProviderTemplates } from '@/hooks/useIntegrationFunctions';
+import { useGetIntegrationTemplates } from '@/hooks/useIntegrationFunctions';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
@@ -35,10 +36,27 @@ import { APIError } from '@/utils/api';
 import { cn } from '@/utils/utils';
 
 import type { ComboboxOption } from '@/components-v2/ui/combobox';
-import type { ApiError, NangoActionFunction, NangoSyncFunction } from '@nangohq/types';
+import type { ApiError, DeployedMeta, NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
-type Template = NangoSyncFunction | NangoActionFunction;
+type Template = NangoFunctionTemplate;
+
+const DeployedStatus: React.FC<{ deployed: DeployedMeta }> = ({ deployed }) => {
+    if (deployed.source === 'catalog') {
+        return (
+            <span className="inline-flex items-center gap-0.5 text-feedback-success-fg text-body-small-regular">
+                <Check className="size-3" />
+                Deployed
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-0.5 text-feedback-warning-fg text-body-small-regular">
+            <AlertTriangle className="size-3" />
+            Exists
+        </span>
+    );
+};
 
 const TYPE_FILTER_VALUES = ['sync', 'action'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -50,6 +68,18 @@ const TYPE_OPTIONS: ComboboxOption<TypeFilterValue>[] = [
 
 function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
+}
+
+const DEPLOYED_FILTER_VALUES = ['deployed', 'not-deployed'] as const;
+type DeployedFilterValue = (typeof DEPLOYED_FILTER_VALUES)[number];
+
+const DEPLOYED_OPTIONS: ComboboxOption<DeployedFilterValue>[] = [
+    { value: 'deployed', label: 'Deployed' },
+    { value: 'not-deployed', label: 'Not deployed' }
+];
+
+function isDeployedFilterValue(value: string): value is DeployedFilterValue {
+    return (DEPLOYED_FILTER_VALUES as readonly string[]).includes(value);
 }
 
 export const Templates: React.FC = () => {
@@ -65,7 +95,7 @@ export const Templates: React.FC = () => {
         data: templatesResponse,
         isLoading: templatesLoading,
         error: templatesError
-    } = useGetProviderTemplates({ env, providerConfigKey: providerConfigKey! });
+    } = useGetIntegrationTemplates({ env, providerConfigKey: providerConfigKey! });
     const templates = templatesResponse?.data;
 
     const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''));
@@ -75,6 +105,9 @@ export const Templates: React.FC = () => {
     const [rawTypeFilter, setTypeFilter] = useQueryState('typeFilter', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue | undefined = rawTypeFilter && isTypeFilterValue(rawTypeFilter) ? rawTypeFilter : undefined;
 
+    const [rawDeployedFilter, setDeployedFilter] = useQueryState('deployedFilter', parseAsString.withDefault(''));
+    const deployedFilter: DeployedFilterValue | undefined = rawDeployedFilter && isDeployedFilterValue(rawDeployedFilter) ? rawDeployedFilter : undefined;
+
     const [selectedName, setSelectedName] = useQueryState('template', parseAsString);
     const [selectedType, setSelectedType] = useQueryState('type', parseAsString);
 
@@ -83,13 +116,15 @@ export const Templates: React.FC = () => {
         const needle = debouncedSearch.trim().toLowerCase();
         return templates.filter((t) => {
             if (typeFilter && t.type !== typeFilter) return false;
+            if (deployedFilter === 'deployed' && !t.deployed) return false;
+            if (deployedFilter === 'not-deployed' && t.deployed) return false;
             if (needle) {
                 const haystack = `${t.name} ${t.description ?? ''}`.toLowerCase();
                 if (!haystack.includes(needle)) return false;
             }
             return true;
         });
-    }, [templates, debouncedSearch, typeFilter]);
+    }, [templates, debouncedSearch, typeFilter, deployedFilter]);
 
     const selected = useMemo<Template | null>(() => {
         if (!selectedName || !selectedType) return null;
@@ -197,6 +232,20 @@ export const Templates: React.FC = () => {
                                 reorderOnSelect={false}
                                 showSearch={false}
                             />
+                            <ComboboxSelect<DeployedFilterValue>
+                                allowMultiple
+                                label={deployedFilter ? (deployedFilter === 'deployed' ? 'Deployed' : 'Not deployed') : 'Status'}
+                                dropdownTitle="Filter by status"
+                                options={DEPLOYED_OPTIONS}
+                                selected={deployedFilter ? [deployedFilter] : []}
+                                onSelectedChange={(next) => {
+                                    const newlyAdded = next.find((value) => value !== deployedFilter);
+                                    void setDeployedFilter(newlyAdded ?? null);
+                                }}
+                                onClearAll={() => void setDeployedFilter(null)}
+                                reorderOnSelect={false}
+                                showSearch={false}
+                            />
                         </div>
 
                         {isLoading ? (
@@ -227,9 +276,12 @@ export const Templates: React.FC = () => {
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-text-primary text-body-medium-medium truncate">{t.name}</span>
-                                                    <Badge variant="gray" className="uppercase">
-                                                        {t.type}
-                                                    </Badge>
+                                                    <div className="inline-flex items-center gap-1.5 shrink-0">
+                                                        {t.deployed && <DeployedStatus deployed={t.deployed} />}
+                                                        <Badge variant="gray" className="uppercase">
+                                                            {t.type}
+                                                        </Badge>
+                                                    </div>
                                                 </div>
                                                 {t.description && (
                                                     <span className="text-text-secondary text-body-small-regular line-clamp-1">{t.description}</span>
@@ -251,6 +303,7 @@ export const Templates: React.FC = () => {
                             key={`${selected.type}:${selected.name}`}
                             template={selected}
                             provider={integrationData.integration.provider}
+                            deployedFunctionPath={`/${env}/integrations/${integrationData.integration.unique_key}/functions/${encodeURIComponent(selected.name)}?type=${selected.type}`}
                             onDeploy={onDeploy}
                             isDeploying={isDeploying}
                         />
@@ -264,12 +317,25 @@ export const Templates: React.FC = () => {
 interface TemplateDetailProps {
     template: Template;
     provider: string;
+    deployedFunctionPath: string;
     onDeploy: () => void;
     isDeploying: boolean;
 }
 
-const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onDeploy, isDeploying }) => {
+const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, deployedFunctionPath, onDeploy, isDeploying }) => {
+    const { confirm, DialogComponent } = useConfirmDialog();
     const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
+
+    const onRedeployClick = () => {
+        void confirm({
+            title: 'Redeploy this template?',
+            description: `This will overwrite the existing deployed ${template.type} "${template.name}".`,
+            confirmButtonText: 'Redeploy',
+            confirmVariant: 'primary',
+            icon: <AlertTriangle />,
+            onConfirm: onDeploy
+        });
+    };
     const rawCodeUrl = `${INTEGRATION_TEMPLATES_RAW_URL}/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
     const {
         data: code,
@@ -316,11 +382,29 @@ const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onD
                     </div>
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>
-                <Button type="button" onClick={onDeploy} disabled={isDeploying}>
-                    <Upload />
-                    {isDeploying ? 'Deploying…' : 'Deploy template'}
-                </Button>
+                <div className="inline-flex items-center gap-3 shrink-0">
+                    {template.deployed && <DeployedStatus deployed={template.deployed} />}
+                    {template.deployed ? (
+                        <>
+                            <ButtonLink to={deployedFunctionPath} variant="ghost">
+                                <Eye />
+                                View
+                            </ButtonLink>
+                            <Button type="button" variant="secondary" onClick={onRedeployClick} disabled={isDeploying}>
+                                <Upload />
+                                {isDeploying ? 'Deploying…' : 'Redeploy template'}
+                            </Button>
+                        </>
+                    ) : (
+                        <Button type="button" onClick={onDeploy} disabled={isDeploying}>
+                            <Upload />
+                            {isDeploying ? 'Deploying…' : 'Deploy template'}
+                        </Button>
+                    )}
+                </div>
             </div>
+
+            {DialogComponent}
 
             {template.type === 'sync' && (
                 <div className="flex flex-wrap gap-4 gap-y-2">
