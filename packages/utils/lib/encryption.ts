@@ -7,7 +7,7 @@ export class Encryption {
     protected algorithm: { sync: CipherGCMTypes; async: 'AES-GCM' } = { sync: 'aes-256-gcm', async: 'AES-GCM' };
     protected encoding: BufferEncoding = 'base64';
     private encryptionKeyByteLength = 32;
-    private cryptoKeyPromise?: Promise<CryptoKey>;
+    private cryptoKeyPromise: Promise<CryptoKey> | undefined;
 
     constructor(key: string) {
         this.key = key;
