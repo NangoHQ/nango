@@ -16,6 +16,7 @@
     "dependencies": {
         "@elastic/elasticsearch": "8.17.0",
         "@nangohq/utils": "file:../utils",
+        "@opensearch-project/opensearch": "2.13.0",
         "@opentelemetry/api": "1.9.0",
         "@opentelemetry/core": "1.27.0",
         "@opentelemetry/exporter-trace-otlp-http": "0.54.0",

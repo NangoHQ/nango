@@ -1,8 +1,10 @@
-import { errors } from '@elastic/elasticsearch';
+import { errors as esErrors } from '@elastic/elasticsearch';
+import { errors as osErrors } from '@opensearch-project/opensearch';
 
 import { getLogger } from '@nangohq/utils';
 
-import { client } from './es/client.js';
+import { envs } from './env.js';
+import { client } from './storage/client.js';
 
 export const logger = getLogger('logs');
 
@@ -23,4 +25,33 @@ export const logLevelToLogger = {
     silly: 'debug'
 } as const;
 
-export const ResponseError = errors.ResponseError;
+/** @deprecated Prefer `isLogsNotFoundError` — works for both Elasticsearch and OpenSearch clients. */
+export const ResponseError = esErrors.ResponseError;
+
+export function isLogsNotFoundError(err: unknown): boolean {
+    if (err instanceof esErrors.ResponseError) {
+        return err.statusCode === 404;
+    }
+    if (err instanceof osErrors.ResponseError) {
+        return err.statusCode === 404;
+    }
+    return false;
+}
+
+export function throwLogsNotFound(): never {
+    if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
+        throw new osErrors.ResponseError({
+            statusCode: 404,
+            body: {},
+            headers: {},
+            warnings: null
+        } as any);
+    }
+
+    throw new esErrors.ResponseError({
+        statusCode: 404,
+        warnings: [],
+        body: {},
+        headers: {}
+    } as any);
+}

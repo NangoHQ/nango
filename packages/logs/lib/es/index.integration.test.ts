@@ -2,11 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { nanoid } from '@nangohq/utils';
 
-import { client } from './client.js';
+import { envs } from '../env.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
-import { indexOperations } from './schema.js';
+import { indexOperations, policyOperations } from './schema.js';
 import { getFormattedOperation } from '../models/helpers.js';
 import { createOperation, getOperation, updateOperation } from '../models/operations.js';
+import { client } from '../storage/client.js';
 
 // This file is sequential
 describe('mapping', () => {
@@ -48,7 +49,12 @@ describe('mapping', () => {
         const settings = await client.indices.getSettings({ index: fullIndexName });
         expect(settings[fullIndexName]?.settings?.index?.analysis).toMatchSnapshot();
         expect(settings[fullIndexName]?.settings?.index?.sort).toMatchSnapshot();
-        expect(settings[fullIndexName]?.settings?.index?.lifecycle).toMatchSnapshot();
+        if (envs.NANGO_LOGS_PROVIDER === 'elasticsearch') {
+            expect(settings[fullIndexName]?.settings?.index?.lifecycle).toMatchSnapshot();
+        } else {
+            const idx = settings[fullIndexName]?.settings?.index as { plugins?: { index_state_management?: { policy_id?: string } } } | undefined;
+            expect(idx?.plugins?.index_state_management?.policy_id).toBe(policyOperations.name);
+        }
     });
 
     it('should create yesterday index automatically', async () => {
