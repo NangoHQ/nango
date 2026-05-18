@@ -29,7 +29,7 @@
         "axios": "1.15.2",
         "botbuilder": "4.23.2",
         "connect-timeout": "1.9.1",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.103.0",
         "express": "5.1.0",
         "soap": "1.2.1",
         "superjson": "2.2.1",
