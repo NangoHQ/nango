@@ -28,7 +28,7 @@ async function execute({
     let logCtx: LogContextOrigin | undefined = undefined;
 
     try {
-        const internalNango = getInternalNango(connection, providerName);
+        const internalNango = getInternalNango(connection, providerName, team.id);
         const provider = getProvider(providerName);
         const handler = getHandler({
             provider: provider,
