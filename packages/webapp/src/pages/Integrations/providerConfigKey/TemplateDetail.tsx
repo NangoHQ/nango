@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ChevronRight, ExternalLink, Upload } from 'lucide-react';
+import { AlertTriangle, ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { CodeBlock } from '@/components-v2/CodeBlock';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
@@ -14,6 +13,7 @@ import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/popover';
 import { Spinner } from '@/components-v2/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
@@ -72,7 +72,29 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                             <TooltipContent side="bottom">You already have a function deployed with this name</TooltipContent>
                         </Tooltip>
                     )}
-                    <Button type="button" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button type="button" variant="secondary" size="sm">
+                                Customize
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align="end" className="w-fit p-4 flex flex-col gap-2 bg-bg-elevated border border-border-muted">
+                            <span className="text-text-primary text-body-medium-semi">Pull template to customize</span>
+                            <LineSnippet
+                                className="bg-bg-surface border border-border-muted w-96 min-w-0"
+                                snippet={`nango pull -c ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
+                            />
+                            <Link
+                                to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                                target="_blank"
+                                className="text-text-tertiary self-end text-body-small-medium inline-flex items-center gap-1.5 w-fit"
+                            >
+                                Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                            </Link>
+                        </PopoverContent>
+                    </Popover>
+
+                    <Button type="button" size="sm" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
                         <Upload />
                         {isDeploying ? 'Deploying…' : 'Deploy template'}
                     </Button>
@@ -104,28 +126,6 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                     <span className="text-text-secondary text-body-medium-regular">No scopes required.</span>
                 )}
             </section>
-
-            <Collapsible asChild>
-                <section className="flex flex-col gap-2">
-                    <CollapsibleTrigger className="flex items-center justify-between gap-2 cursor-pointer group">
-                        <span className="text-text-primary text-body-medium-semi">Customize this template</span>
-                        <ChevronRight className="size-4.5 text-text-tertiary transition-transform duration-200 group-data-[state=open]:rotate-90" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="flex flex-col gap-2">
-                        <LineSnippet
-                            className="bg-bg-surface border border-border-muted"
-                            snippet={`nango pull --catalog ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
-                        />
-                        <Link
-                            to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
-                            target="_blank"
-                            className="text-text-tertiary text-body-small-medium inline-flex items-center gap-1.5 w-fit"
-                        >
-                            Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                        </Link>
-                    </CollapsibleContent>
-                </section>
-            </Collapsible>
 
             <Tabs defaultValue={!inputSchema && outputSchemas.length > 0 ? 'output' : 'input'} className="gap-4">
                 <TabsList className="w-fit gap-0">
