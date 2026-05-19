@@ -2,12 +2,7 @@ import * as uuid from 'uuid';
 
 import { Err, Ok, stringToHash } from '@nangohq/utils';
 
-import {
-    createSandboxApiKeyToken,
-    createSandboxSigningSecret,
-    decryptSandboxSigningSecret,
-    encryptSandboxSigningSecret
-} from './customer-key-sandbox-token.service.js';
+import { createSandboxApiKeyToken, createSandboxSigningSecret, decryptSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
