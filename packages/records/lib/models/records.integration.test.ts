@@ -1905,6 +1905,57 @@ describe('Records service', () => {
         });
     });
 
+    describe('size_bytes', () => {
+        it('should store size_bytes on records table after upsert and update', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowsAfterUpsert = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).select<{ size_bytes: number | null }[]>('size_bytes');
+            expect(rowsAfterUpsert).toHaveLength(2);
+            for (const row of rowsAfterUpsert) {
+                expect(row.size_bytes).not.toBeNull();
+                expect(row.size_bytes).toBeGreaterThan(0);
+            }
+
+            const rowBeforeUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            const sizeBeforeUpdate = rowBeforeUpdate.size_bytes!;
+
+            await updateRecords({
+                records: [
+                    {
+                        id: '1',
+                        name: `This is a much longer name`
+                    }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowAfterUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            expect(rowAfterUpdate?.size_bytes).not.toBeNull();
+            expect(rowAfterUpdate?.size_bytes).toBeGreaterThan(sizeBeforeUpdate);
+        });
+    });
+
     describe('ensureSeenPartition', () => {
         it('should create a partition for the given date', async () => {
             const date = new Date('2025-01-15T00:00:00Z');
