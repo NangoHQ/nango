@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ExternalLink, Upload } from 'lucide-react';
+import { ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
 import { CodeBlock } from '@/components-v2/CodeBlock';
+import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { EmptyCard } from '@/components-v2/EmptyCard';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
@@ -15,11 +16,14 @@ import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/popover';
 import { Spinner } from '@/components-v2/ui/spinner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+function buildPullCommand(provider: string, templateName: string, templateType: NangoFunctionTemplate['type']): string {
+    return `nango pull --catalog ${provider} ${templateName} ${templateType === 'action' ? '-a' : '-s'}`;
+}
 
 interface TemplateDetailProps {
     template: NangoFunctionTemplate;
@@ -62,16 +66,6 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>
                 <div className="inline-flex items-center gap-2 shrink-0">
-                    {template.deployed && (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-flex text-feedback-warning-fg" tabIndex={0}>
-                                    <AlertTriangle className="size-4" />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom">You already have a function deployed with this name</TooltipContent>
-                        </Tooltip>
-                    )}
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button type="button" variant="secondary" size="sm">
@@ -82,10 +76,10 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                             <span className="text-text-primary text-body-medium-semi">Pull template to customize</span>
                             <LineSnippet
                                 className="bg-bg-surface border border-border-muted w-96 min-w-0"
-                                snippet={`nango pull -c ${provider} ${template.name} ${template.type === 'action' ? '--action' : '--sync'}`}
+                                snippet={buildPullCommand(provider, template.name, template.type)}
                             />
                             <Link
-                                to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                                to="https://nango.dev/docs/reference/functions/functions-cli"
                                 target="_blank"
                                 className="text-text-tertiary self-end text-body-small-medium inline-flex items-center gap-1.5 w-fit"
                             >
@@ -94,10 +88,12 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                         </PopoverContent>
                     </Popover>
 
-                    <Button type="button" size="sm" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
-                        <Upload />
-                        {isDeploying ? 'Deploying…' : 'Deploy template'}
-                    </Button>
+                    <ConditionalTooltip condition={!!template.deployed} content="You already have a function deployed with this name">
+                        <Button type="button" size="sm" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
+                            <Upload />
+                            {isDeploying ? 'Deploying…' : 'Deploy template'}
+                        </Button>
+                    </ConditionalTooltip>
                 </div>
             </div>
 
