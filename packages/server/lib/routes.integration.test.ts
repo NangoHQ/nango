@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { isError, runServer } from './utils/tests.js';
 
@@ -74,6 +75,24 @@ describe('route', () => {
                     payload: {}
                 }
             });
+        });
+
+        it('should authenticate sandbox API key token with script header', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const sandboxToken = (
+                await customerKeyService.createSandboxApiKey(db.knex, {
+                    parentApiKeyId: apiKey.id,
+                    environmentId: env.id,
+                    expiresAt: new Date(Date.now() + 60 * 1000)
+                })
+            ).unwrap();
+
+            const res = await fetch(`${api.url}/providers`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${sandboxToken}`, 'Nango-Is-Script': 'true' }
+            });
+
+            expect(res.status).toBe(200);
         });
     });
 });

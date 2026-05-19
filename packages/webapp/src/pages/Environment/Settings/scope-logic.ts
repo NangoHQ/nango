@@ -38,6 +38,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         ]
     },
     { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
+    { group: 'Dryrun', items: [{ value: 'environment:dryrun', label: 'dryrun' }] },
     {
         group: 'Records',
         items: [
