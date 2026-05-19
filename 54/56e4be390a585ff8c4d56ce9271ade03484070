@@ -1,0 +1,64 @@
+docs/docs.json
+  s_6fb3c1794bde76::t_72774ecc171f9c 789-791
+docs/reference/backend/http-api/functions/dryrun.mdx
+  s_6fb3c1794bde76::t_72774ecc171f9c 1-6,8-10
+  s_6fb3c1794bde76::t_04df25d1b8eef7 7
+docs/reference/backend/http-api/functions/compile.mdx
+  s_6fb3c1794bde76::t_72774ecc171f9c 1-10
+docs/reference/backend/http-api/functions/deployments.mdx
+  s_6fb3c1794bde76::t_72774ecc171f9c 1-10
+packages/server/lib/services/remote-function/command-builders.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 34,44-52
+packages/types/lib/functions/api.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 7,33-135,139,141,147,149,155,157
+packages/server/lib/controllers/functions/compile/postCompile.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 7,9-13,61-85
+packages/server/lib/services/remote-function/deploy-client.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 24-25
+packages/types/lib/api.endpoints.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 69-71,156-158
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_6fb3c1794bde76::t_3811fa478cfd42 121-144,169-177
+  s_21d7567bafb42b::t_ecaebde50c03aa 349-352
+  s_6fb3c1794bde76::t_72774ecc171f9c 11-12,16-20,62-65,213-232,306-348,375-383
+packages/server/lib/services/remote-function/command-builders.unit.test.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 15-31,33
+packages/server/lib/controllers/functions/validation.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 31-61
+packages/server/lib/routes.public.ts
+  s_6fb3c1794bde76::t_b44cbe9e3a2130 100
+  s_6fb3c1794bde76::t_72774ecc171f9c 37-39,99,101,276-280
+docs/spec.yaml
+  s_6fb3c1794bde76::t_72774ecc171f9c 1435-1525,2861-2874,2900-3062
+  s_21d7567bafb42b::t_99e1f4aff28223 2875-2878
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_6fb3c1794bde76::t_2112925729d0bb 2,10,12-15,19,21-25,27-37,64-65,69-136,145,150,166
+  s_6fb3c1794bde76::t_d3d95c408ba613 20,26
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_6fb3c1794bde76::t_2d7804c7e3df85 10,12-13,17,19-23,25-35,75-76,80-128,130-132,134-146,157-160
+  s_6fb3c1794bde76::t_e827cba60fb0de 18,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "5456e4be390a585ff8c4d56ce9271ade03484070",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    },
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
