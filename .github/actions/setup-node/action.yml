@@ -1,0 +1,34 @@
+name: 'Setup Node.js'
+description: 'Sets up Node.js with npm caching enabled by default.'
+
+inputs:
+    node-version:
+        description: 'Node.js version to use. When set, overrides node-version-file.'
+        required: false
+    node-version-file:
+        description: 'Path to a file containing the Node.js version. Defaults to .nvmrc.'
+        required: false
+        default: '.nvmrc'
+    registry-url:
+        description: 'Optional registry URL for npm publishing or private registry auth.'
+        required: false
+    scope:
+        description: 'Optional npm scope used together with registry-url.'
+        required: false
+    always-auth:
+        description: 'Set always-auth on the configured registry.'
+        required: false
+        default: 'false'
+
+runs:
+    using: 'composite'
+    steps:
+        - uses: actions/setup-node@v4
+          with:
+              node-version: ${{ inputs.node-version }}
+              node-version-file: ${{ inputs.node-version-file }}
+              cache: 'npm'
+              cache-dependency-path: 'package-lock.json'
+              registry-url: ${{ inputs.registry-url }}
+              scope: ${{ inputs.scope }}
+              always-auth: ${{ inputs.always-auth }}
