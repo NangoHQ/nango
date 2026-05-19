@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.4] - 2026-05-18
+
+### Added
+
+- *(integrations)* Add support for anvil (#6159) by @hassan254-prog
+- *(integrations)* Add support for zendesk-api-key (#6163) by @hassan254-prog
+
+### Changed
+
+- *(records)* Ensure records_seen partition before insert (#6133) by @TBonnin
+- *(records)* Use cursor in records delete functions loop avoid dead tuple traversal (#6156) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d475db2192b6fdb26ed3d11181b155a9a0be8a5a by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/99d3ce34d6b8e8d91b31d50ab2240eea99c5db19 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9e5859862df584537d47644ea1bdbd4a651b2f4c by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a73e95005814649c03567097ffc9f28bb8942e76 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/c48bc66a7077e982a22df405ff57077353757770 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b17c74c0e3fc96812d2ab8407edd7362fa17c6a5 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d9e1719135ef271819ffad2941eddef1117e3b21 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/fb16a7b8f6426d5f2a7c36b968740ddb760c6b6d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/633ab9da00422f8616a4333bab2e4486b1315765 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d560cbbed858a65b8d0d4802a9604c7c322fe6bf by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7d9e477fabe82e4aa155b8124e442d2f3e8f2783 by Max Mayhew by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/409cb3ade9c45996d0eb844999828401e199139a by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/21a7016c1a8756727ed458ddbea6244818f2d123 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- *(lambda)* All plans should have tenant isolation enabled (#6162) by @rossmcewan
+- *(server)* Use zod to validate jwt.decode result in sellsy post-connection hook (#6139) by @calebcgates
+- *(vulns)* High-severity vuln fixes (#6171) by @rossmcewan
+
 ## [v0.70.3] - 2026-05-15
 
 ### Added
@@ -6708,6 +6739,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.4]: https://github.com/NangoHQ/nango/compare/v0.70.3..v0.70.4
 [v0.70.3]: https://github.com/NangoHQ/nango/compare/v0.70.2..v0.70.3
 [v0.70.2]: https://github.com/NangoHQ/nango/compare/v0.70.1..v0.70.2
 [v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1

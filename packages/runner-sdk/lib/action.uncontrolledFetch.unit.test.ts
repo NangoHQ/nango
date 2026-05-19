@@ -6,6 +6,7 @@ function makeProps(): NangoProps {
     // Only the fields used by the base constructor are required for these tests.
     return {
         connectionId: 'connection-id',
+        team: { id: 1, name: 'test-team' },
         environmentId: 1,
         providerConfigKey: 'provider-config-key',
         activityLogId: 'activity-log-id',
