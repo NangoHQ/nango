@@ -12523,14 +12523,14 @@ ninjaone-saas-backup:
         - productivity
     auth_mode: API_KEY
     proxy:
-        base_url: https://${connectionConfig.apiHost}
+        base_url: https://${connectionConfig.apiHost}/api
         headers:
             x-reseller-token: ${connectionConfig.resellerToken}
             x-access-token: ${apiKey}
         verification:
             method: GET
             endpoints:
-                - /api/accounts
+                - /accounts
     docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
     docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
     connection_config:
