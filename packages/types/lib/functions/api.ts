@@ -144,6 +144,7 @@ export type GetIntegrationFunctions = Endpoint<{
     Querystring: {
         env: string;
         type?: FunctionType;
+        search?: string;
         page?: number;
         limit?: number;
     };
@@ -152,6 +153,14 @@ export type GetIntegrationFunctions = Endpoint<{
         data: NangoFunctionDeployed[];
         pagination: { total: number; page: number; limit: number };
     };
+}>;
+
+export type GetIntegrationFunction = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
+    Querystring: { env: string; type?: FunctionType };
+    Params: { providerConfigKey: string; functionName: string };
+    Success: { data: NangoFunctionDeployed };
 }>;
 
 export type GetProviderTemplates = Endpoint<{

@@ -7,10 +7,10 @@ import { NangoError, connectionService, getSyncConfigsByConfigIdForWebhook } fro
 import { errorToObject, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { runWithConcurrencyLimit } from './runWithConcurrencyLimit.js';
-import { getOrchestrator } from '../utils/utils.js';
 import { dispatchQueuePublisher } from './dispatch-queue/client.js';
 import { SQS_BATCH_MAX_BYTES } from './dispatch-queue/publisher.js';
+import { runWithConcurrencyLimit } from './runWithConcurrencyLimit.js';
+import { getOrchestrator } from '../utils/utils.js';
 
 import type { DispatchQueuePublisher, PreparedDispatchMessage } from './dispatch-queue/publisher.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';

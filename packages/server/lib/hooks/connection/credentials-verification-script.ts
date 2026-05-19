@@ -1,6 +1,7 @@
 import tracer from 'dd-trace';
 
 import { ProxyRequest, getProvider, getProxyConfiguration } from '@nangohq/shared';
+import { metrics } from '@nangohq/utils';
 
 import * as verificationscriptHandlers from './index.js';
 
@@ -35,7 +36,8 @@ async function execute(
     config: Config,
     credentials: ApiKeyCredentials | BasicApiCredentials | TbaCredentials | JwtCredentials | SignatureCredentials | InstallPluginCredentials,
     connectionId: string,
-    connectionConfig: ConnectionConfig
+    connectionConfig: ConnectionConfig,
+    _accountId: number
 ) {
     const { provider: providerName, unique_key: providerConfigKey } = config;
 
@@ -113,7 +115,11 @@ async function execute(
                     getIntegrationConfig: () => ({
                         oauth_client_id: null,
                         oauth_client_secret: null
-                    })
+                    }),
+                    onBytes: ({ sent, received }) => {
+                        metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_credential_verification_hook' });
+                        metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_credential_verification_hook' });
+                    }
                 });
                 return (await proxy.request()).unwrap();
             }

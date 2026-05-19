@@ -82,6 +82,7 @@ export abstract class NangoActionBase<
         | undefined;
 
     public isCLI: NangoProps['isCLI'];
+    public accountId: number;
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -102,6 +103,7 @@ export abstract class NangoActionBase<
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
         this.environmentId = config.environmentId;
+        this.accountId = config.team.id;
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;

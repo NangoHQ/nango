@@ -712,7 +712,11 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                })
+                }),
+                onBytes: ({ sent, received }) => {
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'slack_join_channel' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'slack_join_channel' });
+                }
             });
             const join = await proxy.request();
             if (join.isErr()) {
@@ -785,7 +789,11 @@ export class SlackService {
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
-                })
+                }),
+                onBytes: ({ sent, received }) => {
+                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'slack_send_message' });
+                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'slack_send_message' });
+                }
             });
             const slackMessage = await proxy.request();
 
