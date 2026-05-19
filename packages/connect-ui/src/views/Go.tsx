@@ -10,6 +10,7 @@ import * as z from 'zod';
 import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
+import { CustomSelect } from '@/components/CustomSelect';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -549,7 +550,11 @@ export const Go: React.FC = () => {
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
+                                            defaultValue={
+                                                isPreconfigured
+                                                    ? preconfigured[key]
+                                                    : (definition?.default_value ?? (definition?.enum && !isOptional ? definition.enum[0] : ''))
+                                            }
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {
@@ -594,14 +599,24 @@ export const Go: React.FC = () => {
                                                             )}
                                                         </div>
                                                         <FormControl>
-                                                            <CustomInput
-                                                                placeholder={definition?.example || definition?.title || base?.example}
-                                                                prefix={definition?.prefix}
-                                                                suffix={definition?.suffix}
-                                                                {...(field as InputHTMLAttributes<HTMLInputElement>)}
-                                                                autoComplete="off"
-                                                                type={definition?.secret || base?.secret ? 'password' : 'text'}
-                                                            />
+                                                            {definition?.enum && definition.enum.length > 0 ? (
+                                                                <CustomSelect
+                                                                    name={field.name}
+                                                                    options={definition.enum}
+                                                                    placeholder={definition.title}
+                                                                    value={field.value as string | undefined}
+                                                                    onChange={field.onChange}
+                                                                />
+                                                            ) : (
+                                                                <CustomInput
+                                                                    placeholder={definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
+                                                                    suffix={definition?.suffix}
+                                                                    {...(field as InputHTMLAttributes<HTMLInputElement>)}
+                                                                    autoComplete="off"
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
+                                                                />
+                                                            )}
                                                         </FormControl>
                                                         <FormMessage className="p-0" />
                                                     </FormItem>

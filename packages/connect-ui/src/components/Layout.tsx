@@ -12,7 +12,18 @@ export const Layout: React.FC = () => {
     const { isEmbedded, showWatermark, isAuthLink } = useGlobal();
     const isDarkTheme = document.documentElement.classList.contains('dark');
 
-    useClickAway(ref, () => {
+    useClickAway(ref, (event: MouseEvent) => {
+        const target = event.target as Element | null;
+
+        if (target?.closest('[data-slot="select-content"]')) return;
+
+        if (target === document.documentElement) {
+            const rect = ref.current?.getBoundingClientRect();
+            if (rect && event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom) {
+                return;
+            }
+        }
+
         triggerClose('click:outside');
     });
 
