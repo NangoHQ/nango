@@ -1,0 +1,30 @@
+packages/shared/lib/services/sandbox-api-key.unit.test.ts
+  s_3149120bc775e1::t_2d374ee691f94c 12
+packages/shared/lib/index.ts
+  s_3149120bc775e1::t_80485fd1c02660 62
+packages/shared/lib/services/customerKey.service.ts
+  ai_agent 5
+packages/shared/lib/utils/encryption.manager.integration.test.ts
+  s_3149120bc775e1::t_1760df9ecef6ee 96-98,100-101,105-114
+  ai_agent 8
+  s_3149120bc775e1::t_df27aaa827f7aa 11-14,27,37,45,53,85,95,99,102-104
+packages/shared/lib/services/account.service.ts
+  s_3149120bc775e1::t_5ae7ded1e62903 11
+  ai_agent 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "86e9d7d1ba835fd0f74e280122a8fa4a0ee01e90",
+  "prompts": {},
+  "sessions": {
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
