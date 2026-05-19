@@ -57,7 +57,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
       The default API key created on signup has full access and is the simplest option.
 
-      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
+      If the user creates a scoped API key instead, this guide needs `environment:integrations:create` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
     </Accordion>
   </Step>
 
@@ -372,9 +372,15 @@ Once you have the connection ID, fetch credentials whenever you need them:
   </Step>
 </Steps>
 
+<Tip>
+  **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
+
 ## OAuth developer apps
 
-Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup. They work in production too, but we strongly recommend registering your own OAuth app before going live.
+Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup.
+
+They work in production too, but we strongly recommend registering your own before going live. Most OAuth APIs have a step-by-step setup guide in [APIs & Integrations](/integrations/overview) — for example, [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
 Reasons to register your own:
 - **Whitelabel auth** — with Nango's app, users authorize Nango instead of your product.
@@ -386,10 +392,6 @@ Reasons to register your own:
 - **Portability** — only your own developer app lets you export access and refresh tokens and move off Nango without users re-authorizing.
 
 The same tradeoffs apply to shared OAuth apps provided by other auth platforms.
-
-<Tip>
-  **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
 
 ## Related guides
 
