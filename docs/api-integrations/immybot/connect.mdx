@@ -20,41 +20,114 @@ To authenticate with ImmyBot, you need:
 
 ### Instructions:
 
-##### Step 1: Create or find your Microsoft Entra app registration
+<Steps>
+  <Step title="Create or find your Microsoft Entra app registration">
+    In Microsoft Entra, go to **App registrations** and click **New registration**, or open an existing app registration for ImmyBot API access.
 
-In Microsoft Entra:
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/01-azure-app-registrations-new-registration.png" />
+    </Frame>
 
-1. Create an app registration for ImmyBot API access, or open an existing app registration.
-2. Copy the **Directory (tenant) ID**.
-3. Copy the **Application (client) ID**.
-4. Create a client secret and copy the secret **Value**.
-5. Open the matching **Enterprise Application** / managed application in the local directory.
-6. Copy the Enterprise Application **Object ID**.
-7. In ImmyBot, add a Person with the Enterprise Application Object ID as the Azure Object ID.
-8. Create a User from that Person and assign an administrator role for API access.
+    From the app registration overview, copy the **Directory (tenant) ID** and **Application (client) ID**.
 
-<Note>
-Store the Client Secret securely. Azure only shows the client secret value once.
-</Note>
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/02-azure-app-registration-overview.png" />
+    </Frame>
 
-<Warning>
-Use the Enterprise Application Object ID for the ImmyBot Azure Object ID field, not the App Registration Object ID.
-</Warning>
+    Create a client secret under **Certificates & secrets**, then copy the secret **Value**.
 
-##### Step 2: Find your ImmyBot instance subdomain
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/03-azure-client-secret.png" />
+    </Frame>
 
-Open your ImmyBot instance URL. The subdomain is the first segment before `.immy.bot`.
+    <Note>
+      Store the Client Secret securely. Azure only shows the client secret value once.
+    </Note>
+  </Step>
 
-For example, if your ImmyBot URL is `https://acme.immy.bot`, enter `acme`.
+  <Step title="Copy the Enterprise Application Object ID">
+    From the app registration overview, click the **Managed application in local directory** link.
 
-##### Step 3: Enter credentials in the Connect UI
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/04-azure-managed-application-link.png" />
+    </Frame>
 
-1. Open the form where you need to authenticate with ImmyBot.
-2. Enter:
-   - **Microsoft Entra Tenant ID**
-   - **ImmyBot Instance Subdomain**
-   - **Client ID**
-   - **Client Secret**
-3. Submit the form, and you should be successfully authenticated.
+    On the Enterprise Application properties page, copy the **Object ID**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/05-azure-enterprise-application-object-id.png" />
+    </Frame>
+
+    <Warning>
+      Use the Enterprise Application Object ID for the ImmyBot Azure Object ID field, not the App Registration Object ID.
+    </Warning>
+  </Step>
+
+  <Step title="Add the Azure service principal as a Person in ImmyBot">
+    In ImmyBot, expand **Show more** in the sidebar and open **People**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/06-immybot-show-more-people.png" />
+    </Frame>
+
+    Click **New**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/07-immybot-people-new.png" />
+    </Frame>
+
+    Create a Person for the integration. Select the owner tenant, enter a recognizable name and email, and paste the Enterprise Application Object ID into **Azure Object ID**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/08-immybot-new-person-form.png" />
+    </Frame>
+  </Step>
+
+  <Step title="Create a User and assign an API access role in ImmyBot">
+    In ImmyBot, expand **Show more** and open **Users & Roles**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/09-immybot-show-more-users-roles.png" />
+    </Frame>
+
+    Click **Add New User**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/10-immybot-users-roles-add-new-user.png" />
+    </Frame>
+
+    Select the Person you created, then click **Create Users**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/11-immybot-create-users-from-existing-people.png" />
+    </Frame>
+
+    Assign an administrator role that can access the ImmyBot API, such as **System Administrator (Legacy)** or the applicable administrator role for your tenant. Set the assignment to **Allow**, then click **Assign**.
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/12-immybot-direct-role-assignment.png" />
+    </Frame>
+  </Step>
+
+  <Step title="Find your ImmyBot instance subdomain">
+    Open your ImmyBot instance URL. The subdomain is the first segment before `.immy.bot`.
+
+    For example, if your ImmyBot URL is `https://acme.immy.bot`, enter `acme`.
+  </Step>
+
+  <Step title="Enter credentials in the Nango Connect UI">
+    Open the form where you need to authenticate with ImmyBot, then enter:
+    - **Microsoft Entra Tenant ID**
+    - **ImmyBot Instance Subdomain**
+    - **Client ID**
+    - **Client Secret**
+
+    <Frame>
+      <img src="/api-integrations/immybot/screenshots/13-nango-immybot-connection-form.png" />
+    </Frame>
+
+    Submit the form, and you should be successfully authenticated.
+  </Step>
+</Steps>
 
 You are now connected to ImmyBot.
