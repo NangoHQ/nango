@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ChevronRight, ExternalLink, Eye, Upload } from 'lucide-react';
+import { AlertTriangle, ChevronRight, ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
-import { DeployedStatus } from './DeployedStatus';
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
@@ -16,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Spinner } from '@/components-v2/ui/spinner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 import type { NangoFunctionTemplate } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -25,25 +24,12 @@ import type { JSONSchema7 } from 'json-schema';
 interface TemplateDetailProps {
     template: NangoFunctionTemplate;
     provider: string;
-    deployedFunctionPath: string;
     onDeploy: () => void;
     isDeploying: boolean;
 }
 
-export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, deployedFunctionPath, onDeploy, isDeploying }) => {
-    const { confirm, DialogComponent } = useConfirmDialog();
+export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provider, onDeploy, isDeploying }) => {
     const githubUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${provider}/${template.type === 'action' ? 'actions' : 'syncs'}/${template.name}.ts`;
-
-    const onRedeployClick = () => {
-        void confirm({
-            title: 'Redeploy this template?',
-            description: `This will overwrite the existing deployed ${template.type} "${template.name}".`,
-            confirmButtonText: 'Redeploy',
-            confirmVariant: 'primary',
-            icon: <AlertTriangle />,
-            onConfirm: onDeploy
-        });
-    };
 
     const inputSchema = useMemo<JSONSchema7 | null>(() => {
         if (!template.input || !template.json_schema) return null;
@@ -75,29 +61,23 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                     </div>
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>
-                <div className="inline-flex items-center gap-3 shrink-0">
-                    {template.deployed && <DeployedStatus deployed={template.deployed} />}
-                    {template.deployed ? (
-                        <>
-                            <ButtonLink to={deployedFunctionPath} variant="ghost">
-                                <Eye />
-                                View
-                            </ButtonLink>
-                            <Button type="button" variant="secondary" onClick={onRedeployClick} disabled={isDeploying}>
-                                <Upload />
-                                {isDeploying ? 'Deploying…' : 'Redeploy template'}
-                            </Button>
-                        </>
-                    ) : (
-                        <Button type="button" onClick={onDeploy} disabled={isDeploying}>
-                            <Upload />
-                            {isDeploying ? 'Deploying…' : 'Deploy template'}
-                        </Button>
+                <div className="inline-flex items-center gap-2 shrink-0">
+                    {template.deployed && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-flex text-feedback-warning-fg" tabIndex={0}>
+                                    <AlertTriangle className="size-4" />
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">You already have a function deployed with this name</TooltipContent>
+                        </Tooltip>
                     )}
+                    <Button type="button" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
+                        <Upload />
+                        {isDeploying ? 'Deploying…' : 'Deploy template'}
+                    </Button>
                 </div>
             </div>
-
-            {DialogComponent}
 
             {template.type === 'sync' && (
                 <div className="flex flex-wrap gap-4 gap-y-2">

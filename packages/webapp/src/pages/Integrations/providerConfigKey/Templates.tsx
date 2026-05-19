@@ -5,7 +5,6 @@ import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { DeployedStatus } from './DeployedStatus';
 import { TemplateDetail } from './TemplateDetail';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { EmptyCard } from '@/components-v2/EmptyCard';
@@ -28,22 +27,12 @@ import { cn } from '@/utils/utils';
 import type { ComboboxOption } from '@/components-v2/ui/combobox';
 import type { ApiError, NangoFunctionTemplate } from '@nangohq/types';
 
-type Template = NangoFunctionTemplate;
-
 const TYPE_FILTER_VALUES = ['sync', 'action'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
 
 const TYPE_OPTIONS: ComboboxOption<TypeFilterValue>[] = [
     { value: 'sync', label: 'Sync' },
     { value: 'action', label: 'Action' }
-];
-
-const DEPLOYED_FILTER_VALUES = ['deployed', 'not-deployed'] as const;
-type DeployedFilterValue = (typeof DEPLOYED_FILTER_VALUES)[number];
-
-const DEPLOYED_OPTIONS: ComboboxOption<DeployedFilterValue>[] = [
-    { value: 'deployed', label: 'Deployed' },
-    { value: 'not-deployed', label: 'Not deployed' }
 ];
 
 const isOneOf = <T extends string>(values: readonly T[], v: string): v is T => (values as readonly string[]).includes(v);
@@ -71,37 +60,38 @@ export const Templates: React.FC = () => {
     const [rawTypeFilter, setTypeFilter] = useQueryState('typeFilter', parseAsString.withDefault(''));
     const typeFilter: TypeFilterValue | undefined = rawTypeFilter && isOneOf(TYPE_FILTER_VALUES, rawTypeFilter) ? rawTypeFilter : undefined;
 
-    const [rawDeployedFilter, setDeployedFilter] = useQueryState('deployedFilter', parseAsString.withDefault(''));
-    const deployedFilter: DeployedFilterValue | undefined =
-        rawDeployedFilter && isOneOf(DEPLOYED_FILTER_VALUES, rawDeployedFilter) ? rawDeployedFilter : undefined;
-
     const [selectedName, setSelectedName] = useQueryState('template', parseAsString);
     const [selectedType, setSelectedType] = useQueryState('type', parseAsString);
 
-    const filteredTemplates = useMemo<Template[]>(() => {
+    const filteredTemplates = useMemo<NangoFunctionTemplate[]>(() => {
         if (!templates) return [];
         const needle = debouncedSearch.trim().toLowerCase();
-        return templates.filter((t) => {
-            if (typeFilter && t.type !== typeFilter) return false;
-            if (deployedFilter === 'deployed' && !t.deployed) return false;
-            if (deployedFilter === 'not-deployed' && t.deployed) return false;
-            if (needle) {
-                const haystack = `${t.name} ${t.description ?? ''}`.toLowerCase();
-                if (!haystack.includes(needle)) return false;
-            }
-            return true;
-        });
-    }, [templates, debouncedSearch, typeFilter, deployedFilter]);
+        return templates
+            .filter((t) => {
+                if (typeFilter && t.type !== typeFilter) return false;
+                if (needle) {
+                    const haystack = `${t.name} ${t.description ?? ''}`.toLowerCase();
+                    if (!haystack.includes(needle)) return false;
+                }
+                return true;
+            })
+            .sort((a, b) => {
+                const deployedDiff = Number(!!a.deployed) - Number(!!b.deployed);
+                if (deployedDiff !== 0) return deployedDiff;
+                return a.name.localeCompare(b.name);
+            });
+    }, [templates, debouncedSearch, typeFilter]);
 
     // Render-time fallback: prefer the URL-selected template if it's visible, otherwise the first match.
     // No effect / URL writes here — the URL only changes when the user explicitly clicks an item.
-    const selected = useMemo<Template | null>(() => {
+    const selected = useMemo<NangoFunctionTemplate | null>(() => {
         if (filteredTemplates.length === 0) return null;
         if (selectedName && selectedType) {
             const match = filteredTemplates.find((t) => t.name === selectedName && t.type === selectedType);
             if (match) return match;
         }
-        return filteredTemplates[0];
+        const firstAvailable = filteredTemplates.find((t) => !t.deployed);
+        return firstAvailable ?? filteredTemplates[0];
     }, [filteredTemplates, selectedName, selectedType]);
 
     const { mutateAsync: deployFlow, isPending: isDeploying } = usePreBuiltDeployFlow(env, integrationData?.integration.unique_key ?? '');
@@ -190,20 +180,6 @@ export const Templates: React.FC = () => {
                                 reorderOnSelect={false}
                                 showSearch={false}
                             />
-                            <ComboboxSelect<DeployedFilterValue>
-                                allowMultiple
-                                label={deployedFilter ? (deployedFilter === 'deployed' ? 'Deployed' : 'Not deployed') : 'Status'}
-                                dropdownTitle="Filter by status"
-                                options={DEPLOYED_OPTIONS}
-                                selected={deployedFilter ? [deployedFilter] : []}
-                                onSelectedChange={(next) => {
-                                    const newlyAdded = next.find((value) => value !== deployedFilter);
-                                    void setDeployedFilter(newlyAdded ?? null);
-                                }}
-                                onClearAll={() => void setDeployedFilter(null)}
-                                reorderOnSelect={false}
-                                showSearch={false}
-                            />
                         </div>
 
                         {isLoading ? (
@@ -218,6 +194,7 @@ export const Templates: React.FC = () => {
                             <ul className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto pb-3">
                                 {filteredTemplates.map((t) => {
                                     const isSelected = selected?.name === t.name && selected.type === t.type;
+                                    const isDeployed = !!t.deployed;
                                     return (
                                         <li key={`${t.type}:${t.name}`}>
                                             <button
@@ -229,17 +206,15 @@ export const Templates: React.FC = () => {
                                                 }}
                                                 className={cn(
                                                     'w-full flex flex-col gap-1 p-3 rounded-md border border-border-muted bg-bg-elevated text-left cursor-pointer hover:bg-bg-subtle transition-colors',
+                                                    isDeployed && 'opacity-50',
                                                     isSelected && 'bg-bg-subtle border-l-2 border-l-border-brand'
                                                 )}
                                             >
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-text-primary text-body-medium-medium truncate">{t.name}</span>
-                                                    <div className="inline-flex items-center gap-1.5 shrink-0">
-                                                        {t.deployed && <DeployedStatus deployed={t.deployed} />}
-                                                        <Badge variant="gray" className="uppercase">
-                                                            {t.type}
-                                                        </Badge>
-                                                    </div>
+                                                    <Badge variant="gray" className="uppercase shrink-0">
+                                                        {t.type}
+                                                    </Badge>
                                                 </div>
                                                 {t.description && (
                                                     <span className="text-text-secondary text-body-small-regular line-clamp-1">{t.description}</span>
@@ -261,7 +236,6 @@ export const Templates: React.FC = () => {
                             key={`${selected.type}:${selected.name}`}
                             template={selected}
                             provider={integrationData.integration.provider}
-                            deployedFunctionPath={`/${env}/integrations/${integrationData.integration.unique_key}/functions/${encodeURIComponent(selected.name)}?type=${selected.type}`}
                             onDeploy={onDeploy}
                             isDeploying={isDeploying}
                         />
