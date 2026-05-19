@@ -81,10 +81,6 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
         navigate(`/${env}/integrations/${integration.unique_key}/templates`);
     }, [env, integration.unique_key, navigate]);
 
-    const onBuildCustom = useCallback(() => {
-        // TODO: open the custom-function authoring flow once it exists.
-    }, []);
-
     const onFunctionClick = useCallback(
         (fn: NangoFunctionDeployed) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
@@ -159,7 +155,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button type="button" className="h-full">
-                                    <Plus /> New
+                                    <Plus /> Add
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-64">
@@ -174,8 +170,13 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                         </div>
                                     </div>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onSelect={onBuildCustom}>
-                                    <div className="flex items-center gap-4">
+                                <DropdownMenuItem asChild>
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/functions-guide#guide"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="flex items-center gap-4"
+                                    >
                                         <Code />
                                         <div className="">
                                             <span className="text-text-primary text-body-medium-medium">Build custom</span>
@@ -183,7 +184,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
                                                 Bring your own code or leverage AI agents to build for your use case.
                                             </p>
                                         </div>
-                                    </div>
+                                    </a>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
