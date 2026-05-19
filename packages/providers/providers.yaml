@@ -14318,7 +14318,7 @@ pivotaltracker:
             description: The API key for your Pivotal Tracker account
 
 pushpay-chms-v1:
-    display_name: Pushpay ChMS (API v1)
+    display_name: Pushpay ChMS (v1)
     categories:
         - crm
         - productivity
@@ -14357,6 +14357,7 @@ pushpay-chms-v1:
             type: string
             title: API password
             description: The password for your Pushpay ChMS API user.
+            secret: true
             doc_section: '#step-2-create-an-api-user'
 
 plain:
