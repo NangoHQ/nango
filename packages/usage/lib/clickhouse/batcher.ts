@@ -117,8 +117,8 @@ export class Batcher<T> {
 
             return Err(new Error('Batcher failed to process batch', { cause: err }));
         } finally {
-            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6);
             this.isFlushing = false;
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6);
         }
     }
 
