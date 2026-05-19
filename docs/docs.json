@@ -1548,6 +1548,8 @@
               "integrations/all/statista",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
+              "api-integrations/store-census",
+              "api-integrations/store-leads",
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",

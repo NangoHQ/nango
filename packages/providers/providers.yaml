@@ -17902,6 +17902,32 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-census:
+    display_name: StoreCensus
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.storecensus.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/apps?page=1&pageSize=1
+    docs: https://nango.dev/docs/api-integrations/store-census
+    docs_connect: https://nango.dev/docs/api-integrations/store-census/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your StoreCensus API key.
+            doc_section: '#step-1-get-your-api-key'
+
 store-leads:
     display_name: Store Leads
     categories:
