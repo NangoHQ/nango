@@ -74,14 +74,14 @@ jobs:
               run: npm run lint -- --quiet
     typecheck:
         needs: should-run
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         permissions:
             contents: read
         steps:
             - uses: actions/checkout@v4
               if: needs.should-run.outputs.should_skip != 'true'
               with:
-                  fetch-depth: '0'
+                  fetch-depth: 1
 
             - uses: actions/setup-node@v4
               if: needs.should-run.outputs.should_skip != 'true'
