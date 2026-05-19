@@ -1,14 +1,14 @@
 import db from '@nangohq/database';
 import { FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, report } from '@nangohq/utils';
 
+import environmentService from './environment.service.js';
 import {
     buildSandboxApiKeyScopes,
     decryptSandboxSigningSecret,
     isSandboxApiKey,
     parseSandboxApiKeyToken,
     verifySandboxApiKeyToken
-} from './customer-key-sandbox-token.service.js';
-import environmentService from './environment.service.js';
+} from './sandbox-api-key.service.js';
 import secretService from './secret.service.js';
 import userService from './user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';

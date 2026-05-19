@@ -59,7 +59,7 @@ export {
     sandboxApiKeyBaseScopes,
     sandboxApiKeyPrefix,
     verifySandboxApiKeyToken
-} from './services/customer-key-sandbox-token.service.js';
+} from './services/sandbox-api-key.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';

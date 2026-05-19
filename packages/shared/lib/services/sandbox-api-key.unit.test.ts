@@ -9,7 +9,7 @@ import {
     parseSandboxApiKeyToken,
     sandboxApiKeyPrefix,
     verifySandboxApiKeyToken
-} from './customer-key-sandbox-token.service.js';
+} from './sandbox-api-key.service.js';
 
 describe('customer key sandbox token service', () => {
     it('creates and verifies a sandbox API key token', () => {
