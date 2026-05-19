@@ -6,6 +6,7 @@ import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TA
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
+import { envs } from '../env.js';
 import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
@@ -821,6 +822,121 @@ describe('Records service', () => {
             expect(runTime).toBeLessThan(5000);
 
             expect(allRecordsLength).toBe(numOfRecords);
+        });
+
+        describe('size budget (RECORDS_MAX_RESPONSE_SIZE_BYTES)', () => {
+            const originalBudget = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
+            afterAll(() => {
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = originalBudget;
+            });
+
+            it('Should truncate page and emit next_cursor when the byte budget is exceeded', async () => {
+                // Insert records with non-trivial payloads so each one has a measurable size_bytes.
+                const numOfRecords = 50;
+                const bigField = 'x'.repeat(2_000); // ~2 kB plaintext per record (encrypted+JSONB on disk ≈ a few kB)
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                // Tight budget — must cut the page well below numOfRecords.
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+
+                expect(records.length).toBeGreaterThanOrEqual(1); // always keeps at least one
+                expect(records.length).toBeLessThan(numOfRecords);
+                expect(next_cursor).not.toBeNull();
+            });
+
+            it('Should paginate through every record when budget is enabled (no records lost)', async () => {
+                const numOfRecords = 30;
+                const bigField = 'y'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+
+                const seen = new Set<string>();
+                let cursor: string | undefined | null = null;
+                let pages = 0;
+                do {
+                    const response = await Records.getRecords({
+                        connectionId,
+                        model,
+                        limit: numOfRecords,
+                        ...(cursor && { cursor })
+                    });
+                    expect(response.isOk()).toBe(true);
+                    const { records, next_cursor } = response.unwrap();
+                    expect(records.length).toBeGreaterThan(0);
+                    for (const r of records) {
+                        expect(seen.has(r['id'])).toBe(false);
+                        seen.add(r['id']);
+                    }
+                    cursor = next_cursor;
+                    pages++;
+                    if (pages > 100) throw new Error('runaway pagination');
+                } while (cursor);
+
+                expect(seen.size).toBe(numOfRecords);
+                expect(pages).toBeGreaterThan(1); // confirms budget actually truncated
+            });
+
+            it('Should not truncate when budget is 0 (disabled)', async () => {
+                const numOfRecords = 20;
+                const bigField = 'z'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 0;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                expect(records.length).toBe(numOfRecords);
+                expect(next_cursor).toBeNull();
+            });
+
+            it('Should keep at least one record even when it exceeds the budget', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const huge = 'h'.repeat(5_000);
+                await upsertRecords({
+                    records: [
+                        { id: '1', payload: huge },
+                        { id: '2', payload: huge }
+                    ],
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId
+                });
+
+                // Set a budget smaller than a single record's size.
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 100;
+
+                const response = await Records.getRecords({ connectionId, model, limit: 10 });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                // Must return exactly one record and offer a next_cursor so pagination can progress.
+                expect(records.length).toBe(1);
+                expect(next_cursor).not.toBeNull();
+            });
         });
     }, 60_000);
 

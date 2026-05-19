@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -196,7 +196,7 @@ export async function getRecords({
             }
             query = query.limit(Number(limit) + 1);
         } else {
-            query = query.limit(101);
+            query = query.limit(DEFAULT_RECORDS_LIMIT + 1);
         }
 
         if (modifiedAfter) {
@@ -242,7 +242,10 @@ export async function getRecords({
             }
         }
 
-        const recordsMetadata: FormattedRecordWithMetadata[] = await query.select(
+        const budgetBytes = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
+        const budgetEnabled = budgetBytes > 0;
+
+        const recordsMetadata: (FormattedRecordWithMetadata & { sz: number | null })[] = await query.select(
             // PostgreSQL stores timestamp with microseconds precision
             // however, javascript date only supports milliseconds precision
             // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
@@ -259,12 +262,45 @@ export async function getRecords({
                     WHEN deleted_at IS NOT NULL THEN 'DELETED'
                     WHEN created_at = updated_at THEN 'ADDED'
                     ELSE 'UPDATED'
-                END as last_action
+                END as last_action,
+                ${budgetEnabled ? 'size_bytes' : 'NULL'} as sz
             `)
         );
 
         if (recordsMetadata.length === 0) {
             return Ok({ records: [], next_cursor: null });
+        }
+
+        // Enforce the per-request byte budget BEFORE the records_data fetch
+        // so a truncated page also saves bandwidth on the IN-query. Truncation
+        // marks hasMore=true so a next_cursor is emitted from the last kept
+        // record. We always keep at least one record so pagination can make
+        // progress even on records larger than the budget.
+        const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
+        let hasMore = recordsMetadata.length >= limitPlus1;
+        if (hasMore) {
+            recordsMetadata.pop();
+        }
+        if (budgetEnabled) {
+            // size_bytes is NULL for rows written before #6164 (either still
+            // in legacy records.json or in records_data without the cached
+            // size). Both populations drain as customers re-upsert — every
+            // write path populates size_bytes — so we count NULL as 0 toward
+            // the budget rather than firing a fallback query. Worst case: one
+            // un-backfilled row overshoots by its own size; bounded by data
+            // shape, not unbounded.
+            let acc = 0;
+            for (let i = 0; i < recordsMetadata.length; i++) {
+                const sz = recordsMetadata[i]!.sz ?? 0;
+                if (i > 0 && acc + sz > budgetBytes) {
+                    recordsMetadata.splice(i);
+                    hasMore = true;
+                    span.setTag('nango.records.budgetTruncated', true);
+                    span.setTag('nango.records.budgetAccBytes', acc);
+                    break;
+                }
+                acc += sz;
+            }
         }
 
         const recordIds = recordsMetadata.map((r) => r.id);
@@ -317,14 +353,10 @@ export async function getRecords({
             span.setTag('nango.partition', partition);
         }
 
-        if (results.length > Number(limit || 100)) {
-            results.pop();
-            recordsMetadata.pop();
-
+        if (hasMore) {
             const cursorRawElement = recordsMetadata[recordsMetadata.length - 1];
             if (cursorRawElement) {
-                const encodedCursorValue = Cursor.new(cursorRawElement);
-                return Ok({ records: results, next_cursor: encodedCursorValue });
+                return Ok({ records: results, next_cursor: Cursor.new(cursorRawElement) });
             }
         }
 
