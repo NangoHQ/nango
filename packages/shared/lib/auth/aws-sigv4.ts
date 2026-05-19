@@ -31,11 +31,6 @@ export interface AwsSigV4IntegrationSettings {
         auth?: StsAuth;
     };
     builtinCredentials?: BuiltinAwsCredentials;
-    instructions?: {
-        label?: string;
-        url?: string;
-        description?: string;
-    };
 }
 
 export interface AwsSigV4AssumeRoleInput {
@@ -97,9 +92,6 @@ export function getAwsSigV4Settings(config: ProviderConfig): Result<AwsSigV4Inte
     if (parsed['defaultRegion']) {
         settings.defaultRegion = parsed['defaultRegion'];
     }
-    if (parsed['instructions']) {
-        settings.instructions = parsed['instructions'];
-    }
 
     return Ok(settings);
 }
@@ -160,6 +152,11 @@ export function extractSecretsFromConfig(parsed: Record<string, any>): {
     builtinCredentials: { aws_access_key_id: string; aws_secret_access_key: string } | null;
 } {
     const cleaned = { ...parsed };
+
+    // Strip legacy vendor-side onboarding fields that are no longer surfaced by Nango.
+    // Setup guidance and IAM role provisioning belong in the integration owner's onboarding flow.
+    delete cleaned['templates'];
+    delete cleaned['instructions'];
 
     // Extract builtin AWS credentials
     let builtinCredentials: { aws_access_key_id: string; aws_secret_access_key: string } | null = null;

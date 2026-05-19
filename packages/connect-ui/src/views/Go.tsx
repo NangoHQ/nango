@@ -21,7 +21,7 @@ import { telemetry } from '@/lib/telemetry';
 import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType, AwsSigV4TemplateSummary } from '@nangohq/types';
+import type { AuthModeType } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
 
@@ -30,29 +30,6 @@ const generateExternalId = (): string => {
         return crypto.randomUUID();
     }
     return `ext-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
-};
-
-const buildAwsQuickCreateUrl = (template: AwsSigV4TemplateSummary): string | null => {
-    if (!template.template_url && !template.template_body) {
-        return null;
-    }
-    const params = new URLSearchParams();
-    if (template.stack_name) {
-        params.set('stackName', template.stack_name);
-    }
-    if (template.template_url) {
-        params.set('templateURL', template.template_url);
-    } else if (template.template_body) {
-        params.set('templateBody', template.template_body);
-    }
-    if (template.parameters) {
-        for (const [key, value] of Object.entries(template.parameters)) {
-            if (key && typeof value === 'string') {
-                params.set(`param_${key}`, value);
-            }
-        }
-    }
-    return `https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?${params.toString()}`;
 };
 
 const formSchema: Record<AuthModeType, z.ZodObject> = {
@@ -160,9 +137,6 @@ export const Go: React.FC = () => {
         if (override) return [override, true];
         return [provider?.docs_connect, false];
     }, [provider, integration, session]);
-    const awsSigV4Instructions = integration?.aws_sigv4?.instructions;
-    const awsSigV4Templates = integration?.aws_sigv4?.templates || [];
-
     useMount(() => {
         if (integration) {
             telemetry('view:integration', { integration: integration.unique_key });
@@ -611,41 +585,6 @@ export const Go: React.FC = () => {
                     <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
-                {awsSigV4Instructions && (
-                    <div className="flex flex-col gap-3 border border-subtle rounded-md p-4 bg-elevated">
-                        {awsSigV4Instructions.description && <p className="text-sm text-text-secondary">{awsSigV4Instructions.description}</p>}
-                        {awsSigV4Instructions.url && (
-                            <Button
-                                className="border border-subtle bg-white text-text-primary hover:bg-elevated"
-                                type="button"
-                                onClick={() => window.open(awsSigV4Instructions.url, '_blank', 'noopener,noreferrer')}
-                            >
-                                {awsSigV4Instructions.label || 'Open setup instructions'}
-                            </Button>
-                        )}
-                    </div>
-                )}
-                {awsSigV4Templates.length > 0 && (
-                    <div className="flex flex-col gap-3 border border-subtle rounded-md p-4 bg-elevated">
-                        <p className="text-sm text-text-secondary">Deploy the required AWS resources directly from these templates.</p>
-                        <div className="flex flex-col gap-3">
-                            {awsSigV4Templates.map((template) => {
-                                const launchUrl = buildAwsQuickCreateUrl(template);
-                                return launchUrl ? (
-                                    <div key={template.id} className="flex flex-col gap-2 border border-subtle rounded-md p-3">
-                                        <div>
-                                            <p className="text-sm font-semibold text-text-primary">{template.label || template.id}</p>
-                                            {template.description && <p className="text-xs text-text-secondary mt-1">{template.description}</p>}
-                                        </div>
-                                        <Button type="button" onClick={() => window.open(launchUrl, '_blank', 'noopener,noreferrer')}>
-                                            Deploy in AWS Console
-                                        </Button>
-                                    </div>
-                                ) : null;
-                            })}
-                        </div>
-                    </div>
-                )}
                 {provider.auth_mode === 'AWS_SIGV4' && awsExternalId && (
                     <div className="flex flex-col gap-2 border border-subtle rounded-md p-4 bg-elevated">
                         <p className="text-sm text-text-secondary">Use this External ID when configuring your IAM trust policy.</p>
