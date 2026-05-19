@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
@@ -14,6 +14,10 @@ describe('Secret service', () => {
         await multipleMigrations();
     });
 
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
     const newEnv = async (): Promise<DBEnvironment> => {
         const account = await createAccount();
         const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
@@ -22,8 +26,8 @@ describe('Secret service', () => {
 
     it('creates a default secret for each environment', async () => {
         const env = await newEnv();
-        // Note: getInternalSecretForEnv will throw if no default secret exists.
-        (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
+        // Note: getDefaultSecretForEnv will throw if no default secret exists.
+        (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
     });
 
     it('refuses to create two default secrets', async () => {
@@ -55,7 +59,7 @@ describe('Secret service', () => {
             })
         ).unwrap();
         (await secretService.markDefault(db.knex, secret.id)).unwrap();
-        const newDefault = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
+        const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
         expect(newDefault.id).toEqual(secret.id);
     });
 
@@ -96,5 +100,12 @@ describe('Secret service', () => {
         for (const env of envs) {
             expect(fetched.get(env.id)).toBeDefined();
         }
+    });
+
+    it('applies NANGO_SECRET_KEY_<ENV_NAME> override when self-hosted', async () => {
+        const env = await newEnv();
+        vi.stubEnv(`NANGO_SECRET_KEY_${env.name.toUpperCase()}`, 'override-secret-value');
+        const fetched = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        expect(fetched.secret).toBe('override-secret-value');
     });
 });
