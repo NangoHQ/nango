@@ -59,11 +59,9 @@ jobs:
               with:
                   fetch-depth: '0'
 
-            - uses: actions/setup-node@v4
+            - uses: ./.github/actions/setup-node
               if: needs.should-run.outputs.should_skip != 'true'
               with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
                   registry-url: 'https://registry.npmjs.org'
 
             - run: npm ci
