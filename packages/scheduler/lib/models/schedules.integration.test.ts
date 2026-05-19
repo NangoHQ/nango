@@ -41,7 +41,7 @@ describe('Schedules', () => {
     });
     it('should be successfully deleted', async () => {
         const schedule = await createSchedule(db);
-        await setTimeout(1);
+        await setTimeout(10);
         const deleted = (await schedules.remove(db, schedule.id)).unwrap();
         expect(deleted.state).toBe('DELETED');
         expect(deleted.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -49,7 +49,7 @@ describe('Schedules', () => {
     });
     it('should be successfully paused/unpaused', async () => {
         const schedule = await createSchedule(db);
-        await setTimeout(1);
+        await setTimeout(10);
         const paused = (await schedules.transitionState(db, schedule.id, 'PAUSED')).unwrap();
         expect(paused.state).toBe('PAUSED');
         expect(paused.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
@@ -68,7 +68,7 @@ describe('Schedules', () => {
     });
     it('should be successfully updated', async () => {
         const schedule = await createSchedule(db);
-        await setTimeout(1);
+        await setTimeout(10);
         const newFrequency = 600_000; // 10 minutes
         const updated = (
             await schedules.update(db, {
@@ -97,7 +97,7 @@ describe('Schedules', () => {
     });
     it('should set last scheduled task', async () => {
         const schedule = await createSchedule(db);
-        await setTimeout(1);
+        await setTimeout(10);
         const taskId = uuidv7();
         const taskState = 'STARTED';
 
@@ -109,7 +109,7 @@ describe('Schedules', () => {
     });
     it('should update last scheduled task state', async () => {
         const schedule = await createSchedule(db);
-        await setTimeout(1);
+        await setTimeout(10);
         const taskId = uuidv7();
 
         await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
