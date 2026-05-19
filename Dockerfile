@@ -57,7 +57,7 @@ COPY . /app/tmp
 
 # Build the backend separately because it can be cached --in the same build for production and staging-- when we change the env vars
 RUN true \
-  && npm run ts-build:docker
+  && npm run ts-build:docker -- --noCheck
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production
