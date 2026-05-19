@@ -9628,7 +9628,7 @@ immybot:
             prefix: https://
             suffix: .immy.bot
             order: 2
-            doc_section: '#step-2-find-your-immybot-instance-subdomain'
+            doc_section: '#step-5-find-your-immybot-instance-subdomain'
     credentials:
         client_id:
             type: string
