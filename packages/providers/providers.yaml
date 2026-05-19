@@ -12560,12 +12560,6 @@ ninjaone-saas-backup:
             secret: true
             doc_section: '#step-1-find-your-api-credentials'
 
-dropsuite:
-    alias: ninjaone-saas-backup
-    display_name: Dropsuite
-    docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
-    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
-
 nocrm:
     display_name: nocrm.io
     categories:
