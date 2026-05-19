@@ -9,7 +9,7 @@ description: "Important developer & product updates, including deprecations & br
 
   We are migrating all sync executions to our serverless AWS Lambda runtime, and introducing a **10-minute execution limit** per run.
   This gives us better autoscaling, more predictable execution isolation, and a simpler runtime model across Nango Cloud environments.
-  Lambda has a hard timeout, so long-running syncs and actions must checkpoint work and continue across runs instead of relying on a single long execution.
+  Lambda has a hard timeout, so long-running syncs must checkpoint work and continue across runs instead of relying on a single long execution.
 
   **Timeline:**
 
