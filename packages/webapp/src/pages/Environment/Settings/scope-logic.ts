@@ -58,21 +58,6 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
 
-// Legacy scopes — still accepted by the API but no longer exposed in the UI.
-// Stripped from the payload when a migrated key is saved, so the DB ends up
-// with only the new fine-grained scopes.
-export const LEGACY_SCOPES: readonly string[] = [
-    'environment:integrations:write',
-    'environment:connections:write',
-    'environment:syncs:manage',
-    'environment:config:read',
-    'environment:config:*'
-];
-
-export function stripLegacyScopes(scopes: string[]): string[] {
-    return scopes.filter((s) => !LEGACY_SCOPES.includes(s));
-}
-
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
 }
