@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite --port ${NANGO_CONNECT_UI_PORT:-3009}",
-        "build": "vite build",
+        "build": "tsc -b --noCheck && vite build",
         "preview": "vite preview",
         "serve:unsafe": "serve dist -p ${NANGO_CONNECT_UI_PORT:-3009}"
     },
