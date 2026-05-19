@@ -13,6 +13,7 @@ const querystringValidation = z
     .object({
         env: envSchema,
         type: z.enum(['sync', 'action', 'on-event']).optional(),
+        search: z.string().trim().min(1).max(255).optional(),
         page: z.coerce.number().int().min(0).optional().default(0),
         limit: z.coerce.number().int().min(1).max(100).optional().default(20)
     })
@@ -33,7 +34,7 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
 
     const { environment } = res.locals;
     const { providerConfigKey } = valParams.data;
-    const { type, page, limit } = queryStringValues.data;
+    const { type, search, page, limit } = queryStringValues.data;
 
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
     if (!integration) {
@@ -45,6 +46,7 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
         environmentId: environment.id,
         providerConfigKey,
         type,
+        search,
         limit,
         offset: page * limit
     });

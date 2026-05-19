@@ -68,13 +68,13 @@ describe('Scope enforcement on public API routes', () => {
     });
 
     describe('POST /integrations', () => {
-        it('should allow with integrations:write scope', async () => {
-            const token = await createKeyWithScopes(['environment:integrations:write']);
+        it('should allow with integrations:create scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:create']);
             const res = await api.fetch('/integrations', { method: 'POST', token, body: {} } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without integrations:write scope', async () => {
+        it('should deny without integrations:create scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/integrations', { method: 'POST', token, body: {} } as any);
             expect(res.res.status).toBe(403);
@@ -82,13 +82,13 @@ describe('Scope enforcement on public API routes', () => {
     });
 
     describe('POST /integrations/quickstart', () => {
-        it('should allow with integrations:write scope', async () => {
-            const token = await createKeyWithScopes(['environment:integrations:write']);
+        it('should allow with integrations:create scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:create']);
             const res = await api.fetch('/integrations/quickstart', { method: 'POST', token, body: {} } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without integrations:write scope', async () => {
+        it('should deny without integrations:create scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/integrations/quickstart', { method: 'POST', token, body: {} } as any);
             expect(res.res.status).toBe(403);
@@ -110,13 +110,13 @@ describe('Scope enforcement on public API routes', () => {
     });
 
     describe('DELETE /integrations/:uniqueKey', () => {
-        it('should allow with integrations:write scope', async () => {
-            const token = await createKeyWithScopes(['environment:integrations:write']);
+        it('should allow with integrations:delete scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:delete']);
             const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'DELETE', token, params: { uniqueKey: 'nonexistent' } } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without integrations:write scope', async () => {
+        it('should deny without integrations:delete scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/integrations/:uniqueKey' as any, { method: 'DELETE', token, params: { uniqueKey: 'nonexistent' } } as any);
             expect(res.res.status).toBe(403);
@@ -154,13 +154,13 @@ describe('Scope enforcement on public API routes', () => {
     });
 
     describe('DELETE /connections/:connectionId', () => {
-        it('should allow with connections:write scope', async () => {
-            const token = await createKeyWithScopes(['environment:connections:write']);
+        it('should allow with connections:delete scope', async () => {
+            const token = await createKeyWithScopes(['environment:connections:delete']);
             const res = await api.fetch('/connections/:connectionId' as any, { method: 'DELETE', token, params: { connectionId: 'nonexistent' } } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without connections:write scope', async () => {
+        it('should deny without connections:delete scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/connections/:connectionId' as any, { method: 'DELETE', token, params: { connectionId: 'nonexistent' } } as any);
             expect(res.res.status).toBe(403);
@@ -390,13 +390,13 @@ describe('Scope enforcement on public API routes', () => {
     // ── Config ───────────────────────────────────────────────────────
 
     describe('GET /environment-variables', () => {
-        it('should allow with config:read scope', async () => {
-            const token = await createKeyWithScopes(['environment:config:read']);
+        it('should allow with variables:read scope', async () => {
+            const token = await createKeyWithScopes(['environment:variables:read']);
             const res = await api.fetch('/environment-variables' as any, { method: 'GET', token } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without config:read scope', async () => {
+        it('should deny without variables:read scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/environment-variables' as any, { method: 'GET', token } as any);
             expect(res.res.status).toBe(403);
@@ -404,13 +404,13 @@ describe('Scope enforcement on public API routes', () => {
     });
 
     describe('GET /scripts/config', () => {
-        it('should allow with config:read scope', async () => {
-            const token = await createKeyWithScopes(['environment:config:read']);
+        it('should allow with integrations:list_functions scope', async () => {
+            const token = await createKeyWithScopes(['environment:integrations:list_functions']);
             const res = await api.fetch('/scripts/config', { method: 'GET', token } as any);
             expect(res.res.status).not.toBe(403);
         });
 
-        it('should deny without config:read scope', async () => {
+        it('should deny without integrations:list_functions scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/scripts/config', { method: 'GET', token } as any);
             expect(res.res.status).toBe(403);

@@ -2,10 +2,10 @@ import { uuidv4, uuidv7 } from 'uuidv7';
 
 import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
-import { envs } from '../env.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
 import type { Result } from '@nangohq/utils';
