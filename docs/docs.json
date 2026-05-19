@@ -786,6 +786,9 @@
                       {
                         "group": "Functions",
                         "pages": [
+                          "reference/backend/http-api/functions/compile",
+                          "reference/backend/http-api/functions/dryrun",
+                          "reference/backend/http-api/functions/deployments",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },

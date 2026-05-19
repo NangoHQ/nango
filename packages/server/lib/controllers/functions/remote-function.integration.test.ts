@@ -8,12 +8,16 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
+import type { ApiKeyScope } from '@nangohq/types';
+
 let api: Awaited<ReturnType<typeof runServer>>;
 const originalNodeEnv = envs.NODE_ENV;
 
-async function seedAccountWithRemoteFunctions() {
-    const seed = await seeders.seedAccountEnvAndUser();
-    await db.knex('plans').where('id', seed.plan.id).update({ remote_functions: true });
+async function seedAccountWithRemoteFunctions(scopes?: ApiKeyScope[]) {
+    const seed = await seeders.seedAccountEnvAndUser({ plan: { remote_functions: true } });
+    if (scopes) {
+        await db.knex('customer_keys').where('id', seed.apiKey.id).update({ scopes });
+    }
     return seed;
 }
 
@@ -48,6 +52,17 @@ describe('remote-function public API', () => {
                 integration_id: 'github',
                 function_name: 'syncIssues',
                 function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        shouldBeProtected(res);
+    });
+
+    it('protects POST /functions/compile', async () => {
+        const res = await api.fetch('/functions/compile', {
+            method: 'POST',
+            body: {
                 code: 'export default {}'
             }
         });
@@ -103,6 +118,30 @@ describe('remote-function public API', () => {
         });
     });
 
+    it('rejects POST /functions/dryrun without dryrun scope', async () => {
+        const seed = await seedAccountWithRemoteFunctions();
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
+
+        const res = await api.fetch('/functions/dryrun', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_type: 'sync',
+                code: 'export default {}',
+                connection_id: 'missing-connection'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:dryrun'
+            }
+        });
+    });
+
     it('rejects POST /remote-function/deploy without deploy scope', async () => {
         const seed = await seedAccountWithRemoteFunctions();
         const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
@@ -111,6 +150,31 @@ describe('remote-function public API', () => {
             method: 'POST',
             token: apiKey.secret,
             body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:deploy'
+            }
+        });
+    });
+
+    it('rejects POST /functions/deployments without deploy scope', async () => {
+        const seed = await seedAccountWithRemoteFunctions();
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                type: 'single',
                 integration_id: 'github',
                 function_name: 'syncIssues',
                 function_type: 'sync',
@@ -144,6 +208,26 @@ describe('remote-function public API', () => {
         isError(res.json);
         expect(res.res.status).toBe(400);
         expect(res.json.error.code).toBe('invalid_body');
+    });
+
+    it('requires deploy scope on POST /functions/compile', async () => {
+        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:mcp']);
+
+        const res = await api.fetch('/functions/compile', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:deploy'
+            }
+        });
     });
 
     it('returns integration_not_found on POST /remote-function/compile', async () => {
@@ -219,6 +303,53 @@ describe('remote-function public API', () => {
         });
     });
 
+    it('returns connection_not_found on POST /functions/dryrun', async () => {
+        const { env, apiKey } = await seedAccountWithRemoteFunctions();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await api.fetch('/functions/dryrun', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_type: 'sync',
+                code: 'export default {}',
+                connection_id: 'missing-connection'
+            }
+        });
+
+        expect(res.res.status).toBe(404);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'connection_not_found',
+                message: "Connection 'missing-connection' was not found for integration 'github'"
+            }
+        });
+    });
+
+    it('returns integration_not_found on POST /functions/dryrun', async () => {
+        const { apiKey } = await seedAccountWithRemoteFunctions();
+
+        const res = await api.fetch('/functions/dryrun', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_type: 'sync',
+                code: 'export default {}',
+                connection_id: 'missing-connection'
+            }
+        });
+
+        expect(res.res.status).toBe(404);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'integration_not_found',
+                message: "Integration 'github' was not found"
+            }
+        });
+    });
+
     it('returns integration_not_found on POST /remote-function/deploy', async () => {
         const { apiKey } = await seedAccountWithRemoteFunctions();
 
@@ -226,6 +357,30 @@ describe('remote-function public API', () => {
             method: 'POST',
             token: apiKey.secret,
             body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(404);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'integration_not_found',
+                message: "Integration 'github' was not found"
+            }
+        });
+    });
+
+    it('returns integration_not_found on POST /functions/deployments', async () => {
+        const { apiKey } = await seedAccountWithRemoteFunctions();
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                type: 'single',
                 integration_id: 'github',
                 function_name: 'syncIssues',
                 function_type: 'sync',

@@ -66,6 +66,9 @@ import type {
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetProviderTemplates,
+    PostFunctionCompile,
+    PostFunctionDeployment,
+    PostFunctionDryrun,
     PostRemoteFunctionCompile,
     PostRemoteFunctionDeploy,
     PostRemoteFunctionDryrun
@@ -150,6 +153,9 @@ export type PublicApiEndpoints =
     | GetPublicSyncStatus
     | GetPublicV1
     | PostPublicTriggerAction
+    | PostFunctionCompile
+    | PostFunctionDryrun
+    | PostFunctionDeployment
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun
     | PostRemoteFunctionDeploy

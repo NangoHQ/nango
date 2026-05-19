@@ -21,6 +21,8 @@ export interface DeployRequest {
     environment_name: string;
     nango_secret_key: string;
     nango_host: string;
+    version?: string;
+    allow_destructive?: boolean;
 }
 
 export interface DeployResult {

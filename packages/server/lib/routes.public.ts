@@ -34,9 +34,9 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
-import { postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
-import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
+import { postFunctionCompile, postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { postFunctionDeployment, postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionDryrun, postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -96,6 +96,9 @@ const remoteFunctionAuth: RequestHandler[] = [
         next();
     }
 ];
+const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
+const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:dryrun')];
+const functionDeployAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
 
 export const publicAPI = express.Router();
 
@@ -269,6 +272,12 @@ publicAPI.route('/mcp').get(apiAuth, withScope('environment:mcp'), getMcp);
 // Scripts config
 publicAPI.use('/scripts', jsonContentTypeMiddleware);
 publicAPI.route('/scripts/config').get(apiAuth, withScope('environment:integrations:list_functions'), getPublicScriptsConfig);
+
+// Functions
+publicAPI.use('/functions', jsonContentTypeMiddleware);
+publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionCompile);
+publicAPI.route('/functions/dryrun').post(functionDryrunAuth, postFunctionDryrun);
+publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

@@ -4,6 +4,7 @@ import type { FunctionSource } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
 
 export type FunctionType = 'action' | 'sync' | 'on-event';
+export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -29,69 +30,131 @@ export interface ProxyCall {
     headers: Record<string, unknown>;
 }
 
+export interface FunctionCompileBody {
+    code: string;
+}
+
+export interface FunctionCompileSuccess {
+    bundle_size_bytes: number;
+    bundled_js: string;
+    compiled_at: string;
+}
+
+export interface FunctionDryrunBody {
+    integration_id: string;
+    function_type: RunnableFunctionType;
+    code: string;
+    connection_id: string;
+    input?: unknown;
+    metadata?: Record<string, unknown> | undefined;
+    checkpoint?: Record<string, unknown> | undefined;
+    last_sync_date?: string | undefined;
+}
+
+export interface FunctionDryrunSuccess {
+    integration_id: string;
+    function_type: RunnableFunctionType;
+    execution_timeout_at: string;
+    duration_ms: number;
+    output: string;
+    result?: unknown;
+}
+
+export interface FunctionDeploymentBody {
+    type: 'single';
+    integration_id: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+    code: string;
+    version?: string | undefined;
+    allow_destructive?: boolean | undefined;
+}
+
+export interface FunctionDeploySuccess {
+    integration_id: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+    deployed: boolean;
+    deployed_functions: { name: string; version: string }[];
+    output: string;
+}
+
+export type PostFunctionCompile = Endpoint<{
+    Method: 'POST';
+    Path: '/functions/compile';
+    Body: FunctionCompileBody;
+    Error: ApiError<FunctionErrorCode>;
+    Success: FunctionCompileSuccess;
+}>;
+
+export type PostFunctionDryrun = Endpoint<{
+    Method: 'POST';
+    Path: '/functions/dryrun';
+    Body: FunctionDryrunBody;
+    Error: ApiError<FunctionErrorCode>;
+    Success: FunctionDryrunSuccess;
+}>;
+
+export type PostFunctionDeployment = Endpoint<{
+    Method: 'POST';
+    Path: '/functions/deployments';
+    Body: FunctionDeploymentBody;
+    Error: ApiError<FunctionErrorCode>;
+    Success: FunctionDeploySuccess;
+}>;
+
+export interface RemoteFunctionCompileBody {
+    integration_id: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+    code: string;
+}
+
+export interface RemoteFunctionCompileSuccess extends FunctionCompileSuccess {
+    integration_id: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+}
+
+export interface RemoteFunctionDryrunBody extends RemoteFunctionCompileBody {
+    connection_id: string;
+    input?: unknown;
+    metadata?: Record<string, unknown> | undefined;
+    checkpoint?: Record<string, unknown> | undefined;
+    last_sync_date?: string | undefined;
+}
+
+export interface RemoteFunctionDryrunSuccess {
+    integration_id: string;
+    function_name: string;
+    function_type: RunnableFunctionType;
+    execution_timeout_at: string;
+    duration_ms: number;
+    result?: unknown;
+}
+
 export type PostRemoteFunctionCompile = Endpoint<{
     Method: 'POST';
     Path: '/remote-function/compile';
-    Body: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        code: string;
-    };
+    Body: RemoteFunctionCompileBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        bundle_size_bytes: number;
-        bundled_js: string;
-        compiled_at: string;
-    };
+    Success: RemoteFunctionCompileSuccess;
 }>;
 
 export type PostRemoteFunctionDryrun = Endpoint<{
     Method: 'POST';
     Path: '/remote-function/dryrun';
-    Body: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        code: string;
-        connection_id: string;
-        input?: unknown;
-        metadata?: Record<string, unknown> | undefined;
-        checkpoint?: Record<string, unknown> | undefined;
-        last_sync_date?: string | undefined;
-    };
+    Body: RemoteFunctionDryrunBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        execution_timeout_at: string;
-        duration_ms: number;
-        result?: unknown;
-    };
+    Success: RemoteFunctionDryrunSuccess;
 }>;
 
 export type PostRemoteFunctionDeploy = Endpoint<{
     Method: 'POST';
     Path: '/remote-function/deploy';
-    Body: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        code: string;
-    };
+    Body: RemoteFunctionCompileBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: {
-        integration_id: string;
-        function_name: string;
-        function_type: FunctionType;
-        deployed: boolean;
-        deployed_functions: { name: string; version: string }[];
-        output: string;
-    };
+    Success: FunctionDeploySuccess;
 }>;
 
 interface NangoFunctionBase {

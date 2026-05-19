@@ -28,3 +28,34 @@ export const remoteFunctionDryrunBodySchema = remoteFunctionBaseBodySchema
         last_sync_date: z.string().datetime().optional()
     })
     .strict();
+
+export const functionCompileBodySchema = z
+    .object({
+        code: z.string().min(1)
+    })
+    .strict();
+
+export const functionDryrunBodySchema = z
+    .object({
+        integration_id: integrationIdSchema,
+        function_type: z.enum(['action', 'sync']),
+        code: z.string().min(1),
+        connection_id: connectionIdSchema,
+        input: z.unknown().optional(),
+        metadata: z.record(z.string(), z.unknown()).optional(),
+        checkpoint: z.record(z.string(), z.unknown()).optional(),
+        last_sync_date: z.string().datetime().optional()
+    })
+    .strict();
+
+export const functionDeploymentBodySchema = z
+    .object({
+        type: z.literal('single'),
+        integration_id: integrationIdSchema,
+        function_name: syncNameSchema,
+        function_type: z.enum(['action', 'sync']),
+        code: z.string().min(1),
+        version: z.string().optional(),
+        allow_destructive: z.boolean().optional()
+    })
+    .strict();
