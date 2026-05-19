@@ -86,8 +86,6 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         return;
     }
 
-    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
-
     let logCtx: LogContext | undefined;
 
     const connectionId = parsedHeaders['connection-id'];
@@ -268,7 +266,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
                 oauth_client_secret: integration.oauth_client_secret
-            })
+            }),
+            onBytes: ({ sent, received }) => {
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server' });
+            }
         });
 
         let success = false;
@@ -432,7 +434,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
 
         await logCtx.success();
         metrics.increment(metrics.Types.PROXY_SUCCESS);
-        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 
@@ -532,8 +533,6 @@ export function handleErrorResponse({
                     // Intentionally left blank - parsedBody stays string
                 }
             }
-
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};

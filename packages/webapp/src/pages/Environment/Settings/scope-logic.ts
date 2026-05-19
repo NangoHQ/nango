@@ -16,8 +16,11 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         group: 'Integrations',
         items: [
             { value: 'environment:integrations:list', label: 'list', credentials: 'environment:integrations:list_credentials' },
+            { value: 'environment:integrations:list_functions', label: 'list functions' },
             { value: 'environment:integrations:read', label: 'read', credentials: 'environment:integrations:read_credentials' },
-            { value: 'environment:integrations:write', label: 'write' }
+            { value: 'environment:integrations:create', label: 'create' },
+            { value: 'environment:integrations:update', label: 'update' },
+            { value: 'environment:integrations:delete', label: 'delete' }
         ]
     },
     {
@@ -25,7 +28,9 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         items: [
             { value: 'environment:connections:list', label: 'list', credentials: 'environment:connections:list_credentials' },
             { value: 'environment:connections:read', label: 'read', credentials: 'environment:connections:read_credentials' },
-            { value: 'environment:connections:write', label: 'write' }
+            { value: 'environment:connections:create', label: 'create' },
+            { value: 'environment:connections:update', label: 'update' },
+            { value: 'environment:connections:delete', label: 'delete' }
         ]
     },
     { group: 'Connect Sessions', items: [{ value: 'environment:connect_sessions:write', label: 'write' }] },
@@ -34,7 +39,9 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         items: [
             { value: 'environment:syncs:read', label: 'read' },
             { value: 'environment:syncs:execute', label: 'execute' },
-            { value: 'environment:syncs:manage', label: 'manage' }
+            { value: 'environment:syncs:update', label: 'update' },
+            { value: 'environment:syncs:variant:create', label: 'create variant' },
+            { value: 'environment:syncs:variant:delete', label: 'delete variant' }
         ]
     },
     { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
@@ -48,9 +55,24 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     },
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
-    { group: 'Config', items: [{ value: 'environment:config:read', label: 'read' }] },
+    { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },
     { group: 'MCP', items: [{ value: 'environment:mcp', label: 'mcp' }] }
 ];
+
+// Legacy scopes — still accepted by the API but no longer exposed in the UI.
+// Stripped from the payload when a migrated key is saved, so the DB ends up
+// with only the new fine-grained scopes.
+export const LEGACY_SCOPES: readonly string[] = [
+    'environment:integrations:write',
+    'environment:connections:write',
+    'environment:syncs:manage',
+    'environment:config:read',
+    'environment:config:*'
+];
+
+export function stripLegacyScopes(scopes: string[]): string[] {
+    return scopes.filter((s) => !LEGACY_SCOPES.includes(s));
+}
 
 export function allGroupScopes(group: ScopeGroup): string[] {
     return group.items.flatMap((item) => (item.credentials ? [item.value, item.credentials] : [item.value]));
@@ -101,9 +123,8 @@ export function toggleScope(scope: string, credentialChild: string | undefined, 
             const without = expanded.filter((s) => s !== scope && s !== credentialChild);
             const rest = selectedScopes.filter((s) => s !== matchingWildcard);
             return [...rest, ...without];
-        } else {
-            return selectedScopes.filter((s) => s !== scope && s !== credentialChild);
         }
+        return selectedScopes.filter((s) => s !== scope && s !== credentialChild);
     } else {
         return [...selectedScopes, scope];
     }

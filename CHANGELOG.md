@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.4] - 2026-05-18
+
+### Added
+
+- *(integrations)* Add support for anvil (#6159) by @hassan254-prog
+- *(integrations)* Add support for zendesk-api-key (#6163) by @hassan254-prog
+
+### Changed
+
+- *(records)* Ensure records_seen partition before insert (#6133) by @TBonnin
+- *(records)* Use cursor in records delete functions loop avoid dead tuple traversal (#6156) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d475db2192b6fdb26ed3d11181b155a9a0be8a5a by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/99d3ce34d6b8e8d91b31d50ab2240eea99c5db19 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9e5859862df584537d47644ea1bdbd4a651b2f4c by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/a73e95005814649c03567097ffc9f28bb8942e76 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/c48bc66a7077e982a22df405ff57077353757770 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b17c74c0e3fc96812d2ab8407edd7362fa17c6a5 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d9e1719135ef271819ffad2941eddef1117e3b21 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/fb16a7b8f6426d5f2a7c36b968740ddb760c6b6d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/633ab9da00422f8616a4333bab2e4486b1315765 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/d560cbbed858a65b8d0d4802a9604c7c322fe6bf by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/7d9e477fabe82e4aa155b8124e442d2f3e8f2783 by Max Mayhew by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/409cb3ade9c45996d0eb844999828401e199139a by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/21a7016c1a8756727ed458ddbea6244818f2d123 by Victor Lang'at by @github-actions[bot]
+
+### Fixed
+
+- *(lambda)* All plans should have tenant isolation enabled (#6162) by @rossmcewan
+- *(server)* Use zod to validate jwt.decode result in sellsy post-connection hook (#6139) by @calebcgates
+- *(vulns)* High-severity vuln fixes (#6171) by @rossmcewan
+
+## [v0.70.3] - 2026-05-15
+
+### Added
+
+- *(usage)* Enable MV dedup propagation on ClickHouse inserts (#6122) by @pfreixes
+- *(records)* Add records_seen partitioned table 1/3 (#6124) by @TBonnin
+- *(integrations)* Add support for buffer (#6120) by @hassan254-prog
+- *(proxy)* Add a header allow list to forward proxy headers (#6131) by @hassan254-prog
+- *(integrations)* Add support for render mcp (#6117) by @hassan254-prog
+- *(integrations)* Add support for wordpress mcp (#6118) by @hassan254-prog
+- Add env var to control how many old syncs to delete (#6138) by @TBonnin
+- *(records)* Add trace instrumentation for GET /records phases (#6114) by @pfreixes
+- *(connections)* Add id as secondary sort key in listConnections (#6132) by @macko911
+- *(metering)* Add ClickHouse -> S3 -> Orb billing events export cron (#6070) by @pfreixes
+- *(server)* New (private) function listing endpoints (deployed & templates) (#6091) by @kaposke
+- *(integrations)* Add support for shippo (#6142) by @hassan254-prog
+- *(integrations)* Add support for easypost (#6143) by @hassan254-prog
+- *(integrations)* Add support for zigpoll (#6144) by @hassan254-prog
+- *(integrations)* Add support for podscribe (#6145) by @hassan254-prog
+- *(integrations)* Add support for revivn (#6147) by @hassan254-prog
+- *(integrations)* Add support for microsoft-people (#6148) by @hassan254-prog
+- *(integrations)* Add support for canva mcp (#6149) by @hassan254-prog
+- Return CLI exit codes for remote functions (#6025) by @marcindobry
+
+### Changed
+
+- *(ci)* Switch workflows to Blacksmith 4-core runners (#6106) by @macko911
+- *(ci)* Parallelize unit and integration tests (#6141) by @macko911
+- *(records)* Faster autodelete candidate query (#6150) by @TBonnin
+- Explain Nango developer apps vs. your own OAuth app (#6153) by @rguldener
+- Cleanup fields replaced by function source (#6109) by @kaposke
+- *(records)* Use records_seen instead of records_batch  2/3 (#6125) by @TBonnin
+- *(records)* Optimize records size calculation (#6134) by @TBonnin
+- *(records)* Drop records_batch table 3/3 (#6126) by @TBonnin
+- Clean up mcp provider docs (#6097) by @hassan254-prog
+- Surface API setup guides and reorder Slack tip in auth guide (#6160) by @rguldener
+
+### Fixed
+
+- *(runner)* Use fake timers in lock expiry tests (#6140) by @macko911
+- *(proxy)* Strip stale content-length for decompressed responses (#6121) by @ErickRDev
+- *(jira-data-center)* Update domain pattern for Jira Data Center  (#6135) by @kishenpateldotwork
+- CancellableDaemon tick shouldn't be fire and forget (#6151) by @TBonnin
+- Validate jwt.decode() tenant ID before using in URL construction (#6018) by @calebcgates
+
 ## [v0.70.2] - 2026-05-13
 
 ### Added
@@ -6663,6 +6739,8 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.4]: https://github.com/NangoHQ/nango/compare/v0.70.3..v0.70.4
+[v0.70.3]: https://github.com/NangoHQ/nango/compare/v0.70.2..v0.70.3
 [v0.70.2]: https://github.com/NangoHQ/nango/compare/v0.70.1..v0.70.2
 [v0.70.1]: https://github.com/NangoHQ/nango/compare/v0.70.0..v0.70.1
 [v0.70.0]: https://github.com/NangoHQ/nango/compare/v0.69.50..v0.70.0

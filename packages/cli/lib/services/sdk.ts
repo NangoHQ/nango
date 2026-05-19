@@ -102,14 +102,14 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
         }
     }
 
-    public triggerSync(
+    public async triggerSync(
         _providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
         _syncMode?: unknown
     ): Promise<void | string> {
         const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
-        return this.dryRunService.run({
+        const res = await this.dryRunService.run({
             ...syncArgs,
             connectionId,
             autoConfirm: true,
@@ -117,6 +117,11 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             interactive: false,
             dependencyUpdate: true
         });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        return res.value;
     }
 
     public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {

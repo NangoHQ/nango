@@ -39,8 +39,8 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
-    PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
+    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
+    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 

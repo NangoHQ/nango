@@ -70,7 +70,7 @@ jobs:
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'
 
-            - run: npm run ts-build
+            - run: npm run ts-build -- --noCheck
               if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run test:unit -- --exclude packages/cli/

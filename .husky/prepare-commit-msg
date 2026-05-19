@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Skip during rebase/cherry-pick — HEAD is detached and the commit messages
+# being applied have already been written by the user.
+GIT_DIR=$(git rev-parse --git-dir)
+if [ -d "$GIT_DIR/rebase-merge" ] || [ -d "$GIT_DIR/rebase-apply" ] || [ -f "$GIT_DIR/CHERRY_PICK_HEAD" ]; then
+  exit 0
+fi
+
 if [ -z "$BRANCHES_TO_SKIP" ]; then
   BRANCHES_TO_SKIP=(master main develop dev development staging stage test)
 fi
