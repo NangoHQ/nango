@@ -14328,12 +14328,7 @@ pushpay-chms-v1:
         retry:
             after:
                 - 'retry-after'
-        verification:
-            method: GET
-            headers:
-                accept: 'application/xml, text/xml;q=0.9, */*;q=0.8'
-            endpoints:
-                - /api.php?srv=api_status
+    credentials_verification_script: pushpayChmsV1CredentialsVerification
     docs: https://nango.dev/docs/api-integrations/pushpay-chms-v1
     docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v1/connect
     connection_config:
