@@ -4962,7 +4962,7 @@ cursor:
             description: The API Key for your Cursor account
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
 
 cursor-admin:
     display_name: Cursor Admin
@@ -4983,7 +4983,7 @@ cursor-admin:
             title: API key
             description: The API Key of your Greenhouse account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
             doc_section: '#step-1-finding-api-key'
         password:
@@ -7094,6 +7094,26 @@ folk:
             example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
             pattern: '^FOLK[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+followupboss:
+    display_name: Follow Up Boss
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.followupboss.com/oauth/authorize
+    token_url: https://app.followupboss.com/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: auth_code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.followupboss.com
+    docs: https://nango.dev/docs/api-integrations/followupboss
+    setup_guide_url: https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app
 
 fortnox:
     display_name: Fortnox
