@@ -1643,6 +1643,7 @@
               "api-integrations/vtex",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",
+              "api-integrations/wappalyzer",
               "integrations/all/wakatime",
               "integrations/all/wave-accounting",
               "integrations/all/wealthbox",
