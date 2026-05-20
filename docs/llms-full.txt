@@ -14275,6 +14275,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `statista` | Statista | API_KEY | [docs](https://nango.dev/docs/integrations/all/statista.md) | [connect](https://nango.dev/docs/integrations/all/statista/connect.md) |  | analytics |
 | `stay-ai` | Stay AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/stay-ai.md) | [connect](https://nango.dev/docs/api-integrations/stay-ai/connect.md) |  | e-commerce |
 | `stitch-mcp` | Stitch (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stitch-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app.md) | design, mcp |
+| `store-census` | StoreCensus | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-census.md) | [connect](https://nango.dev/docs/api-integrations/store-census/connect.md) |  | e-commerce, crm |
 | `store-leads` | Store Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-leads.md) | [connect](https://nango.dev/docs/api-integrations/store-leads/connect.md) |  | e-commerce |
 | `strava` | Strava (Mobile) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava.md) |  |  | social, sports |
 | `strava-web` | Strava (Web) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava-web.md) |  |  | social, sports |
