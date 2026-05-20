@@ -1,13 +1,14 @@
 import { XMLParser } from 'fast-xml-parser';
 
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
+import type { AxiosError, AxiosResponse } from 'axios';
 
 const XML_ACCEPT = 'application/xml, text/xml;q=0.9, */*;q=0.8';
 
 export default async function execute(nango: Nango) {
     const { provider_config_key } = nango.getConnection();
 
-    let response: { data?: unknown };
+    let response: AxiosResponse | AxiosError;
     try {
         response = await nango.proxy({
             endpoint: '/api.php?srv=api_status',
