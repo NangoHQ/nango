@@ -1,0 +1,55 @@
+packages/server/lib/services/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_ac3ae8aee0efee 7
+  s_b39de48b60dddc::t_372abd4b1ec0c2 211,213,215
+  s_b39de48b60dddc::t_7d641f3d8f1377 5,41-53,132-210,212,214,216-383
+packages/server/lib/services/remote-function/dryrun-client.unit.test.ts
+  s_b39de48b60dddc::t_32d9f3d3801f16 23
+  s_b39de48b60dddc::t_1328ce415e0c27 50,126-176
+packages/server/lib/crons/timeoutFunctionDryruns.ts
+  s_b39de48b60dddc::t_59f643e368dfd2 1-41
+docs/reference/backend/http-api/functions/dryruns-get.mdx
+  s_b39de48b60dddc::t_14163dcaa3d423 2-3,10
+docs/docs.json
+  s_b39de48b60dddc::t_eafb5fe10d6508 790-791
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_ea7ba686e24942 11,36-74,161,165,346,350,370,373,439-526
+packages/server/lib/services/remote-function/helpers.ts
+  s_b39de48b60dddc::t_e04dec314ed24b 22
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_3cd71b002631bd 1-2,4-16,19,25-26,33-98,104-109,113,142-149,163,202-205,223-225,229-242,244,246-247,254,256-257,264-269,271-278,280-288,292-381
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_e2b7805f56669f 39,101-109,288-290
+packages/server/lib/server.ts
+  s_b39de48b60dddc::t_72136c61a52f6f 24,97
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_b39de48b60dddc::t_e5783736c661f3 1-42
+packages/shared/lib/index.ts
+  s_b39de48b60dddc::t_ca4b4897f7ec72 31
+packages/shared/lib/services/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_5f4fec96ee5b94 1-239
+docs/reference/backend/http-api/functions/dryruns-create.mdx
+  s_b39de48b60dddc::t_5ec3861412f254 1-10
+packages/types/lib/functions/api.ts
+  s_b39de48b60dddc::t_7a9a2fc6c66f33 16,64-90,120,123-131
+packages/types/lib/api.endpoints.ts
+  s_b39de48b60dddc::t_f9625b51f864f7 66,159
+docs/spec.yaml
+  s_b39de48b60dddc::t_9e23e5c193e3bd 2997-3024,3029-3030,3033-3035,3037-3041,3046-3059,3071-3080
+  s_b39de48b60dddc::t_08667b88ae1dac 1464,1466-1468,1476-1477,1481,1495-1521
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "48bf196c94a653e4431e705fb06ac34e022ce2cd",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
