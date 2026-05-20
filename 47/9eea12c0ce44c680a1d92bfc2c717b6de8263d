@@ -1,0 +1,68 @@
+docs/reference/backend/http-api/functions/dryruns-create.mdx
+  s_b39de48b60dddc::t_5ec3861412f254 1-10
+packages/server/lib/crons/timeoutFunctionDryruns.ts
+  s_b39de48b60dddc::t_59f643e368dfd2 1-41
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_b39de48b60dddc::t_e5783736c661f3 1-42
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 54,57
+  s_b39de48b60dddc::t_286a836da52e46 6,493,496
+  s_b39de48b60dddc::t_ea7ba686e24942 55-56,58-74,161,165,346,350,370,373,439-492,494-495,497-529
+packages/types/lib/functions/api.ts
+  s_b39de48b60dddc::t_7a9a2fc6c66f33 16,64,66-71,74-76,79-86,88,120,123,126-129,131
+  s_6fb3c1794bde76::t_72774ecc171f9c 65,72-73,77-78,87,89-90,124-125,130
+packages/shared/lib/index.ts
+  s_b39de48b60dddc::t_ca4b4897f7ec72 32
+packages/shared/lib/services/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_5f4fec96ee5b94 1-239
+packages/server/lib/services/remote-function/helpers.ts
+  s_b39de48b60dddc::t_e04dec314ed24b 22
+packages/server/lib/services/remote-function/dryrun-client.unit.test.ts
+  s_b39de48b60dddc::t_1328ce415e0c27 50,126-176
+  s_b39de48b60dddc::t_32d9f3d3801f16 23
+docs/docs.json
+  s_b39de48b60dddc::t_eafb5fe10d6508 790-791
+packages/server/lib/server.ts
+  s_b39de48b60dddc::t_72136c61a52f6f 24,97
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_e2b7805f56669f 39,101-109,288-290
+packages/server/lib/services/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_7d641f3d8f1377 5,41-53,132-210,212,214,216-383
+  s_b39de48b60dddc::t_372abd4b1ec0c2 211,213,215
+  s_b39de48b60dddc::t_ac3ae8aee0efee 7
+packages/types/lib/api.endpoints.ts
+  s_b39de48b60dddc::t_f9625b51f864f7 66,159
+docs/reference/backend/http-api/functions/dryruns-get.mdx
+  s_b39de48b60dddc::t_c63d918482aee7 2-3,10
+docs/spec.yaml
+  s_6fb3c1794bde76::t_72774ecc171f9c 1507-1508,1510-1512,1514-1522,3000,3002-3004,3009,3011,3014,3017,3019-3024,3038,3047,3049-3050,3052-3053,3055-3056,3058-3059
+  s_b39de48b60dddc::t_08667b88ae1dac 1464,1466-1468,1476-1477,1481,1495-1506,1509,1513
+  s_b39de48b60dddc::t_9e23e5c193e3bd 2997-2999,3001,3005-3008,3010,3012-3013,3015-3016,3018,3029-3030,3033-3035,3037,3039-3041,3046,3048,3051,3054,3057,3071-3080
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_3cd71b002631bd 105-110,112-114,143-150,164,203-206,224-226,230-233,235-243,245,247-248,255,257-258,265-270,272-279,281-289,293-382
+  s_6fb3c1794bde76::t_2112925729d0bb 101,111,234
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "479eea12c0ce44c680a1d92bfc2c717b6de8263d",
+  "prompts": {},
+  "sessions": {
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}
