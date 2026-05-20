@@ -41,12 +41,12 @@ jobs:
                       const marker = '<!-- preview-webapp-deploy-bot -->';
                       const body = `${marker}\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| 🔄 Deploying | ${url} | [Deploy Logs](${runUrl}) | ${now} |`;
 
-                      const comments = await github.rest.issues.listComments({
+                      const comments = await github.paginate(github.rest.issues.listComments, {
                         owner: context.repo.owner,
                         repo: context.repo.repo,
                         issue_number: context.issue.number,
                       });
-                      const existing = comments.data.find(c => c.body.startsWith(marker));
+                      const existing = comments.find(c => c.body.startsWith(marker));
 
                       if (existing) {
                         await github.rest.issues.updateComment({
