@@ -20179,6 +20179,8 @@ videoask:
         grant_type: refresh_token
     proxy:
         base_url: https://api.videoask.com
+    webhook_routing_script: videoaskWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
 
