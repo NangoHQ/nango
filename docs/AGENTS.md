@@ -24,6 +24,18 @@ cd docs
 mintlify dev
 ```
 
+## Keep LLM docs indexes generated
+
+`llms.txt`, `llms-full.txt`, and `api-catalog.txt` are custom generated files that override Mintlify's defaults.
+
+When changing docs navigation, renaming or moving docs pages, editing core docs pages, or changing provider docs metadata, run:
+
+```bash
+npm run docs:generate:llms
+```
+
+The generator reads `docs/docs.json`, page frontmatter, and `packages/providers/providers.yaml`. It keeps `llms.txt` focused on core docs, keeps provider-specific pages out of `llms-full.txt`, and exposes provider slugs through `api-catalog.txt`.
+
 ## Prefix docs PR titles with `docs:`
 
 Pull requests that only change docs must have a PR title prefixed with `docs:`.

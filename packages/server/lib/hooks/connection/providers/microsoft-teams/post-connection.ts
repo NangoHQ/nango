@@ -1,58 +1,27 @@
 import jwt from 'jsonwebtoken';
+import * as z from 'zod';
+
+import { getLogger } from '@nangohq/utils';
 
 import type { InternalNango as Nango } from '../../internal-nango.js';
 import type { OAuth2Credentials } from '@nangohq/types';
 
-interface MicrosoftDecodedToken {
-    aud: string;
-    iss: string;
-    iat: number;
-    nbf: number;
-    exp: number;
-    acct: number;
-    acr: string;
-    aio: string;
-    amr: string[];
-    app_displayname: string;
-    appid: string;
-    appidacr: string;
-    family_name: string;
-    given_name: string;
-    idtyp: string;
-    ipaddr: string;
-    name: string;
-    oid: string;
-    platf: string;
-    puid: string;
-    rh: string;
-    scp: string;
-    signin_state: string[];
-    sub: string;
-    tenant_region_scope: string;
-    tid: string;
-    unique_name: string;
-    upn: string;
-    uti: string;
-    ver: string;
-    wids: string[];
-    xms_ftd: string;
-    xms_idrel: string;
-    xms_st: {
-        sub: string;
-    };
-    xms_tcdt: number;
-}
+const logger = getLogger('post-connection:microsoft-teams');
+
+const MicrosoftTeamsJWTPayloadSchema = z.object({
+    tid: z.string()
+});
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const accessToken = (connection.credentials as OAuth2Credentials).access_token;
-    const decoded = jwt.decode(accessToken) as MicrosoftDecodedToken;
+    const decoded = jwt.decode(accessToken);
 
-    if (!decoded || typeof decoded !== 'object') {
+    const parsed = MicrosoftTeamsJWTPayloadSchema.safeParse(decoded);
+    if (!parsed.success) {
+        logger.info('Failed to parse decoded JWT payload. Skipping tenant_id update.');
         return;
     }
 
-    const id = decoded.tid;
-
-    await nango.updateConnectionConfig({ tenantId: id });
+    await nango.updateConnectionConfig({ tenantId: parsed.data.tid });
 }

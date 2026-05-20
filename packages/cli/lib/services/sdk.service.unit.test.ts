@@ -20,6 +20,7 @@ describe('NangoSyncCLI - getConnection', () => {
         instance = new NangoSyncCLI(
             {
                 secretKey: 'test-secret-key',
+                team: { id: 1, name: 'test-team' },
                 syncConfig: {
                     models_json_schema: { definitions: {} }
                 }
@@ -81,6 +82,7 @@ describe('NangoSyncCLI - batchSave', () => {
         instance = new NangoSyncCLI(
             {
                 secretKey: 'test-secret-key',
+                team: { id: 1, name: 'test-team' },
                 syncConfig: {
                     models_json_schema: {
                         definitions: {

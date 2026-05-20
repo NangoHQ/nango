@@ -39,8 +39,8 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.incoming.payloadSizeBytes',
-    PROXY_OUTGOING_PAYLOAD_SIZE_BYTES = 'nango.server.proxy.outgoing.payloadSizeBytes',
+    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
+    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -117,7 +117,9 @@ export enum Types {
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
-    BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED = 'nango.billing.usage.clickhouse.batcher.dropped',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS = 'nango.billing.usage.clickhouse.batcher.ingest.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
+    BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 

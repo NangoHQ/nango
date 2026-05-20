@@ -371,8 +371,6 @@ async function compileDeployInfo({
             idsToMarkAsInactive,
             syncConfig: {
                 source,
-                pre_built: source === 'catalog',
-                is_public: source === 'catalog',
                 environment_id,
                 nango_config_id: config.id as number,
                 sync_name: syncName,
