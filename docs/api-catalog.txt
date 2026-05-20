@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 812
+Provider count: 813
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -269,6 +269,7 @@ URL patterns:
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
 | `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/integrations/all/folk.md) | [connect](https://nango.dev/docs/integrations/all/folk/connect.md) |  | crm |
+| `followupboss` | Follow Up Boss | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/followupboss.md) |  | [setup](https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app.md) | crm |
 | `fortnox` | Fortnox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fortnox.md) |  |  | accounting, invoicing |
 | `freeagent` | FreeAgent | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
 | `freeagent-sandbox` | FreeAgent (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
