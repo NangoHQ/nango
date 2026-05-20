@@ -18790,6 +18790,36 @@ telegram:
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
 
+the-swarm:
+    display_name: The Swarm
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://bee.theswarm.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /v2/profiles/search
+            headers:
+                content-type: application/json
+            data:
+                query:
+                    match_all: {}
+                limit: 1
+    docs: https://nango.dev/docs/api-integrations/the-swarm
+    docs_connect: https://nango.dev/docs/api-integrations/the-swarm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Swarm API key from Team Settings.
+            example: aB3cD9eF************************wX6yZ2
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
+
 terraform:
     display_name: Terraform
     categories:
