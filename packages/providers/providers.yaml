@@ -16215,8 +16215,8 @@ sap-concur-password:
         token_expiration_strategy: expireIn
     proxy:
         base_url: https://${connectionConfig.region}.api.concursolutions.com
-    docs: https://nango.dev/docs/integrations/all/sap-concur
-    docs_connect: https://nango.dev/docs/integrations/all/sap-concur/connect
+    docs: https://nango.dev/docs/api-integrations/sap-concur-password
+    docs_connect: https://nango.dev/docs/api-integrations/sap-concur-password/connect
     credentials:
         username:
             type: string
@@ -16246,6 +16246,7 @@ sap-concur-password:
             title: Region
             description: The SAP Concur Data Center region.
             example: us
+            pattern: '^[a-z0-9-]+$'
             order: 1
             doc_section: '#step-3-determine-your-region'
 
