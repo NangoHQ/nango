@@ -1,0 +1,61 @@
+packages/types/lib/environment/db.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 95-96
+packages/shared/lib/services/sandbox-api-key.service.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 69-70
+  s_3149120bc775e1::t_8fc6bfa658ecbb 109-113,119
+  s_3149120bc775e1::t_5b86ac0975972b 15-19,23,35-36,99,105,116-117,141,146,188,215,222,252-254,257-261
+  s_3149120bc775e1::t_3fb47c7b09d3d3 5-6,8,10,12,24-25,135-140,142-145,147-187,189-195,263-264
+  s_3149120bc775e1::t_53ced19789ff44 255-256
+packages/database/lib/migrations/20260514120000_customer_keys_sandbox_signing_secret.cjs
+  s_3149120bc775e1::t_1db44c2aa02f85 9-11,18
+packages/shared/lib/services/customerKey.service.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 39-73,75-78,128,134-135,138
+  s_3149120bc775e1::t_8c4e435192a145 5
+packages/shared/lib/services/account.service.ts
+  s_3149120bc775e1::t_b2c38fa19de7b1 570
+  s_3149120bc775e1::t_1ee3b4233348b8 2,21,282-288
+  s_3149120bc775e1::t_821f18c2a19301 494-499,501-533,535-562,564-567,569,571-572,574-622,624
+packages/shared/lib/services/account.service.integration.test.ts
+  s_3149120bc775e1::t_6ec0ec75a7eccb 246-249
+  s_3149120bc775e1::t_83b4916d94a492 11,169,216,239,283,313
+  s_3149120bc775e1::t_8dd1fc3773bba2 1,209,224-229
+  s_3149120bc775e1::t_b5a59112bb5cc4 213,223,230-231
+  s_3149120bc775e1::t_5bf558d924b9ba 220
+  s_3149120bc775e1::t_8e38c43f11a178 172,219,242,266,286,316
+  s_3149120bc775e1::t_a22ad84782af93 234-238,240-241,243-245,250-265,267-269
+packages/shared/lib/index.ts
+  s_3149120bc775e1::t_b2f9caeccac666 16,102
+  ai_agent 60
+  s_3149120bc775e1::t_8e38c43f11a178 63
+packages/shared/lib/services/sandbox-api-key.unit.test.ts
+  s_3149120bc775e1::t_8fc6bfa658ecbb 47,52-53,59-66,68-71
+  s_3149120bc775e1::t_99f25ee61aa34d 10,23,37-38,42,51,67,79,95-112
+  s_3149120bc775e1::t_2d374ee691f94c 72-73,113-114
+packages/server/lib/middleware/access.middleware.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 61-63,66
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_3149120bc775e1::t_8e38c43f11a178 63
+  s_3149120bc775e1::t_83b4916d94a492 2,60
+packages/server/lib/routes.integration.test.ts
+  s_3149120bc775e1::t_8e38c43f11a178 86
+  s_3149120bc775e1::t_83b4916d94a492 4,83
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_3149120bc775e1::t_83b4916d94a492 2,47
+  s_3149120bc775e1::t_8e38c43f11a178 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "6917ade2aa625c7b6f4257d9093b5d1d65595e3d",
+  "prompts": {},
+  "sessions": {
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
