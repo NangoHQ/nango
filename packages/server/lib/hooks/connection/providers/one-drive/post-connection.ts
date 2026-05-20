@@ -1,21 +1,31 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
+import * as z from 'zod';
 
-import type { MicrosoftDecodedToken, SharePointTokenResponse } from './types.js';
+import { getLogger } from '@nangohq/utils';
+
+import type { SharePointTokenResponse } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
 import type { OAuth2Credentials } from '@nangohq/types';
+
+const logger = getLogger('post-connection:one-drive');
+
+const OneDriveJWTPayloadSchema = z.object({
+    tid: z.string()
+});
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();
     const credentials = connection.credentials as OAuth2Credentials;
     const integration = await nango.getIntegration();
 
-    const decoded = jwt.decode(credentials.access_token) as MicrosoftDecodedToken;
-    if (!decoded || typeof decoded !== 'object') {
+    const decoded = jwt.decode(credentials.access_token);
+    const parsed = OneDriveJWTPayloadSchema.safeParse(decoded);
+    if (!parsed.success) {
+        logger.info('Failed to parse decoded JWT payload. Skipping tenant_id update.');
         return;
     }
-
-    const tenantId = decoded.tid;
+    const tenantId = parsed.data.tid;
 
     if (!integration || !integration.oauth_client_id || !integration.oauth_client_secret || !credentials.refresh_token) {
         return;

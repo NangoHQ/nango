@@ -57,7 +57,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
       The default API key created on signup has full access and is the simplest option.
 
-      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
+      If the user creates a scoped API key instead, this guide needs `environment:integrations:create` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
     </Accordion>
   </Step>
 
@@ -66,7 +66,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
     <Tip>Each API has a dedicated [Nango documentation page](/integrations/overview) with setup notes and gotchas.</Tip>
 
-    <Accordion title="⚠️ OAuth developer apps">
+    <Accordion title="⚠️ OAuth app setup">
       OAuth APIs require an OAuth developer app registered with the provider. Register one on the provider's developer portal, use the `Callback URL` shown in your Nango integration settings, then paste the `Client ID` and `Client Secret` back into Nango. Register any required scopes too.
 
       If this integration will be used in production, complete the optional custom callback URL step below before real users connect. Retrofitting a callback URL later requires updating the provider app and can break new authorization or reconnect flows until the provider and Nango settings match.
@@ -74,7 +74,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       For OAuth 2.0 providers, Nango shows **suggested scopes** — auto-discovered and refreshed at least monthly. They're suggestions; you can use any scope the provider supports.
 
       <Note>
-        For popular APIs, Nango ships a built-in shared developer app so you can test connections with zero setup. **Do not use it in production** — it violates most providers' terms of service and is rate-limited and unreliable. Always register your own OAuth app before going live.
+        For popular APIs, Nango ships a built-in shared developer app so you can test connections with zero setup. We strongly recommend registering your own OAuth app before going live — see [OAuth developer apps](#oauth-developer-apps) below.
       </Note>
     </Accordion>
 
@@ -375,6 +375,23 @@ Once you have the connection ID, fetch credentials whenever you need them:
 <Tip>
   **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
 </Tip>
+
+## OAuth developer apps
+
+Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup.
+
+They work in production too, but we strongly recommend registering your own before going live. Most OAuth APIs have a step-by-step setup guide in [APIs & Integrations](/integrations/overview) — for example, [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
+
+Reasons to register your own:
+- **Whitelabel auth** — with Nango's app, users authorize Nango instead of your product.
+- **Scopes** — Nango developer apps have fixed scopes. Your own app supports any scope the provider exposes.
+- **Callback URL** — Nango developer apps use Nango's callback. Your own app supports a [custom callback URL](#custom-oauth-callback-url-optional) on your domain.
+- **Marketplace listings** — provider marketplaces require your own developer app.
+- **Advanced API features** — some provider features are only available to first-party apps.
+- **Revocation risk** — most providers don't allow shared credentials. Nango developer apps may be revoked by the provider at any time.
+- **Portability** — only your own developer app lets you export access and refresh tokens and move off Nango without users re-authorizing.
+
+The same tradeoffs apply to shared OAuth apps provided by other auth platforms.
 
 ## Related guides
 

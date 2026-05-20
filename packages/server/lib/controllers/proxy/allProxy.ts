@@ -58,6 +58,14 @@ const schemaHeaders = z.object({
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
 
+// Headers from provider responses that Nango needs to explicitly forwards to the client.
+const PROXY_RESPONSE_HEADER_ALLOWLIST = [
+    'content-type',
+    'mcp-session-id', // MCP RFC — https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management
+    'x-request-id',
+    'x-correlation-id'
+];
+
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
@@ -77,8 +85,6 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         });
         return;
     }
-
-    metrics.increment(metrics.Types.PROXY_INCOMING_PAYLOAD_SIZE_BYTES, req.rawBody ? Buffer.byteLength(req.rawBody) : 0, { accountId: account.id });
 
     let logCtx: LogContext | undefined;
 
@@ -260,7 +266,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
                 oauth_client_secret: integration.oauth_client_secret
-            })
+            }),
+            onBytes: ({ sent, received }) => {
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server' });
+            }
         });
 
         let success = false;
@@ -346,21 +356,40 @@ export function parseHeaders(req: Pick<Request, 'rawHeaders'>) {
     return forwardedHeaders;
 }
 
+/**
+ * Checks whether the response was compressed (`content-encoding` header was set) before axios processed it.
+ */
+function checkWasCompressed(responseStream: AxiosResponse): boolean | undefined {
+    const contentEncoding = responseStream.headers['content-encoding'] || '';
+    // if `content-encoding` header wasn't stripped by axios, the response is compressed
+    if (contentEncoding) return true;
+
+    const rawHeaders = responseStream.request?.res?.rawHeaders;
+    // if raw headers are not available, we can't determine whether the response was compressed
+    if (!rawHeaders || !Array.isArray(rawHeaders)) return undefined;
+
+    const ceIdx = rawHeaders.findIndex((h: unknown) => typeof h === 'string' && h.toLowerCase() === 'content-encoding');
+    // if `content-encoding` header is present in raw headers, the response was originally compressed and the header was stripped by axios
+    return ceIdx !== -1 && ceIdx + 1 < rawHeaders.length && Boolean(rawHeaders[ceIdx + 1]);
+}
+
 export async function handleResponse({ res, responseStream, logCtx }: { res: Response; responseStream: AxiosResponse; logCtx: LogContext }) {
-    const contentType = responseStream.headers['content-type'] || '';
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
-    const contentEncoding = responseStream.headers['content-encoding'] || '';
 
     const isChunked = transferEncoding === 'chunked';
-    const isEncoded = Boolean(contentEncoding);
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
-    if (isChunked || isEncoded || isAttachmentOrInline) {
+    if (isChunked || isAttachmentOrInline) {
+        const passthroughHeaders = Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders;
+        if (checkWasCompressed(responseStream)) {
+            // axios decompressed the response, so the `content-length` header is no longer valid
+            delete passthroughHeaders['content-length'];
+        }
         const passThroughStream = new PassThrough();
         responseStream.data.pipe(passThroughStream);
         passThroughStream.pipe(res);
-        res.writeHead(responseStream.status, responseStream.headers as OutgoingHttpHeaders);
+        res.writeHead(responseStream.status, passthroughHeaders);
 
         metrics.increment(metrics.Types.PROXY_SUCCESS);
         await logCtx.success();
@@ -387,8 +416,11 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
             return;
         }
 
-        if (typeof contentType === 'string' && contentType !== '') {
-            res.setHeader('Content-Type', contentType);
+        for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
+            const value = responseStream.headers[header];
+            if (typeof value === 'string' && value !== '') {
+                res.setHeader(header, value);
+            }
         }
 
         try {
@@ -402,7 +434,6 @@ export async function handleResponse({ res, responseStream, logCtx }: { res: Res
 
         await logCtx.success();
         metrics.increment(metrics.Types.PROXY_SUCCESS);
-        metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, responseLen, { accountId: logCtx.accountId });
     });
 }
 
@@ -502,8 +533,6 @@ export function handleErrorResponse({
                     // Intentionally left blank - parsedBody stays string
                 }
             }
-
-            metrics.increment(metrics.Types.PROXY_OUTGOING_PAYLOAD_SIZE_BYTES, Buffer.byteLength(data), { accountId: logCtx.accountId });
 
             const responseStatus = error.response?.status || 500;
             const responseHeaders = error.response?.headers || {};

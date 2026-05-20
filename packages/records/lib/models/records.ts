@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -67,12 +67,62 @@ function getInactiveThisMonth(records: UpsertedMetadata[]): UpsertedMetadata[] {
     });
 }
 
-async function insertBatchEntry(
+export const ensureSeenPartition = (() => {
+    const seenPartitionPromises = new Map<string, Promise<void>>();
+    return async ({ date }: { date: Date }): Promise<Result<void>> => {
+        const day = dayjs(date).utc().startOf('day');
+        const suffix = day.format('YYYYMMDD');
+
+        let promise = seenPartitionPromises.get(suffix);
+        try {
+            if (!promise) {
+                const next = day.add(1, 'day');
+                promise = db
+                    .raw(
+                        `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                    )
+                    .then(() => undefined);
+                seenPartitionPromises.set(suffix, promise);
+            }
+            await promise;
+            return Ok(undefined);
+        } catch (err) {
+            if (seenPartitionPromises.get(suffix) === promise) {
+                seenPartitionPromises.delete(suffix);
+            }
+            return Err(new Error('Failed to ensure seen partition', { cause: err }));
+        }
+    };
+})();
+
+export async function dropSeenPartition({ date }: { date: Date }): Promise<Result<void>> {
+    const suffix = dayjs(date).utc().startOf('day').format('YYYYMMDD');
+    try {
+        return await db.transaction(async (trx) => {
+            // advisory lock scoped to this partition date — concurrent instances skip instead of racing
+            const lockKey = stringToHash(`records_seen_drop:${suffix}`);
+            const { rows } = await trx.raw<{ rows: { lock: boolean }[] }>(`SELECT pg_try_advisory_xact_lock(?) as lock`, [lockKey]);
+            if (!rows?.[0]?.lock) {
+                return Ok(undefined);
+            }
+            await trx.raw(`DROP TABLE IF EXISTS "records_seen_${suffix}"`);
+            return Ok(undefined);
+        });
+    } catch (err) {
+        return Err(new Error('Failed to drop seen partition', { cause: err }));
+    }
+}
+
+async function insertSeenEntry(
     trx: Knex.Transaction,
     { connectionId, model, syncJobId, recordIds }: { connectionId: number; model: string; syncJobId: number; recordIds: string[] }
 ): Promise<void> {
     if (recordIds.length === 0) return;
-    await trx(RECORDS_BATCH_TABLE).insert({
+    const ensureRes = await ensureSeenPartition({ date: new Date() });
+    if (ensureRes.isErr()) {
+        throw new Error('Failed to ensure seen partition', { cause: ensureRes.error });
+    }
+    await trx(RECORDS_SEEN_TABLE).insert({
         connection_id: connectionId,
         model,
         sync_job_id: syncJobId,
@@ -105,6 +155,7 @@ export async function getRecords({
         ...(activeSpan ? { childOf: activeSpan } : {}),
         tags: { 'nango.connectionId': connectionId, 'nango.model': model }
     });
+    const results: ReturnedRecord[] = [];
     try {
         if (!model) {
             const error = new Error('missing_model');
@@ -233,27 +284,30 @@ export async function getRecords({
             }
         }
 
-        const results: ReturnedRecord[] = [];
-
-        // TODO: decrypt in batch
-        for (const item of recordsMetadata) {
-            const data = dataById.get(item.id) ?? item.json ?? {};
-            // Drop the only remaining reference to the encrypted blob so V8 can
-            // reclaim it when GC fires under heap pressure.
-            dataById.delete(item.id);
-            const decryptedData = await decryptRecordData({ ...item, json: data });
-            results.push({
-                ...decryptedData,
-                id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
-                _nango_metadata: {
-                    first_seen_at: item.first_seen_at,
-                    last_modified_at: item.last_modified_at,
-                    last_action: item.last_action,
-                    deleted_at: item.deleted_at,
-                    pruned_at: item.pruned_at,
-                    cursor: Cursor.new(item)
-                }
-            });
+        const decryptSpan = tracer.startSpan('nango.records.decrypt', { childOf: span });
+        try {
+            // TODO: decrypt in batch
+            for (const item of recordsMetadata) {
+                const data = dataById.get(item.id) ?? item.json ?? {};
+                // Drop the only remaining reference to the encrypted blob so V8 can
+                // reclaim it when GC fires under heap pressure.
+                dataById.delete(item.id);
+                const decryptedData = await decryptRecordData({ ...item, json: data });
+                results.push({
+                    ...decryptedData,
+                    id: item.external_id, // record payload can be empty (when pruned), always use external_id as id
+                    _nango_metadata: {
+                        first_seen_at: item.first_seen_at,
+                        last_modified_at: item.last_modified_at,
+                        last_action: item.last_action,
+                        deleted_at: item.deleted_at,
+                        pruned_at: item.pruned_at,
+                        cursor: Cursor.new(item)
+                    }
+                });
+            }
+        } finally {
+            decryptSpan.finish();
         }
 
         // all records for the same connection/model are in the same partition
@@ -279,6 +333,7 @@ export async function getRecords({
         span.setTag('error', e);
         return Err(e);
     } finally {
+        span.setTag('records.count', results.length);
         span.finish();
     }
 }
@@ -540,13 +595,20 @@ export async function upsert({
 
                         let batchDeltaSizeInBytes = 0;
                         if (recordsToUpdateData.length > 0) {
-                            const upsertDataResult = await trx
+                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
+                                if (r.needs_data_write) {
+                                    return acc + r.legacy_size_bytes;
+                                }
+                                return acc;
+                            }, 0);
+                            const [upsertDataResult] = await trx
                                 .with('prev_size', (qb) => {
                                     qb.select('id', trx.raw('pg_column_size(data) as prev_size_bytes'))
                                         .from(RECORDS_DATA_TABLE)
+                                        .where({ connection_id: connectionId, model })
                                         .whereIn(
-                                            ['connection_id', 'model', 'id'],
-                                            recordsToUpdateData.map((r) => [r.connection_id, r.model, r.id])
+                                            'id',
+                                            recordsToUpdateData.map((r) => r.id)
                                         );
                                 })
                                 .with('upsert_data', (qb) => {
@@ -563,26 +625,19 @@ export async function upsert({
                                         .merge(['data'])
                                         .returning<{ id: string; new_size_bytes: number }[]>(['id', trx.raw('pg_column_size(data) as new_size_bytes')]);
                                 })
-                                .select<{ id: string; new_size_bytes: number; prev_size_bytes: number }[]>(
-                                    'upsert_data.id',
-                                    'upsert_data.new_size_bytes',
-                                    trx.raw('COALESCE(prev_size.prev_size_bytes, 0) as prev_size_bytes')
+                                .select<{ delta_size_bytes: number | string }[]>(
+                                    trx.raw(
+                                        'COALESCE(SUM(upsert_data.new_size_bytes - COALESCE(prev_size.prev_size_bytes, 0)), 0)::double precision as delta_size_bytes'
+                                    )
                                 )
                                 .from('upsert_data')
                                 .leftJoin('prev_size', 'prev_size.id', 'upsert_data.id');
 
-                            // Calculate the delta size
-                            const totalLegacySizeInBytes = upsertMetadata.reduce((acc, r) => {
-                                if (r.needs_data_write) {
-                                    return acc + r.legacy_size_bytes;
-                                }
-                                return acc;
-                            }, 0);
-                            batchDeltaSizeInBytes = upsertDataResult.reduce((acc, r) => acc + r.new_size_bytes - r.prev_size_bytes, -totalLegacySizeInBytes);
+                            batchDeltaSizeInBytes = Number(upsertDataResult?.delta_size_bytes ?? 0) - totalLegacySizeInBytes;
                         }
 
                         // insert batch entry with all seen record ids (including unchanged)
-                        await insertBatchEntry(trx, {
+                        await insertSeenEntry(trx, {
                             connectionId,
                             model,
                             syncJobId: chunk[0]!.sync_job_id,
@@ -851,7 +906,7 @@ export async function update({
                     const updated = await query;
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
-                    await insertBatchEntry(trx, {
+                    await insertSeenEntry(trx, {
                         connectionId,
                         model,
                         syncJobId: encryptedRecords[0]!.sync_job_id,
@@ -990,6 +1045,10 @@ export async function deleteRecords({
                 await acquireAdvisoryLock(trx, { name: 'lock_records_delete', connectionId, model });
             }
 
+            // Each batch starts right after the last processed record
+            // so the index scan doesn't re-traverse dead tuples from prior batches
+            let from: { updated_at: string; id: string } | null = null;
+
             do {
                 const toDelete = limit ? Math.min(batchSize, limit - totalRecords) : batchSize;
                 if (toDelete <= 0) {
@@ -1006,6 +1065,9 @@ export async function deleteRecords({
                             { column: 'id', order: 'asc' }
                         ])
                         .limit(toDelete);
+                    if (from) {
+                        subQuery.whereRaw('(updated_at, id) > (?, ?)', [from.updated_at, from.id]);
+                    }
                     if (decodedCursor) {
                         // Delete records up to and including the cursor position
                         subQuery.whereRaw('(updated_at, id) <= (?, ?)', [decodedCursor.sort, decodedCursor.id]);
@@ -1090,6 +1152,12 @@ export async function deleteRecords({
                 const lastDeletedRecord = res[res.length - 1];
                 if (lastDeletedRecord) {
                     lastCursor = Cursor.new({ id: lastDeletedRecord.id, last_modified_at: lastDeletedRecord.updated_at });
+                    // Soft delete sets updated_at = now, so RETURNING gives the new value.
+                    // Using it as a cursor would place us past all remaining records.
+                    // dryRun doesn't modify updated_at, so cursor advancement is safe there.
+                    if (mode !== 'soft' || dryRun) {
+                        from = { updated_at: lastDeletedRecord.updated_at, id: lastDeletedRecord.id };
+                    }
                 }
 
                 if (paginatedRecords < toDelete) {
@@ -1159,6 +1227,10 @@ export async function deleteOutdatedRecords({
     try {
         const deletedIds: string[] = [];
         let hasMore = true;
+        // Cursor as id: each batch starts right after the last processed record so the
+        // index scan doesn't re-traverse dead tuples from prior batches
+        // updated_at can't be used as cursor here since the soft delete sets it to now.
+        let lastId: string | null = null;
         // NOTE: deletion is intentionally not atomic. Each batch is its own transaction so that
         // long-running deletes (e.g. millions of records) don't hold a single DB connection and
         // row locks for the entire duration, which was causing timeouts and stalling other queries.
@@ -1182,7 +1254,7 @@ export async function deleteOutdatedRecords({
                         }[] = (
                             await trx.raw(
                                 `WITH seen AS MATERIALIZED (
-                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_BATCH_TABLE}
+                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
                                       AND sync_job_id >= :generation
@@ -1195,6 +1267,8 @@ export async function deleteOutdatedRecords({
                                       AND r.model = :model
                                       AND r.deleted_at IS NULL
                                       AND seen.id IS NULL
+                                      AND (:lastId::text IS NULL OR r.id > :lastId)
+                                    ORDER BY r.id
                                     LIMIT :batchSize
                                 )
                                 UPDATE ${RECORDS_TABLE} r
@@ -1213,7 +1287,7 @@ export async function deleteOutdatedRecords({
                                   r.external_id,
                                   COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
                                   r.tableoid::regclass as partition`,
-                                { connectionId, model, generation, batchSize }
+                                { connectionId, model, generation, batchSize, lastId }
                             )
                         ).rows;
 
@@ -1262,6 +1336,8 @@ export async function deleteOutdatedRecords({
                 hasMore = false;
             }
 
+            lastId = batchResult[batchResult.length - 1]?.id ?? lastId;
+
             if (!partition && batchResult[0]?.partition) {
                 partition = batchResult[0].partition;
             }
@@ -1285,28 +1361,6 @@ export async function deleteOutdatedRecords({
         return Err(e);
     } finally {
         span.finish();
-    }
-}
-
-export async function deleteOldBatchEntries({ olderThan, limit }: { olderThan: Date; limit: number }): Promise<Result<number>> {
-    try {
-        const result = await db.raw<{ rowCount: number }>(
-            `WITH expired AS (
-                SELECT ctid
-                FROM ${RECORDS_BATCH_TABLE}
-                WHERE created_at < ?
-                ORDER BY created_at
-                LIMIT ?
-                FOR UPDATE SKIP LOCKED
-            )
-            DELETE FROM ${RECORDS_BATCH_TABLE}
-            USING expired
-            WHERE records_batch.ctid = expired.ctid`,
-            [olderThan, limit]
-        );
-        return Ok(result.rowCount);
-    } catch (err) {
-        return Err(new Error('Failed to delete old batch entries', { cause: err }));
     }
 }
 
@@ -1502,7 +1556,7 @@ export async function autoPruningCandidate({ staleAfterMs }: { staleAfterMs: num
 /*
  * autoDeletingCandidate
  * @desc finds a candidate connection/model for auto-deleting
- * by randomly selecting a connection/model that have NOT seen its count updated in the past staleAfterMs milliseconds.
+ * by selecting the least-recently-checked connection/model whose count has not been updated in the past staleAfterMs milliseconds.
  * @param staleAfterMs - milliseconds since last modification to consider a connection as potentially stale
  * @returns a Result containing either:
  * - candidate connection, model and environmentId
@@ -1517,11 +1571,25 @@ export async function autoDeletingCandidate({ staleAfterMs }: { staleAfterMs: nu
 > {
     try {
         const [candidate] = await db
-            .from(RECORD_COUNTS_TABLE)
-            .select<RecordCount[]>('*')
-            .whereRaw(`updated_at < NOW() - INTERVAL '${staleAfterMs} milliseconds'`)
-            .orderByRaw('RANDOM()')
-            .limit(1);
+            .raw<{ rows: { connection_id: number; model: string; environment_id: number }[] }>(
+                `WITH candidate AS (
+                SELECT connection_id, model, environment_id
+                FROM ${RECORD_COUNTS_TABLE}
+                WHERE updated_at < NOW() - ? * INTERVAL '1 millisecond'
+                ORDER BY autodelete_checked_at ASC NULLS FIRST, connection_id ASC
+                LIMIT 1
+                FOR UPDATE SKIP LOCKED
+            )
+            UPDATE ${RECORD_COUNTS_TABLE} rc
+            SET autodelete_checked_at = NOW()
+            FROM candidate
+            WHERE rc.connection_id = candidate.connection_id
+              AND rc.model = candidate.model
+              AND rc.environment_id = candidate.environment_id
+            RETURNING rc.connection_id, rc.model, rc.environment_id`,
+                [staleAfterMs]
+            )
+            .then((r) => r.rows);
 
         if (candidate) {
             return Ok({

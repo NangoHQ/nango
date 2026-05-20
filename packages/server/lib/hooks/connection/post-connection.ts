@@ -24,7 +24,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, providerNam
         }
         const connection = connectionRes.response;
 
-        const internalNango = getInternalNango(connection, providerName);
+        const internalNango = getInternalNango(connection, providerName, account.id);
         const provider = getProvider(providerName);
 
         const handler = getHandler({
