@@ -136,3 +136,4 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 ## Optional
 
 - [Changelog](https://nango.dev/docs/updates/changelog.md): Important developer & product updates, including deprecations & breaking changes.
+
