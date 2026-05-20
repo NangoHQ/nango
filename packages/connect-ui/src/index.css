@@ -99,7 +99,7 @@
     --color-border-default: var(--color-gray-200);
     --color-dropdown-bg-default: var(--color-gray-75);
     --color-dropdown-bg-hover: var(--color-gray-150);
-    --color-dropdown-bg-press: var(--color-gray-50);
+    --color-dropdown-bg-press: var(--color-gray-250);
     --color-focus-ring: var(--color-brand-500);
 
     --color-error: var(--color-red-700);
