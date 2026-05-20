@@ -49,6 +49,7 @@ interface UpsertedMetadata {
     previous_last_modified_at: string | null;
     needs_data_write: boolean;
     legacy_size_bytes: number;
+    existing_size_bytes: number | null;
     status: 'inserted' | 'changed' | 'undeleted' | 'deleted' | 'unchanged';
 }
 
@@ -482,6 +483,7 @@ export async function upsert({
                                         r.updated_at as existing_updated_at,
                                         to_json(r.updated_at) as previous_last_modified_at,
                                         COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
+                                        r.size_bytes as existing_size_bytes,
                                         r.tableoid::regclass as existing_partition,
                                         (r.external_id IS NULL OR incoming.data_hash IS DISTINCT FROM r.data_hash OR r.json IS NOT NULL OR r.pruned_at IS NOT NULL) as needs_data_write,
                                         (
@@ -581,6 +583,7 @@ export async function upsert({
                                     classified.previous_last_modified_at,
                                     classified.needs_data_write,
                                     classified.legacy_size_bytes,
+                                    classified.existing_size_bytes,
                                     CASE WHEN combined.was_upserted THEN classified.status ELSE 'unchanged' END as status
                                 FROM combined
                                 JOIN classified ON classified.external_id = combined.external_id
@@ -601,15 +604,14 @@ export async function upsert({
                                 }
                                 return acc;
                             }, 0);
+                            const unknownSizeIds = upsertMetadata.filter((r) => r.needs_data_write && r.existing_size_bytes === null).map((r) => r.id);
+                            const knownSizes = upsertMetadata.filter((r) => r.needs_data_write && r.existing_size_bytes !== null);
                             const [upsertDataResult] = await trx
-                                .with('prev_size', (qb) => {
+                                .with('unknown_existing_size', (qb) => {
                                     qb.select('id', trx.raw('pg_column_size(data) as prev_size_bytes'))
                                         .from(RECORDS_DATA_TABLE)
                                         .where({ connection_id: connectionId, model })
-                                        .whereIn(
-                                            'id',
-                                            recordsToUpdateData.map((r) => r.id)
-                                        );
+                                        .whereIn('id', unknownSizeIds);
                                 })
                                 .with('upsert_data', (qb) => {
                                     qb.insert(
@@ -625,15 +627,23 @@ export async function upsert({
                                         .merge(['data'])
                                         .returning<{ id: string; new_size_bytes: number }[]>(['id', trx.raw('pg_column_size(data) as new_size_bytes')]);
                                 })
+                                .with(
+                                    'update_size',
+                                    trx.raw(
+                                        `UPDATE ${RECORDS_TABLE} r SET size_bytes = upsert_data.new_size_bytes FROM upsert_data WHERE r.id = upsert_data.id AND r.connection_id = ? AND r.model = ?`,
+                                        [connectionId, model]
+                                    )
+                                )
                                 .select<{ delta_size_bytes: number | string }[]>(
                                     trx.raw(
-                                        'COALESCE(SUM(upsert_data.new_size_bytes - COALESCE(prev_size.prev_size_bytes, 0)), 0)::double precision as delta_size_bytes'
+                                        'COALESCE(SUM(upsert_data.new_size_bytes - COALESCE(unknown_existing_size.prev_size_bytes, 0)), 0)::double precision as delta_size_bytes'
                                     )
                                 )
                                 .from('upsert_data')
-                                .leftJoin('prev_size', 'prev_size.id', 'upsert_data.id');
+                                .leftJoin('unknown_existing_size', 'unknown_existing_size.id', 'upsert_data.id');
 
-                            batchDeltaSizeInBytes = Number(upsertDataResult?.delta_size_bytes ?? 0) - totalLegacySizeInBytes;
+                            const knownSizesTotal = knownSizes.reduce((acc, r) => acc + (r.existing_size_bytes ?? 0), 0);
+                            batchDeltaSizeInBytes = Number(upsertDataResult?.delta_size_bytes ?? 0) - knownSizesTotal - totalLegacySizeInBytes;
                         }
 
                         // insert batch entry with all seen record ids (including unchanged)
@@ -820,7 +830,8 @@ export async function update({
                                 `${RECORDS_TABLE}.external_id`,
                                 `${RECORDS_TABLE}.id`,
                                 trx.raw(`pg_column_size(${RECORDS_TABLE}.json) as legacy_size_bytes`),
-                                trx.raw(`${RECORDS_TABLE}.tableoid::regclass as partition`)
+                                trx.raw(`${RECORDS_TABLE}.tableoid::regclass as partition`),
+                                `${RECORDS_TABLE}.size_bytes`
                             )
                                 .from(RECORDS_TABLE)
                                 .where(`${RECORDS_TABLE}.connection_id`, connectionId)
@@ -863,7 +874,8 @@ export async function update({
                                     join.on('existing.id', '=', `${RECORDS_DATA_TABLE}.id`)
                                         .andOnVal(`${RECORDS_DATA_TABLE}.connection_id`, '=', connectionId)
                                         .andOnVal(`${RECORDS_DATA_TABLE}.model`, '=', model);
-                                });
+                                })
+                                .whereNull('existing.size_bytes');
                         })
                         .with('upsert_data', (qb) => {
                             qb.insert(
@@ -886,6 +898,7 @@ export async function update({
                                 id: string;
                                 last_modified_at: string;
                                 delta_size_bytes: number;
+                                new_size_bytes: number;
                             }[]
                         >(
                             trx.raw(`
@@ -893,7 +906,8 @@ export async function update({
                                 upsert_metadata.id as id,
                                 upsert_metadata.external_id as external_id,
                                 to_json(upsert_metadata.updated_at) as last_modified_at,
-                                upsert_data.new_size_bytes - COALESCE(existing.legacy_size_bytes, 0) - COALESCE(previous_size.previous_size_bytes, 0)  as delta_size_bytes`)
+                                upsert_data.new_size_bytes - COALESCE(existing.size_bytes, previous_size.previous_size_bytes, 0) - COALESCE(existing.legacy_size_bytes, 0) as delta_size_bytes,
+                                upsert_data.new_size_bytes as new_size_bytes`)
                         )
                         .from('upsert_metadata')
                         .join('existing', 'existing.id', 'upsert_metadata.id')
@@ -904,6 +918,14 @@ export async function update({
                             { column: 'id', order: 'asc' }
                         ]);
                     const updated = await query;
+                    // Update size_bytes separately — can't do it in the same CTE as upsert_metadata
+                    // because both would update the same rows in RECORDS_TABLE (PostgreSQL disallows this)
+                    if (updated.length > 0) {
+                        await trx.raw(
+                            `UPDATE ${RECORDS_TABLE} r SET size_bytes = v.new_size_bytes FROM (VALUES ${updated.map(() => '(?::uuid, ?::integer)').join(', ')}) AS v(id, new_size_bytes) WHERE r.id = v.id AND r.connection_id = ? AND r.model = ?`,
+                            [...updated.flatMap((r) => [r.id, r.new_size_bytes]), connectionId, model]
+                        );
+                    }
                     updatedKeys.push(...updated.map((record) => record.external_id));
 
                     await insertSeenEntry(trx, {
@@ -1088,7 +1110,7 @@ export async function deleteRecords({
                     sizeRows = await trx
                         .select<{ id: string; size_bytes: number }[]>(
                             'r.id',
-                            trx.raw('COALESCE(pg_column_size(r.json), pg_column_size(d.data), 0) as size_bytes')
+                            trx.raw('COALESCE(pg_column_size(r.json), r.size_bytes, pg_column_size(d.data), 0) as size_bytes')
                         )
                         .from({ r: RECORDS_TABLE })
                         .leftJoin({ d: RECORDS_DATA_TABLE }, function () {
@@ -1117,7 +1139,8 @@ export async function deleteRecords({
                         case 'prune':
                             query.update({
                                 pruned_at: now,
-                                json: null
+                                json: null,
+                                size_bytes: 0
                                 // IMPORTANT: updated_at isn't updated because it would cause the record cursor to also change
                             });
                             break;
@@ -1250,6 +1273,7 @@ export async function deleteOutdatedRecords({
                             model: string;
                             external_id: string;
                             legacy_size_bytes: number;
+                            size_bytes: number | null;
                             partition: string;
                         }[] = (
                             await trx.raw(
@@ -1286,19 +1310,26 @@ export async function deleteOutdatedRecords({
                                   r.model,
                                   r.external_id,
                                   COALESCE(pg_column_size(r.json), 0) as legacy_size_bytes,
+                                  r.size_bytes,
                                   r.tableoid::regclass as partition`,
                                 { connectionId, model, generation, batchSize, lastId }
                             )
                         ).rows;
 
-                        // Get size of deleted records
-                        const [sizeRes] = await trx(RECORDS_DATA_TABLE)
-                            .whereIn(
-                                ['connection_id', 'model', 'id'],
-                                res.map((r) => [r.connection_id, r.model, r.id])
-                            )
-                            .select<{ sum: number }[]>(trx.raw('sum(pg_column_size(data)) as sum'));
-                        const totalPreviousSizeBytes = sizeRes?.sum || 0;
+                        // Get size of deleted records — use cached size_bytes when available
+                        const knownSizeTotal = res.reduce((acc, r) => acc + (r.size_bytes ?? 0), 0);
+                        const unknownSizeIds = res.filter((r) => r.size_bytes === null);
+                        let unknownSizeTotal = 0;
+                        if (unknownSizeIds.length > 0) {
+                            const [sizeRes] = await trx(RECORDS_DATA_TABLE)
+                                .whereIn(
+                                    ['connection_id', 'model', 'id'],
+                                    unknownSizeIds.map((r) => [r.connection_id, r.model, r.id])
+                                )
+                                .select<{ sum: number }[]>(trx.raw('sum(pg_column_size(data)) as sum'));
+                            unknownSizeTotal = sizeRes?.sum || 0;
+                        }
+                        const totalPreviousSizeBytes = knownSizeTotal + unknownSizeTotal;
 
                         // update records count and size
                         const deleted = res.length;

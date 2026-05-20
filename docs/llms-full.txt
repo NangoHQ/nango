@@ -13,7 +13,7 @@ Nango is the integration layer for AI-built, code-owned product integrations.
 
 Your users connect external APIs through Nango. You generate and customize TypeScript functions with your favorite coding agent. Your app, backend jobs, or agents then consume those functions through Nango's API, SDKs, or MCP server.
 
-Nango supports [700+ APIs](/integrations/overview) and handles auth, credentials, execution, retries, rate limits, observability, environments, and tenant isolation so you can ship integrations without rebuilding the same infrastructure for every provider.
+Nango supports [800+ APIs](/integrations/overview) and handles auth, credentials, execution, retries, rate limits, observability, environments, and tenant isolation so you can ship integrations without rebuilding the same infrastructure for every provider.
 
 ## Why it matters
 
@@ -98,7 +98,7 @@ Description: Authorize an API and run your first Nango function
   **Using a coding agent?** Set up the [docs MCP](/getting-started/coding-agent-setup#docs-mcp-server) and [skills](/getting-started/coding-agent-setup#skills), then copy this page as prompt.
 </Tip>
 
-This quickstart uses the GitHub API as an example, but you can choose any of the [700+ APIs](/integrations/overview).
+This quickstart uses the GitHub API as an example, but you can choose any of the [800+ APIs](/integrations/overview).
 
 <Steps>
   <Step id="create-integration" title="Create an integration">
@@ -917,7 +917,7 @@ Description: Let your users connect external APIs to your agents & apps.
 
 ## Overview
 
-Nango Auth lets your users connect 700+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+Nango Auth lets your users connect 800+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
 
 A **Connection** is created after each successful authorization. It stores one user's credentials for one external API and keeps them valid over time. Credentials can be retrieved at scale or used directly by other Nango primitives — without ever passing through your codebase.
 
@@ -948,7 +948,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Capabilities
 
-- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 700+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
+- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 800+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
@@ -7380,6 +7380,21 @@ Checkpoints solve both problems. For a full overview, see the [checkpoints guide
 
 # Migration steps
 
+<a id="migrate-with-skill"></a>
+## Migrate with the migrating-to-checkpoints skill
+
+You can migrate syncs to checkpoints with the **`migrating-to-checkpoints`** skill from [NangoHQ/skills](https://github.com/NangoHQ/skills). The skill guides a coding agent through converting `createSync()` implementations from `nango.lastSyncDate`, legacy `syncType: 'incremental'`, and non-resumable full refreshes to checkpoint-based syncs.
+
+Install it in your functions repo:
+
+```bash
+npx skills add NangoHQ/skills -s migrating-to-checkpoints
+```
+
+Then ask your agent to migrate a specific sync using the `migrating-to-checkpoints` skill. The skill covers checkpoint schema selection, replacing `lastSyncDate` with `getCheckpoint()` and `saveCheckpoint()`, full-refresh recovery with `clearCheckpoint()`, and validating with `nango dryrun --checkpoint`.
+
+The manual steps below walk through the same migration if you prefer to do it by hand or want to review what the skill changes.
+
 ## Step 1: Add a checkpoint schema to your sync declaration
 
 Add a `checkpoint` field to your `createSync()` call. In most cases, this is a single string field holding a timestamp:
@@ -12962,7 +12977,7 @@ Nango is the leading provider of **API access for AI agents & apps**. It is desi
 
 <CardGroup cols={1}>
 <Card title="All APIs & integrations" icon="list" href="https://www.nango.dev/api-integrations">
-700+ APIs & thousands of integrations.
+800+ APIs & thousands of integrations.
 </Card>
 <Card title="Request or contribute a new API" icon="circle-question" href="/integrations/contribute-or-request-api">
 We deliver them in &lt;48h.
@@ -13560,7 +13575,7 @@ If all goes well, you should see your new connection in the _Connections_ tab. C
 
 Add a `<api>.mdx` file (e.g. `github.mdx`) for your API to the `docs/integrations/all` folder. Check out [other examples](/integrations/overview) to fill out the content of the documentation page.
 
-Reference the page in the `docs/docs.json` file in the `700+ APIs & Integrations` group in alphabetical order.
+Reference the page in the `docs/docs.json` file in the `800+ APIs & Integrations` group in alphabetical order.
 
 ### Submit a pull request
 
