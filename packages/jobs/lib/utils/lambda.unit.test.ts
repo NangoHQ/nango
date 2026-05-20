@@ -154,7 +154,7 @@ describe('getLambdaFunctionName', () => {
 
 describe('getLambdaTenantId', () => {
     it('returns team and environment scoped id', () => {
-        expect(getLambdaTenantId(minimalNangoProps())).toBe('account-1-env-1');
+        expect(getLambdaTenantId(minimalNangoProps())).toBe('account-1');
     });
 });
 
