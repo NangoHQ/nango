@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { connectionService, customerKeyService } from '@nangohq/shared';
+import { connectionService, sandboxApiKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
@@ -44,9 +44,10 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         return;
     }
 
-    const sandboxApiKey = await customerKeyService.createSandboxApiKey(db.knex, {
+    const sandboxApiKey = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId: res.locals.apiKeyId,
         environmentId: environment.id,
+        purpose: 'dryrun',
         expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
     if (sandboxApiKey.isErr()) {

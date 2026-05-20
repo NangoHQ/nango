@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, seeders } from '@nangohq/shared';
+import { sandboxApiKeyService, seeders } from '@nangohq/shared';
 
 import { isError, runServer } from './utils/tests.js';
 
@@ -80,9 +80,10 @@ describe('route', () => {
         it('should authenticate sandbox API key token through the sandbox path even with script header', async () => {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             const sandboxToken = (
-                await customerKeyService.createSandboxApiKey(db.knex, {
+                await sandboxApiKeyService.createSandboxApiKey(db.knex, {
                     parentApiKeyId: apiKey.id,
                     environmentId: env.id,
+                    purpose: 'dryrun',
                     expiresAt: new Date(Date.now() + 60 * 1000)
                 })
             ).unwrap();

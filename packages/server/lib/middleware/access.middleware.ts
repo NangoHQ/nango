@@ -58,10 +58,12 @@ export class AccessMiddleware {
             };
         }>
     > {
-        if (!keyRegex.test(secret) && !secret.startsWith(sandboxApiKeyPrefix)) {
+        const isSandboxApiKey = secret.startsWith(sandboxApiKeyPrefix);
+
+        if (!keyRegex.test(secret) && !isSandboxApiKey) {
             return Err('invalid_secret_key_format');
         }
-        const isSandboxApiKey = secret.startsWith(sandboxApiKeyPrefix);
+
         const accountContext = await accountService.getAccountContextByApiKey(
             isSandboxApiKey || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
         );

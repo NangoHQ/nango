@@ -2,7 +2,7 @@ import * as uuid from 'uuid';
 
 import { Err, Ok, stringToHash } from '@nangohq/utils';
 
-import { createSandboxApiKeyToken, createSandboxSigningSecret, decryptSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
+import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
@@ -36,43 +36,47 @@ class CustomerKeyService {
             displayName: string;
             scopes: string[];
         }
-    ): Promise<DBCustomerKey> {
-        const plainText = uuid.v4();
+    ): Promise<Result<DBCustomerKey>> {
+        try {
+            const plainText = uuid.v4();
 
-        const hashed = await this.hashSecret(plainText);
-        if (hashed.isErr()) {
-            throw hashed.error;
+            const hashed = await this.hashSecret(plainText);
+            if (hashed.isErr()) {
+                return Err(hashed.error);
+            }
+
+            const customerKey = {
+                account_id: accountId,
+                key_type: 'api' as const,
+                display_name: displayName,
+                scopes,
+                secret: plainText,
+                iv: '',
+                tag: '',
+                hashed: hashed.value,
+                ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
+                last_used_at: null,
+                deleted_at: null
+            } satisfies Partial<DBCustomerKey>;
+
+            const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
+
+            const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
+            if (!row) {
+                return Err(new NangoError('impossible_condition'));
+            }
+
+            await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
+                customer_key_id: row.id,
+                entity_type: 'environment',
+                entity_id: environmentId
+            });
+
+            row.secret = plainText; // Callers expect unencrypted secret.
+            return Ok(row);
+        } catch (err) {
+            return Err(err);
         }
-
-        const customerKey = {
-            account_id: accountId,
-            key_type: 'api' as const,
-            display_name: displayName,
-            scopes,
-            secret: plainText,
-            iv: '',
-            tag: '',
-            hashed: hashed.value,
-            ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
-            last_used_at: null,
-            deleted_at: null
-        } satisfies Partial<DBCustomerKey>;
-
-        const encrypted = encryptionManager.encryptAPISecret(customerKey as Parameters<typeof encryptionManager.encryptAPISecret>[0]) as typeof customerKey;
-
-        const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
-        if (!row) {
-            throw new NangoError('impossible_condition');
-        }
-
-        await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-            customer_key_id: row.id,
-            entity_type: 'environment',
-            entity_id: environmentId
-        });
-
-        row.secret = plainText; // Callers expect unencrypted secret.
-        return row;
     }
 
     public async createApiKey(
@@ -121,64 +125,20 @@ class CustomerKeyService {
                     throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
                 }
 
-                return await this.insertApiKeyForEnvironment(innerTrx, {
+                const inserted = await this.insertApiKeyForEnvironment(innerTrx, {
                     accountId,
                     environmentId,
                     displayName,
                     scopes
                 });
+                if (inserted.isErr()) {
+                    throw inserted.error;
+                }
+
+                return inserted.value;
             });
 
             return Ok(created);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    public async createSandboxApiKey(
-        trx: Knex,
-        {
-            parentApiKeyId,
-            environmentId,
-            expiresAt
-        }: {
-            parentApiKeyId: number;
-            environmentId: number;
-            expiresAt: Date;
-        }
-    ): Promise<Result<string>> {
-        try {
-            const token = await trx.transaction(async (innerTrx) => {
-                const parentKey = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                    .select(`${CUSTOMER_KEYS_TABLE}.*`)
-                    .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                    .where(`${CUSTOMER_KEYS_TABLE}.id`, parentApiKeyId)
-                    .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                    .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
-                    .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                    .forUpdate()
-                    .first();
-
-                if (!parentKey) {
-                    throw new NangoError('no_such_api_secret', { id: parentApiKeyId });
-                }
-
-                let signingSecret = decryptSandboxSigningSecret(parentKey);
-                if (!signingSecret) {
-                    signingSecret = createSandboxSigningSecret();
-                    await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                        .where(`${CUSTOMER_KEYS_TABLE}.id`, parentApiKeyId)
-                        .update({
-                            ...encryptSandboxSigningSecret(signingSecret),
-                            updated_at: innerTrx.fn.now() as unknown as Date
-                        });
-                }
-
-                return createSandboxApiKeyToken({ parentApiKeyId: parentKey.id, signingSecret, expiresAt });
-            });
-
-            return Ok(token);
         } catch (err) {
             return Err(err);
         }

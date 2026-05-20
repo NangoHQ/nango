@@ -13,6 +13,7 @@ import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
+import sandboxApiKeyService from './services/sandbox-api-key.service.js';
 import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
@@ -56,8 +57,10 @@ export {
     encryptSandboxSigningSecret,
     isSandboxApiKey,
     parseSandboxApiKeyToken,
+    sandboxApiKeyAudience,
     sandboxApiKeyBaseScopes,
     sandboxApiKeyPrefix,
+    sandboxApiKeyPurposes,
     verifySandboxApiKeyToken
 } from './services/sandbox-api-key.service.js';
 
@@ -96,6 +99,7 @@ export {
     pbkdf2,
     providerClientManager,
     remoteFileService,
+    sandboxApiKeyService,
     secretService,
     seeders,
     sharedCredentialsService,

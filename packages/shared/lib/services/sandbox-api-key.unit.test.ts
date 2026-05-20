@@ -7,6 +7,7 @@ import {
     createSandboxSigningSecret,
     isSandboxApiKey,
     parseSandboxApiKeyToken,
+    sandboxApiKeyAudience,
     sandboxApiKeyPrefix,
     verifySandboxApiKeyToken
 } from './sandbox-api-key.service.js';
@@ -19,6 +20,7 @@ describe('customer key sandbox token service', () => {
         const token = createSandboxApiKeyToken({
             parentApiKeyId: 123,
             signingSecret,
+            purpose: 'dryrun',
             expiresAt,
             issuedAt
         });
@@ -32,21 +34,41 @@ describe('customer key sandbox token service', () => {
         expect(rawJwt.split('.')).toHaveLength(3);
         expect(decoded.header).toStrictEqual({ alg: 'HS256', typ: 'JWT', kid: '123' });
         expect(decoded.payload).toStrictEqual({
+            aud: sandboxApiKeyAudience,
+            purpose: 'dryrun',
             iat: Math.floor(issuedAt / 1000),
             exp: Math.ceil(expiresAt.getTime() / 1000)
         });
-        expect(verifySandboxApiKeyToken({ token, signingSecret })?.kid).toBe(123);
+        expect(verifySandboxApiKeyToken({ token, signingSecret })).toMatchObject({ kid: 123, aud: sandboxApiKeyAudience, purpose: 'dryrun' });
     });
 
     it('rejects expired tokens', () => {
         const signingSecret = createSandboxSigningSecret();
+        const now = Date.now();
         const token = createSandboxApiKeyToken({
             parentApiKeyId: 123,
             signingSecret,
-            expiresAt: new Date(Date.now() - 1_000)
+            purpose: 'dryrun',
+            expiresAt: new Date(now - 1_000),
+            issuedAt: now - 60_000
         });
 
         expect(verifySandboxApiKeyToken({ token, signingSecret })).toBeNull();
+    });
+
+    it('rejects token creation when expiresAt is not in the future', () => {
+        const signingSecret = createSandboxSigningSecret();
+        const issuedAt = Date.now();
+
+        expect(() =>
+            createSandboxApiKeyToken({
+                parentApiKeyId: 123,
+                signingSecret,
+                purpose: 'dryrun',
+                expiresAt: new Date(issuedAt),
+                issuedAt
+            })
+        ).toThrow('Sandbox API key expiresAt must be in the future');
     });
 
     it('rejects tampered signatures', () => {
@@ -54,6 +76,7 @@ describe('customer key sandbox token service', () => {
         const token = createSandboxApiKeyToken({
             parentApiKeyId: 123,
             signingSecret,
+            purpose: 'dryrun',
             expiresAt: new Date(Date.now() + 60_000)
         });
         const parts = token.split('.');
@@ -67,6 +90,26 @@ describe('customer key sandbox token service', () => {
     it('rejects malformed tokens', () => {
         expect(parseSandboxApiKeyToken('not-a-token')).toBeNull();
         expect(parseSandboxApiKeyToken(`${sandboxApiKeyPrefix}bad`)).toBeNull();
+    });
+
+    it('rejects tokens with the wrong audience or purpose', () => {
+        const signingSecret = createSandboxSigningSecret();
+        const payload = {
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.ceil((Date.now() + 60_000) / 1000)
+        };
+
+        const wrongAudience = jwt.sign({ ...payload, aud: 'other', purpose: 'dryrun' }, signingSecret, {
+            algorithm: 'HS256',
+            header: { typ: 'JWT', alg: 'HS256', kid: '123' }
+        });
+        const wrongPurpose = jwt.sign({ ...payload, aud: sandboxApiKeyAudience, purpose: 'other' }, signingSecret, {
+            algorithm: 'HS256',
+            header: { typ: 'JWT', alg: 'HS256', kid: '123' }
+        });
+
+        expect(verifySandboxApiKeyToken({ token: `${sandboxApiKeyPrefix}${wrongAudience}`, signingSecret })).toBeNull();
+        expect(verifySandboxApiKeyToken({ token: `${sandboxApiKeyPrefix}${wrongPurpose}`, signingSecret })).toBeNull();
     });
 
     it('rejects non-canonical parent API key ids', () => {

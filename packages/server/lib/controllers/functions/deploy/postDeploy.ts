@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { configService, customerKeyService, getSyncConfigRaw } from '@nangohq/shared';
+import { configService, getSyncConfigRaw, sandboxApiKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
@@ -57,9 +57,10 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         return;
     }
 
-    const sandboxApiKey = await customerKeyService.createSandboxApiKey(db.knex, {
+    const sandboxApiKey = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId: res.locals.apiKeyId,
         environmentId: environment.id,
+        purpose: 'deploy',
         expiresAt: new Date(Date.now() + remoteFunctionDeploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
     if (sandboxApiKey.isErr()) {
