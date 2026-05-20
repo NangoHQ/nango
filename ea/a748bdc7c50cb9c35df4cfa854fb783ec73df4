@@ -1,0 +1,74 @@
+packages/shared/lib/index.ts
+  s_21d7567bafb42b::t_a4d1f61a9eca25 31
+packages/jobs/lib/processor/handler.ts
+  s_21d7567bafb42b::t_70efed82ea305b 6,35
+packages/types/lib/functions/api.ts
+  s_21d7567bafb42b::t_e1cabd29aae8de 16
+  s_21d7567bafb42b::t_ad974829d844d3 64-90,120,123-131
+docs/reference/backend/http-api/functions/dryruns-get.mdx
+  s_21d7567bafb42b::t_96413abdd227a5 2-3
+  s_21d7567bafb42b::t_0a17e1f85eef20 10
+packages/jobs/lib/execution/functions/dryrun.ts
+  s_21d7567bafb42b::t_c6f0872aa063bd 1-20,22-231,233-276,278-284,286-301
+  s_21d7567bafb42b::t_6cd499beffd5af 232,277,285
+  s_21d7567bafb42b::t_98c1b81e932a4c 21
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_21d7567bafb42b::t_77dede85928913 3,9-10,14-15,21-25,28-29,31-33,40-42
+  s_21d7567bafb42b::t_9754b5c96625c4 18
+  s_21d7567bafb42b::t_09288b3985e423 1-2,4-8,11-13,16-17,19-20,26-27,30,34-39
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_21d7567bafb42b::t_dfbd12ea2b9d9a 442-447,469,480,498
+  s_21d7567bafb42b::t_43a17b7cb1c57a 161,165,346,350,370,373,439-441,448-468,470-479,481-497,499-526
+  s_21d7567bafb42b::t_b96d5925c3b557 11,36-72
+packages/server/lib/services/remote-function/helpers.ts
+  s_21d7567bafb42b::t_7d56b0810d8088 22
+packages/types/lib/api.endpoints.ts
+  s_21d7567bafb42b::t_a2095dddef4e81 66,159
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_21d7567bafb42b::t_7dc3a4d314d051 1-2,25-26
+  s_21d7567bafb42b::t_239e8ad2e3422f 286,309
+  s_21d7567bafb42b::t_1413615f5d0f29 341
+  s_21d7567bafb42b::t_ee85fcfebe7f19 4-14,22,32-75,109-110,114,204-206,224-226,236-268,270-272,274-275,277-285,287-308,310-340,342-353,356-357,359-366
+  s_21d7567bafb42b::t_89a8141c112309 88-90
+  s_21d7567bafb42b::t_a9b2299a888c4c 76-86
+  s_21d7567bafb42b::t_0e6b45a036e93c 143-150,164,203
+  s_21d7567bafb42b::t_6df2e832c0c1bb 91-97,99,105-108
+docs/docs.json
+  s_21d7567bafb42b::t_6dfc6f03a2da10 790-791
+docs/reference/backend/http-api/functions/dryruns-create.mdx
+  s_21d7567bafb42b::t_0a17e1f85eef20 10
+  s_21d7567bafb42b::t_96413abdd227a5 1-9
+packages/shared/lib/services/functions/dryruns.service.ts
+  s_21d7567bafb42b::t_fbdad7482a1e8a 1-2,4-26,28-250
+  s_21d7567bafb42b::t_d85c064811d03d 3,27
+packages/jobs/package.json
+  s_21d7567bafb42b::t_5a7bd5bb11e5bf 39
+docs/spec.yaml
+  s_21d7567bafb42b::t_12ea5f7dd57871 3072-3079
+  s_21d7567bafb42b::t_6334080f73484e 3080
+  s_21d7567bafb42b::t_64e1ca6711c231 2997-3024,3029-3030,3033-3035,3037-3041,3046-3059,3071
+  s_21d7567bafb42b::t_0bbbfa5b7d53aa 1464,1466-1468,1476-1477,1481,1495-1521
+packages/server/lib/crons/timeoutFunctionDryruns.ts
+  s_21d7567bafb42b::t_9fea7515eca888 1-38,40-41
+  s_21d7567bafb42b::t_c66c5556745647 39
+packages/server/lib/routes.public.ts
+  s_21d7567bafb42b::t_d29ab12a07b996 39,101-109,288-290
+packages/server/lib/server.ts
+  s_21d7567bafb42b::t_a78ae76e6dd0cd 24,96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "eaa748bdc7c50cb9c35df4cfa854fb783ec73df4",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
