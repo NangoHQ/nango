@@ -24,8 +24,9 @@ export function getLambdaFunctionName(node: Node): string {
 }
 
 /** Stable `TenantId` for AWS Lambda invoke when the plan uses tenant-isolated functions (PER_TENANT). */
-export function getLambdaTenantIdFromAccountEnv(accountId: number, environmentId: number): string {
-    return `account-${accountId}-env-${environmentId}`;
+export function getLambdaTenantIdFromAccountEnv(accountId: number, _environmentId: number): string {
+    //changing this to only isolate to account for now
+    return `account-${accountId}`;
 }
 
 /** Stable `TenantId` for AWS Lambda invoke when the plan uses tenant-isolated functions (PER_TENANT). */
