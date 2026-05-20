@@ -7095,6 +7095,26 @@ folk:
             pattern: '^FOLK[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
+followupboss:
+    display_name: Follow Up Boss
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.followupboss.com/oauth/authorize
+    token_url: https://app.followupboss.com/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: auth_code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.followupboss.com
+    docs: https://nango.dev/docs/api-integrations/followupboss
+    setup_guide_url: https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app
+
 fortnox:
     display_name: Fortnox
     categories:
