@@ -4962,7 +4962,7 @@ cursor:
             description: The API Key for your Cursor account
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
 
 cursor-admin:
     display_name: Cursor Admin
@@ -4983,7 +4983,7 @@ cursor-admin:
             title: API key
             description: The API Key of your Greenhouse account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
             doc_section: '#step-1-finding-api-key'
         password:
