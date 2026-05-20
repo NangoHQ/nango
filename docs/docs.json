@@ -1499,6 +1499,7 @@
               "api-integrations/sellercloud",
               "integrations/all/sap-business-one",
               "integrations/all/sap-concur",
+              "api-integrations/sap-concur-password",
               "api-integrations/sap-success-factors",
               "integrations/all/sap-fieldglass",
               "api-integrations/sap-odata-oauth2-cc",
