@@ -20297,6 +20297,29 @@ videoask:
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
 
+wappalyzer:
+    display_name: Wappalyzer
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.wappalyzer.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/credits/balance/
+    docs: https://nango.dev/docs/api-integrations/wappalyzer
+    docs_connect: https://nango.dev/docs/api-integrations/wappalyzer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wappalyzer API key.
+            doc_section: '#step-1-get-your-api-key'
+
 wakatime:
     display_name: Wakatime
     categories:
