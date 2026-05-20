@@ -51,7 +51,7 @@ function getPushpayChmsV1ApiError(data: unknown): string | null {
             return null;
         }
 
-        const errorNode = (response as Record<string, unknown>).error;
+        const errorNode = (response as Record<string, unknown>)['error'];
         if (errorNode === undefined || errorNode === null) {
             return null;
         }
@@ -64,11 +64,11 @@ function getPushpayChmsV1ApiError(data: unknown): string | null {
 }
 
 function getCcbResponse(parsed: Record<string, unknown>): unknown {
-    const root = parsed.ccb_api ?? parsed;
+    const root = parsed['ccb_api'] ?? parsed;
     if (typeof root !== 'object' || root === null) {
         return undefined;
     }
-    return (root as Record<string, unknown>).response;
+    return (root as Record<string, unknown>)['response'];
 }
 
 function formatErrorNode(error: unknown): string {
