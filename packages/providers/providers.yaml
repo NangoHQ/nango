@@ -16385,6 +16385,63 @@ sap-concur:
             example: us
             doc_section: '#step-3-determine-your-region'
 
+sap-concur-password:
+    display_name: SAP Concur (Password Grant)
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.region}.api.concursolutions.com/oauth2/v0/token
+    token_params:
+        grant_type: password
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.region}.api.concursolutions.com
+    docs: https://nango.dev/docs/api-integrations/sap-concur-password
+    docs_connect: https://nango.dev/docs/api-integrations/sap-concur-password/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your SAP Concur username or userId.
+            doc_section: '#step-2-get-your-user-credentials'
+        password:
+            type: string
+            title: Password
+            secret: true
+            description: Your SAP Concur account password.
+            doc_section: '#step-2-get-your-user-credentials'
+        clientId:
+            type: string
+            title: Client ID
+            description: Your OAuth application client_id supplied by App Management.
+            doc_section: '#step-1-get-your-client-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            secret: true
+            description: Your OAuth application client_secret supplied by App Management.
+            doc_section: '#step-1-get-your-client-credentials'
+    connection_config:
+        region:
+            type: string
+            title: Region
+            description: The SAP Concur Data Center region.
+            example: us
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-3-determine-your-region'
+
 sap-business-one:
     display_name: SAP Business One
     categories:
@@ -18121,6 +18178,32 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-census:
+    display_name: StoreCensus
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.storecensus.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/apps?page=1&pageSize=1
+    docs: https://nango.dev/docs/api-integrations/store-census
+    docs_connect: https://nango.dev/docs/api-integrations/store-census/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your StoreCensus API key.
+            doc_section: '#step-1-get-your-api-key'
+
 store-leads:
     display_name: Store Leads
     categories:
@@ -18752,6 +18835,36 @@ telegram:
             example: 1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ1234567
             pattern: '^[0-9]+:[a-zA-Z0-9_-]+$'
             doc_section: '#step-1-creating-your-telegram-bot'
+
+the-swarm:
+    display_name: The Swarm
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://bee.theswarm.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: POST
+            endpoints:
+                - /v2/profiles/search
+            headers:
+                content-type: application/json
+            data:
+                query:
+                    match_all: {}
+                limit: 1
+    docs: https://nango.dev/docs/api-integrations/the-swarm
+    docs_connect: https://nango.dev/docs/api-integrations/the-swarm/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Swarm API key from Team Settings.
+            example: aB3cD9eF************************wX6yZ2
+            pattern: '^[a-zA-Z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
 
 terraform:
     display_name: Terraform
@@ -20199,6 +20312,8 @@ videoask:
         grant_type: refresh_token
     proxy:
         base_url: https://api.videoask.com
+    webhook_routing_script: videoaskWebhookRouting
+    webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
 
