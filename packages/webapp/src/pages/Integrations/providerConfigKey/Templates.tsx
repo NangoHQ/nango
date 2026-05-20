@@ -228,7 +228,7 @@ export const Templates: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex-1 min-w-0 min-h-0 overflow-y-auto pr-11 py-3">
+                <div className="flex-1 min-w-120 min-h-0 overflow-y-auto pr-11 py-3">
                     {isLoading ? (
                         <Skeleton className="w-full h-96" />
                     ) : selected && integrationData ? (
