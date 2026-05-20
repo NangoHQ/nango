@@ -13,6 +13,7 @@ export type FunctionErrorCode =
     | 'dryrun_error'
     | 'deployment_error'
     | 'connection_not_found'
+    | 'dryrun_not_found'
     | 'function_disabled'
     | 'timeout'
     | 'validation_error';
@@ -60,6 +61,33 @@ export interface FunctionDryrunSuccess {
     result?: unknown;
 }
 
+export type FunctionDryrunStatus = 'pending' | 'running' | 'succeeded' | 'failed';
+
+export interface FunctionDryrunCreateSuccess {
+    id: string;
+    status: Extract<FunctionDryrunStatus, 'pending' | 'running'>;
+    status_url: string;
+    created_at: string;
+    execution_timeout_at?: string | undefined;
+}
+
+export interface FunctionDryrunResultSuccess {
+    id: string;
+    status: FunctionDryrunStatus;
+    integration_id: string;
+    function_type: RunnableFunctionType;
+    status_url: string;
+    created_at: string;
+    updated_at: string;
+    started_at?: string | undefined;
+    completed_at?: string | undefined;
+    execution_timeout_at?: string | undefined;
+    duration_ms?: number | undefined;
+    output?: string | undefined;
+    result?: unknown;
+    error?: ApiError<FunctionErrorCode>['error'] | undefined;
+}
+
 export interface FunctionDeploymentBody {
     type: 'single';
     integration_id: string;
@@ -89,10 +117,18 @@ export type PostFunctionCompile = Endpoint<{
 
 export type PostFunctionDryrun = Endpoint<{
     Method: 'POST';
-    Path: '/functions/dryrun';
+    Path: '/functions/dryruns';
     Body: FunctionDryrunBody;
     Error: ApiError<FunctionErrorCode>;
-    Success: FunctionDryrunSuccess;
+    Success: FunctionDryrunCreateSuccess;
+}>;
+
+export type GetFunctionDryrun = Endpoint<{
+    Method: 'GET';
+    Path: '/functions/dryruns/:id';
+    Params: { id: string };
+    Error: ApiError<FunctionErrorCode>;
+    Success: FunctionDryrunResultSuccess;
 }>;
 
 export type PostFunctionDeployment = Endpoint<{

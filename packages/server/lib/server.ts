@@ -21,6 +21,7 @@ import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
+import { timeoutFunctionDryrunsCron } from './crons/timeoutFunctionDryruns.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
@@ -92,6 +93,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 getProviders();
 
 refreshConnectionsCron();
+timeoutFunctionDryrunsCron();
 timeoutLogsOperations();
 deleteOldData();
 trialCron();

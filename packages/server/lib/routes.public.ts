@@ -36,7 +36,7 @@ import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile, postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postFunctionDeployment, postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
-import { postFunctionDryrun, postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
+import { getFunctionDryrun, postFunctionDryrun, postFunctionDryrunResult, postRemoteFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -98,6 +98,15 @@ const remoteFunctionAuth: RequestHandler[] = [
 ];
 const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
 const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:dryrun')];
+const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
+    if (res.locals['apiKeyAuthSource'] !== 'sandbox_token') {
+        res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint only accepts sandbox tokens' } });
+        return;
+    }
+
+    next();
+};
+const functionDryrunResultAuth: RequestHandler[] = [...remoteFunctionAuth, sandboxTokenOnly, withScope('environment:dryrun')];
 const functionDeployAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
 
 export const publicAPI = express.Router();
@@ -276,7 +285,9 @@ publicAPI.route('/scripts/config').get(apiAuth, withScope('environment:integrati
 // Functions
 publicAPI.use('/functions', jsonContentTypeMiddleware);
 publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionCompile);
-publicAPI.route('/functions/dryrun').post(functionDryrunAuth, postFunctionDryrun);
+publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
+publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
+publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
 publicAPI.route('/functions/deployments').post(functionDeployAuth, postFunctionDeployment);
 
 // Actions

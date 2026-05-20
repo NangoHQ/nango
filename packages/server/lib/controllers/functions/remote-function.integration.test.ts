@@ -8,6 +8,7 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
+import type { DBFunctionDryrun } from '@nangohq/shared';
 import type { ApiKeyScope } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -30,6 +31,45 @@ async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccoun
     });
 
     return key.unwrap();
+}
+
+async function createDryrunSeed({
+    environmentId,
+    functionType = 'sync',
+    sandboxId,
+    startedAt,
+    executionTimeoutAt
+}: {
+    environmentId: number;
+    functionType?: 'action' | 'sync';
+    sandboxId?: string | undefined;
+    startedAt?: Date | undefined;
+    executionTimeoutAt?: Date | undefined;
+}): Promise<DBFunctionDryrun> {
+    const rows = (await db
+        .knex('function_dryruns')
+        .insert({
+            environment_id: environmentId,
+            request: {
+                integration_id: 'github',
+                function_name: 'function',
+                function_type: functionType,
+                code: 'export default {}',
+                connection_id: 'conn'
+            },
+            status: 'running',
+            ...(sandboxId ? { sandbox_id: sandboxId } : {}),
+            ...(startedAt ? { started_at: startedAt } : {}),
+            ...(executionTimeoutAt ? { execution_timeout_at: executionTimeoutAt } : {})
+        })
+        .returning('*')) as DBFunctionDryrun[];
+
+    const row = rows[0];
+    if (!row) {
+        throw new Error('Failed to create dryrun seed');
+    }
+
+    return row;
 }
 
 describe('remote-function public API', () => {
@@ -118,11 +158,11 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('rejects POST /functions/dryrun without dryrun scope', async () => {
+    it('rejects POST /functions/dryruns without dryrun scope', async () => {
         const seed = await seedAccountWithRemoteFunctions();
         const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
 
-        const res = await api.fetch('/functions/dryrun', {
+        const res = await api.fetch('/functions/dryruns', {
             method: 'POST',
             token: apiKey.secret,
             body: {
@@ -303,11 +343,11 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('returns connection_not_found on POST /functions/dryrun', async () => {
+    it('returns connection_not_found on POST /functions/dryruns', async () => {
         const { env, apiKey } = await seedAccountWithRemoteFunctions();
         await seeders.createConfigSeed(env, 'github', 'github');
 
-        const res = await api.fetch('/functions/dryrun', {
+        const res = await api.fetch('/functions/dryruns', {
             method: 'POST',
             token: apiKey.secret,
             body: {
@@ -327,10 +367,10 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('returns integration_not_found on POST /functions/dryrun', async () => {
+    it('returns integration_not_found on POST /functions/dryruns', async () => {
         const { apiKey } = await seedAccountWithRemoteFunctions();
 
-        const res = await api.fetch('/functions/dryrun', {
+        const res = await api.fetch('/functions/dryruns', {
             method: 'POST',
             token: apiKey.secret,
             body: {
@@ -394,6 +434,96 @@ describe('remote-function public API', () => {
                 code: 'integration_not_found',
                 message: "Integration 'github' was not found"
             }
+        });
+    });
+
+    it('returns stored dryrun status on GET /functions/dryruns/:id', async () => {
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const dryrun = await createDryrunSeed({
+            environmentId: env.id,
+            sandboxId: 'sandbox-id',
+            startedAt: new Date('2026-01-01T00:00:00.000Z'),
+            executionTimeoutAt: new Date('2026-01-01T00:10:00.000Z')
+        });
+
+        const res = await api.fetch('/functions/dryruns/:id', {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { id: dryrun.id }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toMatchObject({
+            id: dryrun.id,
+            status: 'running',
+            integration_id: 'github',
+            function_type: 'sync',
+            status_url: `/functions/dryruns/${dryrun.id}`,
+            started_at: '2026-01-01T00:00:00.000Z',
+            execution_timeout_at: '2026-01-01T00:10:00.000Z'
+        });
+    });
+
+    it('rejects POST /functions/dryruns/:id/result with a customer API key', async () => {
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const dryrun = await createDryrunSeed({ environmentId: env.id, startedAt: new Date() });
+
+        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${apiKey.secret}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'succeeded', output: 'Executing -> function\nDone\n{"ok":true}' })
+        });
+
+        const json = (await res.json()) as unknown;
+        expect(res.status).toBe(403);
+        expect(json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'This endpoint only accepts sandbox tokens'
+            }
+        });
+    });
+
+    it('accepts POST /functions/dryruns/:id/result with a sandbox token', async () => {
+        const seed = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+        const sandboxToken = await customerKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKey.id,
+            environmentId: seed.env.id,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
+
+        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'succeeded', output: 'Building\nExecuting -> function\nDone\n{"ok":true}', duration_ms: 123 })
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toStrictEqual({ ok: true });
+
+        const getRes = await api.fetch('/functions/dryruns/:id', {
+            method: 'GET',
+            token: seed.apiKey.secret,
+            params: { id: dryrun.id }
+        });
+
+        expect(getRes.res.status).toBe(200);
+        expect(getRes.json).toMatchObject({
+            id: dryrun.id,
+            status: 'succeeded',
+            integration_id: 'github',
+            function_type: 'action',
+            duration_ms: 123,
+            output: 'Executing -> function\nDone',
+            result: { ok: true }
         });
     });
 });

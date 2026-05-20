@@ -63,6 +63,7 @@ import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
 import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from './flow/http.api.js';
 import type {
+    GetFunctionDryrun,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetProviderTemplates,
@@ -155,6 +156,7 @@ export type PublicApiEndpoints =
     | PostPublicTriggerAction
     | PostFunctionCompile
     | PostFunctionDryrun
+    | GetFunctionDryrun
     | PostFunctionDeployment
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun

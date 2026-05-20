@@ -19,6 +19,7 @@ const functionErrorCodes = new Set<string>([
     'dryrun_error',
     'deployment_error',
     'connection_not_found',
+    'dryrun_not_found',
     'function_disabled',
     'timeout',
     'validation_error'

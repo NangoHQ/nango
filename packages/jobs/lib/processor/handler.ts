@@ -3,6 +3,7 @@ import tracer from 'dd-trace';
 import { Err, Ok } from '@nangohq/utils';
 
 import { startAction } from '../execution/action.js';
+import { isInternalFunctionDryrunAction, startInternalFunctionDryrun } from '../execution/functions/dryrun.js';
 import { startOnEvent } from '../execution/onEvent.js';
 import { abortTask } from '../execution/operations/abort.js';
 import { abortSync, startSync } from '../execution/sync.js';
@@ -31,7 +32,7 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
     if (task.isAction()) {
         const span = tracer.startSpan('jobs.handler.action');
         return await tracer.scope().activate(span, async () => {
-            const res = await startAction(task);
+            const res = isInternalFunctionDryrunAction(task) ? await startInternalFunctionDryrun(task) : await startAction(task);
             span.finish();
             return res;
         });
