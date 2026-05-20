@@ -278,6 +278,7 @@ export async function getRecords({
         // progress even on records larger than the budget.
         const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
         let hasMore = recordsMetadata.length >= limitPlus1;
+        let dryRunBudgetWouldTruncate = false;
         if (hasMore) {
             recordsMetadata.pop();
         }
@@ -290,16 +291,21 @@ export async function getRecords({
             // un-backfilled row overshoots by its own size; bounded by data
             // shape, not unbounded.
             let acc = 0;
+            let truncateAt: number | null = null;
             for (let i = 0; i < recordsMetadata.length; i++) {
                 const sz = recordsMetadata[i]!.sz ?? 0;
                 if (i > 0 && acc + sz > budgetBytes) {
-                    recordsMetadata.splice(i);
-                    hasMore = true;
-                    span.setTag('nango.records.budgetTruncated', true);
-                    span.setTag('nango.records.budgetAccBytes', acc);
+                    truncateAt = i;
                     break;
                 }
                 acc += sz;
+            }
+            if (truncateAt !== null && envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
+                dryRunBudgetWouldTruncate = true;
+            } else if (truncateAt !== null) {
+                recordsMetadata.splice(truncateAt);
+                hasMore = true;
+                span.setTag('nango.records.budgetTruncated', true);
             }
         }
 
@@ -356,11 +362,19 @@ export async function getRecords({
         if (hasMore) {
             const cursorRawElement = recordsMetadata[recordsMetadata.length - 1];
             if (cursorRawElement) {
-                return Ok({ records: results, next_cursor: Cursor.new(cursorRawElement) });
+                return Ok({
+                    records: results,
+                    next_cursor: Cursor.new(cursorRawElement),
+                    ...(dryRunBudgetWouldTruncate ? { dryRunBudgetWouldTruncate } : {})
+                });
             }
         }
 
-        return Ok({ records: results, next_cursor: null });
+        return Ok({
+            records: results,
+            next_cursor: null,
+            ...(dryRunBudgetWouldTruncate ? { dryRunBudgetWouldTruncate } : {})
+        });
     } catch (err) {
         const e = new Error(`List records error for model ${model}`, { cause: err });
         span.setTag('error', e);

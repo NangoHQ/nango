@@ -826,8 +826,16 @@ describe('Records service', () => {
 
         describe('size budget (RECORDS_MAX_RESPONSE_SIZE_BYTES)', () => {
             const originalBudget = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
+            const originalDryRun = envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN;
+            beforeEach(() => {
+                // Dry-run is on by default; the truncation tests below toggle
+                // it off to assert real enforcement. One dedicated test
+                // re-enables it to assert dry-run does NOT truncate.
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = false;
+            });
             afterAll(() => {
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = originalBudget;
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = originalDryRun;
             });
 
             it('Should truncate page and emit next_cursor when the byte budget is exceeded', async () => {
@@ -936,6 +944,28 @@ describe('Records service', () => {
                 // Must return exactly one record and offer a next_cursor so pagination can progress.
                 expect(records.length).toBe(1);
                 expect(next_cursor).not.toBeNull();
+            });
+
+            it('Should NOT truncate in dry-run mode even when budget is exceeded', async () => {
+                const numOfRecords = 50;
+                const bigField = 'd'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                // Same tight budget as the truncation tests above, but with
+                // dry-run flipped back on — should return all records.
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = true;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                expect(records.length).toBe(numOfRecords);
+                expect(next_cursor).toBeNull();
             });
         });
     }, 60_000);

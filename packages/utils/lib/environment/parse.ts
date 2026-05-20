@@ -393,6 +393,11 @@ export const ENVS = z.object({
     // than wire bytes by 1.5–3×). 0 disables the budget — same behavior
     // as before this feature. Set per environment in nango-environments.
     RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
+    // When true (default), getRecords does NOT truncate responses that
+    // exceed the budget — it only emits a metric tagged with accountId so
+    // we can measure how many customers would be affected before enforcing.
+    // Set to false to enable real truncation.
+    RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),

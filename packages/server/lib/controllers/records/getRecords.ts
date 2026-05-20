@@ -104,6 +104,10 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
 
+        if (result.value.dryRunBudgetWouldTruncate) {
+            metrics.increment(metrics.Types.RECORDS_BUDGET_DRY_RUN_TRUNCATE, 1, { accountId: account.id, service: 'server' });
+        }
+
         span.setTag('response.size_bytes', responseSize);
     });
 });
