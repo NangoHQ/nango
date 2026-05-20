@@ -2126,6 +2126,10 @@ npx skills add NangoHQ/skills -s building-nango-functions-locally
   If your coding agent is already running, restart it after installing the skill so it can load the new instructions.
 </Note>
 
+<Warning>
+  Claude Code users: the default symlink install currently skips the `.claude/skills/` symlinks when `.claude/` doesn't already exist, so Claude Code won't see the skill. As a workaround, choose **Copy to all agents** during the interactive prompt (or create `.claude/` before running the command). Tracked upstream in [vercel-labs/skills#1138](https://github.com/vercel-labs/skills/issues/1138).
+</Warning>
+
 The docs MCP and skill give the agent current Nango function APIs, CLI commands, project layout, Zod schema patterns, testing guidance, deployment expectations, and examples for action, sync, webhook, and event functions.
 
 You can start with a short request:
