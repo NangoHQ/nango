@@ -4,28 +4,28 @@ sidebarTitle: 'ImmyBot'
 description: 'Integrate your application with the ImmyBot API'
 ---
 
-## Quickstart
+## 🚀 Quickstart
 
 Connect to ImmyBot with Nango and see data flow in 2 minutes.
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _ImmyBot_.
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _ImmyBot_.
 
     This integration uses Microsoft Entra OAuth2 Client Credentials.
     </Step>
     <Step title="Authorize ImmyBot">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Microsoft Entra tenant ID, ImmyBot instance subdomain, client ID, and client secret.
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your Microsoft Entra tenant ID, ImmyBot instance subdomain, client ID, and client secret. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the ImmyBot API">
-    Let's make your first request to the ImmyBot API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first request to the ImmyBot API. Replace the placeholders below with your Nango API key from **Environment settings** > **API Keys**, integration ID, and connection ID:
 
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl -X GET "https://api.nango.dev/proxy/api/v1/computers" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json"
@@ -40,7 +40,7 @@ Connect to ImmyBot with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/api/v1/computers',
@@ -55,7 +55,7 @@ Connect to ImmyBot with Nango and see data flow in 2 minutes.
 
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
     </Step>
 
     <Step title="Implement Nango in your app">
@@ -65,13 +65,21 @@ Connect to ImmyBot with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-## ImmyBot integration guides
+## 📚 ImmyBot integration guides
 
-Nango maintained guides for common use cases.
+Nango-maintained guides for common use cases.
 
-- [How do I link my account?](/api-integrations/immybot/connect)
+- [How to link your ImmyBot account](/api-integrations/immybot/connect)
 Connect your ImmyBot instance using the Connect UI
 
 Official docs:
 - [ImmyBot API documentation](https://www.immy.bot/documentation/reference/api-documentation/)
 - [Build Your Own Integration](https://www.immy.bot/documentation/integrations/build-your-own-integration/)
+
+## 🧩 Pre-built syncs & actions for ImmyBot
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/immybot/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
