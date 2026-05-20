@@ -74,4 +74,5 @@ export interface RecordCount {
     count: number;
     size_bytes: number;
     updated_at: string;
+    autodelete_checked_at: string | null;
 }

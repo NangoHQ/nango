@@ -11,6 +11,18 @@ import type { Knex } from 'knex';
 
 export const TRIAL_DURATION = ms('15days');
 
+function getTrialStartFields(
+    plan: Pick<DBPlan, 'trial_start_at' | 'trial_extension_count'>
+): Pick<DBPlan, 'trial_start_at' | 'trial_end_at' | 'trial_end_notified_at' | 'trial_extension_count' | 'trial_expired'> {
+    return {
+        trial_start_at: plan.trial_start_at || new Date(),
+        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
+        trial_end_notified_at: null,
+        trial_extension_count: plan.trial_extension_count + 1,
+        trial_expired: false
+    };
+}
+
 export async function getPlan(
     db: Knex,
     opts: Partial<{
@@ -94,11 +106,7 @@ export async function updatePlanByTeam(
 export async function startTrial(db: Knex, plan: DBPlan): Promise<Result<boolean>> {
     return await updatePlan(db, {
         id: plan.id,
-        trial_start_at: plan.trial_start_at || new Date(),
-        trial_end_at: new Date(Date.now() + TRIAL_DURATION),
-        trial_end_notified_at: null,
-        trial_extension_count: plan.trial_extension_count + 1,
-        trial_expired: false
+        ...getTrialStartFields(plan)
     });
 }
 
@@ -174,6 +182,7 @@ export async function handlePlanChanged(
                   trial_expired: null
               }
             : {}),
+        ...(isDowngrade && !isNewPaid ? getTrialStartFields(currentPlan.value) : {}),
         ...mergedFlags
     });
 

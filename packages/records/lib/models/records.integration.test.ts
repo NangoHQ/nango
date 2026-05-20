@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
@@ -21,7 +21,7 @@ describe('Records service', () => {
     afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
-        await db(RECORDS_BATCH_TABLE).truncate();
+        await db(RECORDS_SEEN_TABLE).truncate();
     });
 
     describe('Should fetch cursor', () => {
@@ -1017,7 +1017,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 15,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1025,7 +1026,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 25,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res3.environmentId,
@@ -1033,7 +1035,8 @@ describe('Records service', () => {
                         model: res3.model,
                         count: 35,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1062,7 +1065,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 10,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1070,7 +1074,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 30,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1707,12 +1712,12 @@ describe('Records service', () => {
             expect(candidate).toBeNull();
         });
 
-        it('should randomly select candidates', async () => {
+        it('should rotate across candidates', async () => {
             const oneDay = 24 * 60 * 60 * 1000;
             const syncId = uuid.v4();
+            const total = 5;
 
-            // Insert multiple stale record counts
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < total; i++) {
                 const connectionId = rnd.number();
                 const environmentId = rnd.number();
                 const model = rnd.string();
@@ -1725,14 +1730,15 @@ describe('Records service', () => {
                     .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
             }
 
+            // Each call should advance to a different candidate; after `total` calls all must have been seen
             const candidates = new Set<string>();
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < total; i++) {
                 const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
                 if (candidate) {
                     candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
                 }
             }
-            expect(candidates.size).toBeGreaterThan(1);
+            expect(candidates.size).toBe(total);
         });
     });
     describe('payload migration', () => {
@@ -1896,6 +1902,99 @@ describe('Records service', () => {
             // hard delete removes the count entry entirely when count reaches 0
             const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBeUndefined();
+        });
+    });
+
+    describe('size_bytes', () => {
+        it('should store size_bytes on records table after upsert and update', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowsAfterUpsert = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).select<{ size_bytes: number | null }[]>('size_bytes');
+            expect(rowsAfterUpsert).toHaveLength(2);
+            for (const row of rowsAfterUpsert) {
+                expect(row.size_bytes).not.toBeNull();
+                expect(row.size_bytes).toBeGreaterThan(0);
+            }
+
+            const rowBeforeUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            const sizeBeforeUpdate = rowBeforeUpdate.size_bytes!;
+
+            await updateRecords({
+                records: [
+                    {
+                        id: '1',
+                        name: `This is a much longer name`
+                    }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowAfterUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            expect(rowAfterUpdate?.size_bytes).not.toBeNull();
+            expect(rowAfterUpdate?.size_bytes).toBeGreaterThan(sizeBeforeUpdate);
+        });
+    });
+
+    describe('ensureSeenPartition', () => {
+        it('should create a partition for the given date', async () => {
+            const date = new Date('2025-01-15T00:00:00Z');
+            const res = await Records.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250115'
+            ]);
+            expect(rows[0]?.exists).toBe(true);
+        });
+
+        it('should be idempotent', async () => {
+            const date = new Date('2025-01-16T00:00:00Z');
+            const res1 = await Records.ensureSeenPartition({ date });
+            const res2 = await Records.ensureSeenPartition({ date });
+            expect(res1.isOk()).toBe(true);
+            expect(res2.isOk()).toBe(true);
+        });
+    });
+
+    describe('dropSeenPartition', () => {
+        it('should drop an existing partition', async () => {
+            const date = new Date('2025-02-10T00:00:00Z');
+            await Records.ensureSeenPartition({ date });
+
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250210'
+            ]);
+            expect(rows[0]?.exists).toBe(false);
+        });
+
+        it('should not error when partition does not exist', async () => {
+            const date = new Date('2025-02-11T00:00:00Z');
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
         });
     });
 });

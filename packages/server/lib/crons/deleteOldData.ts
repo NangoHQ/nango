@@ -34,6 +34,7 @@ const cronMinutes = envs.CRON_DELETE_OLD_DATA_EVERY_MIN;
 
 const limit = envs.CRON_DELETE_OLD_JOBS_LIMIT;
 const deleteJobsOlderThan = envs.CRON_DELETE_OLD_JOBS_MAX_DAYS;
+const deleteSyncsLimit = envs.CRON_DELETE_OLD_SYNCS_LIMIT;
 
 const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS;
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
@@ -132,7 +133,7 @@ export async function exec(): Promise<void> {
             ...opts,
             name: 'sync',
             deleteFn: async () => {
-                const syncs = await getSoftDeletedSyncs({ limit: 2, olderThan: deleteSyncsOlderThan });
+                const syncs = await getSoftDeletedSyncs({ limit: deleteSyncsLimit, olderThan: deleteSyncsOlderThan });
                 if (syncs.isErr()) {
                     throw syncs.error;
                 }
