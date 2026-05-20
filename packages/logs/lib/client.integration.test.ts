@@ -3,7 +3,7 @@ import { afterEach } from 'node:test';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { deleteIndex, migrateMapping } from './es/helpers.js';
-import { indexMessages } from './es/schema.js';
+import { indexMessages, indexOperations } from './es/schema.js';
 import { logContextGetter } from './models/logContextGetter.js';
 import * as modelMessages from './models/messages.js';
 import * as modelOperations from './models/operations.js';
@@ -21,6 +21,7 @@ const operationPayload: OperationRowInsert = {
 describe('client', () => {
     beforeAll(async () => {
         await deleteIndex({ prefix: indexMessages.index });
+        await deleteIndex({ prefix: indexOperations.index });
         await migrateMapping();
     });
     afterEach(() => {

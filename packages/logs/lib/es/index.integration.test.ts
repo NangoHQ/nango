@@ -44,13 +44,13 @@ describe('mapping', () => {
 
         // Should have created a today index
         const mapping = await client.indices.getMapping({ index: fullIndexName });
-        expect(mapping[fullIndexName]).toMatchSnapshot();
+        expect(mapping[fullIndexName]).toMatchSnapshot(`${envs.NANGO_LOGS_PROVIDER}-mapping`);
 
         const settings = await client.indices.getSettings({ index: fullIndexName });
-        expect(settings[fullIndexName]?.settings?.index?.analysis).toMatchSnapshot();
-        expect(settings[fullIndexName]?.settings?.index?.sort).toMatchSnapshot();
+        expect(settings[fullIndexName]?.settings?.index?.analysis).toMatchSnapshot(`${envs.NANGO_LOGS_PROVIDER}-analysis`);
+        expect(settings[fullIndexName]?.settings?.index?.sort).toMatchSnapshot(`${envs.NANGO_LOGS_PROVIDER}-sort`);
         if (envs.NANGO_LOGS_PROVIDER === 'elasticsearch') {
-            expect(settings[fullIndexName]?.settings?.index?.lifecycle).toMatchSnapshot();
+            expect(settings[fullIndexName]?.settings?.index?.lifecycle).toMatchSnapshot(`${envs.NANGO_LOGS_PROVIDER}-lifecycle`);
         } else {
             const idx = settings[fullIndexName]?.settings?.index as { plugins?: { index_state_management?: { policy_id?: string } } } | undefined;
             expect(idx?.plugins?.index_state_management?.policy_id).toBe(policyOperations.name);

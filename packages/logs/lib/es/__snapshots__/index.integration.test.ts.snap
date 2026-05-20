@@ -1,6 +1,25 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`mapping > should create one index automatically on operation 1`] = `
+exports[`mapping > should create one index automatically on operation > elasticsearch-analysis 1`] = `
+{
+  "analyzer": {
+    "default": {
+      "type": "standard",
+    },
+    "default_search": {
+      "type": "standard",
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > elasticsearch-lifecycle 1`] = `
+{
+  "name": "test_policy_retention_operations",
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > elasticsearch-mapping 1`] = `
 {
   "mappings": {
     "dynamic": "false",
@@ -185,20 +204,7 @@ exports[`mapping > should create one index automatically on operation 1`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on operation 2`] = `
-{
-  "analyzer": {
-    "default": {
-      "type": "standard",
-    },
-    "default_search": {
-      "type": "standard",
-    },
-  },
-}
-`;
-
-exports[`mapping > should create one index automatically on operation 3`] = `
+exports[`mapping > should create one index automatically on operation > elasticsearch-sort 1`] = `
 {
   "field": [
     "createdAt",
@@ -211,8 +217,218 @@ exports[`mapping > should create one index automatically on operation 3`] = `
 }
 `;
 
-exports[`mapping > should create one index automatically on operation 4`] = `
+exports[`mapping > should create one index automatically on operation > opensearch-analysis 1`] = `
 {
-  "name": "test_policy_retention_operations",
+  "analyzer": {
+    "default": {
+      "type": "standard",
+    },
+    "default_search": {
+      "type": "standard",
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > opensearch-mapping 1`] = `
+{
+  "mappings": {
+    "dynamic": "false",
+    "properties": {
+      "accountId": {
+        "type": "keyword",
+      },
+      "accountName": {
+        "type": "keyword",
+      },
+      "connectionId": {
+        "type": "keyword",
+      },
+      "connectionName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "search_analyzer": "standard",
+        "type": "text",
+      },
+      "createdAt": {
+        "type": "date",
+      },
+      "durationMs": {
+        "type": "integer",
+      },
+      "endUserId": {
+        "type": "keyword",
+      },
+      "endUserName": {
+        "type": "keyword",
+      },
+      "endedAt": {
+        "type": "date",
+      },
+      "environmentId": {
+        "type": "keyword",
+      },
+      "environmentName": {
+        "type": "keyword",
+      },
+      "error": {
+        "properties": {
+          "message": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "name": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+          "payload": {
+            "enabled": false,
+            "type": "object",
+          },
+          "type": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "keyword",
+          },
+        },
+      },
+      "expiresAt": {
+        "type": "date",
+      },
+      "id": {
+        "type": "keyword",
+      },
+      "integrationId": {
+        "type": "keyword",
+      },
+      "integrationName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "search_analyzer": "standard",
+        "type": "text",
+      },
+      "jobId": {
+        "type": "keyword",
+      },
+      "level": {
+        "type": "keyword",
+      },
+      "message": {
+        "analyzer": "standard",
+        "copy_to": [
+          "meta_search",
+        ],
+        "search_analyzer": "standard",
+        "type": "text",
+      },
+      "meta": {
+        "enabled": false,
+        "type": "object",
+      },
+      "meta_search": {
+        "analyzer": "standard",
+        "search_analyzer": "standard",
+        "type": "text",
+      },
+      "operation": {
+        "properties": {
+          "action": {
+            "type": "keyword",
+          },
+          "type": {
+            "type": "keyword",
+          },
+        },
+      },
+      "providerName": {
+        "type": "keyword",
+      },
+      "request": {
+        "properties": {
+          "headers": {
+            "enabled": false,
+            "type": "object",
+          },
+          "method": {
+            "type": "keyword",
+          },
+          "url": {
+            "type": "keyword",
+          },
+        },
+      },
+      "response": {
+        "properties": {
+          "code": {
+            "copy_to": [
+              "meta_search",
+            ],
+            "type": "integer",
+          },
+          "headers": {
+            "enabled": false,
+            "type": "object",
+          },
+        },
+      },
+      "source": {
+        "type": "keyword",
+      },
+      "startedAt": {
+        "type": "date",
+      },
+      "state": {
+        "type": "keyword",
+      },
+      "syncConfigId": {
+        "type": "keyword",
+      },
+      "syncConfigName": {
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+          },
+        },
+        "search_analyzer": "standard",
+        "type": "text",
+      },
+      "type": {
+        "type": "keyword",
+      },
+      "updatedAt": {
+        "type": "date",
+      },
+      "userId": {
+        "type": "keyword",
+      },
+    },
+  },
+}
+`;
+
+exports[`mapping > should create one index automatically on operation > opensearch-sort 1`] = `
+{
+  "field": [
+    "createdAt",
+    "id",
+  ],
+  "order": [
+    "desc",
+    "desc",
+  ],
 }
 `;
