@@ -1456,7 +1456,7 @@ paths:
                   schema:
                       type: integer
                   description: |
-                      The maximum number of records to return. Defaults to 100. A response may include fewer than `limit` records when the response would otherwise exceed an internal byte budget; this is not a signal that there are no more records. Always use `next_cursor` to determine whether more pages remain.
+                      The maximum number of records to return. Defaults to 100. A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
                 - name: filter
                   in: query
                   required: false

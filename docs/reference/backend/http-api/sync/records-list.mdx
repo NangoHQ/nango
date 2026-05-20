@@ -23,7 +23,7 @@ This endpoint returns a list of records, ordered by modification date ascending.
 </Tip>
 
 <Warning>
-A response may contain fewer records than `limit`. To protect server memory, Nango caps each response by total payload size, so large records can cause the page to be truncated before `limit` is reached. This does not mean there are no more records — always check `next_cursor` and keep paginating until it is `null`.
+A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
 </Warning>
 
 ### Default behavior
