@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => {
     const write = vi.fn();
     const kill = vi.fn();
     const sandbox = {
+        sandboxId: 'sandbox-id',
         commands: { run },
         files: { write },
         kill
@@ -46,7 +47,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 });
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
-import { invokeDryrun } from './dryrun-client.js';
+import { buildAsyncDryrunScript, invokeDryrun, prepareAsyncDryrun } from './dryrun-client.js';
 
 import type { RemoteFunctionError } from './helpers.js';
 
@@ -121,5 +122,57 @@ describe('remote function dryrun client', () => {
             message: 'type error details\nFound 1 error',
             status: 400
         } satisfies Partial<RemoteFunctionError>);
+    });
+
+    it('prepares an async dryrun sandbox and starts the callback script in the background', async () => {
+        const prepared = await prepareAsyncDryrun({
+            ...request,
+            dryrun_id: '7b539769-6d39-4442-89fc-33fbac96ea66',
+            callback_url: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
+            input: { ok: true },
+            metadata: { source: 'test' },
+            checkpoint: { cursor: 'abc' }
+        });
+
+        expect(prepared.sandboxId).toBe(mocks.sandbox.sandboxId);
+        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/github/actions/listRepos.ts', 'export default {}');
+        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/index.ts', "import './github/actions/listRepos.js';\n");
+        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-input.json', JSON.stringify({ ok: true }));
+        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-metadata.json', JSON.stringify({ source: 'test' }));
+        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-dryrun-checkpoint.json', JSON.stringify({ cursor: 'abc' }));
+        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-function-dryrun.mjs', expect.stringContaining('NANGO_DRYRUN_CALLBACK_URL'));
+
+        await prepared.start();
+
+        expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-dryrun.mjs', {
+            cwd: '/home/user/nango-integrations',
+            background: true,
+            timeoutMs: 30_000,
+            envs: expect.objectContaining({
+                NANGO_DRYRUN_CALLBACK_URL: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result',
+                NANGO_DRYRUN_ARGS: JSON.stringify([
+                    'dryrun',
+                    'listRepos',
+                    'conn-1',
+                    '--environment',
+                    'dev',
+                    '--integration-id',
+                    'github',
+                    '--auto-confirm',
+                    '--no-interactive',
+                    '--input',
+                    '@/tmp/nango-dryrun-input.json',
+                    '--metadata',
+                    '@/tmp/nango-dryrun-metadata.json',
+                    '--checkpoint',
+                    '@/tmp/nango-dryrun-checkpoint.json'
+                ])
+            })
+        });
+    });
+
+    it('builds a callback script that reports dryrun compile exit codes as compilation errors', () => {
+        expect(buildAsyncDryrunScript()).toContain("code: dryrun.exitCode === compileExitCode ? 'compilation_error' : 'dryrun_error'");
+        expect(buildAsyncDryrunScript()).toContain("'Nango-Is-Script': 'true'");
     });
 });

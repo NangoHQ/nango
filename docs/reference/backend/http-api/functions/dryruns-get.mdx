@@ -1,10 +1,10 @@
 ---
-title: 'Dry run a function'
-openapi: 'POST /functions/dryrun'
+title: 'Get a function dry run'
+openapi: 'GET /functions/dryruns/{id}'
 ---
 
 <Info>
   Requires an API key with the `environment:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
-Compiles and executes TypeScript function source code against a connection without deploying it.
+Returns the status and result of an asynchronous function dry run.

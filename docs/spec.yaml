@@ -1461,11 +1461,11 @@ paths:
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
 
-    /functions/dryrun:
+    /functions/dryruns:
         post:
-            operationId: dryrunFunction
-            summary: Dry run a function
-            description: Compiles and executes TypeScript function source code against a connection without deploying it.
+            operationId: createFunctionDryrun
+            summary: Create a function dry run
+            description: Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
             requestBody:
                 required: true
                 content:
@@ -1473,12 +1473,12 @@ paths:
                         schema:
                             $ref: '#/components/schemas/FunctionDryrunRequest'
             responses:
-                '200':
-                    description: Successfully completed the dry run.
+                '202':
+                    description: Successfully started the dry run.
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/FunctionDryrunResponse'
+                                $ref: '#/components/schemas/FunctionDryrunCreateResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -1491,6 +1491,34 @@ paths:
                     $ref: '#/components/responses/ServerError'
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
+
+    /functions/dryruns/{id}:
+        get:
+            operationId: getFunctionDryrun
+            summary: Get a function dry run
+            description: Returns the status and result of an asynchronous function dry run.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Successfully retrieved the dry run.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionDryrunResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
 
     /functions/deployments:
         post:
@@ -2966,20 +2994,69 @@ components:
                     format: date-time
                     description: Optional last sync date available to sync functions during the dry run.
 
+        FunctionDryrunStatus:
+            type: string
+            enum: [pending, running, succeeded, failed]
+
+        FunctionDryrunCreateResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - status_url
+                - created_at
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                status:
+                    type: string
+                    enum: [pending, running]
+                status_url:
+                    type: string
+                created_at:
+                    type: string
+                    format: date-time
+                execution_timeout_at:
+                    type: string
+                    format: date-time
+
         FunctionDryrunResponse:
             type: object
             additionalProperties: false
             required:
+                - id
+                - status
                 - integration_id
                 - function_type
-                - execution_timeout_at
-                - duration_ms
-                - output
+                - status_url
+                - created_at
+                - updated_at
             properties:
+                id:
+                    type: string
+                    format: uuid
+                status:
+                    $ref: '#/components/schemas/FunctionDryrunStatus'
                 integration_id:
                     type: string
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
+                status_url:
+                    type: string
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+                started_at:
+                    type: string
+                    format: date-time
+                completed_at:
+                    type: string
+                    format: date-time
                 execution_timeout_at:
                     type: string
                     format: date-time
@@ -2991,6 +3068,16 @@ components:
                     description: Dry run command output.
                 result:
                     description: The function result, when the dry run emits one.
+                error:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                        code:
+                            type: string
+                        message:
+                            type: string
+                        payload:
+                            description: Optional error payload.
 
         FunctionDeploymentRequest:
             type: object
