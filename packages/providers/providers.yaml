@@ -17616,7 +17616,7 @@ shortcut:
             description: The API key for your Shortcut account
 
 simpro:
-    display_name: simPRO
+    display_name: Simpro
     categories:
         - productivity
         - invoicing
@@ -17636,8 +17636,8 @@ simpro:
     connection_config:
         build:
             type: string
-            title: simPRO Build Name
-            description: The subdomain part of your simPRO URL.
+            title: Simpro Build Name
+            description: The subdomain part of your Simpro URL.
             pattern: '^[a-z0-9_-]+$'
             example: yourcompany
             suffix: .simprosuite.com

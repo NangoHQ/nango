@@ -82,12 +82,12 @@ if (nonOauth2Targets.length > 0) {
 if (args.verbose) {
     console.log(`Loaded ${Object.keys(providers).length} providers`);
     console.log(`Loaded ${Object.keys(providerScopes).length} scoped providers`);
-    console.log(`Detected ${oauth2Providers.length} OAuth2 providers`);
-    console.log(`Targeting ${oauth2TargetProviders.length} OAuth2 providers`);
+    console.log(`Detected ${oauth2Providers.length} OAuth2/OAuth2CC providers`);
+    console.log(`Targeting ${oauth2TargetProviders.length} OAuth2/OAuth2CC providers`);
 }
 
 if (oauth2TargetProviders.length === 0) {
-    console.log('No changed OAuth2 providers found. Nothing to do.');
+    console.log('No changed OAuth2/OAuth2CC providers found. Nothing to do.');
     process.exit(0);
 }
 
@@ -164,7 +164,7 @@ if (changed.length > 0) {
 }
 
 if (unresolved.length > 0) {
-    console.warn('These OAuth2 providers have no resolvable scope source (default_scopes or alias scopes):');
+    console.warn('These OAuth2/OAuth2CC providers have no resolvable scope source (default_scopes or alias scopes):');
     console.warn(`- ${unresolved.sort().join('\n- ')}`);
     console.warn('Empty arrays were written for those providers. Fill them manually with verified provider scopes.');
 }
@@ -327,7 +327,7 @@ function isOAuth2Provider(providerName: string, providerMap: ProvidersMap, seen 
         return isOAuth2Provider(entry.alias, providerMap, seen);
     }
 
-    return (entry as Provider).auth_mode === 'OAUTH2';
+    return (entry as Provider).auth_mode === 'OAUTH2' || (entry as Provider).auth_mode === 'OAUTH2_CC';
 }
 
 function inferScopes(providerName: string, providerMap: ProvidersMap, originalScopes: ProviderScopesMap, seen = new Set<string>()): InferenceResult {
@@ -700,33 +700,97 @@ function buildAgentPrompt(params: { providerNames: string[]; baseRef: string; pr
         '',
         'Objective:',
         '- Update only the providers listed below in packages/providers/providers.scopes.yaml.',
-        "- For each provider, thoroughly read the provider's COMPLETE OFFICIAL OAuth2 scopes documentation page (not Nango docs) and write EVERY scope listed there.",
+        '- For each provider, obtain the COMPLETE list of OAuth2 scopes using the discovery strategy below.',
         '',
         'Providers to update:',
         namesList,
+        '',
+        'Scope discovery strategy (follow these steps IN ORDER for each provider):',
+        '',
+        'STEP A — Try standard OAuth2/OIDC discovery endpoints (machine-readable, authoritative for API-specific scopes):',
+        '  A1) Read providers.yaml to get the authorization_url for the provider (e.g. https://auth.example.com/oauth/authorize). For OAUTH2_CC providers that have no authorization_url, skip A1 and proceed directly to A2 using token_url as the base.',
+        '       Derive the base URL (e.g. https://auth.example.com) and attempt HTTP GET on these endpoints in order:',
+        '       - {base}/.well-known/oauth-authorization-server   (RFC 8414)',
+        '       - {base}/.well-known/openid-configuration         (OIDC Discovery)',
+        '       If either returns a valid JSON response containing any field that is an array of scope strings (commonly "scopes_supported" per RFC 8414/OIDC, but also "scopes", "supported_scopes", or any other field whose value is an array of strings that look like OAuth2 scope identifiers), collect that array.',
+        '       Record the endpoint URL and field name as the source.',
+        '  A2) If A1 returned no scope array (endpoint exists but no relevant field), also try the token_url and proxy base_url from providers.yaml as alternative bases — but ONLY after validating the URL is suitable:',
+        '       - Strip any path segments beyond the origin (e.g. https://api.example.com/v1/oauth → use https://api.example.com, not https://api.example.com/v1/oauth).',
+        '       - Do NOT use a base_url that clearly points to a versioned API path (e.g. /v1, /v2, /rest, /api) as a discovery base — the .well-known endpoints must be at the root of the auth domain.',
+        '       - Always attempt discovery on the bare origin (scheme + host). If the remaining path is NOT a versioned API segment (/v1, /v2, /rest, /api, etc.), also attempt path-aware discovery per spec: OIDC — {issuer-path}/.well-known/openid-configuration; RFC 8414 — {origin}/.well-known/oauth-authorization-server/{issuer-path}. If all attempts fail or 404, fall through to STEP B.',
+        '  A3) CRITICAL — Assess whether the discovery result is "OIDC-only":',
+        '       The standard OIDC identity scope set is: openid, profile, email, phone, address, offline_access, offline, given_name,',
+        '       family_name, name, nickname, picture, email_verified, created_at, identities, roles, web-origins, .default, and',
+        '       similarly generic identity claims.',
+        '       If ALL scopes returned by the discovery endpoint are from this identity set (no provider-specific API scopes), the',
+        '       authorization server is publishing only its OIDC capability — NOT the full list of API authorization scopes available.',
+        '       Examples of this pattern: Google (accounts.google.com returns only [email, openid, profile]),',
+        '       Microsoft (login.microsoftonline.com returns only [email, openid, profile, offline_access, .default]),',
+        '       Zoho (accounts.zoho.com returns only [email, openid, phone, profile]).',
+        '       In this case you MUST ALSO execute STEP B to find the provider-specific API scopes. Include BOTH the OIDC scopes',
+        '       from discovery AND the API scopes from docs in the final list.',
+        '       Note the source for both: # source: <discovery URL> (scopes_supported) + <docs URL>',
+        '',
+        'STEP B — Official documentation (required when STEP A fails, returns no scopes, or is OIDC-only per A3):',
+        "  B1) Search for and fetch the provider's COMPLETE OFFICIAL OAuth2 scopes reference page (not Nango docs).",
+        '       READ THE ENTIRE PAGE — scroll through all sections, tables, and sub-sections. Many providers organise',
+        '       scopes into categories (e.g. Zoho CRM lists scopes per module, Google has per-product scope pages,',
+        '       Microsoft has Graph API permissions pages) — you MUST include ALL of them.',
+        '       For multi-product platforms (Google, Microsoft, Zoho, Salesforce, etc.) where the provider key is product-specific',
+        '       (e.g. google-drive, microsoft-teams, zoho-crm), fetch the scopes page for THAT SPECIFIC PRODUCT, not the generic platform.',
+        '       Record the docs URL as the source, e.g.: # source: https://developer.example.com/docs/scopes',
         '',
         'Strict rules:',
         '1) Only edit packages/providers/providers.scopes.yaml.',
         '2) Only change keys for the listed providers.',
         '3) Keep YAML valid. Each provider entry must be a plain YAML list (e.g. "provider:\\n  - scope1"). No nested keys like "scopes:".',
-        '4) SKIP any provider whose auth_mode in providers.yaml is NOT exactly "OAUTH2". Do not write an entry for it at all — not even an empty array.',
-        "5) For each OAuth2 provider, search for and fetch the provider's official OAuth2 scopes reference page. READ THE ENTIRE PAGE — scroll through all sections, tables, and sub-sections. Many providers organise scopes into categories (e.g. Zoho CRM lists scopes per module: Leads, Contacts, Deals, etc.) — you MUST include ALL of them.",
-        '6) Only include scopes that are explicitly listed on that official page. Do not invent or guess scopes.',
-        '7) Exclude deprecated scopes — any scope marked as deprecated, legacy, or superseded by another scope.',
-        '8) Exclude scopes that are not passed via the OAuth authorization URL scope parameter. Some providers allow permissions to be configured in their developer platform/dashboard without needing them in the OAuth flow — omit those.',
-        '9) Above each provider entry in the YAML, write a comment with the exact official docs URL you read to obtain the scopes, e.g.: # source: https://developer.github.com/v3/oauth/#scopes. If a source comment already exists, keep it (update it only if you used a different URL).',
-        '10) If you cannot find an authoritative official scopes page, fall back to providers.yaml default_scopes and note the fallback in the comment, e.g.: # source: providers.yaml (no official scopes page found)',
-        '11) Each provider MUST have its own independently defined scope list. Never reference or defer to another provider\'s scopes (e.g. do NOT write "same as google" or copy scopes from google to google-mail). Each provider key must contain the exact scopes valid for that specific provider, looked up from that provider\'s own documentation.',
-        '11a) Some providers in providers.yaml are defined as aliases of another provider (e.g. github-app-oauth aliases github, sharepoint-online aliases microsoft). Even for aliases, you MUST independently research and define their own scope list from their specific official documentation. An alias simply means they share the same OAuth2 app infrastructure — their available OAuth2 scopes may differ. Treat each alias as a fully independent provider for the purposes of scope research.',
-        '12) Each scope string within a provider entry must be unique — do not list the same scope string more than once.',
-        '13) *** MOST IMPORTANT RULE *** The scope list must be EXHAUSTIVE AND COMPLETE. You MUST include EVERY SINGLE scope listed across the ENTIRE official docs page — all categories, all modules, all resource types, all permission levels (READ, WRITE, CREATE, UPDATE, DELETE, ALL, etc.), all sub-scopes. For example, if a provider like Zoho CRM lists scopes per module (ZohoCRM.modules.leads.READ, ZohoCRM.modules.contacts.ALL, etc.) you must include every one of them. Do NOT summarise with wildcard/umbrella scopes only when granular per-resource scopes are also listed. Take as much time as needed — thoroughness is more important than speed. A list of 5 scopes for a provider with 50+ documented scopes is WRONG.',
-        '14) Do not ask questions.',
+        '4) SKIP any provider whose auth_mode in providers.yaml is NOT "OAUTH2" or "OAUTH2_CC". Do not write an entry for it at all — not even an empty array.',
+        '5) Only include scopes that are confirmed to exist — from a discovery endpoint response or an official docs page. Do not invent or guess scopes.',
+        '6) Exclude deprecated scopes — any scope marked as deprecated, legacy, or superseded by another scope.',
+        '7) For OAUTH2 providers: exclude scopes that are not passed via the OAuth authorization URL scope parameter. For OAUTH2_CC providers: client-credentials flow has no authorization URL — include all scopes that can be requested in the token request body (do NOT apply the authorization-URL restriction to CC providers).',
+        '8) Above each provider entry in the YAML, write a comment with the exact source(s) used, following the format in STEP A and B above. If a source comment already exists, update it to reflect what you actually used.',
+        '9) If you cannot find scopes via discovery OR official docs, fall back to providers.yaml default_scopes and note: # source: providers.yaml (no official scopes page or discovery endpoint found)',
+        "10) Each provider MUST have its own independently defined scope list. Never reference or defer to another provider's scopes.",
+        '10a) Aliases and product-specific variants share OAuth2 infrastructure but have DIFFERENT available API scopes. Examples:',
+        '     - google-drive, google-calendar, google-ads, google-analytics each have their own scope pages under developers.google.com',
+        '     - microsoft-teams, microsoft-excel, microsoft-planner each have their own Graph API permission sets',
+        '     - zoho-crm, zoho-books, zoho-mail, zoho-invoice each have their own scope lists in Zoho developer docs',
+        '     - salesforce, salesforce-sandbox, salesforce-cc share the same Salesforce auth but may be used for different access levels',
+        '     Treat each as a fully independent provider — fetch the scopes page SPECIFIC to that product. Do not copy from the parent.',
+        '10b) ZOHO product-specific scope pages — use these exact URLs for each Zoho alias:',
+        '     - zoho-bigin    → https://www.bigin.com/developer/docs/apis/v2/scopes.html  (Bigin-specific scopes, NOT ZohoCRM scopes)',
+        '     - zoho-calendar → https://www.zoho.com/calendar/help/api/oauth.html',
+        '     - zoho-desk     → https://desk.zoho.com/DeskAPIDocument#OAuthAuthentication  and https://desk.zoho.com/support/APIDocument.do#OAuthScope',
+        '     - zoho-inventory → https://www.zoho.com/inventory/api/v1/introduction/#oauth',
+        '     - zoho-invoice  → https://www.zoho.com/invoice/api/v3/#oauth',
+        '     - zoho-people   → https://www.zoho.com/people/api/overview.html',
+        '     - zoho-recruit  → https://www.zoho.com/recruit/developer-guide/apiv2/oauth-overview.html',
+        '     For each Zoho product, discover its own module-level scopes (e.g. ZohoDesk.tickets.ALL, ZohoCalendar.event.ALL) — they are distinct from the base zoho scopes.',
+        '10c) NEVER write an empty array [] for any provider. If discovery and docs both fail, fall back to providers.yaml default_scopes (rule 9). An empty array means "no scopes exist" which is never correct for a real OAuth2 provider.',
+        '11) Each scope string within a provider entry must be unique.',
+        '12) *** MOST IMPORTANT RULE *** The scope list must be EXHAUSTIVE AND COMPLETE — every scope from the discovery response and/or every scope across the ENTIRE official docs page, including all categories, modules, resource types, and permission levels. A list of 5 scopes for a provider with 50+ documented scopes is WRONG.',
+        '13) Do not ask questions.',
+        '',
+        'Source quality rules (ANTI-HALLUCINATION):',
+        '14) Discovery is authoritative ONLY when it returns provider-specific API scopes (not just generic OIDC identity scopes).',
+        '    - If discovery returns a rich, provider-specific scope list (e.g. Airtable, Gusto, HubSpot, Salesforce) → use it as-is.',
+        '    - If discovery returns ONLY generic OIDC identity scopes (see A3 above) → it is partial; you MUST also run STEP B and merge.',
+        '    - Never treat a list of [email, openid, profile, offline_access] as a complete API scope list for any provider.',
+        '15) For docs: only use the official provider developer documentation. Do NOT use Stack Overflow, GitHub issues, blog posts, or community forums.',
+        '16) If you are not certain a scope string exists in the discovery response or official docs, do NOT include it.',
+        '17) Do not infer scopes from OAuth token payloads, API response fields, or SDK method names.',
+        '',
+        'Completeness verification (TWO-PASS):',
+        '18) Before writing your final YAML for each provider, count the total number of unique scopes found and write that count in your reasoning. Then verify your written list matches that count.',
+        '19) After writing the YAML, do a second pass: re-check the discovery response or docs page section by section. If you find any missed scope, add it before finalising.',
+        '20) If the official docs page spans multiple pages or tabs (e.g. "API v1 scopes", "API v2 scopes", "granular scopes"), fetch and read ALL of them before writing.',
+        '21) If providers.yaml lists default_scopes for a provider, every scope in default_scopes MUST appear in your written list.',
         '',
         `Context base ref for this run: ${params.baseRef}`,
         `Providers source: ${path.relative(ROOT_DIR, params.providersYamlPath)}`,
         `Scopes target: ${path.relative(ROOT_DIR, params.providersScopesPath)}`,
         '',
-        'When done, output a short final message listing updated provider keys only.'
+        'When done, output a short final message listing: (a) updated provider keys, (b) scope count per provider, (c) source used per provider (discovery endpoint URL or docs URL).'
     ].join('\n');
 }
 

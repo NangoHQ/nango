@@ -55,7 +55,7 @@ export class Batcher<T> {
 
         if (discarded > 0) {
             logger.error(`Clickhouse batcher queue full. Discarding ${discarded} items.`);
-            metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED, discarded, { reason: 'queue_full' });
+            metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT, discarded, { success: 'false', reason: 'queue_full' });
         }
 
         this.queue.push(...t);
@@ -92,8 +92,10 @@ export class Batcher<T> {
         // dedup catches a retried INSERT even if the block content drifts.
         const retryKey = this.retry?.key ?? randomUUID();
 
+        const start = process.hrtime.bigint();
         try {
             await this.process(batch, { retryKey });
+            metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT, batch.length, { success: 'true' });
 
             this.retry = null;
 
@@ -105,16 +107,18 @@ export class Batcher<T> {
             const attempts = (this.retry?.attempts ?? 0) + 1;
             if (attempts > this.maxProcessingRetry) {
                 logger.error(`Clickhouse batcher: dropping ${batch.length} items after exhausting retries.`);
-                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_DROPPED, batch.length, { reason: 'failed_insert' });
+                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT, batch.length, { success: 'false', reason: 'insert_failed' });
                 this.retry = null;
             } else {
                 this.queue.unshift(...batch);
                 this.retry = { key: retryKey, size: batch.length, attempts };
+                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY, 1);
             }
 
             return Err(new Error('Batcher failed to process batch', { cause: err }));
         } finally {
             this.isFlushing = false;
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6);
         }
     }
 
