@@ -48,11 +48,11 @@ if (validator.errors) {
     process.exit(1);
 }
 
-const invalidInterpolation = /(?<!(\$|]))\{/g;
+// Allow `{}` (empty-object YAML syntax) but flag any other `{` not preceded by `$` or `]`
+const invalidInterpolation = /(?<!(\$|]))\{(?!\s*})/g;
 for (const [providerKey, provider] of Object.entries(providersJson)) {
     // Skip validation for 'sage-intacct' provider, we need this so that we can specify the element attribute
-    // Skip 'the-swarm' because its verification body requires a literal `{}` (Elasticsearch match_all syntax)
-    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp' || providerKey === 'the-swarm') {
+    if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp') {
         continue;
     }
     const { credentials, connection_config, ...providerWithoutSensitive } = provider;
