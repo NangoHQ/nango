@@ -21,7 +21,7 @@ import { useGetIntegrationFunctions } from '@/hooks/useIntegrationFunctions';
 import { useStore } from '@/store';
 
 import type { ComboboxOption } from '@/components-v2/ui/combobox';
-import type { ApiIntegration, FunctionType, NangoActionFunctionDeployed, NangoFunctionDeployed, NangoSyncFunctionDeployed } from '@nangohq/types';
+import type { ApiIntegration, DeployedNangoActionFunction, DeployedNangoFunction, DeployedNangoSyncFunction, FunctionType } from '@nangohq/types';
 
 const TYPE_FILTER_VALUES = ['sync', 'action', 'on-event'] as const;
 type TypeFilterValue = (typeof TYPE_FILTER_VALUES)[number];
@@ -42,7 +42,7 @@ function isTypeFilterValue(value: string): value is TypeFilterValue {
     return (TYPE_FILTER_VALUES as readonly string[]).includes(value);
 }
 
-function isSyncOrAction(fn: NangoFunctionDeployed): fn is NangoSyncFunctionDeployed | NangoActionFunctionDeployed {
+function isSyncOrAction(fn: DeployedNangoFunction): fn is DeployedNangoSyncFunction | DeployedNangoActionFunction {
     return fn.type === 'sync' || fn.type === 'action';
 }
 
@@ -82,7 +82,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
     }, [env, integration.unique_key, navigate]);
 
     const onFunctionClick = useCallback(
-        (fn: NangoFunctionDeployed) => {
+        (fn: DeployedNangoFunction) => {
             navigate(`/${env}/integrations/${integration.unique_key}/functions/${encodeURIComponent(fn.name)}?type=${fn.type}`);
         },
         [env, integration.unique_key, navigate]
@@ -90,7 +90,7 @@ export const FunctionsTab: React.FC<FunctionsTabProps> = ({ integration }) => {
 
     // Mirrors the empty-pages-then-more-pages behavior used in Connection/List.tsx — though here the
     // server applies the filter so we shouldn't get empty pages in practice. Kept as a safety net.
-    const functions: NangoFunctionDeployed[] = data?.pages.flatMap((page) => page.data) ?? [];
+    const functions: DeployedNangoFunction[] = data?.pages.flatMap((page) => page.data) ?? [];
     const total = data?.pages[0]?.pagination.total ?? 0;
     useEffect(() => {
         if (functions.length === 0 && hasNextPage && !isFetchingNextPage && !isLoading) {
