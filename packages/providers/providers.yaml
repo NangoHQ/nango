@@ -18549,7 +18549,10 @@ the-swarm:
                 - /v2/profiles/search
             headers:
                 content-type: application/json
-            data: { 'query': { 'match_all': {} }, 'limit': 1 }
+            data:
+                query:
+                    match_all: {}
+                limit: 1
     docs: https://nango.dev/docs/api-integrations/the-swarm
     docs_connect: https://nango.dev/docs/api-integrations/the-swarm/connect
     credentials:
