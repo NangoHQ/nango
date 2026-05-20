@@ -16618,6 +16618,7 @@ sentry:
             enum:
                 - sentry.io
                 - us.sentry.io
+                - eu.sentry.io
                 - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
@@ -16658,6 +16659,7 @@ sentry-oauth:
             enum:
                 - sentry.io
                 - us.sentry.io
+                - eu.sentry.io
                 - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
@@ -21057,6 +21059,7 @@ zoho:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
         accounts-server:
@@ -21082,6 +21085,7 @@ zoho-books:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21103,6 +21107,7 @@ zoho-crm:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21125,6 +21130,7 @@ zoho-calendar:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21148,6 +21154,7 @@ zoho-desk:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21168,6 +21175,7 @@ zoho-inventory:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21188,6 +21196,7 @@ zoho-invoice:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21211,6 +21220,7 @@ zoho-mail:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21231,6 +21241,7 @@ zoho-bigin:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21253,6 +21264,7 @@ zoho-people:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
             optional: true
 
@@ -21275,6 +21287,7 @@ zoho-recruit:
                 - eu
                 - in
                 - com.au
+                - com.cn
                 - jp
 
 zoom:
