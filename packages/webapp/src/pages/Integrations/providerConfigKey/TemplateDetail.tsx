@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
 
 import { JsonSchemaTopLevelObject } from '../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../components/jsonSchema/utils';
@@ -11,10 +10,11 @@ import { EmptyCard } from '@/components-v2/EmptyCard';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { LineSnippet } from '@/components-v2/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { StyledLink } from '@/components-v2/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Badge } from '@/components-v2/ui/badge';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/popover';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
 import { Spinner } from '@/components-v2/ui/spinner';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
 
@@ -66,30 +66,42 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>
                 <div className="inline-flex items-center gap-2 shrink-0">
-                    <Popover>
-                        <PopoverTrigger asChild>
+                    <Dialog>
+                        <DialogTrigger asChild>
                             <Button type="button" variant="secondary" size="sm">
                                 Customize
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent align="end" className="w-fit p-4 flex flex-col gap-2 bg-bg-elevated border border-border-muted">
-                            <span className="text-text-primary text-body-medium-semi">Pull template to customize</span>
-                            <LineSnippet
-                                className="bg-bg-surface border border-border-muted w-96 min-w-0"
-                                snippet={buildPullCommand(provider, template.name, template.type)}
-                            />
-                            <Link
-                                to="https://nango.dev/docs/reference/functions/functions-cli"
-                                target="_blank"
-                                className="text-text-tertiary self-end text-body-small-medium inline-flex items-center gap-1.5 w-fit"
-                            >
-                                Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                            </Link>
-                        </PopoverContent>
-                    </Popover>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Pull template to customize</DialogTitle>
+                            </DialogHeader>
+                            <div className="flex flex-col gap-1.5">
+                                <LineSnippet
+                                    className="bg-bg-surface border border-border-muted min-w-0"
+                                    snippet={buildPullCommand(provider, template.name, template.type)}
+                                />
+                                <StyledLink
+                                    to="https://nango.dev/docs/reference/functions/functions-cli"
+                                    type="external"
+                                    icon
+                                    className="text-body-small-medium"
+                                >
+                                    Get started with the Nango CLI
+                                </StyledLink>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                    <Button type="button" variant="secondary">
+                                        Close
+                                    </Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
 
                     <ConditionalTooltip condition={!!template.deployed} content="You already have a function deployed with this name">
-                        <Button type="button" size="sm" onClick={onDeploy} disabled={isDeploying || !!template.deployed}>
+                        <Button type="button" size="sm" onClick={onDeploy} loading={isDeploying} disabled={!!template.deployed}>
                             <Upload />
                             {isDeploying ? 'Deploying…' : 'Deploy template'}
                         </Button>
