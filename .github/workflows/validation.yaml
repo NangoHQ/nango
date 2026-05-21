@@ -71,12 +71,6 @@ jobs:
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'
 
-            - name: Ensure generated docs indexes are up to date
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: |
-                  npm run docs:generate:llms
-                  git diff --exit-code docs/llms.txt docs/llms-full.txt docs/api-catalog.txt
-
             - name: Validate YAML
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:providers

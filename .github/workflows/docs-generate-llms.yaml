@@ -1,0 +1,52 @@
+name: Regenerate LLM Indexes
+
+permissions: {}
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - 'docs/**'
+            - 'scripts/docs-generate-llms.ts'
+            - 'package.json'
+            - 'packages/providers/providers.yaml'
+            - 'packages/providers/providers.scopes.yaml'
+
+jobs:
+    regenerate:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
+              with:
+                  node-version-file: '.nvmrc'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - run: npm ci
+
+            - name: Regenerate LLM indexes
+              run: npm run docs:generate:llms
+
+            - name: Commit updated indexes if changed
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  if git diff --quiet docs/llms.txt docs/llms-full.txt docs/api-catalog.txt; then
+                      echo "No changes to commit."
+                      exit 0
+                  fi
+                  git add docs/llms.txt docs/llms-full.txt docs/api-catalog.txt
+                  git commit -m "chore(docs): regenerate LLM indexes"
+                  # Rebase onto latest master before pushing to handle concurrent
+                  # merges that land while this job is running.
+                  git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+                  git pull --rebase origin master
+                  git push origin master
