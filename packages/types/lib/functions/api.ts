@@ -62,11 +62,11 @@ export interface FunctionDryrunSuccess {
     result?: unknown;
 }
 
-export type FunctionDryrunStatus = 'pending' | 'running' | 'succeeded' | 'failed';
+export type FunctionDryrunStatus = 'waiting' | 'running' | 'success' | 'failed';
 
 export interface FunctionDryrunCreateSuccess {
     id: string;
-    status: Extract<FunctionDryrunStatus, 'pending' | 'running'>;
+    status: Extract<FunctionDryrunStatus, 'waiting' | 'running'>;
     status_url: string;
     created_at: string;
     execution_timeout_at?: string | undefined;
@@ -91,7 +91,7 @@ export interface FunctionDryrunResultSuccess {
 
 export type FunctionDryrunResultBody =
     | {
-          status: 'succeeded';
+          status: 'success';
           output: string;
           duration_ms?: number | undefined;
       }

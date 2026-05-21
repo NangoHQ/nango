@@ -8,7 +8,7 @@ import {
     invokeDryrun,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
-    markFunctionDryrunSucceeded,
+    markFunctionDryrunSuccess,
     parseDryrunSuccessOutput,
     prepareAsyncDryrun,
     remoteFunctionDryrunSandboxTimeoutMs,
@@ -297,15 +297,15 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
         return;
     }
 
-    if (current.status === 'succeeded' || current.status === 'failed') {
+    if (current.status === 'success' || current.status === 'failed') {
         res.status(200).send({ ok: true });
         return;
     }
 
     const body = valBody.data;
-    if (body.status === 'succeeded') {
+    if (body.status === 'success') {
         const output = parseDryrunSuccessOutput(body.output);
-        await markFunctionDryrunSucceeded({
+        await markFunctionDryrunSuccess({
             environmentId: environment.id,
             id: current.id,
             output: output.output,

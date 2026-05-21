@@ -210,7 +210,7 @@ async function runLocalAsyncDryrun(request: AsyncDryrunRequest, startedAt: Date)
     try {
         const result = await invokeLocalDryrun(request);
         await postDryrunCallback(request, {
-            status: 'succeeded',
+            status: 'success',
             output: result.output,
             duration_ms: Date.now() - startedAt.getTime()
         });
@@ -231,7 +231,7 @@ async function runLocalAsyncDryrun(request: AsyncDryrunRequest, startedAt: Date)
 async function postDryrunCallback(
     request: Pick<AsyncDryrunRequest, 'callback_url' | 'nango_secret_key'>,
     payload:
-        | { status: 'succeeded'; output: string; duration_ms?: number }
+        | { status: 'success'; output: string; duration_ms?: number }
         | { status: 'failed'; output?: string; duration_ms?: number; error: { code?: string; message: string; payload?: unknown } }
 ): Promise<void> {
     const res = await fetch(request.callback_url, {
@@ -291,7 +291,7 @@ try {
         process.exit(1);
     }
 
-    await postResult({ status: 'succeeded', output: dryrun.stdout.trimEnd() });
+    await postResult({ status: 'success', output: dryrun.stdout.trimEnd() });
     process.exit(0);
 } catch (err) {
     await postResult({ status: 'failed', error: { code: 'dryrun_error', message: err instanceof Error ? err.message : String(err) } }).catch(() => undefined);

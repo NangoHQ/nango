@@ -46,7 +46,7 @@ export async function createFunctionDryrun({
         .insert({
             environment_id: environmentId,
             request: jsonb(trx, request),
-            status: 'pending'
+            status: 'waiting'
         })
         .returning('*');
 
@@ -99,7 +99,7 @@ export async function markFunctionDryrunRunning({
     trx?: Knex;
 }): Promise<DBFunctionDryrun | null> {
     const [row] = await trx<DBFunctionDryrun>(tableName)
-        .where({ id, environment_id: environmentId, status: 'pending' })
+        .where({ id, environment_id: environmentId, status: 'waiting' })
         .update({
             status: 'running',
             sandbox_id: sandboxId,
@@ -112,7 +112,7 @@ export async function markFunctionDryrunRunning({
     return row || null;
 }
 
-export async function markFunctionDryrunSucceeded({
+export async function markFunctionDryrunSuccess({
     environmentId,
     id,
     output,
@@ -131,9 +131,9 @@ export async function markFunctionDryrunSucceeded({
 }): Promise<DBFunctionDryrun | null> {
     const [row] = await trx<DBFunctionDryrun>(tableName)
         .where({ id, environment_id: environmentId })
-        .whereIn('status', ['pending', 'running'])
+        .whereIn('status', ['waiting', 'running'])
         .update({
-            status: 'succeeded',
+            status: 'success',
             output,
             result: hasResult ? jsonb(trx, result ?? null) : null,
             has_result: hasResult,
@@ -152,7 +152,7 @@ export async function markFunctionDryrunFailed({
     error,
     output,
     durationMs,
-    statuses = ['pending', 'running'],
+    statuses = ['waiting', 'running'],
     trx = db.knex
 }: {
     environmentId: number;
@@ -204,7 +204,7 @@ export async function timeoutFunctionDryruns({ limit = 100, trx = db.knex }: { l
 export function toFunctionDryrunCreate(row: DBFunctionDryrun): FunctionDryrunCreateSuccess {
     return {
         id: row.id,
-        status: row.status === 'running' ? 'running' : 'pending',
+        status: row.status === 'running' ? 'running' : 'waiting',
         status_url: `/functions/dryruns/${row.id}`,
         created_at: toIsoString(row.created_at),
         ...(row.execution_timeout_at ? { execution_timeout_at: toIsoString(row.execution_timeout_at) } : {})

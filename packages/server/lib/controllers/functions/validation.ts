@@ -61,7 +61,7 @@ export const functionDryrunParamsSchema = z
 export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
     z
         .object({
-            status: z.literal('succeeded'),
+            status: z.literal('success'),
             output: z.string(),
             duration_ms: z.number().int().nonnegative().optional()
         })

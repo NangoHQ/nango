@@ -3008,7 +3008,7 @@ components:
 
         FunctionDryrunStatus:
             type: string
-            enum: [pending, running, succeeded, failed]
+            enum: [waiting, running, success, failed]
 
         FunctionDryrunCreateResponse:
             type: object
@@ -3024,7 +3024,7 @@ components:
                     format: uuid
                 status:
                     type: string
-                    enum: [pending, running]
+                    enum: [waiting, running]
                 status_url:
                     type: string
                 created_at:

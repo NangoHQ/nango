@@ -475,7 +475,7 @@ describe('remote-function public API', () => {
                 authorization: `Bearer ${apiKey.secret}`,
                 'content-type': 'application/json'
             },
-            body: JSON.stringify({ status: 'succeeded', output: 'Executing -> function\nDone\n{"ok":true}' })
+            body: JSON.stringify({ status: 'success', output: 'Executing -> function\nDone\n{"ok":true}' })
         });
 
         const json = (await res.json()) as unknown;
@@ -505,7 +505,7 @@ describe('remote-function public API', () => {
                 authorization: `Bearer ${sandboxToken.unwrap()}`,
                 'content-type': 'application/json'
             },
-            body: JSON.stringify({ status: 'succeeded', output: 'Building\nExecuting -> function\nDone\n{"ok":true}', duration_ms: 123 })
+            body: JSON.stringify({ status: 'success', output: 'Building\nExecuting -> function\nDone\n{"ok":true}', duration_ms: 123 })
         });
 
         expect(res.status).toBe(200);
@@ -520,7 +520,7 @@ describe('remote-function public API', () => {
         expect(getRes.res.status).toBe(200);
         expect(getRes.json).toMatchObject({
             id: dryrun.id,
-            status: 'succeeded',
+            status: 'success',
             integration_id: 'github',
             function_type: 'action',
             duration_ms: 123,

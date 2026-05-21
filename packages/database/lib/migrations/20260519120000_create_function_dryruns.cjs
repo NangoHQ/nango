@@ -11,7 +11,7 @@ exports.up = async function (knex) {
             id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
             environment_id INTEGER NOT NULL REFERENCES _nango_environments(id) ON DELETE CASCADE,
             request JSONB NOT NULL,
-            status TEXT NOT NULL CHECK (status IN ('pending', 'running', 'succeeded', 'failed')),
+            status TEXT NOT NULL CHECK (status IN ('waiting', 'running', 'success', 'failed')),
             sandbox_id TEXT,
             output TEXT,
             result JSONB,
