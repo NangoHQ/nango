@@ -1307,6 +1307,26 @@ export async function deleteOutdatedRecords({
                         // Lock to prevent concurrent modifications with upserts and deletes
                         await acquireAdvisoryLock(trx, { name: 'lock_records_outdated', connectionId, model });
 
+                        // Fetch page bounds separately
+                        // Update query only yields soft-deleted rows
+                        // and we can't tell "end of table" from "records in page have all been seen and skipped".
+                        // The advisory lock ensures both page and update queries see the same rows.
+                        const pageQuery = trx
+                            .select<{ id: string }[]>('id')
+                            .from(RECORDS_TABLE)
+                            .where({ connection_id: connectionId, model })
+                            .whereNull('deleted_at')
+                            .orderBy('id')
+                            .limit(batchSize);
+                        if (lastId) {
+                            pageQuery.whereRaw('id > ?', [lastId]);
+                        }
+                        const pageRows = await pageQuery;
+
+                        if (pageRows.length === 0) {
+                            return { rows: [], pageLastId: null as string | null, pageSize: 0 };
+                        }
+
                         const res: {
                             id: string;
                             connection_id: number;
@@ -1317,23 +1337,33 @@ export async function deleteOutdatedRecords({
                             partition: string;
                         }[] = (
                             await trx.raw(
-                                `WITH seen AS MATERIALIZED (
-                                    SELECT DISTINCT unnest(record_ids) AS id FROM ${RECORDS_SEEN_TABLE}
+                                // Paginate records first so the planner knows the driving side is bounded by batchSize.
+                                // This forces a hash anti-join instead of a nested loop anti-join,
+                                // which the planner chooses when it can't estimate the seen CTE cardinality accurately.
+                                // ie: unnest output is consistently underestimated, pg thinks nested loop is cheap, causing O(records*seen) comparisons instead of O(seen+page).
+                                // Seen is still fully unnested.
+                                `WITH page AS MATERIALIZED (
+                                    SELECT ctid, id
+                                    FROM ${RECORDS_TABLE}
+                                    WHERE connection_id = :connectionId
+                                      AND model = :model
+                                      AND deleted_at IS NULL
+                                      AND (:lastId::text IS NULL OR id > :lastId)
+                                    ORDER BY id
+                                    LIMIT :batchSize
+                                ),
+                                seen AS MATERIALIZED (
+                                    SELECT unnest(record_ids) AS id
+                                    FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
                                       AND sync_job_id >= :generation
                                 ),
-                                to_delete AS MATERIALIZED (
-                                    SELECT r.ctid, r.id
-                                    FROM ${RECORDS_TABLE} r
-                                    LEFT JOIN seen ON seen.id = r.id
-                                    WHERE r.connection_id = :connectionId
-                                      AND r.model = :model
-                                      AND r.deleted_at IS NULL
-                                      AND seen.id IS NULL
-                                      AND (:lastId::text IS NULL OR r.id > :lastId)
-                                    ORDER BY r.id
-                                    LIMIT :batchSize
+                                to_delete AS (
+                                    SELECT p.ctid, p.id
+                                    FROM page p
+                                    LEFT JOIN seen s ON s.id = p.id
+                                    WHERE s.id IS NULL
                                 )
                                 UPDATE ${RECORDS_TABLE} r
                                 SET
@@ -1385,7 +1415,7 @@ export async function deleteOutdatedRecords({
                             });
                         }
 
-                        return res;
+                        return { rows: res, pageLastId: pageRows.at(-1)?.id ?? null, pageSize: pageRows.length };
                     });
                 },
                 // Retry if deadlock detected
@@ -1403,17 +1433,19 @@ export async function deleteOutdatedRecords({
                 }
             );
 
-            if (batchResult.length < batchSize) {
+            // Use page bounds for cursor and termination
+            if (batchResult.pageLastId) {
+                lastId = batchResult.pageLastId;
+            }
+            if (batchResult.pageSize < batchSize) {
                 hasMore = false;
             }
 
-            lastId = batchResult[batchResult.length - 1]?.id ?? lastId;
-
-            if (!partition && batchResult[0]?.partition) {
-                partition = batchResult[0].partition;
+            if (!partition && batchResult.rows[0]?.partition) {
+                partition = batchResult.rows[0].partition;
             }
 
-            deletedIds.push(...batchResult.map((r) => r.external_id));
+            deletedIds.push(...batchResult.rows.map((r) => r.external_id));
         }
 
         if (partition) {

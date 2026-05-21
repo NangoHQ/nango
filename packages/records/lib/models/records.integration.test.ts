@@ -962,7 +962,7 @@ describe('Records service', () => {
         });
     }, 60_000);
 
-    describe('markPreviousGenerationRecordsAsDeleted', () => {
+    describe('deleteOutdatedRecords', () => {
         it('should track size correctly when marking outdated records as deleted', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
@@ -1038,6 +1038,40 @@ describe('Records service', () => {
                 .where({ connection_id: connectionId, model, external_id: '5' })
                 .first();
             expect(notDeleted?.deleted_at).toBeNull();
+        });
+
+        it('should not mark records from recent generation as deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const generation = 1;
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: generation
+            });
+
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation
+                })
+            ).unwrap();
+
+            // No records should be marked as deleted since they are from the same generation
+            expect(deletedIds).toHaveLength(0);
         });
 
         it('should not mark already deleted records', async () => {
