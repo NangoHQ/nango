@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 816
+Provider count: 817
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -271,6 +271,7 @@ URL patterns:
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
 | `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/integrations/all/folk.md) | [connect](https://nango.dev/docs/integrations/all/folk/connect.md) |  | crm |
+| `followupboss` | Follow Up Boss | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/followupboss.md) |  | [setup](https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app.md) | crm |
 | `fortnox` | Fortnox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fortnox.md) |  |  | accounting, invoicing |
 | `freeagent` | FreeAgent | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
 | `freeagent-sandbox` | FreeAgent (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
@@ -692,6 +693,7 @@ URL patterns:
 | `statista` | Statista | API_KEY | [docs](https://nango.dev/docs/integrations/all/statista.md) | [connect](https://nango.dev/docs/integrations/all/statista/connect.md) |  | analytics |
 | `stay-ai` | Stay AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/stay-ai.md) | [connect](https://nango.dev/docs/api-integrations/stay-ai/connect.md) |  | e-commerce |
 | `stitch-mcp` | Stitch (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stitch-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app.md) | design, mcp |
+| `store-census` | StoreCensus | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-census.md) | [connect](https://nango.dev/docs/api-integrations/store-census/connect.md) |  | e-commerce, crm |
 | `store-leads` | Store Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-leads.md) | [connect](https://nango.dev/docs/api-integrations/store-leads/connect.md) |  | e-commerce |
 | `strava` | Strava (Mobile) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava.md) |  |  | social, sports |
 | `strava-web` | Strava (Web) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava-web.md) |  |  | social, sports |
@@ -771,6 +773,7 @@ URL patterns:
 | `vimeo-basic` | Vimeo (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/vimeo-basic.md) |  |  | video |
 | `vtex` | VTEX | API_KEY | [docs](https://nango.dev/docs/api-integrations/vtex.md) | [connect](https://nango.dev/docs/api-integrations/vtex/connect.md) |  | e-commerce |
 | `wakatime` | Wakatime | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wakatime.md) |  |  | analytics, dev-tools |
+| `wappalyzer` | Wappalyzer | API_KEY | [docs](https://nango.dev/docs/api-integrations/wappalyzer.md) | [connect](https://nango.dev/docs/api-integrations/wappalyzer/connect.md) |  | marketing, analytics |
 | `wave-accounting` | Wave Accounting | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wave-accounting.md) |  |  | accounting |
 | `wealthbox` | Wealthbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wealthbox.md) |  |  | crm |
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |
