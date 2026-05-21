@@ -1,0 +1,33 @@
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_13ed31bad60e75 478,508,523
+docs/spec.yaml
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 3011,3027
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 11,300,306,308
+packages/server/lib/controllers/functions/validation.ts
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 64
+packages/types/lib/functions/api.ts
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 65,69,94
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 14
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 49,102,115,134,136,155,207
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 213,234,294
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "cd9e2b403b52a81229bccde8a0805bd3364c714c",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
