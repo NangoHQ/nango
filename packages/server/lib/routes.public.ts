@@ -97,7 +97,7 @@ const remoteFunctionAuth: RequestHandler[] = [
     }
 ];
 const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:functions:compile')];
-const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:dryrun')];
+const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:functions:dryrun')];
 const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
     if (res.locals['apiKeyAuthSource'] !== 'sandbox_token') {
         res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint only accepts sandbox tokens' } });
@@ -305,7 +305,7 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 publicAPI.use('/remote-function', jsonContentTypeMiddleware);
 publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, withScope('environment:dryrun'), postRemoteFunctionDryrun);
+publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, withScope('environment:functions:dryrun'), postRemoteFunctionDryrun);
 publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, withScope('environment:deploy'), postRemoteFunctionDeploy);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution

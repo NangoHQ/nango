@@ -33,6 +33,7 @@ interface SandboxApiKeyPayload {
     kid: number;
     aud: typeof sandboxApiKeyAudience;
     purpose: SandboxApiKeyPurpose;
+    dryrun_id?: string;
     exp: number;
     iat: number;
 }
@@ -96,12 +97,14 @@ export function createSandboxApiKeyToken({
     parentApiKeyId,
     signingSecret,
     purpose,
+    dryrunId,
     expiresAt,
     issuedAt = Date.now()
 }: {
     parentApiKeyId: number;
     signingSecret: string;
     purpose: SandboxApiKeyPurpose;
+    dryrunId?: string;
     expiresAt: Date;
     issuedAt?: number;
 }): string {
@@ -114,6 +117,7 @@ export function createSandboxApiKeyToken({
         {
             aud: sandboxApiKeyAudience,
             purpose,
+            ...(dryrunId ? { dryrun_id: dryrunId } : {}),
             iat: Math.floor(issuedAt / 1000),
             exp: Math.ceil(expiresAtMs / 1000)
         },
@@ -138,11 +142,13 @@ class SandboxApiKeyService {
             parentApiKeyId,
             environmentId,
             purpose,
+            dryrunId,
             expiresAt
         }: {
             parentApiKeyId: number;
             environmentId: number;
             purpose: SandboxApiKeyPurpose;
+            dryrunId?: string;
             expiresAt: Date;
         }
     ): Promise<Result<string>> {
@@ -187,7 +193,13 @@ class SandboxApiKeyService {
                         });
                 }
 
-                return createSandboxApiKeyToken({ parentApiKeyId: parentKey.id, signingSecret, purpose, expiresAt: cappedExpiresAt });
+                return createSandboxApiKeyToken({
+                    parentApiKeyId: parentKey.id,
+                    signingSecret,
+                    purpose,
+                    ...(dryrunId ? { dryrunId } : {}),
+                    expiresAt: cappedExpiresAt
+                });
             });
 
             return Ok(token);
@@ -221,7 +233,14 @@ export function verifySandboxApiKeyToken({
             return null;
         }
 
-        return { kid: parsed.parentApiKeyId, aud: verified.aud, purpose: verified.purpose, exp: verified.exp, iat: verified.iat };
+        return {
+            kid: parsed.parentApiKeyId,
+            aud: verified.aud,
+            purpose: verified.purpose,
+            ...(verified.dryrun_id ? { dryrun_id: verified.dryrun_id } : {}),
+            exp: verified.exp,
+            iat: verified.iat
+        };
     } catch {
         return null;
     }
@@ -251,11 +270,12 @@ export function parseSandboxApiKeyToken(token: string): { parentApiKeyId: number
     return { parentApiKeyId, jwt: rawJwt };
 }
 
-function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & Pick<SandboxApiKeyPayload, 'aud' | 'purpose' | 'exp' | 'iat'> {
+function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & Pick<SandboxApiKeyPayload, 'aud' | 'purpose' | 'dryrun_id' | 'exp' | 'iat'> {
     return (
         payload.aud === sandboxApiKeyAudience &&
         typeof payload['purpose'] === 'string' &&
         sandboxApiKeyPurposesSet.has(payload['purpose']) &&
+        (payload['dryrun_id'] === undefined || typeof payload['dryrun_id'] === 'string') &&
         typeof payload.exp === 'number' &&
         typeof payload.iat === 'number' &&
         Number.isSafeInteger(payload.exp) &&

@@ -14,10 +14,18 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
 import { functionDeploymentBodySchema, remoteFunctionDeployBodySchema } from '../validation.js';
 
-import type { PostFunctionDeployment, PostRemoteFunctionDeploy } from '@nangohq/types';
+import type { DBSyncConfig, PostFunctionDeployment, PostRemoteFunctionDeploy } from '@nangohq/types';
 import type { Response } from 'express';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
+
+function isProtectedExistingFunction(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null): boolean {
+    return Boolean(existingSyncConfig && existingSyncConfig.source !== 'standalone');
+}
+
+function shouldAllowDestructiveDeploy(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null, allowDestructive: boolean): boolean {
+    return Boolean(allowDestructive && existingSyncConfig?.source === 'standalone');
+}
 
 async function createDeploySandboxApiKey(res: Response, environmentId: number): Promise<string | null> {
     if (res.locals['apiKeyAuthSource'] !== 'customer_key' || !res.locals['apiKeyId']) {
@@ -68,7 +76,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         isAction: body.function_type === 'action'
     });
 
-    if (existingSyncConfig && existingSyncConfig.source !== 'standalone' && !body.allow_destructive) {
+    if (isProtectedExistingFunction(existingSyncConfig)) {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
@@ -83,6 +91,8 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         return;
     }
 
+    const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
+
     try {
         const result = await invokeDeploy({
             integration_id: body.integration_id,
@@ -92,7 +102,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             environment_name: environment.name,
             nango_secret_key: sandboxApiKey,
             nango_host: getRemoteFunctionNangoHost(),
-            allow_destructive: body.allow_destructive
+            allow_destructive: allowDestructiveDeploy
         });
         const output = parseDeploySuccessOutput(result.output);
 
@@ -138,7 +148,7 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
         isAction: body.function_type === 'action'
     });
 
-    if (existingSyncConfig && existingSyncConfig.source !== 'standalone' && !body.allow_destructive) {
+    if (isProtectedExistingFunction(existingSyncConfig)) {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
@@ -153,6 +163,8 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
         return;
     }
 
+    const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
+
     try {
         const result = await invokeDeploy({
             integration_id: body.integration_id,
@@ -163,7 +175,7 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
             nango_secret_key: sandboxApiKey,
             nango_host: getRemoteFunctionNangoHost(),
             ...(body.version ? { version: body.version } : {}),
-            allow_destructive: body.allow_destructive
+            allow_destructive: allowDestructiveDeploy
         });
         const output = parseDeploySuccessOutput(result.output);
 

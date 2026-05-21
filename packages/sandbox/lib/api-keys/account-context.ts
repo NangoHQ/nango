@@ -17,6 +17,8 @@ export interface SandboxAccountContext {
         source: 'sandbox_token';
         scopes: string[];
         apiKeyId: number;
+        purpose: 'dryrun' | 'deploy';
+        dryrunId?: string;
     };
 }
 
@@ -146,7 +148,9 @@ export async function getAccountContextBySandboxApiKey(sandboxApiKey: string): P
             auth: {
                 source: 'sandbox_token',
                 scopes: buildSandboxApiKeyScopes(row.auth_scopes),
-                apiKeyId: row.auth_api_key_id
+                apiKeyId: row.auth_api_key_id,
+                purpose: verified.purpose,
+                ...(verified.dryrun_id ? { dryrunId: verified.dryrun_id } : {})
             }
         });
     } catch (err) {

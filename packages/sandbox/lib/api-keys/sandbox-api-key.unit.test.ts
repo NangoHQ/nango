@@ -42,6 +42,26 @@ describe('customer key sandbox token service', () => {
         expect(verifySandboxApiKeyToken({ token, signingSecret })).toMatchObject({ kid: 123, aud: sandboxApiKeyAudience, purpose: 'dryrun' });
     });
 
+    it('can bind a sandbox API key token to a dryrun id', () => {
+        const signingSecret = createSandboxSigningSecret();
+        const dryrunId = '00000000-0000-4000-8000-000000000001';
+        const token = createSandboxApiKeyToken({
+            parentApiKeyId: 123,
+            signingSecret,
+            purpose: 'dryrun',
+            dryrunId,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+        const rawJwt = token.slice(sandboxApiKeyPrefix.length);
+        const decoded = jwt.decode(rawJwt, { complete: true });
+        if (!decoded || typeof decoded.payload === 'string') {
+            throw new Error('expected decoded JWT payload');
+        }
+
+        expect(decoded.payload).toMatchObject({ dryrun_id: dryrunId });
+        expect(verifySandboxApiKeyToken({ token, signingSecret })).toMatchObject({ dryrun_id: dryrunId });
+    });
+
     it('rejects expired tokens', () => {
         const signingSecret = createSandboxSigningSecret();
         const now = Date.now();
@@ -127,8 +147,8 @@ describe('customer key sandbox token service', () => {
     });
 
     it('keeps parent scopes and adds sandbox baseline scopes', () => {
-        expect(buildSandboxApiKeyScopes(['environment:dryrun', 'environment:records:read'])).toStrictEqual([
-            'environment:dryrun',
+        expect(buildSandboxApiKeyScopes(['environment:functions:dryrun', 'environment:records:read'])).toStrictEqual([
+            'environment:functions:dryrun',
             'environment:records:read',
             'environment:connections:read',
             'environment:integrations:read',
@@ -137,8 +157,8 @@ describe('customer key sandbox token service', () => {
     });
 
     it('does not duplicate baseline scopes already present on the parent key', () => {
-        expect(buildSandboxApiKeyScopes(['environment:dryrun', 'environment:proxy'])).toStrictEqual([
-            'environment:dryrun',
+        expect(buildSandboxApiKeyScopes(['environment:functions:dryrun', 'environment:proxy'])).toStrictEqual([
+            'environment:functions:dryrun',
             'environment:proxy',
             'environment:connections:read',
             'environment:integrations:read'

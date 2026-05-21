@@ -70,6 +70,7 @@ import type {
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDryrun,
+    PostFunctionDryrunResult,
     PostRemoteFunctionCompile,
     PostRemoteFunctionDeploy,
     PostRemoteFunctionDryrun
@@ -157,6 +158,7 @@ export type PublicApiEndpoints =
     | PostFunctionCompile
     | PostFunctionDryrun
     | GetFunctionDryrun
+    | PostFunctionDryrunResult
     | PostFunctionDeployment
     | PostRemoteFunctionCompile
     | PostRemoteFunctionDryrun

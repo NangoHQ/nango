@@ -10,7 +10,7 @@ import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { DBFunctionDryrun } from '@nangohq/sandbox';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, FunctionSource, ScriptTypeLiteral } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 const originalNodeEnv = envs.NODE_ENV;
@@ -71,6 +71,41 @@ async function createDryrunSeed({
     }
 
     return row;
+}
+
+async function createExistingFunctionConfig({
+    environmentId,
+    configId,
+    functionName,
+    functionType = 'sync',
+    source = 'repo'
+}: {
+    environmentId: number;
+    configId: number;
+    functionName: string;
+    functionType?: ScriptTypeLiteral;
+    source?: FunctionSource;
+}) {
+    const now = new Date();
+
+    await db.knex('_nango_sync_configs').insert({
+        environment_id: environmentId,
+        nango_config_id: configId,
+        sync_name: functionName,
+        type: functionType,
+        source,
+        file_location: 'file_location',
+        version: '1',
+        models: [],
+        active: true,
+        runs: 'runs',
+        track_deletes: false,
+        auto_start: false,
+        webhook_subscriptions: [],
+        enabled: true,
+        created_at: now,
+        updated_at: now
+    });
 }
 
 describe('remote-function public API', () => {
@@ -154,7 +189,7 @@ describe('remote-function public API', () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'forbidden',
-                message: 'Insufficient scope. Required: environment:dryrun'
+                message: 'Insufficient scope. Required: environment:functions:dryrun'
             }
         });
     });
@@ -178,14 +213,14 @@ describe('remote-function public API', () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'forbidden',
-                message: 'Insufficient scope. Required: environment:dryrun'
+                message: 'Insufficient scope. Required: environment:functions:dryrun'
             }
         });
     });
 
     it('rejects POST /remote-function/deploy without deploy scope', async () => {
         const seed = await seedAccountWithRemoteFunctions();
-        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
 
         const res = await api.fetch('/remote-function/deploy', {
             method: 'POST',
@@ -209,7 +244,7 @@ describe('remote-function public API', () => {
 
     it('rejects POST /functions/deployments without deploy scope', async () => {
         const seed = await seedAccountWithRemoteFunctions();
-        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
 
         const res = await api.fetch('/functions/deployments', {
             method: 'POST',
@@ -474,8 +509,71 @@ describe('remote-function public API', () => {
         });
     });
 
+    it('rejects allow_destructive on POST /remote-function/deploy for repo-managed functions', async () => {
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
+        const providerConfig = await seeders.createConfigSeed(env, 'github', 'github');
+        await createExistingFunctionConfig({
+            environmentId: env.id,
+            configId: providerConfig.id!,
+            functionName: 'syncIssues',
+            source: 'repo'
+        });
+
+        const res = await api.fetch('/remote-function/deploy', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}',
+                allow_destructive: true
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_request',
+                message: "Cannot overwrite existing function 'syncIssues'"
+            }
+        });
+    });
+
+    it('rejects allow_destructive on POST /functions/deployments for repo-managed functions', async () => {
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
+        const providerConfig = await seeders.createConfigSeed(env, 'github', 'github');
+        await createExistingFunctionConfig({
+            environmentId: env.id,
+            configId: providerConfig.id!,
+            functionName: 'syncIssues',
+            source: 'repo'
+        });
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                type: 'function',
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}',
+                allow_destructive: true
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_request',
+                message: "Cannot overwrite existing function 'syncIssues'"
+            }
+        });
+    });
+
     it('returns stored dryrun status on GET /functions/dryruns/:id', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({
             environmentId: env.id,
             sandboxId: 'sandbox-id',
@@ -502,7 +600,7 @@ describe('remote-function public API', () => {
     });
 
     it('rejects POST /functions/dryruns/:id/result with a customer API key', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({ environmentId: env.id, startedAt: new Date() });
 
         const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
@@ -525,15 +623,16 @@ describe('remote-function public API', () => {
     });
 
     it('accepts POST /functions/dryruns/:id/result with a sandbox token', async () => {
-        const seed = await seedAccountWithRemoteFunctions(['environment:dryrun']);
-        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
         const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
             parentApiKeyId: apiKey.id,
             environmentId: seed.env.id,
             purpose: 'dryrun',
+            dryrunId: dryrun.id,
             expiresAt: new Date(Date.now() + 60_000)
         });
-        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
 
         const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
             method: 'POST',
@@ -566,15 +665,16 @@ describe('remote-function public API', () => {
     });
 
     it('accepts POST /functions/dryruns/:id/result with a sandbox token from a parent key without dryrun scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
         const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
             parentApiKeyId: apiKey.id,
             environmentId: seed.env.id,
             purpose: 'dryrun',
+            dryrunId: dryrun.id,
             expiresAt: new Date(Date.now() + 60_000)
         });
-        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
 
         const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
             method: 'POST',
@@ -587,5 +687,36 @@ describe('remote-function public API', () => {
 
         expect(res.status).toBe(200);
         expect(await res.json()).toStrictEqual({ ok: true });
+    });
+
+    it('rejects POST /functions/dryruns/:id/result with a sandbox token for another dryrun', async () => {
+        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
+        const otherDryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKey.id,
+            environmentId: seed.env.id,
+            purpose: 'dryrun',
+            dryrunId: otherDryrun.id,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'failed', error: { message: 'Compilation failed' } })
+        });
+
+        expect(res.status).toBe(403);
+        expect(await res.json()).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'This sandbox token is not authorized for this dryrun'
+            }
+        });
     });
 });

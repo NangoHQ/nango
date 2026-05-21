@@ -46,12 +46,14 @@ const functionErrorCodes = new Set<string>([
 
 type RemoteDryrunResponse = Response<PostRemoteFunctionDryrun['Reply'], Required<RequestLocals>>;
 type FunctionDryrunResponse = Response<PostFunctionDryrun['Reply'], Required<RequestLocals>>;
+type FunctionDryrunResultResponse = Response<PostFunctionDryrunResult['Reply'], Required<RequestLocals>>;
 
-async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number) {
+async function createDryrunSandboxApiKey(parentApiKeyId: number, environmentId: number, dryrunId?: string) {
     return await sandboxApiKeyService.createSandboxApiKey(db.knex, {
         parentApiKeyId,
         environmentId,
         purpose: 'dryrun',
+        ...(dryrunId ? { dryrunId } : {}),
         expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
     });
 }
@@ -72,6 +74,15 @@ function getFunctionParentCustomerKeyId(res: FunctionDryrunResponse): number | n
     }
 
     return res.locals['apiKeyId'];
+}
+
+function verifyDryrunResultSandboxToken(res: FunctionDryrunResultResponse, dryrunId: string): boolean {
+    if (res.locals['sandboxTokenPurpose'] !== 'dryrun' || res.locals['sandboxTokenDryrunId'] !== dryrunId) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'This sandbox token is not authorized for this dryrun' } });
+        return false;
+    }
+
+    return true;
 }
 
 export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(async (req, res) => {
@@ -181,12 +192,6 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
         return;
     }
 
-    const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id);
-    if (sandboxApiKey.isErr()) {
-        sendStepError({ res, status: 500, error: sandboxApiKey.error });
-        return;
-    }
-
     const dryrun = await createFunctionDryrun({
         environmentId: environment.id,
         request: {
@@ -204,6 +209,11 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
 
     let prepared: Awaited<ReturnType<typeof prepareAsyncDryrun>> | null = null;
     try {
+        const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id, dryrun.id);
+        if (sandboxApiKey.isErr()) {
+            throw sandboxApiKey.error;
+        }
+
         const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, getRemoteFunctionNangoHost()).toString();
         prepared = await prepareAsyncDryrun({
             integration_id: body.integration_id,
@@ -281,6 +291,10 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
     const valParams = functionDryrunParamsSchema.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
+        return;
+    }
+
+    if (!verifyDryrunResultSandboxToken(res, valParams.data.id)) {
         return;
     }
 

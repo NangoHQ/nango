@@ -55,6 +55,8 @@ export class AccessMiddleware {
                 source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
+                purpose?: 'dryrun' | 'deploy';
+                dryrunId?: string;
             };
         }>
     > {
@@ -127,6 +129,12 @@ export class AccessMiddleware {
                 res.locals['apiKeyAuthSource'] = result.value.auth.source;
                 if (result.value.auth.apiKeyId !== undefined) {
                     res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+                if (result.value.auth.purpose !== undefined) {
+                    res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
+                }
+                if (result.value.auth.dryrunId !== undefined) {
+                    res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
                 }
             }
             const authSource = result.value.auth?.source ?? 'env_var';
@@ -407,6 +415,12 @@ export class AccessMiddleware {
                     res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
                     if (apiKeyResult.value.auth.apiKeyId !== undefined) {
                         res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
+                    }
+                    if (apiKeyResult.value.auth.purpose !== undefined) {
+                        res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
+                    }
+                    if (apiKeyResult.value.auth.dryrunId !== undefined) {
+                        res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
                     }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {

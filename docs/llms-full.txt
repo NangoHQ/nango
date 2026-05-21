@@ -8622,6 +8622,7 @@ The **Default - Full access** key that comes with each environment already has a
 | Scope | Description |
 |-------|-------------|
 | `environment:functions:compile` | Compile function source code |
+| `environment:functions:dryrun` | Dry run function source code |
 
 ### Records
 
@@ -8974,7 +8975,7 @@ Compiles TypeScript function source code and returns the bundled JavaScript.
 Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md
 
 <Info>
-  Requires an API key with the `environment:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
@@ -8984,7 +8985,7 @@ Starts an asynchronous dry run for TypeScript function source code against a con
 Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md
 
 <Info>
-  Requires an API key with the `environment:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
 
 Returns the status and result of an asynchronous function dry run.
