@@ -41,6 +41,21 @@ Checkpoints solve both problems. For a full overview, see the [checkpoints guide
 
 # Migration steps
 
+<a id="migrate-with-skill"></a>
+## Migrate with the migrating-to-checkpoints skill
+
+You can migrate syncs to checkpoints with the **`migrating-to-checkpoints`** skill from [NangoHQ/skills](https://github.com/NangoHQ/skills). The skill guides a coding agent through converting `createSync()` implementations from `nango.lastSyncDate`, legacy `syncType: 'incremental'`, and non-resumable full refreshes to checkpoint-based syncs.
+
+Install it in your functions repo:
+
+```bash
+npx skills add NangoHQ/skills -s migrating-to-checkpoints
+```
+
+Then ask your agent to migrate a specific sync using the `migrating-to-checkpoints` skill. The skill covers checkpoint schema selection, replacing `lastSyncDate` with `getCheckpoint()` and `saveCheckpoint()`, full-refresh recovery with `clearCheckpoint()`, and validating with `nango dryrun --checkpoint`.
+
+The manual steps below walk through the same migration if you prefer to do it by hand or want to review what the skill changes.
+
 ## Step 1: Add a checkpoint schema to your sync declaration
 
 Add a `checkpoint` field to your `createSync()` call. In most cases, this is a single string field holding a timestamp:

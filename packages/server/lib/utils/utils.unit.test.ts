@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAdditionalAuthorizationParams, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
+import { getAdditionalAuthorizationParams, isBinaryContentType, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
@@ -212,5 +212,22 @@ describe('missesInterpolationParam', () => {
         const template = 'https://api.example.com';
         const replacers = {};
         expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+});
+
+describe('isBinaryContentType', () => {
+    it.each(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/jpeg; charset=binary'])('Should treat %s as binary', (contentType) => {
+        expect(isBinaryContentType(contentType)).toBe(true);
+    });
+
+    it.each(['application/pdf', 'application/octet-stream', 'video/mp4', 'audio/mpeg'])(
+        'Should keep existing binary content-type support for %s',
+        (contentType) => {
+            expect(isBinaryContentType(contentType)).toBe(true);
+        }
+    );
+
+    it.each(['application/json', 'application/x-www-form-urlencoded', undefined])('Should not treat %s as binary', (contentType) => {
+        expect(isBinaryContentType(contentType)).toBe(false);
     });
 });

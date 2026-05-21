@@ -6,7 +6,7 @@ description: 'Let your users connect external APIs to your agents & apps.'
 
 ## Overview
 
-Nango Auth lets your users connect 700+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
+Nango Auth lets your users connect 800+ external APIs to your product. You embed a Nango-managed auth flow in your application, and Nango handles authorization, credential storage, refresh, and validation.
 
 A **Connection** is created after each successful authorization. It stores one user's credentials for one external API and keeps them valid over time. Credentials can be retrieved at scale or used directly by other Nango primitives — without ever passing through your codebase.
 
@@ -37,7 +37,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
 ## Capabilities
 
-- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 700+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
+- **Auth schemes** — OAuth 2.0, OAuth 1.0a, API keys, basic auth, custom. 800+ APIs supported; new ones [added on demand](/integrations/contribute-or-request-api) within days, by request or self-contributed.
 - **Pre-built UI** — Embedded Connect UI with API-specific guidance, input validation, and your branding. Or [customize Connect UI or build a custom UI](/guides/auth/customize-connect-ui).
 - **Credential management** — Encrypted storage, automatic refresh, retrieval at scale. Combine with [Proxy](/guides/platform/proxy-requests) or [Functions](/guides/functions/functions-guide) to avoid handling credentials directly.
 - **Observability** — Failure detection, reconnect flow, and per-connection logs.
@@ -57,7 +57,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
 
       The default API key created on signup has full access and is the simplest option.
 
-      If the user creates a scoped API key instead, this guide needs `environment:integrations:write` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
+      If the user creates a scoped API key instead, this guide needs `environment:integrations:create` (step 2) and `environment:connect_sessions:write` (steps 5 and 8). See [API keys](/reference/backend/http-api/api-keys).
     </Accordion>
   </Step>
 
@@ -372,9 +372,15 @@ Once you have the connection ID, fetch credentials whenever you need them:
   </Step>
 </Steps>
 
+<Tip>
+  **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
+</Tip>
+
 ## OAuth developer apps
 
-Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup. They work in production too, but we strongly recommend registering your own OAuth app before going live.
+Nango ships built-in shared developer apps for some OAuth 2.0 APIs so you can test connections with zero setup.
+
+They work in production too, but we strongly recommend registering your own before going live. Most OAuth APIs have a step-by-step setup guide in [APIs & Integrations](/integrations/overview) — for example, [Gmail](/api-integrations/google-mail/how-to-register-your-own-gmail-api-oauth-app).
 
 Reasons to register your own:
 - **Whitelabel auth** — with Nango's app, users authorize Nango instead of your product.
@@ -386,10 +392,6 @@ Reasons to register your own:
 - **Portability** — only your own developer app lets you export access and refresh tokens and move off Nango without users re-authorizing.
 
 The same tradeoffs apply to shared OAuth apps provided by other auth platforms.
-
-<Tip>
-  **Questions, problems, feedback?** Reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
 
 ## Related guides
 

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { flowService, getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
@@ -57,14 +57,19 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({ data: { id: expect.any(Number) } });
 
+        const template = flowService.getFlowByIntegrationAndName({ provider: 'airtable', type: 'sync', scriptName: 'tables' });
+        if (!template) {
+            throw new Error('Expected Airtable tables template to exist');
+        }
+
         const sync = await getSyncConfigRaw({ environmentId: env.id, config_id: integration.id!, name: 'tables', isAction: false });
         expect(sync).toMatchObject({
             sync_name: 'tables',
             type: 'sync',
-            models: ['Table'],
+            models: template.returns,
             active: true,
             attributes: {},
-            auto_start: true,
+            auto_start: template.auto_start,
             created_at: expect.any(Date),
             deleted: false,
             deleted_at: null,
@@ -72,92 +77,22 @@ describe(`POST ${endpoint}`, () => {
             environment_id: env.id,
             file_location: '_LOCAL_FILE_',
             id: expect.any(Number),
-            input: null,
+            input: template.input || null,
             source: 'catalog',
             metadata: {
-                description: expect.any(String),
-                scopes: ['schema.bases:read']
+                description: template.description,
+                scopes: template.scopes
             },
             model_schema: null,
-            models_json_schema: {
-                definitions: {
-                    Table: {
-                        additionalProperties: false,
-                        properties: {
-                            baseId: {
-                                type: 'string'
-                            },
-                            baseName: {
-                                type: 'string'
-                            },
-                            fields: {
-                                items: {
-                                    additionalProperties: false,
-                                    properties: {
-                                        description: {
-                                            type: 'string'
-                                        },
-                                        id: {
-                                            type: 'string'
-                                        },
-                                        name: {
-                                            type: 'string'
-                                        },
-                                        options: {
-                                            additionalProperties: {},
-                                            type: 'object'
-                                        },
-                                        type: {
-                                            type: 'string'
-                                        }
-                                    },
-                                    required: ['id', 'name', 'type'],
-                                    type: 'object'
-                                },
-                                type: 'array'
-                            },
-                            id: {
-                                type: 'string'
-                            },
-                            name: {
-                                type: 'string'
-                            },
-                            primaryFieldId: {
-                                type: 'string'
-                            },
-                            views: {
-                                items: {
-                                    additionalProperties: false,
-                                    properties: {
-                                        id: {
-                                            type: 'string'
-                                        },
-                                        name: {
-                                            type: 'string'
-                                        },
-                                        type: {
-                                            type: 'string'
-                                        }
-                                    },
-                                    required: ['id', 'name', 'type'],
-                                    type: 'object'
-                                },
-                                type: 'array'
-                            }
-                        },
-                        required: ['id', 'name', 'baseId', 'baseName', 'primaryFieldId', 'fields', 'views'],
-                        type: 'object'
-                    }
-                }
-            },
+            models_json_schema: template.json_schema,
             nango_config_id: integration.id!,
-            runs: 'every day',
-            sdk_version: expect.any(String),
-            features: expect.any(Array),
-            sync_type: 'full',
-            track_deletes: false,
+            runs: template.runs,
+            sdk_version: template.sdk_version,
+            features: template.features,
+            sync_type: template.sync_type,
+            track_deletes: template.track_deletes,
             updated_at: expect.any(Date),
-            version: '2.0.1',
+            version: template.version,
             webhook_subscriptions: null
         });
     });

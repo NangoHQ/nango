@@ -824,7 +824,7 @@ describe('Records service', () => {
         });
     }, 60_000);
 
-    describe('markPreviousGenerationRecordsAsDeleted', () => {
+    describe('deleteOutdatedRecords', () => {
         it('should track size correctly when marking outdated records as deleted', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
@@ -900,6 +900,40 @@ describe('Records service', () => {
                 .where({ connection_id: connectionId, model, external_id: '5' })
                 .first();
             expect(notDeleted?.deleted_at).toBeNull();
+        });
+
+        it('should not mark records from recent generation as deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const generation = 1;
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: generation
+            });
+
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation
+                })
+            ).unwrap();
+
+            // No records should be marked as deleted since they are from the same generation
+            expect(deletedIds).toHaveLength(0);
         });
 
         it('should not mark already deleted records', async () => {
@@ -1902,6 +1936,57 @@ describe('Records service', () => {
             // hard delete removes the count entry entirely when count reaches 0
             const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBeUndefined();
+        });
+    });
+
+    describe('size_bytes', () => {
+        it('should store size_bytes on records table after upsert and update', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowsAfterUpsert = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).select<{ size_bytes: number | null }[]>('size_bytes');
+            expect(rowsAfterUpsert).toHaveLength(2);
+            for (const row of rowsAfterUpsert) {
+                expect(row.size_bytes).not.toBeNull();
+                expect(row.size_bytes).toBeGreaterThan(0);
+            }
+
+            const rowBeforeUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            const sizeBeforeUpdate = rowBeforeUpdate.size_bytes!;
+
+            await updateRecords({
+                records: [
+                    {
+                        id: '1',
+                        name: `This is a much longer name`
+                    }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowAfterUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            expect(rowAfterUpdate?.size_bytes).not.toBeNull();
+            expect(rowAfterUpdate?.size_bytes).toBeGreaterThan(sizeBeforeUpdate);
         });
     });
 
