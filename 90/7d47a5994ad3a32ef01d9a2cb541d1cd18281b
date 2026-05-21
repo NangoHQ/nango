@@ -1,0 +1,57 @@
+packages/utils/lib/api-key-scopes.ts
+  s_b39de48b60dddc::t_b631f4562259f1 38-39
+packages/server/lib/middleware/access.middleware.ts
+  s_b39de48b60dddc::t_e0ccbd8138c4a1 58-59,133-138,419-423
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_b631f4562259f1 100,308
+packages/sandbox/lib/api-keys/sandbox-api-key.service.ts
+  s_b39de48b60dddc::t_c8062ca93a46bc 196-202
+  s_b39de48b60dddc::t_5f9fba311344cd 36,100,107,120,145,151,236-243,273,278
+packages/sandbox/lib/api-keys/sandbox-api-key.unit.test.ts
+  s_b39de48b60dddc::t_1aeb374cc15ff3 150-151,160-161
+  s_b39de48b60dddc::t_f08695d9a7d6c3 45-64
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_b39de48b60dddc::t_b631f4562259f1 47-53
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_1aeb374cc15ff3 192,216,223,247,576,603,626-627,668,693-694
+  s_b39de48b60dddc::t_1badc25401e8dc 13,76-108
+  s_b39de48b60dddc::t_8de929538e6d26 628,633,670,675,691-692,695-720
+  s_b39de48b60dddc::t_e50a6651659963 512-574
+docs/reference/backend/http-api/api-keys.mdx
+  s_b39de48b60dddc::t_b631f4562259f1 195
+packages/types/lib/api-keys/scopes.ts
+  s_b39de48b60dddc::t_b631f4562259f1 36-37
+docs/reference/backend/http-api/functions/dryruns-create.mdx
+  s_b39de48b60dddc::t_b631f4562259f1 7
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_8f7e3012144127 51,56,79-87,212-216,297
+  s_b39de48b60dddc::t_c7d5a214d6f5aa 49
+packages/server/lib/utils/express.ts
+  s_b39de48b60dddc::t_bdd2506714ca4f 37-38
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_b39de48b60dddc::t_574df4d617670e 17,22-29,79,94-95,105,151,166-167,178
+packages/sandbox/lib/api-keys/account-context.ts
+  s_b39de48b60dddc::t_a0518e0819cc0c 20-21,151-153
+docs/llms-full.txt
+  s_b39de48b60dddc::t_4288b2ffa0ff90 8625,8978,8988
+docs/reference/backend/http-api/functions/dryruns-get.mdx
+  s_b39de48b60dddc::t_b631f4562259f1 7
+packages/types/lib/api.endpoints.ts
+  s_b39de48b60dddc::t_6189ebaeef79a4 73,161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "907d47a5994ad3a32ef01d9a2cb541d1cd18281b",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
