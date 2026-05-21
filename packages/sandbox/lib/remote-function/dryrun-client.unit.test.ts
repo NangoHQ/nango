@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => {
         }
     }
 
+    class RateLimitError extends Error {}
+
     class TimeoutError extends Error {}
 
     const run = vi.fn();
@@ -27,11 +29,12 @@ const mocks = vi.hoisted(() => {
     };
     const create = vi.fn();
 
-    return { CommandExitError, TimeoutError, create, kill, run, sandbox, write };
+    return { CommandExitError, RateLimitError, TimeoutError, create, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
     CommandExitError: mocks.CommandExitError,
+    RateLimitError: mocks.RateLimitError,
     Sandbox: { create: mocks.create },
     TimeoutError: mocks.TimeoutError
 }));
@@ -48,6 +51,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildAsyncDryrunScript, invokeDryrun, prepareAsyncDryrun } from './dryrun-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { RemoteFunctionError } from './helpers.js';
 
@@ -124,6 +128,19 @@ describe('remote function dryrun client', () => {
         } satisfies Partial<RemoteFunctionError>);
     });
 
+    it('returns execution_environment_unavailable when the dryrun sandbox cannot be created', async () => {
+        mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
+
+        await expect(invokeDryrun(request)).rejects.toMatchObject({
+            code: 'execution_environment_unavailable',
+            message: executionEnvironmentUnavailableMessage,
+            status: 503
+        } satisfies Partial<RemoteFunctionError>);
+
+        expect(mocks.write).not.toHaveBeenCalled();
+        expect(mocks.kill).not.toHaveBeenCalled();
+    });
+
     it('prepares an async dryrun sandbox and starts the callback script in the background', async () => {
         const prepared = await prepareAsyncDryrun({
             ...request,
@@ -169,6 +186,25 @@ describe('remote function dryrun client', () => {
                 ])
             })
         });
+    });
+
+    it('returns execution_environment_unavailable when the async dryrun sandbox cannot be created', async () => {
+        mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
+
+        await expect(
+            prepareAsyncDryrun({
+                ...request,
+                dryrun_id: '7b539769-6d39-4442-89fc-33fbac96ea66',
+                callback_url: 'https://api.example.test/functions/dryruns/7b539769-6d39-4442-89fc-33fbac96ea66/result'
+            })
+        ).rejects.toMatchObject({
+            code: 'execution_environment_unavailable',
+            message: executionEnvironmentUnavailableMessage,
+            status: 503
+        } satisfies Partial<RemoteFunctionError>);
+
+        expect(mocks.write).not.toHaveBeenCalled();
+        expect(mocks.kill).not.toHaveBeenCalled();
     });
 
     it('builds a callback script that reports dryrun compile exit codes as compilation errors', () => {

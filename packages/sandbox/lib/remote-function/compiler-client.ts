@@ -1,18 +1,13 @@
-import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 
-import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
+import { CommandExitError, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
 import { getCommandOutput } from './command-output.js';
 import { RemoteFunctionError } from './helpers.js';
-import {
-    remoteFunctionCompileTimeoutMs,
-    remoteFunctionCompilerSandboxTimeoutMs,
-    remoteFunctionCompilerTemplate,
-    remoteFunctionProjectPath
-} from './runtime.js';
+import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { createRemoteFunctionSandbox } from './sandbox.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 interface FunctionFilePathRequest {
@@ -53,11 +48,9 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
     }
 
-    const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
+    const sandbox = await createRemoteFunctionSandbox({
+        purpose: 'nango-compiler',
         timeoutMs: remoteFunctionCompilerSandboxTimeoutMs,
-        allowInternetAccess: true,
-        metadata: { purpose: 'nango-compiler', requestId: randomUUID() },
-        network: { allowPublicTraffic: true },
         apiKey
     });
 

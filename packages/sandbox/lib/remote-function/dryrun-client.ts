@@ -1,6 +1,4 @@
-import { randomUUID } from 'node:crypto';
-
-import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
+import { CommandExitError, TimeoutError } from 'e2b';
 
 import { isLocal, stringifyError } from '@nangohq/utils';
 
@@ -9,13 +7,8 @@ import { buildDryrunArgs } from './command-builders.js';
 import { getCommandOutput, getDryrunCommandSuccessOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
-import {
-    remoteFunctionCompileTimeoutMs,
-    remoteFunctionCompilerTemplate,
-    remoteFunctionDryrunSandboxTimeoutMs,
-    remoteFunctionDryrunTimeoutMs,
-    remoteFunctionProjectPath
-} from './runtime.js';
+import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { createRemoteFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
@@ -61,11 +54,9 @@ export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult
         throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
     }
 
-    const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
+    const sandbox = await createRemoteFunctionSandbox({
+        purpose: 'nango-dryrun',
         timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
-        allowInternetAccess: true,
-        metadata: { purpose: 'nango-dryrun', requestId: randomUUID() },
-        network: { allowPublicTraffic: true },
         apiKey
     });
 
@@ -140,11 +131,10 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
         throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
     }
 
-    const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
+    const sandbox = await createRemoteFunctionSandbox({
+        purpose: 'nango-function-dryrun',
         timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
-        allowInternetAccess: true,
-        metadata: { purpose: 'nango-function-dryrun', dryrunId: request.dryrun_id, requestId: randomUUID() },
-        network: { allowPublicTraffic: true },
+        metadata: { dryrunId: request.dryrun_id },
         apiKey
     });
 

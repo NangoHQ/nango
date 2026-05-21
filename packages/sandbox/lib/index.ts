@@ -10,4 +10,5 @@ export * from './remote-function/deploy-client.js';
 export * from './remote-function/dryrun-client.js';
 export * from './remote-function/helpers.js';
 export * from './remote-function/runtime.js';
+export * from './remote-function/sandbox.js';
 export * from './remote-function/shell.js';

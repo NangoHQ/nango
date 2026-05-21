@@ -15,6 +15,7 @@ export type FunctionErrorCode =
     | 'connection_not_found'
     | 'dryrun_not_found'
     | 'function_disabled'
+    | 'execution_environment_unavailable'
     | 'timeout'
     | 'validation_error';
 

@@ -1458,6 +1458,8 @@ paths:
                     $ref: '#/components/responses/Forbidden'
                 '500':
                     $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
 
@@ -1489,6 +1491,8 @@ paths:
                     $ref: '#/components/responses/NotFound'
                 '500':
                     $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
 
@@ -1548,6 +1552,8 @@ paths:
                     $ref: '#/components/responses/NotFound'
                 '500':
                     $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
 
@@ -2894,6 +2900,12 @@ components:
                         $ref: '#/components/schemas/StdError'
         ServerError:
             description: Server error
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        ServiceUnavailable:
+            description: Service unavailable
             content:
                 application/json:
                     schema:

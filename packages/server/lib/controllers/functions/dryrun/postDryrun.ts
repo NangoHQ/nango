@@ -39,6 +39,7 @@ const functionErrorCodes = new Set<string>([
     'connection_not_found',
     'dryrun_not_found',
     'function_disabled',
+    'execution_environment_unavailable',
     'timeout',
     'validation_error'
 ] satisfies FunctionErrorCode[]);
@@ -241,10 +242,7 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
         await markFunctionDryrunFailed({
             environmentId: environment.id,
             id: dryrun.id,
-            error: {
-                code: 'dryrun_error',
-                message: stringifyError(err)
-            }
+            error: toFunctionDryrunError(err)
         });
         sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
     }
@@ -338,4 +336,19 @@ function normalizeFunctionErrorCode(code: string | undefined): FunctionErrorCode
     }
 
     return 'dryrun_error';
+}
+
+function toFunctionDryrunError(err: unknown): { code: FunctionErrorCode; message: string; payload?: unknown } {
+    if (err instanceof RemoteFunctionError) {
+        return {
+            code: err.code,
+            message: err.message,
+            ...(err.payload !== undefined ? { payload: err.payload } : {})
+        };
+    }
+
+    return {
+        code: 'dryrun_error',
+        message: stringifyError(err)
+    };
 }

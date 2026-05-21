@@ -27,6 +27,27 @@ describe('function controller errors', () => {
         expect(send).toHaveBeenCalledWith({ error: { code: 'deployment_error', message: 'Deploy failed' } });
     });
 
+    it('sends execution environment unavailable errors as service unavailable', () => {
+        const { res, status, send } = mockResponse();
+
+        sendStepError({
+            res,
+            error: new RemoteFunctionError({
+                code: 'execution_environment_unavailable',
+                message: 'The function execution environment is temporarily unavailable. Please try again shortly.',
+                status: 503
+            })
+        });
+
+        expect(status).toHaveBeenCalledWith(503);
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'execution_environment_unavailable',
+                message: 'The function execution environment is temporarily unavailable. Please try again shortly.'
+            }
+        });
+    });
+
     it('does not expose arbitrary error codes as function API codes', () => {
         const { res, status, send } = mockResponse();
 

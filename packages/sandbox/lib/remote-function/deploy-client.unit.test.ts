@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => {
         }
     }
 
+    class RateLimitError extends Error {}
+
     class TimeoutError extends Error {}
 
     const run = vi.fn();
@@ -26,11 +28,12 @@ const mocks = vi.hoisted(() => {
     };
     const create = vi.fn();
 
-    return { CommandExitError, TimeoutError, create, kill, run, sandbox, write };
+    return { CommandExitError, RateLimitError, TimeoutError, create, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
     CommandExitError: mocks.CommandExitError,
+    RateLimitError: mocks.RateLimitError,
     Sandbox: { create: mocks.create },
     TimeoutError: mocks.TimeoutError
 }));
@@ -47,6 +50,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { invokeDeploy } from './deploy-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { RemoteFunctionError } from './helpers.js';
 
@@ -108,5 +112,18 @@ describe('remote function deploy client', () => {
         } satisfies Partial<RemoteFunctionError>);
 
         expect(mocks.run).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns execution_environment_unavailable when the deploy sandbox cannot be created', async () => {
+        mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
+
+        await expect(invokeDeploy(request)).rejects.toMatchObject({
+            code: 'execution_environment_unavailable',
+            message: executionEnvironmentUnavailableMessage,
+            status: 503
+        } satisfies Partial<RemoteFunctionError>);
+
+        expect(mocks.write).not.toHaveBeenCalled();
+        expect(mocks.kill).not.toHaveBeenCalled();
     });
 });
