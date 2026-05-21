@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Typography',
+    title: 'Design System/Tokens/Typography',
     parameters: {
         layout: 'padded'
     }
@@ -23,108 +23,114 @@ interface TypeScale {
 const SANS_SCALE: TypeScale[] = [
     {
         name: 'Display · 4xl',
-        fontSize: 'var(--ds-typography-fontSize-4xl)',
-        fontWeight: 'var(--ds-typography-fontWeight-bold)',
-        lineHeight: 'var(--ds-typography-lineHeight-tight)',
-        letterSpacing: 'var(--ds-typography-letterSpacing-tight)'
+        fontSize: 'var(--ds-typography-font-size-4xl)',
+        fontWeight: 'var(--ds-typography-font-weight-bold)',
+        lineHeight: 'var(--ds-typography-line-height-tight)',
+        letterSpacing: 'var(--ds-typography-letter-spacing-tight)'
     },
     {
         name: 'Display · 3xl',
-        fontSize: 'var(--ds-typography-fontSize-3xl)',
-        fontWeight: 'var(--ds-typography-fontWeight-bold)',
-        lineHeight: 'var(--ds-typography-lineHeight-tight)',
-        letterSpacing: 'var(--ds-typography-letterSpacing-tight)'
+        fontSize: 'var(--ds-typography-font-size-3xl)',
+        fontWeight: 'var(--ds-typography-font-weight-bold)',
+        lineHeight: 'var(--ds-typography-line-height-tight)',
+        letterSpacing: 'var(--ds-typography-letter-spacing-tight)'
     },
     {
         name: 'Heading · 2xl',
-        fontSize: 'var(--ds-typography-fontSize-2xl)',
-        fontWeight: 'var(--ds-typography-fontWeight-semibold)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)'
+        fontSize: 'var(--ds-typography-font-size-2xl)',
+        fontWeight: 'var(--ds-typography-font-weight-semibold)',
+        lineHeight: 'var(--ds-typography-line-height-snug)'
     },
     {
         name: 'Heading · xl',
-        fontSize: 'var(--ds-typography-fontSize-xl)',
-        fontWeight: 'var(--ds-typography-fontWeight-semibold)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)'
+        fontSize: 'var(--ds-typography-font-size-xl)',
+        fontWeight: 'var(--ds-typography-font-weight-semibold)',
+        lineHeight: 'var(--ds-typography-line-height-snug)'
     },
     {
         name: 'Heading · lg',
-        fontSize: 'var(--ds-typography-fontSize-lg)',
-        fontWeight: 'var(--ds-typography-fontWeight-semibold)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)'
+        fontSize: 'var(--ds-typography-font-size-lg)',
+        fontWeight: 'var(--ds-typography-font-weight-semibold)',
+        lineHeight: 'var(--ds-typography-line-height-snug)'
     },
     {
         name: 'Body · lg',
-        fontSize: 'var(--ds-typography-fontSize-lg)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-normal)'
+        fontSize: 'var(--ds-typography-font-size-lg)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-normal)'
     },
     {
         name: 'Body · md',
-        fontSize: 'var(--ds-typography-fontSize-md)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-normal)'
+        fontSize: 'var(--ds-typography-font-size-md)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-normal)'
     },
     {
         name: 'Body · sm',
-        fontSize: 'var(--ds-typography-fontSize-sm)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-normal)'
+        fontSize: 'var(--ds-typography-font-size-sm)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-normal)'
     },
     {
         name: 'Label · md · medium',
-        fontSize: 'var(--ds-typography-fontSize-md)',
-        fontWeight: 'var(--ds-typography-fontWeight-medium)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)'
+        fontSize: 'var(--ds-typography-font-size-md)',
+        fontWeight: 'var(--ds-typography-font-weight-medium)',
+        lineHeight: 'var(--ds-typography-line-height-snug)'
     },
     {
         name: 'Label · sm · medium',
-        fontSize: 'var(--ds-typography-fontSize-sm)',
-        fontWeight: 'var(--ds-typography-fontWeight-medium)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)'
+        fontSize: 'var(--ds-typography-font-size-sm)',
+        fontWeight: 'var(--ds-typography-font-weight-medium)',
+        lineHeight: 'var(--ds-typography-line-height-snug)'
     },
     {
         name: 'Label · xs · medium',
-        fontSize: 'var(--ds-typography-fontSize-xs)',
-        fontWeight: 'var(--ds-typography-fontWeight-medium)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)',
-        letterSpacing: 'var(--ds-typography-letterSpacing-wide)'
+        fontSize: 'var(--ds-typography-font-size-xs)',
+        fontWeight: 'var(--ds-typography-font-weight-medium)',
+        lineHeight: 'var(--ds-typography-line-height-snug)',
+        letterSpacing: 'var(--ds-typography-letter-spacing-wide)'
     },
     {
         name: 'Label · 2xs · medium',
-        fontSize: 'var(--ds-typography-fontSize-2xs)',
-        fontWeight: 'var(--ds-typography-fontWeight-medium)',
-        lineHeight: 'var(--ds-typography-lineHeight-snug)',
-        letterSpacing: 'var(--ds-typography-letterSpacing-wide)'
+        fontSize: 'var(--ds-typography-font-size-2xs)',
+        fontWeight: 'var(--ds-typography-font-weight-medium)',
+        lineHeight: 'var(--ds-typography-line-height-snug)',
+        letterSpacing: 'var(--ds-typography-letter-spacing-wide)'
     }
 ];
 
 const MONO_SCALE: TypeScale[] = [
     {
         name: 'Code · md',
-        fontSize: 'var(--ds-typography-fontSize-md)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-relaxed)',
-        fontFamily: 'var(--ds-typography-fontFamily-mono)'
+        fontSize: 'var(--ds-typography-font-size-md)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-relaxed)',
+        fontFamily: 'var(--ds-typography-font-family-mono)'
     },
     {
         name: 'Code · sm',
-        fontSize: 'var(--ds-typography-fontSize-sm)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-relaxed)',
-        fontFamily: 'var(--ds-typography-fontFamily-mono)'
+        fontSize: 'var(--ds-typography-font-size-sm)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-relaxed)',
+        fontFamily: 'var(--ds-typography-font-family-mono)'
     },
     {
         name: 'Code · xs',
-        fontSize: 'var(--ds-typography-fontSize-xs)',
-        fontWeight: 'var(--ds-typography-fontWeight-regular)',
-        lineHeight: 'var(--ds-typography-lineHeight-relaxed)',
-        fontFamily: 'var(--ds-typography-fontFamily-mono)'
+        fontSize: 'var(--ds-typography-font-size-xs)',
+        fontWeight: 'var(--ds-typography-font-weight-regular)',
+        lineHeight: 'var(--ds-typography-line-height-relaxed)',
+        fontFamily: 'var(--ds-typography-font-family-mono)'
     }
 ];
 
 const SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog';
 const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
+
+/** 'var(--ds-typography-font-size-4xl)' → '4xl' */
+function tokenKey(cssVar: string): string {
+    const match = cssVar.match(/-([^-)]+)\)$/);
+    return match ? match[1] : cssVar;
+}
 
 function TypeRow({ scale }: { scale: TypeScale }) {
     return (
@@ -143,14 +149,14 @@ function TypeRow({ scale }: { scale: TypeScale }) {
                     fontSize: '11px',
                     fontWeight: 500,
                     color: 'var(--text-secondary)',
-                    fontFamily: 'var(--ds-typography-fontFamily-mono)',
+                    fontFamily: 'var(--ds-typography-font-family-mono)',
                     paddingTop: '2px'
                 }}
             >
                 <div>{scale.name}</div>
                 <div style={{ marginTop: '4px', color: 'var(--text-disabled)', fontWeight: 400 }}>
-                    {scale.fontSize} / {scale.fontWeight} / lh {scale.lineHeight}
-                    {scale.letterSpacing ? ` / ls ${scale.letterSpacing}` : ''}
+                    {tokenKey(scale.fontSize)} / {tokenKey(scale.fontWeight)} / lh {tokenKey(scale.lineHeight)}
+                    {scale.letterSpacing ? ` / ls ${tokenKey(scale.letterSpacing)}` : ''}
                 </div>
             </div>
             <div
@@ -159,7 +165,7 @@ function TypeRow({ scale }: { scale: TypeScale }) {
                     fontWeight: scale.fontWeight,
                     lineHeight: scale.lineHeight,
                     letterSpacing: scale.letterSpacing,
-                    fontFamily: scale.fontFamily ?? 'var(--ds-typography-fontFamily-sans)',
+                    fontFamily: scale.fontFamily ?? 'var(--ds-typography-font-family-sans)',
                     color: 'var(--text-strong)'
                 }}
             >
@@ -174,13 +180,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
         <div style={{ marginBottom: '48px' }}>
             <h2
                 style={{
-                    fontSize: 'var(--ds-typography-fontSize-xs)',
-                    fontWeight: 'var(--ds-typography-fontWeight-semibold)',
+                    fontSize: 'var(--ds-typography-font-size-xs)',
+                    fontWeight: 'var(--ds-typography-font-weight-semibold)',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     color: 'var(--text-secondary)',
                     margin: '0 0 12px 0',
-                    fontFamily: 'var(--ds-typography-fontFamily-sans)'
+                    fontFamily: 'var(--ds-typography-font-family-sans)'
                 }}
             >
                 {title}
@@ -238,7 +244,7 @@ export const FontFamilies: Story = {
                         textTransform: 'uppercase',
                         color: 'var(--text-secondary)',
                         marginBottom: '12px',
-                        fontFamily: 'var(--ds-typography-fontFamily-mono)'
+                        fontFamily: 'var(--ds-typography-font-family-mono)'
                     }}
                 >
                     Geist Sans — UI text
@@ -246,7 +252,7 @@ export const FontFamilies: Story = {
                 <div
                     style={{
                         fontSize: '28px',
-                        fontFamily: 'var(--ds-typography-fontFamily-sans)',
+                        fontFamily: 'var(--ds-typography-font-family-sans)',
                         color: 'var(--text-strong)',
                         lineHeight: 1.3
                     }}
@@ -267,7 +273,7 @@ export const FontFamilies: Story = {
                         textTransform: 'uppercase',
                         color: 'var(--text-secondary)',
                         marginBottom: '12px',
-                        fontFamily: 'var(--ds-typography-fontFamily-mono)'
+                        fontFamily: 'var(--ds-typography-font-family-mono)'
                     }}
                 >
                     Geist Mono — Code, IDs, API keys
@@ -275,7 +281,7 @@ export const FontFamilies: Story = {
                 <div
                     style={{
                         fontSize: '28px',
-                        fontFamily: 'var(--ds-typography-fontFamily-mono)',
+                        fontFamily: 'var(--ds-typography-font-family-mono)',
                         color: 'var(--text-strong)',
                         lineHeight: 1.3
                     }}

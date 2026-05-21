@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Color Palette',
+    title: 'Design System/Tokens/Color Palette',
     parameters: {
         layout: 'padded'
     }
@@ -173,8 +173,8 @@ function Swatch({ token }: { token: string }) {
             />
             <span
                 style={{
-                    fontSize: 'var(--ds-typography-fontSize-xs)',
-                    fontFamily: 'var(--ds-typography-fontFamily-mono)',
+                    fontSize: 'var(--ds-typography-font-size-xs)',
+                    fontFamily: 'var(--ds-typography-font-family-mono)',
                     color: 'var(--text-secondary)'
                 }}
             >
@@ -193,13 +193,13 @@ function Group({ group }: { group: TokenGroup }) {
         >
             <h2
                 style={{
-                    fontSize: 'var(--ds-typography-fontSize-xs)',
-                    fontWeight: 'var(--ds-typography-fontWeight-semibold)',
+                    fontSize: 'var(--ds-typography-font-size-xs)',
+                    fontWeight: 'var(--ds-typography-font-weight-semibold)',
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
                     color: 'var(--text-secondary)',
                     margin: '0 0 8px 0',
-                    fontFamily: 'var(--ds-typography-fontFamily-sans)'
+                    fontFamily: 'var(--ds-typography-font-family-sans)'
                 }}
             >
                 {group.label}
@@ -222,32 +222,6 @@ function Group({ group }: { group: TokenGroup }) {
         </div>
     );
 }
-
-// ─── Stories ────────────────────────────────────────────────────────────────
-
-type Story = StoryObj<typeof meta>;
-
-export const SemanticTokens: Story = {
-    name: 'Semantic Tokens',
-    render: () => (
-        <div style={{ maxWidth: '960px', padding: '32px' }}>
-            <p
-                style={{
-                    fontSize: 'var(--ds-typography-fontSize-sm)',
-                    color: 'var(--text-secondary)',
-                    margin: '0 0 32px 0',
-                    fontFamily: 'var(--ds-typography-fontFamily-sans)'
-                }}
-            >
-                Semantic tokens resolve to different values per theme. Use the theme toolbar above to toggle between light and dark. New components should only
-                use semantic tokens — never raw primitives.
-            </p>
-            {SEMANTIC_GROUPS.map((group) => (
-                <Group key={group.label} group={group} />
-            ))}
-        </div>
-    )
-};
 
 // ─── Primitive palette ───────────────────────────────────────────────────────
 
@@ -318,7 +292,7 @@ function RampSwatch({ token, step }: { token: string; step: string }) {
                 style={{
                     fontSize: '10px',
                     color: 'var(--text-secondary)',
-                    fontFamily: 'var(--ds-typography-fontFamily-mono)'
+                    fontFamily: 'var(--ds-typography-font-family-mono)'
                 }}
             >
                 {step}
@@ -327,32 +301,25 @@ function RampSwatch({ token, step }: { token: string; step: string }) {
     );
 }
 
-export const PrimitiveRamps: Story = {
-    name: 'Primitive Ramps',
+// ─── Stories ────────────────────────────────────────────────────────────────
+
+type Story = StoryObj<typeof meta>;
+
+export const Primitives: Story = {
+    name: 'Primitives',
     render: () => (
         <div style={{ maxWidth: '960px', padding: '32px' }}>
-            <p
-                style={{
-                    fontSize: 'var(--ds-typography-fontSize-sm)',
-                    color: 'var(--text-secondary)',
-                    margin: '0 0 32px 0',
-                    fontFamily: 'var(--ds-typography-fontFamily-sans)'
-                }}
-            >
-                Raw color primitives with <code style={{ fontFamily: 'var(--ds-typography-fontFamily-mono)' }}>--ds-</code> prefix. These are intentionally
-                excluded from Tailwind utilities — use semantic tokens in components instead.
-            </p>
             {PRIMITIVE_RAMPS.map((ramp) => (
                 <div key={ramp.label} style={{ marginBottom: '32px' }}>
                     <h2
                         style={{
-                            fontSize: 'var(--ds-typography-fontSize-xs)',
-                            fontWeight: 'var(--ds-typography-fontWeight-semibold)',
+                            fontSize: 'var(--ds-typography-font-size-xs)',
+                            fontWeight: 'var(--ds-typography-font-weight-semibold)',
                             letterSpacing: '0.08em',
                             textTransform: 'uppercase',
                             color: 'var(--text-secondary)',
                             margin: '0 0 10px 0',
-                            fontFamily: 'var(--ds-typography-fontFamily-sans)'
+                            fontFamily: 'var(--ds-typography-font-family-sans)'
                         }}
                     >
                         {ramp.label}
@@ -369,6 +336,28 @@ export const PrimitiveRamps: Story = {
                         ))}
                     </div>
                 </div>
+            ))}
+        </div>
+    )
+};
+
+export const SemanticTokens: Story = {
+    name: 'Semantic Tokens',
+    render: () => (
+        <div style={{ maxWidth: '960px', padding: '32px' }}>
+            <p
+                style={{
+                    fontSize: 'var(--ds-typography-font-size-sm)',
+                    color: 'var(--text-secondary)',
+                    margin: '0 0 32px 0',
+                    fontFamily: 'var(--ds-typography-font-family-sans)'
+                }}
+            >
+                Semantic tokens resolve to different values per theme. Use the theme toolbar above to toggle between light and dark. New components should only
+                use semantic tokens — never raw primitives.
+            </p>
+            {SEMANTIC_GROUPS.map((group) => (
+                <Group key={group.label} group={group} />
             ))}
         </div>
     )

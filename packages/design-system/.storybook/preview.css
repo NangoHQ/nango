@@ -8,7 +8,7 @@
 }
 
 body {
-    font-family: var(--ds-typography-fontFamily-sans);
+    font-family: var(--ds-typography-font-family-sans);
     background-color: var(--surface-canvas);
     color: var(--text-default);
     margin: 0;
