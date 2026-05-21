@@ -1,4 +1,4 @@
-import { BookOpen, Box } from 'lucide-react';
+import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
@@ -9,6 +9,7 @@ import { SlackIcon } from '@/assets/SlackIcon';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
+import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
 
@@ -20,6 +21,9 @@ export const AppHeader: React.FC = () => {
     const environment = envData?.environmentAndAccount?.environment;
     const { can } = usePermissions();
     const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
+
+    const darkMode = useFeatureFlagsStore((s) => s.darkMode);
+    const toggleDarkMode = useFeatureFlagsStore((s) => s.toggleDarkMode);
 
     return (
         <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
@@ -55,6 +59,17 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
+                {import.meta.env.DEV && (
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={toggleDarkMode}
+                        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        className="size-8 p-0"
+                    >
+                        {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
+                    </Button>
+                )}
             </div>
         </header>
     );
