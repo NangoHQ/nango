@@ -153,68 +153,18 @@ const SEMANTIC_GROUPS: TokenGroup[] = [
 
 function Swatch({ token }: { token: string }) {
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '6px 0'
-            }}
-        >
-            <div
-                style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '6px',
-                    backgroundColor: `var(${token})`,
-                    border: '1px solid var(--border-default)',
-                    flexShrink: 0
-                }}
-            />
-            <span
-                style={{
-                    fontSize: 'var(--ds-typography-font-size-xs)',
-                    fontFamily: 'var(--ds-typography-font-family-mono)',
-                    color: 'var(--text-secondary)'
-                }}
-            >
-                {token}
-            </span>
+        <div className="flex items-center gap-2.5 py-1.5">
+            <div className="w-8 h-8 rounded-[6px] border border-border-default shrink-0" style={{ backgroundColor: `var(${token})` }} />
+            <span className="text-xs font-mono text-text-secondary">{token}</span>
         </div>
     );
 }
 
 function Group({ group }: { group: TokenGroup }) {
     return (
-        <div
-            style={{
-                marginBottom: '32px'
-            }}
-        >
-            <h2
-                style={{
-                    fontSize: 'var(--ds-typography-font-size-xs)',
-                    fontWeight: 'var(--ds-typography-font-weight-semibold)',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-secondary)',
-                    margin: '0 0 8px 0',
-                    fontFamily: 'var(--ds-typography-font-family-sans)'
-                }}
-            >
-                {group.label}
-            </h2>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '0 24px',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-default)',
-                    backgroundColor: 'var(--surface-panel)'
-                }}
-            >
+        <div className="mb-8">
+            <h2 className="story-section-heading mb-2">{group.label}</h2>
+            <div className="grid grid-cols-3 gap-x-6 p-3 rounded-lg border border-border-default bg-surface-panel">
                 {group.tokens.map((token) => (
                     <Swatch key={token} token={token} />
                 ))}
@@ -278,25 +228,9 @@ const PRIMITIVE_RAMPS: { label: string; prefix: string; steps: string[] }[] = [
 
 function RampSwatch({ token, step }: { token: string; step: string }) {
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
-            <div
-                style={{
-                    width: '100%',
-                    height: '40px',
-                    borderRadius: '4px',
-                    backgroundColor: `var(${token})`,
-                    border: '1px solid var(--border-muted)'
-                }}
-            />
-            <span
-                style={{
-                    fontSize: '10px',
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--ds-typography-font-family-mono)'
-                }}
-            >
-                {step}
-            </span>
+        <div className="flex flex-col gap-1 items-center">
+            <div className="w-full h-10 rounded border border-border-muted" style={{ backgroundColor: `var(${token})` }} />
+            <span className="text-[10px] text-text-secondary font-mono">{step}</span>
         </div>
     );
 }
@@ -308,29 +242,11 @@ type Story = StoryObj<typeof meta>;
 export const Primitives: Story = {
     name: 'Primitives',
     render: () => (
-        <div style={{ maxWidth: '960px', padding: '32px' }}>
+        <div className="max-w-[960px] p-8">
             {PRIMITIVE_RAMPS.map((ramp) => (
-                <div key={ramp.label} style={{ marginBottom: '32px' }}>
-                    <h2
-                        style={{
-                            fontSize: 'var(--ds-typography-font-size-xs)',
-                            fontWeight: 'var(--ds-typography-font-weight-semibold)',
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            color: 'var(--text-secondary)',
-                            margin: '0 0 10px 0',
-                            fontFamily: 'var(--ds-typography-font-family-sans)'
-                        }}
-                    >
-                        {ramp.label}
-                    </h2>
-                    <div
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: `repeat(${ramp.steps.length}, 1fr)`,
-                            gap: '6px'
-                        }}
-                    >
+                <div key={ramp.label} className="mb-8">
+                    <h2 className="story-section-heading mb-2.5">{ramp.label}</h2>
+                    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${ramp.steps.length}, 1fr)` }}>
                         {ramp.steps.map((step) => (
                             <RampSwatch key={step} token={`${ramp.prefix}${step}`} step={step} />
                         ))}
@@ -342,20 +258,9 @@ export const Primitives: Story = {
 };
 
 export const SemanticTokens: Story = {
-    name: 'Semantic Tokens',
+    name: 'Semantic',
     render: () => (
-        <div style={{ maxWidth: '960px', padding: '32px' }}>
-            <p
-                style={{
-                    fontSize: 'var(--ds-typography-font-size-sm)',
-                    color: 'var(--text-secondary)',
-                    margin: '0 0 32px 0',
-                    fontFamily: 'var(--ds-typography-font-family-sans)'
-                }}
-            >
-                Semantic tokens resolve to different values per theme. Use the theme toolbar above to toggle between light and dark. New components should only
-                use semantic tokens — never raw primitives.
-            </p>
+        <div className="max-w-[1200px] p-8">
             {SEMANTIC_GROUPS.map((group) => (
                 <Group key={group.label} group={group} />
             ))}

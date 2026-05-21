@@ -134,39 +134,23 @@ function tokenKey(cssVar: string): string {
 
 function TypeRow({ scale }: { scale: TypeScale }) {
     return (
-        <div
-            style={{
-                display: 'grid',
-                gridTemplateColumns: '200px 1fr',
-                gap: '16px',
-                alignItems: 'baseline',
-                padding: '12px 0',
-                borderBottom: '1px solid var(--border-default)'
-            }}
-        >
-            <div
-                style={{
-                    fontSize: '11px',
-                    fontWeight: 500,
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--ds-typography-font-family-mono)',
-                    paddingTop: '2px'
-                }}
-            >
+        <div className="grid grid-cols-[260px_1fr] gap-4 items-baseline py-3 border-b border-border-default">
+            <div className="text-[11px] font-medium text-text-secondary font-mono pt-0.5">
                 <div>{scale.name}</div>
-                <div style={{ marginTop: '4px', color: 'var(--text-disabled)', fontWeight: 400 }}>
+                <div className="mt-1 font-normal whitespace-nowrap">
                     {tokenKey(scale.fontSize)} / {tokenKey(scale.fontWeight)} / lh {tokenKey(scale.lineHeight)}
                     {scale.letterSpacing ? ` / ls ${tokenKey(scale.letterSpacing)}` : ''}
                 </div>
             </div>
+            {/* Inline style intentional: this column renders the actual token values */}
             <div
+                className="text-text-strong"
                 style={{
                     fontSize: scale.fontSize,
                     fontWeight: scale.fontWeight,
                     lineHeight: scale.lineHeight,
                     letterSpacing: scale.letterSpacing,
-                    fontFamily: scale.fontFamily ?? 'var(--ds-typography-font-family-sans)',
-                    color: 'var(--text-strong)'
+                    fontFamily: scale.fontFamily ?? 'var(--ds-typography-font-family-sans)'
                 }}
             >
                 {scale.fontFamily ? SAMPLE_MONO : SAMPLE_TEXT}
@@ -177,20 +161,8 @@ function TypeRow({ scale }: { scale: TypeScale }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div style={{ marginBottom: '48px' }}>
-            <h2
-                style={{
-                    fontSize: 'var(--ds-typography-font-size-xs)',
-                    fontWeight: 'var(--ds-typography-font-weight-semibold)',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-secondary)',
-                    margin: '0 0 12px 0',
-                    fontFamily: 'var(--ds-typography-font-family-sans)'
-                }}
-            >
-                {title}
-            </h2>
+        <div className="mb-12">
+            <h2 className="story-section-heading mb-3">{title}</h2>
             {children}
         </div>
     );
@@ -203,7 +175,7 @@ type Story = StoryObj<typeof meta>;
 export const TypeScale: Story = {
     name: 'Type Scale',
     render: () => (
-        <div style={{ maxWidth: '900px', padding: '32px' }}>
+        <div className="p-8">
             <Section title="Geist Sans — Display &amp; Heading">
                 {SANS_SCALE.filter((s) => s.name.startsWith('Display') || s.name.startsWith('Heading')).map((s) => (
                     <TypeRow key={s.name} scale={s} />
@@ -234,65 +206,25 @@ export const TypeScale: Story = {
 export const FontFamilies: Story = {
     name: 'Font Families',
     render: () => (
-        <div style={{ maxWidth: '700px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-            <div>
-                <div
-                    style={{
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '12px',
-                        fontFamily: 'var(--ds-typography-font-family-mono)'
-                    }}
-                >
-                    Geist Sans — UI text
-                </div>
-                <div
-                    style={{
-                        fontSize: '28px',
-                        fontFamily: 'var(--ds-typography-font-family-sans)',
-                        color: 'var(--text-strong)',
-                        lineHeight: 1.3
-                    }}
-                >
+        <div className="max-w-[700px] p-8">
+            <Section title="Geist Sans — UI text">
+                <div className="text-[28px] font-sans text-text-strong leading-[1.5]">
                     ABCDEFGHIJKLMNOPQRSTUVWXYZ
                     <br />
                     abcdefghijklmnopqrstuvwxyz
                     <br />
                     0123456789 !@#$%^&amp;*()
                 </div>
-            </div>
-            <div>
-                <div
-                    style={{
-                        fontSize: '11px',
-                        fontWeight: 500,
-                        letterSpacing: '0.08em',
-                        textTransform: 'uppercase',
-                        color: 'var(--text-secondary)',
-                        marginBottom: '12px',
-                        fontFamily: 'var(--ds-typography-font-family-mono)'
-                    }}
-                >
-                    Geist Mono — Code, IDs, API keys
-                </div>
-                <div
-                    style={{
-                        fontSize: '28px',
-                        fontFamily: 'var(--ds-typography-font-family-mono)',
-                        color: 'var(--text-strong)',
-                        lineHeight: 1.3
-                    }}
-                >
+            </Section>
+            <Section title="Geist Mono — Code, IDs, API keys">
+                <div className="text-[28px] font-mono text-text-strong leading-[1.5]">
                     ABCDEFGHIJKLMNOPQRSTUVWXYZ
                     <br />
                     abcdefghijklmnopqrstuvwxyz
                     <br />
                     0123456789 !@#$%^&amp;*()
                 </div>
-            </div>
+            </Section>
         </div>
     )
 };
