@@ -1,0 +1,25 @@
+packages/shared/lib/services/customerKey.service.ts
+  s_b39de48b60dddc::t_48f5a34d7a91e9 57
+  s_b39de48b60dddc::t_e453957240f2c2 5
+packages/shared/lib/utils/encryption.manager.integration.test.ts
+  s_b39de48b60dddc::t_4e0b290b4f216b 8,96,105,111-114
+  s_b39de48b60dddc::t_3ca345b65d3da7 11-12,95,97-104,106-110
+packages/shared/lib/services/account.service.integration.test.ts
+  s_b39de48b60dddc::t_b9b2c727aa6603 10,167,214,235,264
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "331d1ba41308a9f1557d4932482e48b551416127",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
