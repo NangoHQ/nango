@@ -1466,7 +1466,7 @@ paths:
     /functions/dryruns:
         post:
             operationId: createFunctionDryrun
-            summary: Create a function dry run
+            summary: Dry run a function
             description: Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
             requestBody:
                 required: true
@@ -1499,7 +1499,7 @@ paths:
     /functions/dryruns/{id}:
         get:
             operationId: getFunctionDryrun
-            summary: Get a function dry run
+            summary: Get dry run results
             description: Returns the status and result of an asynchronous function dry run.
             parameters:
                 - name: id

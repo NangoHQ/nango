@@ -2,9 +2,8 @@ import crypto from 'node:crypto';
 
 import jwt from 'jsonwebtoken';
 
+import { encryptionManager } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
-
-import { decryptSync, encryptSync, shouldEncrypt } from './encryption.js';
 
 import type { ApiKeyScope, DBCustomerKey, Result } from '@nangohq/types';
 import type { Algorithm, JwtPayload } from 'jsonwebtoken';
@@ -63,7 +62,7 @@ export function createSandboxSigningSecret(): string {
 export function encryptSandboxSigningSecret(
     signingSecret: string
 ): Pick<DBCustomerKey, 'sandbox_signing_secret' | 'sandbox_signing_secret_iv' | 'sandbox_signing_secret_tag'> {
-    if (!shouldEncrypt()) {
+    if (!encryptionManager.shouldEncrypt()) {
         return {
             sandbox_signing_secret: signingSecret,
             sandbox_signing_secret_iv: null,
@@ -71,7 +70,7 @@ export function encryptSandboxSigningSecret(
         };
     }
 
-    const [encrypted, iv, tag] = encryptSync(signingSecret);
+    const [encrypted, iv, tag] = encryptionManager.encryptSync(signingSecret);
     return {
         sandbox_signing_secret: encrypted,
         sandbox_signing_secret_iv: iv,
@@ -86,11 +85,11 @@ export function decryptSandboxSigningSecret(
         return null;
     }
 
-    if (!shouldEncrypt() || !key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag) {
+    if (!encryptionManager.shouldEncrypt() || !key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag) {
         return key.sandbox_signing_secret;
     }
 
-    return decryptSync(key.sandbox_signing_secret, key.sandbox_signing_secret_iv, key.sandbox_signing_secret_tag);
+    return encryptionManager.decryptSync(key.sandbox_signing_secret, key.sandbox_signing_secret_iv, key.sandbox_signing_secret_tag);
 }
 
 export function createSandboxApiKeyToken({

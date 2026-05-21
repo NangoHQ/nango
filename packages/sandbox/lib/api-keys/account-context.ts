@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
+import { encryptionManager } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
-import { decryptApiSecret } from './encryption.js';
 import { buildSandboxApiKeyScopes, decryptSandboxSigningSecret, parseSandboxApiKeyToken, verifySandboxApiKeyToken } from './sandbox-api-key.service.js';
 
 import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, Result } from '@nangohq/types';
@@ -115,8 +115,8 @@ export async function getAccountContextBySandboxApiKey(sandboxApiKey: string): P
             logger.warning('Failed to update sandbox API key last_used_at', { err, customerKeyId: row.auth_api_key_id });
         }
 
-        const defaultSecret = decryptApiSecret(row.default_secret);
-        const pendingKey = row.pending_secret ? decryptApiSecret(row.pending_secret) : null;
+        const defaultSecret = encryptionManager.decryptAPISecret(row.default_secret);
+        const pendingKey = row.pending_secret ? encryptionManager.decryptAPISecret(row.pending_secret) : null;
 
         return Ok({
             account: {
