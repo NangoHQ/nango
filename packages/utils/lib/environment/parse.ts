@@ -388,6 +388,12 @@ export const ENVS = z.object({
     RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
     RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
+    // Per-request byte budget for getRecords. Compared against the sum of
+    // pg_column_size(records_data.data) (compressed on-disk size, smaller
+    // than wire bytes by 1.5–3×). 0 disables the budget and returns all the requested records.
+    RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
+    // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
+    RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),
