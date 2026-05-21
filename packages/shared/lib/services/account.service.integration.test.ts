@@ -7,6 +7,7 @@ import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
+import { createSandboxApiKeyToken, createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
@@ -184,6 +185,44 @@ describe('Account service', () => {
         await accountService.getAccountContext({ secretKey: customerKeySecret });
         const thirdLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
         expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
+    });
+
+    it('should retrieve account context by sandbox API key', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const apiKey = apiKeys[0]!;
+        const signingSecret = createSandboxSigningSecret();
+        const dryrunId = uuid();
+
+        await db
+            .knex('customer_keys')
+            .where({ id: apiKey.id })
+            .update({
+                ...encryptSandboxSigningSecret(signingSecret),
+                scopes: ['environment:functions:dryrun']
+            });
+
+        const sandboxApiKey = createSandboxApiKeyToken({
+            parentApiKeyId: apiKey.id,
+            signingSecret,
+            purpose: 'dryrun',
+            dryrunId,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        const result = await accountService.getAccountContext({ secretKey: sandboxApiKey });
+
+        expect(result?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: ['environment:functions:dryrun', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
+            apiKeyId: apiKey.id,
+            purpose: 'dryrun',
+            dryrunId
+        });
+        expect(result?.account.id).toBe(account.id);
+        expect(result?.environment.id).toBe(environment!.id);
     });
 
     it('should return environment:* scopes for internalSecretKey (api_secret path)', async () => {

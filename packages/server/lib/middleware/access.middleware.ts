@@ -3,8 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { getAccountContextBySandboxApiKey, isSandboxApiKey } from '@nangohq/sandbox';
-import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
+import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, isSandboxApiKey, userService } from '@nangohq/shared';
 import {
     Err,
     Ok,
@@ -66,17 +65,9 @@ export class AccessMiddleware {
             return Err('invalid_secret_key_format');
         }
 
-        let accountContext: Awaited<ReturnType<typeof accountService.getAccountContextByApiKey>>;
-        if (isSandboxApiKeyToken) {
-            const result = await getAccountContextBySandboxApiKey(secret);
-            if (result.isErr()) {
-                logger.error('Failed to get account context by sandbox API key', { err: result.error });
-                return Err('unknown_account');
-            }
-            accountContext = result.value;
-        } else {
-            accountContext = await accountService.getAccountContextByApiKey(!opts.isScript ? { secretKey: secret } : { internalSecretKey: secret });
-        }
+        const accountContext = await accountService.getAccountContextByApiKey(
+            isSandboxApiKeyToken || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
+        );
         if (!accountContext) {
             return Err('unknown_account');
         }
