@@ -1554,7 +1554,7 @@
               "api-integrations/triple-whale",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
-              "integrations/all/smartsheet",
+              "api-integrations/smartsheet",
               "integrations/all/smugmug",
               "integrations/all/snipe-it",
               "integrations/all/snapchat",
