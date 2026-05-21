@@ -1,0 +1,19 @@
+packages/sandbox/lib/api-keys/sandbox-api-key.integration.test.ts
+  s_b39de48b60dddc::t_a36345175fcc8f 7-9,55-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "5569f02f541a6cfe43b4b5c921729e7b9dc6e31c",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
