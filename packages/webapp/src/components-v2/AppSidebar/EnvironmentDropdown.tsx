@@ -17,6 +17,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
+import { isNonEnvPath } from '@/utils/routes';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -43,6 +44,11 @@ export const EnvironmentDropdown: React.FC = () => {
         setEnv(selected);
 
         const pathSegments = window.location.pathname.split('/').filter(Boolean);
+
+        // Non-environment-specific pages — just update env in store, don't change URL
+        if (isNonEnvPath(window.location.pathname)) {
+            return;
+        }
 
         pathSegments[0] = selected;
 
@@ -116,7 +122,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                                 <>Contact Nango to add more</>
                                             ) : (
                                                 <>
-                                                    <StyledLink to={`/${env}/team/billing`} className="text-s">
+                                                    <StyledLink to={`/team/billing`} className="text-s">
                                                         Upgrade
                                                     </StyledLink>{' '}
                                                     to add more

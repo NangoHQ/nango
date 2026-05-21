@@ -80,7 +80,7 @@ export default function UsageCard() {
     }
 
     return (
-        <Link to={`/${env}/team/billing#usage`} className={cn(baseClassName, 'cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent')}>
+        <Link to={`/team/billing#usage`} className={cn(baseClassName, 'cursor-pointer transition-colors hover:bg-bg-elevated hover:border-transparent')}>
             {content}
         </Link>
     );
