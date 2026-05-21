@@ -1,0 +1,21 @@
+packages/shared/lib/services/account.service.integration.test.ts
+  s_b39de48b60dddc::t_3d184fb15ac85d 10,14-33,210,213-214,217,220,228,230-292,294-334
+packages/sandbox/lib/api-keys/sandbox-api-key.integration.test.ts
+  s_b39de48b60dddc::t_3d184fb15ac85d 1-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "2aa5d7d6d13dbb94861a5841e96f6bfea1caaf3e",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
