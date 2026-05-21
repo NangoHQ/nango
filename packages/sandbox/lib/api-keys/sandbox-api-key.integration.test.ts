@@ -4,7 +4,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import sandboxApiKeyService, { sandboxApiKeyPrefix } from './sandbox-api-key.service.js';
+import sandboxApiKeyService, { decryptSandboxSigningSecret, sandboxApiKeyPrefix } from './sandbox-api-key.service.js';
+
+import type { DBCustomerKey } from '@nangohq/types';
 
 describe('customer key sandbox token service', () => {
     beforeAll(async () => {
@@ -49,5 +51,28 @@ describe('customer key sandbox token service', () => {
         }
 
         expect(sandboxToken.error.message).toBe('Sandbox API key expiresAt must be in the future');
+    });
+
+    it('should store sandbox signing secrets encrypted when encryption is enabled', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+
+        (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: apiKey.id,
+                environmentId: env.id,
+                purpose: 'dryrun',
+                expiresAt: new Date(Date.now() + 60 * 1000)
+            })
+        ).unwrap();
+
+        const rawKey = await db.knex<DBCustomerKey>('customer_keys').where({ id: apiKey.id }).first();
+        expect(rawKey).toBeDefined();
+        expect(rawKey!.sandbox_signing_secret).toBeTruthy();
+        expect(rawKey!.sandbox_signing_secret_iv).toBeTruthy();
+        expect(rawKey!.sandbox_signing_secret_tag).toBeTruthy();
+
+        const decryptedSigningSecret = decryptSandboxSigningSecret(rawKey!);
+        expect(decryptedSigningSecret).toBeTruthy();
+        expect(rawKey!.sandbox_signing_secret).not.toEqual(decryptedSigningSecret);
     });
 });
