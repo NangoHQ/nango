@@ -447,6 +447,8 @@
     --container-panel: 0 1px 2px rgba(0, 0, 0, 0.08);
     --container-sheet: 0 8px 24px rgba(0, 0, 0, 0.16);
     --container-inset: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    --spinner-motion-duration: 500ms;
+    --spinner-motion-easing: cubic-bezier(0, 0, 1, 1);
     --spinner-track: #e0e0e0;
     --spinner-indicator: #424347;
     --dialog-bg: #ffffff;
@@ -462,6 +464,8 @@
     --dialog-close-bg-default: #ffffff00;
     --dialog-close-bg-hover: #0000000f;
     --dialog-close-bg-active: #0000001a;
+    --dialog-motion-duration: 150ms;
+    --dialog-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --alert-dialog-bg: #ffffff;
     --alert-dialog-overlay: #000000a3;
     --alert-dialog-border: #e0e0e0;
@@ -477,6 +481,8 @@
     --alert-dialog-icon-border-danger: #fac9c9;
     --alert-dialog-divider: #0000001a;
     --alert-dialog-footer-bg: #ffffff;
+    --alert-dialog-motion-duration: 150ms;
+    --alert-dialog-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --card-bg: #ffffff;
     --card-border: #e0e0e0;
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -497,6 +503,8 @@
     --accordion-trigger-icon-disabled: #c4c4c8;
     --accordion-content-text: #626366;
     --accordion-divider: #0000001a;
+    --accordion-motion-duration: 150ms;
+    --accordion-motion-easing: cubic-bezier(0.4, 0, 0.2, 1);
     --command-bg: #ffffff;
     --command-border: #e0e0e0;
     --command-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
@@ -664,6 +672,7 @@
     --nav-env-switcher-chevron: #76777a;
     --nav-quota-bg: #ffffff00;
     --nav-quota-border: #e0e0e0;
+    --nav-quota-row: [object Object];
     --table-row-bg-default: #ffffff00;
     --table-row-bg-hover: #ffffff80;
     --table-row-bg-selected: #ebebeb;
@@ -1109,6 +1118,8 @@
     --container-panel: 0 1px 2px rgba(0, 0, 0, 0.08);
     --container-sheet: 0 8px 24px rgba(0, 0, 0, 0.16);
     --container-inset: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    --spinner-motion-duration: 500ms;
+    --spinner-motion-easing: cubic-bezier(0, 0, 1, 1);
     --spinner-track: #ffffff1f;
     --spinner-indicator: #c4c4c8;
     --dialog-bg: #202124;
@@ -1124,6 +1135,8 @@
     --dialog-close-bg-default: #ffffff00;
     --dialog-close-bg-hover: #ffffff14;
     --dialog-close-bg-active: #ffffff1f;
+    --dialog-motion-duration: 150ms;
+    --dialog-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --alert-dialog-bg: #202124;
     --alert-dialog-overlay: #000000b8;
     --alert-dialog-border: #ffffff1a;
@@ -1139,6 +1152,8 @@
     --alert-dialog-icon-border-danger: #e81818;
     --alert-dialog-divider: #ffffff14;
     --alert-dialog-footer-bg: #121212;
+    --alert-dialog-motion-duration: 150ms;
+    --alert-dialog-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --card-bg: #121212;
     --card-border: #ffffff1a;
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -1159,6 +1174,8 @@
     --accordion-trigger-icon-disabled: #626366;
     --accordion-content-text: #a1a2a5;
     --accordion-divider: #ffffff14;
+    --accordion-motion-duration: 150ms;
+    --accordion-motion-easing: cubic-bezier(0.4, 0, 0.2, 1);
     --command-bg: #202124;
     --command-border: #ffffff1a;
     --command-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
@@ -1326,6 +1343,7 @@
     --nav-env-switcher-chevron: #8b8c8f;
     --nav-quota-bg: #ffffff00;
     --nav-quota-border: #ffffff29;
+    --nav-quota-row: [object Object];
     --table-row-bg-default: #ffffff00;
     --table-row-bg-hover: #ffffff14;
     --table-row-bg-selected: #2a2b2f;

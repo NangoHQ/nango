@@ -110,7 +110,13 @@ async function resolveTokens({ sourceFiles, includeFiles = [] }) {
         // Exclude tokens from `include` files (primitives passed into semantic builds for alias
         // resolution). Only emit tokens that originated in the current pass's `source` files —
         // primitives get their own pass, so we don't want them duplicated in semantic blocks.
-        if (!t.isSource || t['$type'] === 'other') continue;
+        //
+        // Tokens Studio stores `$description` metadata fields as pseudo-tokens with $type:'other'
+        // and a path segment starting with '$' (e.g. ['surface', '$description']).
+        // Skip those — but keep real semantic tokens that happen to have $type:'other' (e.g.
+        // motion aliases like spinner.motion.duration that resolve to a duration value).
+        if (!t.isSource) continue;
+        if (t['$type'] === 'other' && t.path.some((s) => s.startsWith('$'))) continue;
         const value = t.$value ?? t.value;
         // Skip tokens with unresolved aliases — SD couldn't find the referenced token.
         // These would produce invalid CSS (e.g. `--foo: {text.muted}`) and crash prettier.
