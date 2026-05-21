@@ -10,6 +10,7 @@ on:
             - 'docs/**'
             - 'scripts/docs-generate-llms.ts'
             - 'package.json'
+            - 'package-lock.json'
             - 'packages/providers/providers.yaml'
             - 'packages/providers/providers.scopes.yaml'
 
