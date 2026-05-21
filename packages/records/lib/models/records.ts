@@ -194,6 +194,7 @@ export async function getRecords({
                 const error = new Error('invalid_limit');
                 return Err(error);
             }
+            // +1: fetch one extra row to detect "has more pages".
             query = query.limit(Number(limit) + 1);
         } else {
             query = query.limit(DEFAULT_RECORDS_LIMIT + 1);
@@ -271,11 +272,6 @@ export async function getRecords({
             return Ok({ records: [], next_cursor: null });
         }
 
-        // Enforce the per-request byte budget BEFORE the records_data fetch
-        // so a truncated page also saves bandwidth on the IN-query. Truncation
-        // marks hasMore=true so a next_cursor is emitted from the last kept
-        // record. We always keep at least one record so pagination can make
-        // progress even on records larger than the budget.
         const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
         let hasMore = recordsMetadata.length >= limitPlus1;
         let dryRunBudgetWouldTruncate = false;
@@ -283,16 +279,10 @@ export async function getRecords({
             recordsMetadata.pop();
         }
         if (budgetEnabled) {
-            // size_bytes is NULL for rows written before #6164 (either still
-            // in legacy records.json or in records_data without the cached
-            // size). Both populations drain as customers re-upsert — every
-            // write path populates size_bytes — so we count NULL as 0 toward
-            // the budget rather than firing a fallback query. Worst case: one
-            // un-backfilled row overshoots by its own size; bounded by data
-            // shape, not unbounded.
             let acc = 0;
             let truncateAt: number | null = null;
             for (let i = 0; i < recordsMetadata.length; i++) {
+                // i > 0: always keep at least one record so pagination can progress past oversized rows.
                 const sz = recordsMetadata[i]!.sz ?? 0;
                 if (i > 0 && acc + sz > budgetBytes) {
                     truncateAt = i;

@@ -828,9 +828,7 @@ describe('Records service', () => {
             const originalBudget = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
             const originalDryRun = envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN;
             beforeEach(() => {
-                // Dry-run is on by default; the truncation tests below toggle
-                // it off to assert real enforcement. One dedicated test
-                // re-enables it to assert dry-run does NOT truncate.
+                // Disable dry-run so truncation actually fires; the dry-run test below re-enables it.
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = false;
             });
             afterAll(() => {
@@ -839,9 +837,8 @@ describe('Records service', () => {
             });
 
             it('Should truncate page and emit next_cursor when the byte budget is exceeded', async () => {
-                // Insert records with non-trivial payloads so each one has a measurable size_bytes.
                 const numOfRecords = 50;
-                const bigField = 'x'.repeat(2_000); // ~2 kB plaintext per record (encrypted+JSONB on disk ≈ a few kB)
+                const bigField = 'x'.repeat(2_000);
                 const connectionId = rnd.number();
                 const environmentId = rnd.number();
                 const model = rnd.string();
@@ -849,14 +846,13 @@ describe('Records service', () => {
                 const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
                 await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
 
-                // Tight budget — must cut the page well below numOfRecords.
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
 
                 const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
 
-                expect(records.length).toBeGreaterThanOrEqual(1); // always keeps at least one
+                expect(records.length).toBeGreaterThanOrEqual(1);
                 expect(records.length).toBeLessThan(numOfRecords);
                 expect(next_cursor).not.toBeNull();
             });
@@ -896,7 +892,7 @@ describe('Records service', () => {
                 } while (cursor);
 
                 expect(seen.size).toBe(numOfRecords);
-                expect(pages).toBeGreaterThan(1); // confirms budget actually truncated
+                expect(pages).toBeGreaterThan(1);
             });
 
             it('Should not truncate when budget is 0 (disabled)', async () => {
@@ -935,13 +931,11 @@ describe('Records service', () => {
                     syncId
                 });
 
-                // Set a budget smaller than a single record's size.
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 100;
 
                 const response = await Records.getRecords({ connectionId, model, limit: 10 });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
-                // Must return exactly one record and offer a next_cursor so pagination can progress.
                 expect(records.length).toBe(1);
                 expect(next_cursor).not.toBeNull();
             });
@@ -956,8 +950,6 @@ describe('Records service', () => {
                 const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
                 await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
 
-                // Same tight budget as the truncation tests above, but with
-                // dry-run flipped back on — should return all records.
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = true;
 

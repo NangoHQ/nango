@@ -390,13 +390,9 @@ export const ENVS = z.object({
     RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
     // Per-request byte budget for getRecords. Compared against the sum of
     // pg_column_size(records_data.data) (compressed on-disk size, smaller
-    // than wire bytes by 1.5–3×). 0 disables the budget — same behavior
-    // as before this feature. Set per environment in nango-environments.
+    // than wire bytes by 1.5–3×). 0 disables the budget and returns all the requested records.
     RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
-    // When true (default), getRecords does NOT truncate responses that
-    // exceed the budget — it only emits a metric tagged with accountId so
-    // we can measure how many customers would be affected before enforcing.
-    // Set to false to enable real truncation.
+    // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
     RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
 
     // Redis (system boundary)
