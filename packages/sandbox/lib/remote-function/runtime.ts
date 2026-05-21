@@ -1,10 +1,7 @@
-import { getApiUrl } from '@nangohq/shared';
 import { cloudHost, isCloud, isStaging, stagingHost } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
-
 export const remoteFunctionProjectPath = '/home/user/nango-integrations';
-export const remoteFunctionCompilerTemplate = envs.E2B_SANDBOX_COMPILER_TEMPLATE;
+export const remoteFunctionCompilerTemplate = process.env['E2B_SANDBOX_COMPILER_TEMPLATE'] || 'blank-workspace:staging';
 export const remoteFunctionLocalImage = 'agent-sandboxes/blank-workspace:local';
 
 export const remoteFunctionCompileTimeoutMs = 3 * 60 * 1000;
@@ -24,6 +21,34 @@ export function getRemoteFunctionNangoHost(): string {
     if (process.env['NANGO_SERVER_URL']) {
         return process.env['NANGO_SERVER_URL'];
     }
+    if (process.env['SERVER_SERVICE_URL']) {
+        return process.env['SERVER_SERVICE_URL'];
+    }
 
-    return getApiUrl();
+    return `${getServerHost()}:${getServerPort()}`;
+}
+
+function getServerHost(): string {
+    if (process.env['SERVER_HOST']) {
+        return process.env['SERVER_HOST'];
+    }
+    if (process.env['SERVER_RUN_MODE'] === 'DOCKERIZED') {
+        return 'http://nango-server';
+    }
+
+    return 'http://localhost';
+}
+
+function getServerPort(): number {
+    if (process.env['SERVER_PORT']) {
+        return +process.env['SERVER_PORT'];
+    }
+    if (process.env['PORT']) {
+        return +process.env['PORT'];
+    }
+    if (process.env['NANGO_PORT']) {
+        return +process.env['NANGO_PORT'];
+    }
+
+    return 3003;
 }

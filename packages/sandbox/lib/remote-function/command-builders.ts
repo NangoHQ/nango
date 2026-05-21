@@ -31,7 +31,7 @@ export function buildDryrunArgs(request: DryrunRequest): string[] {
 }
 
 export function buildDeployArgs(request: DeployRequest): string[] {
-    return [
+    const args = [
         'deploy',
         request.environment_name,
         '--integration',
@@ -39,7 +39,15 @@ export function buildDeployArgs(request: DeployRequest): string[] {
         request.function_type === 'action' ? '--action' : '--sync',
         request.function_name,
         '--auto-confirm',
-        '--allow-destructive',
         '--no-interactive'
     ];
+
+    if (request.version) {
+        args.push('--version', request.version);
+    }
+    if (request.allow_destructive) {
+        args.push('--allow-destructive');
+    }
+
+    return args;
 }

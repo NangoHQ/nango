@@ -1,6 +1,5 @@
+import { remoteFunctionProjectPath } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
-
-import { remoteFunctionProjectPath } from './runtime.js';
 
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
@@ -8,7 +7,7 @@ import type { Response } from 'express';
 const maxRemoteFunctionErrorMessageLength = 20_000;
 
 /**
- * Runtime allow-list for error codes exposed by the remote-function API.
+ * Runtime allow-list for error codes exposed by the function API.
  * normalizeError receives arbitrary Error-like objects, so internal codes
  * such as ENOENT should not be returned as public API error codes.
  */
@@ -19,26 +18,12 @@ const functionErrorCodes = new Set<string>([
     'dryrun_error',
     'deployment_error',
     'connection_not_found',
+    'dryrun_not_found',
     'function_disabled',
+    'execution_environment_unavailable',
     'timeout',
     'validation_error'
 ] satisfies FunctionErrorCode[]);
-
-export class RemoteFunctionError extends Error {
-    public readonly code: FunctionErrorCode;
-    public readonly status: number;
-    public readonly payload?: unknown;
-
-    constructor({ code, message, status, payload }: { code: FunctionErrorCode; message: string; status: number; payload?: unknown }) {
-        super(message);
-        this.name = 'RemoteFunctionError';
-        this.code = code;
-        this.status = status;
-        if (payload !== undefined) {
-            this.payload = payload;
-        }
-    }
-}
 
 export function sendStepError({ res, error, status }: { res: Response; error: unknown; status?: number }): void {
     const normalized = normalizeError(error);
@@ -67,6 +52,7 @@ function normalizeError(error: unknown): {
         const status = typeof err['status'] === 'number' ? err['status'] : undefined;
         return { message, ...(code ? { code } : {}), ...(payload !== undefined ? { payload } : {}), ...(status ? { status } : {}) };
     }
+
     return { message: sanitizeMessage(stringifyError(error)) };
 }
 

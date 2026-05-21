@@ -12,9 +12,25 @@ describe('remote function command builders', () => {
                 code: 'export default {}',
                 environment_name: 'dev',
                 nango_secret_key: 'nango-secret',
-                nango_host: 'https://api.example.test'
+                nango_host: 'https://api.example.test',
+                allow_destructive: true
             })
-        ).toStrictEqual(['deploy', 'dev', '--integration', 'github', '--sync', 'syncIssues', '--auto-confirm', '--allow-destructive', '--no-interactive']);
+        ).toStrictEqual(['deploy', 'dev', '--integration', 'github', '--sync', 'syncIssues', '--auto-confirm', '--no-interactive', '--allow-destructive']);
+    });
+
+    it('passes the requested deploy version', () => {
+        expect(
+            buildDeployArgs({
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}',
+                environment_name: 'dev',
+                nango_secret_key: 'nango-secret',
+                nango_host: 'https://api.example.test',
+                version: '1.2.3'
+            })
+        ).toStrictEqual(['deploy', 'dev', '--integration', 'github', '--sync', 'syncIssues', '--auto-confirm', '--no-interactive', '--version', '1.2.3']);
     });
 
     it('scopes dry-run to the requested integration', () => {

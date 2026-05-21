@@ -2,14 +2,10 @@ import crypto from 'node:crypto';
 
 import jwt from 'jsonwebtoken';
 
-import { Err, Ok } from '@nangohq/utils';
-
 import encryptionManager from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
 
-import type { ApiKeyScope, DBCustomerKey, Result } from '@nangohq/types';
+import type { ApiKeyScope, DBCustomerKey } from '@nangohq/types';
 import type { Algorithm, JwtPayload } from 'jsonwebtoken';
-import type { Knex } from 'knex';
 
 export const sandboxApiKeyPrefix = 'nango_sbx_v1_';
 export const sandboxApiKeyAudience = 'sandbox';
@@ -21,22 +17,21 @@ const sandboxApiKeyAlgorithm: Algorithm = 'HS256';
 const sandboxApiKeyType = 'JWT';
 const sandboxApiKeyKidPattern = /^[1-9]\d*$/;
 const sandboxApiKeyPurposesSet = new Set<string>(sandboxApiKeyPurposes);
-const customerKeysTable = 'customer_keys';
-const customerKeysRelationsTable = 'customer_keys_relations';
+
+interface SandboxApiKeyPayload {
+    kid: number;
+    aud: typeof sandboxApiKeyAudience;
+    purpose: SandboxApiKeyPurpose;
+    dryrun_id?: string;
+    exp: number;
+    iat: number;
+}
 
 export const sandboxApiKeyBaseScopes = [
     'environment:connections:read',
     'environment:integrations:read',
     'environment:proxy'
 ] as const satisfies readonly ApiKeyScope[];
-
-interface SandboxApiKeyPayload {
-    kid: number;
-    aud: typeof sandboxApiKeyAudience;
-    purpose: SandboxApiKeyPurpose;
-    exp: number;
-    iat: number;
-}
 
 export function isSandboxApiKey(secret: string): boolean {
     return secret.startsWith(sandboxApiKeyPrefix);
@@ -97,12 +92,14 @@ export function createSandboxApiKeyToken({
     parentApiKeyId,
     signingSecret,
     purpose,
+    dryrunId,
     expiresAt,
     issuedAt = Date.now()
 }: {
     parentApiKeyId: number;
     signingSecret: string;
     purpose: SandboxApiKeyPurpose;
+    dryrunId?: string;
     expiresAt: Date;
     issuedAt?: number;
 }): string {
@@ -115,6 +112,7 @@ export function createSandboxApiKeyToken({
         {
             aud: sandboxApiKeyAudience,
             purpose,
+            ...(dryrunId ? { dryrun_id: dryrunId } : {}),
             iat: Math.floor(issuedAt / 1000),
             exp: Math.ceil(expiresAtMs / 1000)
         },
@@ -130,69 +128,6 @@ export function createSandboxApiKeyToken({
     );
 
     return `${sandboxApiKeyPrefix}${token}`;
-}
-
-class SandboxApiKeyService {
-    public async createSandboxApiKey(
-        trx: Knex,
-        {
-            parentApiKeyId,
-            environmentId,
-            purpose,
-            expiresAt
-        }: {
-            parentApiKeyId: number;
-            environmentId: number;
-            purpose: SandboxApiKeyPurpose;
-            expiresAt: Date;
-        }
-    ): Promise<Result<string>> {
-        try {
-            const now = Date.now();
-            const expiresAtMs = expiresAt.getTime();
-            if (!Number.isFinite(expiresAtMs) || expiresAtMs <= now) {
-                return Err(new Error('Sandbox API key expiresAt must be in the future'));
-            }
-
-            // Sandbox API keys are meant to stay short-lived; this cap can be modified if there is a good reason.
-            const maxExpiresAt = new Date(now + 24 * 60 * 60 * 1000);
-            const cappedExpiresAt = expiresAtMs > maxExpiresAt.getTime() ? maxExpiresAt : expiresAt;
-
-            const token = await trx.transaction(async (innerTrx) => {
-                const parentKey = await innerTrx<DBCustomerKey>(customerKeysTable)
-                    .select(`${customerKeysTable}.*`)
-                    .join(customerKeysRelationsTable, `${customerKeysRelationsTable}.customer_key_id`, `${customerKeysTable}.id`)
-                    .where(`${customerKeysTable}.id`, parentApiKeyId)
-                    .where(`${customerKeysTable}.key_type`, 'api')
-                    .where(`${customerKeysRelationsTable}.entity_type`, 'environment')
-                    .where(`${customerKeysRelationsTable}.entity_id`, environmentId)
-                    .whereNull(`${customerKeysTable}.deleted_at`)
-                    .forUpdate()
-                    .first();
-
-                if (!parentKey) {
-                    throw new NangoError('no_such_api_secret', { id: parentApiKeyId });
-                }
-
-                let signingSecret = decryptSandboxSigningSecret(parentKey);
-                if (!signingSecret) {
-                    signingSecret = createSandboxSigningSecret();
-                    await innerTrx<DBCustomerKey>(customerKeysTable)
-                        .where(`${customerKeysTable}.id`, parentApiKeyId)
-                        .update({
-                            ...encryptSandboxSigningSecret(signingSecret),
-                            updated_at: innerTrx.fn.now() as unknown as Date
-                        });
-                }
-
-                return createSandboxApiKeyToken({ parentApiKeyId: parentKey.id, signingSecret, purpose, expiresAt: cappedExpiresAt });
-            });
-
-            return Ok(token);
-        } catch (err) {
-            return Err(err);
-        }
-    }
 }
 
 export function verifySandboxApiKeyToken({
@@ -219,7 +154,14 @@ export function verifySandboxApiKeyToken({
             return null;
         }
 
-        return { kid: parsed.parentApiKeyId, aud: verified.aud, purpose: verified.purpose, exp: verified.exp, iat: verified.iat };
+        return {
+            kid: parsed.parentApiKeyId,
+            aud: verified.aud,
+            purpose: verified.purpose,
+            ...(verified.dryrun_id ? { dryrun_id: verified.dryrun_id } : {}),
+            exp: verified.exp,
+            iat: verified.iat
+        };
     } catch {
         return null;
     }
@@ -249,16 +191,15 @@ export function parseSandboxApiKeyToken(token: string): { parentApiKeyId: number
     return { parentApiKeyId, jwt: rawJwt };
 }
 
-function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & Pick<SandboxApiKeyPayload, 'aud' | 'purpose' | 'exp' | 'iat'> {
+function isSandboxApiKeyJwtPayload(payload: JwtPayload): payload is JwtPayload & Pick<SandboxApiKeyPayload, 'aud' | 'purpose' | 'dryrun_id' | 'exp' | 'iat'> {
     return (
         payload.aud === sandboxApiKeyAudience &&
         typeof payload['purpose'] === 'string' &&
         sandboxApiKeyPurposesSet.has(payload['purpose']) &&
+        (payload['dryrun_id'] === undefined || typeof payload['dryrun_id'] === 'string') &&
         typeof payload.exp === 'number' &&
         typeof payload.iat === 'number' &&
         Number.isSafeInteger(payload.exp) &&
         Number.isSafeInteger(payload.iat)
     );
 }
-
-export default new SandboxApiKeyService();
