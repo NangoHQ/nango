@@ -1,7 +1,6 @@
 import { metrics, validateRequest } from '@nangohq/utils';
 
 import { telemetryBodySchema, telemetryParamsSchema } from './validate.js';
-import { logger } from '../../../logger.js';
 
 import type { AuthLocals } from '../../../middleware/auth.middleware.js';
 import type { PostRunnerTelemetry } from '@nangohq/types';
@@ -29,7 +28,6 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
         Number.MAX_SAFE_INTEGER
     );
 
-    logger.info(`Received ${dataTransferEvents.length} data transfer events: ${totalBytesSent} bytes sent, ${totalBytesReceived} bytes received`);
     metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, totalBytesSent, { callsite: 'runner' });
     metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, totalBytesReceived, { callsite: 'runner' });
 
