@@ -1,9 +1,9 @@
+import { RemoteFunctionError, invokeCompiler } from '@nangohq/sandbox';
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { invokeCompiler } from '../../../services/remote-function/compiler-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { sendStepError } from '../errors.js';
 import { functionCompileBodySchema, remoteFunctionCompileBodySchema } from '../validation.js';
 
 import type { PostFunctionCompile, PostRemoteFunctionCompile } from '@nangohq/types';

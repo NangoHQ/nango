@@ -1,12 +1,17 @@
 import db from '@nangohq/database';
-import { configService, getSyncConfigRaw, sandboxApiKeyService } from '@nangohq/shared';
+import {
+    RemoteFunctionError,
+    getRemoteFunctionNangoHost,
+    invokeDeploy,
+    parseDeploySuccessOutput,
+    remoteFunctionDeploySandboxTimeoutMs,
+    sandboxApiKeyService
+} from '@nangohq/sandbox';
+import { configService, getSyncConfigRaw } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
-import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost, remoteFunctionDeploySandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { sendStepError } from '../errors.js';
 import { functionDeploymentBodySchema, remoteFunctionDeployBodySchema } from '../validation.js';
 
 import type { PostFunctionDeployment, PostRemoteFunctionDeploy } from '@nangohq/types';

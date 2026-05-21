@@ -3,6 +3,7 @@ import path from 'node:path';
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
+import { getAccountContextBySandboxApiKey, isSandboxApiKey } from '@nangohq/sandbox';
 import { ErrorSourceEnum, LogActionEnum, accountService, environmentService, errorManager, getPlan, userService } from '@nangohq/shared';
 import {
     Err,
@@ -30,7 +31,6 @@ import type { NextFunction, Request, Response } from 'express';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
-const sandboxApiKeyPrefix = 'nango_sbx_v1_';
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
@@ -58,15 +58,23 @@ export class AccessMiddleware {
             };
         }>
     > {
-        const isSandboxApiKey = secret.startsWith(sandboxApiKeyPrefix);
+        const isSandboxApiKeyToken = isSandboxApiKey(secret);
 
-        if (!keyRegex.test(secret) && !isSandboxApiKey) {
+        if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
             return Err('invalid_secret_key_format');
         }
 
-        const accountContext = await accountService.getAccountContextByApiKey(
-            isSandboxApiKey || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
-        );
+        let accountContext: Awaited<ReturnType<typeof accountService.getAccountContextByApiKey>>;
+        if (isSandboxApiKeyToken) {
+            const result = await getAccountContextBySandboxApiKey(secret);
+            if (result.isErr()) {
+                logger.error('Failed to get account context by sandbox API key', { err: result.error });
+                return Err('unknown_account');
+            }
+            accountContext = result.value;
+        } else {
+            accountContext = await accountService.getAccountContextByApiKey(!opts.isScript ? { secretKey: secret } : { internalSecretKey: secret });
+        }
         if (!accountContext) {
             return Err('unknown_account');
         }

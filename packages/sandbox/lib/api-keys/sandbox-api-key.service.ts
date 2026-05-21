@@ -4,8 +4,7 @@ import jwt from 'jsonwebtoken';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import encryptionManager from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
+import { decryptSync, encryptSync, shouldEncrypt } from './encryption.js';
 
 import type { ApiKeyScope, DBCustomerKey, Result } from '@nangohq/types';
 import type { Algorithm, JwtPayload } from 'jsonwebtoken';
@@ -63,7 +62,7 @@ export function createSandboxSigningSecret(): string {
 export function encryptSandboxSigningSecret(
     signingSecret: string
 ): Pick<DBCustomerKey, 'sandbox_signing_secret' | 'sandbox_signing_secret_iv' | 'sandbox_signing_secret_tag'> {
-    if (!encryptionManager.shouldEncrypt()) {
+    if (!shouldEncrypt()) {
         return {
             sandbox_signing_secret: signingSecret,
             sandbox_signing_secret_iv: null,
@@ -71,7 +70,7 @@ export function encryptSandboxSigningSecret(
         };
     }
 
-    const [encrypted, iv, tag] = encryptionManager.encryptSync(signingSecret);
+    const [encrypted, iv, tag] = encryptSync(signingSecret);
     return {
         sandbox_signing_secret: encrypted,
         sandbox_signing_secret_iv: iv,
@@ -86,11 +85,11 @@ export function decryptSandboxSigningSecret(
         return null;
     }
 
-    if (!encryptionManager.shouldEncrypt() || !key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag) {
+    if (!shouldEncrypt() || !key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag) {
         return key.sandbox_signing_secret;
     }
 
-    return encryptionManager.decryptSync(key.sandbox_signing_secret, key.sandbox_signing_secret_iv, key.sandbox_signing_secret_tag);
+    return decryptSync(key.sandbox_signing_secret, key.sandbox_signing_secret_iv, key.sandbox_signing_secret_tag);
 }
 
 export function createSandboxApiKeyToken({
@@ -171,7 +170,10 @@ class SandboxApiKeyService {
                     .first();
 
                 if (!parentKey) {
-                    throw new NangoError('no_such_api_secret', { id: parentApiKeyId });
+                    throw Object.assign(new Error('Sandbox API key parent customer key was not found'), {
+                        type: 'no_such_api_secret',
+                        payload: { id: parentApiKeyId }
+                    });
                 }
 
                 let signingSecret = decryptSandboxSigningSecret(parentKey);

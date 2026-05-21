@@ -1,7 +1,7 @@
 import * as cron from 'node-cron';
 
 import { getLocking } from '@nangohq/kvstore';
-import { timeoutFunctionDryruns } from '@nangohq/shared';
+import { timeoutFunctionDryruns } from '@nangohq/sandbox';
 import { getLogger, report } from '@nangohq/utils';
 
 import type { Lock } from '@nangohq/kvstore';

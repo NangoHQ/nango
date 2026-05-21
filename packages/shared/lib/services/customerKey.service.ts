@@ -2,7 +2,6 @@ import * as uuid from 'uuid';
 
 import { Err, Ok, stringToHash } from '@nangohq/utils';
 
-import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 
@@ -54,7 +53,6 @@ class CustomerKeyService {
                 iv: '',
                 tag: '',
                 hashed: hashed.value,
-                ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
                 last_used_at: null,
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;

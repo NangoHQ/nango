@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { RemoteFunctionError, sendStepError } from './helpers.js';
+import { RemoteFunctionError } from '@nangohq/sandbox';
+
+import { sendStepError } from './errors.js';
 
 import type { Response } from 'express';
 
@@ -12,7 +14,7 @@ function mockResponse() {
     return { res, status, send };
 }
 
-describe('remote function helpers', () => {
+describe('function controller errors', () => {
     it('sends structured remote function errors with their status and code', () => {
         const { res, status, send } = mockResponse();
 

@@ -1,23 +1,25 @@
 import db from '@nangohq/database';
 import {
-    configService,
-    connectionService,
+    RemoteFunctionError,
     createFunctionDryrun,
     getFunctionDryrun as getStoredFunctionDryrun,
     getFunctionDryrunRow,
+    getRemoteFunctionNangoHost,
+    invokeDryrun,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
     markFunctionDryrunSucceeded,
+    parseDryrunSuccessOutput,
+    prepareAsyncDryrun,
+    remoteFunctionDryrunSandboxTimeoutMs,
     sandboxApiKeyService,
     toFunctionDryrunCreate
-} from '@nangohq/shared';
+} from '@nangohq/sandbox';
+import { configService, connectionService } from '@nangohq/shared';
 import { requireEmptyQuery, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
-import { invokeDryrun, prepareAsyncDryrun } from '../../../services/remote-function/dryrun-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost, remoteFunctionDryrunSandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { sendStepError } from '../errors.js';
 import { functionDryrunBodySchema, functionDryrunParamsSchema, functionDryrunResultBodySchema, remoteFunctionDryrunBodySchema } from '../validation.js';
 
 import type { RequestLocals } from '../../../utils/express.js';

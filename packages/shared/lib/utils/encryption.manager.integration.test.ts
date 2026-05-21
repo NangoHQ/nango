@@ -5,10 +5,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import encryptionManager, { EncryptionManager } from './encryption.manager.js';
 import { seedAccountEnvAndUser } from '../seeders/index.js';
 import environmentService from '../services/environment.service.js';
-import { decryptSandboxSigningSecret } from '../services/sandbox-api-key.service.js';
 import secretService from '../services/secret.service.js';
-
-import type { DBCustomerKey } from '@nangohq/types';
 
 const testEncryptionKey = 'aHcTnJX5yaDJHF/EJLc6IMFSo2+aiz1hPsTkpsufxa0=';
 
@@ -91,27 +88,6 @@ describe('encryption', () => {
             const defaultSecretAfterEnc = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
             expect(defaultSecretAfterEnc.secret).toBeUUID();
             expect(defaultSecretAfterEnc.secret).toEqual(env.secret_key);
-        });
-
-        it('should store sandbox signing secrets encrypted when encryption is enabled', async () => {
-            db.knex.client.config.searchPath = 'nango_encrypt_sandbox_keys';
-            db.schema = () => 'nango_encrypt_sandbox_keys';
-
-            await multipleMigrations();
-
-            // @ts-expect-error Modify the key on the fly
-            encryptionManager.key = testEncryptionKey;
-
-            const { apiKey } = await seedAccountEnvAndUser();
-            const rawKey = await db.knex<DBCustomerKey>('customer_keys').where({ id: apiKey.id }).first();
-            expect(rawKey).toBeDefined();
-            expect(rawKey!.sandbox_signing_secret).toBeTruthy();
-            expect(rawKey!.sandbox_signing_secret_iv).toBeTruthy();
-            expect(rawKey!.sandbox_signing_secret_tag).toBeTruthy();
-
-            const decryptedSigningSecret = decryptSandboxSigningSecret(rawKey!);
-            expect(decryptedSigningSecret).toBeTruthy();
-            expect(rawKey!.sandbox_signing_secret).not.toEqual(decryptedSigningSecret);
         });
     });
 });

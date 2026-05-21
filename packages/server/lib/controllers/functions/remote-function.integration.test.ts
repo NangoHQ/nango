@@ -3,12 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, sandboxApiKeyService, seeders } from '@nangohq/shared';
+import { sandboxApiKeyService } from '@nangohq/sandbox';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { DBFunctionDryrun } from '@nangohq/shared';
+import type { DBFunctionDryrun } from '@nangohq/sandbox';
 import type { ApiKeyScope } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
