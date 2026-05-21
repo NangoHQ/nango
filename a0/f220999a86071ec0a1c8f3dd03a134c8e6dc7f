@@ -1,0 +1,47 @@
+packages/server/lib/services/remote-function/compiler-client.unit.test.ts
+  s_b39de48b60dddc::t_96068ca1d4f4c0 3,32-33,49-50
+  s_b39de48b60dddc::t_b3c1d36eb09478 34-38,48
+packages/server/lib/controllers/functions/validation.ts
+  s_b39de48b60dddc::t_7e63d3fbb6e26e 22,93
+  s_b39de48b60dddc::t_f5b356db9203c3 20-21,23-24,87
+  s_b39de48b60dddc::t_d1019c9c2a3a77 55-84
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_d1019c9c2a3a77 530-553
+  s_b39de48b60dddc::t_1c1ca38d3756c6 217,423
+packages/types/lib/functions/api.ts
+  s_b39de48b60dddc::t_00d77ae8fdb07f 109,198-201,221
+  s_b39de48b60dddc::t_d1019c9c2a3a77 91-107,151-157
+packages/server/lib/services/local/compiler-client.ts
+  s_b39de48b60dddc::t_20f985d25be7ce 4,23,26
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_b39de48b60dddc::t_24d062e10b226f 90,161
+  s_b39de48b60dddc::t_77d6d902c3bd60 66
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_d1019c9c2a3a77 21,24,258,281
+docs/spec.yaml
+  s_b39de48b60dddc::t_9db8ce9989ad0d 3094-3095
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_b39de48b60dddc::t_dabaff503caf27 37
+packages/server/lib/services/remote-function/compiler-client.ts
+  ai_agent 18,22
+  s_b39de48b60dddc::t_5d84bac8dfbd55 23
+  s_b39de48b60dddc::t_1c6c5cce521fa5 24,65,68,97-111,121
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_d1019c9c2a3a77 109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "a0f220999a86071ec0a1c8f3dd03a134c8e6dc7f",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
