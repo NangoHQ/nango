@@ -15,10 +15,13 @@ import {
 } from './runtime.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
-export interface CompileRequest {
+interface FunctionFilePathRequest {
     integration_id: string;
     function_name: string;
     function_type: 'action' | 'sync';
+}
+
+export interface CompileRequest {
     code: string;
 }
 
@@ -59,10 +62,10 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
     });
 
     try {
-        const { tsFilePath, cjsFilePath } = getFilePaths(request);
+        const { tsFilePath, cjsFilePath } = getCompilerFilePaths();
 
         await sandbox.files.write(path.join(remoteFunctionProjectPath, tsFilePath), request.code);
-        await sandbox.files.write(path.join(remoteFunctionProjectPath, 'index.ts'), buildIndexTs(request));
+        await sandbox.files.write(path.join(remoteFunctionProjectPath, 'index.ts'), buildCompilerIndexTs());
 
         try {
             await sandbox.commands.run('nango compile', {
@@ -91,7 +94,21 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
     }
 }
 
-export function getFilePaths(request: Pick<CompileRequest, 'integration_id' | 'function_name' | 'function_type'>): {
+export function getCompilerFilePaths(): {
+    tsFilePath: string;
+    cjsFilePath: string;
+} {
+    return {
+        tsFilePath: 'function/functions/function.ts',
+        cjsFilePath: 'build/function_functions_function.cjs'
+    };
+}
+
+export function buildCompilerIndexTs(): string {
+    return "import './function/functions/function.js';\n";
+}
+
+export function getFilePaths(request: FunctionFilePathRequest): {
     tsFilePath: string;
     cjsFilePath: string;
 } {
@@ -101,7 +118,7 @@ export function getFilePaths(request: Pick<CompileRequest, 'integration_id' | 'f
     return { tsFilePath, cjsFilePath };
 }
 
-export function buildIndexTs(request: Pick<CompileRequest, 'integration_id' | 'function_name' | 'function_type'>): string {
+export function buildIndexTs(request: FunctionFilePathRequest): string {
     const folder = request.function_type === 'action' ? 'actions' : 'syncs';
     return `import './${request.integration_id}/${folder}/${request.function_name}.js';\n`;
 }

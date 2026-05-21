@@ -3091,8 +3091,8 @@ components:
             properties:
                 type:
                     type: string
-                    enum: [single]
-                    description: Deploy a single submitted function.
+                    enum: [function]
+                    description: Deploy a submitted function.
                 integration_id:
                     type: string
                     description: The integration ID (unique_key) that you created in Nango.

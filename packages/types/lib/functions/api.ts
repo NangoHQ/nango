@@ -88,8 +88,25 @@ export interface FunctionDryrunResultSuccess {
     error?: ApiError<FunctionErrorCode>['error'] | undefined;
 }
 
+export type FunctionDryrunResultBody =
+    | {
+          status: 'succeeded';
+          output: string;
+          duration_ms?: number | undefined;
+      }
+    | {
+          status: 'failed';
+          output?: string | undefined;
+          duration_ms?: number | undefined;
+          error: {
+              code?: string | undefined;
+              message: string;
+              payload?: unknown;
+          };
+      };
+
 export interface FunctionDeploymentBody {
-    type: 'single';
+    type: 'function';
     integration_id: string;
     function_name: string;
     function_type: RunnableFunctionType;
@@ -131,6 +148,15 @@ export type GetFunctionDryrun = Endpoint<{
     Success: FunctionDryrunResultSuccess;
 }>;
 
+export type PostFunctionDryrunResult = Endpoint<{
+    Method: 'POST';
+    Path: '/functions/dryruns/:id/result';
+    Params: { id: string };
+    Body: FunctionDryrunResultBody;
+    Error: ApiError<FunctionErrorCode>;
+    Success: { ok: true };
+}>;
+
 export type PostFunctionDeployment = Endpoint<{
     Method: 'POST';
     Path: '/functions/deployments';
@@ -169,6 +195,10 @@ export interface RemoteFunctionDryrunSuccess {
     result?: unknown;
 }
 
+export interface RemoteFunctionDeployBody extends RemoteFunctionCompileBody {
+    allow_destructive?: boolean | undefined;
+}
+
 export type PostRemoteFunctionCompile = Endpoint<{
     Method: 'POST';
     Path: '/remote-function/compile';
@@ -188,7 +218,7 @@ export type PostRemoteFunctionDryrun = Endpoint<{
 export type PostRemoteFunctionDeploy = Endpoint<{
     Method: 'POST';
     Path: '/remote-function/deploy';
-    Body: RemoteFunctionCompileBody;
+    Body: RemoteFunctionDeployBody;
     Error: ApiError<FunctionErrorCode>;
     Success: FunctionDeploySuccess;
 }>;

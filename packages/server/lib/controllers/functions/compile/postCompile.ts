@@ -8,10 +8,6 @@ import { functionCompileBodySchema, remoteFunctionCompileBodySchema } from '../v
 
 import type { PostFunctionCompile, PostRemoteFunctionCompile } from '@nangohq/types';
 
-const defaultFunctionIntegrationId = 'function';
-const defaultFunctionName = 'function';
-const defaultFunctionType = 'action';
-
 export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
@@ -36,9 +32,6 @@ export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>
 
     try {
         const result = await invokeCompiler({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
             code: body.code
         });
 
@@ -76,9 +69,6 @@ export const postFunctionCompile = asyncWrapper<PostFunctionCompile>(async (req,
 
     try {
         const result = await invokeCompiler({
-            integration_id: defaultFunctionIntegrationId,
-            function_name: defaultFunctionName,
-            function_type: defaultFunctionType,
             code: body.code
         });
 

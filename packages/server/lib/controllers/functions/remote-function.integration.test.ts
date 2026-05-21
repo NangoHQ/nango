@@ -214,7 +214,7 @@ describe('remote-function public API', () => {
             method: 'POST',
             token: apiKey.secret,
             body: {
-                type: 'single',
+                type: 'function',
                 integration_id: 'github',
                 function_name: 'syncIssues',
                 function_type: 'sync',
@@ -420,7 +420,7 @@ describe('remote-function public API', () => {
             method: 'POST',
             token: apiKey.secret,
             body: {
-                type: 'single',
+                type: 'function',
                 integration_id: 'github',
                 function_name: 'syncIssues',
                 function_type: 'sync',
@@ -526,5 +526,29 @@ describe('remote-function public API', () => {
             output: 'Executing -> function\nDone',
             result: { ok: true }
         });
+    });
+
+    it('accepts POST /functions/dryruns/:id/result with a sandbox token from a parent key without dryrun scope', async () => {
+        const seed = await seedAccountWithRemoteFunctions(['environment:dryrun']);
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKey.id,
+            environmentId: seed.env.id,
+            purpose: 'dryrun',
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
+
+        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'failed', error: { message: 'Compilation failed' } })
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toStrictEqual({ ok: true });
     });
 });

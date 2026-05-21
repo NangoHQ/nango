@@ -106,7 +106,7 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
-const functionDryrunResultAuth: RequestHandler[] = [...remoteFunctionAuth, sandboxTokenOnly, withScope('environment:dryrun')];
+const functionDryrunResultAuth: RequestHandler[] = [...remoteFunctionAuth, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
 
 export const publicAPI = express.Router();

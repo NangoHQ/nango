@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, readContainerFile, writeContainerFile } from './docker.js';
-import { CompilerError, buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
+import { CompilerError, buildCompilerIndexTs, getCompilerFilePaths } from '../remote-function/compiler-client.js';
 import {
     remoteFunctionCompileTimeoutMs,
     remoteFunctionCompilerSandboxTimeoutMs,
@@ -20,10 +20,10 @@ export async function invokeLocalCompiler(request: CompileRequest): Promise<Comp
             { timeout: 10_000 }
         );
 
-        const { tsFilePath, cjsFilePath } = getFilePaths(request);
+        const { tsFilePath, cjsFilePath } = getCompilerFilePaths();
 
         await writeContainerFile(containerName, `${remoteFunctionProjectPath}/${tsFilePath}`, request.code);
-        await writeContainerFile(containerName, `${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
+        await writeContainerFile(containerName, `${remoteFunctionProjectPath}/index.ts`, buildCompilerIndexTs());
 
         try {
             await execDockerFileAsync(['exec', '-w', remoteFunctionProjectPath, '-e', 'NO_COLOR=1', containerName, 'nango', 'compile'], {

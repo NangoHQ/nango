@@ -17,7 +17,11 @@ const remoteFunctionBaseBodySchema = z
 
 export const remoteFunctionCompileBodySchema = remoteFunctionBaseBodySchema;
 
-export const remoteFunctionDeployBodySchema = remoteFunctionBaseBodySchema;
+export const remoteFunctionDeployBodySchema = remoteFunctionBaseBodySchema
+    .extend({
+        allow_destructive: z.boolean().default(false)
+    })
+    .strict();
 
 export const remoteFunctionDryrunBodySchema = remoteFunctionBaseBodySchema
     .extend({
@@ -48,14 +52,44 @@ export const functionDryrunBodySchema = z
     })
     .strict();
 
+export const functionDryrunParamsSchema = z
+    .object({
+        id: z.string().uuid()
+    })
+    .strict();
+
+export const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
+    z
+        .object({
+            status: z.literal('succeeded'),
+            output: z.string(),
+            duration_ms: z.number().int().nonnegative().optional()
+        })
+        .strict(),
+    z
+        .object({
+            status: z.literal('failed'),
+            output: z.string().optional(),
+            duration_ms: z.number().int().nonnegative().optional(),
+            error: z
+                .object({
+                    code: z.string().optional(),
+                    message: z.string(),
+                    payload: z.unknown().optional()
+                })
+                .strict()
+        })
+        .strict()
+]);
+
 export const functionDeploymentBodySchema = z
     .object({
-        type: z.literal('single'),
+        type: z.literal('function'),
         integration_id: integrationIdSchema,
         function_name: syncNameSchema,
         function_type: z.enum(['action', 'sync']),
         code: z.string().min(1),
         version: z.string().optional(),
-        allow_destructive: z.boolean().optional()
+        allow_destructive: z.boolean().default(false)
     })
     .strict();

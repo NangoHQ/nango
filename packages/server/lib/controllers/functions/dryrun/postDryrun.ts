@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import db from '@nangohq/database';
 import {
     configService,
@@ -20,21 +18,15 @@ import { invokeDryrun, prepareAsyncDryrun } from '../../../services/remote-funct
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { getRemoteFunctionNangoHost, remoteFunctionDryrunSandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { functionDryrunBodySchema, remoteFunctionDryrunBodySchema } from '../validation.js';
+import { functionDryrunBodySchema, functionDryrunParamsSchema, functionDryrunResultBodySchema, remoteFunctionDryrunBodySchema } from '../validation.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
-import type { Endpoint, FunctionErrorCode, GetFunctionDryrun, PostFunctionDryrun, PostRemoteFunctionDryrun } from '@nangohq/types';
+import type { FunctionErrorCode, GetFunctionDryrun, PostFunctionDryrun, PostFunctionDryrunResult, PostRemoteFunctionDryrun } from '@nangohq/types';
 import type { Response } from 'express';
 
 const defaultFunctionName = 'function';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
-
-const dryrunParamsSchema = z
-    .object({
-        id: z.string().uuid()
-    })
-    .strict();
 
 const functionErrorCodes = new Set<string>([
     'invalid_request',
@@ -48,41 +40,6 @@ const functionErrorCodes = new Set<string>([
     'timeout',
     'validation_error'
 ] satisfies FunctionErrorCode[]);
-
-const functionDryrunResultBodySchema = z.discriminatedUnion('status', [
-    z
-        .object({
-            status: z.literal('succeeded'),
-            output: z.string(),
-            duration_ms: z.number().int().nonnegative().optional()
-        })
-        .strict(),
-    z
-        .object({
-            status: z.literal('failed'),
-            output: z.string().optional(),
-            duration_ms: z.number().int().nonnegative().optional(),
-            error: z
-                .object({
-                    code: z.string().optional(),
-                    message: z.string(),
-                    payload: z.unknown().optional()
-                })
-                .strict()
-        })
-        .strict()
-]);
-
-type FunctionDryrunResultBody = z.infer<typeof functionDryrunResultBodySchema>;
-
-type PostFunctionDryrunResult = Endpoint<{
-    Method: 'POST';
-    Path: '/functions/dryruns/:id/result';
-    Params: { id: string };
-    Body: FunctionDryrunResultBody;
-    Error: { error: { code: FunctionErrorCode; message: string; payload?: unknown } };
-    Success: { ok: true };
-}>;
 
 type RemoteDryrunResponse = Response<PostRemoteFunctionDryrun['Reply'], Required<RequestLocals>>;
 type FunctionDryrunResponse = Response<PostFunctionDryrun['Reply'], Required<RequestLocals>>;
@@ -298,7 +255,7 @@ export const getFunctionDryrun = asyncWrapper<GetFunctionDryrun>(async (req, res
         return;
     }
 
-    const valParams = dryrunParamsSchema.safeParse(req.params);
+    const valParams = functionDryrunParamsSchema.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
         return;
@@ -321,7 +278,7 @@ export const postFunctionDryrunResult = asyncWrapper<PostFunctionDryrunResult>(a
         return;
     }
 
-    const valParams = dryrunParamsSchema.safeParse(req.params);
+    const valParams = functionDryrunParamsSchema.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
         return;

@@ -34,9 +34,4 @@ exports.up = async function (knex) {
     `);
 };
 
-/**
- * @param {import('knex').Knex} knex
- */
-exports.down = async function (knex) {
-    await knex.schema.raw(`DROP TABLE IF EXISTS ${table};`);
-};
+exports.down = async function () {};

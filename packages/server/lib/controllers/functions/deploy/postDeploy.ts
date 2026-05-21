@@ -63,7 +63,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         isAction: body.function_type === 'action'
     });
 
-    if (existingSyncConfig && existingSyncConfig.source !== 'standalone') {
+    if (existingSyncConfig && existingSyncConfig.source !== 'standalone' && !body.allow_destructive) {
         res.status(400).send({
             error: {
                 code: 'invalid_request',
@@ -87,7 +87,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             environment_name: environment.name,
             nango_secret_key: sandboxApiKey,
             nango_host: getRemoteFunctionNangoHost(),
-            allow_destructive: true
+            allow_destructive: body.allow_destructive
         });
         const output = parseDeploySuccessOutput(result.output);
 
@@ -158,7 +158,7 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
             nango_secret_key: sandboxApiKey,
             nango_host: getRemoteFunctionNangoHost(),
             ...(body.version ? { version: body.version } : {}),
-            ...(body.allow_destructive ? { allow_destructive: true } : {})
+            allow_destructive: body.allow_destructive
         });
         const output = parseDeploySuccessOutput(result.output);
 
