@@ -7,29 +7,9 @@ import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
-import { createSandboxApiKeyToken, createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
+import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
-
-async function setSandboxSigningSecret({
-    apiKeyId,
-    signingSecret = createSandboxSigningSecret(),
-    scopes
-}: {
-    apiKeyId: number;
-    signingSecret?: string;
-    scopes?: string[];
-}): Promise<string> {
-    await db
-        .knex('customer_keys')
-        .where({ id: apiKeyId })
-        .update({
-            ...encryptSandboxSigningSecret(signingSecret),
-            ...(scopes ? { scopes } : {})
-        });
-
-    return signingSecret;
-}
 
 describe('Account service', () => {
     beforeAll(async () => {
@@ -184,7 +164,7 @@ describe('Account service', () => {
         const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
         const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
         const apiKey = apiKeys[0]!;
-        const signingSecret = await setSandboxSigningSecret({ apiKeyId: apiKey.id });
+        const signingSecret = decryptSandboxSigningSecret(apiKey)!;
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: apiKey.id,
@@ -231,7 +211,7 @@ describe('Account service', () => {
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
         const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
-        const signingSecret = await setSandboxSigningSecret({ apiKeyId: apiKeys[0]!.id });
+        const signingSecret = decryptSandboxSigningSecret(apiKeys[0]!)!;
         const now = Date.now();
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: apiKeys[0]!.id,
@@ -252,7 +232,7 @@ describe('Account service', () => {
         await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
         const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
         const apiKey = apiKeys[0]!;
-        const signingSecret = await setSandboxSigningSecret({ apiKeyId: apiKey.id });
+        const signingSecret = decryptSandboxSigningSecret(apiKey)!;
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: apiKey.id,
@@ -281,7 +261,7 @@ describe('Account service', () => {
                 scopes: ['environment:functions:dryrun']
             })
         ).unwrap();
-        const signingSecret = await setSandboxSigningSecret({ apiKeyId: parentKey.id });
+        const signingSecret = decryptSandboxSigningSecret(parentKey)!;
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: parentKey.id,
