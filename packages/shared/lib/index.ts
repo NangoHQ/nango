@@ -28,7 +28,7 @@ export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
 export * from './services/connections/credentials/refresh.js';
 export * from './services/function.service.js';
-export * from './services/sandbox-api-key.service.js';
+export * from './services/sandbox-api-key.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';

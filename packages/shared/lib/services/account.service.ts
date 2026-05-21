@@ -8,7 +8,7 @@ import {
     isSandboxApiKey,
     parseSandboxApiKeyToken,
     verifySandboxApiKeyToken
-} from './sandbox-api-key.service.js';
+} from './sandbox-api-key.js';
 import secretService from './secret.service.js';
 import userService from './user.service.js';
 import { LogActionEnum } from '../models/Telemetry.js';

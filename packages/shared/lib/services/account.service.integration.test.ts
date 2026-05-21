@@ -7,7 +7,7 @@ import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
-import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.service.js';
+import { createSandboxApiKeyToken, decryptSandboxSigningSecret } from './sandbox-api-key.js';
 import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
