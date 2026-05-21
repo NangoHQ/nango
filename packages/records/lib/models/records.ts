@@ -1302,7 +1302,7 @@ export async function deleteOutdatedRecords({
                                 // which the planner chooses when it can't estimate the seen CTE cardinality accurately.
                                 // ie: unnest output is consistently underestimated, pg thinks nested loop is cheap, causing O(records*seen) comparisons instead of O(seen+page).
                                 // Seen is still fully unnested.
-                                `WITH page AS (
+                                `WITH page AS MATERIALIZED (
                                     SELECT ctid, id
                                     FROM ${RECORDS_TABLE}
                                     WHERE connection_id = :connectionId
@@ -1312,7 +1312,7 @@ export async function deleteOutdatedRecords({
                                     ORDER BY id
                                     LIMIT :batchSize
                                 ),
-                                seen AS (
+                                seen AS MATERIALIZED (
                                     SELECT unnest(record_ids) AS id
                                     FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
