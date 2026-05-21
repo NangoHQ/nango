@@ -223,7 +223,11 @@ export function metricRowsSql({
             concat('${eventName}:', toString(account_id), ':', toString(day)) AS idempotency_key,
             '${eventName}' AS event_name,
             toString(account_id) AS external_customer_id,
-            concat(toString(day), 'T00:00:00.000Z') AS timestamp,
+            -- End-of-day so the timestamp falls within Orb's account grace period at
+            -- ingestion time (cron runs the day after, so 00:00:00 of D is older than
+            -- the typical 24h grace and gets rejected with "must be later than ...").
+            -- The day bucket is still D for billing purposes.
+            concat(toString(day), 'T23:59:59.999Z') AS timestamp,
             properties
         FROM (${metric.select(day, database)})
     `;
