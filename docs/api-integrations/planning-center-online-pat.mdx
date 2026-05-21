@@ -9,7 +9,7 @@ description: 'Integrate your application with the Planning Center Online API usi
 Connect to Planning Center Online (PAT) with Nango.
 
 <Steps>
-    <Step id="configure-planning-center-pat-integration" title="Create the integration">
+    <Step id="configure-planning-center-pat-integration" title="Create an integration">
         In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Planning Center Online (Personal Access Token)_.
 
         Personal Access Tokens are intended for **single-user scripting**. If you’re distributing your integration to **multiple churches**, use OAuth instead:
@@ -29,9 +29,7 @@ Connect to Planning Center Online (PAT) with Nango.
         These map to HTTP Basic Authentication (`Authorization: Basic ...`), equivalent to `curl -u client_id:secret`.
     </Step>
     <Step id="call-planning-center-pat-api" title="Call the Planning Center Online API">
-        Example (People API): list people records.
-
-        Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Planning Center Online API (People API — list people). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
         <Tabs>
             <Tab title="cURL">
@@ -68,13 +66,15 @@ Connect to Planning Center Online (PAT) with Nango.
 
         </Tabs>
 
-        Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
         ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
     <Step id="implement-nango-for-planning-center-pat" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 
