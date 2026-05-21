@@ -14356,6 +14356,7 @@ planning-center-online:
         base_url: https://api.planningcenteronline.com
         headers:
             accept: application/json
+            user-agent: Nango (https://nango.dev)
         retry:
             after:
                 - 'retry-after'
@@ -14365,7 +14366,7 @@ planning-center-online:
             limit_name_in_request: per_page
             response_path: data
     docs: https://nango.dev/docs/api-integrations/planning-center-online
-    docs_connect: https://nango.dev/docs/api-integrations/planning-center-online/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app
 
 planning-center-online-pat:
     display_name: Planning Center Online (Personal Access Token)
@@ -14398,17 +14399,16 @@ planning-center-online-pat:
         username:
             type: string
             title: Client ID
-            description: The Client ID (`client_id`) for your Planning Center Personal Access Token
+            description: The Client ID for your Planning Center Personal Access Token.
             pattern: '^[a-zA-Z0-9_-]{4,128}$'
             example: 01h2jk3lm4np5qrst6uvw
             doc_section: '#step-2-create-a-personal-access-token'
         password:
             type: string
             title: Secret
-            description: The Secret (`secret`) for your Planning Center Personal Access Token
+            description: The Secret for your Planning Center Personal Access Token.
             pattern: '^[a-zA-Z0-9+/=_-]{8,512}$'
             example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
-            secret: true
             doc_section: '#step-2-create-a-personal-access-token'
 
 plain:

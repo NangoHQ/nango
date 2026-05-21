@@ -5,40 +5,34 @@ sidebarTitle: Planning Center Online (PAT)
 
 # Overview
 
-Planning Center Personal Access Tokens (PATs) allow you to call the API as a single user (great for scripts and internal tooling).
+To authenticate with Planning Center using a Personal Access Token, you will need:
+1. **Client ID** - The client ID from your Planning Center personal access token.
+2. **Secret** - The secret from your Planning Center personal access token.
 
-If you need to distribute your integration to **multiple churches**, use OAuth instead:
-
-- [Planning Center Online (OAuth)](/api-integrations/planning-center-online)
+Personal Access Tokens authenticate as a single user and are suited for scripts and internal tooling. If you need to distribute your integration to **multiple churches**, use [Planning Center Online (OAuth)](/api-integrations/planning-center-online) instead.
 
 ### Prerequisites
 
-- You can sign in to Planning Center and generate Personal Access Tokens from your developer account.
+- You must be able to sign in to Planning Center and access the developer token management page.
 
-## Connect in Nango
+### Instructions
 
-<Steps>
-  <Step id="open-planning-center-personal-access-tokens" title="Open Personal Access Tokens">
-    1. Open Planning Center PAT management: `https://api.planningcenteronline.com/personal_access_tokens`
+#### Step 1: Generate a personal access token
 
-    Official documentation:
+1. Open Planning Center [PAT management](https://api.planningcenteronline.com/personal_access_tokens)
+2. Click **Create token**.
+3. Copy the **Client ID** and **Secret**.
 
-    - [Personal Access Token](https://api.planningcenteronline.com/docs/overview/authentication#personal-access-token)
-  </Step>
-  <Step id="create-planning-center-personal-access-token" title="Create a personal access token">
-    <a id="step-2-create-a-personal-access-token"></a>
+The secret is only shown once — store it securely before navigating away.
 
-    1. Create a new token.
-    2. Copy the **Client ID** (`client_id`) and **Secret** (`secret`).
+#### Step 2: Enter credentials in the Connect UI
 
-    These credentials authenticate via HTTP Basic Auth (equivalent to `curl -u client_id:secret ...`).
-  </Step>
-  <Step id="enter-planning-center-pat-credentials-in-connect" title="Enter credentials in Nango Connect">
-    In the Connect UI form:
+Once you have your **Client ID** and **Secret**:
 
-    - **Client ID**: paste your PAT `client_id`
-    - **Secret**: paste your PAT `secret`
+1. Open the form where you need to authenticate with Planning Center Online (PAT).
+2. Enter your **Client ID** and **Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
 
-    Submit the form to complete authentication.
-  </Step>
-</Steps>
+<img src="/api-integrations/planning-center-online-pat/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Planning Center Online.
