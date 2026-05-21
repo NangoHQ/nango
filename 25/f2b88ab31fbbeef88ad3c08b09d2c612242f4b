@@ -1,0 +1,77 @@
+packages/server/lib/routes.integration.test.ts
+  s_3149120bc775e1::t_83b4916d94a492 83
+  s_3149120bc775e1::t_8e38c43f11a178 86
+packages/types/lib/api-keys/scopes.ts
+  s_3149120bc775e1::t_487f5806b82216 6,9-12,19-22,29-32,47-49
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_e2b7805f56669f 99
+  s_3149120bc775e1::t_487f5806b82216 188-190,194-195,209,213,217,219,221,223,227,229-230,234-235,239,248,261-262,271
+packages/types/lib/environment/db.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 95-96
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_6fb3c1794bde76::t_2d7804c7e3df85 51-54,57-59
+packages/database/lib/migrations/20260514120000_customer_keys_sandbox_signing_secret.cjs
+  s_3149120bc775e1::t_1db44c2aa02f85 9-11,18
+packages/utils/lib/api-key-scopes.ts
+  s_3149120bc775e1::t_487f5806b82216 8,11-14,21-24,31-34,49-51
+packages/shared/lib/utils/encryption.manager.integration.test.ts
+  s_3149120bc775e1::t_df27aaa827f7aa 13-14,27,37,45,53,85
+packages/server/lib/middleware/access.middleware.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 62,66
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_3149120bc775e1::t_487f5806b82216 19,21-23,31-33,42-44,58,62-76,127
+packages/shared/lib/services/account.service.ts
+  ai_agent 4
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_6fb3c1794bde76::t_2112925729d0bb 11,58-67,69-85
+  s_b39de48b60dddc::t_3cd71b002631bd 44-46,53-54,68,89-90
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_ef1b283cf348fc 6
+  s_b39de48b60dddc::t_ea7ba686e24942 29-30,241
+  s_6fb3c1794bde76::t_3811fa478cfd42 91-105,111-113
+  s_6fb3c1794bde76::t_72774ecc171f9c 147-148,207-219,226-228
+  s_21d7567bafb42b::t_ecaebde50c03aa 220-221
+  s_b39de48b60dddc::t_d1019c9c2a3a77 242-243
+packages/shared/lib/services/customerKey.service.ts
+  s_3149120bc775e1::t_1db44c2aa02f85 39-56,58-73,75-78,128,134-135,138
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "25f2b88ab31fbbeef88ad3c08b09d2c612242f4b",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    },
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}

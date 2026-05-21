@@ -1,0 +1,95 @@
+packages/sandbox/lib/index.ts
+  s_b39de48b60dddc::t_991ce3583f2626 1-12,14
+  s_b39de48b60dddc::t_2551bb034c5042 13
+packages/sandbox/lib/remote-function/compiler-client.ts
+  s_b39de48b60dddc::t_2551bb034c5042 3,10,51-52
+  s_b39de48b60dddc::t_66a62bb7321759 9
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_6fb3c1794bde76::t_2112925729d0bb 24,204,206,209,211-214,216,219-224,27,29,62,114,116-117,119,122,125,132-133,135,137,139-141,143-144,148,155,168-170,174-179,210,61,71,194
+  s_b39de48b60dddc::t_3cd71b002631bd 111-113,248-249,56,75,118,120-121,123,126-130,136,138,142,146,149-152,156-158,161-162,171,180-181,57,60,65-66,68-70,74,103-105,108-110,124,163-165,184-186,190-193,195-203,205,207-208,215,217-218,225-230,232-235,237,239,241-244,246,251-255,259-261,264-268,271-272,274-278,282-284,287-290,293-297,301-302,305,307,309-327,330-331,333-335,338-339,354
+  s_b39de48b60dddc::t_dd63122d753741 28,63-64,76,115,131,134,145,147,153-154,159-160,167,172-173,182-183,46,49,58,67,72-73,106-107,166,236,238,250,256-257,262-263,269-270,273,279-280,285-286,291-292,298-299,303-304,328-329,332,336-337,245,340-353
+  s_b39de48b60dddc::t_a0ba5b7ce86530 53-55
+  s_b39de48b60dddc::t_d1019c9c2a3a77 23,26,258,281
+  s_b39de48b60dddc::t_8bf85b6bc54d5f 3
+  s_b39de48b60dddc::t_2e11f8e6ba9c55 7-8,12-14,17-18
+  s_b39de48b60dddc::t_1ec6f41a8be480 22
+  s_b39de48b60dddc::t_66a62bb7321759 42
+packages/sandbox/lib/remote-function/compiler-client.e2b.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 1-33,36-56
+  s_b39de48b60dddc::t_9dee9e7724b47b 34-35
+packages/sandbox/lib/remote-function/deploy-client.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 17-18,31,36,53,116-127
+packages/sandbox/lib/remote-function/dryrun-client.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 128-143,191-209
+packages/sandbox/lib/remote-function/sandbox.unit.test.ts
+  s_b39de48b60dddc::t_57ff77722ee50d 1-3,5-62
+  s_b39de48b60dddc::t_f9614dbc1e9abd 4
+docs/spec.yaml
+  s_6fb3c1794bde76::t_72774ecc171f9c 1435-1460,1463-1465,1467,1471-1477,1480-1482,1484-1493,1496-1498,1527-1554,1557-1559,2895-2902,2913-2914,2940-3008,3037-3040,3043-3044,3048,3054-3057,3072-3082,3093-3105,3108-3161,1511-1512,1514-1516,1518-1526,3012,3014-3016,3021,3023,3026,3029,3031-3036,3050,3059,3061-3062,3064-3065,3067-3068,3070-3071
+  s_21d7567bafb42b::t_99e1f4aff28223 2915-2918,2909-2912
+  s_b39de48b60dddc::t_08667b88ae1dac 1466,1468-1470,1478-1479,1483,1499-1510,1513,1517
+  s_b39de48b60dddc::t_9e23e5c193e3bd 3009-3010,3013,3017-3020,3022,3024-3025,3028,3030,3041-3042,3045-3047,3049,3051-3053,3058,3060,3063,3066,3069,3083-3092
+  s_b39de48b60dddc::t_9db8ce9989ad0d 3106-3107
+  s_b39de48b60dddc::t_6ffbb634581640 1461-1462,1494-1495,1555-1556,2907-2908
+packages/server/lib/controllers/functions/errors.unit.test.ts
+  s_b39de48b60dddc::t_80d0275cba72e7 1-29,51-120,31-34,40-41,43-44,47-50
+  s_b39de48b60dddc::t_003d798522e935 30,35-39,42,45-46
+packages/sandbox/lib/remote-function/deploy-client.ts
+  s_b39de48b60dddc::t_2551bb034c5042 1,11,41-42
+  s_b39de48b60dddc::t_66a62bb7321759 10
+packages/server/lib/controllers/functions/errors.ts
+  s_b39de48b60dddc::t_80d0275cba72e7 1-2,4-5,7,9-22,24-26,28-29,31-37,40-53,56-57,59-64,67-72,74-81,83-88,90-91
+  s_b39de48b60dddc::t_66a62bb7321759 23
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_2551bb034c5042 1,11,57-58,134-135,137
+  s_b39de48b60dddc::t_66a62bb7321759 10
+packages/sandbox/lib/remote-function/sandbox.ts
+  s_b39de48b60dddc::t_2551bb034c5042 1-88
+packages/types/lib/functions/api.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 7,35-64,109,111-137,139,161-196,206,208,214,216,224,78-79,88,142,148,153,157,159
+  s_b39de48b60dddc::t_d1019c9c2a3a77 140,147,92-93,95-107,152,154-156,158
+  s_b39de48b60dddc::t_00d77ae8fdb07f 197-198,66,73-74,90-91,143,108,110,160,199-202,222
+  s_3149120bc775e1::t_487f5806b82216 277,288-293,145
+  s_b39de48b60dddc::t_7a9a2fc6c66f33 16,67-68,70-72,75-77,80-87,89,138,141,144,146,149
+  s_b39de48b60dddc::t_66a62bb7321759 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "1f3ec90c1fe95465c5d5eaaa430bb00d29c13ee3",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    },
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}
