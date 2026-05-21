@@ -1,0 +1,85 @@
+docs/docs.json
+  s_6fb3c1794bde76::t_72774ecc171f9c 789,791
+  s_3149120bc775e1::t_487f5806b82216 928,1689
+packages/types/lib/functions/api.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 7,33-63,65-91,93-94,96,98-133,139,141,147,149,157
+  s_b39de48b60dddc::t_00d77ae8fdb07f 97,134-135
+  s_3149120bc775e1::t_487f5806b82216 210,221-226
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_6fb3c1794bde76::t_e827cba60fb0de 18,24
+  s_6fb3c1794bde76::t_2d7804c7e3df85 19-22,25-36,72-89,91-129,131-133,135,137-147,158-160
+  s_b39de48b60dddc::t_574df4d617670e 150
+packages/types/lib/api.endpoints.ts
+  s_3149120bc775e1::t_487f5806b82216 66,189
+  s_6fb3c1794bde76::t_72774ecc171f9c 69-71,156-158
+packages/server/lib/controllers/functions/compile/postCompile.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 7,9-10,61-78,82-85
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_6fb3c1794bde76::t_2112925729d0bb 13,15,21-22,33,70,72-73,75,78,81,88-89,91,93,95-97,99-100,104,111,120-122,126-131,140,143,145-150,152-158
+  s_b39de48b60dddc::t_dd63122d753741 14,18,23-24,63-64,71,87,90,101,103,109-110,115-116,119,124-125,134-135,161,172
+  s_b39de48b60dddc::t_3cd71b002631bd 20,62,67-69,74,76-77,79,82-86,92,94,98,102,105-108,112-114,117-118,123,132-133,169,173
+  s_b39de48b60dddc::t_8f7e3012144127 34-35,37-38
+docs/spec.yaml
+  s_6fb3c1794bde76::t_72774ecc171f9c 1435-1463,1465,1469-1475,1478-1480,1482-1525,2862-2869,2874-2875,2901-2975,2979-3007,3010-3063
+  s_b39de48b60dddc::t_d128b6826bb095 1467
+  s_21d7567bafb42b::t_99e1f4aff28223 2870-2873,2876-2879
+docs/reference/backend/http-api/functions/compile.mdx
+  s_6fb3c1794bde76::t_72774ecc171f9c 1-6,8-10
+packages/server/lib/controllers/functions/validation.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 31-49,51-52,54-58,60-61
+  s_b39de48b60dddc::t_d1019c9c2a3a77 50
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_ef1b283cf348fc 6
+  s_b39de48b60dddc::t_d1019c9c2a3a77 12,64,68-69,71-72,123-124,126,134-135,142-144,172,174,183-184,191-193,222,231-232,309,311,319-320,327-329,332,334,342-343,350-352,373-375,378,380,389-390
+  s_6fb3c1794bde76::t_72774ecc171f9c 16-19,62-63,65-66,128-132,136-137,173,176,178,180-181,185-186,189,211-212,214,291-303,307-308,313-317,321-322,324-325,331,336-340,344-345,347-348,357-359,376-377,379,382,384,386-387,391-392,394-395
+  s_b39de48b60dddc::t_ea7ba686e24942 20,33-34,67,127,133,138-139,141,175,182,187-188,190,221,312,318,323,326,335,341,346,349,372,381,388,393
+  s_6fb3c1794bde76::t_3811fa478cfd42 106-115,117-120,122,150-152,169-170
+  s_21d7567bafb42b::t_ecaebde50c03aa 304-305
+  s_b39de48b60dddc::t_8de929538e6d26 396-397
+packages/server/lib/routes.public.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 37-38,101,276-278,280
+  s_b39de48b60dddc::t_e2b7805f56669f 102
+  s_3149120bc775e1::t_487f5806b82216 191-193,197-198,212,216,220,222,224,226,230,232-233,237-238,242,251,264-265,274,281
+docs/reference/backend/http-api/functions/deployments.mdx
+  s_6fb3c1794bde76::t_72774ecc171f9c 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "d24c591b2cda67b68d6d2121a1f3d6b938452842",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    },
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}

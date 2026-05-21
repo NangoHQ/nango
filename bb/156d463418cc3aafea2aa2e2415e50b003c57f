@@ -1,0 +1,47 @@
+packages/server/lib/middleware/access.middleware.ts
+  s_b39de48b60dddc::t_787e03515db954 62,64
+  s_3149120bc775e1::t_1db44c2aa02f85 63,67
+  s_b39de48b60dddc::t_e0ccbd8138c4a1 123-129,410-415
+  s_b39de48b60dddc::t_f17611e71ed9a7 6,68-70
+packages/sandbox/lib/index.ts
+  s_b39de48b60dddc::t_991ce3583f2626 1-11,13
+  s_b39de48b60dddc::t_2551bb034c5042 12
+packages/sandbox/lib/api-keys/sandbox-api-key.service.ts
+  s_b39de48b60dddc::t_c8d468adfe86f9 2-3,6,8-9,27-33,35-39,41-84,92-96,101
+  s_b39de48b60dddc::t_5f9fba311344cd 34,40
+  s_b39de48b60dddc::t_c8062ca93a46bc 85-91
+  ai_agent 1,5
+  s_b39de48b60dddc::t_b5bea286eb60d5 4
+  s_b39de48b60dddc::t_f17611e71ed9a7 11-25
+packages/shared/lib/services/account.service.integration.test.ts
+  s_b39de48b60dddc::t_ee49443d603208 160-187,191-194,198,206,214,216,227
+  s_b39de48b60dddc::t_3d184fb15ac85d 195,204,208-210,218,221,226
+  s_b39de48b60dddc::t_b5bea286eb60d5 213,223
+packages/shared/lib/services/account.service.ts
+  ai_agent 4
+  s_b39de48b60dddc::t_f17611e71ed9a7 2,5-10,21,24-25,35-36,283-291,377-510,512
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "bb156d463418cc3aafea2aa2e2415e50b003c57f",
+  "prompts": {},
+  "sessions": {
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}

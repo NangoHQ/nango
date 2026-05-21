@@ -1,0 +1,21 @@
+docs/llms-full.txt
+  s_b39de48b60dddc::t_6c2e567b3aeaee 8620-8625,8962-8971,8973-8976,8978-8981,8983-8986,8988-9000
+docs/llms.txt
+  s_b39de48b60dddc::t_6c2e567b3aeaee 88,91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "f6f2a2022d8cd3f3a7bc73b3aa31a6c32f30b248",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}

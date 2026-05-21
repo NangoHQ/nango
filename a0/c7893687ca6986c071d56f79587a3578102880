@@ -1,0 +1,24 @@
+packages/shared/lib/services/account.service.integration.test.ts
+  s_b39de48b60dddc::t_ee49443d603208 180-207,211-212,215,219,227,229,337,30,33,261,263-266,276,278,281,283-286,289,296,298,300,303,305-308,318,325,327,329
+  s_b39de48b60dddc::t_3d184fb15ac85d 216,221-223,293,336,210,213-214,220,228,231-255,258,260,262,268-274,277,279-280,282,287,290-292,294,297,299,301-302,304,309-316,319-323,326,328,330-334
+  s_b39de48b60dddc::t_b5bea286eb60d5 226,335,29,259,275,295,324
+packages/sandbox/lib/api-keys/sandbox-api-key.integration.test.ts
+  s_b39de48b60dddc::t_3d184fb15ac85d 1-6,9-51,53
+  s_b39de48b60dddc::t_a36345175fcc8f 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "a0c7893687ca6986c071d56f79587a3578102880",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}

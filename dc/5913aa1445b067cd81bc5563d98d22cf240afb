@@ -1,0 +1,113 @@
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_d1019c9c2a3a77 14,140,144-145,147-148,199-200,202,210-211,218-220,248,250,259-260,267-269,298,343-344,421,423,431-432,439-441,444,446,454-455,462-464,485-487,490,492,501-502,600,623,646-647,665,667,669,688-690,307,327,108,541,573,721
+  s_6fb3c1794bde76::t_72774ecc171f9c 18-21,138-139,141-142,204-208,212-213,249,252,254,256-257,261-262,265,287-288,290,403-415,419-420,425-429,433-434,436-437,443,448-452,456-457,459-460,469-471,488-489,491,494,496,498-499,503-504,506-507,312,316,320,332
+  s_b39de48b60dddc::t_ea7ba686e24942 22,35-36,143,203,209,214-215,217,251,258,263-264,266,297,424,430,435,438,447,453,458,461,484,493,500,505,56-57,59,61-66,68-71,73-74,197,201,418,422,442,445,575,577-581,584-587,590-598,602,604,609,615,617,620,625,649-652,655-657,659-663,314,334,109,516,524,547,555
+  s_6fb3c1794bde76::t_3811fa478cfd42 182-191,193-196,198,226-228,245-246
+  s_21d7567bafb42b::t_ecaebde50c03aa 416-417
+  s_b39de48b60dddc::t_8de929538e6d26 508-509,60,67,72,75,511,582-583,588-589,599,601,605-608,610-611,613-614,616,618-619,621-622,624,629-632,634-642,644-645,648,653-654,664,666,671-674,676-687,305-306,308,311,313,319,322-323,325-326,328,331,333,337-339,90,110,520-521,523,531-533,536,539-540,542,551-552,554,563-565,568,571-572,574,628,633,670,675,691-692,695-720
+  s_b39de48b60dddc::t_1badc25401e8dc 38-39,43-44,13,76-89,91-107
+  s_b39de48b60dddc::t_e50a6651659963 55,58,253,495,315,321,335,340,512-515,517-519,522,525-530,534-535,537-538,543-546,548-550,553,556-562,566-567,569-570
+  s_b39de48b60dddc::t_ef1b283cf348fc 6-7,12
+  s_b39de48b60dddc::t_13ed31bad60e75 612,643,658
+  s_b39de48b60dddc::t_1aeb374cc15ff3 192,216,223,247,576,603,626-627,668,693-694
+docs/reference/backend/http-api/functions/dryruns-create.mdx
+  s_b39de48b60dddc::t_5ec3861412f254 1,3-6,8-10
+  s_b39de48b60dddc::t_b631f4562259f1 7
+docs/reference/backend/http-api/functions/dryruns-get.mdx
+  s_b39de48b60dddc::t_c63d918482aee7 3,10
+  s_b39de48b60dddc::t_b631f4562259f1 7
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_6fb3c1794bde76::t_e827cba60fb0de 31,37
+  s_6fb3c1794bde76::t_2d7804c7e3df85 32-35,38-49,85-93,96-104,106-144,146-148,150,152-162,175-177,24,28
+  s_b39de48b60dddc::t_574df4d617670e 165,17,22-23,25-27,29,79,94-95,105,151,166-167,178
+  s_b39de48b60dddc::t_2e11f8e6ba9c55 2-7,9
+  s_b39de48b60dddc::t_1ec6f41a8be480 8,14
+  s_b39de48b60dddc::t_8bf85b6bc54d5f 10
+packages/server/lib/middleware/access.middleware.ts
+  s_b39de48b60dddc::t_787e03515db954 63,65
+  s_3149120bc775e1::t_1db44c2aa02f85 64,68
+  s_b39de48b60dddc::t_e0ccbd8138c4a1 132-138,419-424
+packages/server/lib/routes.public.ts
+  s_6fb3c1794bde76::t_72774ecc171f9c 37-38,110,285-287,291
+  s_b39de48b60dddc::t_e2b7805f56669f 111,39,101-105,107-108,288-290
+  s_3149120bc775e1::t_487f5806b82216 200-202,206-207,221,225,229,231,233,235,239,241-242,246-247,251,260,273-274,283,292,106
+  s_b39de48b60dddc::t_d1019c9c2a3a77 109
+  s_b39de48b60dddc::t_b631f4562259f1 100,308
+packages/server/lib/utils/express.ts
+  s_b39de48b60dddc::t_bdd2506714ca4f 37-38
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_b39de48b60dddc::t_b631f4562259f1 47-53
+packages/types/lib/api-keys/scopes.ts
+  s_b39de48b60dddc::t_b631f4562259f1 33-34
+docs/reference/backend/http-api/api-keys.mdx
+  s_b39de48b60dddc::t_b631f4562259f1 195
+packages/sandbox/lib/api-keys/sandbox-api-key.service.ts
+  s_b39de48b60dddc::t_c8d468adfe86f9 5-6,11,18,23-24,95,134,138-144,146-150,152-195,203-207,234,257,284-286
+  s_b39de48b60dddc::t_5f9fba311344cd 145,151
+  s_b39de48b60dddc::t_c8062ca93a46bc 196-202
+packages/types/lib/api.endpoints.ts
+  s_3149120bc775e1::t_487f5806b82216 67,193
+  s_6fb3c1794bde76::t_72774ecc171f9c 70-72,158-159,162
+  s_b39de48b60dddc::t_f9625b51f864f7 66,160
+  s_b39de48b60dddc::t_6189ebaeef79a4 73,161
+packages/utils/lib/api-key-scopes.ts
+  s_b39de48b60dddc::t_b631f4562259f1 35-36
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_6fb3c1794bde76::t_2112925729d0bb 27,29,64,125,127-128,130,133,136,143-144,146,148,150-152,154-155,159,166,179-181,185-190,211,219-224,226,229-234,63,73,198-206
+  s_b39de48b60dddc::t_dd63122d753741 28,32,112-113,126,142,145,156,158,164-165,170-171,178,183-184,193-194,258,46,50,60,69,74-75,117-118,177,246,248,260,266-267,272-273,279-280,283,289-290,295-296,305-306,312-313,317-318,342-343,346,350-351,255,354-367,83-84,87,216,299-300
+  s_b39de48b60dddc::t_8f7e3012144127 65-66,77-78,51,56,79-82,85,212-214,297
+  s_b39de48b60dddc::t_3cd71b002631bd 111,122-124,129,131-132,134,137-141,147,149,153,157,160-163,167-169,172-173,182,191-192,241,259,59,62,67-68,70-72,76,114-116,119-121,135,174-176,195-197,207-208,210,217-218,225,227-228,235-240,242-245,247,249,251-254,256,261-265,269-271,274-278,281-282,284-288,292-294,301-304,307-311,315-316,319,321,323-341,344-345,347-349,352-353,368,86,215,298
+  s_b39de48b60dddc::t_d1019c9c2a3a77 23,26,268,291
+  s_b39de48b60dddc::t_8bf85b6bc54d5f 3
+  s_b39de48b60dddc::t_2e11f8e6ba9c55 7-8,12-14,17-18
+  s_b39de48b60dddc::t_1ec6f41a8be480 22
+  s_b39de48b60dddc::t_66a62bb7321759 42
+  s_b39de48b60dddc::t_9f7f9ab9d7f045 11,314,320,322
+  s_b39de48b60dddc::t_c7d5a214d6f5aa 49
+docs/llms-full.txt
+  s_b39de48b60dddc::t_6c2e567b3aeaee 8620-8624,8626,8963-8972,8974-8977,8979-8982,8984-8987,8989-9001
+  s_b39de48b60dddc::t_4288b2ffa0ff90 8625,8978,8988
+packages/sandbox/lib/api-keys/sandbox-api-key.unit.test.ts
+  s_b39de48b60dddc::t_f08695d9a7d6c3 45-64
+  s_b39de48b60dddc::t_1aeb374cc15ff3 150-151,160-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "dc5913aa1445b067cd81bc5563d98d22cf240afb",
+  "prompts": {},
+  "sessions": {
+    "s_21d7567bafb42b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3bd6-6feb-7212-b10f-d85b5c8c80e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    },
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_6fb3c1794bde76": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3cc3-d691-7593-a660-a4943c2cfe1f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    },
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": null
+    }
+  }
+}
