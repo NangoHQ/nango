@@ -9,7 +9,6 @@ import {
     allGroupScopes,
     groupWildcard,
     isScopeSelected,
-    stripLegacyScopes,
     toggleCredential as toggleCredentialFn,
     toggleGroup as toggleGroupFn,
     toggleScope as toggleScopeFn
@@ -58,12 +57,11 @@ function formatFullDate(dateStr: string | null): string {
 }
 
 function countSelectedScopes(scopes: string[]): number {
-    const visible = stripLegacyScopes(scopes);
-    if (visible.includes('environment:*')) {
+    if (scopes.includes('environment:*')) {
         return SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).length, 0);
     }
     let count = 0;
-    for (const scope of visible) {
+    for (const scope of scopes) {
         if (scope.endsWith(':*')) {
             const prefix = scope.slice(0, -1);
             count += SCOPE_GROUPS.reduce((acc, g) => acc + allGroupScopes(g).filter((s) => s.startsWith(prefix)).length, 0);
@@ -328,11 +326,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
     const scopesChanged = JSON.stringify(editedScopes.slice().sort()) !== JSON.stringify(apiKey.scopes.slice().sort());
     const nameChanged = editedName.trim() !== apiKey.display_name;
     const hasChanges = scopesChanged || nameChanged;
-    // Migrated keys carry hidden legacy scopes in `editedScopes` (alongside the expanded new ones)
-    // until the user saves. Count only the scopes that would actually be persisted, so unchecking
-    // every visible scope flips the "Select at least one scope" warning even if a legacy entry
-    // is still lurking in the array.
-    const hasNoScopes = stripLegacyScopes(editedScopes).length === 0;
+    const hasNoScopes = editedScopes.length === 0;
 
     const masked = `····${apiKey.secret.slice(-4)}`;
 
@@ -344,9 +338,7 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
         try {
             const updates: { keyId: number; scopes?: string[]; display_name?: string } = { keyId: apiKey.id };
             if (scopesChanged) {
-                // Drop legacy scopes from the saved payload — they're still in DB on
-                // migrated keys but should not survive an explicit save.
-                updates.scopes = stripLegacyScopes(editedScopes);
+                updates.scopes = editedScopes;
             }
             if (nameChanged) {
                 updates.display_name = editedName.trim();
