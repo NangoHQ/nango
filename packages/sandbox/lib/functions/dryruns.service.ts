@@ -189,6 +189,7 @@ export async function timeoutFunctionDryruns({ limit = 100, trx = db.knex }: { l
         .limit(limit);
 
     const rows = await trx<DBFunctionDryrun>(tableName)
+        .where({ status: 'running' })
         .whereIn('id', ids)
         .update({
             status: 'failed',
