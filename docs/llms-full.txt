@@ -14067,6 +14067,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `netsuite` | NetSuite (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/netsuite.md) |  |  | accounting, erp |
 | `netsuite-tba` | NetSuite (TBA) | TBA | [docs](https://nango.dev/docs/api-integrations/netsuite-tba.md) |  | [setup](https://nango.dev/docs/api-integrations/netsuite-tba/how-to-set-up-netsuite-tba-with-nango.md) | accounting, erp, popular |
 | `next-cloud-ocs` | Next Cloud OCS | BASIC | [docs](https://nango.dev/docs/integrations/all/next-cloud-ocs.md) | [connect](https://nango.dev/docs/integrations/all/next-cloud-ocs/connect.md) |  | storage, productivity |
+| `nexthink` | Nexthink | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/nexthink.md) | [connect](https://nango.dev/docs/api-integrations/nexthink/connect.md) |  | it |
 | `ninjaone-rmm` | NinjaOne RMM | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/ninjaone-rmm.md) | [connect](https://nango.dev/docs/integrations/all/ninjaone-rmm/connect.md) |  | support |
 | `ninjaone-rmm-oauth2` | NinjaOne RMM (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app.md) | support |
 | `nocrm` | nocrm.io | API_KEY | [docs](https://nango.dev/docs/api-integrations/nocrm.md) | [connect](https://nango.dev/docs/api-integrations/nocrm/connect.md) |  | crm, productivity |

@@ -12465,6 +12465,36 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+nexthink:
+    display_name: Nexthink
+    categories:
+        - it
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - service:integration
+    proxy:
+        base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
+    docs: https://nango.dev/docs/api-integrations/nexthink
+    docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    connection_config:
+        instance:
+            type: string
+            title: Instance Name
+            description: The name of your Nexthink instance.
+            example: acme
+            order: 1
+        region:
+            type: string
+            title: Region
+            description: 'Your Nexthink region'
+            example: eu
+            pattern: '^(us|eu|pac|meta)$'
+            order: 2
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:
