@@ -37,7 +37,8 @@ export class Billing {
                   flushIntervalMs: envs.BILLING_INGEST_BATCH_INTERVAL_MS,
                   maxQueueSize: envs.BILLING_INGEST_MAX_QUEUE_SIZE,
                   maxProcessingRetry: envs.BILLING_INGEST_MAX_RETRY,
-                  grouping: new BillingEventGrouping()
+                  grouping: new BillingEventGrouping(),
+                  logger
               })
             : null;
     }
