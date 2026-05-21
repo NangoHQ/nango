@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
 import { toDeployedNangoFunction } from './mappers.js';
-import * as repository from './repository.js';
+import * as functionsModel from './models/functions.js';
 
 import type { DeployedNangoFunction, FunctionType } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -27,7 +27,7 @@ export async function listFunctions({
     offset: number;
 }): Promise<Result<{ rows: DeployedNangoFunction[]; total: number }>> {
     try {
-        const { rows: dbRows, total } = await repository.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
+        const { rows: dbRows, total } = await functionsModel.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
         const rows: DeployedNangoFunction[] = [];
 
         for (const row of dbRows) {
@@ -61,7 +61,7 @@ export async function getFunction({
     type: FunctionType | undefined;
 }): Promise<Result<DeployedNangoFunction | undefined>> {
     try {
-        const row = await repository.findActiveByName({ environmentId, providerConfigKey, name, type });
+        const row = await functionsModel.findActiveByName({ environmentId, providerConfigKey, name, type });
         if (!row) {
             return Ok(undefined);
         }

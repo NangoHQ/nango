@@ -1,6 +1,6 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import type { FunctionRow } from './repository.js';
+import type { FunctionRow } from './models/functions.js';
 import type {
     DBOnEventScript,
     DeployedNangoActionFunction,

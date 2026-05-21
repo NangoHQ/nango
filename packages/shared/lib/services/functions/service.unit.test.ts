@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getFunction, listFunctions } from './service.js';
 
-import type { FunctionRow } from './repository.js';
+import type { FunctionRow } from './models/functions.js';
 
 const { mockFindActiveByEnvironment, mockFindActiveByName } = vi.hoisted(() => {
     return {
@@ -11,7 +11,7 @@ const { mockFindActiveByEnvironment, mockFindActiveByName } = vi.hoisted(() => {
     };
 });
 
-vi.mock('./repository.js', () => ({
+vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,
     findActiveByName: mockFindActiveByName
 }));
