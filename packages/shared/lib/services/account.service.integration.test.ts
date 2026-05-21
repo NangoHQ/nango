@@ -7,7 +7,7 @@ import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
-import { createSandboxApiKeyToken, createSandboxSigningSecret, encryptSandboxSigningSecret, sandboxApiKeyPrefix } from './sandbox-api-key.service.js';
+import { createSandboxApiKeyToken, createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.service.js';
 import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
@@ -177,36 +177,6 @@ describe('Account service', () => {
         expect(bySecretKey).toBeNull();
     });
 
-    it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {
-        const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
-        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
-        const customerKeySecret = apiKeys[0]!.secret;
-
-        const initial = await accountService.getAccountContext({ secretKey: customerKeySecret });
-        expect(initial?.auth?.source).toBe('customer_key');
-        const apiKeyId = initial?.auth?.apiKeyId;
-        expect(apiKeyId).toBeDefined();
-
-        const firstLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
-        expect(firstLastUsedAt).toBeTruthy();
-
-        const recentTimestamp = new Date(Date.now() - 5 * 1000);
-        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: recentTimestamp });
-
-        await accountService.getAccountContext({ secretKey: customerKeySecret });
-        const secondLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
-        expect(new Date(secondLastUsedAt).toISOString()).toBe(recentTimestamp.toISOString());
-
-        const staleTimestamp = new Date(Date.now() - 2 * 60 * 1000);
-        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: staleTimestamp });
-
-        await accountService.getAccountContext({ secretKey: customerKeySecret });
-        const thirdLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
-        expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
-    });
-
     it('should retrieve account context by sandbox API key token', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
@@ -215,19 +185,17 @@ describe('Account service', () => {
         const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
         const apiKey = apiKeys[0]!;
         const signingSecret = await setSandboxSigningSecret({ apiKeyId: apiKey.id });
-        const dryrunId = uuid();
 
         const sandboxToken = createSandboxApiKeyToken({
             parentApiKeyId: apiKey.id,
             signingSecret,
             purpose: 'dryrun',
-            dryrunId,
-            expiresAt: new Date(Date.now() + 60_000)
+            expiresAt: new Date(Date.now() + 60 * 1000)
         });
 
         const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
 
-        expect(sandboxToken).toMatch(new RegExp(`^${sandboxApiKeyPrefix}`));
+        expect(sandboxToken).toMatch(/^nango_sbx_v1_/);
         expect(bySecretKey).toStrictEqual({
             account: {
                 ...account,
@@ -253,8 +221,7 @@ describe('Account service', () => {
                 source: 'sandbox_token',
                 scopes: ['environment:*', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
                 apiKeyId: apiKey.id,
-                purpose: 'dryrun',
-                dryrunId
+                purpose: 'dryrun'
             }
         });
     });
@@ -333,6 +300,36 @@ describe('Account service', () => {
             apiKeyId: parentKey.id,
             purpose: 'dryrun'
         });
+    });
+
+    it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const customerKeySecret = apiKeys[0]!.secret;
+
+        const initial = await accountService.getAccountContext({ secretKey: customerKeySecret });
+        expect(initial?.auth?.source).toBe('customer_key');
+        const apiKeyId = initial?.auth?.apiKeyId;
+        expect(apiKeyId).toBeDefined();
+
+        const firstLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(firstLastUsedAt).toBeTruthy();
+
+        const recentTimestamp = new Date(Date.now() - 5 * 1000);
+        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: recentTimestamp });
+
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
+        const secondLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(new Date(secondLastUsedAt).toISOString()).toBe(recentTimestamp.toISOString());
+
+        const staleTimestamp = new Date(Date.now() - 2 * 60 * 1000);
+        await db.knex('customer_keys').where({ id: apiKeyId! }).update({ last_used_at: staleTimestamp });
+
+        await accountService.getAccountContext({ secretKey: customerKeySecret });
+        const thirdLastUsedAt = (await db.knex('customer_keys').select('last_used_at').where({ id: apiKeyId! }).first())?.last_used_at;
+        expect(new Date(thirdLastUsedAt).getTime()).toBeGreaterThan(staleTimestamp.getTime());
     });
 
     it('should return environment:* scopes for internalSecretKey (api_secret path)', async () => {
