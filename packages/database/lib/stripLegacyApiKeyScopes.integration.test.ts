@@ -138,6 +138,16 @@ describe('stripLegacyApiKeyScopes', () => {
         expect(await readScopes(key.id)).toEqual(['environment:*']);
     });
 
+    it('leaves an empty array when a key carries only legacy scopes', async () => {
+        const key = await createKey({
+            scopes: ['environment:integrations:write', 'environment:config:read']
+        });
+
+        await stripLegacyApiKeyScopes(db.knex);
+
+        expect(await readScopes(key.id)).toEqual([]);
+    });
+
     it('preserves unrelated scopes', async () => {
         const key = await createKey({
             scopes: ['environment:integrations:write', 'environment:proxy', 'environment:records:read']
