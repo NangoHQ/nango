@@ -56,6 +56,8 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
+    UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
+    UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 

@@ -101,6 +101,14 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         });
     }
 
+    protected override recordUncontrolledFetchTransfer({ direction, bytes }: { direction: 'request' | 'response'; bytes: number }): void {
+        if (direction === 'request') {
+            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytes);
+        } else {
+            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytes);
+        }
+    }
+
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.throwIfAbortedOrKilled();
 
