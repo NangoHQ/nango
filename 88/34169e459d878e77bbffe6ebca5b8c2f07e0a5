@@ -1,0 +1,27 @@
+packages/shared/lib/services/account.service.ts
+  s_3149120bc775e1::t_821f18c2a19301 566
+packages/webapp/src/pages/Environment/Settings/scope-logic.ts
+  s_3149120bc775e1::t_487f5806b82216 19,21-23,31-33,42-44,58,62-76,127
+packages/types/lib/api-keys/scopes.ts
+  s_3149120bc775e1::t_487f5806b82216 6,9-12,19-22,29-32,47-49
+packages/server/lib/routes.public.ts
+  s_3149120bc775e1::t_487f5806b82216 188-190,194-195,209,213,217,219,221,223,227,229-230,234-235,239,248,261-262,271
+packages/utils/lib/api-key-scopes.ts
+  s_3149120bc775e1::t_487f5806b82216 8,11-14,21-24,31-34,49-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "8834169e459d878e77bbffe6ebca5b8c2f07e0a5",
+  "prompts": {},
+  "sessions": {
+    "s_3149120bc775e1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e2b36-a5bf-73f0-b083-a7f322476346",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
