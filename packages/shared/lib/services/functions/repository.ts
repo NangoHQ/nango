@@ -1,8 +1,25 @@
 import db from '@nangohq/database';
 
-import type { FunctionRow } from './mappers.js';
-import type { FunctionType } from '@nangohq/types';
+import type { FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
+
+export interface FunctionRow {
+    id: number;
+    name: string;
+    type: string;
+    metadata: NangoConfigMetadata | null;
+    input: string | null;
+    returns: string[] | null;
+    json_schema: JSONSchema7 | null;
+    runs: string | null;
+    auto_start: boolean | null;
+    track_deletes: boolean | null;
+    enabled: boolean;
+    last_deployed: Date;
+    source: FunctionSource;
+    event: string | null;
+}
 
 export async function findActiveByEnvironment({
     environmentId,
@@ -65,7 +82,7 @@ export async function findActiveByName({
         ])
         .first();
 
-    return row ?? undefined;
+    return row;
 }
 
 function buildListingSubquery({

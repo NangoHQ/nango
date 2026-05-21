@@ -1,53 +1,38 @@
+import { Err, Ok } from '@nangohq/utils';
+
+import type { FunctionRow } from './repository.js';
 import type {
     DBOnEventScript,
     DeployedNangoActionFunction,
     DeployedNangoFunction,
     DeployedNangoOnEventFunction,
     DeployedNangoSyncFunction,
-    FunctionSource,
-    NangoConfigMetadata,
     OnEventType
 } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type { Result } from '@nangohq/utils';
 
-export const EVENT_TYPE_MAPPINGS: Record<DBOnEventScript['event'], OnEventType> = {
+const DB_TO_API_EVENT_TYPE: Record<DBOnEventScript['event'], OnEventType> = {
     POST_CONNECTION_CREATION: 'post-connection-creation',
     PRE_CONNECTION_DELETION: 'pre-connection-deletion',
     VALIDATE_CONNECTION: 'validate-connection'
 } as const;
 
+const API_TO_DB_EVENT_TYPE: Record<OnEventType, DBOnEventScript['event']> = {
+    'post-connection-creation': 'POST_CONNECTION_CREATION',
+    'pre-connection-deletion': 'PRE_CONNECTION_DELETION',
+    'validate-connection': 'VALIDATE_CONNECTION'
+} as const;
+
 export const eventTypeMapper = {
     fromDb: (event: DBOnEventScript['event']): OnEventType => {
-        return EVENT_TYPE_MAPPINGS[event];
+        return DB_TO_API_EVENT_TYPE[event];
     },
     toDb: (eventType: OnEventType): DBOnEventScript['event'] => {
-        for (const [key, value] of Object.entries(EVENT_TYPE_MAPPINGS)) {
-            if (value === eventType) {
-                return key as DBOnEventScript['event'];
-            }
-        }
-        throw new Error(`Unknown event type: ${eventType}`);
+        return API_TO_DB_EVENT_TYPE[eventType];
     }
 };
 
-export interface FunctionRow {
-    id: number;
-    name: string;
-    type: 'sync' | 'action' | 'on-event';
-    metadata: NangoConfigMetadata | null;
-    input: string | null;
-    returns: string[] | null;
-    json_schema: JSONSchema7 | null;
-    runs: string | null;
-    auto_start: boolean | null;
-    track_deletes: boolean | null;
-    enabled: boolean;
-    last_deployed: Date;
-    source: FunctionSource;
-    event: string | null;
-}
-
-export function toDeployedNangoFunction(row: FunctionRow): DeployedNangoFunction | undefined {
+export function toDeployedNangoFunction(row: FunctionRow): Result<DeployedNangoFunction> {
     const description = row.metadata?.description;
     const scopes = row.metadata?.scopes;
     const base = {
@@ -75,20 +60,25 @@ export function toDeployedNangoFunction(row: FunctionRow): DeployedNangoFunction
                 track_deletes: row.track_deletes ?? false,
                 ...deployedMeta
             };
-            return out;
+            return Ok(out);
         }
         case 'on-event': {
-            const apiEvent = row.event ? EVENT_TYPE_MAPPINGS[row.event as DBOnEventScript['event']] : undefined;
-            if (!apiEvent) {
-                return undefined;
+            if (!row.event) {
+                return Err(new Error('Unknown on-event type: null'));
             }
+
+            const apiEvent = DB_TO_API_EVENT_TYPE[row.event as DBOnEventScript['event']];
+            if (!apiEvent) {
+                return Err(new Error(`Unknown on-event type: ${row.event}`));
+            }
+
             const out: DeployedNangoOnEventFunction = {
                 ...base,
                 type: 'on-event',
                 event: apiEvent,
                 ...deployedMeta
             };
-            return out;
+            return Ok(out);
         }
         case 'action': {
             const out: DeployedNangoActionFunction = {
@@ -99,9 +89,9 @@ export function toDeployedNangoFunction(row: FunctionRow): DeployedNangoFunction
                 json_schema: row.json_schema,
                 ...deployedMeta
             };
-            return out;
+            return Ok(out);
         }
-        default:
-            return undefined;
     }
+
+    return Err(new Error(`Unknown function type: ${String(row.type)}`));
 }

@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { configService, listFunctions } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../../../helpers/validation.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
@@ -42,7 +42,7 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
         return;
     }
 
-    const { rows, total } = await listFunctions({
+    const fnResult = await listFunctions({
         environmentId: environment.id,
         providerConfigKey,
         type,
@@ -50,6 +50,14 @@ export const getIntegrationFunctions = asyncWrapper<GetIntegrationFunctions>(asy
         limit,
         offset: page * limit
     });
+
+    if (fnResult.isErr()) {
+        report(fnResult.error);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to list functions' } });
+        return;
+    }
+
+    const { rows, total } = fnResult.value;
 
     res.status(200).send({ data: rows, pagination: { total, page, limit } });
 });

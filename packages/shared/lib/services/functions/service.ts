@@ -25,15 +25,23 @@ export async function listFunctions({
     search: string | undefined;
     limit: number;
     offset: number;
-}): Promise<{ rows: DeployedNangoFunction[]; total: number }> {
-    const { rows: dbRows, total } = await repository.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
+}): Promise<Result<{ rows: DeployedNangoFunction[]; total: number }>> {
+    try {
+        const { rows: dbRows, total } = await repository.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
+        const rows: DeployedNangoFunction[] = [];
 
-    const rows = dbRows.flatMap((row) => {
-        const fn = toDeployedNangoFunction(row);
-        return fn ? [fn] : [];
-    });
+        for (const row of dbRows) {
+            const fn = toDeployedNangoFunction(row);
+            if (fn.isErr()) {
+                return Err(new Error('failed_to_list_functions', { cause: fn.error }));
+            }
+            rows.push(fn.value);
+        }
 
-    return { rows, total };
+        return Ok({ rows, total });
+    } catch (err) {
+        return Err(new Error('failed_to_list_functions', { cause: err }));
+    }
 }
 
 /**
@@ -54,7 +62,16 @@ export async function getFunction({
 }): Promise<Result<DeployedNangoFunction | undefined>> {
     try {
         const row = await repository.findActiveByName({ environmentId, providerConfigKey, name, type });
-        return Ok(row ? toDeployedNangoFunction(row) : undefined);
+        if (!row) {
+            return Ok(undefined);
+        }
+
+        const fn = toDeployedNangoFunction(row);
+        if (fn.isErr()) {
+            return Err(new Error('failed_to_get_function', { cause: fn.error }));
+        }
+
+        return Ok(fn.value);
     } catch (err) {
         return Err(new Error('failed_to_get_function', { cause: err }));
     }

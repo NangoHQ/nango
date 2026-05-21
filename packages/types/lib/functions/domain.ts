@@ -15,7 +15,7 @@ export interface NangoSyncFunction extends NangoFunctionBase {
     input?: string;
     returns: string[];
     json_schema: JSONSchema7 | null;
-    /** Cron expression. */
+    /** Schedule expression such as `every day`. */
     runs: string | null;
     auto_start: boolean;
     track_deletes: boolean;
