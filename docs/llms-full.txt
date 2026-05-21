@@ -2126,6 +2126,10 @@ npx skills add NangoHQ/skills -s building-nango-functions-locally
   If your coding agent is already running, restart it after installing the skill so it can load the new instructions.
 </Note>
 
+<Warning>
+  Claude Code users: the default symlink install currently skips the `.claude/skills/` symlinks when `.claude/` doesn't already exist, so Claude Code won't see the skill. As a workaround, choose **Copy to all agents** during the interactive prompt (or create `.claude/` before running the command). Tracked upstream in [vercel-labs/skills#1138](https://github.com/vercel-labs/skills/issues/1138).
+</Warning>
+
 The docs MCP and skill give the agent current Nango function APIs, CLI commands, project layout, Zod schema patterns, testing guidance, deployment expectations, and examples for action, sync, webhook, and event functions.
 
 You can start with a short request:
@@ -9090,6 +9094,10 @@ Receive webhooks from Nango when new records are available. Follow the [sync fun
 This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
 </Tip>
 
+<Warning>
+A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
+</Warning>
+
 ### Default behavior
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
 
@@ -13854,6 +13862,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
 | `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/integrations/all/folk.md) | [connect](https://nango.dev/docs/integrations/all/folk/connect.md) |  | crm |
+| `followupboss` | Follow Up Boss | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/followupboss.md) |  | [setup](https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app.md) | crm |
 | `fortnox` | Fortnox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fortnox.md) |  |  | accounting, invoicing |
 | `freeagent` | FreeAgent | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
 | `freeagent-sandbox` | FreeAgent (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent-sandbox.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent-sandbox/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
@@ -14275,6 +14284,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `statista` | Statista | API_KEY | [docs](https://nango.dev/docs/integrations/all/statista.md) | [connect](https://nango.dev/docs/integrations/all/statista/connect.md) |  | analytics |
 | `stay-ai` | Stay AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/stay-ai.md) | [connect](https://nango.dev/docs/api-integrations/stay-ai/connect.md) |  | e-commerce |
 | `stitch-mcp` | Stitch (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stitch-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app.md) | design, mcp |
+| `store-census` | StoreCensus | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-census.md) | [connect](https://nango.dev/docs/api-integrations/store-census/connect.md) |  | e-commerce, crm |
 | `store-leads` | Store Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-leads.md) | [connect](https://nango.dev/docs/api-integrations/store-leads/connect.md) |  | e-commerce |
 | `strava` | Strava (Mobile) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava.md) |  |  | social, sports |
 | `strava-web` | Strava (Web) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava-web.md) |  |  | social, sports |
@@ -14355,6 +14365,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `vimeo-basic` | Vimeo (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/vimeo-basic.md) |  |  | video |
 | `vtex` | VTEX | API_KEY | [docs](https://nango.dev/docs/api-integrations/vtex.md) | [connect](https://nango.dev/docs/api-integrations/vtex/connect.md) |  | e-commerce |
 | `wakatime` | Wakatime | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wakatime.md) |  |  | analytics, dev-tools |
+| `wappalyzer` | Wappalyzer | API_KEY | [docs](https://nango.dev/docs/api-integrations/wappalyzer.md) | [connect](https://nango.dev/docs/api-integrations/wappalyzer/connect.md) |  | marketing, analytics |
 | `wave-accounting` | Wave Accounting | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wave-accounting.md) |  |  | accounting |
 | `wealthbox` | Wealthbox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wealthbox.md) |  |  | crm |
 | `webex` | Webex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/webex.md) |  |  | communication |

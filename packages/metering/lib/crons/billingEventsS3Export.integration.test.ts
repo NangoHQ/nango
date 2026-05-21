@@ -209,14 +209,14 @@ describe('billingEventsS3Export', () => {
                 idempotency_key: `proxy_test:1:${targetDay}`,
                 event_name: 'proxy_test',
                 external_customer_id: '1',
-                timestamp: `${targetDay}T00:00:00.000Z`,
+                timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 14 }
             });
             expect(rows).toContainEqual({
                 idempotency_key: `proxy_test:999:${targetDay}`,
                 event_name: 'proxy_test',
                 external_customer_id: '999',
-                timestamp: `${targetDay}T00:00:00.000Z`,
+                timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: { count: 3 }
             });
         });
@@ -234,7 +234,7 @@ describe('billingEventsS3Export', () => {
                 idempotency_key: `function_executions_test:1:${targetDay}`,
                 event_name: 'function_executions_test',
                 external_customer_id: '1',
-                timestamp: `${targetDay}T00:00:00.000Z`,
+                timestamp: `${targetDay}T23:59:59.999Z`,
                 properties: {
                     count: 4,
                     'telemetry.durationMs': 400,
