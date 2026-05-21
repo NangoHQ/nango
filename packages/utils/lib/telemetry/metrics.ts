@@ -105,6 +105,7 @@ export enum Types {
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
     RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
+    RECORDS_BUDGET_TRUNCATE = 'nango.records.budgetTruncate',
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 

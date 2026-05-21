@@ -9094,6 +9094,10 @@ Receive webhooks from Nango when new records are available. Follow the [sync fun
 This endpoint returns a list of records, ordered by modification date ascending. If some records are updated while you paginate through this endpoint, you might see these records multiple times.
 </Tip>
 
+<Warning>
+A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
+</Warning>
+
 ### Default behavior
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
 

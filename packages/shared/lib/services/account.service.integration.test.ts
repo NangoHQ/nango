@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +8,7 @@ import accountService from './account.service.js';
 import customerKeyService from './customerKey.service.js';
 import environmentService, { defaultEnvironments } from './environment.service.js';
 import * as plans from './plans/plans.js';
+import sandboxApiKeyService, { createSandboxApiKeyToken, decryptSandboxSigningSecret, sandboxApiKeyPrefix } from './sandbox-api-key.service.js';
 import secretService from './secret.service.js';
 import { createAccount as createTestAccount } from '../seeders/account.seeder.js';
 
@@ -154,6 +156,177 @@ describe('Account service', () => {
         const bySecretKey = await accountService.getAccountContext({ secretKey: uuid() });
 
         expect(bySecretKey).toBeNull();
+    });
+
+    it('should retrieve account context by sandbox API key token', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const plan = (await plans.createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
+        const secret = (await secretService.getInternalSecretForEnv(db.knex, environment!.id)).unwrap();
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        const sandboxToken = (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: apiKeys[0]!.id,
+                environmentId: environment!.id,
+                purpose: 'dryrun',
+                expiresAt: new Date(Date.now() + 60 * 1000)
+            })
+        ).unwrap();
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(sandboxToken).toMatch(/^nango_sbx_v1_/);
+        expect(bySecretKey).toStrictEqual({
+            account: {
+                ...account,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            environment: {
+                ...environment,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            plan: {
+                ...plan,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            secret: {
+                ...secret,
+                created_at: expect.toBeIsoDateTimezone(),
+                updated_at: expect.toBeIsoDateTimezone()
+            },
+            auth: {
+                source: 'sandbox_token',
+                scopes: ['environment:*', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
+                apiKeyId: apiKeys[0]!.id
+            }
+        });
+    });
+
+    it('should cap sandbox API key token expiration to one day', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const issuedAtBeforeCall = Date.now();
+
+        const sandboxToken = (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: apiKeys[0]!.id,
+                environmentId: environment!.id,
+                purpose: 'dryrun',
+                expiresAt: new Date(issuedAtBeforeCall + 7 * 24 * 60 * 60 * 1000)
+            })
+        ).unwrap();
+        const issuedAtAfterCall = Date.now();
+
+        const decoded = jwt.decode(sandboxToken.slice(sandboxApiKeyPrefix.length));
+        if (!decoded || typeof decoded === 'string') {
+            throw new Error('expected decoded JWT payload');
+        }
+
+        expect(decoded.exp).toBeGreaterThanOrEqual(Math.floor((issuedAtBeforeCall + 24 * 60 * 60 * 1000) / 1000));
+        expect(decoded.exp).toBeLessThanOrEqual(Math.ceil((issuedAtAfterCall + 24 * 60 * 60 * 1000) / 1000));
+    });
+
+    it('should reject sandbox API key creation when expiration is not in the future', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: apiKeys[0]!.id,
+            environmentId: environment!.id,
+            purpose: 'dryrun',
+            expiresAt: new Date(Date.now() - 60 * 1000)
+        });
+
+        if (sandboxToken.isOk()) {
+            throw new Error('expected sandbox API key creation to fail');
+        }
+
+        expect(sandboxToken.error.message).toBe('Sandbox API key expiresAt must be in the future');
+    });
+
+    it('should return null when sandbox API key token is expired', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+        const signingSecret = decryptSandboxSigningSecret(apiKeys[0]!);
+        if (!signingSecret) {
+            throw new Error('expected sandbox signing secret');
+        }
+        const now = Date.now();
+        const sandboxToken = createSandboxApiKeyToken({
+            parentApiKeyId: apiKeys[0]!.id,
+            signingSecret,
+            purpose: 'dryrun',
+            expiresAt: new Date(now - 60 * 1000),
+            issuedAt: now - 120 * 1000
+        });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should return null when sandbox API key token parent key is soft-deleted', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
+
+        const sandboxToken = (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: apiKeys[0]!.id,
+                environmentId: environment!.id,
+                purpose: 'dryrun',
+                expiresAt: new Date(Date.now() + 60 * 1000)
+            })
+        ).unwrap();
+
+        await db.knex('customer_keys').where({ id: apiKeys[0]!.id }).update({ deleted_at: new Date() });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(bySecretKey).toBeNull();
+    });
+
+    it('should apply current parent scopes when resolving sandbox API key token', async () => {
+        const account = await createTestAccount();
+        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+
+        const parentKey = (
+            await customerKeyService.createApiKey(db.knex, {
+                accountId: account.id,
+                environmentId: environment!.id,
+                displayName: `sandbox-parent-${uuid()}`,
+                scopes: ['environment:dryrun']
+            })
+        ).unwrap();
+
+        const sandboxToken = (
+            await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                parentApiKeyId: parentKey.id,
+                environmentId: environment!.id,
+                purpose: 'dryrun',
+                expiresAt: new Date(Date.now() + 60 * 1000)
+            })
+        ).unwrap();
+
+        await customerKeyService.updateApiKeyScopes(db.knex, parentKey.id, ['environment:records:read'], environment!.id);
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(bySecretKey?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: ['environment:records:read', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy'],
+            apiKeyId: parentKey.id
+        });
     });
 
     it('should debounce customer key last_used_at updates when resolving by secretKey', async () => {

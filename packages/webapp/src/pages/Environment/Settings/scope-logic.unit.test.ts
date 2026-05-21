@@ -7,7 +7,6 @@ import {
     expandScopes,
     groupWildcard,
     isScopeSelected,
-    stripLegacyScopes,
     toggleCredential,
     toggleGroup,
     toggleScope
@@ -29,7 +28,7 @@ describe('isScopeSelected', () => {
 
     it('group wildcard matches scopes in group', () => {
         expect(isScopeSelected('environment:integrations:list', ['environment:integrations:*'])).toBe(true);
-        expect(isScopeSelected('environment:integrations:write', ['environment:integrations:*'])).toBe(true);
+        expect(isScopeSelected('environment:integrations:create', ['environment:integrations:*'])).toBe(true);
     });
 
     it('group wildcard does not match other groups', () => {
@@ -263,32 +262,5 @@ describe('allGroupScopes', () => {
             'environment:syncs:variant:create',
             'environment:syncs:variant:delete'
         ]);
-    });
-});
-
-describe('stripLegacyScopes', () => {
-    it('removes all legacy scopes', () => {
-        expect(
-            stripLegacyScopes([
-                'environment:integrations:write',
-                'environment:integrations:create',
-                'environment:integrations:update',
-                'environment:integrations:delete',
-                'environment:connections:write',
-                'environment:syncs:manage',
-                'environment:config:read',
-                'environment:config:*',
-                'environment:proxy'
-            ])
-        ).toEqual(['environment:integrations:create', 'environment:integrations:update', 'environment:integrations:delete', 'environment:proxy']);
-    });
-
-    it('passes through non-legacy scopes unchanged', () => {
-        const input = ['environment:*', 'environment:proxy', 'environment:variables:read'];
-        expect(stripLegacyScopes(input)).toEqual(input);
-    });
-
-    it('handles empty array', () => {
-        expect(stripLegacyScopes([])).toEqual([]);
     });
 });
