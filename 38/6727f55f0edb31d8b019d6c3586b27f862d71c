@@ -1,0 +1,21 @@
+docs/llms.txt
+  s_b39de48b60dddc::t_6c2e567b3aeaee 88-91
+docs/llms-full.txt
+  s_b39de48b60dddc::t_6c2e567b3aeaee 8522-8529,8569,8620-8625,8962-9000
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "386727f55f0edb31d8b019d6c3586b27f862d71c",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
