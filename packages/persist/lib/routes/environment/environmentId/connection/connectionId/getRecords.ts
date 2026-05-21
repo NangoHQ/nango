@@ -1,6 +1,8 @@
 import { logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { metrics, validateRequest } from '@nangohq/utils';
+import { ENVS, metrics, parseEnvs, validateRequest } from '@nangohq/utils';
+
+const envs = parseEnvs(ENVS);
 
 import { getRecordsRequestParser } from './validate.js';
 
@@ -59,10 +61,14 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
             externalIds,
             limit
         });
-        const { dryRunBudgetWouldTruncate, ...response } = result.value;
+        const { budgetTruncated, ...response } = result.value;
         res.json(response);
-        if (dryRunBudgetWouldTruncate) {
-            metrics.increment(metrics.Types.RECORDS_BUDGET_DRY_RUN_TRUNCATE, 1, { accountId: account.id, service: 'persist' });
+        if (budgetTruncated) {
+            metrics.increment(metrics.Types.RECORDS_BUDGET_TRUNCATE, 1, {
+                accountId: account.id,
+                service: 'persist',
+                dryRun: String(envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN)
+            });
         }
     } else {
         res.status(500).json({ error: { code: 'get_records_failed', message: `Failed to get records: ${result.error.message}` } });

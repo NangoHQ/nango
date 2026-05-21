@@ -52,7 +52,7 @@ interface RecordMetadata {
 export interface GetRecordsResponse {
     records: ReturnedRecord[];
     next_cursor?: string | null;
-    dryRunBudgetWouldTruncate?: true;
+    budgetTruncated?: true;
 }
 
 export interface UpsertSummary {

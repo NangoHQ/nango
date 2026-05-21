@@ -246,7 +246,7 @@ export async function getRecords({
         const budgetBytes = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
         const budgetEnabled = budgetBytes > 0;
 
-        const recordsMetadata: (FormattedRecordWithMetadata & { sz: number | null })[] = await query.select(
+        const recordsMetadata: (FormattedRecordWithMetadata & { size: number })[] = await query.select(
             // PostgreSQL stores timestamp with microseconds precision
             // however, javascript date only supports milliseconds precision
             // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
@@ -264,7 +264,7 @@ export async function getRecords({
                     WHEN created_at = updated_at THEN 'ADDED'
                     ELSE 'UPDATED'
                 END as last_action,
-                ${budgetEnabled ? 'size_bytes' : 'NULL'} as sz
+                COALESCE(size_bytes, 0) as size
             `)
         );
 
@@ -274,7 +274,7 @@ export async function getRecords({
 
         const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
         let hasMore = recordsMetadata.length >= limitPlus1;
-        let dryRunBudgetWouldTruncate = false;
+        let budgetTruncated = false;
         if (hasMore) {
             recordsMetadata.pop();
         }
@@ -283,19 +283,23 @@ export async function getRecords({
             let truncateAt: number | null = null;
             for (let i = 0; i < recordsMetadata.length; i++) {
                 // i > 0: always keep at least one record so pagination can progress past oversized rows.
-                const sz = recordsMetadata[i]!.sz ?? 0;
-                if (i > 0 && acc + sz > budgetBytes) {
+                if (i > 0 && acc + recordsMetadata[i]!.size > budgetBytes) {
                     truncateAt = i;
                     break;
                 }
-                acc += sz;
+                acc += recordsMetadata[i]!.size;
             }
-            if (truncateAt !== null && envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
-                dryRunBudgetWouldTruncate = true;
-            } else if (truncateAt !== null) {
-                recordsMetadata.splice(truncateAt);
-                hasMore = true;
-                span.setTag('nango.records.budgetTruncated', true);
+            if (truncateAt !== null) {
+                budgetTruncated = true;
+                if (!envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
+                    recordsMetadata.splice(truncateAt);
+                    hasMore = true;
+                }
+                span.addTags({
+                    'nango.records.budgetTruncated': true,
+                    'nango.records.budgetKeptBytes': acc,
+                    'nango.records.budgetDryRun': envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN
+                });
             }
         }
 
@@ -355,7 +359,7 @@ export async function getRecords({
                 return Ok({
                     records: results,
                     next_cursor: Cursor.new(cursorRawElement),
-                    ...(dryRunBudgetWouldTruncate ? { dryRunBudgetWouldTruncate } : {})
+                    ...(budgetTruncated ? { budgetTruncated } : {})
                 });
             }
         }
@@ -363,7 +367,7 @@ export async function getRecords({
         return Ok({
             records: results,
             next_cursor: null,
-            ...(dryRunBudgetWouldTruncate ? { dryRunBudgetWouldTruncate } : {})
+            ...(budgetTruncated ? { budgetTruncated } : {})
         });
     } catch (err) {
         const e = new Error(`List records error for model ${model}`, { cause: err });
