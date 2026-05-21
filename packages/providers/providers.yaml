@@ -14361,7 +14361,7 @@ pushpay-chms-v1:
             order: 1
             prefix: https://
             suffix: .ccbchurch.com
-            doc_section: '#step-1-finding-your-subdomain'
+            doc_section: '#step-1-finding-your-church-subdomain'
     credentials:
         username:
             type: string
