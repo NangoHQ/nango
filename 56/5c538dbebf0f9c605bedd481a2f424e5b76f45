@@ -1,0 +1,51 @@
+packages/sandbox/lib/remote-function/deploy-client.ts
+  s_b39de48b60dddc::t_66a62bb7321759 10
+  s_b39de48b60dddc::t_2551bb034c5042 1,11,41-42
+packages/sandbox/lib/remote-function/dryrun-client.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 17-18,32,37,54,131-143,191-207
+docs/spec.yaml
+  s_b39de48b60dddc::t_6ffbb634581640 1461-1462,1494-1495,1555-1556,2907-2908
+packages/sandbox/lib/remote-function/compiler-client.ts
+  s_b39de48b60dddc::t_2551bb034c5042 3,10,51-52
+  s_b39de48b60dddc::t_66a62bb7321759 9
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_66a62bb7321759 42
+  s_b39de48b60dddc::t_dd63122d753741 245,340-353
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_2551bb034c5042 1,11,57-58,134-135,137
+  s_b39de48b60dddc::t_66a62bb7321759 10
+packages/sandbox/lib/remote-function/deploy-client.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 17-18,31,36,53,116-127
+packages/sandbox/lib/remote-function/compiler-client.e2b.unit.test.ts
+  s_b39de48b60dddc::t_7fb41dd9236acb 1-33,36-56
+  s_b39de48b60dddc::t_9dee9e7724b47b 34-35
+packages/sandbox/lib/remote-function/sandbox.ts
+  s_b39de48b60dddc::t_2551bb034c5042 1-88
+packages/sandbox/lib/index.ts
+  s_b39de48b60dddc::t_2551bb034c5042 13
+packages/server/lib/controllers/functions/errors.unit.test.ts
+  s_b39de48b60dddc::t_003d798522e935 30-50
+packages/types/lib/functions/api.ts
+  s_b39de48b60dddc::t_66a62bb7321759 18
+packages/server/lib/controllers/functions/errors.ts
+  s_b39de48b60dddc::t_66a62bb7321759 23
+packages/sandbox/lib/remote-function/sandbox.unit.test.ts
+  s_b39de48b60dddc::t_f9614dbc1e9abd 4
+  s_b39de48b60dddc::t_57ff77722ee50d 1-3,5-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "565c538dbebf0f9c605bedd481a2f424e5b76f45",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
