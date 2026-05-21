@@ -1587,6 +1587,7 @@
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
+              "api-integrations/tanium",
               "integrations/all/teamtailor",
               "integrations/all/teamleader",
               "integrations/all/teamwork",
