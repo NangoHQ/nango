@@ -5,7 +5,7 @@ import type { InlineConfig } from 'vite';
 
 const config: StorybookConfig = {
     stories: ['../src/**/*.stories.@(ts|tsx)'],
-    addons: ['@storybook/addon-themes'],
+    addons: ['@storybook/addon-a11y', '@storybook/addon-mcp', '@storybook/addon-themes'],
     framework: {
         name: '@storybook/react-vite',
         options: {}
