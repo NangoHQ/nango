@@ -33,6 +33,8 @@ export const apiKeyScopes = [
     'environment:syncs:variant:delete',
     'environment:syncs:manage', // legacy: covers update + variant:create + variant:delete
     'environment:syncs:*',
+    // Functions
+    'environment:functions:compile',
     // Deploy
     'environment:deploy',
     // Dryrun

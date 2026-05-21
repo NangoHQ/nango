@@ -44,6 +44,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
             { value: 'environment:syncs:variant:delete', label: 'delete variant' }
         ]
     },
+    { group: 'Functions', items: [{ value: 'environment:functions:compile', label: 'compile' }] },
     { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
     { group: 'Dryrun', items: [{ value: 'environment:dryrun', label: 'dryrun' }] },
     {

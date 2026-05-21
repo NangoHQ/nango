@@ -251,7 +251,7 @@ describe('remote-function public API', () => {
         expect(res.json.error.code).toBe('invalid_body');
     });
 
-    it('requires deploy scope on POST /functions/compile', async () => {
+    it('requires compile scope on POST /functions/compile', async () => {
         const { apiKey } = await seedAccountWithRemoteFunctions(['environment:mcp']);
 
         const res = await api.fetch('/functions/compile', {
@@ -266,9 +266,45 @@ describe('remote-function public API', () => {
         expect(res.json).toStrictEqual({
             error: {
                 code: 'forbidden',
-                message: 'Insufficient scope. Required: environment:deploy'
+                message: 'Insufficient scope. Required: environment:functions:compile'
             }
         });
+    });
+
+    it('rejects deploy-only scope on POST /functions/compile', async () => {
+        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
+
+        const res = await api.fetch('/functions/compile', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:functions:compile'
+            }
+        });
+    });
+
+    it('accepts compile scope on POST /functions/compile', async () => {
+        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:compile']);
+
+        const res = await api.fetch('/functions/compile', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                code: ''
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
     });
 
     it('returns integration_not_found on POST /remote-function/compile', async () => {

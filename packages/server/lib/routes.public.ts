@@ -96,7 +96,7 @@ const remoteFunctionAuth: RequestHandler[] = [
         next();
     }
 ];
-const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
+const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:functions:compile')];
 const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:dryrun')];
 const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
     if (res.locals['apiKeyAuthSource'] !== 'sandbox_token') {
