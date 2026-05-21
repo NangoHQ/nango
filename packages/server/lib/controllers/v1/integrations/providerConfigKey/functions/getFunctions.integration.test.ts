@@ -213,16 +213,16 @@ describe(`GET ${route}`, () => {
         expect(page0Names.some((name) => page2Names.includes(name))).toBe(false);
     });
 
-    it('should paginate on-event results deterministically when multiple scripts share the same name', async () => {
+    it('should paginate on-event results deterministically', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
 
         await insertOnEventScripts({
             configId: integration.id!,
             scripts: [
-                { name: 'shared-script', event: 'POST_CONNECTION_CREATION' },
-                { name: 'shared-script', event: 'PRE_CONNECTION_DELETION' },
-                { name: 'shared-script', event: 'VALIDATE_CONNECTION' }
+                { name: 'alpha-script', event: 'POST_CONNECTION_CREATION' },
+                { name: 'beta-script', event: 'PRE_CONNECTION_DELETION' },
+                { name: 'gamma-script', event: 'VALIDATE_CONNECTION' }
             ]
         });
 
@@ -247,8 +247,8 @@ describe(`GET ${route}`, () => {
         const page0Keys = page0.json.data.map(toFunctionKey);
         const page1Keys = page1.json.data.map(toFunctionKey);
 
-        expect(page0Keys).toStrictEqual(['on-event:shared-script:post-connection-creation', 'on-event:shared-script:pre-connection-deletion']);
-        expect(page1Keys).toStrictEqual(['on-event:shared-script:validate-connection']);
+        expect(page0Keys).toStrictEqual(['on-event:alpha-script:post-connection-creation', 'on-event:beta-script:pre-connection-deletion']);
+        expect(page1Keys).toStrictEqual(['on-event:gamma-script:validate-connection']);
         expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
     });
 
@@ -288,8 +288,8 @@ describe(`GET ${route}`, () => {
         await insertOnEventScripts({
             configId: integration.id!,
             scripts: [
-                { name: 'shared-script', event: 'POST_CONNECTION_CREATION' },
-                { name: 'shared-script', event: 'PRE_CONNECTION_DELETION' }
+                { name: 'on-event-a', event: 'POST_CONNECTION_CREATION' },
+                { name: 'on-event-b', event: 'PRE_CONNECTION_DELETION' }
             ]
         });
 
@@ -314,8 +314,8 @@ describe(`GET ${route}`, () => {
         const page0Keys = page0.json.data.map(toFunctionKey);
         const page1Keys = page1.json.data.map(toFunctionKey);
 
-        expect(page0Keys).toStrictEqual(['action:action-a:', 'action:action-b:', 'on-event:shared-script:post-connection-creation']);
-        expect(page1Keys).toStrictEqual(['on-event:shared-script:pre-connection-deletion', 'sync:sync-a:', 'sync:sync-b:']);
+        expect(page0Keys).toStrictEqual(['action:action-a:', 'action:action-b:', 'on-event:on-event-a:post-connection-creation']);
+        expect(page1Keys).toStrictEqual(['on-event:on-event-b:pre-connection-deletion', 'sync:sync-a:', 'sync:sync-b:']);
         expect(page0Keys.some((key) => page1Keys.includes(key))).toBe(false);
     });
 

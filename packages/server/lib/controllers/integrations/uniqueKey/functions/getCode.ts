@@ -79,12 +79,11 @@ export const getFunctionCode = asyncWrapper<GetPublicFunctionCode>(async (req, r
     }
 
     const syncConfigMatches = type === 'on-event' ? [] : await getSyncAndActionConfigsBySyncNameAndConfigId(environment.id, providerConfig.id, name);
-    const onEventMatches = type && type !== 'on-event' ? [] : await onEventScriptService.getByConfigAndName(providerConfig.id, name);
+    const onEventMatch = type && type !== 'on-event' ? null : await onEventScriptService.getByConfigAndName(providerConfig.id, name);
 
     const matches: FunctionMatch[] = [
         ...syncConfigMatches.map((c) => ({ type: c.type, name: c.sync_name, fileLocation: c.file_location })),
-        // Multiple on-event rows can share a name (different events) but point to the same TS file, so collapse to one match.
-        ...(onEventMatches.length > 0 ? [{ type: 'on-event' as const, name: onEventMatches[0]!.name, fileLocation: onEventMatches[0]!.fileLocation }] : [])
+        ...(onEventMatch ? [{ type: 'on-event' as const, name: onEventMatch.name, fileLocation: onEventMatch.fileLocation }] : [])
     ];
 
     const filtered = type ? matches.filter((m) => m.type === type) : matches;

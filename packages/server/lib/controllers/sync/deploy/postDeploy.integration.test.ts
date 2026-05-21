@@ -128,6 +128,46 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
     });
 
+    it('should reject duplicate on-event names within one integration', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                debug: false,
+                flowConfigs: [],
+                nangoYamlBody: '',
+                onEventScriptsByProvider: [
+                    {
+                        providerConfigKey: 'github',
+                        scripts: [
+                            { name: 'shared-script', fileBody: { js: '', ts: '' }, event: 'post-connection-creation' },
+                            { name: 'shared-script', fileBody: { js: '', ts: '' }, event: 'pre-connection-deletion' }
+                        ]
+                    }
+                ],
+                reconcile: false,
+                deployMode: 'all'
+            }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message:
+                            'On-event function "shared-script" is used multiple times. Please make sure all on-event function names are unique within an integration.',
+                        path: ['onEventScriptsByProvider', '0', 'scripts', '1', 'name']
+                    }
+                ]
+            }
+        });
+    });
+
     it('should return 409 when a concurrent deployment is already in progress', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
 

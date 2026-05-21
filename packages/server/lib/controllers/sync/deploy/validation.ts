@@ -143,6 +143,45 @@ const postConnectionScriptsByProvider = z.array(
         }))
 );
 
+function validateNoDuplicateOnEventNames({
+    scriptGroups,
+    pathPrefix,
+    issues
+}: {
+    scriptGroups:
+        | {
+              providerConfigKey: string;
+              scripts: { name: string }[];
+          }[]
+        | undefined;
+    pathPrefix: 'onEventScriptsByProvider' | 'postConnectionScriptsByProvider';
+    issues: {
+        push: (issue: { code: 'custom'; message: string; path: (string | number)[]; input: unknown }) => void;
+    };
+}) {
+    if (!scriptGroups) {
+        return;
+    }
+
+    for (const [groupIndex, group] of scriptGroups.entries()) {
+        const seenNames = new Set<string>();
+
+        for (const [scriptIndex, script] of group.scripts.entries()) {
+            if (seenNames.has(script.name)) {
+                issues.push({
+                    code: 'custom',
+                    message: `On-event function "${script.name}" is used multiple times. Please make sure all on-event function names are unique within an integration.`,
+                    path: [pathPrefix, groupIndex, 'scripts', scriptIndex, 'name'],
+                    input: script.name
+                });
+                continue;
+            }
+
+            seenNames.add(script.name);
+        }
+    }
+}
+
 const commonValidation = z
     .object({
         flowConfigs,
@@ -163,14 +202,29 @@ const commonValidation = z
     })
     .strict();
 
-export const validation = commonValidation.transform((data) => ({
-    ...data,
-    deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
-}));
+function validateUniqueOnEventNames(
+    data: z.infer<typeof commonValidation>,
+    issues: { push: (issue: { code: 'custom'; message: string; path: (string | number)[]; input: unknown }) => void }
+) {
+    validateNoDuplicateOnEventNames({ scriptGroups: data.onEventScriptsByProvider, pathPrefix: 'onEventScriptsByProvider', issues });
+    validateNoDuplicateOnEventNames({ scriptGroups: data.postConnectionScriptsByProvider, pathPrefix: 'postConnectionScriptsByProvider', issues });
+}
+
+export const validation = commonValidation
+    .check((payload) => {
+        validateUniqueOnEventNames(payload.value, payload.issues);
+    })
+    .transform((data) => ({
+        ...data,
+        deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
+    }));
 
 export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
+    })
+    .check((payload) => {
+        validateUniqueOnEventNames(payload.value, payload.issues);
     })
     .transform((data) => ({
         ...data,
