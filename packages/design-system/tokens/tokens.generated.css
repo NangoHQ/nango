@@ -243,6 +243,7 @@
     --ds-layout-column-4: 4;
     --ds-layout-column-6: 6;
     --ds-layout-column-12: 12;
+    --ds-test-token: #7654fd;
 }
 
 /* Semantic tokens — Light (default) */

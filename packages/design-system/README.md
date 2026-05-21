@@ -2,6 +2,36 @@
 
 Shared design system for the Nango app — design tokens, components, and Storybook.
 
+## Storybook
+
+Storybook is the living style guide for the design system. Run it locally to browse tokens and components in both light and dark themes.
+
+```bash
+# From the repo root
+npm run storybook
+
+# Or directly from this package
+cd packages/design-system
+npm run storybook
+```
+
+Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) to toggle between light and dark.
+
+### Stories
+
+| Story | Path |
+|---|---|
+| Typography — Type Scale | `Design System / Typography` |
+| Typography — Font Families | `Design System / Typography` |
+| Color Palette — Semantic Tokens | `Design System / Color Palette` |
+| Color Palette — Primitive Ramps | `Design System / Color Palette` |
+
+### Adding component stories
+
+Create a `*.stories.tsx` file anywhere under `packages/design-system/src/`. Follow the `src/stories/Typography.stories.tsx` pattern.
+
+---
+
 ## Tokens
 
 Design tokens are authored in Figma via [Tokens Studio](https://tokens.studio/) and compiled to CSS custom properties.

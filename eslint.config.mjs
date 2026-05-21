@@ -258,6 +258,15 @@ export default tseslint.config(
         }
     },
     {
+        files: ['packages/design-system/src/**/*.{tsx,ts}', 'packages/design-system/.storybook/**/*.{ts,tsx}'],
+
+        languageOptions: {
+            parserOptions: {
+                project: 'packages/design-system/tsconfig.json'
+            }
+        }
+    },
+    {
         files: ['packages/webapp/src/**/*.{tsx,ts}'],
         plugins: {
             react: react,

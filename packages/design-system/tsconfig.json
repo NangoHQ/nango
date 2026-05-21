@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "lib": ["DOM", "DOM.Iterable", "ES2021"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "types": ["vite/client"]
+    },
+    "include": ["src/**/*", ".storybook/**/*"]
+}

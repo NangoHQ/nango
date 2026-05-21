@@ -6,15 +6,27 @@
     "scripts": {
         "tokens:fetch": "node scripts/tokens-fetch.mjs",
         "tokens:build": "node scripts/tokens-fetch.mjs --build-only",
-        "test": "vitest run --config vitest.config.mjs"
+        "test": "vitest run --config vitest.config.mjs",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "exports": {
         "./tokens/tokens.generated.css": "./tokens/tokens.generated.css"
     },
     "devDependencies": {
+        "@storybook/addon-themes": "^10.4.0",
+        "@storybook/react-vite": "^10.4.0",
+        "@tailwindcss/vite": "^4.1.13",
+        "tailwindcss": "^4.1.13",
         "@tokens-studio/sd-transforms": "2.0.3",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
         "prettier": "3.6.2",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "storybook": "^10.4.0",
         "style-dictionary": "5.4.1",
+        "vite": "^7.3.2",
         "vitest": "3.2.4"
     }
 }
