@@ -1,8 +1,9 @@
-import { Err, Ok } from '@nangohq/utils';
+import { getLogger } from './logger.js';
+import { Err, Ok } from './result.js';
 
-import { logger } from './logger.js';
+import type { Result } from './result.js';
 
-import type { Result } from '@nangohq/utils';
+const logger = getLogger('Batcher');
 
 interface Item<T> {
     item: T;
@@ -50,7 +51,7 @@ export class Batcher<T> {
         }
 
         if (discarded > 0) {
-            logger.error(`Billing batcher queue full. Discarding ${discarded} items.`);
+            logger.error(`Batcher queue full. Discarding ${discarded} items.`);
             // TODO: add metric + alert
         }
 

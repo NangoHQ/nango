@@ -17,7 +17,8 @@ import type {
     MergingStrategy,
     PostRecordsSuccess,
     PutCheckpointSuccess,
-    PutRecordsSuccess
+    PutRecordsSuccess,
+    RunnerTelemetry
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -373,6 +374,18 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to save checkpoint: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async postRunnerTelemetry(environmentId: number, events: RunnerTelemetry[]): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/telemetry`,
+            data: { events }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
         }
         return res;
     }
