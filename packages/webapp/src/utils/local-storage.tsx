@@ -40,7 +40,8 @@ export enum LocalStorageKeys {
     AccountId = 'nango_account_id',
     LastEnvironment = 'nango_last_environment',
     Playground = 'nango_playground',
-    FeatureFlags = 'nango_feature_flags'
+    FeatureFlags = 'nango_feature_flags',
+    Theme = 'nango_theme'
 }
 
 const storage = new LocalStorage();

@@ -3,20 +3,33 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '../utils/local-storage';
 
+/**
+ * Local-storage-only feature flags for development use.
+ * Only surfaced via DevToolPanel — never shipped to production UI.
+ *
+ * Each flag here controls whether a particular feature is visible/active
+ * in the app UI. The flag itself is NOT the feature state — e.g. `themeSwitcher`
+ * controls whether the dark/light toggle button appears in the navbar;
+ * the actual theme state lives in `useThemeStore`.
+ */
 export interface FeatureFlagsState {
-    darkMode: boolean;
-    setDarkMode: (value: boolean) => void;
-    toggleDarkMode: () => void;
+    /** When true, shows the dark/light mode toggle button in the app header. */
+    themeSwitcher: boolean;
+
+    setFlag: <K extends keyof FeatureFlagsFlags>(key: K, value: boolean) => void;
+}
+
+export interface FeatureFlagsFlags {
+    themeSwitcher: boolean;
 }
 
 export const useFeatureFlagsStore = create<FeatureFlagsState>()(
     persist(
-        (set, get) => ({
-            // Default to dark mode to match the existing app default
-            darkMode: true,
+        (set) => ({
+            // Off by default — enable via the dev panel (⌘⇧D)
+            themeSwitcher: false,
 
-            setDarkMode: (value) => set({ darkMode: value }),
-            toggleDarkMode: () => set({ darkMode: !get().darkMode })
+            setFlag: (key, value) => set({ [key]: value })
         }),
         {
             name: LocalStorageKeys.FeatureFlags,

@@ -11,6 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
+import { useThemeStore } from '@/store/theme';
 import { cn } from '@/utils/utils';
 
 export const AppHeader: React.FC = () => {
@@ -22,8 +23,9 @@ export const AppHeader: React.FC = () => {
     const { can } = usePermissions();
     const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
 
-    const darkMode = useFeatureFlagsStore((s) => s.darkMode);
-    const toggleDarkMode = useFeatureFlagsStore((s) => s.toggleDarkMode);
+    const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
+    const darkMode = useThemeStore((s) => s.darkMode);
+    const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
     return (
         <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
@@ -59,7 +61,7 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
-                {import.meta.env.DEV && (
+                {themeSwitcher && (
                     <Button
                         variant="secondary"
                         size="sm"
