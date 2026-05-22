@@ -3,7 +3,6 @@ import { errors as osErrors } from '@opensearch-project/opensearch';
 
 import { getLogger } from '@nangohq/utils';
 
-import { envs } from './env.js';
 import { client } from './storage/client.js';
 
 export const logger = getLogger('logs');
@@ -28,7 +27,17 @@ export const logLevelToLogger = {
 /** @deprecated Prefer `isLogsNotFoundError` — works for both Elasticsearch and OpenSearch clients. */
 export const ResponseError = esErrors.ResponseError;
 
+export class LogsNotFoundError extends Error {
+    constructor() {
+        super('Logs document not found');
+        this.name = 'LogsNotFoundError';
+    }
+}
+
 export function isLogsNotFoundError(err: unknown): boolean {
+    if (err instanceof LogsNotFoundError) {
+        return true;
+    }
     if (err instanceof esErrors.ResponseError) {
         return err.statusCode === 404;
     }
@@ -39,19 +48,5 @@ export function isLogsNotFoundError(err: unknown): boolean {
 }
 
 export function throwLogsNotFound(): never {
-    if (envs.NANGO_LOGS_PROVIDER === 'opensearch') {
-        throw new osErrors.ResponseError({
-            statusCode: 404,
-            body: {},
-            headers: {},
-            warnings: null
-        } as any);
-    }
-
-    throw new esErrors.ResponseError({
-        statusCode: 404,
-        warnings: [],
-        body: {},
-        headers: {}
-    } as any);
+    throw new LogsNotFoundError();
 }
