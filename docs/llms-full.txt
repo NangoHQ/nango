@@ -14213,6 +14213,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `prospeo` | Prospeo | API_KEY | [docs](https://nango.dev/docs/api-integrations/prospeo.md) | [connect](https://nango.dev/docs/api-integrations/prospeo/connect.md) |  | crm, marketing |
 | `provenexpert` | ProvenExpert | BASIC | [docs](https://nango.dev/docs/api-integrations/provenexpert.md) | [connect](https://nango.dev/docs/api-integrations/provenexpert/connect.md) |  | marketing |
 | `prtg-classic` | PRTG Classic | API_KEY | [docs](https://nango.dev/docs/api-integrations/prtg-classic.md) | [connect](https://nango.dev/docs/api-integrations/prtg-classic/connect.md) |  | support |
+| `pushpay-chms-v1` | Pushpay ChMS (v1) | BASIC | [docs](https://nango.dev/docs/api-integrations/pushpay-chms-v1.md) | [connect](https://nango.dev/docs/api-integrations/pushpay-chms-v1/connect.md) |  | crm, productivity |
 | `pylon` | Pylon | API_KEY | [docs](https://nango.dev/docs/api-integrations/pylon.md) | [connect](https://nango.dev/docs/api-integrations/pylon/connect.md) |  | productivity |
 | `qualia` | Qualia | BASIC | [docs](https://nango.dev/docs/api-integrations/qualia.md) | [connect](https://nango.dev/docs/api-integrations/qualia/connect.md) |  | legal |
 | `qualtrics` | Qualtrics | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/qualtrics.md) |  |  | surveys |
