@@ -60,18 +60,28 @@ function createTelemetryBatcher({ environmentId, persistClient }: { environmentI
     return batcher;
 }
 
-export function createTelemetryRecorder({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): TelemetryRecorder {
-    const batcher = createTelemetryBatcher({ environmentId, persistClient });
+export function createTelemetryRecorder({
+    environmentId,
+    persistClient,
+    exportRunnerTelemetry
+}: {
+    environmentId: number;
+    persistClient: PersistClient;
+    exportRunnerTelemetry: boolean;
+}): TelemetryRecorder {
+    const batcher = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : null;
 
     return {
         environmentId,
         record(entry) {
+            if (!batcher) return;
             const res = batcher.add(entry);
             if (res.isErr()) {
                 logger.error(`Telemetry recorder dropped entry: ${res.error.message}`);
             }
         },
         async shutdown({ timeoutMs = 5_000 }: { timeoutMs?: number } = {}) {
+            if (!batcher) return Ok(undefined);
             const res = await batcher.shutdown({ timeoutMs });
             if (res.isErr()) {
                 logger.error(`Telemetry recorder shutdown error: ${res.error.message}`);

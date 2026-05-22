@@ -55,6 +55,7 @@ export async function exec({
     const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
     const telemetryRecorder = createTelemetryRecorder({
         environmentId: nangoProps.environmentId,
+        exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
         persistClient
     });
     const rawNango = (() => {

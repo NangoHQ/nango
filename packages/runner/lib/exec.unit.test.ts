@@ -31,7 +31,8 @@ function getNangoProps(): NangoProps {
             validateActionInput: false,
             validateActionOutput: false,
             validateSyncMetadata: false,
-            validateSyncRecords: false
+            validateSyncRecords: false,
+            exportRunnerTelemetry: false
         },
         endUser: null,
         heartbeatTimeoutSecs: 30

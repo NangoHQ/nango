@@ -97,7 +97,8 @@ function minimalNangoProps(overrides: { environmentId?: number } = {}) {
             validateWebhookInput: false,
             validateWebhookOutput: false,
             validateSyncRecords: false,
-            validateSyncMetadata: false
+            validateSyncMetadata: false,
+            exportRunnerTelemetry: false
         }
     };
 }

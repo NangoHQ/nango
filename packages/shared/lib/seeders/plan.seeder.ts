@@ -49,6 +49,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,
         lambda_tenant_isolation: true,
+        export_runner_telemetry: true,
         ...override
     };
 }
