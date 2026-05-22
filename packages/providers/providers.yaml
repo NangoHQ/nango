@@ -18884,6 +18884,7 @@ tanium:
             example: acme.cloud.tanium.com
             format: hostname
             prefix: https://
+            doc_section: '#step-2-find-your-hostname'
             order: 1
 
 teamtailor:
