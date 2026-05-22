@@ -16,5 +16,5 @@
         "jsx": "react-jsx",
         "types": ["vite/client"]
     },
-    "include": ["src/**/*", ".storybook/**/*"]
+    "include": ["src/**/*", "tokens/**/*", ".storybook/**/*"]
 }
