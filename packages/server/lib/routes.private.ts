@@ -130,8 +130,10 @@ const basePublicHost = new URL(basePublicUrl).hostname;
 export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigins: Set<string>, publicHost: string): boolean {
     if (!origin) return true;
     try {
-        const host = new URL(origin).hostname;
-        return allowedOrigins.has(origin) || (/^pr-\d+\./.test(host) && host.endsWith(`.${publicHost}`));
+        const url = new URL(origin);
+        if (allowedOrigins.has(origin)) return true;
+        // Only allow HTTPS with no non-standard port for PR preview subdomains
+        return url.protocol === 'https:' && url.port === '' && /^pr-\d+\./.test(url.hostname) && url.hostname.endsWith(`.${publicHost}`);
     } catch {
         return false;
     }
