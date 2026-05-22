@@ -25,11 +25,11 @@ To authenticate with ImmyBot, you need:
 1. In Microsoft Entra, go to **App registrations**.
 2. Click **New registration**, or open an existing app registration for ImmyBot API access.
 
-<img src="/api-integrations/immybot/screenshots/01-azure-app-registrations-new-registration.png" />
+<img src="/api-integrations/immybot/01-azure-app-registrations-new-registration.png" />
 
 3. From the app registration overview, copy the **Directory (tenant) ID** and **Application (client) ID**.
 
-<img src="/api-integrations/immybot/screenshots/02-azure-app-registration-overview.png" />
+<img src="/api-integrations/immybot/02-azure-app-registration-overview.png" />
 
 #### Step 2: Create a client secret
 
@@ -37,7 +37,7 @@ To authenticate with ImmyBot, you need:
 2. Create a new client secret.
 3. Copy the secret **Value**.
 
-<img src="/api-integrations/immybot/screenshots/03-azure-client-secret.png" />
+<img src="/api-integrations/immybot/03-azure-client-secret.png" />
 
 <Note>
 Store the Client Secret securely. Azure only shows the client secret value once.
@@ -47,11 +47,11 @@ Store the Client Secret securely. Azure only shows the client secret value once.
 
 1. From the app registration overview, click the **Managed application in local directory** link.
 
-<img src="/api-integrations/immybot/screenshots/04-azure-managed-application-link.png" />
+<img src="/api-integrations/immybot/04-azure-managed-application-link.png" />
 
 2. On the Enterprise Application properties page, copy the **Object ID**.
 
-<img src="/api-integrations/immybot/screenshots/05-azure-enterprise-application-object-id.png" />
+<img src="/api-integrations/immybot/05-azure-enterprise-application-object-id.png" />
 
 <Warning>
 Use the Enterprise Application Object ID for the ImmyBot Azure Object ID field, not the App Registration Object ID.
@@ -61,34 +61,34 @@ Use the Enterprise Application Object ID for the ImmyBot Azure Object ID field, 
 
 1. In ImmyBot, expand **Show more** in the sidebar and open **People**.
 
-<img src="/api-integrations/immybot/screenshots/06-immybot-show-more-people.png" />
+<img src="/api-integrations/immybot/06-immybot-show-more-people.png" />
 
 2. Click **New**.
 
-<img src="/api-integrations/immybot/screenshots/07-immybot-people-new.png" />
+<img src="/api-integrations/immybot/07-immybot-people-new.png" />
 
 3. Create a Person for the integration. Select the owner tenant, enter a recognizable name and email, and paste the Enterprise Application Object ID into **Azure Object ID**.
 
-<img src="/api-integrations/immybot/screenshots/08-immybot-new-person-form.png" />
+<img src="/api-integrations/immybot/08-immybot-new-person-form.png" />
 
 #### Step 5: Create a User and assign an API access role in ImmyBot
 
 1. In ImmyBot, expand **Show more** and open **Users & Roles**.
 
-<img src="/api-integrations/immybot/screenshots/09-immybot-show-more-users-roles.png" />
+<img src="/api-integrations/immybot/09-immybot-show-more-users-roles.png" />
 
 2. Click **Add New User**.
 
-<img src="/api-integrations/immybot/screenshots/10-immybot-users-roles-add-new-user.png" />
+<img src="/api-integrations/immybot/10-immybot-users-roles-add-new-user.png" />
 
 3. Select the Person you created, then click **Create Users**.
 
-<img src="/api-integrations/immybot/screenshots/11-immybot-create-users-from-existing-people.png" />
+<img src="/api-integrations/immybot/11-immybot-create-users-from-existing-people.png" />
 
 4. Assign an administrator role that can access the ImmyBot API, such as **System Administrator (Legacy)** or the applicable administrator role for your tenant.
 5. Set the assignment to **Allow**, then click **Assign**.
 
-<img src="/api-integrations/immybot/screenshots/12-immybot-direct-role-assignment.png" />
+<img src="/api-integrations/immybot/12-immybot-direct-role-assignment.png" />
 
 #### Step 6: Find your ImmyBot instance subdomain
 
@@ -105,6 +105,6 @@ Once you have your ImmyBot credentials:
 2. Enter your **Microsoft Entra Tenant ID**, **ImmyBot Instance Subdomain**, **Client ID**, and **Client Secret** in their respective fields.
 3. Submit the form, and you should be successfully authenticated.
 
-<img src="/api-integrations/immybot/screenshots/13-nango-immybot-connection-form.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/immybot/13-nango-immybot-connection-form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to ImmyBot.
