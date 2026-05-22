@@ -8717,15 +8717,59 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
 </Info>
 
 <ResponseExample>
-```json Example Response
+```json Basic response
 {
   "data": {
     "unique_key": "slack-nango-community",
     "display_name": "Slack",
     "provider": "slack",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": true,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z"
+  }
+}
+```
+
+```json With credentials (OAuth2/OAuth1/TBA)
+{
+  "data": {
+    "unique_key": "github-nango",
+    "display_name": "GitHub",
+    "provider": "github",
+    "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": false,
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "OAUTH2",
+      "client_id": "abc123",
+      "client_secret": "secret456",
+      "scopes": "repo,user",
+      "webhook_secret": null
+    }
+  }
+}
+```
+
+```json With credentials (GitHub App / CUSTOM)
+{
+  "data": {
+    "unique_key": "github-app-nango",
+    "display_name": "GitHub App",
+    "provider": "github-app",
+    "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": false,
+    "created_at": "2023-10-16T08:45:26.241Z",
+    "updated_at": "2023-10-16T08:45:26.241Z",
+    "credentials": {
+      "type": "CUSTOM",
+      "client_id": "abc123",
+      "client_secret": "secret456",
+      "app_id": "123456",
+      "app_link": "https://github.com/apps/my-app",
+      "private_key": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----"
+    }
   }
 }
 ```
@@ -9735,7 +9779,7 @@ await nango.getIntegration(<INTEGRATION-ID>);
          The integration ID
     </ResponseField>
     <ResponseField name="include" type="array">
-        Include sensitive data. Allowed values: `webhook`
+        Include sensitive data. Allowed values: `webhook`, `credentials`
     </ResponseField>
 </Expandable>
 
@@ -9746,10 +9790,12 @@ await nango.getIntegration(<INTEGRATION-ID>);
 {
     "data": {
         "unique_key": "slack-nango-community",
+        "display_name": "Slack",
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "forward_webhooks": true,
         "created_at": "2023-10-16T08:45:26.241Z",
-        "updated_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```

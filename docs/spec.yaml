@@ -3096,6 +3096,9 @@ components:
                     type: string
                     format: date-time
                     description: Last time it was updated
+                forward_webhooks:
+                    type: boolean
+                    description: Whether webhooks received from this integration's provider are forwarded to your backend.
         IntegrationFull:
             allOf:
                 - $ref: '#/components/schemas/Integration'
