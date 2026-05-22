@@ -18969,8 +18969,7 @@ tableau:
 tanium:
     display_name: Tanium
     categories:
-        - it
-        - security
+        - dev-tools
     auth_mode: API_KEY
     proxy:
         base_url: https://${connectionConfig.hostname}/api
