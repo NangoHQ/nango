@@ -14209,7 +14209,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `prive` | Prive | API_KEY | [docs](https://nango.dev/docs/integrations/all/prive.md) | [connect](https://nango.dev/docs/integrations/all/prive/connect.md) |  | e-commerce |
 | `procore` | Procore | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/procore.md) | [connect](https://nango.dev/docs/api-integrations/procore/connect.md) | [setup](https://nango.dev/docs/api-integrations/procore/how-to-register-your-own-procore-oauth-app.md) | erp |
 | `productboard` | Productboard | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/productboard.md) |  |  | productivity |
-| `prospeo` | Prospeo | API_KEY | [docs](https://nango.dev/docs/integrations/all/prospeo.md) | [connect](https://nango.dev/docs/integrations/all/prospeo/connect.md) |  | crm, marketing |
+| `prospeo` | Prospeo | API_KEY | [docs](https://nango.dev/docs/api-integrations/prospeo.md) | [connect](https://nango.dev/docs/api-integrations/prospeo/connect.md) |  | crm, marketing |
 | `provenexpert` | ProvenExpert | BASIC | [docs](https://nango.dev/docs/api-integrations/provenexpert.md) | [connect](https://nango.dev/docs/api-integrations/provenexpert/connect.md) |  | marketing |
 | `prtg-classic` | PRTG Classic | API_KEY | [docs](https://nango.dev/docs/api-integrations/prtg-classic.md) | [connect](https://nango.dev/docs/api-integrations/prtg-classic/connect.md) |  | support |
 | `pylon` | Pylon | API_KEY | [docs](https://nango.dev/docs/api-integrations/pylon.md) | [connect](https://nango.dev/docs/api-integrations/pylon/connect.md) |  | productivity |

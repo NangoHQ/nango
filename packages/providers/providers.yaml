@@ -14736,15 +14736,15 @@ prospeo:
                 content-type: application/json
             endpoints:
                 - /account-information
-    docs: https://nango.dev/docs/integrations/all/prospeo
-    docs_connect: https://nango.dev/docs/integrations/all/prospeo/connect
+    docs: https://nango.dev/docs/api-integrations/prospeo
+    docs_connect: https://nango.dev/docs/api-integrations/prospeo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: Your Prospeo API Key
-            example: 65d2be5e227e447d8777d36f934c611c
-            pattern: '^[a-f0-9]{32}$'
+            example: pk_640edfcc************************304fca5e
+            pattern: '^(pk_[a-f0-9]{64}|[a-f0-9]{32})$'
             doc_section: '#step-1-finding-your-api-key'
 
 prtg-classic:

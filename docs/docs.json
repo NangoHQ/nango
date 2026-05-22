@@ -633,6 +633,14 @@
     {
       "source": "/reference/sdks/java",
       "destination": "/reference/backend/backend-sdk/java"
+    },
+    {
+      "source": "/integrations/all/prospeo",
+      "destination": "/api-integrations/prospeo"
+    },
+    {
+      "source": "/integrations/all/prospeo/connect",
+      "destination": "/api-integrations/prospeo/connect"
     }
   ],
   "navigation": {
@@ -1440,7 +1448,7 @@
               "integrations/all/prive",
               "integrations/all/private-api-basic",
               "integrations/all/private-api-bearer",
-              "integrations/all/prospeo",
+              "api-integrations/prospeo",
               "integrations/all/productboard",
               "api-integrations/procore",
               "api-integrations/provenexpert",
