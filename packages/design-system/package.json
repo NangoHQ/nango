@@ -11,7 +11,21 @@
         "build-storybook": "NODE_PATH=./node_modules storybook build"
     },
     "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        },
         "./tokens/tokens.generated.css": "./tokens/tokens.generated.css"
+    },
+    "dependencies": {
+        "@radix-ui/react-slot": "^1.1.2",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^3.3.0"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
     },
     "devDependencies": {
         "@storybook/addon-a11y": "10.4.0",
@@ -28,7 +42,7 @@
         "react-dom": "18.3.1",
         "storybook": "10.4.0",
         "style-dictionary": "5.4.1",
-        "tailwindcss": "4.1.13",
+        "tailwindcss": "4.2.0",
         "vite": "7.3.2",
         "vitest": "3.2.4"
     }

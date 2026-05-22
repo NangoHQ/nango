@@ -13,6 +13,17 @@
     box-sizing: border-box;
 }
 
+/* Focus rings are applied via box-shadow (--focus-outline-*); suppress the browser default */
+*:focus-visible {
+    outline: none;
+}
+
+@keyframes ds-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 body {
     font-family: var(--ds-typography-font-family-sans);
     background-color: var(--surface-page);
