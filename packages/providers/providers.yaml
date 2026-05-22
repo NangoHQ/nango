@@ -12492,7 +12492,7 @@ next-cloud-ocs:
 nexthink:
     display_name: Nexthink
     categories:
-        - dev-tools
+        - analytics
     auth_mode: OAUTH2_CC
     token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
     token_request_auth_method: basic
@@ -12504,6 +12504,18 @@ nexthink:
         base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
     docs: https://nango.dev/docs/api-integrations/nexthink
     docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Nexthink API Client ID.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Nexthink API Client Secret.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
     connection_config:
         instance:
             type: string
@@ -12511,6 +12523,7 @@ nexthink:
             description: The name of your Nexthink instance.
             example: acme
             order: 1
+            doc_section: '#step-1-locate-your-instance-name-and-region'
         region:
             type: string
             title: Region
@@ -12518,6 +12531,7 @@ nexthink:
             example: eu
             pattern: '^(us|eu|pac|meta)$'
             order: 2
+            doc_section: '#step-1-locate-your-instance-name-and-region'
 
 ninjaone-rmm:
     display_name: NinjaOne RMM
