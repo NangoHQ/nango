@@ -28,7 +28,7 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 
 ### Storybook MCP
 
-Storybook ships with an [MCP server](https://storybook.js.org/docs/sharing/mcp-server) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. When the dev server is running, Claude Code connects to it automatically via `.mcp.json`.
+Storybook ships with an [MCP server](https://storybook.js.org/docs/ai/mcp/overview) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. When the dev server is running, Claude Code connects to it automatically via `.mcp.json`.
 
 This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
 
