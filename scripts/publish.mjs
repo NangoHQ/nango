@@ -125,7 +125,7 @@ async function npmPublish(packageName) {
             return;
         }
 
-        await $`npm publish --access public --provenance -w "${packageName}"`;
+        await $`npm publish --ignore-scripts=false --access public --provenance -w "${packageName}"`;
 
         echo(chalk.green(`${figures.tick} Published ${packageName}      `));
     });
