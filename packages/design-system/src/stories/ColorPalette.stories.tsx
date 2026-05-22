@@ -83,38 +83,43 @@ interface PrimitiveRamp {
     vars: { step: string; cssVar: string }[];
 }
 
-/** Collect all leaf steps from a color group, handling one level of nesting (e.g. alpha.white, accent.blue) */
-function collectColorSteps(groupKey: string, group: Record<string, unknown>): { step: string; cssVar: string }[] {
-    const vars: { step: string; cssVar: string }[] = [];
-    for (const [k, v] of Object.entries(group)) {
-        if (k.startsWith('$')) continue;
-        if (v && typeof v === 'object' && '$value' in v) {
-            // Flat leaf: e.g. neutral.50
-            vars.push({ step: k, cssVar: `--ds-color-${toKebab(groupKey)}-${k}` });
-        } else if (v && typeof v === 'object') {
-            // One level nested: e.g. alpha.white.8, accent.blue.500
-            for (const [step, leaf] of Object.entries(v as Record<string, unknown>)) {
-                if (step.startsWith('$')) continue;
-                if (leaf && typeof leaf === 'object' && '$value' in leaf) {
-                    vars.push({ step: `${k}-${step}`, cssVar: `--ds-color-${toKebab(groupKey)}-${toKebab(k)}-${step}` });
-                }
-            }
-        }
-    }
-    return vars;
-}
-
 /** Capitalise first letter */
 function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-const PRIMITIVE_RAMPS: PrimitiveRamp[] = Object.entries(primitiveColor)
-    .filter(([k]) => !k.startsWith('$'))
-    .map(([key, group]) => ({
-        label: capitalize(key),
-        vars: collectColorSteps(key, group)
-    }));
+/**
+ * Build primitive color ramps from tokens.json.
+ * - 'transparent' is excluded (single value, not a ramp)
+ * - Nested groups (alpha, accent) produce one ramp per sub-group so each
+ *   row spans the full width like the flat ramps (neutral, brand, etc.)
+ */
+const PRIMITIVE_RAMPS: PrimitiveRamp[] = [];
+
+for (const [key, group] of Object.entries(primitiveColor)) {
+    if (key.startsWith('$') || key === 'transparent') continue;
+
+    const entries = Object.entries(group).filter(([k]) => !k.startsWith('$'));
+    const isNested = entries.some(([, v]) => v && typeof v === 'object' && !('$value' in v));
+
+    if (isNested) {
+        // One row per sub-group, e.g. "Alpha · White", "Alpha · Black"
+        for (const [subKey, subGroup] of entries) {
+            if (!subGroup || typeof subGroup !== 'object' || '$value' in subGroup) continue;
+            const vars = Object.entries(subGroup as Record<string, unknown>)
+                .filter(([k]) => !k.startsWith('$'))
+                .filter(([, v]) => v && typeof v === 'object' && '$value' in v)
+                .map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(key)}-${toKebab(subKey)}-${step}` }));
+            PRIMITIVE_RAMPS.push({ label: `${capitalize(key)} · ${capitalize(subKey)}`, vars });
+        }
+    } else {
+        // Flat ramp, e.g. "Neutral", "Brand"
+        const vars = entries
+            .filter(([, v]) => v && typeof v === 'object' && '$value' in v)
+            .map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(key)}-${step}` }));
+        PRIMITIVE_RAMPS.push({ label: capitalize(key), vars });
+    }
+}
 
 // ─── Components ─────────────────────────────────────────────────────────────
 
