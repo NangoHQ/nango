@@ -1,3 +1,5 @@
+import tokensJson from '../../tokens/tokens.json';
+
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -9,147 +11,96 @@ const meta: Meta = {
 
 export default meta;
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Token derivation ────────────────────────────────────────────────────────
+
+/** Convert a token path segment from camelCase to kebab-case */
+function toKebab(str: string): string {
+    return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+/** Convert a token path array to a CSS custom property name, e.g. ['surface', 'panelMuted'] → '--surface-panel-muted' */
+function pathToCssVar(path: string[]): string {
+    return '--' + path.map(toKebab).join('-');
+}
+
+/** Walk a token group object and collect CSS variable names for all leaf tokens */
+function collectVars(obj: Record<string, unknown>, path: string[] = []): string[] {
+    const vars: string[] = [];
+    for (const [key, value] of Object.entries(obj)) {
+        if (key.startsWith('$')) continue;
+        if (value && typeof value === 'object' && '$value' in value) {
+            vars.push(pathToCssVar([...path, key]));
+        } else if (value && typeof value === 'object') {
+            vars.push(...collectVars(value as Record<string, unknown>, [...path, key]));
+        }
+    }
+    return vars;
+}
+
+// Build semantic groups directly from tokens.json — stays in sync with Figma automatically
+const semanticLight = (tokensJson as Record<string, unknown>)['Semantic/Light'] as Record<string, unknown>;
 
 interface TokenGroup {
     label: string;
     tokens: string[];
 }
 
+function buildGroup(key: string, label: string): TokenGroup {
+    const group = semanticLight[key] as Record<string, unknown>;
+    return { label, tokens: collectVars(group, [key]) };
+}
+
+function buildStatusGroup(statusKey: string, label: string): TokenGroup {
+    const status = semanticLight['status'] as Record<string, unknown>;
+    const group = status[statusKey] as Record<string, unknown>;
+    return { label, tokens: collectVars(group, ['status', statusKey]) };
+}
+
 const SEMANTIC_GROUPS: TokenGroup[] = [
-    {
-        label: 'Surface',
-        tokens: [
-            '--surface-canvas',
-            '--surface-page',
-            '--surface-panel',
-            '--surface-panelMuted',
-            '--surface-panelInset',
-            '--surface-overlay',
-            '--surface-input',
-            '--surface-inputMuted',
-            '--surface-inverse'
-        ]
-    },
-    {
-        label: 'Text',
-        tokens: [
-            '--text-strong',
-            '--text-default',
-            '--text-secondary',
-            '--text-disabled',
-            '--text-inverse',
-            '--text-onBrand',
-            '--text-link',
-            '--text-linkHover',
-            '--text-brand',
-            '--text-danger',
-            '--text-success',
-            '--text-warning'
-        ]
-    },
-    {
-        label: 'Border',
-        tokens: [
-            '--border-default',
-            '--border-muted',
-            '--border-strong',
-            '--border-stronger',
-            '--border-input',
-            '--border-inputHover',
-            '--border-selected',
-            '--border-disabled',
-            '--border-inverse',
-            '--border-danger'
-        ]
-    },
-    {
-        label: 'Icon',
-        tokens: [
-            '--icon-default',
-            '--icon-secondary',
-            '--icon-muted',
-            '--icon-disabled',
-            '--icon-brand',
-            '--icon-inverse',
-            '--icon-success',
-            '--icon-warning',
-            '--icon-danger',
-            '--icon-info'
-        ]
-    },
-    {
-        label: 'Interactive',
-        tokens: [
-            '--interactive-primary',
-            '--interactive-primaryHover',
-            '--interactive-primaryActive',
-            '--interactive-outline',
-            '--interactive-outlineHover',
-            '--interactive-ghost',
-            '--interactive-ghostHover',
-            '--interactive-danger',
-            '--interactive-dangerHover',
-            '--interactive-disabled',
-            '--interactive-selectedFill'
-        ]
-    },
-    {
-        label: 'State',
-        tokens: ['--state-hover', '--state-pressed', '--state-selected', '--state-selectedMuted', '--state-disabled']
-    },
-    {
-        label: 'Focus',
-        tokens: ['--focus-ring-default', '--focus-ring-danger']
-    },
-    {
-        label: 'Status · Neutral',
-        tokens: ['--status-neutral-bg', '--status-neutral-border', '--status-neutral-text', '--status-neutral-icon', '--status-neutral-strong']
-    },
-    {
-        label: 'Status · Info',
-        tokens: ['--status-info-bg', '--status-info-border', '--status-info-text', '--status-info-icon', '--status-info-strong']
-    },
-    {
-        label: 'Status · Success',
-        tokens: ['--status-success-bg', '--status-success-border', '--status-success-text', '--status-success-icon', '--status-success-strong']
-    },
-    {
-        label: 'Status · Warning',
-        tokens: ['--status-warning-bg', '--status-warning-border', '--status-warning-text', '--status-warning-icon', '--status-warning-strong']
-    },
-    {
-        label: 'Status · Danger',
-        tokens: ['--status-danger-bg', '--status-danger-border', '--status-danger-text', '--status-danger-icon', '--status-danger-strong']
-    },
-    {
-        label: 'Button · Primary',
-        tokens: [
-            '--button-primary-bg-default',
-            '--button-primary-bg-hover',
-            '--button-primary-bg-active',
-            '--button-primary-bg-disabled',
-            '--button-primary-text-default',
-            '--button-primary-text-disabled',
-            '--button-primary-icon-default'
-        ]
-    },
-    {
-        label: 'Button · Outline',
-        tokens: [
-            '--button-outline-bg-default',
-            '--button-outline-bg-hover',
-            '--button-outline-border-default',
-            '--button-outline-border-hover',
-            '--button-outline-text-default',
-            '--button-outline-icon-default'
-        ]
-    },
-    {
-        label: 'Button · Danger',
-        tokens: ['--button-danger-bg-default', '--button-danger-bg-hover', '--button-danger-text-default', '--button-danger-icon-default']
-    }
+    buildGroup('surface', 'Surface'),
+    buildGroup('text', 'Text'),
+    buildGroup('border', 'Border'),
+    buildGroup('icon', 'Icon'),
+    buildGroup('interactive', 'Interactive'),
+    buildGroup('state', 'State'),
+    buildGroup('focus', 'Focus'),
+    buildStatusGroup('neutral', 'Status · Neutral'),
+    buildStatusGroup('info', 'Status · Info'),
+    buildStatusGroup('success', 'Status · Success'),
+    buildStatusGroup('warning', 'Status · Warning'),
+    buildStatusGroup('danger', 'Status · Danger'),
+    buildGroup('container', 'Container'),
+    buildGroup('chart', 'Chart'),
+    buildGroup('control', 'Control')
 ];
+
+// ─── Primitive palette ───────────────────────────────────────────────────────
+
+const primitives = (tokensJson as Record<string, unknown>)['Primitives'] as Record<string, unknown>;
+
+interface PrimitiveRamp {
+    label: string;
+    vars: { step: string; cssVar: string }[];
+}
+
+function buildPrimitiveRamp(colorKey: string, label: string): PrimitiveRamp {
+    const colorGroup = (primitives['color'] as Record<string, unknown>)[colorKey] as Record<string, unknown>;
+    const vars = Object.entries(colorGroup)
+        .filter(([k]) => !k.startsWith('$'))
+        .filter(([, v]) => v && typeof v === 'object' && '$value' in v)
+        .map(([step]) => ({ step, cssVar: `--ds-color-${colorKey}-${step}` }));
+    return { label, vars };
+}
+
+const PRIMITIVE_RAMPS: PrimitiveRamp[] = [
+    buildPrimitiveRamp('neutral', 'Neutral'),
+    buildPrimitiveRamp('brand', 'Brand'),
+    buildPrimitiveRamp('success', 'Success'),
+    buildPrimitiveRamp('warning', 'Warning'),
+    buildPrimitiveRamp('danger', 'Danger')
+];
+
+// ─── Components ─────────────────────────────────────────────────────────────
 
 function Swatch({ token }: { token: string }) {
     return (
@@ -173,63 +124,10 @@ function Group({ group }: { group: TokenGroup }) {
     );
 }
 
-// ─── Primitive palette ───────────────────────────────────────────────────────
-
-const PRIMITIVE_RAMPS: { label: string; prefix: string; steps: string[] }[] = [
-    {
-        label: 'Neutral',
-        prefix: '--ds-color-neutral-',
-        steps: [
-            '0',
-            '25',
-            '50',
-            '100',
-            '200',
-            '250',
-            '300',
-            '400',
-            '450',
-            '500',
-            '600',
-            '650',
-            '700',
-            '750',
-            '800',
-            '825',
-            '850',
-            '875',
-            '900',
-            '925',
-            '950',
-            '975'
-        ]
-    },
-    {
-        label: 'Brand',
-        prefix: '--ds-color-brand-',
-        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975']
-    },
-    {
-        label: 'Success',
-        prefix: '--ds-color-success-',
-        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975']
-    },
-    {
-        label: 'Warning',
-        prefix: '--ds-color-warning-',
-        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975']
-    },
-    {
-        label: 'Danger',
-        prefix: '--ds-color-danger-',
-        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975']
-    }
-];
-
-function RampSwatch({ token, step }: { token: string; step: string }) {
+function RampSwatch({ cssVar, step }: { cssVar: string; step: string }) {
     return (
         <div className="flex flex-col gap-1 items-center">
-            <div className="w-full h-10 rounded border border-border-muted" style={{ backgroundColor: `var(${token})` }} />
+            <div className="w-full h-10 rounded border border-border-muted" style={{ backgroundColor: `var(${cssVar})` }} />
             <span className="text-[10px] text-text-secondary font-mono">{step}</span>
         </div>
     );
@@ -246,9 +144,9 @@ export const Primitives: Story = {
             {PRIMITIVE_RAMPS.map((ramp) => (
                 <div key={ramp.label} className="mb-8">
                     <h2 className="story-section-heading mb-2.5">{ramp.label}</h2>
-                    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${ramp.steps.length}, 1fr)` }}>
-                        {ramp.steps.map((step) => (
-                            <RampSwatch key={step} token={`${ramp.prefix}${step}`} step={step} />
+                    <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${ramp.vars.length}, 1fr)` }}>
+                        {ramp.vars.map(({ step, cssVar }) => (
+                            <RampSwatch key={step} cssVar={cssVar} step={step} />
                         ))}
                     </div>
                 </div>
