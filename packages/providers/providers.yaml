@@ -18987,7 +18987,7 @@ tanium:
             type: string
             title: API Token
             description: Your Tanium API token.
-            doc_section: '#step-1-generate-api-token'
+            doc_section: '#step-1-generate-an-api-token'
     connection_config:
         hostname:
             type: string
