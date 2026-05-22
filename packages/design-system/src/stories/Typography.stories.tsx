@@ -96,6 +96,13 @@ const SANS_SCALE: TypeScale[] = [
         fontWeight: 'var(--ds-typography-font-weight-medium)',
         lineHeight: 'var(--ds-typography-line-height-snug)',
         letterSpacing: 'var(--ds-typography-letter-spacing-wide)'
+    },
+    {
+        name: 'Label · 3xs · medium',
+        fontSize: 'var(--ds-typography-font-size-3xs)',
+        fontWeight: 'var(--ds-typography-font-weight-medium)',
+        lineHeight: 'var(--ds-typography-line-height-snug)',
+        letterSpacing: 'var(--ds-typography-letter-spacing-wide)'
     }
 ];
 
@@ -176,6 +183,13 @@ export const TypeScale: Story = {
     name: 'Type Scale',
     render: () => (
         <div className="p-8">
+            <div className="flex gap-2 items-start p-3 mb-8 rounded-lg border border-status-warning-border bg-status-warning-bg text-status-warning-text text-sm">
+                <span>⚠️</span>
+                <span>
+                    <strong>Work in progress</strong> — these are the primitive typography tokens (individual font-size, weight, and line-height values).
+                    Compound text styles (e.g. "Heading/xl") do not yet exist as tokens; they will be added once defined in Figma.
+                </span>
+            </div>
             <Section title="Geist Sans — Display &amp; Heading">
                 {SANS_SCALE.filter((s) => s.name.startsWith('Display') || s.name.startsWith('Heading')).map((s) => (
                     <TypeRow key={s.name} scale={s} />
