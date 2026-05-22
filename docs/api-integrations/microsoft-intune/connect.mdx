@@ -5,63 +5,64 @@ sidebarTitle: Microsoft Intune
 
 # Overview
 
-To authenticate with Microsoft Intune, you need:
-1. **Tenant ID** — Your organization's unique Microsoft directory identifier.
-2. **Client ID** — The application ID assigned to your Entra ID app registration.
-3. **Client Secret** — A secret generated for your app registration.
+To connect Microsoft Intune in Nango, you need to provide:
 
-Intune is accessed via the Microsoft Graph API using application permissions (client credentials). There is no delegated flow — an admin must register an app and grant it Intune scopes directly.
+1. **Tenant ID** — The unique identifier for your organization that uses Microsoft services.
+2. **Client ID** — The unique identifier that Azure assigns to your application when it's registered.
+3. **Client Secret** — A unique string that enables the client application to access Microsoft Intune.
+
+This guide will walk you through generating and finding these credentials within Azure.
 
 ### Prerequisites
 
-- An active Azure account with a Microsoft Intune subscription.
-- Permission to register applications and grant admin consent in Microsoft Entra ID.
+- You must have an active Azure account with a Microsoft Intune subscription.
+- You must have permission to register applications and grant admin consent in Microsoft Entra ID.
 
-### Instructions
+### Step 1: Finding your Tenant ID
 
-#### Step 1: Register an application in Microsoft Entra ID
+1. Your Tenant ID can be found in the **Tenant ID** field on the [Overview page](https://aad.portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Overview) within your Azure account.
+<img src="/integrations/all/microsoft-business-central/tenant_id.png" />
 
-1. Go to the [Microsoft Entra admin center](https://entra.microsoft.com) and sign in as an admin.
-2. Navigate to **Identity** > **Applications** > **App registrations**.
+### Step 2: Generating your Client ID
+
+1. Navigate to the [Azure portal home page](https://portal.azure.com/#home) and sign in using the credentials of an administrator.
+2. Select **App registrations**.
 <img src="/integrations/all/microsoft-business-central/app_registration.png" />
 3. Select **New registration**.
 <img src="/integrations/all/microsoft-business-central/new_registration.png" />
-4. In the **Register an application** section, enter a name for the application (e.g. `Nango Intune`). Under **Supported account types**, select **Accounts in any organizational directory (Multitenant)**. Select **Register**.
+4. In the **Register an application** section, enter a meaningful application name to display to users (e.g. `Nango Intune`). Under **Supported account types**, select **Accounts in any organizational directory (Multitenant)** and click **Register**.
 <img src="/integrations/all/sharepoint-online-oauth2-cc/register_new_app.png" />
-5. On the app's **Overview** page, copy the **Application (client) ID** — this is your **Client ID** — and the **Directory (tenant) ID** — this is your **Tenant ID**.
+5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**. Your **Tenant ID** is shown in the **Directory (tenant) ID** field.
 <img src="/integrations/all/sharepoint-online-oauth2-cc/client_id.png" />
 
-#### Step 2: Add Intune API permissions
+### Step 3: Generating your Client Secret
 
-1. In your app registration, go to **API permissions** > **Add a permission**.
-2. Select **Microsoft Graph** > **Application permissions**.
-3. Search for and add the Intune scopes your integration needs. Common scopes:
+1. After registering a new app in the [step above](#step-2-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
+2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/client_secret.png" />
+3. Once completed, your **Client Secret** will be generated. This value can be found in the **Value** field within the **Client Secrets** table.
+<img src="/integrations/all/sharepoint-online-oauth2-cc/gen_client_secret.png" />
+4. After generating the **Client Secret**, you must grant the registered application the necessary permissions. Navigate to **API permissions**, select **Add a permission**, and choose **Microsoft Graph**.
+5. From the displayed list, choose **Application permissions**, select the required Intune permissions, and click **Add permissions**. Common permissions include:
    - `DeviceManagementManagedDevices.Read.All` — read managed devices
    - `DeviceManagementManagedDevices.ReadWrite.All` — read and write managed devices
    - `DeviceManagementConfiguration.Read.All` — read device configuration policies
    - `DeviceManagementApps.Read.All` — read mobile app management data
-4. Select **Add permissions**.
-5. Select **Grant admin consent for [your organization]** and confirm. Admin consent is required for application permissions.
+6. Select **Grant admin consent for [your organization]** and confirm. Admin consent is required for application permissions.
 <img src="/api-integrations/microsoft-oauth2-cc/permissions.png" />
 
 <Note>
 The Intune service must be correctly licensed on the tenant for these API calls to succeed, regardless of whether the permissions are granted.
 </Note>
 
-#### Step 3: Create a client secret
+### Step 4: Enter credentials in the Connect UI
 
-1. In your app registration, go to **Certificates & secrets** > **New client secret**.
-2. Enter a description and choose an expiry, then select **Add**.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/client_secret.png" />
-3. Copy the secret **Value** immediately — it is shown only once.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/gen_client_secret.png" />
-
-#### Step 4: Enter credentials in the Connect UI
+Once you have your credentials:
 
 1. Open the form where you need to authenticate with Microsoft Intune.
-2. Enter your **Tenant ID**, **Client ID**, and **Client Secret**.
-3. Submit the form to authenticate.
+2. Enter the **Tenant ID**, **Client ID**, and **Client Secret** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
 
-<img src="/api-integrations/microsoft-oauth2-cc/form.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/microsoft-intune/form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to Microsoft Intune.
