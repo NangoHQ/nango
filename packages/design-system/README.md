@@ -40,6 +40,10 @@ This lets you ask Claude to build or modify components with full knowledge of ex
 | `get-documentation` | Returns props, variants, and usage for a component |
 | `preview-stories` | Renders a story and returns a preview URL |
 
+### Accessibility
+
+`@storybook/addon-a11y` runs an automated [axe-core](https://github.com/dequelabs/axe-core) audit on every story. Open the **Accessibility** panel (bottom of the Storybook UI) to see violations, incomplete checks, and passing rules for the rendered story. Fix any violations before shipping a component.
+
 ### Adding component stories
 
 Create a `*.stories.tsx` file anywhere under `packages/design-system/src/`. Follow the `src/stories/Typography.stories.tsx` pattern.
