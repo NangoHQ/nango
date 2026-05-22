@@ -1,0 +1,4 @@
+# Files marked linguist-generated are collapsed by default in GitHub PR diffs.
+package-lock.json linguist-generated=true
+packages/design-system/tokens/tokens.json linguist-generated=true
+packages/design-system/tokens/tokens.generated.css linguist-generated=true

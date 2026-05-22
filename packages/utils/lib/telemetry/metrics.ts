@@ -105,6 +105,7 @@ export enum Types {
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
     RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
+    RECORDS_BUDGET_TRUNCATE = 'nango.records.budgetTruncate',
 
     CRON_PERSIST_ACCOUNT_USAGE = 'nango.server.cron.persistAccountUsage',
 
@@ -120,6 +121,8 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS = 'nango.billing.usage.clickhouse.batcher.ingest.duration_ms',
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
     BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT = 'nango.billing.usage.clickhouse.s3_export.result',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 

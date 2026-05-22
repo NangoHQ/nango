@@ -4962,7 +4962,7 @@ cursor:
             description: The API Key for your Cursor account
             doc_section: '#step-1-finding-api-key'
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
 
 cursor-admin:
     display_name: Cursor Admin
@@ -4983,7 +4983,7 @@ cursor-admin:
             title: API key
             description: The API Key of your Greenhouse account
             example: key_9164000970ca2f15c999047a0e2b7e03127885be41198616a6975af08b28239b
-            pattern: '^key_[a-f0-9]{64}$'
+            pattern: '^(key_[a-f0-9]{64}|crsr_[a-f0-9]{64})$'
             secret: true
             doc_section: '#step-1-finding-api-key'
         password:
@@ -7073,6 +7073,8 @@ folk:
     categories:
         - crm
     auth_mode: API_KEY
+    webhook_routing_script: folkWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.folk.app
         headers:
@@ -7084,8 +7086,10 @@ folk:
             method: GET
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/folk
-    docs_connect: https://nango.dev/docs/integrations/all/folk/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/folk
+    docs_connect: https://nango.dev/docs/api-integrations/folk/connect
     credentials:
         apiKey:
             type: string
@@ -7094,6 +7098,26 @@ folk:
             example: 'FOLKLrHVSoYB6TaAF39aNGtEpEi3oxuo'
             pattern: '^FOLK[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
+
+followupboss:
+    display_name: Follow Up Boss
+    categories:
+        - crm
+    auth_mode: OAUTH2
+    authorization_url: https://app.followupboss.com/oauth/authorize
+    token_url: https://app.followupboss.com/oauth/token
+    disable_pkce: true
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: auth_code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.followupboss.com
+    docs: https://nango.dev/docs/api-integrations/followupboss
+    setup_guide_url: https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app
 
 fortnox:
     display_name: Fortnox
@@ -14347,6 +14371,80 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+planning-center-online:
+    display_name: Planning Center Online (OAuth)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.planningcenteronline.com/oauth/authorize
+    token_url: https://api.planningcenteronline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+    docs: https://nango.dev/docs/api-integrations/planning-center-online
+    setup_guide_url: https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app
+
+planning-center-online-pat:
+    display_name: Planning Center Online (Personal Access Token)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                user-agent: Nango (https://nango.dev)
+            endpoints:
+                - /current/v2/me
+    docs: https://nango.dev/docs/api-integrations/planning-center-online-pat
+    docs_connect: https://nango.dev/docs/api-integrations/planning-center-online-pat/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The Client ID for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9_-]{4,128}$'
+            example: 01h2jk3lm4np5qrst6uvw
+            doc_section: '#step-2-create-a-personal-access-token'
+        password:
+            type: string
+            title: Secret
+            description: The Secret for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9+/=_-]{8,512}$'
+            example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
+            doc_section: '#step-2-create-a-personal-access-token'
+
 plain:
     display_name: Plain
     categories:
@@ -17828,7 +17926,7 @@ smartsheet:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.smartsheet.com/b/authorize
+    authorization_url: https://${connectionConfig.app_host}/b/authorize || https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
@@ -17838,16 +17936,25 @@ smartsheet:
         grant_type: refresh_token
     proxy:
         base_url: https://api.${connectionConfig.domain}
-    docs: https://nango.dev/docs/integrations/all/smartsheet
-    docs_connect: https://nango.dev/docs/integrations/all/smartsheet/connect
+    docs: https://nango.dev/docs/api-integrations/smartsheet
+    docs_connect: https://nango.dev/docs/api-integrations/smartsheet/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app
     connection_config:
+        app_host:
+            type: string
+            title: App Host
+            description: The app host used for authorization.
+            example: app.smartsheet.com
+            optional: true
+            pattern: '^(app\.smartsheet\.com|app\.test\.smartsheet\.com)$'
         domain:
             type: string
             title: Domain
-            description: The domain where your account is hosted
+            description: The domain where your account is hosted.
             example: smartsheet.com
             prefix: https://api.
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
+            order: 1
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com|test\.smartsheet\.com)$'
 
 smugmug:
     display_name: Smugmug
@@ -18188,6 +18295,32 @@ stitch-mcp:
     docs: https://nango.dev/docs/api-integrations/stitch-mcp
     setup_guide_url: https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app
 
+store-census:
+    display_name: StoreCensus
+    categories:
+        - e-commerce
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.storecensus.com
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/apps?page=1&pageSize=1
+    docs: https://nango.dev/docs/api-integrations/store-census
+    docs_connect: https://nango.dev/docs/api-integrations/store-census/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your StoreCensus API key.
+            doc_section: '#step-1-get-your-api-key'
+
 store-leads:
     display_name: Store Leads
     categories:
@@ -18487,6 +18620,31 @@ supabase-mcp-oauth:
             example: bvzzcafzoysezumrdvif
             pattern: '^[a-z0-9]{20}$'
             doc_section: '#step-1-finding-your-project-reference'
+
+superhuman-mcp:
+    display_name: Superhuman (MCP)
+    categories:
+        - communication
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.auth.mail.superhuman.com/oauth2/authorize
+    token_url: https://mcp.auth.mail.superhuman.com/oauth2/token
+    registration_url: https://mcp.auth.mail.superhuman.com/oauth2/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.mail.superhuman.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/superhuman-mcp
 
 survey-monkey:
     display_name: SurveyMonkey
@@ -20300,6 +20458,29 @@ videoask:
     webhook_user_defined_secret: true
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
+
+wappalyzer:
+    display_name: Wappalyzer
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.wappalyzer.com
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/credits/balance/
+    docs: https://nango.dev/docs/api-integrations/wappalyzer
+    docs_connect: https://nango.dev/docs/api-integrations/wappalyzer/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Wappalyzer API key.
+            doc_section: '#step-1-get-your-api-key'
 
 wakatime:
     display_name: Wakatime
