@@ -59,5 +59,8 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Validate token aliases resolve cleanly
+              run: npm run tokens:build --workspace=@nangohq/design-system -- --strict
+
             - name: Check for removed tokens still in use
               run: npm run tokens:check --workspace=@nangohq/design-system
