@@ -30,20 +30,13 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 
 Storybook ships with an [MCP server](https://storybook.js.org/docs/ai/mcp/overview) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
 
-The server is **disabled by default** in `.mcp.json` to avoid a connection error for engineers who don't run Storybook. To enable it, add the following to `.claude/settings.local.json` (gitignored, create if it doesn't exist):
+The server is **disabled by default** to avoid a connection error for engineers who don't run Storybook. To opt in, run once from the repo root:
 
-```json
-{
-    "mcpServers": {
-        "storybook": {
-            "type": "http",
-            "url": "http://localhost:6006/mcp"
-        }
-    }
-}
+```bash
+claude mcp add --transport http storybook http://localhost:6006/mcp
 ```
 
-Then start Storybook (`npm run storybook`) and reload Claude Code — the tools below will be available automatically.
+This stores the config in `.claude/settings.local.json` (gitignored). Then start Storybook (`npm run storybook`) and reload Claude Code — the tools below will be available automatically.
 
 **Available MCP tools:**
 
