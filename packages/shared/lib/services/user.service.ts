@@ -95,7 +95,18 @@ class UserService {
 
     async getUserByEmail(email: string): Promise<DBUser | null> {
         const normalizedEmail = normalizeEmailAddress(email);
-        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).whereRaw('LOWER(email) = ?', [normalizedEmail]).orderBy('id', 'asc').first();
+
+        const exactMatch = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ email: normalizedEmail }).first();
+        if (exactMatch) {
+            return exactMatch;
+        }
+        // Separate check for mixed-case emails, so the first check can leverage the index
+        const result = await db.knex
+            .select('*')
+            .from<DBUser>(`_nango_users`)
+            .whereRaw('LOWER(TRIM(email)) = ?', [normalizedEmail])
+            .orderBy('id', 'asc')
+            .first();
 
         return result || null;
     }

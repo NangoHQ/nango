@@ -10,15 +10,27 @@ const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
 export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex }) {
     const normalizedEmail = normalizeEmailAddress(email);
-    const result = await trx
+    const exactMatchResult = await trx
         .from<DBInvitation>(`_nango_invited_users`)
-        .where({ account_id: accountId, accepted: false })
-        .whereRaw('LOWER(email) = ?', [normalizedEmail])
+        .where({ account_id: accountId, accepted: false, email: normalizedEmail })
         .update({
             expires_at: new Date(),
             updated_at: new Date()
         });
-    return result;
+
+    if (exactMatchResult > 0) {
+        return exactMatchResult;
+    }
+
+    // Separate check for mixed-case emails, so the first check can leverage the index
+    return await trx
+        .from<DBInvitation>(`_nango_invited_users`)
+        .where({ account_id: accountId, accepted: false })
+        .whereRaw('LOWER(TRIM(email)) = ?', [normalizedEmail])
+        .update({
+            expires_at: new Date(),
+            updated_at: new Date()
+        });
 }
 
 export async function inviteEmail({
