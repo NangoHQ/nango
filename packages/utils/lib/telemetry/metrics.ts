@@ -121,6 +121,8 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS = 'nango.billing.usage.clickhouse.batcher.ingest.duration_ms',
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
     BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT = 'nango.billing.usage.clickhouse.s3_export.result',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
