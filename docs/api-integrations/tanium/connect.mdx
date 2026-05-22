@@ -1,0 +1,43 @@
+---
+title: Tanium - How do I link my account?
+sidebarTitle: Tanium
+---
+
+# Overview
+
+To authenticate with Tanium, you will need:
+1. **API Token** — an API token generated from the Tanium Console.
+2. **Hostname** — your Tanium Cloud hostname (e.g. `acme.cloud.tanium.com`).
+
+This guide walks you through generating your **API Token** and finding your **Hostname** in Tanium.
+
+### Prerequisites
+
+- You must have administrator access to the Tanium Console.
+
+### Instructions
+
+#### Step 1: Generate an API token
+
+1. Log in to the Tanium Console as an administrator.
+2. Navigate to **Administration** > **Permissions** > **API Tokens**.
+3. Click **New API Token**.
+4. Optionally scope the token to specific roles. For full access, assign the **Administrator** role.
+5. Copy the generated token value, it is shown only once and cannot be retrieved again.
+
+#### Step 2: Find your hostname
+
+- Your Tanium Cloud hostname is the domain you use to access the Tanium Console, for example `acme.cloud.tanium.com`.
+
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Token** and **Hostname**:
+
+1. Open the form where you need to authenticate with Tanium.
+2. Enter your **API Token** and **Hostname** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/tanium/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Tanium.

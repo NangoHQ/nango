@@ -64,7 +64,10 @@ export async function exec(): Promise<void> {
             // only releasing the lock on error
             // and letting it expires otherwise so no other execution can occur until the next cron
         } finally {
-            await clickhouse.shutdown();
+            // Matches the bumped CH request_timeout (60s) so at least one full flush
+            // attempt can complete before shutdown bails. If that attempt times out,
+            // the shutdown-orphan metric will surface the loss in dashboards.
+            await clickhouse.shutdown({ timeoutMs: 60_000 });
         }
     });
 }

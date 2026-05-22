@@ -23,6 +23,14 @@ export interface ApiPublicIntegrationInclude {
               webhook_secret: string | null;
           }
         | { type: AuthModes['App']; app_id: string | null; private_key: string | null; app_link: string | null }
+        | {
+              type: AuthModes['Custom'];
+              client_id: string | null;
+              client_secret: string | null;
+              app_id: string | null;
+              app_link: string | null;
+              private_key: string | null;
+          }
         | null;
 }
 
