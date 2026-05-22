@@ -268,7 +268,7 @@ URL patterns:
 | `fiserv-api-key` | Fiserv (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fiserv-api-key.md) |  |  | banking, payment |
 | `fitbit` | Fitbit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fitbit.md) |  |  | sports |
 | `float` | Float | API_KEY | [docs](https://nango.dev/docs/integrations/all/float.md) | [connect](https://nango.dev/docs/integrations/all/float/connect.md) |  | productivity |
-| `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/integrations/all/folk.md) | [connect](https://nango.dev/docs/integrations/all/folk/connect.md) |  | crm |
+| `folk` | Folk | API_KEY | [docs](https://nango.dev/docs/api-integrations/folk.md) | [connect](https://nango.dev/docs/api-integrations/folk/connect.md) |  | crm |
 | `followupboss` | Follow Up Boss | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/followupboss.md) |  | [setup](https://nango.dev/docs/api-integrations/followupboss/how-to-register-your-own-followupboss-oauth-app.md) | crm |
 | `fortnox` | Fortnox | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fortnox.md) |  |  | accounting, invoicing |
 | `freeagent` | FreeAgent | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/freeagent.md) |  | [setup](https://nango.dev/docs/api-integrations/freeagent/how-to-register-your-own-freeagent-oauth-app.md) | accounting, invoicing |
