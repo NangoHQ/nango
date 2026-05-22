@@ -129,7 +129,7 @@ const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
-    // Allow exact origins and any subdomain of basePublicUrl (e.g. PR preview URLs like pr-123.app-development.nango.dev)
+    // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
     origin: (origin, callback) => {
         if (!origin) {
             callback(null, true);
@@ -137,7 +137,7 @@ const webCorsHandler = cors({
         }
         try {
             const host = new URL(origin).hostname;
-            if (corsAllowedOrigins.has(origin) || host.endsWith(`.${basePublicHost}`)) {
+            if (corsAllowedOrigins.has(origin) || (/^pr-\d+\./.test(host) && host.endsWith(`.${basePublicHost}`))) {
                 callback(null, true);
             } else {
                 callback(null, false);
