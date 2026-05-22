@@ -1358,6 +1358,7 @@
               "integrations/all/netsuite",
               "api-integrations/netsuite-tba",
               "integrations/all/next-cloud-ocs",
+              "api-integrations/nexthink",
               "api-integrations/nocrm",
               "api-integrations/northbeam",
               "api-integrations/notion",
