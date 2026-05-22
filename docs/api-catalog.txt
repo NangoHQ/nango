@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 819
+Provider count: 820
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -706,6 +706,7 @@ URL patterns:
 | `supabase` | Supabase | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase.md) | [connect](https://nango.dev/docs/api-integrations/supabase/connect.md) |  | dev-tools, storage |
 | `supabase-mcp` | Supabase (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/supabase-mcp.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp/connect.md) |  | dev-tools, mcp |
 | `supabase-mcp-oauth` | Supabase (MCP OAuth) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/supabase-mcp-oauth.md) | [connect](https://nango.dev/docs/api-integrations/supabase-mcp-oauth/connect.md) |  | dev-tools, mcp |
+| `superhuman-mcp` | Superhuman (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/superhuman-mcp.md) |  |  | email, productivity, mcp |
 | `survey-monkey` | SurveyMonkey | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/survey-monkey.md) |  |  | surveys |
 | `tableau` | Tableau (PAT) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tableau.md) | [connect](https://nango.dev/docs/integrations/all/tableau/connect.md) |  | analytics |
 | `tailscale` | Tailscale (OAuth) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/tailscale.md) | [connect](https://nango.dev/docs/integrations/all/tailscale/connect.md) |  | dev-tools, productivity |
