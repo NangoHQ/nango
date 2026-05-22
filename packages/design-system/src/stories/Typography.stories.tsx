@@ -69,7 +69,7 @@ function TypeRow({ entry }: { entry: TypeEntry }) {
         <div className="grid grid-cols-[260px_1fr] gap-4 items-baseline py-3 border-b border-border-default">
             <div className="text-[11px] font-mono pt-0.5">
                 <div className="font-medium text-text-secondary">{entry.name}</div>
-                <div className="mt-1 font-normal text-text-muted">{entry.description}</div>
+                <div className="mt-1 font-normal text-text-secondary">{entry.description}</div>
             </div>
             <div className={`text-text-strong ${entry.className}`}>{entry.mono ? SAMPLE_MONO : SAMPLE_TEXT}</div>
         </div>
