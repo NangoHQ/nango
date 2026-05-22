@@ -278,16 +278,20 @@ export async function getRecords({
         if (hasMore) {
             recordsMetadata.pop();
         }
+        let budgetTotalBytes = 0;
         if (budgetEnabled) {
             let acc = 0;
             let truncateAt: number | null = null;
             for (let i = 0; i < recordsMetadata.length; i++) {
+                const sz = recordsMetadata[i]!.size;
+                budgetTotalBytes += sz;
+                if (truncateAt !== null) continue;
                 // i > 0: always keep at least one record so pagination can progress past oversized rows.
-                if (i > 0 && acc + recordsMetadata[i]!.size > budgetBytes) {
+                if (i > 0 && acc + sz > budgetBytes) {
                     truncateAt = i;
-                    break;
+                    continue;
                 }
-                acc += recordsMetadata[i]!.size;
+                acc += sz;
             }
             if (truncateAt !== null) {
                 budgetTruncated = true;
@@ -298,6 +302,7 @@ export async function getRecords({
                 span.addTags({
                     'nango.records.budgetTruncated': true,
                     'nango.records.budgetKeptBytes': acc,
+                    'nango.records.budgetTotalBytes': budgetTotalBytes,
                     'nango.records.budgetDryRun': envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN
                 });
             }

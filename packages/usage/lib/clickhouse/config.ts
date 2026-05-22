@@ -15,6 +15,9 @@ export function clickhouseClient(opts?: { database: string }): ClickHouseClient 
     return createClient({
         url: envs.CLICKHOUSE_URL,
         ...(opts?.database ? { database: opts.database } : {}),
+        // CH Cloud auto-suspend wake-up on idle instances can exceed the 30s
+        // client default — bumping to 60s rides out the cold-start.
+        request_timeout: 60_000,
         clickhouse_settings: {
             // Block-level dedup on INSERTs to raw_events. Default is 1 for Replicated/Shared
             // engines but we set it explicitly so batcher retries that re-send a bit-identical

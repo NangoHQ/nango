@@ -14337,6 +14337,80 @@ pivotaltracker:
             title: API Key
             description: The API key for your Pivotal Tracker account
 
+planning-center-online:
+    display_name: Planning Center Online (OAuth)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.planningcenteronline.com/oauth/authorize
+    token_url: https://api.planningcenteronline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+    docs: https://nango.dev/docs/api-integrations/planning-center-online
+    setup_guide_url: https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app
+
+planning-center-online-pat:
+    display_name: Planning Center Online (Personal Access Token)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                user-agent: Nango (https://nango.dev)
+            endpoints:
+                - /current/v2/me
+    docs: https://nango.dev/docs/api-integrations/planning-center-online-pat
+    docs_connect: https://nango.dev/docs/api-integrations/planning-center-online-pat/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The Client ID for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9_-]{4,128}$'
+            example: 01h2jk3lm4np5qrst6uvw
+            doc_section: '#step-2-create-a-personal-access-token'
+        password:
+            type: string
+            title: Secret
+            description: The Secret for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9+/=_-]{8,512}$'
+            example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
+            doc_section: '#step-2-create-a-personal-access-token'
+
 plain:
     display_name: Plain
     categories:
@@ -17818,7 +17892,7 @@ smartsheet:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.smartsheet.com/b/authorize
+    authorization_url: https://${connectionConfig.app_host}/b/authorize || https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
@@ -17828,16 +17902,25 @@ smartsheet:
         grant_type: refresh_token
     proxy:
         base_url: https://api.${connectionConfig.domain}
-    docs: https://nango.dev/docs/integrations/all/smartsheet
-    docs_connect: https://nango.dev/docs/integrations/all/smartsheet/connect
+    docs: https://nango.dev/docs/api-integrations/smartsheet
+    docs_connect: https://nango.dev/docs/api-integrations/smartsheet/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app
     connection_config:
+        app_host:
+            type: string
+            title: App Host
+            description: The app host used for authorization.
+            example: app.smartsheet.com
+            optional: true
+            pattern: '^(app\.smartsheet\.com|app\.test\.smartsheet\.com)$'
         domain:
             type: string
             title: Domain
-            description: The domain where your account is hosted
+            description: The domain where your account is hosted.
             example: smartsheet.com
             prefix: https://api.
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
+            order: 1
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com|test\.smartsheet\.com)$'
 
 smugmug:
     display_name: Smugmug
