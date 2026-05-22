@@ -3,32 +3,13 @@ import { env } from '@nangohq/utils';
 
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
+import { eventTypeMapper } from './functions/mappers.js';
 import { resolveLocalFileName } from '../utils/utils.js';
 import { increment } from './sync/config/config.service.js';
 
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
 
 const TABLE = 'on_event_scripts';
-
-const EVENT_TYPE_MAPPINGS: Record<DBOnEventScript['event'], OnEventType> = {
-    POST_CONNECTION_CREATION: 'post-connection-creation',
-    PRE_CONNECTION_DELETION: 'pre-connection-deletion',
-    VALIDATE_CONNECTION: 'validate-connection'
-} as const;
-
-const eventTypeMapper = {
-    fromDb: (event: DBOnEventScript['event']): OnEventType => {
-        return EVENT_TYPE_MAPPINGS[event];
-    },
-    toDb: (eventType: OnEventType): DBOnEventScript['event'] => {
-        for (const [key, value] of Object.entries(EVENT_TYPE_MAPPINGS)) {
-            if (value === eventType) {
-                return key as DBOnEventScript['event'];
-            }
-        }
-        throw new Error(`Unknown event type: ${eventType}`); // This should never happen
-    }
-};
 
 const dbMapper = {
     to: (script: OnEventScript): DBOnEventScript => {
@@ -162,8 +143,8 @@ export const onEventScriptService = {
         return db.knex.from<DBOnEventScript>(TABLE).where({ config_id: configId, active: true, event: eventTypeMapper.toDb(event) });
     },
 
-    getByConfigAndName: async (configId: number, name: string): Promise<OnEventScript[]> => {
-        const rows = await db.knex
+    getByConfigAndName: async (configId: number, name: string): Promise<OnEventScript | null> => {
+        const row = await db.knex
             .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
             .from(TABLE)
             .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
@@ -171,8 +152,10 @@ export const onEventScriptService = {
                 [`${TABLE}.config_id`]: configId,
                 [`${TABLE}.name`]: name,
                 [`${TABLE}.active`]: true
-            });
-        return rows.map(dbMapper.from);
+            })
+            .first();
+
+        return row ? dbMapper.from(row) : null;
     },
 
     diffChanges: async ({
