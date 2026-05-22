@@ -315,7 +315,7 @@ Use `building-nango-functions-remotely` when the agent needs to build a function
 The remote workflow is:
 
 1. Install the remote builder skill and add the docs MCP server.
-2. Provide a [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys** as `NANGO_SECRET_KEY`; despite the variable name, it stores a [Nango API key](/reference/backend/http-api/api-keys). Set `NANGO_SERVER_URL` only if you are not using `https://api.nango.dev`.
+2. Provide a [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys** as `NANGO_SECRET_KEY`; despite the variable name, it stores a [Nango API key](/reference/backend/http-api/api-keys).
 3. The agent will ask you for the integration ID, connection ID, function name, function type, input and output shape, metadata or checkpoint values, and the provider API reference or a sample payload if you do not provide them explicitly.
 4. The agent writes one self-contained TypeScript function using `createAction()` or `createSync()`.
 5. The agent compiles remotely, dry-runs against the target connection, and iterates on API or type errors.
