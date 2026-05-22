@@ -8724,6 +8724,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
     "display_name": "Slack",
     "provider": "slack",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": true,
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z"
   }
@@ -8737,6 +8738,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
     "display_name": "GitHub",
     "provider": "github",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": false,
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
     "credentials": {
@@ -8757,6 +8759,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/get.md
     "display_name": "GitHub App",
     "provider": "github-app",
     "logo": "http://localhost:3003/images/template-logos/github.svg",
+    "forward_webhooks": false,
     "created_at": "2023-10-16T08:45:26.241Z",
     "updated_at": "2023-10-16T08:45:26.241Z",
     "credentials": {
@@ -9776,7 +9779,7 @@ await nango.getIntegration(<INTEGRATION-ID>);
          The integration ID
     </ResponseField>
     <ResponseField name="include" type="array">
-        Include sensitive data. Allowed values: `webhook`
+        Include sensitive data. Allowed values: `webhook`, `credentials`
     </ResponseField>
 </Expandable>
 
@@ -9787,10 +9790,12 @@ await nango.getIntegration(<INTEGRATION-ID>);
 {
     "data": {
         "unique_key": "slack-nango-community",
+        "display_name": "Slack",
         "provider": "slack",
         "logo": "http://localhost:3003/images/template-logos/slack.svg",
+        "forward_webhooks": true,
         "created_at": "2023-10-16T08:45:26.241Z",
-        "updated_at": "2023-10-16T08:45:26.241Z",
+        "updated_at": "2023-10-16T08:45:26.241Z"
     }
 }
 ```
