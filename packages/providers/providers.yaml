@@ -5969,7 +5969,7 @@ dynatrace:
             type: string
             title: Environment ID
             description: Your Dynatrace environment ID.
-            pattern: '^[a-z]+\d+$'
+            pattern: '^[a-z0-9]+$'
             example: mew08***
             order: 1
             doc_section: '#step-1-find-your-environment-id'
