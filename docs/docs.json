@@ -1588,6 +1588,7 @@
               "api-integrations/supabase",
               "api-integrations/supabase-mcp",
               "api-integrations/supabase-mcp-oauth",
+              "api-integrations/superhuman-mcp",
               "integrations/all/survey-monkey",
               "integrations/all/tableau",
               "integrations/all/tapclicks",
