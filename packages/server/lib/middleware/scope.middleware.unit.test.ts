@@ -29,7 +29,7 @@ describe('hasScope', () => {
 
     it('group wildcard matches scopes within the group', () => {
         expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:write' })).toBe(true);
+        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:create' })).toBe(true);
         expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:read_credentials' })).toBe(true);
     });
 
@@ -49,6 +49,6 @@ describe('hasScope', () => {
     });
 
     it('credential scope does not grant non-credential access', () => {
-        expect(hasScope({ grantedScopes: ['environment:connections:read_credentials'], requiredScope: 'environment:connections:write' })).toBe(false);
+        expect(hasScope({ grantedScopes: ['environment:connections:read_credentials'], requiredScope: 'environment:connections:update' })).toBe(false);
     });
 });

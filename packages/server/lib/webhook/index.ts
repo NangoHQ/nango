@@ -32,4 +32,5 @@ export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
 export { default as calComWebhookRouting } from './cal-com-webhook-routing.js';
 export { default as streakWebhookRouting } from './streak-webhook-routing.js';
 export { default as folkWebhookRouting } from './folk-webhook-routing.js';
+export { default as videoaskWebhookRouting } from './videoask-webhook-routing.js';
 export type * from './types.js';

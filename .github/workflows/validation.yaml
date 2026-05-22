@@ -26,12 +26,14 @@ jobs:
                   filters: |
                       docs:
                           - 'docs/**'
+                          - 'scripts/docs-generate-llms.ts'
+                          - 'package.json'
                           - 'packages/providers/providers.yaml'
                           - 'packages/providers/providers.scopes.yaml'
             - name: Determine if should skip
               id: check
               run: |
-                  # Run on PRs only if docs changed
+                  # Run on PRs only if docs, provider metadata, or docs generation tooling changed
                   # Always run on merge queue
                   # Always run on direct pushes to master (not merge queue bot)
                   IS_PR="${{ github.event_name == 'pull_request' }}"
@@ -43,7 +45,7 @@ jobs:
                   # Always run on merge queue and direct push to master
                   if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
                       SHOULD_SKIP="false"
-                  # Run on PR only if docs changed
+                  # Run on PR only if docs, provider metadata, or docs generation tooling changed
                   elif [[ "$IS_PR" == "true" && "$HAS_DOCS_CHANGES" == "true" ]]; then
                       SHOULD_SKIP="false"
                   fi
@@ -58,6 +60,9 @@ jobs:
               uses: actions/checkout@v4
               with:
                   fetch-depth: '0'
+                  repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+                  ref: ${{ github.head_ref || github.ref }}
+                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - uses: actions/setup-node@v4
               if: needs.should-run.outputs.should_skip != 'true'
@@ -68,6 +73,29 @@ jobs:
 
             - run: npm ci
               if: needs.should-run.outputs.should_skip != 'true'
+
+            - name: Update LLM indexes if stale
+              if: needs.should-run.outputs.should_skip != 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+              env:
+                  HEAD_REF: ${{ github.head_ref }}
+              run: |
+                  npm run docs:generate:llms
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  if git diff --quiet docs/llms.txt docs/llms-full.txt docs/api-catalog.txt; then
+                      echo "No changes to commit."
+                      exit 0
+                  fi
+                  git add docs/llms.txt docs/llms-full.txt docs/api-catalog.txt
+                  git commit -m "chore(docs): regenerate LLM indexes"
+                  git push origin "HEAD:${HEAD_REF}"
+
+            - name: Ensure LLM indexes are up to date
+              if: needs.should-run.outputs.should_skip != 'true' && github.event_name != 'pull_request'
+              run: |
+                  npm run docs:generate:llms
+                  git diff --exit-code docs/llms.txt docs/llms-full.txt docs/api-catalog.txt
+
             - name: Validate YAML
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run test:providers

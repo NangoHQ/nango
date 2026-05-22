@@ -156,7 +156,7 @@ export const TeamMembers: React.FC = () => {
                                             tooltipContent={
                                                 <span>
                                                     RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <StyledLink to={`/${env}/team/billing#plans`} className="text-s">
+                                                    <StyledLink to={`/team/billing#plans`} className="text-s">
                                                         Upgrade
                                                     </StyledLink>{' '}
                                                     to reactivate role.
