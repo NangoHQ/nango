@@ -3,6 +3,9 @@ name: Preview Deploy — Webapp
 on:
     pull_request:
         types: [opened, synchronize, reopened]
+        paths:
+            - 'packages/webapp/**'
+            - 'packages/design-system/**'
 
 concurrency:
     group: preview-webapp-${{ github.event.pull_request.number }}
