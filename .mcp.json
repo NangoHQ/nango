@@ -2,7 +2,8 @@
     "mcpServers": {
         "storybook": {
             "type": "http",
-            "url": "http://localhost:6006/mcp"
+            "url": "http://localhost:6006/mcp",
+            "disabled": true
         }
     }
 }
