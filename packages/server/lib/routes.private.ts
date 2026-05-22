@@ -123,11 +123,29 @@ const web = express.Router();
 setupAuth(web);
 
 // --- Security
+const corsAllowedOrigins = new Set([basePublicUrl, baseUrl]);
+const basePublicHost = new URL(basePublicUrl).hostname;
 const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
-    origin: [basePublicUrl, baseUrl],
+    // Allow exact origins and any subdomain of basePublicUrl (e.g. PR preview URLs like pr-123.app-development.nango.dev)
+    origin: (origin, callback) => {
+        if (!origin) {
+            callback(null, true);
+            return;
+        }
+        try {
+            const host = new URL(origin).hostname;
+            if (corsAllowedOrigins.has(origin) || host.endsWith(`.${basePublicHost}`)) {
+                callback(null, true);
+            } else {
+                callback(null, false);
+            }
+        } catch {
+            callback(null, false);
+        }
+    },
     credentials: true
 });
 web.use(webCorsHandler);
