@@ -8965,6 +8965,20 @@ pipedrive:
     - projects:full
     - search:read
 
+# source: https://api.planningcenteronline.com/docs/overview/authentication
+planning-center-online:
+    - api
+    - calendar
+    - check_ins
+    - giving
+    - groups
+    - home
+    - openid
+    - people
+    - publishing
+    - registrations
+    - services
+
 # source: https://developers.pleo.io/docs/current/authentication/api-scopes.md
 pleo:
     - accounts:read

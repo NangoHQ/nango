@@ -4,7 +4,7 @@ import tracer from 'dd-trace';
 
 import { Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db, dbRead } from '../db/client.js';
 import { envs } from '../env.js';
@@ -194,9 +194,10 @@ export async function getRecords({
                 const error = new Error('invalid_limit');
                 return Err(error);
             }
+            // +1: fetch one extra row to detect "has more pages".
             query = query.limit(Number(limit) + 1);
         } else {
-            query = query.limit(101);
+            query = query.limit(DEFAULT_RECORDS_LIMIT + 1);
         }
 
         if (modifiedAfter) {
@@ -242,7 +243,10 @@ export async function getRecords({
             }
         }
 
-        const recordsMetadata: FormattedRecordWithMetadata[] = await query.select(
+        const budgetBytes = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
+        const budgetEnabled = budgetBytes > 0;
+
+        const recordsMetadata: (FormattedRecordWithMetadata & { size: number })[] = await query.select(
             // PostgreSQL stores timestamp with microseconds precision
             // however, javascript date only supports milliseconds precision
             // we therefore convert timestamp to string (using to_json()) in order to avoid precision loss
@@ -259,12 +263,49 @@ export async function getRecords({
                     WHEN deleted_at IS NOT NULL THEN 'DELETED'
                     WHEN created_at = updated_at THEN 'ADDED'
                     ELSE 'UPDATED'
-                END as last_action
+                END as last_action,
+                COALESCE(size_bytes, 0) as size
             `)
         );
 
         if (recordsMetadata.length === 0) {
             return Ok({ records: [], next_cursor: null });
+        }
+
+        const limitPlus1 = (limit ? Number(limit) : DEFAULT_RECORDS_LIMIT) + 1;
+        let hasMore = recordsMetadata.length >= limitPlus1;
+        let budgetTruncated = false;
+        if (hasMore) {
+            recordsMetadata.pop();
+        }
+        let budgetTotalBytes = 0;
+        if (budgetEnabled) {
+            let acc = 0;
+            let truncateAt: number | null = null;
+            for (let i = 0; i < recordsMetadata.length; i++) {
+                const sz = recordsMetadata[i]!.size;
+                budgetTotalBytes += sz;
+                if (truncateAt !== null) continue;
+                // i > 0: always keep at least one record so pagination can progress past oversized rows.
+                if (i > 0 && acc + sz > budgetBytes) {
+                    truncateAt = i;
+                    continue;
+                }
+                acc += sz;
+            }
+            if (truncateAt !== null) {
+                budgetTruncated = true;
+                if (!envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN) {
+                    recordsMetadata.splice(truncateAt);
+                    hasMore = true;
+                }
+                span.addTags({
+                    'nango.records.budgetTruncated': true,
+                    'nango.records.budgetKeptBytes': acc,
+                    'nango.records.budgetTotalBytes': budgetTotalBytes,
+                    'nango.records.budgetDryRun': envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN
+                });
+            }
         }
 
         const recordIds = recordsMetadata.map((r) => r.id);
@@ -317,18 +358,22 @@ export async function getRecords({
             span.setTag('nango.partition', partition);
         }
 
-        if (results.length > Number(limit || 100)) {
-            results.pop();
-            recordsMetadata.pop();
-
+        if (hasMore) {
             const cursorRawElement = recordsMetadata[recordsMetadata.length - 1];
             if (cursorRawElement) {
-                const encodedCursorValue = Cursor.new(cursorRawElement);
-                return Ok({ records: results, next_cursor: encodedCursorValue });
+                return Ok({
+                    records: results,
+                    next_cursor: Cursor.new(cursorRawElement),
+                    ...(budgetTruncated ? { budgetTruncated } : {})
+                });
             }
         }
 
-        return Ok({ records: results, next_cursor: null });
+        return Ok({
+            records: results,
+            next_cursor: null,
+            ...(budgetTruncated ? { budgetTruncated } : {})
+        });
     } catch (err) {
         const e = new Error(`List records error for model ${model}`, { cause: err });
         span.setTag('error', e);

@@ -1,0 +1,81 @@
+---
+title: 'Nexthink'
+sidebarTitle: 'Nexthink'
+description: 'Integrate your application with the Nexthink API'
+---
+
+## 🚀 Quickstart
+
+Connect to Nexthink with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Nexthink_.
+    </Step>
+    <Step title="Authorize Nexthink">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Nexthink instance name, region, Client ID, and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Nexthink API">
+    Let's make your first request to the Nexthink API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/nql/export?queryId=<QUERY-ID>" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/nql/export',
+            params: { queryId: '<QUERY-ID>' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(JSON.stringify(res.data, null, 2));
+        ```
+        </Tab>
+
+    </Tabs>
+
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Nexthink Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Nexthink account?](/api-integrations/nexthink/connect)  
+Learn how to authenticate with Nexthink and link your account
+
+Official docs: [Nexthink API documentation](https://docs.nexthink.com/api)
+
+## 🧩 Pre-built syncs & actions for Nexthink
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/nexthink/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

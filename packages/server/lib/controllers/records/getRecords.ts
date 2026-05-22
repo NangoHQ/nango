@@ -3,7 +3,9 @@ import * as z from 'zod';
 
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
+
+const envs = parseEnvs(ENVS);
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -103,6 +105,14 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         metrics.increment(metrics.Types.GET_RECORDS_COUNT, recordsCount, { accountId: account.id });
         metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
         metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
+
+        if (result.value.budgetTruncated) {
+            metrics.increment(metrics.Types.RECORDS_BUDGET_TRUNCATE, 1, {
+                accountId: account.id,
+                service: 'server',
+                dryRun: String(envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN)
+            });
+        }
 
         span.setTag('response.size_bytes', responseSize);
     });

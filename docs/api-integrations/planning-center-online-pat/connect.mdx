@@ -1,0 +1,38 @@
+---
+title: Planning Center Online (Personal Access Token) - How do I link my account?
+sidebarTitle: Planning Center Online (PAT)
+---
+
+# Overview
+
+To authenticate with Planning Center using a Personal Access Token, you will need:
+1. **Client ID** - The client ID from your Planning Center personal access token.
+2. **Secret** - The secret from your Planning Center personal access token.
+
+Personal Access Tokens authenticate as a single user and are suited for scripts and internal tooling. If you need to distribute your integration to **multiple churches**, use [Planning Center Online (OAuth)](/api-integrations/planning-center-online) instead.
+
+### Prerequisites
+
+- You must be able to sign in to Planning Center and access the developer token management page.
+
+### Instructions
+
+#### Step 1: Generate a personal access token
+
+1. Open Planning Center [PAT management](https://api.planningcenteronline.com/personal_access_tokens)
+2. Click **Create token**.
+3. Copy the **Client ID** and **Secret**.
+
+The secret is only shown once — store it securely before navigating away.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Secret**:
+
+1. Open the form where you need to authenticate with Planning Center Online (PAT).
+2. Enter your **Client ID** and **Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/planning-center-online-pat/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Planning Center Online.

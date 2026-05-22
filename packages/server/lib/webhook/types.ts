@@ -355,6 +355,14 @@ interface CRMMatches {
     error: string | null;
 }
 
+export interface FolkWebhookPayload {
+    id: string;
+    type: string;
+    createdAt: string;
+    source: string;
+    data: Record<string, any>;
+}
+
 export interface FathomWebhookResponse {
     title: string;
     meeting_title: string | null;

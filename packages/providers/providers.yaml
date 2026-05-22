@@ -7142,6 +7142,8 @@ folk:
     categories:
         - crm
     auth_mode: API_KEY
+    webhook_routing_script: folkWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.folk.app
         headers:
@@ -7153,8 +7155,10 @@ folk:
             method: GET
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/folk
-    docs_connect: https://nango.dev/docs/integrations/all/folk/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/folk
+    docs_connect: https://nango.dev/docs/api-integrations/folk/connect
     credentials:
         apiKey:
             type: string
@@ -12554,6 +12558,50 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+nexthink:
+    display_name: Nexthink
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - service:integration
+    proxy:
+        base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
+    docs: https://nango.dev/docs/api-integrations/nexthink
+    docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Nexthink API Client ID.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Nexthink API Client Secret.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
+    connection_config:
+        instance:
+            type: string
+            title: Instance Name
+            description: The name of your Nexthink instance.
+            example: acme
+            order: 1
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+        region:
+            type: string
+            title: Region
+            description: 'Your Nexthink region'
+            example: eu
+            pattern: '^(us|eu|pac|meta)$'
+            order: 2
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:
@@ -14405,6 +14453,80 @@ pivotaltracker:
             type: string
             title: API Key
             description: The API key for your Pivotal Tracker account
+
+planning-center-online:
+    display_name: Planning Center Online (OAuth)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://api.planningcenteronline.com/oauth/authorize
+    token_url: https://api.planningcenteronline.com/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+            user-agent: Nango (https://nango.dev)
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+    docs: https://nango.dev/docs/api-integrations/planning-center-online
+    setup_guide_url: https://nango.dev/docs/api-integrations/planning-center-online/how-to-register-your-own-planning-center-oauth-app
+
+planning-center-online-pat:
+    display_name: Planning Center Online (Personal Access Token)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.planningcenteronline.com
+        headers:
+            accept: application/json
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: offset
+            offset_name_in_request: offset
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            headers:
+                accept: application/json
+                user-agent: Nango (https://nango.dev)
+            endpoints:
+                - /current/v2/me
+    docs: https://nango.dev/docs/api-integrations/planning-center-online-pat
+    docs_connect: https://nango.dev/docs/api-integrations/planning-center-online-pat/connect
+    credentials:
+        username:
+            type: string
+            title: Client ID
+            description: The Client ID for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9_-]{4,128}$'
+            example: 01h2jk3lm4np5qrst6uvw
+            doc_section: '#step-2-create-a-personal-access-token'
+        password:
+            type: string
+            title: Secret
+            description: The Secret for your Planning Center Personal Access Token.
+            pattern: '^[a-zA-Z0-9+/=_-]{8,512}$'
+            example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
+            doc_section: '#step-2-create-a-personal-access-token'
 
 plain:
     display_name: Plain
@@ -17887,7 +18009,7 @@ smartsheet:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.smartsheet.com/b/authorize
+    authorization_url: https://${connectionConfig.app_host}/b/authorize || https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
@@ -17897,16 +18019,25 @@ smartsheet:
         grant_type: refresh_token
     proxy:
         base_url: https://api.${connectionConfig.domain}
-    docs: https://nango.dev/docs/integrations/all/smartsheet
-    docs_connect: https://nango.dev/docs/integrations/all/smartsheet/connect
+    docs: https://nango.dev/docs/api-integrations/smartsheet
+    docs_connect: https://nango.dev/docs/api-integrations/smartsheet/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app
     connection_config:
+        app_host:
+            type: string
+            title: App Host
+            description: The app host used for authorization.
+            example: app.smartsheet.com
+            optional: true
+            pattern: '^(app\.smartsheet\.com|app\.test\.smartsheet\.com)$'
         domain:
             type: string
             title: Domain
-            description: The domain where your account is hosted
+            description: The domain where your account is hosted.
             example: smartsheet.com
             prefix: https://api.
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
+            order: 1
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com|test\.smartsheet\.com)$'
 
 smugmug:
     display_name: Smugmug
@@ -18572,6 +18703,31 @@ supabase-mcp-oauth:
             example: bvzzcafzoysezumrdvif
             pattern: '^[a-z0-9]{20}$'
             doc_section: '#step-1-finding-your-project-reference'
+
+superhuman-mcp:
+    display_name: Superhuman (MCP)
+    categories:
+        - communication
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.auth.mail.superhuman.com/oauth2/authorize
+    token_url: https://mcp.auth.mail.superhuman.com/oauth2/token
+    registration_url: https://mcp.auth.mail.superhuman.com/oauth2/register
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.mail.superhuman.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/superhuman-mcp
 
 survey-monkey:
     display_name: SurveyMonkey

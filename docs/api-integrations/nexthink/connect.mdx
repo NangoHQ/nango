@@ -1,0 +1,82 @@
+---
+title: Nexthink - How do I link my account?
+sidebarTitle: Nexthink
+---
+
+# Overview
+
+To authenticate with Nexthink, you need:
+1. **Instance Name** - The name of your Nexthink instance.
+2. **Region** - Your Nexthink region where your instance is hosted.
+3. **Client ID** - Your Nexthink API Client ID.
+4. **Client Secret** - Your Nexthink API Client Secret.
+
+This guide walks you through creating API credentials in Nexthink and connecting your account.
+
+### Prerequisites
+
+- Admin access to your Nexthink instance
+- The Nexthink Infinity platform (Cloud)
+
+### Instructions
+
+#### Step 1: Locate your instance name and region
+
+Your Nexthink instance URL (FQDN) follows one of these patterns depending on your platform type:
+
+| Platform | Pattern |
+|----------|---------|
+| Cloud-native | `<instance>.data.<region>.nexthink.cloud` |
+| Classic | `<instance>.<region>.nexthink.cloud` |
+
+For example, if your FQDN is `nxdocs.data.eu.nexthink.cloud`, then:
+- **Instance name**: `nxdocs`
+- **Region**: `eu`
+
+Available regions:
+- `us` — United States
+- `eu` — European Union
+- `pac` — Asia-Pacific
+- `meta` — Middle East, Turkey and Africa
+
+#### Step 2: Create API credentials
+
+1. Log in to the Nexthink web interface.
+2. Select **Administration** from the main menu.
+3. Click **API credentials** in the navigation panel under the **Account Management** section.
+
+<img src="/api-integrations/nexthink/admin.avif"/>
+
+4. Click **New OAuth client credentials** in the top-right corner.
+5. Fill in the form:
+   - **Name**: use the name of the application calling the API.
+   - **Description**: describe what service will use these credentials and why.
+   - **Permissions**: select the features your integration needs:
+     - **Remote Actions API** — trigger and query remote actions
+     - **Enrichment API** — operate the enrichment feature
+     - **Data management** — manage devices
+     - **Workflows API** — trigger and query workflows
+     - **Campaigns API** — trigger campaigns
+     - **NQL API** — extract data
+     - **Spark API** — transfer a live conversation to Spark
+6. Click **Save and generate credentials**.
+
+<img src="/api-integrations/nexthink/create_new.avif"/>
+
+7. Copy the **Client ID** and **Secret key** using the Copy buttons in the modal that appears.
+
+<img src="/api-integrations/nexthink/credentials.avif"/>
+
+<Note>
+The credentials are shown only once. Copy them immediately and store them in your organization's secure vault — they cannot be retrieved after you close the modal. If lost, you must generate new credentials.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Nexthink.
+2. Enter your **Instance Name**, **Region**, **Client ID** and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/nexthink/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Nexthink.
