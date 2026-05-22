@@ -96,7 +96,17 @@ function capitalize(s: string): string {
  */
 const PRIMITIVE_RAMPS: PrimitiveRamp[] = [];
 
-for (const [key, group] of Object.entries(primitiveColor)) {
+// Display order for color groups — alpha follows neutral since they share the same base scale
+const COLOR_GROUP_ORDER = ['mono', 'neutral', 'alpha', 'brand', 'info', 'success', 'warning', 'danger', 'accent'];
+const sortedColorEntries = Object.entries(primitiveColor)
+    .filter(([k]) => !k.startsWith('$') && k !== 'transparent')
+    .sort(([a], [b]) => {
+        const ai = COLOR_GROUP_ORDER.indexOf(a);
+        const bi = COLOR_GROUP_ORDER.indexOf(b);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+
+for (const [key, group] of sortedColorEntries) {
     if (key.startsWith('$') || key === 'transparent') continue;
 
     const entries = Object.entries(group).filter(([k]) => !k.startsWith('$'));
