@@ -9,13 +9,13 @@ description: 'Integrate your application with the Prospeo API'
 Connect to Prospeo with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="configure-prospeo-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Prospeo_.
     </Step>
-    <Step title="Authorize Prospeo">
+    <Step id="authorize-prospeo" title="Authorize Prospeo">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Prospeo API key. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Prospeo API">
+    <Step id="call-prospeo-api" title="Call the Prospeo API">
     Let's make your first request to the Prospeo API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -55,7 +55,7 @@ Connect to Prospeo with Nango and see data flow in 2 minutes.
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-nango-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.

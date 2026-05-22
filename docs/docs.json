@@ -633,6 +633,14 @@
     {
       "source": "/reference/sdks/java",
       "destination": "/reference/backend/backend-sdk/java"
+    },
+    {
+      "source": "/integrations/all/prospeo",
+      "destination": "/api-integrations/prospeo"
+    },
+    {
+      "source": "/integrations/all/prospeo/connect",
+      "destination": "/api-integrations/prospeo/connect"
     }
   ],
   "navigation": {
