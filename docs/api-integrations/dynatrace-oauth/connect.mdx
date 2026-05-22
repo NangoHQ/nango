@@ -22,12 +22,15 @@ This guide walks you through creating an OAuth client in Dynatrace and connectin
 #### Step 1: Find your account UUID
 
 1. Go to [Dynatrace Account Management](https://myaccount.dynatrace.com).
-2. If you have more than one account, select the account you want to manage.
+2. If you have more than one account, select the account you want to connect.
 3. Your account UUID is visible in the URL: `https://myaccount.dynatrace.com/account/home?account-uuid={accountUuid}`
 
 #### Step 2: Create an OAuth client
 
 1. In Account Management, go to **Identity & access management** > **OAuth clients**.
+
+<img src="/api-integrations/dynatrace-oauth/homepage.png"/>
+
 2. Select **Create client**.
 3. Fill in the form:
    - **Owner email**: the email of the user who owns the client.
@@ -37,7 +40,12 @@ This guide walks you through creating an OAuth client in Dynatrace and connectin
      - `app-engine:apps:run` — run apps on AppEngine
      - `storage:buckets:read` / `storage:logs:read` — read logs and storage
 4. Select **Create client**.
+
+<img src="/api-integrations/dynatrace-oauth/oauth_client_form.png"/>
+
 5. Copy the **Client ID** and **Client Secret** from the generated credentials dialog.
+
+<img src="/api-integrations/dynatrace-oauth/client_credentials.png"/>
 
 <Note>
 The client secret is shown only once. Copy it immediately and store it in your organization's secure vault — it cannot be retrieved after you close the dialog. If lost, you must create a new client.
