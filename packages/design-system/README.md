@@ -46,7 +46,7 @@ This lets you ask Claude to build or modify components with full knowledge of ex
 
 ### Adding component stories
 
-Token stories live in `packages/design-system/tokens/` alongside the token files they document. Component stories go under `packages/design-system/src/`. Follow the `tokens/Typography.stories.tsx` pattern.
+Token stories live in `packages/design-system/tokens/` alongside the token files they document. When adding component stories, place them under `packages/design-system/src/` and add `'../src/**/*.stories.@(ts|tsx)'` to the `stories` glob in `.storybook/main.ts`. Follow the `tokens/Typography.stories.tsx` pattern.
 
 ---
 
