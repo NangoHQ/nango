@@ -2596,15 +2596,15 @@ bigchange:
         customer_id:
             type: string
             title: BigChange Customer ID
-            description: Your numeric BigChange Customer ID, shown in your BigChange Developer Portal under API Key Management (e.g. 5690).
+            description: Your numeric BigChange Customer ID.
             example: '5690'
             pattern: '^[0-9]+$'
-            doc_section: '#step-1-find-your-bigchange-customer-id'
+            doc_section: '#step-2-find-your-bigchange-customer-id'
     credentials:
         client_id:
             type: string
             title: Client ID
-            description: Your BigChange Partner API client_id, issued via the BigChange Developer Portal under API Key Management.
+            description: Your BigChange Partner API client_id.
         client_secret:
             type: string
             title: Client Secret

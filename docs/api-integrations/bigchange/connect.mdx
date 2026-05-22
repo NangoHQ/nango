@@ -6,32 +6,39 @@ sidebarTitle: BigChange
 # Overview
 
 To authenticate with BigChange, you will need:
-1. **BigChange Customer ID** — Your numeric BigChange Customer ID, shown in the BigChange Developer Portal under API Key Management (e.g. `5690`).
+1. **Partner API Client ID and Client Secret** — issued by BigChange to the integrator (set once per Nango integration).
+2. **Customer ID** — the numeric Customer ID for the BigChange tenant you are connecting (per Nango connection).
 
-This guide will walk you through finding your **BigChange Customer ID** so you can complete the connection.
+BigChange uses OAuth 2.0 Client Credentials authentication: a single Partner API `client_id` and `client_secret` are configured at the Nango integration level, and each individual BigChange customer is identified by their numeric Customer ID, passed in the `customer-id` request header.
 
 ### Prerequisites:
 
-- You must have access to a BigChange tenant.
-- You must have access to the [BigChange Developer Portal](https://developers.bigchange.com).
-- Your integration partner must have a set of BigChange Partner API credentials (Client ID + Client Secret) already configured in their Nango integration settings.
+- Access to the [BigChange Developer Portal](https://developers.bigchange.com) with permission to create Partner API keys.
+- The numeric Customer ID for each BigChange tenant you intend to connect.
 
 ### Instructions:
 
-#### Step 1: Find your BigChange Customer ID
+#### Step 1: Generate your BigChange Partner API credentials
 
-1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com) with your BigChange account.
+1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com).
 2. Navigate to **API Key Management**.
-3. Your numeric **Customer ID** is shown at the top of the page (e.g. `5690`).
+3. Click **Create new API Key**, give it a descriptive name, and confirm. BigChange will issue a `client_id` and `client_secret`.
+4. Copy both values. The `client_secret` is shown only once.
+5. In your Nango BigChange integration settings, paste the `client_id` and `client_secret` into the **Client ID** and **Client Secret** fields. These are shared across every BigChange tenant you connect.
 
-<Tip>The Customer ID is a numeric value only — digits 0–9, no letters or punctuation.</Tip>
+#### Step 2: Find your BigChange Customer ID
 
-#### Step 2: Enter credentials in the Connect UI
+1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com).
+2. Navigate to **API Key Management**. The numeric Customer ID is shown in the page description, e.g. `5690`.
+
+<Tip>The Customer ID is numeric only — digits 0-9.</Tip>
+
+#### Step 3: Enter credentials in the Connect UI
 
 Once you have your **BigChange Customer ID**:
 
 1. Open the form where you need to authenticate with BigChange.
-2. Enter your **BigChange Customer ID**.
-3. Click **Authorize**. BigChange uses OAuth 2.0 Client Credentials, so there is no user-facing sign-in screen — the connection is created immediately.
+2. Enter your **BigChange Customer ID** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
 
 You are now connected to BigChange.
