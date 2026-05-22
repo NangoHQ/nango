@@ -76,29 +76,45 @@ const SEMANTIC_GROUPS: TokenGroup[] = [
 
 // ─── Primitive palette ───────────────────────────────────────────────────────
 
-const primitives = (tokensJson as Record<string, unknown>)['Primitives'] as Record<string, unknown>;
+const primitiveColor = ((tokensJson as Record<string, unknown>)['Primitives'] as Record<string, unknown>)['color'] as Record<string, Record<string, unknown>>;
 
 interface PrimitiveRamp {
     label: string;
     vars: { step: string; cssVar: string }[];
 }
 
-function buildPrimitiveRamp(colorKey: string, label: string): PrimitiveRamp {
-    const colorGroup = (primitives['color'] as Record<string, unknown>)[colorKey] as Record<string, unknown>;
-    const vars = Object.entries(colorGroup)
-        .filter(([k]) => !k.startsWith('$'))
-        .filter(([, v]) => v && typeof v === 'object' && '$value' in v)
-        .map(([step]) => ({ step, cssVar: `--ds-color-${colorKey}-${step}` }));
-    return { label, vars };
+/** Collect all leaf steps from a color group, handling one level of nesting (e.g. alpha.white, accent.blue) */
+function collectColorSteps(groupKey: string, group: Record<string, unknown>): { step: string; cssVar: string }[] {
+    const vars: { step: string; cssVar: string }[] = [];
+    for (const [k, v] of Object.entries(group)) {
+        if (k.startsWith('$')) continue;
+        if (v && typeof v === 'object' && '$value' in v) {
+            // Flat leaf: e.g. neutral.50
+            vars.push({ step: k, cssVar: `--ds-color-${toKebab(groupKey)}-${k}` });
+        } else if (v && typeof v === 'object') {
+            // One level nested: e.g. alpha.white.8, accent.blue.500
+            for (const [step, leaf] of Object.entries(v as Record<string, unknown>)) {
+                if (step.startsWith('$')) continue;
+                if (leaf && typeof leaf === 'object' && '$value' in leaf) {
+                    vars.push({ step: `${k}-${step}`, cssVar: `--ds-color-${toKebab(groupKey)}-${toKebab(k)}-${step}` });
+                }
+            }
+        }
+    }
+    return vars;
 }
 
-const PRIMITIVE_RAMPS: PrimitiveRamp[] = [
-    buildPrimitiveRamp('neutral', 'Neutral'),
-    buildPrimitiveRamp('brand', 'Brand'),
-    buildPrimitiveRamp('success', 'Success'),
-    buildPrimitiveRamp('warning', 'Warning'),
-    buildPrimitiveRamp('danger', 'Danger')
-];
+/** Capitalise first letter */
+function capitalize(s: string): string {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+const PRIMITIVE_RAMPS: PrimitiveRamp[] = Object.entries(primitiveColor)
+    .filter(([k]) => !k.startsWith('$'))
+    .map(([key, group]) => ({
+        label: capitalize(key),
+        vars: collectColorSteps(key, group)
+    }));
 
 // ─── Components ─────────────────────────────────────────────────────────────
 
