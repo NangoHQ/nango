@@ -13,11 +13,7 @@ const config: StorybookConfig = {
     viteFinal(config): InlineConfig {
         return {
             ...config,
-            plugins: [...(config.plugins ?? []), tailwindcss()],
-            optimizeDeps: {
-                ...config.optimizeDeps,
-                include: [...(config.optimizeDeps?.include ?? []), 'react', 'react/jsx-runtime', 'react-dom', 'react-dom/client']
-            }
+            plugins: [...(config.plugins ?? []), tailwindcss()]
         };
     }
 };
