@@ -30,26 +30,27 @@ This guide will walk you through generating and finding these credentials within
 <img src="/integrations/all/microsoft-business-central/app_registration.png" />
 3. Select **New registration**.
 <img src="/integrations/all/microsoft-business-central/new_registration.png" />
-4. In the **Register an application** section, enter a meaningful application name to display to users (e.g. `Nango Intune`). Under **Supported account types**, select **Accounts in any organizational directory (Multitenant)** and click **Register**.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/register_new_app.png" />
+4. In the **Register an application** section, enter a meaningful application name to display to users (e.g. `Nango Intune`). Under **Supported account types**, leave it to the default one which is **Single tenant Only** and click **Register**.
+<img src="/api-integrations/microsoft-intune/create_application.png" />
 5. Once you have registered your application, your **Client ID** will be displayed in the **Application (client) ID** field within the **Essentials**. Your **Tenant ID** is shown in the **Directory (tenant) ID** field.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/client_id.png" />
+<img src="/api-integrations/microsoft-intune/client_id.png" />
 
 ### Step 3: Generating your Client Secret
 
 1. After registering a new app in the [step above](#step-2-generating-your-client-id), navigate to **Certificates & secrets** under **Manage**, and click **New client secret**.
 2. A pop-up modal will appear, prompting you to enter your secret's **Description** and **Expires** values. Fill these then click on **Add**.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/client_secret.png" />
+<img src="/integrations/all/microsoft-intune/client_secret.png" />
 3. Once completed, your **Client Secret** will be generated. This value can be found in the **Value** field within the **Client Secrets** table.
-<img src="/integrations/all/sharepoint-online-oauth2-cc/gen_client_secret.png" />
 4. After generating the **Client Secret**, you must grant the registered application the necessary permissions. Navigate to **API permissions**, select **Add a permission**, and choose **Microsoft Graph**.
 5. From the displayed list, choose **Application permissions**, select the required Intune permissions, and click **Add permissions**. Common permissions include:
    - `DeviceManagementManagedDevices.Read.All` — read managed devices
    - `DeviceManagementManagedDevices.ReadWrite.All` — read and write managed devices
    - `DeviceManagementConfiguration.Read.All` — read device configuration policies
    - `DeviceManagementApps.Read.All` — read mobile app management data
+
+<img src="/api-integrations/microsoft-intune/permissions.png" />
+
 6. Select **Grant admin consent for [your organization]** and confirm. Admin consent is required for application permissions.
-<img src="/api-integrations/microsoft-oauth2-cc/permissions.png" />
 
 <Note>
 The Intune service must be correctly licensed on the tenant for these API calls to succeed, regardless of whether the permissions are granted.
