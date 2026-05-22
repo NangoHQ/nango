@@ -150,10 +150,44 @@ export function buildTailwindThemeBlock(tokens) {
     return `@theme {\n${vars.join('\n')}\n}`;
 }
 
+// ─── Typography class builder ──────────────────────────────────────────────────
+
+/**
+ * Generate a CSS class for each composite typography token.
+ * Each class sets font-family, font-size, font-weight, line-height, and letter-spacing.
+ * Class names follow the pattern: .type-{token-name}, e.g. .type-heading-lg
+ */
+export function buildTypographyBlock(tokens) {
+    const typTokens = tokens.filter((t) => t['$type'] === 'typography');
+    if (typTokens.length === 0) return '';
+
+    const classes = typTokens
+        .map((t) => {
+            const value = t.$value ?? t.value;
+            if (!value || typeof value !== 'object') return null;
+
+            const { fontFamily, fontWeight, fontSize, lineHeight, letterSpacing } = value;
+            const props = [
+                fontFamily && `    font-family: ${fontFamily};`,
+                fontSize && `    font-size: ${fontSize};`,
+                fontWeight && `    font-weight: ${fontWeight};`,
+                lineHeight && `    line-height: ${lineHeight};`,
+                letterSpacing != null && `    letter-spacing: ${letterSpacing};`
+            ]
+                .filter(Boolean)
+                .join('\n');
+
+            return `.type-${t.name} {\n${props}\n}`;
+        })
+        .filter(Boolean);
+
+    return classes.join('\n\n');
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function buildCss(tokensData) {
-    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark } = tokensData;
+    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark, Typography } = tokensData;
 
     if (!Primitives || !SemanticLight || !SemanticDark) {
         const found = Object.keys(tokensData)
@@ -173,16 +207,35 @@ export async function buildCss(tokensData) {
     writeFileSync(lightFile, JSON.stringify(SemanticLight, null, 2));
     writeFileSync(darkFile, JSON.stringify(SemanticDark, null, 2));
 
-    let primTokens, lightTokens, darkTokens;
+    let typFile;
+    if (Typography) {
+        typFile = path.join(tmpDir, 'typography.json');
+        writeFileSync(typFile, JSON.stringify(Typography, null, 2));
+    }
+
+    let primTokens, lightTokens, darkTokens, typographyTokens;
     try {
         [primTokens, lightTokens, darkTokens] = await Promise.all([
             resolveTokens({ sourceFiles: [primFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile] })
         ]);
+        typographyTokens = typFile ? await resolveTokens({ includeFiles: [primFile], sourceFiles: [typFile] }) : [];
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
     }
+
+    const typographySection =
+        typographyTokens.length > 0
+            ? [
+                  '',
+                  '/*',
+                  ' * Typography tokens — composite text-style classes generated from Figma.',
+                  ' * Apply to any element: class="type-heading-lg"',
+                  ' */',
+                  buildTypographyBlock(typographyTokens)
+              ].join('\n')
+            : '';
 
     const output = [
         '/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */',
@@ -207,6 +260,7 @@ export async function buildCss(tokensData) {
         ' * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.',
         ' */',
         buildTailwindThemeBlock(lightTokens),
+        typographySection,
         ''
     ].join('\n');
 

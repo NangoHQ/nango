@@ -610,3 +610,231 @@
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
 }
+
+/*
+ * Typography tokens — composite text-style classes generated from Figma.
+ * Apply to any element: class="type-heading-lg"
+ */
+.type-heading-lg {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.type-heading-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.type-heading-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-text-regular-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-regular-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-regular-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-label-lg {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-xxs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-code-regular-sm {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-regular-xs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-regular-xxs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.16em;
+}
+
+.type-code-medium-md {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-sm {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-xs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-xxs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
