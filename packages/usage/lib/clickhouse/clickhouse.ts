@@ -258,8 +258,8 @@ export class Clickhouse {
         }
     }
 
-    async shutdown(): Promise<Result<void>> {
-        const res = this.batcher ? await this.batcher.shutdown() : Ok(undefined);
+    async shutdown(opts?: { timeoutMs: number }): Promise<Result<void>> {
+        const res = this.batcher ? await this.batcher.shutdown(opts) : Ok(undefined);
 
         try {
             await this.client?.close();

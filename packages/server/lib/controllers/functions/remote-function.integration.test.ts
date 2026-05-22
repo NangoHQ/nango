@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -13,6 +15,17 @@ async function seedAccountWithRemoteFunctions() {
     const seed = await seeders.seedAccountEnvAndUser();
     await db.knex('plans').where('id', seed.plan.id).update({ remote_functions: true });
     return seed;
+}
+
+async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccountWithRemoteFunctions>>, scopes: string[]) {
+    const key = await customerKeyService.createApiKey(db.knex, {
+        accountId: seed.account.id,
+        environmentId: seed.env.id,
+        displayName: `test-${randomUUID()}`,
+        scopes
+    });
+
+    return key.unwrap();
 }
 
 describe('remote-function public API', () => {
@@ -61,6 +74,55 @@ describe('remote-function public API', () => {
             error: {
                 code: 'forbidden',
                 message: 'Remote functions are not enabled for this account'
+            }
+        });
+    });
+
+    it('rejects POST /remote-function/dryrun without dryrun scope', async () => {
+        const seed = await seedAccountWithRemoteFunctions();
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
+
+        const res = await api.fetch('/remote-function/dryrun', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}',
+                connection_id: 'missing-connection'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:dryrun'
+            }
+        });
+    });
+
+    it('rejects POST /remote-function/deploy without deploy scope', async () => {
+        const seed = await seedAccountWithRemoteFunctions();
+        const apiKey = await createApiKeyWithScopes(seed, ['environment:dryrun']);
+
+        const res = await api.fetch('/remote-function/deploy', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: 'github',
+                function_name: 'syncIssues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: environment:deploy'
             }
         });
     });

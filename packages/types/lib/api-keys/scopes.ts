@@ -9,7 +9,6 @@ export const API_KEY_SCOPES = [
     'environment:integrations:create',
     'environment:integrations:update',
     'environment:integrations:delete',
-    'environment:integrations:write', // legacy: covers create + update + delete
     'environment:integrations:*',
     // Connections
     'environment:connections:list',
@@ -19,7 +18,6 @@ export const API_KEY_SCOPES = [
     'environment:connections:create',
     'environment:connections:update',
     'environment:connections:delete',
-    'environment:connections:write', // legacy: covers create + update + delete
     'environment:connections:*',
     // Connect Sessions
     'environment:connect_sessions:write',
@@ -29,10 +27,11 @@ export const API_KEY_SCOPES = [
     'environment:syncs:update',
     'environment:syncs:variant:create',
     'environment:syncs:variant:delete',
-    'environment:syncs:manage', // legacy: covers update + variant:create + variant:delete
     'environment:syncs:*',
     // Deploy
     'environment:deploy',
+    // Dryrun
+    'environment:dryrun',
     // Records
     'environment:records:read',
     'environment:records:write',
@@ -44,9 +43,6 @@ export const API_KEY_SCOPES = [
     'environment:proxy',
     // Variables
     'environment:variables:read',
-    // Config (legacy: covers variables:read + integrations:list_functions)
-    'environment:config:read',
-    'environment:config:*',
     // MCP
     'environment:mcp'
 ] as const;
