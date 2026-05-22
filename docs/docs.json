@@ -1141,7 +1141,7 @@
               "integrations/all/fiserv-api-key",
               "integrations/all/fitbit",
               "integrations/all/fortnox",
-              "integrations/all/folk",
+              "api-integrations/folk",
               "integrations/all/freshbooks",
               "api-integrations/freshdesk",
               "api-integrations/freshsales",

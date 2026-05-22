@@ -7073,6 +7073,8 @@ folk:
     categories:
         - crm
     auth_mode: API_KEY
+    webhook_routing_script: folkWebhookRouting
+    webhook_user_defined_secret: true
     proxy:
         base_url: https://api.folk.app
         headers:
@@ -7084,8 +7086,10 @@ folk:
             method: GET
             endpoints:
                 - /v1/users/me
-    docs: https://nango.dev/docs/integrations/all/folk
-    docs_connect: https://nango.dev/docs/integrations/all/folk/connect
+    webhook_allowed_query_params:
+        - nangoConnectionId
+    docs: https://nango.dev/docs/api-integrations/folk
+    docs_connect: https://nango.dev/docs/api-integrations/folk/connect
     credentials:
         apiKey:
             type: string
