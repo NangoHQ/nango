@@ -38,4 +38,12 @@ describe('isAllowedWebCorsOrigin', () => {
     it('blocks malformed origin strings', () => {
         expect(isAllowedWebCorsOrigin('not-a-url', allowedOrigins, publicHost)).toBe(false);
     });
+
+    it('blocks non-https preview origins', () => {
+        expect(isAllowedWebCorsOrigin('http://pr-123.app-development.nango.dev', allowedOrigins, publicHost)).toBe(false);
+    });
+
+    it('blocks preview origins with non-standard ports', () => {
+        expect(isAllowedWebCorsOrigin('https://pr-123.app-development.nango.dev:444', allowedOrigins, publicHost)).toBe(false);
+    });
 });
