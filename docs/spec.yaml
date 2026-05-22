@@ -1455,7 +1455,8 @@ paths:
                   required: false
                   schema:
                       type: integer
-                  description: The maximum number of records to return. Defaults to 100.
+                  description: |
+                      The maximum number of records to return. Defaults to 100. A response may contain fewer records than `limit` when records have a large size. Always check `next_cursor` and continue paginating until it is `null`.
                 - name: filter
                   in: query
                   required: false
@@ -3095,6 +3096,9 @@ components:
                     type: string
                     format: date-time
                     description: Last time it was updated
+                forward_webhooks:
+                    type: boolean
+                    description: Whether webhooks received from this integration's provider are forwarded to your backend.
         IntegrationFull:
             allOf:
                 - $ref: '#/components/schemas/Integration'

@@ -133,6 +133,10 @@ export class Batcher<T> {
             if (Date.now() - start > timeoutMs) {
                 if (this.queue.length > 0) {
                     logger.error(`Clickhouse batcher shutdown timed out. Dropping ${this.queue.length} items.`);
+                    metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT, this.queue.length, {
+                        success: 'false',
+                        reason: 'shutdown_orphan'
+                    });
                 }
                 return Err(new Error('Clickhouse batcher shutdown timed out'));
             }
@@ -145,7 +149,11 @@ export class Batcher<T> {
             }
             const res = await this.flush();
             if (res.isErr()) {
-                return res;
+                // Log + continue: the per-flush retry/drop accounting still happens
+                // inside flush(), so letting the loop iterate lets retries exhaust
+                // naturally within timeoutMs. Bailing here would orphan the items
+                // without ever reaching the success=false drop threshold.
+                logger.warning(`Clickhouse batcher: flush failed during shutdown, retrying within remaining budget`);
             }
         }
         return Ok(undefined);

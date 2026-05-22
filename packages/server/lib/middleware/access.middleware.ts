@@ -30,6 +30,7 @@ import type { NextFunction, Request, Response } from 'express';
 const logger = getLogger('AccessMiddleware');
 
 const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i;
+const sandboxApiKeyPrefix = 'nango_sbx_v1_';
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
@@ -51,16 +52,21 @@ export class AccessMiddleware {
             secret: DBAPISecret;
             plan: DBPlan | null;
             auth?: {
-                source: 'customer_key' | 'api_secret' | 'env_var';
+                source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
             };
         }>
     > {
-        if (!keyRegex.test(secret)) {
+        const isSandboxApiKey = secret.startsWith(sandboxApiKeyPrefix);
+
+        if (!keyRegex.test(secret) && !isSandboxApiKey) {
             return Err('invalid_secret_key_format');
         }
-        const accountContext = await accountService.getAccountContextByApiKey(opts.isScript ? { internalSecretKey: secret } : { secretKey: secret });
+
+        const accountContext = await accountService.getAccountContextByApiKey(
+            isSandboxApiKey || !opts.isScript ? { secretKey: secret } : { internalSecretKey: secret }
+        );
         if (!accountContext) {
             return Err('unknown_account');
         }
@@ -109,8 +115,15 @@ export class AccessMiddleware {
             if (result.value.auth?.scopes) {
                 res.locals['apiKeyScopes'] = result.value.auth.scopes;
             }
+            if (result.value.auth) {
+                res.locals['apiKeyAuthSource'] = result.value.auth.source;
+                if (result.value.auth.apiKeyId !== undefined) {
+                    res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+            }
+            const authSource = result.value.auth?.source ?? 'env_var';
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
-                auth_source: isScript ? 'internal_script' : (result.value.auth?.source ?? 'env_var')
+                auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
             tagTraceUser(result.value);
             next();
@@ -381,6 +394,12 @@ export class AccessMiddleware {
                 res.locals['plan'] = apiKeyResult.value.plan;
                 if (apiKeyResult.value.auth?.scopes) {
                     res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
+                }
+                if (apiKeyResult.value.auth) {
+                    res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
+                    if (apiKeyResult.value.auth.apiKeyId !== undefined) {
+                        res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
+                    }
                 }
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                     auth_source: apiKeyResult.value.auth?.source ?? 'env_var'
