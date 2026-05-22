@@ -17892,7 +17892,7 @@ smartsheet:
     categories:
         - productivity
     auth_mode: OAUTH2
-    authorization_url: https://app.smartsheet.com/b/authorize
+    authorization_url: https://${connectionConfig.app_host}/b/authorize || https://app.smartsheet.com/b/authorize
     token_url: https://api.${connectionConfig.domain}/2.0/token
     authorization_params:
         response_type: code
@@ -17902,16 +17902,25 @@ smartsheet:
         grant_type: refresh_token
     proxy:
         base_url: https://api.${connectionConfig.domain}
-    docs: https://nango.dev/docs/integrations/all/smartsheet
-    docs_connect: https://nango.dev/docs/integrations/all/smartsheet/connect
+    docs: https://nango.dev/docs/api-integrations/smartsheet
+    docs_connect: https://nango.dev/docs/api-integrations/smartsheet/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app
     connection_config:
+        app_host:
+            type: string
+            title: App Host
+            description: The app host used for authorization.
+            example: app.smartsheet.com
+            optional: true
+            pattern: '^(app\.smartsheet\.com|app\.test\.smartsheet\.com)$'
         domain:
             type: string
             title: Domain
-            description: The domain where your account is hosted
+            description: The domain where your account is hosted.
             example: smartsheet.com
             prefix: https://api.
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com)$'
+            order: 1
+            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com|test\.smartsheet\.com)$'
 
 smugmug:
     display_name: Smugmug

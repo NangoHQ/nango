@@ -3,7 +3,7 @@ import * as cron from 'node-cron';
 
 import { getLocking } from '@nangohq/kvstore';
 import { clickhouseClient } from '@nangohq/usage';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
@@ -165,18 +165,30 @@ export async function exec(): Promise<void> {
                 logger.error(`Clickhouse client not configured`);
                 return;
             }
+            const day = yesterdayUTC();
+            const runTimestamp = nowCompactUTC();
             try {
-                const day = yesterdayUTC();
-                const runTimestamp = nowCompactUTC();
                 for (const metric of METRICS) {
                     const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
                     const sql = exportSql({ metric, day, runTimestamp, eventName });
                     logger.info(`Exporting ${eventName} for day=${day}`);
-                    await client.command({ query: sql });
+                    const start = process.hrtime.bigint();
+                    try {
+                        await client.command({ query: sql });
+                        logger.info(`Exported ${eventName} for day=${day}`);
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, { metric: metric.canonicalEventName, success: 'true' });
+                    } catch (err) {
+                        // Per-metric catch so a single failure (e.g. CH timeout on
+                        // a heavy table) does not abort the rest of the run.
+                        logger.error(`Failed to export ${eventName} for day=${day}`, err);
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, { metric: metric.canonicalEventName, success: 'false' });
+                    } finally {
+                        metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6, {
+                            metric: metric.canonicalEventName
+                        });
+                    }
                 }
                 logger.info(`✅ done`);
-            } catch (err) {
-                logger.error('Failed to export billing events to S3', err);
             } finally {
                 await client.close();
             }

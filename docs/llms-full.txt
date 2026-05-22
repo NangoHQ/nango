@@ -14268,7 +14268,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `slack-mcp` | Slack (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/slack-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/slack-mcp/how-to-register-your-own-slack-mcp-oauth-app.md) | popular, productivity, communication, mcp |
 | `smartlead-ai` | Smartlead.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/smartlead-ai.md) | [connect](https://nango.dev/docs/integrations/all/smartlead-ai/connect.md) |  | communication, marketing |
 | `smartrecruiters-api-key` | Smartrecruiters | API_KEY | [docs](https://nango.dev/docs/integrations/all/smartrecruiters-api-key.md) |  |  | ats |
-| `smartsheet` | Smartsheet | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/smartsheet.md) | [connect](https://nango.dev/docs/integrations/all/smartsheet/connect.md) |  | productivity |
+| `smartsheet` | Smartsheet | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/smartsheet.md) | [connect](https://nango.dev/docs/api-integrations/smartsheet/connect.md) | [setup](https://nango.dev/docs/api-integrations/smartsheet/how-to-register-your-own-smartsheet-api-oauth-app.md) | productivity |
 | `smugmug` | Smugmug | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/smugmug.md) |  |  | storage |
 | `snapchat` | Snapchat (Ads API) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/snapchat.md) |  |  | video, social |
 | `snipe-it` | Snipe-IT | API_KEY | [docs](https://nango.dev/docs/integrations/all/snipe-it.md) | [connect](https://nango.dev/docs/integrations/all/snipe-it/connect.md) |  | productivity, other |
