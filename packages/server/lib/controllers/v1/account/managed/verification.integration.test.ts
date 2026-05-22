@@ -65,7 +65,7 @@ describe(`POST ${route}`, () => {
     });
 
     it('should complete the pending WorkOS email verification flow and create the local user', async () => {
-        const email = `${nanoid()}@example.com`;
+        const email = `${nanoid().toLowerCase()}@example.com`;
         const verificationCode = '123456';
 
         workosMocks.authenticateWithCode.mockRejectedValue({
@@ -152,6 +152,54 @@ describe(`POST ${route}`, () => {
                 code: 'not_found',
                 message: 'No pending WorkOS email verification was found. Please try signing in with Google again.'
             }
+        });
+    });
+
+    it('should lowercase the persisted user email from a mixed-case WorkOS email', async () => {
+        const normalizedEmail = `case-${nanoid().toLowerCase()}@example.com`;
+        const mixedCaseEmail = `Case-${normalizedEmail.slice('case-'.length)}`;
+
+        workosMocks.authenticateWithCode.mockRejectedValue({
+            rawData: {
+                code: 'email_verification_required',
+                message: 'Email ownership must be verified before authentication.',
+                pending_authentication_token: 'pending_token_123',
+                email: mixedCaseEmail,
+                email_verification_id: 'email_verification_123'
+            }
+        });
+
+        workosMocks.authenticateWithEmailVerification.mockResolvedValue({
+            user: {
+                email: mixedCaseEmail,
+                firstName: 'Managed',
+                lastName: 'User'
+            },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+            redirect: 'manual'
+        });
+
+        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
+        expect(sessionCookie).toBeTruthy();
+
+        const postVerificationRes = await api.fetch('/api/v1/account/managed/verification', {
+            method: 'POST',
+            session: sessionCookie!,
+            body: {
+                code: '123456'
+            }
+        });
+
+        expect(postVerificationRes.res.status).toBe(200);
+
+        const createdUser = await userService.getUserByEmail(normalizedEmail);
+        expect(createdUser).toMatchObject({
+            email: normalizedEmail,
+            email_verified: true,
+            name: 'Managed User'
         });
     });
 
