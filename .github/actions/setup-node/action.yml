@@ -19,6 +19,10 @@ inputs:
         description: 'Set always-auth on the configured registry.'
         required: false
         default: 'false'
+    check-lockfile:
+        description: 'Fail if package-lock.json is out of sync with package.json.'
+        required: false
+        default: 'true'
 
 runs:
     using: 'composite'
@@ -32,3 +36,10 @@ runs:
               registry-url: ${{ inputs.registry-url }}
               scope: ${{ inputs.scope }}
               always-auth: ${{ inputs.always-auth }}
+
+        - name: Check lockfile consistency
+          if: ${{ inputs.check-lockfile == 'true' }}
+          shell: bash
+          run: |
+              npm install --package-lock-only --ignore-scripts
+              git diff --exit-code package-lock.json
