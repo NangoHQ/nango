@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
+import { ENVS, Err, Ok, normalizeEmailAddress, parseEnvs } from '@nangohq/utils';
 
 import type { DBUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -94,7 +94,8 @@ class UserService {
     }
 
     async getUserByEmail(email: string): Promise<DBUser | null> {
-        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).where({ email: email }).first();
+        const normalizedEmail = normalizeEmailAddress(email);
+        const result = await db.knex.select('*').from<DBUser>(`_nango_users`).whereRaw('LOWER(email) = ?', [normalizedEmail]).orderBy('id', 'asc').first();
 
         return result || null;
     }
@@ -122,11 +123,12 @@ class UserService {
         email_verified: boolean;
         role?: DBUser['role'];
     }): Promise<DBUser | null> {
+        const normalizedEmail = normalizeEmailAddress(email);
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
         const result: Pick<DBUser, 'id'>[] = await db.knex
             .from<DBUser>('_nango_users')
             .insert({
-                email,
+                email: normalizedEmail,
                 name,
                 hashed_password,
                 salt,
@@ -164,9 +166,13 @@ class UserService {
     }
 
     async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>): Promise<DBUser | null> {
+        const normalizedData = {
+            ...data,
+            ...(data.email !== undefined ? { email: normalizeEmailAddress(data.email) } : {})
+        };
         const [up] = await db.knex
             .from<DBUser>(`_nango_users`)
-            .update({ ...data, updated_at: new Date() })
+            .update({ ...normalizedData, updated_at: new Date() })
             .where({ id })
             .returning('*');
         return up || null;

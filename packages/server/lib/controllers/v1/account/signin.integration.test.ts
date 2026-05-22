@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { userService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { seeders, userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer } from '../../../utils/tests.js';
@@ -84,5 +85,23 @@ describe(`POST ${signinRoute}`, () => {
         const cookies = res.headers.getSetCookie();
         expect(cookies.length).toBeGreaterThan(0);
         expect(cookies[0]).toMatch(/^nango_session=/);
+    });
+
+    it('should authenticate a mixed-case stored email with lowercase input', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const inputEmail = `casing-${nanoid()}@example.com`;
+        const mixedCaseEmail = `Casing-${inputEmail.slice('casing-'.length)}`;
+
+        await db.knex('_nango_users').where({ id: user.id }).update({ email: mixedCaseEmail });
+
+        const { res, json } = await api.fetch(signinRoute, {
+            method: 'POST',
+            body: { email: inputEmail, password: 'Password123!' }
+        });
+
+        expect(res.status).toBe(200);
+        isSuccess(json);
+        expect(json).toHaveProperty('user');
+        expect(res.headers.getSetCookie()[0]).toMatch(/^nango_session=/);
     });
 });

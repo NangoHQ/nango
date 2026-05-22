@@ -107,7 +107,7 @@ export type PostLogout = Endpoint<{
 }>;
 
 export type PostForgotPassword = Endpoint<{
-    Method: 'PUT';
+    Method: 'POST';
     Path: '/api/v1/account/forgot-password';
     Body: {
         email: string;

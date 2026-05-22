@@ -1,10 +1,8 @@
 import crypto from 'node:crypto';
 
-const EMAIL_ADDRESS_HASH_CONTEXT = 'nango.emailAddressHash.v1';
+import { normalizeEmailAddress } from '@nangohq/utils';
 
-export function normalizeEmailAddress(emailAddress: string): string {
-    return emailAddress.trim().toLowerCase();
-}
+const EMAIL_ADDRESS_HASH_CONTEXT = 'nango.emailAddressHash.v1';
 
 /**
  * Pseudonymize an email address for storage/comparison.

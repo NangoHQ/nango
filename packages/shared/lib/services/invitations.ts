@@ -1,7 +1,7 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { isEnterprise } from '@nangohq/utils';
+import { isEnterprise, normalizeEmailAddress } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
 import type { DBInvitation } from '@nangohq/types';
@@ -9,13 +9,11 @@ import type { DBInvitation } from '@nangohq/types';
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
 export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex }) {
+    const normalizedEmail = normalizeEmailAddress(email);
     const result = await trx
         .from<DBInvitation>(`_nango_invited_users`)
-        .where({
-            email,
-            account_id: accountId,
-            accepted: false
-        })
+        .where({ account_id: accountId, accepted: false })
+        .whereRaw('LOWER(email) = ?', [normalizedEmail])
         .update({
             expires_at: new Date(),
             updated_at: new Date()
@@ -40,11 +38,12 @@ export async function inviteEmail({
 }) {
     const token = uuid.v4();
     const expires_at = new Date(new Date().getTime() + INVITE_EMAIL_EXPIRATION);
+    const normalizedEmail = normalizeEmailAddress(email);
 
     const result = await trx
         .from<DBInvitation>(`_nango_invited_users`)
         .insert({
-            email,
+            email: normalizedEmail,
             name,
             account_id: accountId,
             invited_by: invitedByUserId,

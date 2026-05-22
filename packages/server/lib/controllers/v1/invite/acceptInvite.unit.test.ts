@@ -91,4 +91,41 @@ describe('acceptInvite', () => {
         expect(status).toHaveBeenCalledWith(200);
         expect(send).toHaveBeenCalledWith({ data: { success: true } });
     });
+
+    it('matches invite emails case-insensitively', async () => {
+        const invitationId = crypto.randomUUID();
+        mockGetInvitation.mockResolvedValue({
+            token: invitationId,
+            email: 'invitee@example.com',
+            account_id: 3,
+            role: nonDefaultRole
+        });
+
+        const req = {
+            params: { id: invitationId },
+            query: {},
+            route: { path: '/api/v1/invite/:id' },
+            originalUrl: '/api/v1/invite/:id',
+            header: vi.fn(),
+            session: {
+                passport: {},
+                save: vi.fn((callback: (err?: Error) => void) => callback())
+            }
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = {
+            locals: {
+                user: { id: 2, email: 'Invitee@example.com' }
+            },
+            status,
+            send
+        } as unknown as Response;
+
+        await acceptInvite(req, res, vi.fn());
+
+        expect(mockUpdateUser).toHaveBeenCalledWith({ id: 2, account_id: 3, role: nonDefaultRole });
+        expect(status).toHaveBeenCalledWith(200);
+        expect(send).toHaveBeenCalledWith({ data: { success: true } });
+    });
 });

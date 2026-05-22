@@ -88,7 +88,7 @@ export const InviteSignup: React.FC = () => {
 
     const inviteData = inviteResponse.json.data;
 
-    if (isLogged && isLogged.email !== inviteData.invitation.email) {
+    if (isLogged && isLogged.email.trim().toLowerCase() !== inviteData.invitation.email.trim().toLowerCase()) {
         return (
             <DefaultLayout className="gap-10">
                 <Helmet>

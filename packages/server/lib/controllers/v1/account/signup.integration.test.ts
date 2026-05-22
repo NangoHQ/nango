@@ -1,8 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
+import { seeders } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
-import { isSuccess, runServer } from '../../../utils/tests.js';
+import { isError, isSuccess, runServer } from '../../../utils/tests.js';
 
 const route = '/api/v1/account/signup';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -72,5 +74,22 @@ describe('POST /api/v1/account/signup', () => {
         isSuccess(res.json);
         expect(res.json.data.verified).toBe(false);
         expect(typeof res.json.data.uuid).toBe('string');
+    });
+
+    it('should treat existing user emails case-insensitively', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const inputEmail = `casing-${nanoid()}@example.com`;
+        const mixedCaseEmail = `Casing-${inputEmail.slice('casing-'.length)}`;
+
+        await db.knex('_nango_users').where({ id: user.id }).update({ email: mixedCaseEmail });
+
+        const res = await api.fetch(route, {
+            method: 'POST',
+            body: { email: inputEmail, name: 'Foobar', password: 'aZ1-foobar!', foundUs: 'the internet' }
+        });
+
+        expect(res.res.status).toBe(400);
+        isError(res.json);
+        expect(res.json.error.code).toBe('user_already_exists');
     });
 });
