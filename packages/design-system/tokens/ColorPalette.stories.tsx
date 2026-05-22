@@ -23,13 +23,16 @@ function pathToCssVar(path: string[]): string {
     return '--' + path.map(toKebab).join('-');
 }
 
-/** Walk a token group object and collect CSS variable names for all leaf tokens */
+/** Walk a token group object and collect CSS variable names for leaf color tokens only */
 function collectVars(obj: Record<string, unknown>, path: string[] = []): string[] {
     const vars: string[] = [];
     for (const [key, value] of Object.entries(obj)) {
         if (key.startsWith('$')) continue;
         if (value && typeof value === 'object' && '$value' in value) {
-            vars.push(pathToCssVar([...path, key]));
+            const token = value as Record<string, unknown>;
+            if (token['$type'] === 'color') {
+                vars.push(pathToCssVar([...path, key]));
+            }
         } else if (value && typeof value === 'object') {
             vars.push(...collectVars(value as Record<string, unknown>, [...path, key]));
         }
