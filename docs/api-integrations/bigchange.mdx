@@ -1,0 +1,84 @@
+---
+title: 'BigChange'
+sidebarTitle: 'BigChange'
+description: 'Integrate your application with the BigChange JobWatch API'
+---
+
+import PreBuiltTooling from "/snippets/generated/bigchange/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/bigchange/PreBuiltUseCases.mdx"
+
+<PreBuiltTooling />
+
+## 🚀 Quickstart
+
+Connect to BigChange with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _BigChange_. Enter your BigChange Partner API Client ID and Client Secret (see the setup guide below).
+    </Step>
+    <Step title="Authorize BigChange">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the customer's numeric Customer ID (found in their BigChange Developer Portal under API Key Management). BigChange uses OAuth 2.0 Client Credentials, so there is no user-facing login screen — the connection is created as soon as the Customer ID is submitted. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the BigChange API">
+    Let's make your first request to the BigChange API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/jobs?page-number=1&page-size=10" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/jobs?page-number=1&page-size=10',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests. Nango automatically injects the `customer-id` header on every proxy call from the connection's `customer_id` field.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 BigChange Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own BigChange API OAuth app](/api-integrations/bigchange/how-to-register-your-own-bigchange-api-oauth-app)
+Obtain Partner API credentials (Client ID / Client Secret) from the BigChange Developer Portal and connect them to Nango.
+
+Official docs: [BigChange API docs](https://developers.bigchange.com/docs/rest)
+
+## 🧩 Pre-built syncs & actions for BigChange
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+<PreBuiltUseCases />
+
+---

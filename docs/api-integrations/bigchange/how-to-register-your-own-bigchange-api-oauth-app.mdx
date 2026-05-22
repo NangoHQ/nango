@@ -1,0 +1,58 @@
+---
+title: 'How to register your own BigChange API OAuth app'
+sidebarTitle: 'BigChange Setup'
+description: 'Obtain BigChange Partner API credentials and connect them to Nango'
+---
+
+This guide shows you how to obtain BigChange Partner API credentials (Client ID & Client Secret) and the per-customer Customer ID needed to connect a tenant via Nango.
+
+BigChange uses **OAuth 2.0 Client Credentials** authentication: a single Partner API client_id and client_secret are issued per integrator (configured once at the Nango integration level), and each individual BigChange customer is identified by a numeric Customer ID passed in the `customer-id` request header (configured per Nango connection).
+
+## Step 1 — Obtaining your Partner credentials
+
+<Steps>
+  <Step title="Sign in to the BigChange Developer Portal">
+    Go to [developers.bigchange.com](https://developers.bigchange.com) and sign in with your BigChange account. If you don't have access, contact your BigChange account manager and request Developer Portal access.
+  </Step>
+  <Step title="Open API Key Management">
+    Navigate to **API Key Management** in the portal.
+  </Step>
+  <Step title="Create an API Key">
+    Click **Create API Key**. Enter a descriptive name (e.g. your company name + integration). BigChange will mint a `client_id` and `client_secret` pair.
+  </Step>
+  <Step title="Copy your credentials">
+    Copy the **Client ID** and **Client Secret** shown. The Client Secret is shown only once — store it in a secret manager.
+  </Step>
+  <Step title="Enter credentials in Nango">
+    In your Nango BigChange integration settings, paste the Client ID and Client Secret into the **Client ID** and **Client Secret** fields. These credentials are shared across every BigChange tenant you connect.
+  </Step>
+</Steps>
+
+## Step 2 — Finding your Customer ID
+
+Each BigChange tenant (customer organisation) is identified by a numeric Customer ID. Every API call must include this Customer ID in the `customer-id` HTTP header so BigChange knows which tenant's data to return.
+
+<Steps>
+  <Step title="Sign in as the customer admin">
+    Have the customer sign in to the [BigChange Developer Portal](https://developers.bigchange.com) with their own BigChange account.
+  </Step>
+  <Step title="Open API Key Management">
+    Navigate to **API Key Management**. The numeric Customer ID is shown at the top of the page (e.g. `5690`).
+  </Step>
+  <Step title="Enter Customer ID at connect time">
+    When creating a Nango connection for this customer, paste their numeric Customer ID into the **BigChange Customer ID** field. Nango will inject this value into the `customer-id` header on every proxy call automatically.
+  </Step>
+</Steps>
+
+## Authentication summary
+
+- **Grant type:** OAuth 2.0 Client Credentials (`grant_type=client_credentials`)
+- **Token endpoint:** `https://api.bigchange.com/auth/tokens`
+- **Client auth method:** HTTP Basic (`Authorization: Basic base64(client_id:client_secret)`)
+- **Per-tenant identifier:** `customer-id` header (numeric Customer ID)
+- **Proxy base URL:** `https://api.bigchange.com`
+- **API version prefix:** `/v1/`
+- **Refresh tokens:** none — Client Credentials grants are stateless. Nango caches the access token by `expires_in` and re-mints automatically on expiry.
+- **Scopes:** none — permissions are governed by the BigChange role assigned to the Partner API key by the customer's BigChange admin.
+
+For more details, see the [BigChange REST API docs](https://developers.bigchange.com/docs/rest).

@@ -1,0 +1,37 @@
+---
+title: BigChange - How do I link my account?
+sidebarTitle: BigChange
+---
+
+# Overview
+
+To authenticate with BigChange, you will need:
+1. **BigChange Customer ID** — Your numeric BigChange Customer ID, shown in the BigChange Developer Portal under API Key Management (e.g. `5690`).
+
+This guide will walk you through finding your **BigChange Customer ID** so you can complete the connection.
+
+### Prerequisites:
+
+- You must have access to a BigChange tenant.
+- You must have access to the [BigChange Developer Portal](https://developers.bigchange.com).
+- Your integration partner must have a set of BigChange Partner API credentials (Client ID + Client Secret) already configured in their Nango integration settings.
+
+### Instructions:
+
+#### Step 1: Find your BigChange Customer ID
+
+1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com) with your BigChange account.
+2. Navigate to **API Key Management**.
+3. Your numeric **Customer ID** is shown at the top of the page (e.g. `5690`).
+
+<Tip>The Customer ID is a numeric value only — digits 0–9, no letters or punctuation.</Tip>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **BigChange Customer ID**:
+
+1. Open the form where you need to authenticate with BigChange.
+2. Enter your **BigChange Customer ID**.
+3. Click **Authorize**. BigChange uses OAuth 2.0 Client Credentials, so there is no user-facing sign-in screen — the connection is created immediately.
+
+You are now connected to BigChange.
