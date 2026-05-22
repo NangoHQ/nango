@@ -17,6 +17,7 @@
         "@storybook/addon-a11y": "^10.4.0",
         "@storybook/addon-mcp": "^0.6.0",
         "@storybook/addon-themes": "^10.4.0",
+        "@storybook/react": "^10.4.0",
         "@storybook/react-vite": "^10.4.0",
         "@tailwindcss/vite": "^4.1.13",
         "@tokens-studio/sd-transforms": "2.0.3",
