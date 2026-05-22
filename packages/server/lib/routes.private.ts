@@ -125,26 +125,25 @@ setupAuth(web);
 // --- Security
 const corsAllowedOrigins = new Set([basePublicUrl, baseUrl]);
 const basePublicHost = new URL(basePublicUrl).hostname;
+
+/** Exported for unit testing. */
+export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigins: Set<string>, publicHost: string): boolean {
+    if (!origin) return true;
+    try {
+        const host = new URL(origin).hostname;
+        return allowedOrigins.has(origin) || (/^pr-\d+\./.test(host) && host.endsWith(`.${publicHost}`));
+    } catch {
+        return false;
+    }
+}
+
 const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
     // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
     origin: (origin, callback) => {
-        if (!origin) {
-            callback(null, true);
-            return;
-        }
-        try {
-            const host = new URL(origin).hostname;
-            if (corsAllowedOrigins.has(origin) || (/^pr-\d+\./.test(host) && host.endsWith(`.${basePublicHost}`))) {
-                callback(null, true);
-            } else {
-                callback(null, false);
-            }
-        } catch {
-            callback(null, false);
-        }
+        callback(null, isAllowedWebCorsOrigin(origin, corsAllowedOrigins, basePublicHost));
     },
     credentials: true
 });
