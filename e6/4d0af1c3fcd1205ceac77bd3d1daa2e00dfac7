@@ -1,0 +1,30 @@
+docs/llms-full.txt
+  s_90bef1a68085f5::t_a4a38a0722cd90 304,319
+  s_90bef1a68085f5::t_14a05aeb648903 303,318,341
+  s_90bef1a68085f5::t_ab3ae776b139d7 324
+  s_90bef1a68085f5::t_fc97c42f68955b 244,246,261-262,266,272-302,305-317,320-323,325-339
+docs/llms.txt
+  s_90bef1a68085f5::t_fc97c42f68955b 16
+docs/getting-started/coding-agent-setup.mdx
+  s_90bef1a68085f5::t_576622b7ec59cd 4,7,22-23,27,33-63,66,68-78,81-84,86-100
+  s_90bef1a68085f5::t_7c917af5b3f042 67
+  s_90bef1a68085f5::t_c0b3cf3afd9bf4 64,102
+  s_90bef1a68085f5::t_51ad9e7fe1fdf9 65,80
+  s_90bef1a68085f5::t_b1c7a8c590098d 85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "e64d0af1c3fcd1205ceac77bd3d1daa2e00dfac7",
+  "prompts": {},
+  "sessions": {
+    "s_90bef1a68085f5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1b0f0a258ffepKTdHoEwu71u6s",
+        "model": "gpt-5.5-pro"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
