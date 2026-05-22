@@ -8,7 +8,7 @@ const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
 
 export interface UncontrolledFetchDeps {
     throwError: (code: string, message: string) => never;
-    recordTransfer: (params: { direction: 'request' | 'response'; bytes: number }) => void;
+    recordTransfer: (params: { bytesSent: number; bytesReceived: number }) => void;
 }
 
 export async function executeUncontrolledFetch(
@@ -20,8 +20,8 @@ export async function executeUncontrolledFetch(
     },
     deps: UncontrolledFetchDeps
 ): Promise<Response> {
-    const recordTransfer = (params: { direction: 'request' | 'response'; bytes: number }) => {
-        if (params.bytes > 0) deps.recordTransfer(params);
+    const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
+        if (params.bytesSent > 0 || params.bytesReceived > 0) deps.recordTransfer(params);
     };
 
     const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
@@ -51,10 +51,10 @@ export async function executeUncontrolledFetch(
             props.body = body;
         }
 
-        recordTransfer({ direction: 'request', bytes: countRequestBytes(props.headers as Headers, body) });
-
         const response = await fetch(currentUrl, props);
-        const responseHeaderBytes = countHeaderBytes(response.headers);
+
+        const bytesSent = countRequestBytes(props.headers as Headers, body);
+        const bytesReceived = countHeaderBytes(response.headers);
 
         if (!REDIRECT_STATUS_CODES.has(response.status)) {
             let contentLength = parseContentLength(response.headers);
@@ -64,17 +64,17 @@ export async function executeUncontrolledFetch(
             }
 
             if (contentLength !== null) {
-                recordTransfer({ direction: 'response', bytes: responseHeaderBytes + contentLength });
+                recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + contentLength });
                 return response;
             }
 
             // CL not present, tap the stream to measure the body
             return tapResponseStreamAndCount(response, ({ bytes }) => {
-                recordTransfer({ direction: 'response', bytes: responseHeaderBytes + bytes });
+                recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + bytes });
             });
         }
 
-        recordTransfer({ direction: 'response', bytes: responseHeaderBytes + (parseContentLength(response.headers) ?? 0) });
+        recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + (parseContentLength(response.headers) ?? 0) });
 
         const location = response.headers.get('Location');
 

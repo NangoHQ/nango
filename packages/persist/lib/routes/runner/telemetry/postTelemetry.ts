@@ -18,12 +18,20 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
     const { events } = res.locals.parsedBody;
 
     const dataTransferEvents = events.filter((event) => event.type === 'data_transfer');
+    const byCallsite = Map.groupBy(dataTransferEvents, (event) => event.callsite);
 
-    const totalBytesSent = dataTransferEvents.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
-    const totalBytesReceived = dataTransferEvents.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
+    for (const [callsite, callsiteEvents] of byCallsite) {
+        const bytesSent = callsiteEvents.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
+        const bytesReceived = callsiteEvents.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
 
-    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, totalBytesSent, { callsite: 'runner' });
-    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, totalBytesReceived, { callsite: 'runner' });
+        if (callsite === 'proxy') {
+            metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
+            metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
+        } else {
+            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
+            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
+        }
+    }
 
     res.status(204).send();
     return;

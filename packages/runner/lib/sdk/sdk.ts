@@ -101,12 +101,15 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         });
     }
 
-    protected override recordUncontrolledFetchTransfer({ direction, bytes }: { direction: 'request' | 'response'; bytes: number }): void {
-        if (direction === 'request') {
-            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytes);
-        } else {
-            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytes);
-        }
+    protected override recordUncontrolledFetchTransfer({ bytesSent, bytesReceived }: { bytesSent: number; bytesReceived: number }): void {
+        this.telemetryRecorder?.record({
+            type: 'data_transfer',
+            callsite: 'uncontrolled_fetch',
+            connectionId: this.connectionId,
+            integrationId: this.providerConfigKey,
+            bytesSent,
+            bytesReceived
+        });
     }
 
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -166,6 +169,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             onBytes: ({ sent, received }) => {
                 this.telemetryRecorder?.record({
                     type: 'data_transfer',
+                    callsite: 'proxy',
                     bytesSent: sent,
                     bytesReceived: received,
                     integrationId: providerConfigKey ?? this.providerConfigKey,

@@ -17,8 +17,8 @@ function makeProps(): NangoProps {
 }
 
 interface TransferRecord {
-    direction: 'request' | 'response';
-    bytes: number;
+    bytesSent: number;
+    bytesReceived: number;
 }
 
 async function makeActionInstance() {
@@ -31,7 +31,7 @@ async function makeActionInstance() {
         // minimal shape for places that may touch user agent
         nango = { userAgent: 'runner-sdk-test' } as any;
 
-        protected override recordUncontrolledFetchTransfer(params: { direction: 'request' | 'response'; bytes: number }): void {
+        protected override recordUncontrolledFetchTransfer(params: TransferRecord): void {
             transfers.push(params);
         }
 
@@ -364,16 +364,9 @@ describe('uncontrolledFetch transfer metering', () => {
             headers: { 'x-test': '1' }
         });
 
-        const requestRecords = transfers.filter((t) => t.direction === 'request');
-        const responseRecords = transfers.filter((t) => t.direction === 'response');
-
-        expect(requestRecords.length).toBe(1);
-        expect(requestRecords[0]!.bytes).toBeGreaterThan(0);
-
-        expect(responseRecords.length).toBe(1);
-        expect(responseRecords[0]!.bytes).toBeGreaterThan(0);
-        // Response bytes should include at least the body bytes
-        expect(responseRecords[0]!.bytes).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody, 'utf8'));
+        expect(transfers.length).toBe(1);
+        expect(transfers[0]!.bytesSent).toBeGreaterThan(0);
+        expect(transfers[0]!.bytesReceived).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody, 'utf8'));
     });
 
     it('records request bytes for POST with body', async () => {
@@ -389,8 +382,8 @@ describe('uncontrolledFetch transfer metering', () => {
             headers: { 'content-type': 'application/json' }
         });
 
-        const requestBytes = transfers.find((t) => t.direction === 'request')?.bytes ?? 0;
-        expect(requestBytes).toBeGreaterThanOrEqual(Buffer.byteLength(body, 'utf8'));
+        expect(transfers.length).toBe(1);
+        expect(transfers[0]!.bytesSent).toBeGreaterThanOrEqual(Buffer.byteLength(body, 'utf8'));
     });
 
     it('records transfer bytes for each hop on redirect, POST body dropped on 302', async () => {
@@ -408,16 +401,16 @@ describe('uncontrolledFetch transfer metering', () => {
             headers: { 'content-type': 'text/plain', 'x-hop': '1' }
         });
 
-        const requestRecords = transfers.filter((t) => t.direction === 'request');
-        const responseRecords = transfers.filter((t) => t.direction === 'response');
+        // Two records: one per hop
+        expect(transfers.length).toBe(2);
 
-        // Two request records: POST (body + headers), then GET (x-hop only; body headers stripped)
-        expect(requestRecords.length).toBe(2);
-        expect(requestRecords[0]!.bytes).toBeGreaterThan(requestRecords[1]!.bytes);
-        expect(requestRecords[1]!.bytes).toBeGreaterThan(0);
+        // First hop is POST with body — more bytesSent than second hop (GET, no body)
+        expect(transfers[0]!.bytesSent).toBeGreaterThan(transfers[1]!.bytesSent);
+        expect(transfers[1]!.bytesSent).toBeGreaterThan(0);
 
-        // Two response records: one for the redirect, one for the final response
-        expect(responseRecords.length).toBe(2);
+        // Both hops have response headers
+        expect(transfers[0]!.bytesReceived).toBeGreaterThan(0);
+        expect(transfers[1]!.bytesReceived).toBeGreaterThan(0);
     });
 
     it('records streamed response body bytes when Content-Length is absent', async () => {
@@ -431,9 +424,8 @@ describe('uncontrolledFetch transfer metering', () => {
         // Consume body to trigger streamed byte count
         await res.text();
 
-        const responseRecords = transfers.filter((t) => t.direction === 'response');
-        expect(responseRecords.length).toBe(1);
-        expect(responseRecords[0]!.bytes).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody, 'utf8'));
+        expect(transfers.length).toBe(1);
+        expect(transfers[0]!.bytesReceived).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody, 'utf8'));
     });
 
     it('base class no-op hook does not throw and emits no transfers when not overridden', async () => {

@@ -466,16 +466,7 @@ export abstract class NangoActionBase<
 
     public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
 
-    /**
-     * No-op hook called with observable HTTP payload bytes (headers + body) for uncontrolledFetch.
-     * Production runner overrides this to emit Datadog metrics.
-     * Only called when bytes > 0.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected recordUncontrolledFetchTransfer(_params: { direction: 'request' | 'response'; bytes: number }): void {
-        // NOTE: will replace this hook by a telemetry recorder internal to the SDK (introduced by NAN-5668)
-        // no-op in base SDK; overridden by production runner
-    }
+    protected recordUncontrolledFetchTransfer(_params: { bytesSent: number; bytesReceived: number }): void {}
 
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
@@ -491,7 +482,7 @@ export abstract class NangoActionBase<
             throwError: (code, message) => {
                 throw new this.ActionError({ code, message });
             },
-            recordTransfer: this.recordUncontrolledFetchTransfer.bind(this)
+            recordTransfer: (p) => this.recordUncontrolledFetchTransfer(p)
         });
     }
 

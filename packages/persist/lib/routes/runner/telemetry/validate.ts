@@ -10,7 +10,8 @@ export const telemetryEntrySchema = z.discriminatedUnion('type', [
             syncId: z.string().optional(),
             type: z.literal('data_transfer'),
             bytesSent: z.number().int().nonnegative(),
-            bytesReceived: z.number().int().nonnegative()
+            bytesReceived: z.number().int().nonnegative(),
+            callsite: z.enum(['proxy', 'uncontrolled_fetch'])
         })
         .strict()
 ]);
