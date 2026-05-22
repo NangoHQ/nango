@@ -23,10 +23,14 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 
 | Story | Path |
 |---|---|
+| Button — All variants / sizes / states | `Design System / Components / Button` |
+| IconButton — All variants / sizes / states | `Design System / Components / Button` |
+| Input — States / with icons / password | `Design System / Components / Input` |
+| Badge — All variants / shapes | `Design System / Components / Badge` |
+| FilterBadge — Selected / unselected / disabled | `Design System / Components / Badge` |
+| Spinner — All sizes | `Design System / Components / Spinner` |
 | Typography — Type Scale | `Design System / Typography` |
-| Typography — Font Families | `Design System / Typography` |
 | Color Palette — Semantic Tokens | `Design System / Color Palette` |
-| Color Palette — Primitive Ramps | `Design System / Color Palette` |
 
 ### Storybook MCP
 
@@ -150,3 +154,42 @@ Primitives are excluded from `@theme` to nudge components toward semantic tokens
 ```
 
 Legacy tokens in `index.css` (`--color-*`) are separate and untouched.
+
+---
+
+## Components
+
+Components are available from the package root:
+
+```tsx
+import { Button, Input, Badge, FilterBadge, IconButton, Spinner } from '@nangohq/design-system';
+```
+
+The consumer must also import the token CSS once at the app root (see above). Components use only semantic CSS variables — no raw hex, hardcoded sizes, or hardcoded spacing.
+
+### Focus rings
+
+Components apply focus rings via `box-shadow` using `--focus-outline-default` (or `--focus-outline-danger` for destructive actions). The app shell should include:
+
+```css
+*:focus-visible { outline: none; }
+```
+
+This is included in Storybook's `preview.css` automatically.
+
+### Tokens Studio GitHub sync config
+
+| Field | Value |
+|---|---|
+| Repository | `NangoHQ/nango` |
+| Branch | `design/tokens` |
+| File path | `packages/design-system/tokens/tokens.json` |
+
+### Figma plugin setup (first time)
+
+1. Install the [Tokens Studio for Figma](https://tokens.studio/) plugin
+2. Plugin should detect existing GitHub sync and pre-fill all fields except for the access token
+3. For the **Personal Access Token** field, retrieve it from 1Password:
+   - Vault: **Eng**
+   - Item: **GitHub PAT - Figma Tokens Studio Sync**
+4. Click **Save** — the plugin will load the existing tokens from the `design/tokens` branch
