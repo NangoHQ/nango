@@ -103,14 +103,31 @@ for (const [key, group] of Object.entries(primitiveColor)) {
     const isNested = entries.some(([, v]) => v && typeof v === 'object' && !('$value' in v));
 
     if (isNested) {
-        // One row per sub-group, e.g. "Alpha · White", "Alpha · Black"
-        for (const [subKey, subGroup] of entries) {
-            if (!subGroup || typeof subGroup !== 'object' || '$value' in subGroup) continue;
-            const vars = Object.entries(subGroup as Record<string, unknown>)
-                .filter(([k]) => !k.startsWith('$'))
-                .filter(([, v]) => v && typeof v === 'object' && '$value' in v)
-                .map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(key)}-${toKebab(subKey)}-${step}` }));
-            PRIMITIVE_RAMPS.push({ label: `${capitalize(key)} · ${capitalize(subKey)}`, vars });
+        // If each sub-group has only one step (e.g. accent.blue.500), combine into
+        // one row using the sub-group key as the label. Otherwise (e.g. alpha.white.*),
+        // emit one row per sub-group so it spans the full width.
+        const subGroups = entries
+            .filter(([, v]) => v && typeof v === 'object' && !('$value' in v))
+            .map(([subKey, subGroup]) => ({
+                subKey,
+                steps: Object.entries(subGroup as Record<string, unknown>).filter(([k, v]) => !k.startsWith('$') && v && typeof v === 'object' && '$value' in v)
+            }));
+
+        const allSingleStep = subGroups.every(({ steps }) => steps.length === 1);
+
+        if (allSingleStep) {
+            // One combined row, step label = sub-group key, e.g. "blue", "violet"
+            const vars = subGroups.map(({ subKey, steps }) => ({
+                step: subKey,
+                cssVar: `--ds-color-${toKebab(key)}-${toKebab(subKey)}-${steps[0][0]}`
+            }));
+            PRIMITIVE_RAMPS.push({ label: capitalize(key), vars });
+        } else {
+            // One row per sub-group, e.g. "Alpha · White", "Alpha · Black"
+            for (const { subKey, steps } of subGroups) {
+                const vars = steps.map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(key)}-${toKebab(subKey)}-${step}` }));
+                PRIMITIVE_RAMPS.push({ label: `${capitalize(key)} · ${capitalize(subKey)}`, vars });
+            }
         }
     } else {
         // Flat ramp, e.g. "Neutral", "Brand"
