@@ -18754,7 +18754,8 @@ tanium:
             content-type: application/json
         verification:
             method: GET
-            endpoint: /v2/session/info
+            endpoints:
+                - /v2/session/info
     docs: https://nango.dev/docs/api-integrations/tanium
     docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
     credentials:
