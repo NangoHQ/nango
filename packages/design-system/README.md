@@ -26,6 +26,20 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 | Color Palette — Semantic Tokens | `Design System / Color Palette` |
 | Color Palette — Primitive Ramps | `Design System / Color Palette` |
 
+### Storybook MCP
+
+Storybook ships with an [MCP server](https://storybook.js.org/docs/sharing/mcp-server) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. When the dev server is running, Claude Code connects to it automatically via `.mcp.json`.
+
+This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
+
+**Available MCP tools (auto-loaded when Storybook is running):**
+
+| Tool | What it does |
+|---|---|
+| `list-all-documentation` | Lists all story IDs and component names |
+| `get-documentation` | Returns props, variants, and usage for a component |
+| `preview-stories` | Renders a story and returns a preview URL |
+
 ### Adding component stories
 
 Create a `*.stories.tsx` file anywhere under `packages/design-system/src/`. Follow the `src/stories/Typography.stories.tsx` pattern.
