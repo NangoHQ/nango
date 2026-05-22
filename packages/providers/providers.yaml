@@ -5952,6 +5952,75 @@ drupal:
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
 
+dynatrace:
+    display_name: Dynatrace
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environmentId}.live.dynatrace.com
+        headers:
+            authorization: Api-Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/dynatrace
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace/connect
+    connection_config:
+        environmentId:
+            type: string
+            title: Environment ID
+            description: Your Dynatrace environment ID.
+            pattern: '^[a-z0-9]+$'
+            example: mew08***
+            order: 1
+            doc_section: '#step-1-find-your-environment-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Dynatrace API token.
+            pattern: '^dt0[a-z]\d+\.[A-Z0-9]+\.[A-Z0-9]+$'
+            example: dt0s01.ST2EY72KQINMH5***********.G3DFPBEJYMODIDAEX454M7YWB***************************
+            doc_section: '#step-2-generate-an-api-token'
+
+dynatrace-oauth:
+    display_name: Dynatrace (OAuth)
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://sso.dynatrace.com/sso/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+        resource: urn:dtaccount:${connectionConfig.accountUuid}
+    proxy:
+        base_url: https://api.dynatrace.com
+    docs: https://nango.dev/docs/api-integrations/dynatrace-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace-oauth/connect
+    connection_config:
+        accountUuid:
+            type: string
+            title: Account UUID
+            description: Your Dynatrace account UUID.
+            example: 9a8b7c6d-1234-5678-abcd-ef0123456789
+            format: uuid
+            order: 1
+            doc_section: '#step-1-find-your-account-uuid'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Dynatrace OAuth client ID.
+            example: dt0s03.****************
+            doc_section: '#step-2-create-an-oauth-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Dynatrace OAuth client secret.
+            secret: true
+            example: dt0s03.5NJ******.GYWJPBF******************
+            doc_section: '#step-2-create-an-oauth-client'
+
 emarsys:
     display_name: Emarsys Core API (WSSE)
     categories:
@@ -12488,6 +12557,50 @@ next-cloud-ocs:
             format: hostname
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
+
+nexthink:
+    display_name: Nexthink
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - service:integration
+    proxy:
+        base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
+    docs: https://nango.dev/docs/api-integrations/nexthink
+    docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Nexthink API Client ID.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Nexthink API Client Secret.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
+    connection_config:
+        instance:
+            type: string
+            title: Instance Name
+            description: The name of your Nexthink instance.
+            example: acme
+            order: 1
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+        region:
+            type: string
+            title: Region
+            description: 'Your Nexthink region'
+            example: eu
+            pattern: '^(us|eu|pac|meta)$'
+            order: 2
+            doc_section: '#step-1-locate-your-instance-name-and-region'
 
 ninjaone-rmm:
     display_name: NinjaOne RMM
