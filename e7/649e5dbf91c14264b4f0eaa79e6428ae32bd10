@@ -1,0 +1,23 @@
+.npmrc
+  s_b39bb872dde816::t_9d8125a5303aa7 1-6
+.github/workflows/cli-verification.yaml
+  s_b39bb872dde816::t_9d8125a5303aa7 126
+scripts/publish.mjs
+  s_b39bb872dde816::t_9d8125a5303aa7 128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e7649e5dbf91c14264b4f0eaa79e6428ae32bd10",
+  "prompts": {},
+  "sessions": {
+    "s_b39bb872dde816": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e504a-8e97-7193-9c33-1309cd88ad66",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
