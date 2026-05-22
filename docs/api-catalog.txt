@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 823
+Provider count: 824
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -716,6 +716,7 @@ URL patterns:
 | `tailscale-api-key` | Tailscale (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/tailscale-api-key.md) | [connect](https://nango.dev/docs/integrations/all/tailscale-api-key/connect.md) |  | dev-tools, productivity |
 | `talentlms` | TalentLMS | API_KEY | [docs](https://nango.dev/docs/api-integrations/talentlms.md) | [connect](https://nango.dev/docs/api-integrations/talentlms/connect.md) |  | other |
 | `tally` | Tally | API_KEY | [docs](https://nango.dev/docs/api-integrations/tally.md) | [connect](https://nango.dev/docs/api-integrations/tally/connect.md) |  | productivity |
+| `tanium` | Tanium | API_KEY | [docs](https://nango.dev/docs/api-integrations/tanium.md) | [connect](https://nango.dev/docs/api-integrations/tanium/connect.md) |  | dev-tools |
 | `tapclicks` | TapClicks | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/tapclicks.md) | [connect](https://nango.dev/docs/integrations/all/tapclicks/connect.md) |  | marketing, analytics |
 | `teamleader` | Teamleader Focus | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/teamleader.md) |  |  | invoicing, crm |
 | `teamtailor` | Teamtailor | API_KEY | [docs](https://nango.dev/docs/integrations/all/teamtailor.md) |  |  | ats |

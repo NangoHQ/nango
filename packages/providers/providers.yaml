@@ -18966,6 +18966,39 @@ tableau:
             doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
 
+tanium:
+    display_name: Tanium
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            session: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/session/info
+    docs: https://nango.dev/docs/api-integrations/tanium
+    docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Tanium API token.
+            doc_section: '#step-1-generate-an-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Tanium Cloud hostname.
+            example: acme.cloud.tanium.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-find-your-hostname'
+            order: 1
+
 teamtailor:
     display_name: Teamtailor
     categories:
