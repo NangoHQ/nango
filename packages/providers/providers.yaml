@@ -18581,7 +18581,7 @@ supabase-mcp-oauth:
 superhuman-mcp:
     display_name: Superhuman (MCP)
     categories:
-        - email
+        - communication
         - productivity
         - mcp
     auth_mode: MCP_OAUTH2
