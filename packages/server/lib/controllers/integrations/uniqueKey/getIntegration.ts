@@ -87,6 +87,16 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
                 private_key: integration.oauth_client_secret,
                 app_link: integration.app_link || null
             };
+        } else if (provider.auth_mode === 'CUSTOM') {
+            const rawPrivateKey = integration.custom?.['private_key'];
+            include.credentials = {
+                type: provider.auth_mode,
+                client_id: integration.oauth_client_id,
+                client_secret: integration.oauth_client_secret,
+                app_id: integration.custom?.['app_id'] || null,
+                app_link: integration.app_link || null,
+                private_key: rawPrivateKey ? Buffer.from(rawPrivateKey, 'base64').toString('utf8') : null
+            };
         } else {
             include.credentials = null;
         }
