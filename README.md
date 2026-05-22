@@ -134,6 +134,8 @@ Nango is available under the [Elastic License](https://github.com/NangoHQ/nango/
 
 We welcome contributions — anyone can [add support for a new API](https://nango.dev/docs/integrations/contribute-or-request-api).
 
+After installing dependencies locally, run `npm run prepare` to install Husky git hooks. npm lifecycle scripts are disabled by default, so this setup step is explicit.
+
 Thank you to all contributors ❤️
 
 <a href="https://github.com/nangohq/nango/graphs/contributors">

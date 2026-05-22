@@ -125,10 +125,23 @@ async function npmPublish(packageName) {
             return;
         }
 
-        await $`npm publish --ignore-scripts=false --access public --provenance -w "${packageName}"`;
+        await runPublishPreparation(packageName);
+        await $`npm publish --ignore-scripts --access public --provenance -w "${packageName}"`;
 
         echo(chalk.green(`${figures.tick} Published ${packageName}      `));
     });
+}
+
+async function runPublishPreparation(packageName) {
+    if (packageName === '@nangohq/node') {
+        echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
+        await $`npm run -w "${packageName}" build`;
+    }
+
+    if (packageName === 'nango') {
+        echo(chalk.grey(`  ${figures.tick} Copying CLI package files`));
+        await $`npm run -w "${packageName}" copy:files`;
+    }
 }
 
 // --- Version bump functions ---
