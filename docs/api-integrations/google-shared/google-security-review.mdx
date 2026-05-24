@@ -46,14 +46,16 @@ The speed also depends on you: If you fix vulnerabilities fast, and follow up da
 
 If you are pressed for time and want more tips to speed things up, [reach out to us](https://nango.dev/slack). We are happy to help 1:1.
 
+Google's Workspace DevRel team can also help with stuck reviews. They can't change or accelerate Trust & Safety decisions, but they can look into why a review is stuck and sometimes unblock it. If you're a Nango customer and need an intro, ping us.
+
 <Info>
-    Google's Workspace developer relations team shares these reference timelines, with no formal SLA:
+    Google publishes "4-6 weeks" for restricted scope reviews. That estimate covers large, unprepared submissions. Real experience from Nango customers prepping with this guide:
 
-    - Brand verification only: 2-3 business days
-    - Sensitive scopes: ~10 business days
-    - Restricted scopes: 6 weeks officially, ~10 weeks on average across all reviews
+    - First response from Google's review team: typically within 24-48 hours.
+    - Standard verification (sensitive scopes only): usually under a week.
+    - Restricted scopes: Trust & Safety approval often comes through in under a week. CASA is usually the longer leg, not Google's review itself.
 
-    These are unconditional averages. The ranges above assume you follow this guide and respond to Google within a day.
+    Long Google reviews are one of the most common concerns we hear from prospects. With proper prep and same-day responses to Google's emails, even early-stage startups can be through Trust & Safety in days.
 </Info>
 
 <Info>
@@ -155,15 +157,11 @@ Google's verification form has a known pitfall: when you go back to fix an issue
 
 If days pass with no acknowledgement email from Trust & Safety, you probably never submitted. Scroll to the bottom of the form and click **Submit**.
 
-### Make your scopes match everywhere
+### Make sure scopes match between the consent screen and Data Access page
 
-Reviewers check that the scopes on your OAuth consent screen match the scopes in:
+Reviewers check that the scopes on your OAuth consent screen match the scopes on the **Data Access** page in Google Cloud Console. Any mismatch is a guaranteed rejection, and it also breaks your app at runtime.
 
-- The **Data Access** page in Google Cloud Console.
-- Your **Marketplace SDK** configuration (if you publish a Workspace add-on).
-- Your **Add-on manifest** (if you use Apps Script).
-
-Any mismatch is a guaranteed rejection. A mismatch also breaks your app at runtime, so fix it in both places.
+If you also publish a Workspace add-on or use Apps Script, the scopes in your Marketplace SDK configuration and Add-on manifest must match too.
 
 ### Demo video
 
@@ -209,17 +207,11 @@ Good listing example: *"LumApps for Google Chat™"*. Check the [Marketplace bra
 
 ### Homepage requirements
 
-"Homepage" is ambiguous in Google's instructions. Three different pages can qualify, and reviewers expect different ones in different contexts:
+Reviewers will check that your app has a public homepage that is:
 
-- Your **company top-level domain** (e.g. `yourcompany.com`).
-- The **Marketplace listing** page for the app.
-- The **in-app home** of a Chat add-on or similar, when applicable.
-
-The page you provide must be:
-
-- **Public** and reachable when the review starts (not behind login).
-- On a **domain you own**, not a Google Play Store, Facebook, or other third-party page.
-- Relevant to the app under review. If it's a generic landing page, link from there to an app-specific page that covers privacy and functionality.
+- On a **domain you own** (not a Google Play Store, Facebook, or other third-party page).
+- **Tied to the product** under review. If your homepage is a generic landing page, link from there to a section that describes what the app does and includes its privacy policy.
+- Reachable when the review starts (not behind login).
 
 ### Privacy policy
 
@@ -279,12 +271,7 @@ Now go to _Verification Center_ in the navbar and you should see a form to start
 You may get emails from Google asking for more details. We recommend answering quickly, but diligently. Google answers within 24-48h, the fewer loops you need, the faster your app will get verified.
 
 <Tip>
-    Two separate Google teams handle your review and they don't share tickets:
-
-    - **OAuth Trust & Safety** handles scopes, justifications, and the security review. They communicate only via the email thread on your contact email and won't take calls.
-    - **Marketplace** handles your listing, branding, and language. They're more reachable and will sometimes hop on a chat or call to resolve issues.
-
-    Check the Verification Center regularly, it's the only place where you'll see when your OAuth verification finishes and you've moved on to the Marketplace check.
+    Google's Trust & Safety team handles the OAuth review. They communicate only via the email thread on your contact email and won't take calls — every back-and-forth happens by email. Check the Verification Center regularly to see your current review status.
 </Tip>
 
 Note that the [test mode restrictions](#test-mode-restrictions) remain until your verification is complete.
@@ -327,7 +314,7 @@ More tips:
 
 Once you pass all steps your CASA vendor will send a letter of validation to Google.
 
-Google may take up to one week to process the letter and issue final approval for your App. Two Google teams are involved in this, and they may work on different tickets. Don't panic if your ticket stays open for a few days with no updates.
+Google may take up to one week to process the letter and issue final approval for your app. Don't panic if your ticket stays open for a few days with no updates.
 
 Once verified, Google will remove the "unverified" step from your OAuth flow and lift the 100 test users limit.
 
@@ -349,11 +336,9 @@ Your app must handle a partial grant cleanly. When a request fails with `insuffi
 
 Pick the one that makes sense for the feature. Don't crash, and don't silently swallow the error — both will surface as user complaints.
 
-### Updates without new scopes are fast
+### Adding new scopes later
 
-When you ship a new version that doesn't add new scopes, the OAuth re-verification is essentially a rubber stamp and often completes in a couple of days. Plan accordingly.
-
-When you do add scopes, you usually don't redo the full CASA assessment within the 12-month validity window. Google may ask your assessor to spot-check the change, especially if a new restricted scope materially expands what your app can do.
+If you add new scopes after your app is verified, you submit a supplementary verification. CASA usually doesn't need to be redone within the 12-month validity window, but Google may ask your assessor to spot-check the change if a new restricted scope materially expands what your app can do.
 
 <Warning>
     Don't forget the annual revalidation!
@@ -361,7 +346,7 @@ When you do add scopes, you usually don't redo the full CASA assessment within t
     For restricted scopes, Google requires you to redo the CASA assessment every 12 months. Plan for it:
 
     - You _should_ receive an email from Google 90 days before the validation is due. Note that the email goes to the contact address on the OAuth consent screen, so keep it monitored.
-    - Set your own reminder 60-90 days before expiry. Renewal is much faster than the initial assessment (typically a couple of weeks) but only if you start early.
+    - Set your own reminder 60-90 days before expiry. Renewal is much faster than the initial assessment, especially if you haven't added new scopes or made major functional changes.
     - If your Letter of Validation is about to expire and renewal is actively in progress, you can request a ~30-day extension from Google.
-    - If the LoV expires without active renewal, your app drops out of the Marketplace and the "unverified" screen comes back with no further warning.
+    - If the LoV expires without active renewal, your OAuth verification lapses — the "unverified" screen comes back with no further warning.
 </Warning>
