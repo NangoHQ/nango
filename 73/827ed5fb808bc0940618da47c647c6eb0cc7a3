@@ -1,0 +1,21 @@
+.agents/skills/ui-visual-debugging/SKILL.md
+  s_b98849faf5d942::t_4218d7148f10d8 3,37,65,124
+.gitignore
+  s_b98849faf5d942::t_4218d7148f10d8 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "73827ed5fb808bc0940618da47c647c6eb0cc7a3",
+  "prompts": {},
+  "sessions": {
+    "s_b98849faf5d942": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5077-e043-74e2-8dce-099270e4e66f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
