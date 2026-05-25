@@ -10,8 +10,8 @@ import type { ReactNode } from 'react';
 
 const inputWrapperVariants = cva(
     [
-        'flex items-center gap-[var(--ds-space-2)]',
-        'rounded-[var(--ds-radius-md)] border',
+        'flex items-center gap-[var(--ds-space-1-5)]',
+        'rounded-[var(--ds-radius-sm)] border-[length:var(--ds-border-width-1)]',
         'bg-[var(--input-bg-default)]',
         'transition-[border-color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
@@ -33,7 +33,7 @@ const inputWrapperVariants = cva(
                 ]
             },
             size: {
-                md: 'h-[2.125rem] px-[var(--ds-space-2-5)]'
+                md: 'h-8 px-[var(--ds-space-2-5)] py-[var(--ds-space-1)]'
             }
         },
         defaultVariants: {
@@ -46,9 +46,10 @@ const inputWrapperVariants = cva(
 const inputFieldVariants = cva(
     [
         'flex-1 min-w-0 bg-transparent border-none outline-none',
-        'text-[var(--ds-typography-font-size-sm)] text-[var(--input-text-default)]',
-        'font-[var(--ds-typography-font-weight-regular)]',
-        'placeholder:text-[var(--text-secondary)]',
+        'text-[length:var(--ds-typography-font-size-md)] text-[var(--input-text-default)]',
+        '[font-weight:var(--ds-typography-font-weight-regular)]',
+        'leading-[1.5] tracking-[var(--ds-typography-letter-spacing-normal)]',
+        'placeholder:text-[var(--text-disabled)]',
         'disabled:text-[var(--input-text-disabled)] disabled:cursor-not-allowed'
     ],
     {
