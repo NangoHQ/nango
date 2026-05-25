@@ -13,9 +13,7 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  */
 export const isDevToolsEnabled = import.meta.env.DEV || window.location.hostname.endsWith('.app-development.nango.dev');
 
-// Toggle with: Alt+Shift+D (Option+Shift+D on Mac)
-// Uses e.code (physical key) instead of e.key so that Option+Shift+D on Mac
-// doesn't produce a Unicode character that breaks the check.
+// Toggle with: Ctrl+Shift+D (Cmd+Shift+D on Mac)
 export const DEV_PANEL_SHORTCUT = 'KeyD';
 
 interface DevPanelState {
@@ -39,7 +37,7 @@ export const DevToolPanel: React.FC = () => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === DEV_PANEL_SHORTCUT && e.shiftKey && e.altKey) {
+            if (e.code === DEV_PANEL_SHORTCUT && e.shiftKey && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 toggle();
             }
