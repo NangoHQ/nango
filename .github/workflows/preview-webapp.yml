@@ -49,9 +49,9 @@ jobs:
                   result-encoding: string
                   script: |
                       const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
-                      const now = new Date().toUTCString();
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
                       const marker = '<!-- preview-webapp-deploy-bot -->';
-                      const body = `${marker}\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| 🔄 Deploying | ${url} | [Deploy Logs](${runUrl}) | ${now} |`;
+                      const body = `${marker}\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| 🔄 Deploying | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
 
                       const comments = await github.paginate(github.rest.issues.listComments, {
                         owner: context.repo.owner,
@@ -113,8 +113,8 @@ jobs:
               with:
                   script: |
                       const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
-                      const now = new Date().toUTCString();
-                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ✅ Ready | [${url}](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ✅ Ready | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
                       await github.rest.issues.updateComment({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
@@ -131,8 +131,8 @@ jobs:
               with:
                   script: |
                       const { PREVIEW_URL: url, RUN_URL: runUrl } = process.env;
-                      const now = new Date().toUTCString();
-                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ❌ Failed | ${url} | [Deploy Logs](${runUrl}) | ${now} |`;
+                      const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                      const body = `<!-- preview-webapp-deploy-bot -->\n## Preview Deploy\n\n| Status | URL | Deploy Logs | Last Updated |\n|--------|-----|------------|-------------|\n| ❌ Failed | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`;
                       await github.rest.issues.updateComment({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
