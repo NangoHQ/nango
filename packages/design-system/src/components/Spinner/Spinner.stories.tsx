@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 export const AllSizes: Story = {
     name: 'All sizes',
     render: () => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-4)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-10)', flexWrap: 'wrap' }}>
             {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => (
                 <div key={size} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--ds-space-2)' }}>
                     <Spinner size={size} />

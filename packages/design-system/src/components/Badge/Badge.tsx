@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority';
+import { Check } from 'lucide-react';
 
 import { cn } from '../../lib/cn';
 
@@ -51,14 +52,6 @@ export const badgeVariants = cva(
     }
 );
 
-function VerifiedCheckIcon() {
-    return (
-        <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 5.5l2 2 4-4" />
-        </svg>
-    );
-}
-
 export interface BadgeProps extends VariantProps<typeof badgeVariants> {
     className?: string;
     children: ReactNode;
@@ -72,7 +65,7 @@ export function Badge({ className, variant, shape, children, leadingIcon }: Badg
         <span className={cn(badgeVariants({ variant, shape }), className)}>
             {showDefaultVerifiedIcon ? (
                 <span className="shrink-0 [&_svg]:size-[0.625rem]">
-                    <VerifiedCheckIcon />
+                    <Check strokeWidth={2.5} />
                 </span>
             ) : leadingIcon ? (
                 <span className="shrink-0 [&_svg]:size-[0.625rem]">{leadingIcon}</span>

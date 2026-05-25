@@ -1,8 +1,9 @@
 import { cva } from 'class-variance-authority';
+import { Eye, EyeOff } from 'lucide-react';
 import { forwardRef, useState } from 'react';
 
 import { cn } from '../../lib/cn';
-import { IconButton } from '../Button/IconButton';
+import { IconButton } from '../IconButton/IconButton';
 
 import type { VariantProps } from 'class-variance-authority';
 import type { ReactNode } from 'react';
@@ -73,19 +74,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ className, inva
 
 Input.displayName = 'Input';
 
-function EyeIcon({ open }: { open: boolean }) {
-    return open ? (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M1.5 8s2-4 6.5-4 6.5 4 6.5 4-2 4-6.5 4S1.5 8 1.5 8Z" />
-            <circle cx="8" cy="8" r="1.75" />
-        </svg>
-    ) : (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M2.5 2.5l11 11M6.5 6.7a2 2 0 002.8 2.8M4.3 4.5C2.8 5.5 1.5 8 1.5 8s2 4 6.5 4c1.4 0 2.6-.4 3.6-1M7 4.1c.3-.1.7-.1 1-.1 4.5 0 6.5 4 6.5 4s-.5 1-1.5 2" />
-        </svg>
-    );
-}
-
 export type PasswordInputProps = Omit<InputProps, 'type' | 'trailingIcon'>;
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(({ className, ...props }, ref) => {
@@ -98,7 +86,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(({
             className={className}
             trailingIcon={
                 <IconButton size="xs" variant="ghost" label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible((v) => !v)} type="button">
-                    <EyeIcon open={visible} />
+                    {visible ? <EyeOff size={14} /> : <Eye size={14} />}
                 </IconButton>
             }
             {...props}
