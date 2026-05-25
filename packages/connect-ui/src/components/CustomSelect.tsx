@@ -10,17 +10,41 @@ export interface SelectProps {
     disabled?: boolean;
     className?: string;
     name?: string;
+    optional?: boolean;
+    id?: string;
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
 }
 
-const CustomSelect: React.FC<SelectProps> = ({ options, placeholder, value, onChange, disabled, className, name }) => {
+const CustomSelect: React.FC<SelectProps> = ({
+    options,
+    placeholder,
+    value,
+    onChange,
+    disabled,
+    className,
+    name,
+    optional,
+    id,
+    'aria-invalid': ariaInvalid,
+    'aria-describedby': ariaDescribedby
+}) => {
     const { error } = useFormField();
 
+    const NONE = '__none__';
+
     return (
-        <Select disabled={disabled} name={name} value={value} onValueChange={onChange}>
-            <SelectTrigger className={cn('w-full', error ? 'border-error focus:border-error focus:ring-red-500/20' : '', className)}>
+        <Select disabled={disabled} name={name} value={value || (optional ? NONE : value)} onValueChange={(v) => onChange?.(v === NONE ? '' : v)}>
+            <SelectTrigger
+                aria-describedby={ariaDescribedby}
+                aria-invalid={ariaInvalid}
+                className={cn('w-full', error ? 'border-error focus:border-error focus:ring-red-500/20' : '', className)}
+                id={id}
+            >
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
+                {optional && <SelectItem value={NONE}>{placeholder}</SelectItem>}
                 {options.map((opt) => (
                     <SelectItem key={opt} value={opt}>
                         {opt}

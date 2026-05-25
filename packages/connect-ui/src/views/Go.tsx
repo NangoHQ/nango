@@ -602,6 +602,7 @@ export const Go: React.FC = () => {
                                                             {definition?.enum && definition.enum.length > 0 ? (
                                                                 <CustomSelect
                                                                     name={field.name}
+                                                                    optional={isOptional}
                                                                     options={definition.enum}
                                                                     placeholder={definition.title}
                                                                     value={field.value as string | undefined}

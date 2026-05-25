@@ -6540,8 +6540,8 @@ exact-online:
                 - de
                 - fr
                 - es
-                - uk
-                - us
+                - co.uk
+                - com
 
 exist:
     display_name: Exist
@@ -11388,8 +11388,8 @@ mailgun:
             title: Region
             description: The region of your Mailgun account.
             enum:
-                - us
-                - eu
+                - api
+                - api.eu
             doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
