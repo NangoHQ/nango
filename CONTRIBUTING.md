@@ -20,6 +20,7 @@ Install the project
 
 ```sh
 npm i
+npm run prepare
 ```
 
 Set your envs
