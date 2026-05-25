@@ -1,0 +1,29 @@
+CONTRIBUTING.md
+  s_b39bb872dde816::t_241e8b83449a9f 23
+packages/shared/package.json
+  s_b39bb872dde816::t_241e8b83449a9f 45
+packages/webapp/package.json
+  s_b39bb872dde816::t_241e8b83449a9f 60-61,80
+scripts/package.json
+  s_b39bb872dde816::t_241e8b83449a9f 16
+package-lock.json
+  ai_agent 38817,39075,39795-39796,39815,41902
+packages/server/package.json
+  s_b39bb872dde816::t_241e8b83449a9f 52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "fa3b7c37617459d66cd71df87e7617810cfab84e",
+  "prompts": {},
+  "sessions": {
+    "s_b39bb872dde816": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e504a-8e97-7193-9c33-1309cd88ad66",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
