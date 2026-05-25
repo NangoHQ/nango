@@ -441,8 +441,12 @@ describe('uncontrolledFetch transfer metering', () => {
         // Consume body to trigger streamed byte count
         await res.text();
 
-        expect(transfers.length).toBe(1);
-        expect(transfers[0]!.bytesReceived).toBeGreaterThanOrEqual(Buffer.byteLength(responseBody, 'utf8'));
+        // Two records: (1) request+headers emitted immediately, (2) body bytes on stream flush
+        expect(transfers.length).toBe(2);
+        expect(transfers[0]!.bytesSent).toBeGreaterThanOrEqual(0);
+        expect(transfers[0]!.bytesReceived).toBeGreaterThan(0);
+        expect(transfers[1]!.bytesSent).toBe(0);
+        expect(transfers[1]!.bytesReceived).toBe(Buffer.byteLength(responseBody, 'utf8'));
     });
 
     it('base class no-op hook does not throw and emits no transfers when not overridden', async () => {

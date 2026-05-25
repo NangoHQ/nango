@@ -68,9 +68,10 @@ export async function executeUncontrolledFetch(
                 return response;
             }
 
-            // CL not present, tap the stream to measure the body
+            // CL not present: emit known bytes now; body bytes follow when stream settles.
+            recordTransfer({ bytesSent, bytesReceived });
             return tapResponseStreamAndCount(response, ({ bytes }) => {
-                recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + bytes });
+                recordTransfer({ bytesSent: 0, bytesReceived: bytes });
             });
         }
 
