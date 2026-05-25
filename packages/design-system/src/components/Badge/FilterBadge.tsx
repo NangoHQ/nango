@@ -9,9 +9,9 @@ import type { ReactNode } from 'react';
 
 export const filterBadgeVariants = cva(
     [
-        'inline-flex items-center gap-[var(--ds-space-1)] border',
+        'inline-flex items-center gap-[var(--ds-space-1)] border-[length:var(--ds-border-width-hairline)]',
         'rounded-[var(--ds-radius-full)] px-[var(--ds-space-2)] h-[1.375rem]',
-        'text-[var(--ds-typography-font-size-xs)] font-[var(--ds-typography-font-weight-medium)] leading-none',
+        'text-[length:var(--ds-typography-font-size-xs)] [font-weight:var(--ds-typography-font-weight-medium)] leading-none',
         'cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
