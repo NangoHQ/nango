@@ -17,6 +17,8 @@ npm run storybook
 
 Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) to toggle between light and dark.
 
+> **Note:** The `storybook` script uses `NODE_PATH=./node_modules` to work around a Vite 7 CJS module resolution issue. This is safe to keep and should not be removed.
+
 ### Stories
 
 | Story | Path |
