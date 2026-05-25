@@ -53,6 +53,16 @@ register(StyleDictionary);
 
 const SD_TRANSFORMS = [...getTransforms(), 'name/kebab'];
 
+// css/typography-classes — registered after buildTypographyBlock is defined below.
+// We defer registration to a function so the format can reference buildTypographyBlock
+// without a forward-reference issue.
+function registerTypographyFormat() {
+    StyleDictionary.registerFormat({
+        name: 'css/typography-classes',
+        format: ({ dictionary }) => buildTypographyBlock(dictionary.allTokens)
+    });
+}
+
 // ─── CSS value formatting ──────────────────────────────────────────────────────
 
 /**
@@ -184,6 +194,29 @@ export function buildTypographyBlock(tokens) {
     return classes.join('\n\n');
 }
 
+// ─── SD build pass with a registered format ───────────────────────────────────
+
+/**
+ * Run a Style Dictionary build pass using a named format and return the output as a string.
+ * SD requires a real file destination — we write to `outPath` (inside tmpDir) and read it back.
+ */
+async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format }) {
+    const sd = new StyleDictionary({
+        include: includeFiles,
+        source: [sourceFile],
+        platforms: {
+            out: {
+                transforms: SD_TRANSFORMS,
+                buildPath: path.dirname(outPath) + '/',
+                files: [{ destination: path.basename(outPath), format }]
+            }
+        },
+        log: { verbosity: 'silent', errors: { brokenReferences: 'warn' } }
+    });
+    await sd.buildAllPlatforms();
+    return readFileSync(outPath, 'utf8');
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function buildCss(tokensData) {
@@ -195,6 +228,8 @@ export async function buildCss(tokensData) {
             .join(', ');
         throw new Error(`Expected Primitives, Semantic/Light, and Semantic/Dark in tokens.json. Found: ${found}`);
     }
+
+    registerTypographyFormat();
 
     // Write token sets to temp files for SD to consume.
     // SD requires file paths — it can't accept raw objects.
@@ -213,29 +248,35 @@ export async function buildCss(tokensData) {
         writeFileSync(typFile, JSON.stringify(Typography, null, 2));
     }
 
-    let primTokens, lightTokens, darkTokens, typographyTokens;
+    let primTokens, lightTokens, darkTokens, typographyCss;
     try {
         [primTokens, lightTokens, darkTokens] = await Promise.all([
             resolveTokens({ sourceFiles: [primFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile] })
         ]);
-        typographyTokens = typFile ? await resolveTokens({ includeFiles: [primFile], sourceFiles: [typFile] }) : [];
+        typographyCss = typFile
+            ? await buildWithFormat({
+                  includeFiles: [primFile],
+                  sourceFile: typFile,
+                  outPath: path.join(tmpDir, 'typography.css'),
+                  format: 'css/typography-classes'
+              })
+            : '';
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
     }
 
-    const typographySection =
-        typographyTokens.length > 0
-            ? [
-                  '',
-                  '/*',
-                  ' * Typography tokens — composite text-style classes generated from Figma.',
-                  ' * Apply to any element: class="type-heading-lg"',
-                  ' */',
-                  buildTypographyBlock(typographyTokens)
-              ].join('\n')
-            : '';
+    const typographySection = typographyCss
+        ? [
+              '',
+              '/*',
+              ' * Typography tokens — composite text-style classes generated from Figma.',
+              ' * Apply to any element: class="type-heading-lg"',
+              ' */',
+              typographyCss
+          ].join('\n')
+        : '';
 
     const output = [
         '/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */',
