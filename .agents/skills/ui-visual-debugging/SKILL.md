@@ -1,6 +1,6 @@
 ---
 name: ui-visual-debugging
-description: Use when modifying or visually debugging Nango frontend UI, including packages/webapp, packages/connect-ui, browser interactions, screenshots, responsive layout, and visual regressions. Prefer browser-controlled or headless Playwright checks; use Peekaboo only for native macOS, visible-browser, or Accessibility tree inspection.
+description: Use when modifying or visually debugging Nango frontend UI, including packages/webapp, packages/connect-ui, browser interactions, screenshots, and visual regressions. Prefer browser-controlled or headless Playwright checks; use Peekaboo only for native macOS, visible-browser, or Accessibility tree inspection.
 ---
 
 # UI Visual Debugging
@@ -34,18 +34,16 @@ npm run dev:watch:web
 
 1. Start or reuse the relevant local services.
 
-2. Capture desktop and mobile baselines with a browser-controlled tool. If a Playwright MCP/browser tool is available, use it. Otherwise use headless Playwright without modifying repo dependencies:
+2. Capture a desktop baseline with a browser-controlled tool. If a Playwright MCP/browser tool is available, use it. Otherwise use headless Playwright without modifying repo dependencies:
 
    ```bash
    npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://localhost:3000 .context/nango-webapp-desktop.png
-   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://localhost:3000 .context/nango-webapp-mobile.png
    ```
 
    For Connect UI:
 
    ```bash
    npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://localhost:3009 .context/nango-connect-desktop.png
-   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://localhost:3009 .context/nango-connect-mobile.png
    ```
 
    If Playwright reports that the Chromium executable is missing, install the browser cache without adding repo dependencies:
@@ -64,7 +62,7 @@ npm run dev:watch:web
 
    For webapp-only visual work, `cd packages/webapp && npm run build` is also useful. For Connect UI, run `npm run connect-ui:build`.
 
-5. Capture fresh desktop and mobile screenshots and compare them before finishing.
+5. Capture fresh desktop screenshots and compare them before finishing.
 
 ## Headless Interaction
 
@@ -123,7 +121,7 @@ Avoid `peekaboo open http://... --app "Google Chrome"` for routine checks becaus
 ## Review Checklist
 
 - [ ] Baseline screenshot captured before UI edits when layout risk is meaningful.
-- [ ] Desktop and mobile screenshots captured after edits.
+- [ ] Desktop screenshots captured after edits.
 - [ ] Screenshots, traces, and throwaway scripts stay under `.context/`.
 - [ ] Browser automation does not depend on the user's existing browser state.
 - [ ] `npm run ts-build` or the relevant package build was run after frontend changes.
