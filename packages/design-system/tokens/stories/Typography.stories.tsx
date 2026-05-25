@@ -1,7 +1,7 @@
 import { entries, isLeaf, tokens } from '../types';
-import { capitalize } from './utils';
+import { capitalize, isFlatGroup, leaves } from './utils';
 
-import type { TokenGroup } from '../types';
+import type { TokenGroup, TokenLeaf } from '../types';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -12,14 +12,8 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-interface TypeEntry {
-    className: string;
-    label: string;
-    description?: string;
-    mono: boolean;
-}
+const SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog';
+const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
 
 const DESCRIPTIONS: Record<string, string> = {
     'type-heading-lg': 'page headings, hero titles',
@@ -45,54 +39,51 @@ const DESCRIPTIONS: Record<string, string> = {
     'type-code-medium-xxs': 'emphasized finest mono'
 };
 
-/** Recursively collect TypeEntry items from a typography token group, building the CSS class name from the token path. */
-function collectEntries(group: TokenGroup, path: string[]): TypeEntry[] {
-    return entries(group).flatMap(([k, node]) => {
-        if (isLeaf(node)) {
-            const className = 'type-' + [...path, k].join('-');
-            const fontFamily = typeof node.$value === 'object' ? (node.$value.fontFamily ?? '') : '';
-            return [{ className, label: [...path, k].join(' / '), description: DESCRIPTIONS[className], mono: fontFamily.toLowerCase().includes('mono') }];
-        }
-        return collectEntries(node, [...path, k]);
-    });
+interface TypeEntry {
+    className: string;
+    label: string;
+    description?: string;
+    mono: boolean;
 }
 
-const font = (e: TypeEntry[]) => (e[0]?.mono ? 'Geist Mono' : 'Geist Sans');
+function toEntry(path: string[], leaf: TokenLeaf): TypeEntry {
+    const className = 'type-' + path.join('-');
+    const fontFamily = typeof leaf.$value === 'object' ? (leaf.$value.fontFamily ?? '') : '';
+    return {
+        className,
+        label: path.join(' / '),
+        description: DESCRIPTIONS[className],
+        mono: fontFamily.toLowerCase().includes('mono')
+    };
+}
+
+const fontName = (e: TypeEntry) => (e.mono ? 'Geist Mono' : 'Geist Sans');
 
 /**
- * Build display sections from the Typography token group.
- * Top-level groups with sub-groups (text, code) produce one section per sub-group.
- * Flat top-level groups (heading, label) produce a single section.
- * Section titles include the font name derived from the first entry's fontFamily.
+ * Top-level typography groups are either flat (heading, label → one section)
+ * or contain subgroups (text, code → one section per subgroup).
  */
-function buildSections(typoGroup: TokenGroup): { title: string; entries: TypeEntry[] }[] {
-    return entries(typoGroup).flatMap(([groupName, groupValue]) => {
-        if (isLeaf(groupValue)) return [];
-        const children = entries(groupValue);
-        const hasSubGroups = children.some(([, v]) => !isLeaf(v));
+function buildSections(): { title: string; entries: TypeEntry[] }[] {
+    return entries(tokens.Typography).flatMap(([name, group]) => {
+        if (isLeaf(group)) return [];
 
-        // Groups like "text" and "code" have sub-groups (regular, medium) → one section per sub-group
-        if (hasSubGroups) {
-            return children
-                .filter((e): e is [string, TokenGroup] => !isLeaf(e[1]))
-                .flatMap(([subName, subValue]) => {
-                    const sectionEntries = collectEntries(subValue, [groupName, subName]);
-                    return sectionEntries.length
-                        ? [{ title: `${font(sectionEntries)} — ${capitalize(groupName)} · ${capitalize(subName)}`, entries: sectionEntries }]
-                        : [];
-                });
+        const sectionsFor = (path: string[], subGroup: TokenGroup, displayName: string) => {
+            const items = [...leaves(subGroup, path)].map(({ path: p, leaf }) => toEntry(p, leaf));
+            return items.length ? [{ title: `${fontName(items[0])} — ${displayName}`, entries: items }] : [];
+        };
+
+        if (isFlatGroup(group)) {
+            return sectionsFor([name], group, capitalize(name));
         }
 
-        // Flat groups like "heading" and "label" → one section
-        const sectionEntries = collectEntries(groupValue, [groupName]);
-        return sectionEntries.length ? [{ title: `${font(sectionEntries)} — ${capitalize(groupName)}`, entries: sectionEntries }] : [];
+        return entries(group).flatMap(([subName, subGroup]) => {
+            if (isLeaf(subGroup)) return [];
+            return sectionsFor([name, subName], subGroup, `${capitalize(name)} · ${capitalize(subName)}`);
+        });
     });
 }
 
-const SECTIONS = buildSections(tokens.Typography);
-
-const SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog';
-const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
+const SECTIONS = buildSections();
 
 // ─── Stories ─────────────────────────────────────────────────────────────────
 
