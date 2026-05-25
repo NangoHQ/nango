@@ -86,10 +86,15 @@ jobs:
                     PACKAGE_PATH=$1
                     PACKAGE_NAME=$(node -p "require('./${PACKAGE_PATH}/package.json').name")
                     PACKAGE_VERSION=$(node -p "require('./${PACKAGE_PATH}/package.json').version")
-                    if npm view ${PACKAGE_NAME}@${PACKAGE_VERSION} ; then
+                    if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" ; then
                       echo "Version ${PACKAGE_VERSION} of ${PACKAGE_NAME} already exists. Skipping publish."
                     else
                       echo "Publishing ${PACKAGE_NAME}@${PACKAGE_VERSION}..."
+                      case "$PACKAGE_NAME" in
+                        @nangohq/node)
+                          npm run -w "$PACKAGE_NAME" build
+                          ;;
+                      esac
                       pushd ./${PACKAGE_PATH}
                       npm publish --ignore-scripts
                       popd
