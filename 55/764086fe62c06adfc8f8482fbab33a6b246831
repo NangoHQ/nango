@@ -1,0 +1,19 @@
+.github/workflows/cli-verification.yaml
+  s_b39bb872dde816::t_b5ec69fdc1919e 89,93-97
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "55764086fe62c06adfc8f8482fbab33a6b246831",
+  "prompts": {},
+  "sessions": {
+    "s_b39bb872dde816": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e504a-8e97-7193-9c33-1309cd88ad66",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
