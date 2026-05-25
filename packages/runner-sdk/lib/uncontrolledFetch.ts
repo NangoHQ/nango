@@ -57,11 +57,12 @@ export async function executeUncontrolledFetch(
         const bytesReceived = countHeaderBytes(response.headers);
 
         if (!REDIRECT_STATUS_CODES.has(response.status)) {
-            let contentLength = parseContentLength(response.headers);
-
-            if (contentLength === null && response.body === null) {
-                contentLength = 0;
+            if (response.body === null) {
+                recordTransfer({ bytesSent, bytesReceived });
+                return response;
             }
+
+            const contentLength = parseContentLength(response.headers);
 
             if (contentLength !== null) {
                 recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + contentLength });

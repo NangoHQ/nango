@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { NangoProps } from '@nangohq/types';
+import type { HTTP_METHOD, NangoProps } from '@nangohq/types';
 
 function makeProps(): NangoProps {
     // Only the fields used by the base constructor are required for these tests.
@@ -463,6 +463,27 @@ describe('uncontrolledFetch transfer metering', () => {
         expect(transfers[0]!.bytesReceived).toBeGreaterThan(0);
         expect(transfers[1]!.bytesSent).toBe(0);
         expect(transfers[1]!.bytesReceived).toBe(Buffer.byteLength(responseBody, 'utf8'));
+    });
+
+    it.each([
+        { method: 'HEAD' as HTTP_METHOD, status: 200 },
+        { method: 'GET' as HTTP_METHOD, status: 204 },
+        { method: 'GET' as HTTP_METHOD, status: 304 }
+    ])('does not count Content-Length as body bytes when response.body is null ($method $status)', async ({ method, status }) => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(null, {
+                status,
+                headers: { 'content-length': '1000000' }
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action, transfers } = await makeActionInstance();
+        await action.uncontrolledFetch({ url: new URL('https://example.com/resource'), method });
+
+        expect(transfers.length).toBe(1);
+        // Only header bytes counted — Content-Length must not be added
+        expect(transfers[0]!.bytesReceived).toBeLessThan(1000000);
     });
 
     it('base class no-op hook does not throw and emits no transfers when not overridden', async () => {
