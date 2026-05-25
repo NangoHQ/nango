@@ -179,36 +179,48 @@ export async function markFunctionDryrunFailed({
     return row || null;
 }
 
-export async function timeoutFunctionDryruns({ limit = 100, trx = db.knex }: { limit?: number; trx?: Knex } = {}): Promise<number> {
-    const ids = trx<DBFunctionDryrun>(tableName)
-        .select('id')
-        .where({ status: 'running' })
-        .whereNotNull('execution_timeout_at')
-        .where('execution_timeout_at', '<', trx.fn.now())
-        .orderBy('execution_timeout_at', 'asc')
-        .limit(limit);
+export async function timeoutFunctionDryruns({ limit = 100, trx }: { limit?: number; trx?: Knex.Transaction } = {}): Promise<number> {
+    const updateTimedOutDryruns = async (transaction: Knex.Transaction): Promise<number> => {
+        // Hold locks through the update so a sandbox callback completing the row is not overwritten.
+        const candidates = await transaction<DBFunctionDryrun>(tableName)
+            .select('id')
+            .where({ status: 'running' })
+            .whereNotNull('execution_timeout_at')
+            .where('execution_timeout_at', '<', transaction.fn.now())
+            .orderBy('execution_timeout_at', 'asc')
+            .limit(limit)
+            .forUpdate()
+            .skipLocked();
 
-    const rows = await trx<DBFunctionDryrun>(tableName)
-        .where({ status: 'running' })
-        .whereIn('id', ids)
-        .update({
-            status: 'failed',
-            error: jsonb(trx, { code: 'timeout', message: 'Dry run timed out' } satisfies FunctionDryrunError),
-            completed_at: trx.fn.now(),
-            updated_at: trx.fn.now()
-        })
-        .returning('id');
+        if (candidates.length === 0) {
+            return 0;
+        }
 
-    return rows.length;
+        const rows = await transaction<DBFunctionDryrun>(tableName)
+            .where({ status: 'running' })
+            .whereIn(
+                'id',
+                candidates.map((candidate) => candidate.id)
+            )
+            .update({
+                status: 'failed',
+                error: jsonb(transaction, { code: 'timeout', message: 'Dry run timed out' } satisfies FunctionDryrunError),
+                completed_at: transaction.fn.now(),
+                updated_at: transaction.fn.now()
+            })
+            .returning('id');
+
+        return rows.length;
+    };
+
+    return trx ? updateTimedOutDryruns(trx) : db.knex.transaction(updateTimedOutDryruns);
 }
 
 export function toFunctionDryrunCreate(row: DBFunctionDryrun): FunctionDryrunCreateSuccess {
     return {
         id: row.id,
         status: row.status === 'running' ? 'running' : 'waiting',
-        status_url: `/functions/dryruns/${row.id}`,
-        created_at: toIsoString(row.created_at),
-        ...(row.execution_timeout_at ? { execution_timeout_at: toIsoString(row.execution_timeout_at) } : {})
+        created_at: toIsoString(row.created_at)
     };
 }
 
@@ -218,12 +230,10 @@ export function toFunctionDryrunResult(row: DBFunctionDryrun): FunctionDryrunRes
         status: row.status,
         integration_id: row.request.integration_id,
         function_type: row.request.function_type,
-        status_url: `/functions/dryruns/${row.id}`,
         created_at: toIsoString(row.created_at),
         updated_at: toIsoString(row.updated_at),
         ...(row.started_at ? { started_at: toIsoString(row.started_at) } : {}),
         ...(row.completed_at ? { completed_at: toIsoString(row.completed_at) } : {}),
-        ...(row.execution_timeout_at ? { execution_timeout_at: toIsoString(row.execution_timeout_at) } : {}),
         ...(row.duration_ms !== null ? { duration_ms: row.duration_ms } : {}),
         ...(row.output !== null ? { output: row.output } : {}),
         ...(row.has_result ? { result: row.result } : {}),

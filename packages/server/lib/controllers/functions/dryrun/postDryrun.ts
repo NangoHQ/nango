@@ -147,7 +147,6 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             integration_id: body.integration_id,
             function_name: body.function_name,
             function_type: body.function_type,
-            execution_timeout_at: new Date(startedAt.getTime() + 5 * 60 * 1000).toISOString(),
             duration_ms: durationMs,
             ...(dryrunOutput.hasResult ? { result: dryrunOutput.result } : {})
         });

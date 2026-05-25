@@ -53,7 +53,6 @@ export interface FunctionDryrunBody {
 export interface FunctionDryrunSuccess {
     integration_id: string;
     function_type: RunnableFunctionType;
-    execution_timeout_at: string;
     duration_ms: number;
     output: string;
     result?: unknown;
@@ -64,9 +63,7 @@ export type FunctionDryrunStatus = 'waiting' | 'running' | 'success' | 'failed';
 export interface FunctionDryrunCreateSuccess {
     id: string;
     status: Extract<FunctionDryrunStatus, 'waiting' | 'running'>;
-    status_url: string;
     created_at: string;
-    execution_timeout_at?: string | undefined;
 }
 
 export interface FunctionDryrunResultSuccess {
@@ -74,12 +71,10 @@ export interface FunctionDryrunResultSuccess {
     status: FunctionDryrunStatus;
     integration_id: string;
     function_type: RunnableFunctionType;
-    status_url: string;
     created_at: string;
     updated_at: string;
     started_at?: string | undefined;
     completed_at?: string | undefined;
-    execution_timeout_at?: string | undefined;
     duration_ms?: number | undefined;
     output?: string | undefined;
     result?: unknown;
@@ -188,7 +183,6 @@ export interface RemoteFunctionDryrunSuccess {
     integration_id: string;
     function_name: string;
     function_type: RunnableFunctionType;
-    execution_timeout_at: string;
     duration_ms: number;
     result?: unknown;
 }

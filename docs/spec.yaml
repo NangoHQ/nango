@@ -3017,7 +3017,6 @@ components:
             required:
                 - id
                 - status
-                - status_url
                 - created_at
             properties:
                 id:
@@ -3026,12 +3025,7 @@ components:
                 status:
                     type: string
                     enum: [waiting, running]
-                status_url:
-                    type: string
                 created_at:
-                    type: string
-                    format: date-time
-                execution_timeout_at:
                     type: string
                     format: date-time
 
@@ -3043,7 +3037,6 @@ components:
                 - status
                 - integration_id
                 - function_type
-                - status_url
                 - created_at
                 - updated_at
             properties:
@@ -3056,8 +3049,6 @@ components:
                     type: string
                 function_type:
                     $ref: '#/components/schemas/RunnableFunctionType'
-                status_url:
-                    type: string
                 created_at:
                     type: string
                     format: date-time
@@ -3068,9 +3059,6 @@ components:
                     type: string
                     format: date-time
                 completed_at:
-                    type: string
-                    format: date-time
-                execution_timeout_at:
                     type: string
                     format: date-time
                 duration_ms:

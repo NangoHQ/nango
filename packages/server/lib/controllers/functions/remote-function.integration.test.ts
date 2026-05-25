@@ -593,10 +593,10 @@ describe('remote-function public API', () => {
             status: 'running',
             integration_id: 'github',
             function_type: 'sync',
-            status_url: `/functions/dryruns/${dryrun.id}`,
-            started_at: '2026-01-01T00:00:00.000Z',
-            execution_timeout_at: '2026-01-01T00:10:00.000Z'
+            started_at: '2026-01-01T00:00:00.000Z'
         });
+        expect(res.json).not.toHaveProperty('status_url');
+        expect(res.json).not.toHaveProperty('execution_timeout_at');
     });
 
     it('rejects POST /functions/dryruns/:id/result with a customer API key', async () => {
@@ -662,6 +662,8 @@ describe('remote-function public API', () => {
             output: 'Executing -> function\nDone',
             result: { ok: true }
         });
+        expect(getRes.json).not.toHaveProperty('status_url');
+        expect(getRes.json).not.toHaveProperty('execution_timeout_at');
     });
 
     it('accepts POST /functions/dryruns/:id/result with a sandbox token from a parent key without dryrun scope', async () => {
