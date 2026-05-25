@@ -11,8 +11,9 @@ export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigin
     try {
         const url = new URL(origin);
         if (allowedOrigins.has(origin)) return true;
-        // Only allow HTTPS with no non-standard port for PR preview subdomains
-        return url.protocol === 'https:' && url.port === '' && /^pr-\d+\./.test(url.hostname) && url.hostname.endsWith(`.${publicHost}`);
+        // Only allow HTTPS, default port, and exact pr-<number>.<publicHost> (no extra labels)
+        const escapedHost = publicHost.replace(/\./g, '\\.');
+        return url.protocol === 'https:' && url.port === '' && new RegExp(`^pr-\\d+\\.${escapedHost}$`).test(url.hostname);
     } catch {
         return false;
     }
