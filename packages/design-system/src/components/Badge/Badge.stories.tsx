@@ -20,16 +20,16 @@ export const AllVariants: Story = {
     render: () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
             {SHAPES.map((shape) => (
-                <div key={shape} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
+                <div key={shape} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
                     <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)' }}>{shape}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-4)', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)', flexWrap: 'wrap' }}>
                         {BADGE_VARIANTS.map((variant) => (
                             <Badge key={variant} variant={variant} shape={shape}>
                                 {variant}
                             </Badge>
                         ))}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-4)', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)', flexWrap: 'wrap' }}>
                         {BADGE_VARIANTS.map((variant) => (
                             <Badge key={variant} variant={variant} shape={shape} leadingIcon={<Circle size={8} fill="currentColor" />}>
                                 {variant}
