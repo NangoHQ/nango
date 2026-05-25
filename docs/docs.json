@@ -1619,6 +1619,7 @@
               "integrations/all/tiktok-personal",
               "integrations/all/tiktok-ads",
               "integrations/all/timely",
+              "api-integrations/toast",
               "integrations/all/todoist",
               "integrations/all/trafft",
               "integrations/all/tailscale",
