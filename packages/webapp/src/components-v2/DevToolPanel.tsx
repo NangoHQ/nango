@@ -1,5 +1,6 @@
 import { Sun, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { create } from 'zustand';
 
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
@@ -12,19 +13,35 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  */
 export const isDevToolsEnabled = import.meta.env.DEV || window.location.hostname.endsWith('.app-development.nango.dev');
 
-// Toggle with: Alt+Shift+D
-export const DEV_PANEL_SHORTCUT = 'd';
+// Toggle with: Alt+Shift+D (Option+Shift+D on Mac)
+// Uses e.code (physical key) instead of e.key so that Option+Shift+D on Mac
+// doesn't produce a Unicode character that breaks the check.
+export const DEV_PANEL_SHORTCUT = 'KeyD';
+
+interface DevPanelState {
+    open: boolean;
+    setOpen: (open: boolean) => void;
+    toggle: () => void;
+}
+
+export const useDevPanelStore = create<DevPanelState>((set, get) => ({
+    open: false,
+    setOpen: (open) => set({ open }),
+    toggle: () => set({ open: !get().open })
+}));
 
 export const DevToolPanel: React.FC = () => {
-    const [open, setOpen] = useState(false);
+    const open = useDevPanelStore((s) => s.open);
+    const setOpen = useDevPanelStore((s) => s.setOpen);
+    const toggle = useDevPanelStore((s) => s.toggle);
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key.toLowerCase() === DEV_PANEL_SHORTCUT && e.shiftKey && e.altKey) {
+            if (e.code === DEV_PANEL_SHORTCUT && e.shiftKey && e.altKey) {
                 e.preventDefault();
-                setOpen((prev) => !prev);
+                toggle();
             }
         };
 
@@ -37,22 +54,22 @@ export const DevToolPanel: React.FC = () => {
     }
 
     return (
-        <div className="fixed bottom-4 right-4 z-50 w-72 rounded-md border border-border-default bg-surface-panel shadow-lg">
+        <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-dropdown-bg-press shadow-md">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-border-default px-4 py-3">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-text-secondary">Dev Tools</span>
-                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="text-text-secondary hover:text-text-default">
+            <div className="flex items-center justify-between border-b border-border-muted px-3 py-2">
+                <span className="text-sm font-medium text-text-default">Dev Tools</span>
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-default">
                     <X className="size-3.5" />
                 </Button>
             </div>
 
             {/* Feature flags */}
-            <div className="p-4">
-                <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-text-secondary">Feature Flags</p>
-                <ul className="space-y-3">
+            <div className="p-3">
+                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-tertiary">Feature Flags</p>
+                <ul className="space-y-2.5">
                     <li className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Sun className="size-3.5 text-text-secondary" />
+                            <Sun className="size-4 shrink-0 text-text-secondary" />
                             <span className="text-sm text-text-default">Theme switcher</span>
                         </div>
                         <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
@@ -61,9 +78,9 @@ export const DevToolPanel: React.FC = () => {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-border-default px-4 py-2">
-                <p className="text-[11px] text-text-secondary">
-                    <kbd className="rounded bg-surface-panel-inset px-1 py-0.5 font-mono text-[10px]">⌥⇧D</kbd> to toggle
+            <div className="border-t border-border-muted px-3 py-2">
+                <p className="text-sm text-text-secondary">
+                    <kbd className="rounded border border-border-muted bg-surface-panel px-1.5 py-0.5 font-mono text-xs">⌥⇧D</kbd> to toggle
                 </p>
             </div>
         </div>
