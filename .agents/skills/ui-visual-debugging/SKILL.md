@@ -37,15 +37,21 @@ npm run dev:watch:web
 2. Capture desktop and mobile baselines with a browser-controlled tool. If a Playwright MCP/browser tool is available, use it. Otherwise use headless Playwright without modifying repo dependencies:
 
    ```bash
-   npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://127.0.0.1:3000 .context/nango-webapp-desktop.png
-   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://127.0.0.1:3000 .context/nango-webapp-mobile.png
+   npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://localhost:3000 .context/nango-webapp-desktop.png
+   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://localhost:3000 .context/nango-webapp-mobile.png
    ```
 
    For Connect UI:
 
    ```bash
-   npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://127.0.0.1:3009 .context/nango-connect-desktop.png
-   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://127.0.0.1:3009 .context/nango-connect-mobile.png
+   npx playwright screenshot --browser=chromium --viewport-size=1512,862 http://localhost:3009 .context/nango-connect-desktop.png
+   npx playwright screenshot --browser=chromium --viewport-size=390,844 http://localhost:3009 .context/nango-connect-mobile.png
+   ```
+
+   If Playwright reports that the Chromium executable is missing, install the browser cache without adding repo dependencies:
+
+   ```bash
+   npx playwright install chromium
    ```
 
 3. Inspect screenshots with `view_image`, then edit the smallest relevant files.
@@ -72,6 +78,22 @@ Common flows:
 - Connect UI at `http://localhost:3009`.
 
 When auth is needed, follow the local credentials and verification-log workflow in `running-and-testing-locally`.
+
+## Startup Troubleshooting
+
+If server startup fails with a Knex error like `The migration directory is corrupt, the following files are missing`, the local database has migrations from another branch. Do not reset the user's database without confirmation. For visual validation only, use a temporary database:
+
+```bash
+docker exec nango-db psql -U nango -d postgres -c "DROP DATABASE IF EXISTS nango_ui_skill_validation WITH (FORCE)"
+docker exec nango-db psql -U nango -d postgres -c "CREATE DATABASE nango_ui_skill_validation"
+NANGO_DB_NAME=nango_ui_skill_validation npm run dev:watch:web
+```
+
+After stopping the dev server, clean up the temporary database:
+
+```bash
+docker exec nango-db psql -U nango -d postgres -c "DROP DATABASE IF EXISTS nango_ui_skill_validation WITH (FORCE)"
+```
 
 ## Peekaboo Workflow
 
