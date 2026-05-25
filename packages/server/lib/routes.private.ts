@@ -105,6 +105,7 @@ import authMiddleware from './middleware/access.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -125,19 +126,6 @@ setupAuth(web);
 // --- Security
 const corsAllowedOrigins = new Set([basePublicUrl, baseUrl]);
 const basePublicHost = new URL(basePublicUrl).hostname;
-
-/** Exported for unit testing. */
-export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigins: Set<string>, publicHost: string): boolean {
-    if (!origin) return true;
-    try {
-        const url = new URL(origin);
-        if (allowedOrigins.has(origin)) return true;
-        // Only allow HTTPS with no non-standard port for PR preview subdomains
-        return url.protocol === 'https:' && url.port === '' && /^pr-\d+\./.test(url.hostname) && url.hostname.endsWith(`.${publicHost}`);
-    } catch {
-        return false;
-    }
-}
 
 const webCorsHandler = cors({
     maxAge: 600,

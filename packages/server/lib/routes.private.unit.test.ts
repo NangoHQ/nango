@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAllowedWebCorsOrigin } from './routes.private.js';
+import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 const allowedOrigins = new Set(['https://app-development.nango.dev', 'https://api-development.nango.dev']);
 const publicHost = 'app-development.nango.dev';
