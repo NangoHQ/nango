@@ -1,5 +1,3 @@
-import tokensJson from '../tokens.json';
-
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -10,82 +8,233 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function toKebab(s: string) {
-    return s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-function capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function collectColorVars(obj: Record<string, unknown>, path: string[]): string[] {
-    return Object.entries(obj).flatMap(([k, v]) => {
-        if (k.startsWith('$') || !v || typeof v !== 'object') return [];
-        const next = [...path, toKebab(k)];
-        if ('$value' in v) return (v as any).$type === 'color' ? ['--' + next.join('-')] : [];
-        return collectColorVars(v as Record<string, unknown>, next);
-    });
-}
-
-// ─── Semantic data ────────────────────────────────────────────────────────────
-
-const semanticLight = (tokensJson as any)['Semantic/Light'] as Record<string, unknown>;
-
-const SEMANTIC_GROUPS = Object.entries(semanticLight)
-    .filter(([k]) => !k.startsWith('$'))
-    .map(([k, v]) => ({ label: k, vars: collectColorVars(v as Record<string, unknown>, [toKebab(k)]) }))
-    .filter((g) => g.vars.length > 0);
-
-// ─── Primitive data ───────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 interface Ramp {
     label: string;
     steps: { step: string; cssVar: string }[];
 }
 
-const COLOR_ORDER = ['mono', 'neutral', 'alpha', 'brand', 'info', 'success', 'warning', 'danger', 'accent'];
+const PRIMITIVE_RAMPS: Ramp[] = [
+    {
+        label: 'Mono',
+        steps: [
+            { step: 'white', cssVar: '--ds-color-mono-white' },
+            { step: 'black', cssVar: '--ds-color-mono-black' }
+        ]
+    },
+    {
+        label: 'Neutral',
+        steps: [
+            '0',
+            '25',
+            '50',
+            '100',
+            '200',
+            '250',
+            '300',
+            '400',
+            '450',
+            '500',
+            '600',
+            '650',
+            '700',
+            '750',
+            '800',
+            '825',
+            '850',
+            '875',
+            '900',
+            '925',
+            '950',
+            '975'
+        ].map((s) => ({
+            step: s,
+            cssVar: `--ds-color-neutral-${s}`
+        }))
+    },
+    {
+        label: 'Alpha · White',
+        steps: ['4', '6', '8', '10', '12', '16', '20', '24', '40', '50', '64', '72', '80'].map((s) => ({ step: s, cssVar: `--ds-color-alpha-white-${s}` }))
+    },
+    {
+        label: 'Alpha · Black',
+        steps: ['4', '6', '8', '10', '12', '16', '20', '24', '40', '64', '72', '80'].map((s) => ({ step: s, cssVar: `--ds-color-alpha-black-${s}` }))
+    },
+    {
+        label: 'Brand',
+        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975'].map((s) => ({ step: s, cssVar: `--ds-color-brand-${s}` }))
+    },
+    {
+        label: 'Info',
+        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975'].map((s) => ({ step: s, cssVar: `--ds-color-info-${s}` }))
+    },
+    {
+        label: 'Success',
+        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975'].map((s) => ({ step: s, cssVar: `--ds-color-success-${s}` }))
+    },
+    {
+        label: 'Warning',
+        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975'].map((s) => ({ step: s, cssVar: `--ds-color-warning-${s}` }))
+    },
+    {
+        label: 'Danger',
+        steps: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950', '975'].map((s) => ({ step: s, cssVar: `--ds-color-danger-${s}` }))
+    },
+    {
+        label: 'Accent',
+        steps: ['blue', 'violet', 'mint', 'pink', 'yellow'].map((s) => ({ step: s, cssVar: `--ds-color-accent-${s}-500` }))
+    }
+];
 
-const leaves = (obj: object) => Object.entries(obj).filter(([k]) => !k.startsWith('$'));
-
-function collectRamps(colorGroup: Record<string, unknown>): Ramp[] {
-    return Object.entries(colorGroup)
-        .filter(([k]) => !k.startsWith('$') && k !== 'transparent')
-        .sort(([a], [b]) => (COLOR_ORDER.indexOf(a) + 1 || 999) - (COLOR_ORDER.indexOf(b) + 1 || 999))
-        .flatMap(([name, group]) => {
-            if (!group || typeof group !== 'object') return [];
-            const children = leaves(group);
-
-            // Flat ramp (neutral, brand, …): children are all leaf tokens
-            if (children.every(([, v]) => '$value' in (v as object))) {
-                return [{ label: capitalize(name), steps: children.map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(name)}-${step}` })) }];
-            }
-
-            const subRamps = children.map(([subName, subGroup]) => ({ subName, steps: leaves(subGroup as object) }));
-
-            // accent-style: each sub-group has exactly one step → merge into one ramp, sub-names become step labels
-            if (subRamps.every(({ steps }) => steps.length === 1)) {
-                return [
-                    {
-                        label: capitalize(name),
-                        steps: subRamps.map(({ subName, steps }) => ({
-                            step: subName,
-                            cssVar: `--ds-color-${toKebab(name)}-${toKebab(subName)}-${steps[0][0]}`
-                        }))
-                    }
-                ];
-            }
-
-            // alpha-style: each sub-group has multiple steps → one ramp row per sub-group
-            return subRamps.map(({ subName, steps }) => ({
-                label: `${capitalize(name)} · ${capitalize(subName)}`,
-                steps: steps.map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(name)}-${toKebab(subName)}-${step}` }))
-            }));
-        });
-}
-
-const PRIMITIVE_RAMPS = collectRamps((tokensJson as any)['Primitives']['color']);
+const SEMANTIC_GROUPS: { label: string; vars: string[] }[] = [
+    {
+        label: 'Surface',
+        vars: [
+            '--surface-canvas',
+            '--surface-page',
+            '--surface-panel',
+            '--surface-panel-muted',
+            '--surface-panel-inset',
+            '--surface-raised',
+            '--surface-overlay',
+            '--surface-input',
+            '--surface-input-muted',
+            '--surface-inverse',
+            '--surface-inverse-hover',
+            '--surface-inverse-pressed',
+            '--surface-scrim'
+        ]
+    },
+    {
+        label: 'Text',
+        vars: [
+            '--text-strong',
+            '--text-default',
+            '--text-secondary',
+            '--text-muted',
+            '--text-disabled',
+            '--text-inverse',
+            '--text-on-accent',
+            '--text-on-brand',
+            '--text-brand',
+            '--text-link',
+            '--text-link-hover',
+            '--text-link-active',
+            '--text-danger',
+            '--text-success',
+            '--text-warning'
+        ]
+    },
+    {
+        label: 'Border',
+        vars: [
+            '--border-muted',
+            '--border-default',
+            '--border-strong',
+            '--border-stronger',
+            '--border-input',
+            '--border-input-hover',
+            '--border-selected',
+            '--border-danger',
+            '--border-danger-hover',
+            '--border-disabled',
+            '--border-inverse'
+        ]
+    },
+    {
+        label: 'Icon',
+        vars: [
+            '--icon-default',
+            '--icon-secondary',
+            '--icon-muted',
+            '--icon-disabled',
+            '--icon-inverse',
+            '--icon-on-accent',
+            '--icon-brand',
+            '--icon-info',
+            '--icon-success',
+            '--icon-warning',
+            '--icon-danger'
+        ]
+    },
+    {
+        label: 'Interactive',
+        vars: [
+            '--interactive-primary',
+            '--interactive-primary-hover',
+            '--interactive-primary-active',
+            '--interactive-danger',
+            '--interactive-danger-hover',
+            '--interactive-danger-active',
+            '--interactive-ghost',
+            '--interactive-ghost-hover',
+            '--interactive-ghost-active',
+            '--interactive-outline',
+            '--interactive-outline-hover',
+            '--interactive-outline-active',
+            '--interactive-disabled',
+            '--interactive-selected-fill'
+        ]
+    },
+    { label: 'State', vars: ['--state-hover', '--state-pressed', '--state-selected', '--state-selected-muted', '--state-disabled'] },
+    { label: 'Focus', vars: ['--focus-outline-default', '--focus-outline-danger', '--focus-ring-default', '--focus-ring-danger'] },
+    {
+        label: 'Status · Neutral',
+        vars: ['--status-neutral-bg', '--status-neutral-border', '--status-neutral-icon', '--status-neutral-text', '--status-neutral-strong']
+    },
+    {
+        label: 'Status · Info',
+        vars: [
+            '--status-info-bg',
+            '--status-info-bg-hover',
+            '--status-info-border',
+            '--status-info-border-hover',
+            '--status-info-icon',
+            '--status-info-text',
+            '--status-info-strong'
+        ]
+    },
+    {
+        label: 'Status · Success',
+        vars: [
+            '--status-success-bg',
+            '--status-success-bg-hover',
+            '--status-success-border',
+            '--status-success-border-hover',
+            '--status-success-icon',
+            '--status-success-text',
+            '--status-success-strong'
+        ]
+    },
+    {
+        label: 'Status · Warning',
+        vars: [
+            '--status-warning-bg',
+            '--status-warning-bg-hover',
+            '--status-warning-border',
+            '--status-warning-border-hover',
+            '--status-warning-icon',
+            '--status-warning-text',
+            '--status-warning-strong'
+        ]
+    },
+    {
+        label: 'Status · Danger',
+        vars: [
+            '--status-danger-bg',
+            '--status-danger-bg-hover',
+            '--status-danger-border',
+            '--status-danger-border-hover',
+            '--status-danger-icon',
+            '--status-danger-text',
+            '--status-danger-strong'
+        ]
+    },
+    { label: 'Container', vars: ['--container-inset', '--container-panel', '--container-sheet'] },
+    { label: 'Chart', vars: ['--chart-series-1', '--chart-series-2', '--chart-series-3', '--chart-series-4', '--chart-series-5', '--chart-series-6'] },
+    { label: 'Control', vars: ['--control-switch-track-off', '--control-switch-track-off-danger', '--control-switch-thumb-off'] }
+];
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
@@ -131,7 +280,7 @@ export const Semantic: Story = {
         <div className="max-w-[1200px] p-8">
             {SEMANTIC_GROUPS.map(({ label, vars }) => (
                 <div key={label} className="mb-8">
-                    <h2 className="story-section-heading mb-2 capitalize">{label}</h2>
+                    <h2 className="story-section-heading mb-2">{label}</h2>
                     <div className="grid grid-cols-3 gap-x-6 p-3 rounded-lg border border-border-default bg-surface-panel">
                         {vars.map((v) => (
                             <Swatch key={v} cssVar={v} />
