@@ -46,4 +46,8 @@ describe('isAllowedWebCorsOrigin', () => {
     it('blocks preview origins with non-standard ports', () => {
         expect(isAllowedWebCorsOrigin('https://pr-123.app-development.nango.dev:444', allowedOrigins, publicHost)).toBe(false);
     });
+
+    it('blocks multi-label preview origins (e.g. pr-123.foo.publicHost)', () => {
+        expect(isAllowedWebCorsOrigin('https://pr-123.foo.app-development.nango.dev', allowedOrigins, publicHost)).toBe(false);
+    });
 });
