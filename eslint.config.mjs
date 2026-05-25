@@ -264,6 +264,10 @@ export default tseslint.config(
             parserOptions: {
                 project: 'packages/design-system/tsconfig.json'
             }
+        },
+
+        rules: {
+            'import/extensions': 'off'
         }
     },
     {
