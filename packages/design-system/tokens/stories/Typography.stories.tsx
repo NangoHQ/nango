@@ -64,7 +64,7 @@ const fontName = (e: TypeEntry) => (e.mono ? 'Geist Mono' : 'Geist Sans');
  * or contain subgroups (text, code → one section per subgroup).
  */
 function buildSections(): { title: string; entries: TypeEntry[] }[] {
-    return entries(tokens.Typography).flatMap(([name, group]) => {
+    return entries(tokens.Typography ?? {}).flatMap(([name, group]) => {
         if (isLeaf(group)) return [];
 
         const sectionsFor = (path: string[], subGroup: TokenGroup, displayName: string) => {

@@ -14,7 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 // ─── Semantic data ────────────────────────────────────────────────────────────
 
-const SEMANTIC_GROUPS = entries(tokens['Semantic/Light']).flatMap(([label, group]) => {
+const SEMANTIC_GROUPS = entries(tokens['Semantic/Light'] ?? {}).flatMap(([label, group]) => {
     if (isLeaf(group)) return [];
     const vars = [...leaves(group, [toKebab(label)])].filter(({ leaf }) => leaf.$type === 'color').map(({ path }) => '--' + path.map(toKebab).join('-'));
     return vars.length ? [{ label, vars }] : [];
@@ -59,7 +59,7 @@ function buildRamp(name: string, family: TokenGroup): Ramp[] {
     }));
 }
 
-const PRIMITIVE_RAMPS: Ramp[] = entries(tokens.Primitives.color)
+const PRIMITIVE_RAMPS: Ramp[] = entries(tokens.Primitives?.color ?? {})
     .filter(([k, v]) => k !== 'transparent' && !isLeaf(v))
     .sort(([a], [b]) => (FAMILY_ORDER.indexOf(a) + 1 || 999) - (FAMILY_ORDER.indexOf(b) + 1 || 999))
     .flatMap(([name, family]) => buildRamp(name, family as TokenGroup));
