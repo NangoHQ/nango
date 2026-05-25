@@ -1,5 +1,5 @@
 import * as LucideIcons from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Icon } from './Icon';
 
@@ -52,8 +52,16 @@ export const Sizes: Story = {
 
 function IconGrid() {
     const [query, setQuery] = useState('');
+    const [copied, setCopied] = useState<string | null>(null);
 
     const filtered = query.trim() ? ALL_ICONS.filter(([name]) => name.toLowerCase().includes(query.toLowerCase())) : ALL_ICONS;
+
+    const handleClick = useCallback((name: string) => {
+        void navigator.clipboard.writeText(`<${name} />`).then(() => {
+            setCopied(name);
+            setTimeout(() => setCopied(null), 1500);
+        });
+    }, []);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
@@ -99,41 +107,38 @@ function IconGrid() {
             <div
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))',
-                    gap: 'var(--ds-space-2)'
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(3rem, 1fr))',
+                    gap: 'var(--ds-space-1)'
                 }}
             >
                 {filtered.map(([name, IconComponent]) => (
-                    <div
+                    <button
                         key={name}
-                        title={name}
+                        title={copied === name ? 'Copied!' : `<${name} />`}
+                        onClick={() => handleClick(name)}
                         style={{
                             display: 'flex',
-                            flexDirection: 'column',
                             alignItems: 'center',
-                            gap: 'var(--ds-space-1-5)',
-                            padding: 'var(--ds-space-3) var(--ds-space-2)',
+                            justifyContent: 'center',
+                            width: '3rem',
+                            height: '3rem',
                             borderRadius: 'var(--ds-radius-sm)',
-                            border: 'var(--ds-border-width-1) solid var(--border-muted)',
-                            cursor: 'default',
-                            transition: 'background var(--ds-motion-duration-fast) var(--ds-motion-easing-standard)'
+                            border: 'none',
+                            background: copied === name ? 'var(--state-selected)' : 'transparent',
+                            color: copied === name ? 'var(--icon-active)' : 'var(--icon-default)',
+                            cursor: 'pointer',
+                            transition:
+                                'background var(--ds-motion-duration-fast) var(--ds-motion-easing-standard), color var(--ds-motion-duration-fast) var(--ds-motion-easing-standard)'
                         }}
-                        onMouseEnter={(e) => ((e.currentTarget as HTMLDivElement).style.background = 'var(--state-hover)')}
-                        onMouseLeave={(e) => ((e.currentTarget as HTMLDivElement).style.background = '')}
+                        onMouseEnter={(e) => {
+                            if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'var(--state-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                        }}
                     >
-                        <Icon icon={IconComponent} size="md" className="text-[var(--icon-default)]" />
-                        <span
-                            style={{
-                                fontSize: 'var(--ds-typography-font-size-2xs)',
-                                color: 'var(--text-secondary)',
-                                textAlign: 'center',
-                                lineHeight: 'var(--ds-typography-line-height-snug)',
-                                wordBreak: 'break-word'
-                            }}
-                        >
-                            {name}
-                        </span>
-                    </div>
+                        <IconComponent size={24} strokeWidth={2} />
+                    </button>
                 ))}
             </div>
 
