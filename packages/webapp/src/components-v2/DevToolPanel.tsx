@@ -6,7 +6,7 @@ import { Switch } from './ui/switch';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 // Dev tool panel — only rendered when import.meta.env.DEV is true.
-// Toggle with: Ctrl+Shift+D (Windows/Linux) or Cmd+Shift+D (Mac)
+// Toggle with: Alt+Shift+D
 export const DEV_PANEL_SHORTCUT = 'd';
 
 export const DevToolPanel: React.FC = () => {
@@ -16,7 +16,7 @@ export const DevToolPanel: React.FC = () => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key.toLowerCase() === DEV_PANEL_SHORTCUT && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+            if (e.key.toLowerCase() === DEV_PANEL_SHORTCUT && e.shiftKey && e.altKey) {
                 e.preventDefault();
                 setOpen((prev) => !prev);
             }
@@ -57,7 +57,7 @@ export const DevToolPanel: React.FC = () => {
             {/* Footer */}
             <div className="border-t border-border-default px-4 py-2">
                 <p className="text-[11px] text-text-secondary">
-                    <kbd className="rounded bg-surface-panel-inset px-1 py-0.5 font-mono text-[10px]">⌘⇧D</kbd> to toggle
+                    <kbd className="rounded bg-surface-panel-inset px-1 py-0.5 font-mono text-[10px]">⌥⇧D</kbd> to toggle
                 </p>
             </div>
         </div>
