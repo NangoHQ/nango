@@ -1,0 +1,19 @@
+.npmrc
+  s_b39bb872dde816::t_9d8125a5303aa7 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "249121537fe6da3f15d3b9bc4a84a7fb0632af18",
+  "prompts": {},
+  "sessions": {
+    "s_b39bb872dde816": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e504a-8e97-7193-9c33-1309cd88ad66",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
