@@ -1,4 +1,7 @@
-import rawTokens from './tokens.json';
+// Import as raw string so TypeScript doesn't infer a type from the 3k-line JSON
+// (which causes ESLint's type-aware pass to OOM in CI). At runtime Vite handles
+// the ?raw suffix; JSON.parse gives us the object we cast to TokensJson below.
+import rawTokensStr from './tokens.json?raw';
 
 /** A leaf token — carries a resolved $value and a $type */
 export interface TokenLeaf {
@@ -22,7 +25,7 @@ export interface TokensJson {
     Typography: TokenGroup;
 }
 
-export const tokens = rawTokens as unknown as TokensJson;
+export const tokens = JSON.parse(rawTokensStr) as TokensJson;
 
 /** True when a node is a leaf token (has a $value) */
 export function isLeaf(node: TokenNode): node is TokenLeaf {
