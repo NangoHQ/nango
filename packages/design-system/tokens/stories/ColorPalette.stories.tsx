@@ -48,7 +48,10 @@ function buildRamp(name: string, family: TokenGroup): Ramp[] {
         return [
             {
                 label: capitalize(name),
-                swatches: subgroups.map(([sub, group]) => ({ step: sub, cssVar: cssVar(name, sub, entries(group)[0][0]) }))
+                swatches: subgroups.flatMap(([sub, group]) => {
+                    const first = entries(group)[0];
+                    return first ? [{ step: sub, cssVar: cssVar(name, sub, first[0]) }] : [];
+                })
             }
         ];
     }
