@@ -54,8 +54,9 @@ function buildGroup(key: string, label: string): TokenGroup {
 }
 
 function buildStatusGroup(statusKey: string, label: string): TokenGroup {
-    const status = semanticLight['status'] as Record<string, unknown>;
-    const group = status[statusKey] as Record<string, unknown>;
+    const status = semanticLight['status'] as Record<string, unknown> | undefined;
+    const group = status?.[statusKey] as Record<string, unknown> | undefined;
+    if (!group) return { label, tokens: [] };
     return { label, tokens: collectVars(group, ['status', statusKey]) };
 }
 

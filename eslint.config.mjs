@@ -258,7 +258,7 @@ export default tseslint.config(
         }
     },
     {
-        files: ['packages/design-system/src/**/*.{tsx,ts}', 'packages/design-system/.storybook/**/*.{ts,tsx}'],
+        files: ['packages/design-system/**/*.{tsx,ts}'],
 
         languageOptions: {
             parserOptions: {
