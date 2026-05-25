@@ -185,11 +185,47 @@ export function tapResponseStreamAndCount(response: Response, onStreamedBytes: (
         // which is acceptable — we avoid forcing a download just for metering.
     });
 
-    const tappedResponse = new Response(readable, {
+    return proxyResponseBody(readable, response);
+}
+
+/**
+ * Returns a Proxy over `response` that routes property accesses in two ways:
+ * - Body-related properties (`body`, `bodyUsed`, `text`, `json`, `arrayBuffer`,
+ *   `blob`, `formData`, `clone`) are routed to a body façade built on top of
+ *   `readable`, so body consumption goes through the tapped stream.
+ * - Everything else (including `url`, `type`, and other runtime-populated
+ *   read-only fields) is routed to the original response object, which
+ *   constructing `new Response(…)` would silently drop.
+ *
+ * Note: `clone()` resolves through the body façade, so clones lose `url`/`type` —
+ * acceptable since `clone()` is used for body re-reading, not metadata access.
+ */
+function proxyResponseBody(readable: ReadableStream<Uint8Array>, response: Response) {
+    const bodyFacade = new Response(readable, {
         status: response.status,
         statusText: response.statusText,
         headers: response.headers
     });
 
-    return tappedResponse;
+    return new Proxy(response, {
+        get(target, prop: string | symbol) {
+            switch (prop) {
+                case 'body':
+                    return readable;
+                case 'bodyUsed':
+                    return bodyFacade.bodyUsed;
+                case 'text':
+                case 'json':
+                case 'arrayBuffer':
+                case 'blob':
+                case 'formData':
+                case 'clone':
+                    return (bodyFacade[prop] as (...args: unknown[]) => unknown).bind(bodyFacade);
+                default: {
+                    const val = Reflect.get(target, prop, target);
+                    return typeof val === 'function' ? (val as (...args: unknown[]) => unknown).bind(target) : val;
+                }
+            }
+        }
+    });
 }

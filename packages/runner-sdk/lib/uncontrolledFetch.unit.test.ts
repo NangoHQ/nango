@@ -335,6 +335,23 @@ describe('uncontrolledFetch byte metering helpers', () => {
         expect(wrapped.status).toBe(206);
         expect(wrapped.headers.get('x-custom')).toBe('val');
     });
+
+    it('tapResponseStreamAndCount preserves url and type from original response', async () => {
+        const { tapResponseStreamAndCount } = await import('./uncontrolledFetch.js');
+        const response = new Response('body');
+        const wrapped = tapResponseStreamAndCount(response, vi.fn());
+        expect(wrapped.url).toBe(response.url);
+        expect(wrapped.type).toBe(response.type);
+    });
+
+    it('tapResponseStreamAndCount clone reads body correctly', async () => {
+        const { tapResponseStreamAndCount } = await import('./uncontrolledFetch.js');
+        const body = 'cloned content';
+        const response = new Response(body);
+        const wrapped = tapResponseStreamAndCount(response, vi.fn());
+        const cloned = wrapped.clone();
+        expect(await cloned.text()).toBe(body);
+    });
 });
 
 describe('uncontrolledFetch transfer metering', () => {
