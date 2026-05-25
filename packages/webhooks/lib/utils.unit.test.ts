@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { stringifyStable } from '@nangohq/utils';
 
-import { getHmacSignatureHeader, getSignatureHeaderUnsafe } from './utils.js';
+import { TestWebhookServer } from './helpers/test.js';
+import { deliver, getHmacSignatureHeader, getSignatureHeaderUnsafe } from './utils.js';
+
+import type { DBAPISecret } from '@nangohq/types';
 
 describe('getSignatureHeaderUnsafe', () => {
     it('should return a string', () => {
@@ -41,5 +44,50 @@ describe('getHmacSignatureHeader', () => {
         const safeSignature = getHmacSignatureHeader(secret, payload);
         const unsafeSignature = getSignatureHeaderUnsafe(secret, payload);
         expect(safeSignature).not.toEqual(unsafeSignature);
+    });
+});
+
+describe('deliver bytes metering', () => {
+    const testServer = new TestWebhookServer(4103);
+    const secret = 'test-secret' as DBAPISecret['secret'];
+
+    beforeAll(async () => {
+        await testServer.start();
+    });
+
+    afterAll(async () => {
+        await testServer.stop();
+    });
+
+    it('should fire onBytes with non-zero sent on successful POST', async () => {
+        const hops: { sent: number; received: number }[] = [];
+        const result = await deliver({
+            webhooks: [{ url: testServer.primaryUrl, type: 'primary' }],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            onBytes: (b) => hops.push(b)
+        });
+        expect(result.isOk()).toBe(true);
+        expect(hops.length).toBe(1);
+        expect(hops[0]!.sent).toBeGreaterThan(0);
+    });
+
+    it('should fire onBytes once per webhook URL', async () => {
+        const hops: { sent: number; received: number }[] = [];
+        await deliver({
+            webhooks: [
+                { url: testServer.primaryUrl, type: 'primary' },
+                { url: testServer.secondaryUrl, type: 'secondary' }
+            ],
+            body: { hello: 'world' },
+            webhookType: 'forward',
+            secret,
+            onBytes: (b) => hops.push(b)
+        });
+        expect(hops.length).toBe(2);
+        for (const h of hops) {
+            expect(h.sent).toBeGreaterThan(0);
+        }
     });
 });

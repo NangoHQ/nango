@@ -4,6 +4,7 @@ import { Err, Ok, metrics } from '@nangohq/utils';
 import { deliver, shouldSend } from './utils.js';
 
 import type { LogContextGetter } from '@nangohq/logs';
+import type { MeteredBytes } from '@nangohq/shared';
 import type { DBAPISecret, DBEnvironment, DBExternalWebhook, DBTeam, IntegrationConfig, NangoForwardWebhookBody, Result } from '@nangohq/types';
 
 export const forwardWebhook = async ({
@@ -26,15 +27,15 @@ export const forwardWebhook = async ({
     payload: Record<string, any> | null;
     webhookOriginalHeaders: Record<string, string>;
     logContextGetter: LogContextGetter;
-}): Promise<Result<{ forwarded: number }>> => {
+}): Promise<Result<{ forwarded: number; bytes: MeteredBytes }>> => {
     if (!webhookSettings) {
-        return Ok({ forwarded: 0 });
+        return Ok({ forwarded: 0, bytes: { sent: 0, received: 0 } });
     }
     if (!shouldSend({ success: true, type: 'forward', webhookSettings })) {
-        return Ok({ forwarded: 0 });
+        return Ok({ forwarded: 0, bytes: { sent: 0, received: 0 } });
     }
     if (!integration.forward_webhooks) {
-        return Ok({ forwarded: 0 });
+        return Ok({ forwarded: 0, bytes: { sent: 0, received: 0 } });
     }
 
     const logCtx = await logContextGetter.create(
@@ -59,6 +60,12 @@ export const forwardWebhook = async ({
         { url: webhookSettings.secondary_url, type: 'secondary webhook url' }
     ].filter((webhook) => webhook.url) as { url: string; type: string }[];
 
+    const totalBytes: MeteredBytes = { sent: 0, received: 0 };
+    const accumulateBytes = (hop: MeteredBytes) => {
+        totalBytes.sent += hop.sent;
+        totalBytes.received += hop.received;
+    };
+
     if (!connectionIds || connectionIds.length === 0) {
         const result = await deliver({
             webhooks,
@@ -66,7 +73,8 @@ export const forwardWebhook = async ({
             webhookType: 'forward',
             secret,
             logCtx,
-            incomingHeaders: webhookOriginalHeaders
+            incomingHeaders: webhookOriginalHeaders,
+            onBytes: accumulateBytes
         });
 
         if (result.isErr()) {
@@ -77,7 +85,7 @@ export const forwardWebhook = async ({
 
         metrics.increment(metrics.Types.WEBHOOK_INCOMING_FORWARDED_SUCCESS, 1, { accountId: account.id });
         await logCtx.success();
-        return Ok({ forwarded: 1 });
+        return Ok({ forwarded: 1, bytes: totalBytes });
     }
 
     let success = true;
@@ -92,7 +100,8 @@ export const forwardWebhook = async ({
             webhookType: 'forward',
             secret,
             logCtx,
-            incomingHeaders: webhookOriginalHeaders
+            incomingHeaders: webhookOriginalHeaders,
+            onBytes: accumulateBytes
         });
 
         if (result.isOk()) {
@@ -109,5 +118,5 @@ export const forwardWebhook = async ({
     } else {
         await logCtx.failed();
     }
-    return Ok({ forwarded });
+    return Ok({ forwarded, bytes: totalBytes });
 };

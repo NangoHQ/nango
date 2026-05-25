@@ -190,4 +190,65 @@ describe('Webhooks: forward notification tests', () => {
         });
         expect(spy).toHaveBeenCalledTimes(4);
     });
+
+    it('Should return non-zero bytes.sent on successful forward', async () => {
+        const payload = { some: 'data' };
+        const result = await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload,
+            webhookOriginalHeaders: {}
+        });
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            // payload sent to both primary and secondary URLs
+            const minBytes = Buffer.byteLength(JSON.stringify(payload)) * 2;
+            expect(result.value.bytes.sent).toBeGreaterThanOrEqual(minBytes);
+        }
+    });
+
+    it('Should return zero bytes when forwarding is skipped', async () => {
+        const result = await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings: null,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {}
+        });
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.bytes).toEqual({ sent: 0, received: 0 });
+        }
+    });
+
+    it('Should sum bytes across connections in fan-out', async () => {
+        const connectionIds = ['conn1', 'conn2'];
+        const payload = { x: 1 };
+        const result = await forwardWebhook({
+            connectionIds,
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings: { ...webhookSettings, secondary_url: '' },
+            logContextGetter,
+            integration,
+            payload,
+            webhookOriginalHeaders: {}
+        });
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.forwarded).toBe(2);
+            const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
+            expect(result.value.bytes.sent).toBeGreaterThanOrEqual(minBytes);
+        }
+    });
 });
