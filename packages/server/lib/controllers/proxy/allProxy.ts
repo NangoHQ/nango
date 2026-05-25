@@ -165,6 +165,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             integration,
             logContextGetter,
             instantRefresh: false,
+            skipIntrospection: true,
             onRefreshSuccess: connectionRefreshSuccess,
             onRefreshFailed: connectionRefreshFailed
         });
@@ -240,6 +241,24 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             logger: (msg) => {
                 void logCtx?.log(msg);
             },
+            onRefreshToken: async () => {
+                const credentialResponse = await refreshOrTestCredentials({
+                    account,
+                    environment,
+                    connection: freshConnection,
+                    integration,
+                    logContextGetter,
+                    instantRefresh: false,
+                    skipIntrospection: true,
+                    onRefreshSuccess: connectionRefreshSuccess,
+                    onRefreshFailed: connectionRefreshFailed
+                });
+                if (credentialResponse.isErr()) {
+                    throw new ProxyError('failed_to_refresh_connection', 'Failed to refresh credentials', credentialResponse.error);
+                }
+                freshConnection = credentialResponse.value;
+                lastConnectionRefresh = Date.now();
+            },
             getConnection: async () => {
                 if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
                     return freshConnection;
@@ -253,6 +272,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     integration,
                     logContextGetter,
                     instantRefresh: false,
+                    skipIntrospection: true,
                     onRefreshSuccess: connectionRefreshSuccess,
                     onRefreshFailed: connectionRefreshFailed
                 });

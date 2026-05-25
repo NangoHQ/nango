@@ -55,6 +55,10 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
+    if (proxyConfig.refreshTokenOn?.some((code) => matchesStatusCode(status, String(code)))) {
+        return { retry: true, reason: 'refresh_token' };
+    }
+
     if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
         // Custom header in providers.yaml
         isRetryable = true;

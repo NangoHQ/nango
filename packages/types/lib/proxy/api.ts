@@ -50,6 +50,7 @@ export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfi
     method: HTTP_METHOD;
     providerName: string;
     provider: Provider;
+    refreshTokenOn: (number | string)[] | null;
 }
 
 export type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
