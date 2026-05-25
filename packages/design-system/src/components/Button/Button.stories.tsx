@@ -1,10 +1,11 @@
+import { ChevronRight, Plus } from 'lucide-react';
+
 import { Button } from './Button';
-import { IconButton } from './IconButton';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
-    title: 'Design System/Components/Button',
+    title: 'Design System/Components/Buttons/Button',
     parameters: { layout: 'padded' }
 };
 
@@ -14,28 +15,12 @@ type Story = StoryObj<typeof meta>;
 const VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger', 'link-danger'] as const;
 const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 
-function PlusIcon() {
-    return (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M8 3v10M3 8h10" strokeLinecap="round" />
-        </svg>
-    );
-}
-
-function ChevronIcon() {
-    return (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-    );
-}
-
 export const AllVariants: Story = {
     name: 'All variants',
     render: () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
             {VARIANTS.map((variant) => (
-                <div key={variant} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', flexWrap: 'wrap' }}>
+                <div key={variant} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '7rem', flexShrink: 0 }}>
                         {variant}
                     </span>
@@ -46,10 +31,10 @@ export const AllVariants: Story = {
                     <Button variant={variant} loading>
                         Loading
                     </Button>
-                    <Button variant={variant} leadingIcon={<PlusIcon />}>
+                    <Button variant={variant} leadingIcon={<Plus size={14} />}>
                         With icon
                     </Button>
-                    <Button variant={variant} trailingIcon={<ChevronIcon />}>
+                    <Button variant={variant} trailingIcon={<ChevronRight size={14} />}>
                         Trailing
                     </Button>
                 </div>
@@ -61,44 +46,17 @@ export const AllVariants: Story = {
 export const AllSizes: Story = {
     name: 'All sizes',
     render: () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-10)' }}>
             {SIZES.map((size) => (
-                <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)' }}>
+                <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-6)' }}>
                     <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '3rem', flexShrink: 0 }}>{size}</span>
                     <Button size={size}>Button</Button>
                     <Button size={size} variant="outline">
                         Outline
                     </Button>
-                    <Button size={size} leadingIcon={<PlusIcon />}>
+                    <Button size={size} leadingIcon={<Plus size={14} />}>
                         With icon
                     </Button>
-                </div>
-            ))}
-        </div>
-    )
-};
-
-const ICON_BUTTON_VARIANTS = ['primary', 'secondary', 'outline', 'ghost', 'danger'] as const;
-const ICON_BUTTON_SIZES = ['xxs', 'xs', 'sm', 'md', 'lg'] as const;
-
-export const IconButtonVariants: Story = {
-    name: 'IconButton variants',
-    render: () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
-            {ICON_BUTTON_VARIANTS.map((variant) => (
-                <div key={variant} style={{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)', width: '5rem', flexShrink: 0 }}>
-                        {variant}
-                    </span>
-                    {ICON_BUTTON_SIZES.map((size) => (
-                        <IconButton key={size} variant={variant} size={size} label={`${variant} ${size}`}>
-                            <PlusIcon />
-                        </IconButton>
-                    ))}
-                    <IconButton variant={variant} disabled label={`${variant} disabled`}>
-                        <PlusIcon />
-                    </IconButton>
-                    <IconButton variant={variant} loading label={`${variant} loading`} />
                 </div>
             ))}
         </div>

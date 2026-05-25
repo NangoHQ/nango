@@ -10,7 +10,7 @@ import type { VariantProps } from 'class-variance-authority';
 const iconButtonVariants = cva(
     [
         'inline-flex items-center justify-center shrink-0',
-        'rounded-[var(--ds-radius-md)] border cursor-pointer select-none',
+        'rounded-[var(--ds-radius-xs)] border-[length:var(--ds-border-width-hairline)] cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
         'focus-visible:outline-none',
