@@ -1,12 +1,17 @@
+import { basePublicUrl, baseUrl } from '@nangohq/utils';
+
+const allowedOrigins = new Set([basePublicUrl, baseUrl]);
+const publicHost = new URL(basePublicUrl).hostname;
+
 /**
  * Returns true if the given CORS origin should be allowed.
  *
  * Allows:
  *  - undefined (same-origin / server-to-server requests)
- *  - origins in the explicit allowlist
+ *  - origins in the explicit allowlist (basePublicUrl, baseUrl)
  *  - HTTPS PR-preview subdomains of the form `pr-<number>.<publicHost>`
  */
-export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigins: Set<string>, publicHost: string): boolean {
+export function isAllowedWebCorsOrigin(origin: string | undefined): boolean {
     if (!origin) return true;
     if (allowedOrigins.has(origin)) return true;
     try {
