@@ -113,11 +113,7 @@ export default tseslint.config(
         }
     },
     {
-        // Design-system uses its own tsconfig and is handled by the block below.
-        // Excluding it here avoids loading two TypeScript programs simultaneously
-        // (root + design-system), which OOMs in CI.
         files: ['**/*.{ts,tsx}'],
-        ignores: ['packages/design-system/**'],
         plugins: {
             '@typescript-eslint': tseslint.plugin
         },
@@ -262,38 +258,12 @@ export default tseslint.config(
         }
     },
     {
-        // Design-system: TypeScript syntax rules only — no type-aware program.
-        // Type correctness is checked by `tsc --noEmit` instead.
+        // Design-system: disable type-aware rules to avoid loading a second
+        // TypeScript program alongside the root one, which OOMs in CI.
         files: ['packages/design-system/{src,tokens,.storybook}/**/*.{tsx,ts}'],
-
-        plugins: {
-            '@typescript-eslint': tseslint.plugin
-        },
-
-        extends: [tseslint.configs.recommended, tseslint.configs.strict, tseslint.configs.stylistic, tseslint.configs.disableTypeChecked],
-
-        languageOptions: {
-            parser: tsParser,
-            sourceType: 'module',
-            parserOptions: {
-                ecmaFeatures: { jsx: true }
-            }
-        },
-
+        extends: [tseslint.configs.disableTypeChecked],
         rules: {
-            'import/extensions': 'off',
-            '@typescript-eslint/no-unused-vars': [
-                'error',
-                {
-                    args: 'all',
-                    argsIgnorePattern: '^_',
-                    caughtErrors: 'all',
-                    caughtErrorsIgnorePattern: '^_',
-                    destructuredArrayIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                    ignoreRestSiblings: true
-                }
-            ]
+            'import/extensions': 'off'
         }
     },
     {
