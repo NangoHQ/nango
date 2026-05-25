@@ -11,8 +11,9 @@ import type { ReactNode } from 'react';
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-[var(--ds-space-1-5)] whitespace-nowrap',
-        'rounded-[var(--ds-radius-md)] border font-[var(--ds-typography-font-weight-medium)]',
-        'text-[var(--ds-typography-font-size-sm)] leading-none cursor-pointer select-none',
+        'rounded-[var(--ds-radius-xs)] border-[length:var(--ds-border-width-hairline)] [font-weight:var(--ds-typography-font-weight-medium)]',
+        'text-[length:var(--ds-typography-font-size-md)] leading-[var(--ds-typography-line-height-normal)]',
+        'tracking-[var(--ds-typography-letter-spacing-normal)] cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
         'focus-visible:outline-none',
@@ -71,10 +72,10 @@ export const buttonVariants = cva(
                 ]
             },
             size: {
-                xs: 'h-6 px-[var(--ds-space-2)] text-[var(--ds-typography-font-size-xs)]',
-                sm: 'h-7 px-[var(--ds-space-2-5)]',
-                md: 'h-8 px-[var(--ds-space-3)]',
-                lg: 'h-9 px-[var(--ds-space-3-5)]'
+                xs: 'h-6 px-[var(--ds-space-1-5)] text-[length:var(--ds-typography-font-size-xs)]',
+                sm: 'h-7 px-[var(--ds-space-2)]',
+                md: 'h-8 px-[var(--ds-space-2-5)]',
+                lg: 'h-9 px-[var(--ds-space-3)]'
             }
         },
         defaultVariants: {
