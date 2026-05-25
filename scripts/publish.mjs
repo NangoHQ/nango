@@ -133,7 +133,15 @@ async function npmPublish(packageName) {
 }
 
 async function runPublishPreparation(packageName) {
-    await $`npm run prepublishOnly --workspace "${packageName}" --if-present`;
+    if (packageName === '@nangohq/node') {
+        echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
+        await $`npm run -w "${packageName}" build`;
+    }
+
+    if (packageName === 'nango') {
+        echo(chalk.grey(`  ${figures.tick} Copying CLI package files`));
+        await $`npm run -w "${packageName}" copy:files`;
+    }
 }
 
 // --- Version bump functions ---
