@@ -5,7 +5,13 @@ import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
-// Dev tool panel — only rendered when import.meta.env.DEV is true.
+/**
+ * True when the dev tool panel should be available:
+ * - local Vite dev server
+ * - *.app-development.nango.dev (development deployment and PR previews)
+ */
+export const isDevToolsEnabled = import.meta.env.DEV || window.location.hostname.endsWith('.app-development.nango.dev');
+
 // Toggle with: Alt+Shift+D
 export const DEV_PANEL_SHORTCUT = 'd';
 
