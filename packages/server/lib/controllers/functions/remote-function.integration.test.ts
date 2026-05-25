@@ -577,8 +577,8 @@ describe('remote-function public API', () => {
         const dryrun = await createDryrunSeed({
             environmentId: env.id,
             sandboxId: 'sandbox-id',
-            startedAt: new Date('2026-01-01T00:00:00.000Z'),
-            executionTimeoutAt: new Date('2026-01-01T00:10:00.000Z')
+            startedAt: new Date('2099-01-01T00:00:00.000Z'),
+            executionTimeoutAt: new Date('2099-01-01T00:10:00.000Z')
         });
 
         const res = await api.fetch('/functions/dryruns/:id', {
@@ -593,7 +593,7 @@ describe('remote-function public API', () => {
             status: 'running',
             integration_id: 'github',
             function_type: 'sync',
-            started_at: '2026-01-01T00:00:00.000Z'
+            started_at: '2099-01-01T00:00:00.000Z'
         });
         expect(res.json).not.toHaveProperty('status_url');
         expect(res.json).not.toHaveProperty('execution_timeout_at');
