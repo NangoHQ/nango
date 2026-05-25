@@ -48,7 +48,7 @@ describe('getHmacSignatureHeader', () => {
 });
 
 describe('deliver bytes metering', () => {
-    const testServer = new TestWebhookServer(4103);
+    const testServer = new TestWebhookServer(4104);
     const secret = 'test-secret' as DBAPISecret['secret'];
 
     beforeAll(async () => {

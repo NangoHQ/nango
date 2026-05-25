@@ -238,7 +238,11 @@ export const deliver = async ({
                                 return Err(new Error('unknown_error', { cause: err }));
                             }
                         } finally {
-                            onBytes?.(attemptBytes);
+                            try {
+                                onBytes?.(attemptBytes);
+                            } catch (err) {
+                                void logCtx?.error('Webhook byte metering callback failed', { error: err, url });
+                            }
                         }
                     });
 
