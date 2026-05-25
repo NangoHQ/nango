@@ -18,7 +18,12 @@ type Story = StoryObj<typeof meta>;
 // Icons in lucide-react v0.500+ are forwardRef objects (typeof === 'object'),
 // so we accept both functions and non-null objects.
 const ALL_ICONS = Object.entries(LucideIcons).filter(
-    ([name, value]) => /^[A-Z]/.test(name) && !name.endsWith('Icon') && value != null && (typeof value === 'function' || typeof value === 'object')
+    ([name, value]) =>
+        /^[A-Z]/.test(name) &&
+        !name.startsWith('Lucide') &&
+        !name.endsWith('Icon') &&
+        value != null &&
+        (typeof value === 'function' || typeof value === 'object')
 ) as [string, LucideIcon][];
 
 const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
