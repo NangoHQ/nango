@@ -1,0 +1,66 @@
+name: Token check
+
+on:
+    push:
+        branches:
+            - master
+            - staging/**
+    pull_request:
+    merge_group:
+
+jobs:
+    should-run:
+        runs-on: ubuntu-latest
+        outputs:
+            should_skip: ${{ steps.check.outputs.should_skip }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: dorny/paths-filter@v4
+              id: filter
+              with:
+                  filters: |
+                      tokens:
+                          - 'packages/design-system/tokens/**'
+                          - 'packages/design-system/scripts/tokens-**'
+                          - 'packages/webapp/src/**'
+                          - '.github/workflows/tokens-check.yaml'
+            - name: Determine if should skip
+              id: check
+              run: |
+                  IS_PR="${{ github.event_name == 'pull_request' }}"
+                  IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
+                  IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
+                  TOKENS_CHANGED="${{ steps.filter.outputs.tokens == 'true' }}"
+
+                  SHOULD_SKIP="true"
+                  if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  elif [[ "$IS_PR" == "true" && "$TOKENS_CHANGED" == "true" ]]; then
+                      SHOULD_SKIP="false"
+                  fi
+
+                  echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
+
+    check-tokens:
+        needs: should-run
+        if: needs.should-run.outputs.should_skip != 'true'
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # Full history needed to resolve the merge-base against origin/master
+                  fetch-depth: 0
+
+            - uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Validate token aliases resolve cleanly
+              run: npm run tokens:build --workspace=@nangohq/design-system -- --strict
+
+            - name: Check for removed tokens still in use
+              run: npm run tokens:check --workspace=@nangohq/design-system

@@ -86,7 +86,7 @@ export function formatTokenValue(token) {
  * Run one Style Dictionary build pass and return the resolved, transformed tokens.
  * SD handles alias resolution, color normalization, and naming.
  */
-async function resolveTokens({ sourceFiles, includeFiles = [] }) {
+export async function resolveTokens({ sourceFiles, includeFiles = [], strict = false }) {
     const sd = new StyleDictionary({
         include: includeFiles,
         source: sourceFiles,
@@ -99,6 +99,8 @@ async function resolveTokens({ sourceFiles, includeFiles = [] }) {
                 files: []
             }
         },
+        // Always 'warn' — SD leaves unresolved aliases as raw `{alias}` strings.
+        // We handle strict vs permissive behavior ourselves in the loop below.
         log: { verbosity: 'silent', errors: { brokenReferences: 'warn' } }
     });
 
@@ -118,9 +120,12 @@ async function resolveTokens({ sourceFiles, includeFiles = [] }) {
         if (!t.isSource) continue;
         if (t['$type'] === 'other' && t.path.some((s) => s.startsWith('$'))) continue;
         const value = t.$value ?? t.value;
-        // Skip tokens with unresolved aliases — SD couldn't find the referenced token.
-        // These would produce invalid CSS (e.g. `--foo: {text.muted}`) and crash prettier.
+        // Detect unresolved aliases — SD leaves them as raw `{alias}` strings when it can't
+        // find the referenced token. Including them would produce invalid CSS with no value.
         if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
+            if (strict) {
+                throw new Error(`Unresolved token alias: ${t.path.join('.')} → ${value}`);
+            }
             console.warn(`⚠ Skipping ${t.path.join('.')} — unresolved alias: ${value}`);
             continue;
         }
@@ -152,7 +157,7 @@ export function buildTailwindThemeBlock(tokens) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export async function buildCss(tokensData) {
+export async function buildCss(tokensData, { strict = false } = {}) {
     const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark } = tokensData;
 
     if (!Primitives || !SemanticLight || !SemanticDark) {
@@ -176,9 +181,9 @@ export async function buildCss(tokensData) {
     let primTokens, lightTokens, darkTokens;
     try {
         [primTokens, lightTokens, darkTokens] = await Promise.all([
-            resolveTokens({ sourceFiles: [primFile] }),
-            resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile] }),
-            resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile] })
+            resolveTokens({ sourceFiles: [primFile], strict }),
+            resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile], strict }),
+            resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile], strict })
         ]);
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
@@ -232,7 +237,7 @@ async function main() {
 
     // Build CSS first — if SD throws, we leave the on-disk tokens.json untouched
     // so the working tree stays consistent (old tokens.json + old tokens.generated.css).
-    const css = await buildCss(tokensData);
+    const css = await buildCss(tokensData, { strict: STRICT });
 
     mkdirSync(TOKENS_DIR, { recursive: true });
     if (!BUILD_ONLY) {
