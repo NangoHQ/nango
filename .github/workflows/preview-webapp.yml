@@ -17,10 +17,10 @@ jobs:
     preview:
         runs-on: ubuntu-latest
         environment: development
-        # Security note: the `pull_request` trigger only fires for collaborator PRs,
-        # not external forks, so untrusted code cannot access secrets or the OIDC token.
-        # The OIDC role is scoped solely to the dev preview S3 bucket — a compromise
-        # cannot reach production resources.
+        # Security note: forked PRs using `pull_request` do not receive secrets or OIDC
+        # tokens, so untrusted fork code cannot assume the deploy role. The OIDC role is
+        # also scoped solely to the dev preview S3 bucket — a compromise cannot reach
+        # production resources.
         permissions:
             id-token: write
             contents: read
