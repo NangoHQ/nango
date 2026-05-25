@@ -1,0 +1,25 @@
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_2339a8c9ec0e8d 596,599
+  s_b39de48b60dddc::t_af0fef9d898269 598
+  s_b39de48b60dddc::t_4bc63e5b15ea80 665-666
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_a2ea373da101c2 184
+  s_b39de48b60dddc::t_2339a8c9ec0e8d 223
+  s_b39de48b60dddc::t_a20cdd6107d84e 182-183,185-214,216
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "b62de8596a435dec8365e4b96609a98626021267",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
