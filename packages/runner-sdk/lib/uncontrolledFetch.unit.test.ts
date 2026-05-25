@@ -352,6 +352,22 @@ describe('uncontrolledFetch byte metering helpers', () => {
         const cloned = wrapped.clone();
         expect(await cloned.text()).toBe(body);
     });
+
+    it('tapResponseStreamAndCount bytes() reads from tapped stream, not locked original', async () => {
+        const { tapResponseStreamAndCount } = await import('./uncontrolledFetch.js');
+        const body = 'bytes content';
+        const response = new Response(body);
+        const calls: { bytes: number }[] = [];
+        const wrapped = tapResponseStreamAndCount(response, (p) => calls.push(p));
+        if (typeof (wrapped as any).bytes !== 'function') {
+            return; // runtime does not implement bytes() — skip
+        }
+        const result = await (wrapped as any).bytes();
+        expect(result).toBeInstanceOf(Uint8Array);
+        expect(Buffer.from(result).toString('utf8')).toBe(body);
+        expect(calls.length).toBe(1);
+        expect(calls[0]!.bytes).toBe(Buffer.byteLength(body, 'utf8'));
+    });
 });
 
 describe('uncontrolledFetch transfer metering', () => {

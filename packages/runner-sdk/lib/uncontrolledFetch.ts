@@ -220,8 +220,9 @@ function proxyResponseBody(readable: ReadableStream<Uint8Array>, response: Respo
                 case 'arrayBuffer':
                 case 'blob':
                 case 'formData':
+                case 'bytes':
                 case 'clone':
-                    return (bodyFacade[prop] as (...args: unknown[]) => unknown).bind(bodyFacade);
+                    return prop in bodyFacade ? (bodyFacade[prop as keyof typeof bodyFacade] as (...args: unknown[]) => unknown).bind(bodyFacade) : undefined;
                 default: {
                     const val = Reflect.get(target, prop, target);
                     return typeof val === 'function' ? (val as (...args: unknown[]) => unknown).bind(target) : val;
