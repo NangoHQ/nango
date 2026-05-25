@@ -1,5 +1,7 @@
-import tokensJson from '../tokens.json';
+import { entries, isLeaf, tokens } from '../types';
+import { capitalize } from './utils';
 
+import type { TokenGroup } from '../types';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -11,10 +13,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // ─── Data ────────────────────────────────────────────────────────────────────
-
-function capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
 
 interface TypeEntry {
     className: string;
@@ -47,44 +45,51 @@ const DESCRIPTIONS: Record<string, string> = {
     'type-code-medium-xxs': 'emphasized finest mono'
 };
 
-function collectEntries(obj: Record<string, unknown>, path: string[]): TypeEntry[] {
-    return Object.entries(obj).flatMap(([k, v]) => {
-        if (k.startsWith('$') || !v || typeof v !== 'object') return [];
-        if ('$value' in v) {
+/** Recursively collect TypeEntry items from a typography token group, building the CSS class name from the token path. */
+function collectEntries(group: TokenGroup, path: string[]): TypeEntry[] {
+    return entries(group).flatMap(([k, node]) => {
+        if (isLeaf(node)) {
             const className = 'type-' + [...path, k].join('-');
-            const fontFamily = ((v as any).$value?.fontFamily ?? '') as string;
+            const fontFamily = typeof node.$value === 'object' ? (node.$value.fontFamily ?? '') : '';
             return [{ className, label: [...path, k].join(' / '), description: DESCRIPTIONS[className], mono: fontFamily.toLowerCase().includes('mono') }];
         }
-        return collectEntries(v as Record<string, unknown>, [...path, k]);
+        return collectEntries(node, [...path, k]);
     });
 }
 
-const leaves = (obj: object) => Object.entries(obj).filter(([k]) => !k.startsWith('$'));
-const font = (entries: TypeEntry[]) => (entries[0]?.mono ? 'Geist Mono' : 'Geist Sans');
+const font = (e: TypeEntry[]) => (e[0]?.mono ? 'Geist Mono' : 'Geist Sans');
 
-function buildSections(typoGroup: Record<string, unknown>): { title: string; entries: TypeEntry[] }[] {
-    return Object.entries(typoGroup).flatMap(([groupName, groupValue]) => {
-        if (groupName.startsWith('$') || !groupValue || typeof groupValue !== 'object') return [];
-        const children = leaves(groupValue);
-        const hasSubGroups = children.some(([, v]) => typeof v === 'object' && !('$value' in (v as object)));
+/**
+ * Build display sections from the Typography token group.
+ * Top-level groups with sub-groups (text, code) produce one section per sub-group.
+ * Flat top-level groups (heading, label) produce a single section.
+ * Section titles include the font name derived from the first entry's fontFamily.
+ */
+function buildSections(typoGroup: TokenGroup): { title: string; entries: TypeEntry[] }[] {
+    return entries(typoGroup).flatMap(([groupName, groupValue]) => {
+        if (isLeaf(groupValue)) return [];
+        const children = entries(groupValue);
+        const hasSubGroups = children.some(([, v]) => !isLeaf(v));
 
         // Groups like "text" and "code" have sub-groups (regular, medium) → one section per sub-group
         if (hasSubGroups) {
             return children
-                .filter(([, v]) => typeof v === 'object')
+                .filter((e): e is [string, TokenGroup] => !isLeaf(e[1]))
                 .flatMap(([subName, subValue]) => {
-                    const entries = collectEntries(subValue as Record<string, unknown>, [groupName, subName]);
-                    return entries.length ? [{ title: `${font(entries)} — ${capitalize(groupName)} · ${capitalize(subName)}`, entries }] : [];
+                    const sectionEntries = collectEntries(subValue, [groupName, subName]);
+                    return sectionEntries.length
+                        ? [{ title: `${font(sectionEntries)} — ${capitalize(groupName)} · ${capitalize(subName)}`, entries: sectionEntries }]
+                        : [];
                 });
         }
 
         // Flat groups like "heading" and "label" → one section
-        const entries = collectEntries(groupValue as Record<string, unknown>, [groupName]);
-        return entries.length ? [{ title: `${font(entries)} — ${capitalize(groupName)}`, entries }] : [];
+        const sectionEntries = collectEntries(groupValue, [groupName]);
+        return sectionEntries.length ? [{ title: `${font(sectionEntries)} — ${capitalize(groupName)}`, entries: sectionEntries }] : [];
     });
 }
 
-const SECTIONS = buildSections((tokensJson as any)['Typography'] as Record<string, unknown>);
+const SECTIONS = buildSections(tokens.Typography);
 
 const SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog';
 const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
@@ -94,10 +99,10 @@ const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
 export const TypeScale: Story = {
     render: () => (
         <div className="p-8">
-            {SECTIONS.map(({ title, entries }) => (
+            {SECTIONS.map(({ title, entries: sectionEntries }) => (
                 <div key={title} className="mb-12">
                     <h2 className="story-section-heading mb-3">{title}</h2>
-                    {entries.map(({ className, label, description, mono }) => (
+                    {sectionEntries.map(({ className, label, description, mono }) => (
                         <div key={className} className="grid grid-cols-[260px_1fr] gap-4 items-baseline py-3 border-b border-border-default">
                             <div className="text-[11px] font-mono pt-0.5">
                                 <div className="font-medium text-text-secondary">{label}</div>

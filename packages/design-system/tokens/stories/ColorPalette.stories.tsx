@@ -1,5 +1,7 @@
-import tokensJson from '../tokens.json';
+import { entries, isLeaf, tokens } from '../types';
+import { capitalize, toKebab } from './utils';
 
+import type { TokenGroup } from '../types';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -10,32 +12,19 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function toKebab(s: string) {
-    return s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-function capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function collectColorVars(obj: Record<string, unknown>, path: string[]): string[] {
-    return Object.entries(obj).flatMap(([k, v]) => {
-        if (k.startsWith('$') || !v || typeof v !== 'object') return [];
+/** Recursively collect CSS variable names for all color leaf tokens in a group. */
+function collectColorVars(group: TokenGroup, path: string[]): string[] {
+    return entries(group).flatMap(([k, node]) => {
         const next = [...path, toKebab(k)];
-        if ('$value' in v) return (v as any).$type === 'color' ? ['--' + next.join('-')] : [];
-        return collectColorVars(v as Record<string, unknown>, next);
+        if (isLeaf(node)) return node.$type === 'color' ? ['--' + next.join('-')] : [];
+        return collectColorVars(node, next);
     });
 }
 
 // ─── Semantic data ────────────────────────────────────────────────────────────
 
-const semanticLight = (tokensJson as any)['Semantic/Light'] as Record<string, unknown>;
-
-const SEMANTIC_GROUPS = Object.entries(semanticLight)
-    .filter(([k]) => !k.startsWith('$'))
-    .map(([k, v]) => ({ label: k, vars: collectColorVars(v as Record<string, unknown>, [toKebab(k)]) }))
+const SEMANTIC_GROUPS = entries(tokens['Semantic/Light'])
+    .map(([k, v]) => ({ label: k, vars: isLeaf(v) ? [] : collectColorVars(v, [toKebab(k)]) }))
     .filter((g) => g.vars.length > 0);
 
 // ─── Primitive data ───────────────────────────────────────────────────────────
@@ -47,22 +36,29 @@ interface Ramp {
 
 const COLOR_ORDER = ['mono', 'neutral', 'alpha', 'brand', 'info', 'success', 'warning', 'danger', 'accent'];
 
-const leaves = (obj: object) => Object.entries(obj).filter(([k]) => !k.startsWith('$'));
-
-function collectRamps(colorGroup: Record<string, unknown>): Ramp[] {
-    return Object.entries(colorGroup)
-        .filter(([k]) => !k.startsWith('$') && k !== 'transparent')
+/**
+ * Build display ramps from the Primitives color group.
+ * Three token structures are handled:
+ *   - Flat ramp (neutral, brand …): direct leaf children → one row, step = token key
+ *   - accent-style nested: each sub-group has exactly one step → one combined row, sub-names become step labels
+ *   - alpha-style nested: each sub-group has multiple steps → one row per sub-group
+ */
+function collectRamps(colorGroup: TokenGroup): Ramp[] {
+    return entries(colorGroup)
+        .filter(([k]) => k !== 'transparent')
         .sort(([a], [b]) => (COLOR_ORDER.indexOf(a) + 1 || 999) - (COLOR_ORDER.indexOf(b) + 1 || 999))
         .flatMap(([name, group]) => {
-            if (!group || typeof group !== 'object') return [];
-            const children = leaves(group);
+            if (isLeaf(group)) return [];
+            const children = entries(group);
 
             // Flat ramp (neutral, brand, …): children are all leaf tokens
-            if (children.every(([, v]) => '$value' in (v as object))) {
+            if (children.every(([, v]) => isLeaf(v))) {
                 return [{ label: capitalize(name), steps: children.map(([step]) => ({ step, cssVar: `--ds-color-${toKebab(name)}-${step}` })) }];
             }
 
-            const subRamps = children.map(([subName, subGroup]) => ({ subName, steps: leaves(subGroup as object) }));
+            const subRamps = children
+                .filter((e): e is [string, TokenGroup] => !isLeaf(e[1]))
+                .map(([subName, subGroup]) => ({ subName, steps: entries(subGroup) }));
 
             // accent-style: each sub-group has exactly one step → merge into one ramp, sub-names become step labels
             if (subRamps.every(({ steps }) => steps.length === 1)) {
@@ -85,7 +81,7 @@ function collectRamps(colorGroup: Record<string, unknown>): Ramp[] {
         });
 }
 
-const PRIMITIVE_RAMPS = collectRamps((tokensJson as any)['Primitives']['color']);
+const PRIMITIVE_RAMPS = collectRamps(tokens.Primitives.color);
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
