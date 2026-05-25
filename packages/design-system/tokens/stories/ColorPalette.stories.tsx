@@ -1,4 +1,4 @@
-import tokensJson from './tokens.json';
+import tokensJson from '../tokens.json';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
