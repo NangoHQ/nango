@@ -1,0 +1,82 @@
+---
+title: 'NinjaOne SaaS Backup'
+sidebarTitle: 'NinjaOne SaaS Backup'
+description: 'Integrate your application with the NinjaOne SaaS Backup API'
+---
+
+## 🚀 Quickstart
+
+Connect to NinjaOne SaaS Backup with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _NinjaOne SaaS Backup_.
+    </Step>
+    <Step title="Authorize NinjaOne SaaS Backup">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API host, Reseller Token, and Authentication Token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the NinjaOne SaaS Backup API">
+    Let's make your first request to the NinjaOne SaaS Backup API (list accounts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/accounts" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/accounts',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 NinjaOne SaaS Backup Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my NinjaOne SaaS Backup account?](/api-integrations/ninjaone-saas-backup/connect)
+Connect your NinjaOne SaaS Backup account using the Connect UI
+
+Official docs:
+- [NinjaOne SaaS Backup API Settings](https://help.dropsuite.com/hc/en-us/articles/20422080552855-15-API-Settings)
+- [NinjaOne SaaS Backup Partner Portal](https://help.dropsuite.com/hc/en-us/categories/18612115282327-Partner-Portal)
+
+## 🧩 Pre-built syncs & actions for NinjaOne SaaS Backup
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ninjaone-saas-backup/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

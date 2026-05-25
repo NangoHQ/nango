@@ -19,6 +19,7 @@ WORKDIR /app/tmp
 # To leverage Docker's cache when no dependency has changed
 COPY packages/data-ingestion/package.json ./packages/data-ingestion/package.json
 COPY packages/database/package.json ./packages/database/package.json
+COPY packages/design-system/package.json ./packages/design-system/package.json
 COPY packages/frontend/package.json ./packages/frontend/package.json
 COPY packages/jobs/package.json ./packages/jobs/package.json
 COPY packages/kvstore/package.json ./packages/kvstore/package.json
@@ -58,7 +59,7 @@ COPY . /app/tmp
 
 # Build the backend separately because it can be cached --in the same build for production and staging-- when we change the env vars
 RUN true \
-  && npm run ts-build:docker
+  && npm run ts-build:docker -- --noCheck
 
 # /!\ Do not set NODE_ENV=production before building, it will break some modules
 # ENV NODE_ENV=production

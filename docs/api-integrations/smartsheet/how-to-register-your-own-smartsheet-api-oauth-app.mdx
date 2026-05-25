@@ -1,0 +1,27 @@
+---
+title: 'How to register your own Smartsheet OAuth app'
+sidebarTitle: 'Smartsheet OAuth setup'
+description: 'Create an OAuth app in Smartsheet and connect it to Nango'
+---
+
+This guide shows you how to create an OAuth app in Smartsheet and obtain your OAuth credentials (client ID and secret). These are required so your users can grant your app access to their Smartsheet account via Nango.
+
+## Create an OAuth app in Smartsheet
+
+<Steps>
+  <Step title="Create an account and register for developer tools">
+    If you don't have an account, sign up at [Smartsheet](https://app.smartsheet.com/) and [register for developer tools](https://developers.smartsheet.com/register).
+  </Step>
+  <Step title="Create a new app">
+    1. Log in to your [Smartsheet account](https://app.smartsheet.com/), click your account icon, then select **Developer Tools**.
+    2. Click **Create New App** and complete all required fields. For **App Redirect URL**, enter `https://api.nango.dev/oauth/callback`.
+    3. Click **Save**. Copy the **App client id** and **App secret** — you'll need them when configuring your integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details on Smartsheet's OAuth implementation, see [Smartsheet's OAuth documentation](https://developers.smartsheet.com/api/smartsheet/guides/advanced-topics/oauth).
+
+---

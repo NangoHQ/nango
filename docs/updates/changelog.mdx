@@ -4,6 +4,33 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="May 18, 2026">
+  ## Sync and action runtime migration to serverless execution
+
+  We are migrating all sync executions to our serverless AWS Lambda runtime, and introducing a **10-minute execution limit** per run.
+  This gives us better autoscaling, more predictable execution isolation, and a simpler runtime model across Nango Cloud environments.
+  Lambda has a hard timeout, so long-running syncs must checkpoint work and continue across runs instead of relying on a single long execution.
+
+  **Timeline:**
+
+  - **Now**: All action and webhook function executions have already been migrated. We are now migrating all sync executions for accounts without long running syncs.
+  - **Next 3-6 months**: We will progressively migrate accounts with long-running syncs by assisting with migration to checkpoints. We will announce milestones in this changelog and coordinate directly with impacted accounts.
+
+  **Am I impacted?**
+
+  - All accounts using syncs without checkpoints are impacted and should migrate to checkpoint-based progress. Short running syncs will still continue working without issue after migrating to lambdas, but it is still recommended to implement checkpoints.
+  - We will be reaching out directly to affected accounts to assist in the migration.
+
+  **What to do:**
+
+  - Migrate all syncs to use checkpoints using the [migration guide and associated skill](/guides/platform/migrations/migrate-to-checkpoints#migrate-with-skill)
+  
+  If you do not want to migrate yet or cannot migrate within the timeline, please reach out and we will find a workable path with you.
+
+</Update>
+
+---
+
 <Update label="May 5, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="50 new APIs in April">
@@ -607,7 +634,7 @@ description: "Important developer & product updates, including deprecations & br
       - [NinjaOne RMM](/integrations/all/ninjaone-rmm)
       - [Passportal](/integrations/all/passportal)
       - [Rocketlane](/integrations/all/rocketlane)
-      - [Prospeo](/integrations/all/prospeo)
+      - [Prospeo](/api-integrations/prospeo)
       - [PracticeFusion](/api-integrations/practicefusion)
       - [Semrush (v3)](/integrations/all/semrush)
       - [Shipstation (v2)](/integrations/all/shipstation-v2)
@@ -726,7 +753,7 @@ description: "Important developer & product updates, including deprecations & br
       - [Aimfox](/integrations/all/aimfox)
       - [Aimfox (OAuth)](/integrations/all/aimfox-oauth)
       - [Atlassian Government Cloud](/integrations/all/atlassian-government-cloud)
-      - [Folk](/integrations/all/folk)
+      - [Folk](/api-integrations/folk)
       - [Ironclad](/integrations/all/ironclad)
       - [Loop Returns](/integrations/all/loop-returns)
       - [MCP Server OAuth2 (Generic)](/integrations/all/mcp-generic)
@@ -1383,7 +1410,7 @@ description: "Important developer & product updates, including deprecations & br
   - [**Action trigger endpoint**](/reference/backend/http-api/action/trigger): Run actions reliably via the API
   - [**Integrated authorization**](/guides/auth/auth-guide): Use Nango’s pre-built UI to securely prompt users for access
 
-  This makes it easier to build AI agents that can reliably interact with 700+ APIs.
+  This makes it easier to build AI agents that can reliably interact with 800+ APIs.
 
   Get inspired by [AI companies using Nango](https://www.nango.dev/blog/nango-for-ai).
 
@@ -1394,7 +1421,7 @@ description: "Important developer & product updates, including deprecations & br
   <Frame>
     ![AI agent demo video illustration](/images/changelog/ai-agent-demo-video.png)
   </Frame>
-  We published a demo showing how AI agents can use Nango to trigger actions across 700+ APIs and integrations.
+  We published a demo showing how AI agents can use Nango to trigger actions across 800+ APIs and integrations.
 
   See how AI agents benefit from:
 

@@ -58,7 +58,7 @@ export const AutoIdlingBanner: React.FC = () => {
                             </AlertButton>
                         )}
                     </PermissionGate>
-                    <AlertButtonLink variant={'warning'} to={`/${env}/team/billing#plans`}>
+                    <AlertButtonLink variant={'warning'} to={`/team/billing#plans`}>
                         Upgrade
                     </AlertButtonLink>
                 </AlertActions>
@@ -80,7 +80,7 @@ export const AutoIdlingBanner: React.FC = () => {
                         </AlertButton>
                     )}
                 </PermissionGate>
-                <AlertButtonLink variant={'info'} to={`/${env}/team/billing#plans`}>
+                <AlertButtonLink variant={'info'} to={`/team/billing#plans`}>
                     Upgrade
                 </AlertButtonLink>
             </AlertActions>

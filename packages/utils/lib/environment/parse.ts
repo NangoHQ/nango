@@ -73,6 +73,7 @@ export const ENVS = z.object({
     CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS: z.coerce.number().optional().default(2),
     CRON_DELETE_OLD_INVITATIONS_MAX_DAYS: z.coerce.number().optional().default(2),
     CRON_DELETE_OLD_SYNCS_MAX_DAYS: z.coerce.number().optional().default(1),
+    CRON_DELETE_OLD_SYNCS_LIMIT: z.coerce.number().optional().default(25),
     CRON_DELETE_OLD_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS: z.coerce.number().optional().default(31),
     CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS: z.coerce.number().optional().default(31),
@@ -80,6 +81,7 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
+    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -96,12 +98,15 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_BATCH_CLEANUP_INTERVAL_MS: z.coerce.number().optional().default(30_000), // set to 0 to disable
-    PERSIST_BATCH_CLEANUP_LIMIT: z.coerce.number().optional().default(1_000),
-    PERSIST_BATCH_CLEANUP_MAX_AGE_MS: z.coerce
+    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
+        .number()
+        .positive()
+        .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
+        .default(1 * 3600 * 1000),
+    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
         .number()
         .optional()
-        .default(72 * 3600 * 1000), // 72 hours
+        .default(48 * 3600 * 1000), // 48 hours
     NANGO_PERSIST_PORT: z.coerce.number().optional().default(3007),
 
     // Orchestrator
@@ -277,6 +282,9 @@ export const ENVS = z.object({
     BILLING_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
     BILLING_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(100_000),
     BILLING_INGEST_MAX_RETRY: z.coerce.number().optional().default(3),
+    BILLING_EVENTS_S3_BUCKET: z.string().optional(),
+    BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
+    BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -380,6 +388,12 @@ export const ENVS = z.object({
     RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),
     RECORDS_DATABASE_STATEMENT_TIMEOUT_MS: z.coerce.number().optional().default(60000),
     RECORDS_BATCH_SIZE: z.coerce.number().optional().default(1000),
+    // Per-request byte budget for getRecords. Compared against the sum of
+    // pg_column_size(records_data.data) (compressed on-disk size, smaller
+    // than wire bytes by 1.5–3×). 0 disables the budget and returns all the requested records.
+    RECORDS_MAX_RESPONSE_SIZE_BYTES: z.coerce.number().optional().default(0),
+    // When true, the budget only emits a metric instead of truncating — used to size the limit before enforcing.
+    RECORDS_MAX_RESPONSE_SIZE_DRY_RUN: z.stringbool().optional().default(true),
 
     // Redis (system boundary)
     NANGO_REDIS_URL: z.url().optional(),

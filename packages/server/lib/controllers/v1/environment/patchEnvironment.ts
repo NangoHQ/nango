@@ -91,7 +91,12 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
 
     if (data.otlp_settings && flagHasPlan) {
         if (!plan!.has_otel) {
-            res.status(403).send({ error: { code: 'forbidden', message: 'OpenTelemetry export is not enabled for this account' } });
+            res.status(403).send({
+                error: {
+                    code: 'forbidden',
+                    message: 'OpenTelemetry export is not available for your account. Check if your Nango plan includes access to this feature.'
+                }
+            });
             return;
         }
     }

@@ -2,10 +2,11 @@ import dayjs from 'dayjs';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_BATCH_TABLE, RECORDS_DATA_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
 import { Cursor } from '../cursor.js';
 import { db } from '../db/client.js';
 import { migrate } from '../db/migrate.js';
+import { envs } from '../env.js';
 import { formatRecords } from '../helpers/format.js';
 import * as Records from '../models/records.js';
 import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
@@ -21,7 +22,7 @@ describe('Records service', () => {
     afterAll(async () => {
         await db(RECORDS_TABLE).truncate();
         await db(RECORD_COUNTS_TABLE).truncate();
-        await db(RECORDS_BATCH_TABLE).truncate();
+        await db(RECORDS_SEEN_TABLE).truncate();
     });
 
     describe('Should fetch cursor', () => {
@@ -822,9 +823,146 @@ describe('Records service', () => {
 
             expect(allRecordsLength).toBe(numOfRecords);
         });
+
+        describe('size budget (RECORDS_MAX_RESPONSE_SIZE_BYTES)', () => {
+            const originalBudget = envs.RECORDS_MAX_RESPONSE_SIZE_BYTES;
+            const originalDryRun = envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN;
+            beforeEach(() => {
+                // Disable dry-run so truncation actually fires; the dry-run test below re-enables it.
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = false;
+            });
+            afterAll(() => {
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = originalBudget;
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = originalDryRun;
+            });
+
+            it('Should truncate page and emit next_cursor when the byte budget is exceeded', async () => {
+                const numOfRecords = 50;
+                const bigField = 'x'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+
+                expect(records.length).toBeGreaterThanOrEqual(1);
+                expect(records.length).toBeLessThan(numOfRecords);
+                expect(next_cursor).not.toBeNull();
+            });
+
+            it('Should paginate through every record when budget is enabled (no records lost)', async () => {
+                const numOfRecords = 30;
+                const bigField = 'y'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+
+                const seen = new Set<string>();
+                let cursor: string | undefined | null = null;
+                let pages = 0;
+                do {
+                    const response = await Records.getRecords({
+                        connectionId,
+                        model,
+                        limit: numOfRecords,
+                        ...(cursor && { cursor })
+                    });
+                    expect(response.isOk()).toBe(true);
+                    const { records, next_cursor } = response.unwrap();
+                    expect(records.length).toBeGreaterThan(0);
+                    for (const r of records) {
+                        expect(seen.has(r['id'])).toBe(false);
+                        seen.add(r['id']);
+                    }
+                    cursor = next_cursor;
+                    pages++;
+                    if (pages > 100) throw new Error('runaway pagination');
+                } while (cursor);
+
+                expect(seen.size).toBe(numOfRecords);
+                expect(pages).toBeGreaterThan(1);
+            });
+
+            it('Should not truncate when budget is 0 (disabled)', async () => {
+                const numOfRecords = 20;
+                const bigField = 'z'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 0;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                expect(records.length).toBe(numOfRecords);
+                expect(next_cursor).toBeNull();
+            });
+
+            it('Should keep at least one record even when it exceeds the budget', async () => {
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const huge = 'h'.repeat(5_000);
+                await upsertRecords({
+                    records: [
+                        { id: '1', payload: huge },
+                        { id: '2', payload: huge }
+                    ],
+                    connectionId,
+                    environmentId,
+                    model,
+                    syncId
+                });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 100;
+
+                const response = await Records.getRecords({ connectionId, model, limit: 10 });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                expect(records.length).toBe(1);
+                expect(next_cursor).not.toBeNull();
+            });
+
+            it('Should NOT truncate in dry-run mode even when budget is exceeded', async () => {
+                const numOfRecords = 50;
+                const bigField = 'd'.repeat(2_000);
+                const connectionId = rnd.number();
+                const environmentId = rnd.number();
+                const model = rnd.string();
+                const syncId = uuid.v4();
+                const toInsert = Array.from({ length: numOfRecords }, (_, i) => ({ id: String(i), payload: bigField }));
+                await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
+
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
+                (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = true;
+
+                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records, next_cursor } = response.unwrap();
+                expect(records.length).toBe(numOfRecords);
+                expect(next_cursor).toBeNull();
+            });
+        });
     }, 60_000);
 
-    describe('markPreviousGenerationRecordsAsDeleted', () => {
+    describe('deleteOutdatedRecords', () => {
         it('should track size correctly when marking outdated records as deleted', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
@@ -900,6 +1038,40 @@ describe('Records service', () => {
                 .where({ connection_id: connectionId, model, external_id: '5' })
                 .first();
             expect(notDeleted?.deleted_at).toBeNull();
+        });
+
+        it('should not mark records from recent generation as deleted', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const generation = 1;
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'John Doe' },
+                    { id: '2', name: 'Jane Doe' },
+                    { id: '3', name: 'Max Doe' },
+                    { id: '4', name: 'Mike Doe' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId,
+                syncJobId: generation
+            });
+
+            const deletedIds = (
+                await Records.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation
+                })
+            ).unwrap();
+
+            // No records should be marked as deleted since they are from the same generation
+            expect(deletedIds).toHaveLength(0);
         });
 
         it('should not mark already deleted records', async () => {
@@ -1017,7 +1189,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 15,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1025,7 +1198,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 25,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res3.environmentId,
@@ -1033,7 +1207,8 @@ describe('Records service', () => {
                         model: res3.model,
                         count: 35,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1062,7 +1237,8 @@ describe('Records service', () => {
                         model: res1.model,
                         count: 10,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     },
                     {
                         environment_id: res2.environmentId,
@@ -1070,7 +1246,8 @@ describe('Records service', () => {
                         model: res2.model,
                         count: 30,
                         size_bytes: expect.any(String),
-                        updated_at: expect.any(Date)
+                        updated_at: expect.any(Date),
+                        autodelete_checked_at: null
                     }
                 ])
             );
@@ -1707,12 +1884,12 @@ describe('Records service', () => {
             expect(candidate).toBeNull();
         });
 
-        it('should randomly select candidates', async () => {
+        it('should rotate across candidates', async () => {
             const oneDay = 24 * 60 * 60 * 1000;
             const syncId = uuid.v4();
+            const total = 5;
 
-            // Insert multiple stale record counts
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < total; i++) {
                 const connectionId = rnd.number();
                 const environmentId = rnd.number();
                 const model = rnd.string();
@@ -1725,14 +1902,15 @@ describe('Records service', () => {
                     .update({ updated_at: new Date(Date.now() - 2 * oneDay) });
             }
 
+            // Each call should advance to a different candidate; after `total` calls all must have been seen
             const candidates = new Set<string>();
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < total; i++) {
                 const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
                 if (candidate) {
                     candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
                 }
             }
-            expect(candidates.size).toBeGreaterThan(1);
+            expect(candidates.size).toBe(total);
         });
     });
     describe('payload migration', () => {
@@ -1896,6 +2074,99 @@ describe('Records service', () => {
             // hard delete removes the count entry entirely when count reaches 0
             const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBeUndefined();
+        });
+    });
+
+    describe('size_bytes', () => {
+        it('should store size_bytes on records table after upsert and update', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            await upsertRecords({
+                records: [
+                    { id: '1', name: 'Alice' },
+                    { id: '2', name: 'Bob' }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowsAfterUpsert = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).select<{ size_bytes: number | null }[]>('size_bytes');
+            expect(rowsAfterUpsert).toHaveLength(2);
+            for (const row of rowsAfterUpsert) {
+                expect(row.size_bytes).not.toBeNull();
+                expect(row.size_bytes).toBeGreaterThan(0);
+            }
+
+            const rowBeforeUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            const sizeBeforeUpdate = rowBeforeUpdate.size_bytes!;
+
+            await updateRecords({
+                records: [
+                    {
+                        id: '1',
+                        name: `This is a much longer name`
+                    }
+                ],
+                connectionId,
+                environmentId,
+                model,
+                syncId
+            });
+
+            const rowAfterUpdate = await db(RECORDS_TABLE)
+                .where({ connection_id: connectionId, model, external_id: '1' })
+                .first<{ size_bytes: number | null }>();
+            expect(rowAfterUpdate?.size_bytes).not.toBeNull();
+            expect(rowAfterUpdate?.size_bytes).toBeGreaterThan(sizeBeforeUpdate);
+        });
+    });
+
+    describe('ensureSeenPartition', () => {
+        it('should create a partition for the given date', async () => {
+            const date = new Date('2025-01-15T00:00:00Z');
+            const res = await Records.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250115'
+            ]);
+            expect(rows[0]?.exists).toBe(true);
+        });
+
+        it('should be idempotent', async () => {
+            const date = new Date('2025-01-16T00:00:00Z');
+            const res1 = await Records.ensureSeenPartition({ date });
+            const res2 = await Records.ensureSeenPartition({ date });
+            expect(res1.isOk()).toBe(true);
+            expect(res2.isOk()).toBe(true);
+        });
+    });
+
+    describe('dropSeenPartition', () => {
+        it('should drop an existing partition', async () => {
+            const date = new Date('2025-02-10T00:00:00Z');
+            await Records.ensureSeenPartition({ date });
+
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
+                'records_seen_20250210'
+            ]);
+            expect(rows[0]?.exists).toBe(false);
+        });
+
+        it('should not error when partition does not exist', async () => {
+            const date = new Date('2025-02-11T00:00:00Z');
+            const res = await Records.dropSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
         });
     });
 });

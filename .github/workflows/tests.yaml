@@ -50,9 +50,35 @@ jobs:
                   fi
 
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
-    tests:
+    tests-unit:
         needs: should-run
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        steps:
+            - name: Checkout
+              if: needs.should-run.outputs.should_skip != 'true'
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: '0'
+
+            - name: Use Node.js
+              if: needs.should-run.outputs.should_skip != 'true'
+              uses: actions/setup-node@v4
+              with:
+                  cache: 'npm'
+                  node-version-file: '.nvmrc'
+
+            - run: npm ci
+              if: needs.should-run.outputs.should_skip != 'true'
+
+            - run: npm run ts-build -- --noCheck
+              if: needs.should-run.outputs.should_skip != 'true'
+
+            - run: npm run test:unit -- --exclude packages/cli/
+              if: needs.should-run.outputs.should_skip != 'true'
+
+    tests-integration:
+        needs: should-run
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         steps:
             - name: Checkout
               if: needs.should-run.outputs.should_skip != 'true'
@@ -71,9 +97,6 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run ts-build
-              if: needs.should-run.outputs.should_skip != 'true'
-
-            - run: npm run test:unit -- --exclude packages/cli/
               if: needs.should-run.outputs.should_skip != 'true'
 
             - run: npm run test:integration

@@ -21,7 +21,7 @@ Connect to the Slack MCP server with Nango and call MCP tools in minutes. Slack 
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/v2/mcp" \
+            curl "https://api.nango.dev/proxy/mcp" \
               -X POST \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
@@ -93,13 +93,5 @@ Connect to the Slack MCP server with Nango and call MCP tools in minutes. Slack 
   Create or reuse a Slack app and configure it for MCP (user tokens, redirect URL, scopes).
 
 Official docs: [Slack MCP server](https://slack.com/help/articles/17388188499099-Use-the-Slack-MCP-server) · [Slack API OAuth](https://api.slack.com/authentication/oauth-v2)
-
-## 🧩 Pre-built syncs & actions for Slack (MCP)
-
-Enable them in your dashboard. Extend and customize to fit your needs.
-
-import PreBuiltUseCases from "/snippets/generated/slack-mcp/PreBuiltUseCases.mdx"
-
-<PreBuiltUseCases />
 
 ---

@@ -54,10 +54,11 @@ jobs:
             - name: Set OS Matrix
               id: set-os-matrix
               run: |
-                  echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+                  echo "os-matrix=[\"blacksmith-4vcpu-ubuntu-2404\"]" >> $GITHUB_OUTPUT
                   # TODO: fix tests on windows and re-enable
                   # echo "os-matrix=[\"ubuntu-latest\",\"windows-latest\"]" >> $GITHUB_OUTPUT
     tests:
+        name: tests (${{ matrix.node-version }}, ubuntu-2404)
         needs:
             - should-run
             - compute-matrix
@@ -88,7 +89,7 @@ jobs:
 
             - name: Build Typescript
               if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build
+              run: npm run ts-build -- --noCheck
 
             - run: npm run test:cli
               if: needs.should-run.outputs.should_skip != 'true'

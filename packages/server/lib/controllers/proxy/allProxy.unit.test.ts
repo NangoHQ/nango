@@ -53,6 +53,7 @@ describe('handleResponse', () => {
         log: vi.fn(),
         accountId: 1
     } as unknown as LogContext;
+
     const createMockResponse = () => {
         let sentData: Buffer | undefined;
         const headers: Record<string, string> = {};
@@ -82,7 +83,11 @@ describe('handleResponse', () => {
                 writeHead: vi.fn(),
                 end: vi.fn(() => {
                     if (sendResolve) sendResolve();
-                })
+                }),
+                on: vi.fn().mockReturnThis(),
+                once: vi.fn().mockReturnThis(),
+                emit: vi.fn().mockReturnThis(),
+                write: vi.fn()
             } as unknown as Response,
             getSentData: () => sentData,
             getHeaders: () => headers,
@@ -91,23 +96,30 @@ describe('handleResponse', () => {
         };
     };
 
-    const createMockResponseStream = (data: string, contentType = 'application/json', status = 200): AxiosResponse => {
+    const createMockResponseStream = (
+        data: string,
+        {
+            contentType = 'application/json',
+            status = 200,
+            headers = {},
+            request = {}
+        }: { contentType?: string; status?: number; headers?: Record<string, string>; request?: object } = {}
+    ): AxiosResponse => {
         const stream = new Readable();
         stream.push(data);
         stream.push(null);
 
         return {
             status,
-            headers: {
-                'content-type': contentType
-            },
+            headers: { 'content-type': contentType, ...headers },
+            request,
             data: stream
         } as unknown as AxiosResponse;
     };
 
     it('should handle 204 No Content response', async () => {
         const mockRes = createMockResponse();
-        const mockResponseStream = createMockResponseStream('', 'application/json', 204);
+        const mockResponseStream = createMockResponseStream('', { status: 204 });
 
         handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
         await mockRes.waitForSend();
@@ -147,7 +159,7 @@ describe('handleResponse', () => {
     it('should pass-thru non-json payload', async () => {
         const nonJsonPayload = `<foobar>`;
         const mockRes = createMockResponse();
-        const mockResponseStream = createMockResponseStream(nonJsonPayload, 'text/xml');
+        const mockResponseStream = createMockResponseStream(nonJsonPayload, { contentType: 'text/xml' });
 
         handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
         await mockRes.waitForSend();
@@ -155,6 +167,70 @@ describe('handleResponse', () => {
         const sentData = mockRes.getSentData();
         expect(sentData).toBeDefined();
         expect(sentData!.toString()).toBe(nonJsonPayload);
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should forward allowlisted headers (mcp-session-id, x-request-id) and drop others', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', {
+            contentType: 'application/json',
+            status: 200,
+            headers: {
+                'mcp-session-id': 'session-abc123',
+                'x-request-id': 'req-xyz',
+                'x-ratelimit-limit': '100',
+                'x-ratelimit-remaining': '42'
+            }
+        });
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await mockRes.waitForSend();
+
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-limit', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-remaining', expect.anything());
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should strip content-length when axios decompressed a gzip-encoded response', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('decompressed content', {
+            contentType: 'application/octet-stream',
+            headers: {
+                'content-length': '500',
+                'content-disposition': 'attachment; filename="file.bin"'
+                // content-encoding absent: axios stripped it after decompression
+            },
+            request: {
+                res: {
+                    rawHeaders: ['Content-Encoding', 'gzip', 'Content-Length', '500', 'Content-Disposition', 'attachment; filename="file.bin"']
+                }
+            }
+        });
+
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+
+        const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
+        expect(headersArg).not.toHaveProperty('content-length');
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should preserve content-length for uncompressed attachment responses', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('raw binary content', {
+            contentType: 'application/pdf',
+            headers: {
+                'content-length': '18',
+                'content-disposition': 'attachment; filename="report.pdf"'
+            }
+        });
+
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+
+        const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
+        expect(headersArg).toHaveProperty('content-length', '18');
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 });
