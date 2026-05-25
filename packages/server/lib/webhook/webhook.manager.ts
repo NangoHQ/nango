@@ -130,14 +130,14 @@ export async function routeWebhook({
             connectionIds,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
-            logContextGetter
+            logContextGetter,
+            onBytes: (bytes) => {
+                metrics.increment(metrics.Types.WEBHOOK_REQUEST_SIZE_IN_BYTES, bytes.sent, { callsite: 'forward' });
+                metrics.increment(metrics.Types.WEBHOOK_RESPONSE_SIZE_IN_BYTES, bytes.received, { callsite: 'forward' });
+            }
         })
             .then((res) => {
                 if (res.isOk()) {
-                    const { bytes } = res.value;
-                    metrics.increment(metrics.Types.WEBHOOK_REQUEST_SIZE_IN_BYTES, bytes.sent, { callsite: 'forward' });
-                    metrics.increment(metrics.Types.WEBHOOK_RESPONSE_SIZE_IN_BYTES, bytes.received, { callsite: 'forward' });
-
                     for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unkown']) {
                         pubsub.publisher.publish({
                             subject: 'usage',

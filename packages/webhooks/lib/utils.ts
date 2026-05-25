@@ -241,7 +241,7 @@ export const deliver = async ({
                             try {
                                 onBytes?.(attemptBytes);
                             } catch (err) {
-                                void logCtx?.error('Webhook byte metering callback failed', { error: err, url });
+                                console.error('onBytes callback failed', err);
                             }
                         }
                     });

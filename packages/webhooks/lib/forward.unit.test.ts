@@ -191,8 +191,9 @@ describe('Webhooks: forward notification tests', () => {
         expect(spy).toHaveBeenCalledTimes(4);
     });
 
-    it('Should return non-zero bytes.sent on successful forward', async () => {
+    it('Should report non-zero bytes.sent via onBytes on successful forward', async () => {
         const payload = { some: 'data' };
+        let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds: [],
             account,
@@ -202,17 +203,19 @@ describe('Webhooks: forward notification tests', () => {
             logContextGetter,
             integration,
             payload,
-            webhookOriginalHeaders: {}
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
         });
         expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            // payload sent to both primary and secondary URLs
-            const minBytes = Buffer.byteLength(JSON.stringify(payload)) * 2;
-            expect(result.value.bytes.sent).toBeGreaterThanOrEqual(minBytes);
-        }
+        // payload sent to both primary and secondary URLs
+        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * 2;
+        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
     });
 
-    it('Should return zero bytes when forwarding is skipped', async () => {
+    it('Should report zero bytes via onBytes when forwarding is skipped', async () => {
+        let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds: [],
             account,
@@ -222,17 +225,19 @@ describe('Webhooks: forward notification tests', () => {
             logContextGetter,
             integration,
             payload: { some: 'data' },
-            webhookOriginalHeaders: {}
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
         });
         expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.bytes).toEqual({ sent: 0, received: 0 });
-        }
+        expect(reportedBytes).toEqual({ sent: 0, received: 0 });
     });
 
-    it('Should sum bytes across connections in fan-out', async () => {
+    it('Should sum bytes across connections in fan-out via onBytes', async () => {
         const connectionIds = ['conn1', 'conn2'];
         const payload = { x: 1 };
+        let reportedBytes: { sent: number; received: number } | undefined;
         const result = await forwardWebhook({
             connectionIds,
             account,
@@ -242,13 +247,16 @@ describe('Webhooks: forward notification tests', () => {
             logContextGetter,
             integration,
             payload,
-            webhookOriginalHeaders: {}
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value.forwarded).toBe(2);
-            const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
-            expect(result.value.bytes.sent).toBeGreaterThanOrEqual(minBytes);
         }
+        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
+        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
     });
 });
