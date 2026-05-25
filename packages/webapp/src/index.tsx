@@ -1,3 +1,4 @@
+// temp
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
 import posthog from 'posthog-js';
