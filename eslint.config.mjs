@@ -270,12 +270,7 @@ export default tseslint.config(
             '@typescript-eslint': tseslint.plugin
         },
 
-        extends: [
-            tseslint.configs.recommended,
-            tseslint.configs.strict,
-            tseslint.configs.stylistic,
-            tseslint.configs.disableTypeChecked
-        ],
+        extends: [tseslint.configs.recommended, tseslint.configs.strict, tseslint.configs.stylistic, tseslint.configs.disableTypeChecked],
 
         languageOptions: {
             parser: tsParser,
