@@ -2,6 +2,7 @@ import * as LucideIcons from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { Icon } from './Icon';
+import { Input } from '../Input/Input';
 
 import type { Meta, StoryObj } from '@storybook/react';
 import type { LucideIcon } from 'lucide-react';
@@ -79,23 +80,12 @@ function IconGrid() {
                     background: 'var(--surface-canvas)'
                 }}
             >
-                <input
+                <Input
                     type="search"
                     placeholder={`Search ${ALL_ICONS.length} icons…`}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    style={{
-                        width: '100%',
-                        maxWidth: '20rem',
-                        height: '2.125rem',
-                        padding: '0 var(--ds-space-2-5)',
-                        border: 'var(--ds-border-width-1) solid var(--input-border-default)',
-                        borderRadius: 'var(--ds-radius-xs)',
-                        background: 'var(--input-bg-default)',
-                        color: 'var(--input-text-default)',
-                        fontSize: 'var(--ds-typography-font-size-sm)',
-                        outline: 'none'
-                    }}
+                    style={{ maxWidth: '20rem' }}
                 />
                 <p
                     style={{
