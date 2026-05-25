@@ -363,4 +363,4 @@ const App = () => {
     );
 };
 
-export default App; // test: validate fork PR skips preview deploy
+export default App;

@@ -17,7 +17,11 @@ jobs:
     preview:
         runs-on: ubuntu-latest
         environment: development
-        # if guard removed to test OIDC fails for fork PRs
+        # Security note: forked PRs using `pull_request` do not receive secrets or OIDC
+        # tokens, so untrusted fork code cannot assume the deploy role. The OIDC role is
+        # also scoped solely to the dev preview S3 bucket — a compromise cannot reach
+        # production resources. Fork PRs are skipped entirely to avoid wasted CI builds.
+        if: github.event.pull_request.head.repo.full_name == github.repository
         permissions:
             id-token: write
             contents: read
