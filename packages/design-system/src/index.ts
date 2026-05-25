@@ -5,4 +5,5 @@ export { Input, type InputProps, PasswordInput, type PasswordInputProps } from '
 export { Badge, type BadgeProps, badgeVariants } from './components/Badge/Badge';
 export { FilterBadge, type FilterBadgeProps, filterBadgeVariants } from './components/Badge/FilterBadge';
 export { Spinner, type SpinnerProps } from './components/Spinner/Spinner';
+export { Tooltip, TooltipContent, TooltipKbd, type TooltipKbdProps, TooltipProvider, TooltipTrigger } from './components/Tooltip/Tooltip';
 export { cn } from './lib/cn';
