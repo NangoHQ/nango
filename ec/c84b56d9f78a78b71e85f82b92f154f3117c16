@@ -1,0 +1,26 @@
+packages/database/lib/migrations/20260522120000_rename_dryrun_api_key_scope.cjs
+  s_b39de48b60dddc::t_d7466bcb03d8c1 3-4,9
+  s_b39de48b60dddc::t_ac6097dc21bc1d 1-2,5-8,10-12
+packages/database/lib/migration-helpers/renameDryrunApiKeyScope.cjs
+  s_b39de48b60dddc::t_d7466bcb03d8c1 1-45
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_2795050867f535 251
+packages/database/lib/renameDryrunApiKeyScope.integration.test.ts
+  s_b39de48b60dddc::t_d7466bcb03d8c1 1-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "ecc84b56d9f78a78b71e85f82b92f154f3117c16",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
