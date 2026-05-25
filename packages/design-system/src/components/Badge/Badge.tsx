@@ -8,8 +8,8 @@ import type { ReactNode } from 'react';
 
 export const badgeVariants = cva(
     [
-        'inline-flex items-center gap-[var(--ds-space-1)] border',
-        'text-[var(--ds-typography-font-size-xs)] font-[var(--ds-typography-font-weight-medium)] leading-none',
+        'inline-flex items-center gap-[var(--ds-space-1)] border-[length:var(--ds-border-width-hairline)]',
+        'text-[length:var(--ds-typography-font-size-xs)] [font-weight:var(--ds-typography-font-weight-medium)] leading-none',
         'px-[var(--ds-space-1-5)] h-[1.125rem]'
     ],
     {
