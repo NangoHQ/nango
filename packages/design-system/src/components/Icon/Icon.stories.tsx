@@ -14,11 +14,12 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Canonical icon entries — exclude *Icon aliases and non-component exports
-const ALL_ICONS = Object.entries(LucideIcons).filter(([name, value]) => /^[A-Z]/.test(name) && !name.endsWith('Icon') && typeof value === 'function') as [
-    string,
-    LucideIcon
-][];
+// Canonical icon entries — exclude *Icon aliases and non-component exports.
+// Icons in lucide-react v0.500+ are forwardRef objects (typeof === 'object'),
+// so we accept both functions and non-null objects.
+const ALL_ICONS = Object.entries(LucideIcons).filter(
+    ([name, value]) => /^[A-Z]/.test(name) && !name.endsWith('Icon') && value != null && (typeof value === 'function' || typeof value === 'object')
+) as [string, LucideIcon][];
 
 const SIZES = ['xs', 'sm', 'md', 'lg', 'xl'] as const;
 
@@ -136,7 +137,7 @@ function IconGrid() {
                 ))}
             </div>
 
-            {filtered.length === 0 && (
+            {query.trim() && filtered.length === 0 && (
                 <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--ds-typography-font-size-sm)' }}>No icons match &ldquo;{query}&rdquo;</p>
             )}
         </div>
