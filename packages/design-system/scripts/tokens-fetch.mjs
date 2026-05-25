@@ -57,10 +57,12 @@ const SD_TRANSFORMS = [...getTransforms(), 'name/kebab'];
 // We defer registration to a function so the format can reference buildTypographyBlock
 // without a forward-reference issue.
 function registerTypographyFormat() {
-    StyleDictionary.registerFormat({
-        name: 'css/typography-classes',
-        format: ({ dictionary }) => buildTypographyBlock(dictionary.allTokens)
-    });
+    if (!StyleDictionary.hooks.formats['css/typography-classes']) {
+        StyleDictionary.registerFormat({
+            name: 'css/typography-classes',
+            format: ({ dictionary }) => buildTypographyBlock(dictionary.allTokens)
+        });
+    }
 }
 
 // ─── CSS value formatting ──────────────────────────────────────────────────────
