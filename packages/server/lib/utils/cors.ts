@@ -8,9 +8,9 @@
  */
 export function isAllowedWebCorsOrigin(origin: string | undefined, allowedOrigins: Set<string>, publicHost: string): boolean {
     if (!origin) return true;
+    if (allowedOrigins.has(origin)) return true;
     try {
         const url = new URL(origin);
-        if (allowedOrigins.has(origin)) return true;
         // Only allow HTTPS, default port, and exact pr-<number>.<publicHost> (no extra labels)
         const escapedHost = publicHost.replace(/\./g, '\\.');
         return url.protocol === 'https:' && url.port === '' && new RegExp(`^pr-\\d+\\.${escapedHost}$`).test(url.hostname);
