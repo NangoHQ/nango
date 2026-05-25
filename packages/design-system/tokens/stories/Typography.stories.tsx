@@ -1,3 +1,5 @@
+import tokensJson from '../tokens.json';
+
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -8,68 +10,81 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+function capitalize(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 interface TypeEntry {
     className: string;
     label: string;
-    description: string;
+    description?: string;
     mono: boolean;
 }
 
-const SECTIONS: { title: string; entries: TypeEntry[] }[] = [
-    {
-        title: 'Geist Sans — Heading',
-        entries: [
-            { className: 'type-heading-lg', label: 'heading / lg', description: 'page headings, hero titles', mono: false },
-            { className: 'type-heading-md', label: 'heading / md', description: 'section headings', mono: false },
-            { className: 'type-heading-sm', label: 'heading / sm', description: 'sub-section headings', mono: false }
-        ]
-    },
-    {
-        title: 'Geist Sans — Text · Regular',
-        entries: [
-            { className: 'type-text-regular-md', label: 'text / regular / md', description: 'standard body text', mono: false },
-            { className: 'type-text-regular-sm', label: 'text / regular / sm', description: 'dense body / tables', mono: false },
-            { className: 'type-text-regular-xs', label: 'text / regular / xs', description: 'small body / captions', mono: false }
-        ]
-    },
-    {
-        title: 'Geist Sans — Text · Medium',
-        entries: [
-            { className: 'type-text-medium-md', label: 'text / medium / md', description: 'emphasized body text', mono: false },
-            { className: 'type-text-medium-sm', label: 'text / medium / sm', description: 'emphasized dense body', mono: false },
-            { className: 'type-text-medium-xs', label: 'text / medium / xs', description: 'emphasized small body', mono: false }
-        ]
-    },
-    {
-        title: 'Geist Sans — Label',
-        entries: [
-            { className: 'type-label-lg', label: 'label / lg', description: 'form labels, prominent chips', mono: false },
-            { className: 'type-label-md', label: 'label / md', description: 'badges, table headers', mono: false },
-            { className: 'type-label-sm', label: 'label / sm', description: 'metadata, helper text', mono: false },
-            { className: 'type-label-xs', label: 'label / xs', description: 'tag content, inline status', mono: false },
-            { className: 'type-label-xxs', label: 'label / xxs', description: 'finest micro labels — use sparingly', mono: false }
-        ]
-    },
-    {
-        title: 'Geist Mono — Code · Regular',
-        entries: [
-            { className: 'type-code-regular-sm', label: 'code / regular / sm', description: 'inline code, IDs, slugs', mono: true },
-            { className: 'type-code-regular-xs', label: 'code / regular / xs', description: 'small inline code', mono: true },
-            { className: 'type-code-regular-xxs', label: 'code / regular / xxs', description: 'finest mono', mono: true }
-        ]
-    },
-    {
-        title: 'Geist Mono — Code · Medium',
-        entries: [
-            { className: 'type-code-medium-md', label: 'code / medium / md', description: 'emphasized code', mono: true },
-            { className: 'type-code-medium-sm', label: 'code / medium / sm', description: 'emphasized inline code', mono: true },
-            { className: 'type-code-medium-xs', label: 'code / medium / xs', description: 'emphasized small inline code', mono: true },
-            { className: 'type-code-medium-xxs', label: 'code / medium / xxs', description: 'emphasized finest mono', mono: true }
-        ]
-    }
-];
+const DESCRIPTIONS: Record<string, string> = {
+    'type-heading-lg': 'page headings, hero titles',
+    'type-heading-md': 'section headings',
+    'type-heading-sm': 'sub-section headings',
+    'type-text-regular-md': 'standard body text',
+    'type-text-regular-sm': 'dense body / tables',
+    'type-text-regular-xs': 'small body / captions',
+    'type-text-medium-md': 'emphasized body text',
+    'type-text-medium-sm': 'emphasized dense body',
+    'type-text-medium-xs': 'emphasized small body',
+    'type-label-lg': 'form labels, prominent chips',
+    'type-label-md': 'badges, table headers',
+    'type-label-sm': 'metadata, helper text',
+    'type-label-xs': 'tag content, inline status',
+    'type-label-xxs': 'finest micro labels — use sparingly',
+    'type-code-regular-sm': 'inline code, IDs, slugs',
+    'type-code-regular-xs': 'small inline code',
+    'type-code-regular-xxs': 'finest mono',
+    'type-code-medium-md': 'emphasized code',
+    'type-code-medium-sm': 'emphasized inline code',
+    'type-code-medium-xs': 'emphasized small inline code',
+    'type-code-medium-xxs': 'emphasized finest mono'
+};
+
+function collectEntries(obj: Record<string, unknown>, path: string[]): TypeEntry[] {
+    return Object.entries(obj).flatMap(([k, v]) => {
+        if (k.startsWith('$') || !v || typeof v !== 'object') return [];
+        if ('$value' in v) {
+            const className = 'type-' + [...path, k].join('-');
+            const fontFamily = ((v as any).$value?.fontFamily ?? '') as string;
+            return [{ className, label: [...path, k].join(' / '), description: DESCRIPTIONS[className], mono: fontFamily.toLowerCase().includes('mono') }];
+        }
+        return collectEntries(v as Record<string, unknown>, [...path, k]);
+    });
+}
+
+const leaves = (obj: object) => Object.entries(obj).filter(([k]) => !k.startsWith('$'));
+const font = (entries: TypeEntry[]) => (entries[0]?.mono ? 'Geist Mono' : 'Geist Sans');
+
+function buildSections(typoGroup: Record<string, unknown>): { title: string; entries: TypeEntry[] }[] {
+    return Object.entries(typoGroup).flatMap(([groupName, groupValue]) => {
+        if (groupName.startsWith('$') || !groupValue || typeof groupValue !== 'object') return [];
+        const children = leaves(groupValue);
+        const hasSubGroups = children.some(([, v]) => typeof v === 'object' && !('$value' in (v as object)));
+
+        // Groups like "text" and "code" have sub-groups (regular, medium) → one section per sub-group
+        if (hasSubGroups) {
+            return children
+                .filter(([, v]) => typeof v === 'object')
+                .flatMap(([subName, subValue]) => {
+                    const entries = collectEntries(subValue as Record<string, unknown>, [groupName, subName]);
+                    return entries.length ? [{ title: `${font(entries)} — ${capitalize(groupName)} · ${capitalize(subName)}`, entries }] : [];
+                });
+        }
+
+        // Flat groups like "heading" and "label" → one section
+        const entries = collectEntries(groupValue as Record<string, unknown>, [groupName]);
+        return entries.length ? [{ title: `${font(entries)} — ${capitalize(groupName)}`, entries }] : [];
+    });
+}
+
+const SECTIONS = buildSections((tokensJson as any)['Typography'] as Record<string, unknown>);
 
 const SAMPLE_TEXT = 'The quick brown fox jumps over the lazy dog';
 const SAMPLE_MONO = 'const api_key = "nango_live_abc123xyz";';
