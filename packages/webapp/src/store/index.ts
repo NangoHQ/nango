@@ -3,8 +3,9 @@ import { create } from 'zustand';
 
 import { usePlaygroundStore } from './playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 
-export const PROD_ENVIRONMENT_NAME = 'prod';
+export { PROD_ENVIRONMENT_NAME };
 
 interface Env {
     name: string;
