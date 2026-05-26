@@ -19,14 +19,8 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
 
     const dataTransferEvents = events.filter((event) => event.type === 'data_transfer');
 
-    const totalBytesSent = Math.min(
-        dataTransferEvents.reduce((acc, event) => acc + event.bytesSent, 0),
-        Number.MAX_SAFE_INTEGER
-    );
-    const totalBytesReceived = Math.min(
-        dataTransferEvents.reduce((acc, event) => acc + event.bytesReceived, 0),
-        Number.MAX_SAFE_INTEGER
-    );
+    const totalBytesSent = dataTransferEvents.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
+    const totalBytesReceived = dataTransferEvents.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
 
     metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, totalBytesSent, { callsite: 'runner' });
     metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, totalBytesReceived, { callsite: 'runner' });
