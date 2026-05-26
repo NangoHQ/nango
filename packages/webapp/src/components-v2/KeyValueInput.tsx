@@ -35,12 +35,8 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     const showEmptyRow = !disabled;
 
     const buildPairsFromValues = (values: Record<string, string>): KeyValuePair[] => {
-        const entries = Object.entries(values);
-        if (entries.length > 0) {
-            const mapped = entries.map(([key, value]) => ({ id: generateId(), key, value }));
-            return showEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
-        }
-        return [{ id: generateId(), key: '', value: '' }];
+        const mapped = Object.entries(values).map(([key, value]) => ({ id: generateId(), key, value }));
+        return showEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
     };
 
     const [pairs, setPairs] = useState<KeyValuePair[]>(() => buildPairsFromValues(initialValues));
@@ -58,14 +54,13 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
 
     useEffect(() => {
         setPairs((prev) => {
-            if (prev.length === 0) return prev;
             const last = prev[prev.length - 1];
-            const hasTrailingEmpty = last.key === '' && last.value === '';
+            const hasTrailingEmpty = last && last.key === '' && last.value === '';
 
             if (showEmptyRow && !hasTrailingEmpty) {
                 return [...prev, { id: generateId(), key: '', value: '' }];
             }
-            if (!showEmptyRow && hasTrailingEmpty && prev.length > 1) {
+            if (!showEmptyRow && hasTrailingEmpty) {
                 return prev.slice(0, -1);
             }
             return prev;
