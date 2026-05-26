@@ -96,4 +96,74 @@ describe('jira-webhook-routing', () => {
             propName: 'baseUrl'
         });
     });
+
+    it('does not execute webhook scripts when a single event has no Jira baseUrl', async () => {
+        const mock = vi.fn();
+        const nango = makeNango(mock);
+        const body = {
+            webhookEvent: 'jira:issue_deleted',
+            issue: {
+                id: '42766'
+            }
+        };
+
+        const result = await JiraWebhookRouting.default(nango as any, {}, body, '');
+
+        expect(result.isOk()).toBe(true);
+        expect((result.unwrap() as { connectionIds: string[]; toForward: unknown }).connectionIds).toEqual([]);
+        expect((result.unwrap() as { connectionIds: string[]; toForward: unknown }).toForward).toBe(body);
+        expect(mock).not.toHaveBeenCalled();
+    });
+
+    it('skips unroutable events in a Jira batch without executing a broad fallback', async () => {
+        const mock = vi.fn().mockResolvedValue({ connectionIds: ['conn-routed'] });
+        const nango = makeNango(mock);
+        const body = [
+            {
+                webhookEvent: 'jira:issue_updated',
+                issue: {
+                    id: '10001'
+                }
+            },
+            {
+                webhookEvent: 'comment_created',
+                comment: {
+                    self: 'https://globex.atlassian.net/rest/api/2/issue/10002/comment/10003'
+                }
+            }
+        ];
+
+        const result = await JiraWebhookRouting.default(nango as any, {}, body, '');
+
+        expect(result.isOk()).toBe(true);
+        expect((result.unwrap() as { connectionIds: string[] }).connectionIds).toEqual(['conn-routed']);
+        expect(mock).toHaveBeenCalledTimes(1);
+        expect(mock).toHaveBeenCalledWith({
+            body: body[1],
+            webhookType: 'webhookEvent',
+            connectionIdentifierValue: 'https://globex.atlassian.net',
+            propName: 'baseUrl'
+        });
+    });
+
+    it('handles deeply nested Jira payloads without recursive stack overflow', async () => {
+        const mock = vi.fn();
+        const nango = makeNango(mock);
+        const body: Record<string, unknown> = {
+            webhookEvent: 'jira:issue_updated'
+        };
+        let cursor = body;
+
+        for (let index = 0; index < 5_000; index++) {
+            const child: Record<string, unknown> = {};
+            cursor['child'] = child;
+            cursor = child;
+        }
+
+        const result = await JiraWebhookRouting.default(nango as any, {}, body, '');
+
+        expect(result.isOk()).toBe(true);
+        expect((result.unwrap() as { connectionIds: string[] }).connectionIds).toEqual([]);
+        expect(mock).not.toHaveBeenCalled();
+    });
 });
