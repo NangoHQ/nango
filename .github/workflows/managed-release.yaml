@@ -495,9 +495,9 @@ jobs:
               env:
                   ACT: 'true'
                   GITHUB_TOKEN: placeholder
-                  TAG_NAME: managed-${{ needs.manage-versions.outputs.image_version }}-${{ needs.manage-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
-                  IMAGE_VERSION: ${{ needs.manage-versions.outputs.image_version }}
-                  APP_VERSION: ${{ needs.manage-versions.outputs.app_version }}
+                  TAG_NAME: managed-${{ steps.release-versions.outputs.image_version }}-${{ steps.release-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                  IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
+                  APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
                   COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
                   MANIFEST_PATH: ${{ github.workspace }}/managed-manifest.json
               run: |

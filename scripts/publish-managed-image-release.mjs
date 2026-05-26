@@ -33,8 +33,25 @@ function runSilent(command, options = {}) {
     return run(command, { ...options, silent: true });
 }
 
+function remoteTagExists(tagName, cwd) {
+    try {
+        runSilent(`git ls-remote --exit-code --refs origin "refs/tags/${tagName}"`, { cwd });
+        return true;
+    } catch (err) {
+        if (err.status === 2) {
+            return false;
+        }
+
+        throw err;
+    }
+}
+
 function readManifest(manifestPath) {
     return JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+}
+
+function getPreviousReleaseCommit(manifest, currentCommitHash) {
+    return manifest.history.findLast((release) => release.commitHash && release.commitHash !== currentCommitHash)?.commitHash;
 }
 
 function generateCliffNotes(prevCommit, commitHash) {
@@ -81,10 +98,17 @@ function appendCustomerChangelog(changelogPath, releaseTitle, releaseNotes) {
     const entry = `\n## ${releaseTitle}\n\n${releaseNotes}\n`;
     const existing = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf-8') : header;
     const normalized = existing.startsWith('#') ? existing : `${header}${existing}`;
+    const releaseExists = normalized.split('\n').some((line) => line.trim() === `## ${releaseTitle}`);
+
+    if (releaseExists) {
+        console.log(`Release ${releaseTitle} already exists in CHANGELOG.md, skipping changelog append`);
+        return;
+    }
+
     fs.writeFileSync(changelogPath, `${normalized.trimEnd()}${entry}`);
 }
 
-function publishToCustomerRepo({ manifest, manifestPath, releaseNotes, releaseTitle, tagName }) {
+function publishToCustomerRepo({ manifestPath, releaseNotes, releaseTitle, tagName }) {
     const customerManifestPath = path.join(MANAGED_RELEASES_REPO_PATH, 'managed-manifest.json');
     const customerChangelogPath = path.join(MANAGED_RELEASES_REPO_PATH, 'CHANGELOG.md');
 
@@ -105,8 +129,7 @@ function publishToCustomerRepo({ manifest, manifestPath, releaseNotes, releaseTi
         console.log('No changes to commit in managed-image-releases');
     }
 
-    const tagExists = runSilent(`git tag -l "${tagName}"`, { cwd: gitCwd }).trim();
-    if (tagExists) {
+    if (remoteTagExists(tagName, gitCwd)) {
         console.log(`Tag ${tagName} already exists in ${TARGET_REPO}, skipping tag creation`);
     } else {
         run(`git tag -a "${tagName}" -m "Managed release ${tagName}"`, { cwd: gitCwd });
@@ -119,15 +142,12 @@ function createGithubRelease({ tagName, releaseTitle, releaseNotes }) {
     fs.writeFileSync(notesFile, releaseNotes);
 
     try {
-        run(
-            `gh release create "${tagName}" --repo "${TARGET_REPO}" --title "${releaseTitle}" --notes-file "${notesFile}"`,
-            {
-                env: {
-                    GH_TOKEN: GITHUB_TOKEN,
-                    GH_HOST
-                }
+        run(`gh release create "${tagName}" --repo "${TARGET_REPO}" --title "${releaseTitle}" --notes-file "${notesFile}"`, {
+            env: {
+                GH_TOKEN: GITHUB_TOKEN,
+                GH_HOST
             }
-        );
+        });
     } finally {
         if (fs.existsSync(notesFile)) {
             fs.unlinkSync(notesFile);
@@ -148,7 +168,7 @@ function main() {
     }
 
     const manifest = readManifest(MANIFEST_PATH);
-    const prevCommit = manifest.history.at(-1)?.commitHash;
+    const prevCommit = getPreviousReleaseCommit(manifest, COMMIT_HASH);
     const cliffNotes = generateCliffNotes(prevCommit, COMMIT_HASH);
     const releaseNotes = buildReleaseNotes({
         manifest,
@@ -175,7 +195,6 @@ function main() {
     }
 
     publishToCustomerRepo({
-        manifest,
         manifestPath: MANIFEST_PATH,
         releaseNotes,
         releaseTitle,
