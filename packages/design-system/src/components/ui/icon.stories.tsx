@@ -1,9 +1,8 @@
+import { CheckIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { Icon } from './icon';
-import { Input } from './input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 import type { Meta, StoryObj } from '@storybook/react';
 import type { LucideIcon } from 'lucide-react';
@@ -71,82 +70,77 @@ function IconGrid() {
     }, []);
 
     return (
-        <TooltipProvider>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
-                <div
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
+            <div
+                style={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10,
+                    paddingBlock: 'var(--ds-space-2)',
+                    background: 'var(--surface-canvas)'
+                }}
+            >
+                <input
+                    type="search"
+                    placeholder={`Search ${ALL_ICONS.length} icons…`}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="max-w-80 h-8 w-full rounded px-2.5 text-sm border border-[var(--input-border-default)] bg-[var(--input-bg-default)] text-[var(--text-default)] placeholder:text-[var(--text-placeholder)] outline-none focus:border-[var(--input-border-focus)]"
+                />
+                <p
                     style={{
-                        position: 'sticky',
-                        top: 0,
-                        zIndex: 10,
-                        paddingBlock: 'var(--ds-space-2)',
-                        background: 'var(--surface-canvas)'
+                        marginTop: 'var(--ds-space-1)',
+                        fontSize: 'var(--ds-typography-font-size-xs)',
+                        color: 'var(--text-secondary)'
                     }}
                 >
-                    <Input
-                        type="search"
-                        placeholder={`Search ${ALL_ICONS.length} icons…`}
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="max-w-80"
-                    />
-                    <p
+                    {filtered.length} icon{filtered.length !== 1 ? 's' : ''}
+                    {query ? ` matching "${query}"` : ''}
+                </p>
+            </div>
+
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(3rem, 1fr))',
+                    gap: 'var(--ds-space-1)'
+                }}
+            >
+                {filtered.map(([name, IconComponent]) => (
+                    <button
+                        key={name}
+                        title={copied === name ? 'Copied!' : `<${name} />`}
+                        onClick={() => handleClick(name)}
                         style={{
-                            marginTop: 'var(--ds-space-1)',
-                            fontSize: 'var(--ds-typography-font-size-xs)',
-                            color: 'var(--text-secondary)'
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '3rem',
+                            height: '3rem',
+                            borderRadius: 'var(--ds-radius-sm)',
+                            border: 'none',
+                            background: copied === name ? 'var(--state-selected)' : 'transparent',
+                            color: copied === name ? 'var(--icon-active)' : 'var(--icon-default)',
+                            cursor: 'pointer',
+                            transition:
+                                'background var(--ds-motion-duration-fast) var(--ds-motion-easing-standard), color var(--ds-motion-duration-fast) var(--ds-motion-easing-standard)'
+                        }}
+                        onMouseEnter={(e) => {
+                            if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'var(--state-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                            if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
                         }}
                     >
-                        {filtered.length} icon{filtered.length !== 1 ? 's' : ''}
-                        {query ? ` matching "${query}"` : ''}
-                    </p>
-                </div>
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(3rem, 1fr))',
-                        gap: 'var(--ds-space-1)'
-                    }}
-                >
-                    {filtered.map(([name, IconComponent]) => (
-                        <Tooltip key={name}>
-                            <TooltipTrigger asChild>
-                                <button
-                                    onClick={() => handleClick(name)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '3rem',
-                                        height: '3rem',
-                                        borderRadius: 'var(--ds-radius-sm)',
-                                        border: 'none',
-                                        background: copied === name ? 'var(--state-selected)' : 'transparent',
-                                        color: copied === name ? 'var(--icon-active)' : 'var(--icon-default)',
-                                        cursor: 'pointer',
-                                        transition:
-                                            'background var(--ds-motion-duration-fast) var(--ds-motion-easing-standard), color var(--ds-motion-duration-fast) var(--ds-motion-easing-standard)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'var(--state-hover)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        if (copied !== name) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                                    }}
-                                >
-                                    <IconComponent size={24} strokeWidth={2} />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>{copied === name ? 'Copied!' : `<${name} />`}</TooltipContent>
-                        </Tooltip>
-                    ))}
-                </div>
-
-                {query.trim() && filtered.length === 0 && (
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--ds-typography-font-size-sm)' }}>No icons match &ldquo;{query}&rdquo;</p>
-                )}
+                        {copied === name ? <CheckIcon size={24} strokeWidth={2} /> : <IconComponent size={24} strokeWidth={2} />}
+                    </button>
+                ))}
             </div>
-        </TooltipProvider>
+
+            {query.trim() && filtered.length === 0 && (
+                <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--ds-typography-font-size-sm)' }}>No icons match &ldquo;{query}&rdquo;</p>
+            )}
+        </div>
     );
 }
 
