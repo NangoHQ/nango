@@ -2,8 +2,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
 import { usePlaygroundStore } from './playground';
-import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
+import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 export { PROD_ENVIRONMENT_NAME };
 
