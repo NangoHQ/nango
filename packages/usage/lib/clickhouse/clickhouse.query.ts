@@ -4,11 +4,16 @@ interface GetUsageQueryMetricDimensions<TDimension extends string = 'none'> {
     dimension: 'none' | 'environment_id' | 'integration_id' | TDimension;
 }
 
-type ValidateMetrics<T extends Record<UsageMetric, unknown> & Record<Exclude<keyof T, UsageMetric>, never>> = T;
+// `getUsage` covers counter metrics only — the SUM-aggregated tables that don't
+// carry a `batch_id` column. AVG-style metrics (`records`, `connections`) are
+// served by `getDailySumAndBatches`, which exposes the two accumulators their
+// `view_mode='cumulative'` rendering needs and isn't expressible in this query
+// shape.
+export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
+
+type ValidateMetrics<T extends Record<CounterUsageMetric, unknown> & Record<Exclude<keyof T, CounterUsageMetric>, never>> = T;
 
 type GetUsageQueryMetrics = ValidateMetrics<{
-    connections: GetUsageQueryMetricDimensions;
-    records: GetUsageQueryMetricDimensions<'connection_id' | 'model'>;
     proxy: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
     webhook_forwards: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
     function_executions: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
@@ -98,7 +103,10 @@ export function tableForMetric(metric: UsageMetric): string {
     }
 }
 
-export function quantityForMetric(metric: UsageMetric): string {
+// Counter metrics only — AVG-style metrics (`records`, `connections`) are not
+// reachable through `getUsage` (excluded from `GetUsageQuery.metrics` at the
+// type level) and use `getDailySumAndBatches` instead.
+export function quantityForMetric(metric: CounterUsageMetric): string {
     switch (metric) {
         case 'function_executions':
         case 'proxy':
@@ -108,10 +116,58 @@ export function quantityForMetric(metric: UsageMetric): string {
             return `SUM(custom_logs)`;
         case 'function_compute_gbms':
             return `SUM(compute_gbms)`;
-        case 'records':
-        case 'connections':
-            // Records and connections build their own SQL in `clickhouse.ts` (three-level
-            // sum-then-avg over the raw projection MVs). This branch isn't reached for them.
-            return `SUM(value)`;
     }
+}
+
+// ----------------------------------------------------------------------------
+// Per-day (sum, batches) accumulators for AVG-style metrics — `records` and
+// `connections` only, which are the two metrics whose write path tags each
+// metering-cron firing with a `batch_id` column (one batch = one Orb event in
+// the `average(count)` billable metric). Other metrics live in counter tables
+// that lack `batch_id` and don't need this shape, so the type is intentionally
+// restricted at compile time.
+//
+// Returns the two accumulators the server-side formatter needs to reconstruct
+// the running period average for `view_mode='cumulative'`:
+//   running_avg(D) = SUM(value)[start..D] / uniqExact(batch_id)[start..D]
+//
+// `batches` is the number of distinct `batch_id`s for the day (NOT the row
+// count — each batch contributes multiple rows, one per slice). For the
+// dimension breakdown, `batches` is the GLOBAL per-day count (same for every
+// dimension value) so per-dimension running averages sum to the global
+// running average exactly — see Clickhouse.getDailySumAndBatches docstring.
+// ----------------------------------------------------------------------------
+
+export type GetDailySumAndBatchesQuery =
+    | {
+          accountId: number;
+          metric: 'records';
+          dimension: 'none' | 'environment_id' | 'integration_id' | 'connection_id' | 'model';
+          timeframe: {
+              // exclusive end (timeframe includes events with timestamp >= start and < end)
+              start: Date;
+              end: Date;
+          };
+      }
+    | {
+          accountId: number;
+          metric: 'connections';
+          dimension: 'none' | 'environment_id' | 'integration_id';
+          timeframe: { start: Date; end: Date };
+      };
+
+export interface GetDailySumAndBatchesDay {
+    day: Date;
+    sum: number;
+    batches: number;
+}
+
+export type GetDailySumAndBatchesSeries =
+    | { days: GetDailySumAndBatchesDay[] }
+    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailySumAndBatchesDay[] };
+
+export interface GetDailySumAndBatchesResult {
+    accountId: number;
+    metric: 'records' | 'connections';
+    series: GetDailySumAndBatchesSeries[];
 }
