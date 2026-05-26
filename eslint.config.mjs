@@ -9,24 +9,8 @@ import unicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 import * as tseslint from 'typescript-eslint';
 
-// Shared typescript-eslint preset extends and custom rule overrides.
-//
-// We use these in both the root `**/*.{ts,tsx}` block (with the root tsconfig)
-// AND in each browser-package block (webapp / frontend / connect-ui) that has
-// its own incompatible tsconfig.  Keeping them in one place ensures the rules
-// are identical regardless of which block applies to a file.
-//
-// Background: IDEs (e.g. VS Code ESLint extension) create a separate TypeScript
-// program for every unique `parserOptions.project` value they see in matching
-// config blocks.  If a file matches both the root block (project: './tsconfig.json')
-// and a package block (project: 'packages/webapp/tsconfig.json'), the IDE runs
-// type-aware rules from the root block with the root tsconfig — which has no
-// DOM/React lib, so every React hook import degrades to `error` type and fires
-// spurious `no-unnecessary-type-assertion` / unsafe-* violations.
-//
-// The fix: exclude browser-package source trees from the root block (via
-// `ignores`) so only one TypeScript program is created for those files, and
-// replicate the shared typescript-eslint setup directly in each package block.
+// Shared presets and rule overrides used by both the root block and each
+// browser-package block (webapp / frontend / connect-ui) that has its own tsconfig.
 const tseslintExtends = [
     tseslint.configs.recommended,
     tseslint.configs.recommendedTypeChecked,
@@ -208,12 +192,7 @@ export default tseslint.config(
         }
     },
     {
-        // Root typescript-eslint block — covers every TypeScript file that does NOT
-        // have its own package-specific block below (server, jobs, cli, shared libs…).
-        // Browser packages (webapp, frontend, connect-ui) are excluded because they
-        // use incompatible tsconfigs (DOM lib, different module mode) and each has its
-        // own block that sets up the same rules via the shared `tseslintExtends` /
-        // `tseslintRules` variables above.
+        // Browser packages are excluded — each has its own block with its tsconfig.
         files: ['**/*.{ts,tsx}'],
         ignores: ['packages/webapp/src/**', 'packages/frontend/**', 'packages/connect-ui/src/**'],
         plugins: {
