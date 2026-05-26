@@ -1,0 +1,56 @@
+---
+title: 'Smartsheet - How do I link my account?'
+sidebarTitle: 'Smartsheet'
+---
+
+# Overview
+
+To authenticate with Smartsheet, you need:
+1. **Domain** - The domain where your account is hosted.
+2. **App host** (optional) - The app host used for authorization. Defaults to `app.smartsheet.com`; use `app.test.smartsheet.com` for test environments.
+
+This guide will walk you through obtaining these values.
+
+### Prerequisites
+
+- You must have an account with Smartsheet.
+
+### Instructions
+
+#### Step 1: Finding your domain
+
+1. Log in to your Smartsheet account.
+2. Look at the **URL** in your browser's address bar.
+3. Your domain is the text after `https://app.` and before `/b/`.
+   - For example, if your URL is `https://app.smartsheet.com/b/home`, your **Domain** is `smartsheet.com`.
+
+Alternatively, use the table below to find the domain for your product:
+
+| Product | Domain value |
+| --- | --- |
+| Smartsheet | `smartsheet.com` |
+| Smartsheet Gov | `smartsheetgov.com` |
+| Smartsheet Regions Europe | `smartsheet.eu` |
+| Smartsheet Regions Australia | `smartsheet.au` |
+
+#### Step 2: Choose your app host (optional)
+
+The **App host** field is optional and determines which Smartsheet environment you connect to:
+
+| App host | Environment |
+| --- | --- |
+| `app.smartsheet.com` | Production (default) |
+| `app.test.smartsheet.com` | Test environment |
+
+Leave it blank to use the production environment.
+
+#### Step 3: Enter credentials in the connect UI
+
+Once you have your **Domain** (and optionally your **App host**):
+1. Open the form where you need to authenticate with Smartsheet.
+2. Enter your **Domain** and **App host** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/smartsheet/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Smartsheet.

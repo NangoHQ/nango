@@ -48,12 +48,17 @@ export class Clickhouse {
 
         this.client = client;
         this.batcher = new Batcher({
-            process: async (events) => {
+            process: async (events, { retryKey }) => {
                 try {
                     await client.insert({
                         table: 'raw_events',
                         values: events,
-                        format: 'JSONEachRow'
+                        format: 'JSONEachRow',
+                        // Token is stable across retries of the same logical batch, so CH
+                        // server-side dedup catches a retried INSERT even if the block
+                        // content has drifted. Paired with the cluster-wide settings in
+                        // config.ts, this propagates the dedup decision to all dependent MVs.
+                        clickhouse_settings: { insert_deduplication_token: retryKey }
                     });
                 } catch (err) {
                     logger.error(`Failed to insert usage events into Clickhouse: ${stringifyError(err)}`);
@@ -253,8 +258,8 @@ export class Clickhouse {
         }
     }
 
-    async shutdown(): Promise<Result<void>> {
-        const res = this.batcher ? await this.batcher.shutdown() : Ok(undefined);
+    async shutdown(opts?: { timeoutMs: number }): Promise<Result<void>> {
+        const res = this.batcher ? await this.batcher.shutdown(opts) : Ok(undefined);
 
         try {
             await this.client?.close();

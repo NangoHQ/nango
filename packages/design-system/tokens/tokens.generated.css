@@ -1,0 +1,840 @@
+/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */
+
+/*
+ * Primitives: raw design scale values prefixed with --ds-.
+ * The --ds- prefix avoids collisions with the legacy --color-* vars.
+ * Primitives are intentionally kept out of @theme to enforce that
+ * components only reach for semantic tokens, never raw primitives.
+ */
+:root {
+    --ds-color-mono-white: #ffffff;
+    --ds-color-mono-black: #000000;
+    --ds-color-transparent-default: #ffffff00;
+    --ds-color-neutral-0: #ffffff;
+    --ds-color-neutral-25: #fafafa;
+    --ds-color-neutral-50: #f5f5f5;
+    --ds-color-neutral-100: #ebebeb;
+    --ds-color-neutral-200: #e0e0e0;
+    --ds-color-neutral-250: #d4d4d8;
+    --ds-color-neutral-300: #c4c4c8;
+    --ds-color-neutral-400: #a1a2a5;
+    --ds-color-neutral-450: #8b8c8f;
+    --ds-color-neutral-500: #76777a;
+    --ds-color-neutral-600: #626366;
+    --ds-color-neutral-650: #505155;
+    --ds-color-neutral-700: #424347;
+    --ds-color-neutral-750: #35363a;
+    --ds-color-neutral-800: #2a2b2f;
+    --ds-color-neutral-825: #242528;
+    --ds-color-neutral-850: #202124;
+    --ds-color-neutral-875: #1e1f21;
+    --ds-color-neutral-900: #18191b;
+    --ds-color-neutral-925: #121212;
+    --ds-color-neutral-950: #0b0b0c;
+    --ds-color-neutral-975: #000000;
+    --ds-color-neutral-925-50: #12121280;
+    --ds-color-brand-50: #eefcfe;
+    --ds-color-brand-100: #e0f7fc;
+    --ds-color-brand-200: #a3e6f6;
+    --ds-color-brand-300: #66d6f0;
+    --ds-color-brand-400: #33c4e9;
+    --ds-color-brand-500: #00b2e3;
+    --ds-color-brand-600: #009cc8;
+    --ds-color-brand-700: #0089b0;
+    --ds-color-brand-800: #016886;
+    --ds-color-brand-900: #02485d;
+    --ds-color-brand-950: #013747;
+    --ds-color-brand-975: #001e27;
+    --ds-color-brand-950-50: #01374780;
+    --ds-color-info-50: #eefcfe;
+    --ds-color-info-100: #e0f7fc;
+    --ds-color-info-200: #a3e6f6;
+    --ds-color-info-300: #66d6f0;
+    --ds-color-info-400: #33c4e9;
+    --ds-color-info-500: #00b2e3;
+    --ds-color-info-600: #009cc8;
+    --ds-color-info-700: #0089b0;
+    --ds-color-info-800: #016886;
+    --ds-color-info-900: #02485d;
+    --ds-color-info-950: #013747;
+    --ds-color-info-975: #001e27;
+    --ds-color-info-950-50: #01374780;
+    --ds-color-success-50: #f2fbf5;
+    --ds-color-success-100: #e6f7ec;
+    --ds-color-success-200: #c7eed2;
+    --ds-color-success-300: #a8e6b9;
+    --ds-color-success-400: #7adf8e;
+    --ds-color-success-500: #4cd964;
+    --ds-color-success-600: #35bb51;
+    --ds-color-success-700: #1e9e3e;
+    --ds-color-success-800: #1a6b2c;
+    --ds-color-success-900: #0a3d16;
+    --ds-color-success-950: #072a0f;
+    --ds-color-success-975: #031708;
+    --ds-color-success-950-50: #072a0f80;
+    --ds-color-warning-50: #fffbe8;
+    --ds-color-warning-100: #fff8d1;
+    --ds-color-warning-200: #fee796;
+    --ds-color-warning-300: #fed75b;
+    --ds-color-warning-400: #facf56;
+    --ds-color-warning-500: #f7c752;
+    --ds-color-warning-600: #e6b738;
+    --ds-color-warning-700: #a07b10;
+    --ds-color-warning-800: #7a5e0a;
+    --ds-color-warning-900: #5c4a0b;
+    --ds-color-warning-950: #403307;
+    --ds-color-warning-975: #231c03;
+    --ds-color-warning-950-50: #40330780;
+    --ds-color-danger-50: #fef5f5;
+    --ds-color-danger-100: #fdecec;
+    --ds-color-danger-200: #fac9c9;
+    --ds-color-danger-300: #f7a6a6;
+    --ds-color-danger-400: #f27474;
+    --ds-color-danger-500: #ee4242;
+    --ds-color-danger-600: #eb2d2d;
+    --ds-color-danger-700: #e81818;
+    --ds-color-danger-800: #a11313;
+    --ds-color-danger-900: #5a0f0f;
+    --ds-color-danger-950: #3f0a0a;
+    --ds-color-danger-975: #220505;
+    --ds-color-danger-950-50: #3f0a0a80;
+    --ds-color-alpha-white-4: #ffffff0a;
+    --ds-color-alpha-white-6: #ffffff0f;
+    --ds-color-alpha-white-8: #ffffff14;
+    --ds-color-alpha-white-10: #ffffff1a;
+    --ds-color-alpha-white-12: #ffffff1f;
+    --ds-color-alpha-white-16: #ffffff29;
+    --ds-color-alpha-white-20: #ffffff33;
+    --ds-color-alpha-white-24: #ffffff3d;
+    --ds-color-alpha-white-40: #ffffff66;
+    --ds-color-alpha-white-50: #ffffff80;
+    --ds-color-alpha-white-64: #ffffffa3;
+    --ds-color-alpha-white-72: #ffffffb8;
+    --ds-color-alpha-white-80: #ffffffcc;
+    --ds-color-alpha-black-4: #0000000a;
+    --ds-color-alpha-black-6: #0000000f;
+    --ds-color-alpha-black-8: #00000014;
+    --ds-color-alpha-black-10: #0000001a;
+    --ds-color-alpha-black-12: #0000001f;
+    --ds-color-alpha-black-16: #00000029;
+    --ds-color-alpha-black-20: #00000033;
+    --ds-color-alpha-black-24: #0000003d;
+    --ds-color-alpha-black-40: #00000066;
+    --ds-color-alpha-black-64: #000000a3;
+    --ds-color-alpha-black-72: #000000b8;
+    --ds-color-alpha-black-80: #000000cc;
+    --ds-color-accent-blue-500: #90a1f0;
+    --ds-color-accent-violet-500: #c695c6;
+    --ds-color-accent-mint-500: #6ed6ac;
+    --ds-color-accent-pink-500: #ef6cbd;
+    --ds-color-accent-yellow-500: #f7c752;
+    --ds-typography-font-family-sans: Geist, ui-sans-serif, system-ui, sans-serif;
+    --ds-typography-font-family-mono: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace;
+    --ds-typography-font-size-3xs: 10px;
+    --ds-typography-font-size-2xs: 11px;
+    --ds-typography-font-size-xs: 12px;
+    --ds-typography-font-size-sm: 13px;
+    --ds-typography-font-size-md: 14px;
+    --ds-typography-font-size-lg: 16px;
+    --ds-typography-font-size-xl: 18px;
+    --ds-typography-font-size-2xl: 20px;
+    --ds-typography-font-size-3xl: 24px;
+    --ds-typography-font-size-4xl: 30px;
+    --ds-typography-font-weight-regular: 400;
+    --ds-typography-font-weight-medium: 500;
+    --ds-typography-font-weight-semibold: 600;
+    --ds-typography-font-weight-bold: 700;
+    --ds-typography-line-height-tight: 1.2;
+    --ds-typography-line-height-snug: 1.35;
+    --ds-typography-line-height-normal: 1.5;
+    --ds-typography-line-height-relaxed: 1.6;
+    --ds-typography-letter-spacing-tight: -0.01em;
+    --ds-typography-letter-spacing-normal: 0em;
+    --ds-typography-letter-spacing-wide: 0.01em;
+    --ds-space-0: 0px;
+    --ds-space-1: 4px;
+    --ds-space-2: 8px;
+    --ds-space-3: 12px;
+    --ds-space-4: 16px;
+    --ds-space-5: 20px;
+    --ds-space-6: 24px;
+    --ds-space-7: 28px;
+    --ds-space-8: 32px;
+    --ds-space-10: 40px;
+    --ds-space-12: 48px;
+    --ds-space-14: 56px;
+    --ds-space-16: 64px;
+    --ds-space-18: 72px;
+    --ds-space-20: 80px;
+    --ds-space-24: 96px;
+    --ds-space-0-5: 2px;
+    --ds-space-1-5: 6px;
+    --ds-space-2-5: 10px;
+    --ds-space-3-5: 14px;
+    --ds-radius-none: 0px;
+    --ds-radius-xs: 2px;
+    --ds-radius-sm: 4px;
+    --ds-radius-md: 6px;
+    --ds-radius-lg: 8px;
+    --ds-radius-xl: 12px;
+    --ds-radius-2xl: 16px;
+    --ds-radius-3xl: 24px;
+    --ds-radius-full: 9999px;
+    --ds-border-width-0: 0px;
+    --ds-border-width-1: 1px;
+    --ds-border-width-2: 2px;
+    --ds-border-width-hairline: 0.5px;
+    --ds-icon-size-xs: 12px;
+    --ds-icon-size-sm: 14px;
+    --ds-icon-size-md: 16px;
+    --ds-icon-size-lg: 20px;
+    --ds-icon-size-xl: 24px;
+    --ds-icon-stroke-xs: 0.5;
+    --ds-icon-stroke-sm: 1;
+    --ds-icon-stroke-md: 1.3;
+    --ds-icon-stroke-lg: 1.5;
+    --ds-motion-duration-instant: 0ms;
+    --ds-motion-duration-fast: 100ms;
+    --ds-motion-duration-moderate: 150ms;
+    --ds-motion-duration-slow: 200ms;
+    --ds-motion-duration-slower: 300ms;
+    --ds-motion-duration-slowest: 500ms;
+    --ds-motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ds-motion-easing-enter: cubic-bezier(0.2, 0, 0, 1);
+    --ds-motion-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+    --ds-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+    --ds-elevation-0: none;
+    --ds-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --ds-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --ds-elevation-3: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --ds-elevation-4: 0 16px 40px rgba(0, 0, 0, 0.2);
+    --ds-elevation-inset: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    --ds-opacity-8: 0.08;
+    --ds-opacity-12: 0.12;
+    --ds-opacity-16: 0.16;
+    --ds-opacity-24: 0.24;
+    --ds-opacity-40: 0.4;
+    --ds-opacity-48: 0.48;
+    --ds-opacity-64: 0.64;
+    --ds-opacity-72: 0.72;
+    --ds-opacity-80: 0.8;
+    --ds-blur-none: 0px;
+    --ds-blur-sm: 4px;
+    --ds-blur-md: 8px;
+    --ds-blur-lg: 16px;
+    --ds-layout-breakpoint-sm: 640px;
+    --ds-layout-breakpoint-md: 768px;
+    --ds-layout-breakpoint-lg: 1024px;
+    --ds-layout-breakpoint-xl: 1280px;
+    --ds-layout-breakpoint-2xl: 1440px;
+    --ds-layout-breakpoint-3xl: 1600px;
+    --ds-layout-breakpoint-4xl: 1920px;
+    --ds-layout-container-xs: 480px;
+    --ds-layout-container-sm: 640px;
+    --ds-layout-container-md: 768px;
+    --ds-layout-container-lg: 1024px;
+    --ds-layout-container-xl: 1280px;
+    --ds-layout-container-2xl: 1440px;
+    --ds-layout-gutter-sm: 16px;
+    --ds-layout-gutter-md: 24px;
+    --ds-layout-gutter-lg: 32px;
+    --ds-layout-column-1: 1;
+    --ds-layout-column-2: 2;
+    --ds-layout-column-3: 3;
+    --ds-layout-column-4: 4;
+    --ds-layout-column-6: 6;
+    --ds-layout-column-12: 12;
+}
+
+/* Semantic tokens — Light (default) */
+:root {
+    --icon-default: #424347;
+    --icon-secondary: #76777a;
+    --icon-muted: #a1a2a5;
+    --icon-disabled: #c4c4c8;
+    --icon-inverse: #ffffff;
+    --icon-on-accent: #ffffff;
+    --icon-brand: #009cc8;
+    --icon-info: #009cc8;
+    --icon-success: #35bb51;
+    --icon-warning: #e6b738;
+    --icon-danger: #eb2d2d;
+    --surface-canvas: #f5f5f5;
+    --surface-page: #fafafa;
+    --surface-panel: #ffffff;
+    --surface-panel-muted: #fafafa;
+    --surface-panel-inset: #ebebeb;
+    --surface-raised: #ffffff;
+    --surface-overlay: #ffffff;
+    --surface-input: #ffffff;
+    --surface-input-muted: #f5f5f5;
+    --surface-inverse: #000000;
+    --surface-inverse-hover: #18191b;
+    --surface-inverse-pressed: #2a2b2f;
+    --surface-scrim: #000000a3;
+    --text-strong: #18191b;
+    --text-default: #2a2b2f;
+    --text-secondary: #626366;
+    --text-muted: #76777a;
+    --text-disabled: #a1a2a5;
+    --text-inverse: #ffffff;
+    --text-on-accent: #ffffff;
+    --text-on-brand: #ffffff;
+    --text-brand: #016886;
+    --text-link: #016886;
+    --text-link-hover: #02485d;
+    --text-link-active: #013747;
+    --text-danger: #e81818;
+    --text-success: #1a6b2c;
+    --text-warning: #7a5e0a;
+    --border-muted: #0000001a;
+    --border-default: #e0e0e0;
+    --border-strong: #c4c4c8;
+    --border-stronger: #a1a2a5;
+    --border-input: #d4d4d8;
+    --border-input-hover: #a1a2a5;
+    --border-selected: #009cc8;
+    --border-danger: #f27474;
+    --border-danger-hover: #eb2d2d;
+    --border-disabled: #ebebeb;
+    --border-inverse: #ffffff33;
+    --interactive-primary: #016886;
+    --interactive-primary-hover: #02485d;
+    --interactive-primary-active: #013747;
+    --interactive-danger: #e81818;
+    --interactive-danger-hover: #a11313;
+    --interactive-danger-active: #5a0f0f;
+    --interactive-ghost: #ffffff00;
+    --interactive-ghost-hover: #0000000f;
+    --interactive-ghost-active: #0000001a;
+    --interactive-outline: #ffffff00;
+    --interactive-outline-hover: #0000000f;
+    --interactive-outline-active: #0000001a;
+    --interactive-disabled: #f5f5f5;
+    --interactive-selected-fill: #0089b0;
+    --state-hover: #0000000f;
+    --state-pressed: #0000001a;
+    --state-selected: #ebebeb;
+    --state-selected-muted: #0000000a;
+    --state-disabled: #f5f5f5;
+    --status-neutral-bg: #ebebeb;
+    --status-neutral-border: #d4d4d8;
+    --status-neutral-icon: #626366;
+    --status-neutral-text: #424347;
+    --status-neutral-strong: #2a2b2f;
+    --status-info-bg: #eefcfe;
+    --status-info-bg-hover: #e0f7fc;
+    --status-info-border: #a3e6f6;
+    --status-info-border-hover: #66d6f0;
+    --status-info-icon: #016886;
+    --status-info-text: #016886;
+    --status-info-strong: #02485d;
+    --status-success-bg: #f2fbf5;
+    --status-success-border: #c7eed2;
+    --status-success-icon: #1a6b2c;
+    --status-success-text: #1a6b2c;
+    --status-success-strong: #0a3d16;
+    --status-success-bg-hover: #e6f7ec;
+    --status-success-border-hover: #a8e6b9;
+    --status-warning-bg: #fffbe8;
+    --status-warning-border: #fed75b;
+    --status-warning-icon: #a07b10;
+    --status-warning-text: #a07b10;
+    --status-warning-strong: #7a5e0a;
+    --status-warning-bg-hover: #fff8d1;
+    --status-warning-border-hover: #facf56;
+    --status-danger-bg: #fef5f5;
+    --status-danger-border: #fac9c9;
+    --status-danger-icon: #a11313;
+    --status-danger-text: #a11313;
+    --status-danger-strong: #5a0f0f;
+    --status-danger-bg-hover: #fdecec;
+    --status-danger-border-hover: #f7a6a6;
+    --focus-ring-default: #0089b0;
+    --focus-ring-danger: #eb2d2d;
+    --focus-outline-default: 0px 0px 0px 2px #f5f5f5, 0px 0px 0px 4px #0089b0;
+    --focus-outline-danger: 0px 0px 0px 2px #f5f5f5, 0px 0px 0px 4px #eb2d2d;
+    --container-inset: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    --container-panel: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --container-sheet: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --chart-series-1: #00b2e3;
+    --chart-series-2: #6ed6ac;
+    --chart-series-3: #f7c752;
+    --chart-series-4: #c695c6;
+    --chart-series-5: #ef6cbd;
+    --chart-series-6: #90a1f0;
+    --control-switch-track-off: #a1a2a5;
+    --control-switch-track-off-danger: #a1a2a5;
+    --control-switch-thumb-off: #ffffff;
+}
+
+/* Semantic tokens — Dark */
+[data-theme='dark'] {
+    --icon-default: #c4c4c8;
+    --icon-secondary: #8b8c8f;
+    --icon-muted: #626366;
+    --icon-disabled: #626366;
+    --icon-inverse: #18191b;
+    --icon-on-accent: #ffffff;
+    --icon-brand: #33c4e9;
+    --icon-info: #33c4e9;
+    --icon-success: #7adf8e;
+    --icon-warning: #facf56;
+    --icon-danger: #f27474;
+    --surface-canvas: #000000;
+    --surface-page: #0b0b0c;
+    --surface-panel: #121212;
+    --surface-panel-muted: #18191b;
+    --surface-panel-inset: #1e1f21;
+    --surface-raised: #202124;
+    --surface-overlay: #202124;
+    --surface-input: #121212;
+    --surface-input-muted: #18191b;
+    --surface-inverse: #ffffff;
+    --surface-inverse-hover: #f5f5f5;
+    --surface-inverse-pressed: #ebebeb;
+    --surface-scrim: #000000b8;
+    --text-strong: #f5f5f5;
+    --text-default: #e0e0e0;
+    --text-secondary: #a1a2a5;
+    --text-muted: #76777a;
+    --text-disabled: #626366;
+    --text-inverse: #000000;
+    --text-on-accent: #ffffff;
+    --text-on-brand: #18191b;
+    --text-brand: #66d6f0;
+    --text-link: #66d6f0;
+    --text-link-hover: #a3e6f6;
+    --text-link-active: #33c4e9;
+    --text-danger: #f27474;
+    --text-success: #7adf8e;
+    --text-warning: #facf56;
+    --border-muted: #ffffff14;
+    --border-default: #ffffff1a;
+    --border-strong: #ffffff29;
+    --border-stronger: #ffffff3d;
+    --border-input: #ffffff1f;
+    --border-input-hover: #ffffff3d;
+    --border-selected: #00b2e3;
+    --border-danger: #eb2d2d;
+    --border-danger-hover: #f27474;
+    --border-disabled: #ffffff0f;
+    --border-inverse: #00000033;
+    --interactive-primary: #00b2e3;
+    --interactive-primary-hover: #33c4e9;
+    --interactive-primary-active: #009cc8;
+    --interactive-danger: #e81818;
+    --interactive-danger-hover: #eb2d2d;
+    --interactive-danger-active: #a11313;
+    --interactive-ghost: #ffffff00;
+    --interactive-ghost-hover: #ffffff14;
+    --interactive-ghost-active: #ffffff1f;
+    --interactive-outline: #ffffff00;
+    --interactive-outline-hover: #ffffff14;
+    --interactive-outline-active: #ffffff1f;
+    --interactive-disabled: #18191b;
+    --interactive-selected-fill: #00b2e3;
+    --state-hover: #ffffff14;
+    --state-pressed: #ffffff1f;
+    --state-selected: #2a2b2f;
+    --state-selected-muted: #ffffff0f;
+    --state-disabled: #18191b;
+    --status-neutral-bg: #202124;
+    --status-neutral-border: #424347;
+    --status-neutral-icon: #a1a2a5;
+    --status-neutral-text: #c4c4c8;
+    --status-neutral-strong: #e0e0e0;
+    --status-info-bg: #013747;
+    --status-info-bg-hover: #02485d;
+    --status-info-border: #016886;
+    --status-info-border-hover: #009cc8;
+    --status-info-icon: #66d6f0;
+    --status-info-text: #66d6f0;
+    --status-info-strong: #a3e6f6;
+    --status-success-bg: #072a0f;
+    --status-success-border: #1a6b2c;
+    --status-success-icon: #7adf8e;
+    --status-success-text: #7adf8e;
+    --status-success-strong: #a8e6b9;
+    --status-success-bg-hover: #0a3d16;
+    --status-success-border-hover: #35bb51;
+    --status-warning-bg: #403307;
+    --status-warning-border: #a07b10;
+    --status-warning-icon: #facf56;
+    --status-warning-text: #facf56;
+    --status-warning-strong: #fed75b;
+    --status-warning-bg-hover: #5c4a0b;
+    --status-warning-border-hover: #f7c752;
+    --status-danger-bg: #3f0a0a;
+    --status-danger-border: #e81818;
+    --status-danger-icon: #f27474;
+    --status-danger-text: #f27474;
+    --status-danger-strong: #f7a6a6;
+    --status-danger-bg-hover: #5a0f0f;
+    --status-danger-border-hover: #ee4242;
+    --focus-ring-default: #00b2e3;
+    --focus-ring-danger: #ee4242;
+    --focus-outline-default: 0px 0px 0px 2px #000000, 0px 0px 0px 4px #00b2e3;
+    --focus-outline-danger: 0px 0px 0px 2px #000000, 0px 0px 0px 4px #ee4242;
+    --container-inset: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+    --container-panel: 0 1px 2px rgba(0, 0, 0, 0.08);
+    --container-sheet: 0 8px 24px rgba(0, 0, 0, 0.16);
+    --chart-series-1: #00b2e3;
+    --chart-series-2: #6ed6ac;
+    --chart-series-3: #f7c752;
+    --chart-series-4: #c695c6;
+    --chart-series-5: #ef6cbd;
+    --chart-series-6: #90a1f0;
+    --control-switch-track-off: #18191b;
+    --control-switch-track-off-danger: #18191b;
+    --control-switch-thumb-off: #ffffff;
+}
+
+/*
+ * Tailwind v4 @theme registration.
+ * Maps semantic color vars to --color-* so Tailwind generates
+ * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.
+ */
+@theme {
+    --color-icon-default: var(--icon-default);
+    --color-icon-secondary: var(--icon-secondary);
+    --color-icon-muted: var(--icon-muted);
+    --color-icon-disabled: var(--icon-disabled);
+    --color-icon-inverse: var(--icon-inverse);
+    --color-icon-on-accent: var(--icon-on-accent);
+    --color-icon-brand: var(--icon-brand);
+    --color-icon-info: var(--icon-info);
+    --color-icon-success: var(--icon-success);
+    --color-icon-warning: var(--icon-warning);
+    --color-icon-danger: var(--icon-danger);
+    --color-surface-canvas: var(--surface-canvas);
+    --color-surface-page: var(--surface-page);
+    --color-surface-panel: var(--surface-panel);
+    --color-surface-panel-muted: var(--surface-panel-muted);
+    --color-surface-panel-inset: var(--surface-panel-inset);
+    --color-surface-raised: var(--surface-raised);
+    --color-surface-overlay: var(--surface-overlay);
+    --color-surface-input: var(--surface-input);
+    --color-surface-input-muted: var(--surface-input-muted);
+    --color-surface-inverse: var(--surface-inverse);
+    --color-surface-inverse-hover: var(--surface-inverse-hover);
+    --color-surface-inverse-pressed: var(--surface-inverse-pressed);
+    --color-surface-scrim: var(--surface-scrim);
+    --color-text-strong: var(--text-strong);
+    --color-text-default: var(--text-default);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-muted: var(--text-muted);
+    --color-text-disabled: var(--text-disabled);
+    --color-text-inverse: var(--text-inverse);
+    --color-text-on-accent: var(--text-on-accent);
+    --color-text-on-brand: var(--text-on-brand);
+    --color-text-brand: var(--text-brand);
+    --color-text-link: var(--text-link);
+    --color-text-link-hover: var(--text-link-hover);
+    --color-text-link-active: var(--text-link-active);
+    --color-text-danger: var(--text-danger);
+    --color-text-success: var(--text-success);
+    --color-text-warning: var(--text-warning);
+    --color-border-muted: var(--border-muted);
+    --color-border-default: var(--border-default);
+    --color-border-strong: var(--border-strong);
+    --color-border-stronger: var(--border-stronger);
+    --color-border-input: var(--border-input);
+    --color-border-input-hover: var(--border-input-hover);
+    --color-border-selected: var(--border-selected);
+    --color-border-danger: var(--border-danger);
+    --color-border-danger-hover: var(--border-danger-hover);
+    --color-border-disabled: var(--border-disabled);
+    --color-border-inverse: var(--border-inverse);
+    --color-interactive-primary: var(--interactive-primary);
+    --color-interactive-primary-hover: var(--interactive-primary-hover);
+    --color-interactive-primary-active: var(--interactive-primary-active);
+    --color-interactive-danger: var(--interactive-danger);
+    --color-interactive-danger-hover: var(--interactive-danger-hover);
+    --color-interactive-danger-active: var(--interactive-danger-active);
+    --color-interactive-ghost: var(--interactive-ghost);
+    --color-interactive-ghost-hover: var(--interactive-ghost-hover);
+    --color-interactive-ghost-active: var(--interactive-ghost-active);
+    --color-interactive-outline: var(--interactive-outline);
+    --color-interactive-outline-hover: var(--interactive-outline-hover);
+    --color-interactive-outline-active: var(--interactive-outline-active);
+    --color-interactive-disabled: var(--interactive-disabled);
+    --color-interactive-selected-fill: var(--interactive-selected-fill);
+    --color-state-hover: var(--state-hover);
+    --color-state-pressed: var(--state-pressed);
+    --color-state-selected: var(--state-selected);
+    --color-state-selected-muted: var(--state-selected-muted);
+    --color-state-disabled: var(--state-disabled);
+    --color-status-neutral-bg: var(--status-neutral-bg);
+    --color-status-neutral-border: var(--status-neutral-border);
+    --color-status-neutral-icon: var(--status-neutral-icon);
+    --color-status-neutral-text: var(--status-neutral-text);
+    --color-status-neutral-strong: var(--status-neutral-strong);
+    --color-status-info-bg: var(--status-info-bg);
+    --color-status-info-bg-hover: var(--status-info-bg-hover);
+    --color-status-info-border: var(--status-info-border);
+    --color-status-info-border-hover: var(--status-info-border-hover);
+    --color-status-info-icon: var(--status-info-icon);
+    --color-status-info-text: var(--status-info-text);
+    --color-status-info-strong: var(--status-info-strong);
+    --color-status-success-bg: var(--status-success-bg);
+    --color-status-success-border: var(--status-success-border);
+    --color-status-success-icon: var(--status-success-icon);
+    --color-status-success-text: var(--status-success-text);
+    --color-status-success-strong: var(--status-success-strong);
+    --color-status-success-bg-hover: var(--status-success-bg-hover);
+    --color-status-success-border-hover: var(--status-success-border-hover);
+    --color-status-warning-bg: var(--status-warning-bg);
+    --color-status-warning-border: var(--status-warning-border);
+    --color-status-warning-icon: var(--status-warning-icon);
+    --color-status-warning-text: var(--status-warning-text);
+    --color-status-warning-strong: var(--status-warning-strong);
+    --color-status-warning-bg-hover: var(--status-warning-bg-hover);
+    --color-status-warning-border-hover: var(--status-warning-border-hover);
+    --color-status-danger-bg: var(--status-danger-bg);
+    --color-status-danger-border: var(--status-danger-border);
+    --color-status-danger-icon: var(--status-danger-icon);
+    --color-status-danger-text: var(--status-danger-text);
+    --color-status-danger-strong: var(--status-danger-strong);
+    --color-status-danger-bg-hover: var(--status-danger-bg-hover);
+    --color-status-danger-border-hover: var(--status-danger-border-hover);
+    --color-focus-ring-default: var(--focus-ring-default);
+    --color-focus-ring-danger: var(--focus-ring-danger);
+    --color-chart-series-1: var(--chart-series-1);
+    --color-chart-series-2: var(--chart-series-2);
+    --color-chart-series-3: var(--chart-series-3);
+    --color-chart-series-4: var(--chart-series-4);
+    --color-chart-series-5: var(--chart-series-5);
+    --color-chart-series-6: var(--chart-series-6);
+    --color-control-switch-track-off: var(--control-switch-track-off);
+    --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
+    --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+}
+
+/*
+ * Typography tokens — composite text-style classes generated from Figma.
+ * Apply to any element: class="type-heading-lg"
+ */
+.type-heading-lg {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.type-heading-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.type-heading-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-text-regular-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-regular-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-regular-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-text-medium-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-label-lg {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-md {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-sm {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-xs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-label-xxs {
+    font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+.type-code-regular-sm {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-regular-xs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-regular-xxs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.16em;
+}
+
+.type-code-medium-md {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-sm {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-xs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}
+
+.type-code-medium-xxs {
+    font-family:
+        Geist Mono,
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        Liberation Mono,
+        monospace;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0em;
+}

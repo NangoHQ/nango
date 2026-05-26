@@ -283,17 +283,33 @@ export class EncryptionManager extends Encryption {
 
         const customerKeys = await db.knex.select('*').from<DBCustomerKey>('customer_keys');
         for (const key of customerKeys) {
-            if (key.iv && key.tag) {
+            const updates: Partial<DBCustomerKey> = {};
+
+            if (!key.iv || !key.tag) {
+                const encrypted = this.encryptAPISecret(key);
+                const hashed = await secretService.hashSecret(key.secret);
+                if (hashed.isErr()) {
+                    throw hashed.error;
+                }
+                updates.secret = encrypted.secret;
+                updates.iv = encrypted.iv;
+                updates.tag = encrypted.tag;
+                updates.hashed = hashed.value;
+            }
+
+            if (key.sandbox_signing_secret && (!key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag)) {
+                const [encrypted, iv, tag] = this.encryptSync(key.sandbox_signing_secret);
+                updates.sandbox_signing_secret = encrypted;
+                updates.sandbox_signing_secret_iv = iv;
+                updates.sandbox_signing_secret_tag = tag;
+            }
+
+            if (Object.keys(updates).length === 0) {
                 continue;
             }
-            const encrypted = this.encryptAPISecret(key);
-            const hashed = await secretService.hashSecret(key.secret);
-            if (hashed.isErr()) {
-                throw hashed.error;
-            }
-            encrypted.hashed = hashed.value;
-            encrypted.updated_at = new Date();
-            await db.knex<DBCustomerKey>('customer_keys').where({ id: key.id }).update(encrypted);
+
+            updates.updated_at = new Date();
+            await db.knex<DBCustomerKey>('customer_keys').where({ id: key.id }).update(updates);
         }
 
         logger.info('🔐✅ Encryption of database complete!');

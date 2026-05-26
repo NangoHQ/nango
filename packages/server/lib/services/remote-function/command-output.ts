@@ -28,27 +28,6 @@ export function combineCommandOutput({ stdout, stderr }: { stdout?: string | und
         .join('\n');
 }
 
-export function isCompilationFailureOutput(output: string): boolean {
-    return /✗ Typechecking|Found \d+ errors?/i.test(output);
-}
-
-/**
- * Detects older CLI dryrun failures that can exit 0 after writing an error.
- * When that happens, return the combined streams so the API can surface it as a dryrun_error.
- */
-export function getDryrunCommandErrorOutput({ stdout, stderr }: { stdout?: string | undefined; stderr?: string | undefined }): string | undefined {
-    const output = combineCommandOutput({ stdout, stderr });
-    if (!output) {
-        return undefined;
-    }
-
-    if (/An error occurred during execution|Connection not found|No script matched/i.test(output)) {
-        return output;
-    }
-
-    return undefined;
-}
-
 /**
  * Returns only stdout for successful dryruns because the CLI prints the action result JSON there.
  * Successful user warnings may go to stderr, and appending them would corrupt result parsing.

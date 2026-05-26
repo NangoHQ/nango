@@ -1,15 +1,17 @@
 import db from '@nangohq/database';
-import { connectionService, secretService } from '@nangohq/shared';
+import { connectionService, sandboxApiKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { parseDryrunSuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDryrun } from '../../../services/remote-function/dryrun-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
+import { getRemoteFunctionNangoHost, remoteFunctionDryrunSandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDryrunBodySchema } from '../validation.js';
 
 import type { PostRemoteFunctionDryrun } from '@nangohq/types';
+
+const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -37,9 +39,19 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
         return;
     }
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        sendStepError({ res, status: 500, error: defaultSecret.error });
+    if (res.locals.apiKeyAuthSource !== 'customer_key' || !res.locals.apiKeyId) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'Sandbox tokens can only be issued from a customer API key' } });
+        return;
+    }
+
+    const sandboxApiKey = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+        parentApiKeyId: res.locals.apiKeyId,
+        environmentId: environment.id,
+        purpose: 'dryrun',
+        expiresAt: new Date(Date.now() + remoteFunctionDryrunSandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+    });
+    if (sandboxApiKey.isErr()) {
+        sendStepError({ res, status: 500, error: sandboxApiKey.error });
         return;
     }
 
@@ -53,7 +65,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
             code: body.code,
             environment_name: environment.name,
             connection_id: body.connection_id,
-            nango_secret_key: defaultSecret.value.secret,
+            nango_secret_key: sandboxApiKey.value,
             nango_host: getRemoteFunctionNangoHost(),
             ...(body.input !== undefined ? { input: body.input } : {}),
             ...(body.metadata ? { metadata: body.metadata } : {}),

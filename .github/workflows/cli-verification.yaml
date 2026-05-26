@@ -75,7 +75,7 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               run: |
                   npm ci
-                  npm run ts-build
+                  npm run ts-build -- --noCheck
 
             - name: Publish packages to github registry so they can be bumped
               if: needs.should-run.outputs.should_skip != 'true'
@@ -86,10 +86,15 @@ jobs:
                     PACKAGE_PATH=$1
                     PACKAGE_NAME=$(node -p "require('./${PACKAGE_PATH}/package.json').name")
                     PACKAGE_VERSION=$(node -p "require('./${PACKAGE_PATH}/package.json').version")
-                    if npm view ${PACKAGE_NAME}@${PACKAGE_VERSION} ; then
+                    if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" ; then
                       echo "Version ${PACKAGE_VERSION} of ${PACKAGE_NAME} already exists. Skipping publish."
                     else
                       echo "Publishing ${PACKAGE_NAME}@${PACKAGE_VERSION}..."
+                      case "$PACKAGE_NAME" in
+                        @nangohq/node)
+                          npm run -w "$PACKAGE_NAME" build
+                          ;;
+                      esac
                       pushd ./${PACKAGE_PATH}
                       npm publish --ignore-scripts
                       popd
@@ -123,7 +128,8 @@ jobs:
                   GIT_HASH=$(git rev-parse HEAD)
                   npm version "0.0.1-$GIT_HASH" --no-git-tag-version --allow-same-version
                   jq '.name = "@nangohq/cli"' package.json > temp.json && mv temp.json package.json
-                  npm publish
+                  npm run copy:files
+                  npm publish --ignore-scripts
     verify:
         runs-on: ubuntu-latest
         needs:

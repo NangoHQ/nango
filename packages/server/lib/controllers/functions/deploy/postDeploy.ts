@@ -1,15 +1,17 @@
 import db from '@nangohq/database';
-import { configService, getSyncConfigRaw, secretService } from '@nangohq/shared';
+import { configService, getSyncConfigRaw, sandboxApiKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { parseDeploySuccessOutput } from '../../../services/remote-function/command-output.js';
 import { invokeDeploy } from '../../../services/remote-function/deploy-client.js';
 import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
-import { getRemoteFunctionNangoHost } from '../../../services/remote-function/runtime.js';
+import { getRemoteFunctionNangoHost, remoteFunctionDeploySandboxTimeoutMs } from '../../../services/remote-function/runtime.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { remoteFunctionDeployBodySchema } from '../validation.js';
 
 import type { PostRemoteFunctionDeploy } from '@nangohq/types';
+
+const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
 
 export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -50,9 +52,19 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
         return;
     }
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        sendStepError({ res, status: 500, error: defaultSecret.error });
+    if (res.locals.apiKeyAuthSource !== 'customer_key' || !res.locals.apiKeyId) {
+        res.status(403).send({ error: { code: 'forbidden', message: 'Sandbox tokens can only be issued from a customer API key' } });
+        return;
+    }
+
+    const sandboxApiKey = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+        parentApiKeyId: res.locals.apiKeyId,
+        environmentId: environment.id,
+        purpose: 'deploy',
+        expiresAt: new Date(Date.now() + remoteFunctionDeploySandboxTimeoutMs + sandboxApiKeyTimeoutBufferMs)
+    });
+    if (sandboxApiKey.isErr()) {
+        sendStepError({ res, status: 500, error: sandboxApiKey.error });
         return;
     }
 
@@ -63,7 +75,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             function_type: body.function_type,
             code: body.code,
             environment_name: environment.name,
-            nango_secret_key: defaultSecret.value.secret,
+            nango_secret_key: sandboxApiKey.value,
             nango_host: getRemoteFunctionNangoHost()
         });
         const output = parseDeploySuccessOutput(result.output);

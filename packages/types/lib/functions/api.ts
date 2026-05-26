@@ -1,6 +1,5 @@
 import type { ApiError, Endpoint } from '../api.js';
-
-export type FunctionType = 'action' | 'sync';
+import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoSyncFunction } from './domain.js';
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -89,4 +88,37 @@ export type PostRemoteFunctionDeploy = Endpoint<{
         deployed_functions: { name: string; version: string }[];
         output: string;
     };
+}>;
+
+export type GetIntegrationFunctions = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions';
+    Querystring: {
+        env: string;
+        type?: FunctionType;
+        search?: string;
+        page?: number;
+        limit?: number;
+    };
+    Params: { providerConfigKey: string };
+    Success: {
+        data: DeployedNangoFunction[];
+        pagination: { total: number; page: number; limit: number };
+    };
+}>;
+
+export type GetIntegrationFunction = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName';
+    Querystring: { env: string; type?: FunctionType };
+    Params: { providerConfigKey: string; functionName: string };
+    Success: { data: DeployedNangoFunction };
+}>;
+
+export type GetProviderTemplates = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/providers/:providerConfigKey/templates';
+    Querystring: { env: string };
+    Params: { providerConfigKey: string };
+    Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
 }>;
