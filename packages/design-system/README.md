@@ -108,7 +108,7 @@ Token changes should always originate in Figma — the designer owns the source 
 ### Generated CSS structure
 
 ```css
-/* Primitives — --ds- prefix, NOT in @theme (enforce semantic-only usage) */
+/* Primitives — --ds- prefix */
 :root {
   --ds-color-neutral-50: #f9fafb;
   ...
@@ -125,12 +125,6 @@ Token changes should always originate in Figma — the designer owns the source 
 [data-theme="dark"] {
   --surface-canvas: #0f172a;
   --text-strong: #f8fafc;
-  ...
-}
-
-/* Tailwind v4 @theme — generates bg-surface-canvas, text-text-strong, etc. */
-@theme {
-  --color-surface-canvas: var(--surface-canvas);
   ...
 }
 ```
@@ -153,46 +147,16 @@ Primitives are excluded from `@theme` to nudge components toward semantic tokens
 @import '@nangohq/design-system/tokens/tokens.generated.css';
 ```
 
-Legacy tokens in `index.css` (`--color-*`) are separate and untouched.
-
----
-
-## Package structure
-
-```
-src/
-  components/
-    Button/
-      Button.tsx           component implementation
-      Button.stories.tsx   Storybook story
-    Input/
-      Input.tsx
-      Input.stories.tsx
-    …                      one directory per component
-    ui/                    shadcn CLI scratch pad — generated files land here,
-                           then get adapted into the component directory above
-  lib/
-    cn.ts                  cn() helper (twMerge + clsx)
-  index.ts                 barrel — all public exports
-  index.css                CSS entry point (imports tokens.generated.css)
-tokens/
-  tokens.json              Tokens Studio source of truth
-  tokens.generated.css     compiled CSS custom properties
-scripts/
-  tokens-fetch.mjs         token pipeline
-components.json            shadcn CLI config
-```
-
-Each component lives in its own directory alongside its story. When adding a new component via the shadcn CLI (`npx shadcn add <name>`), the generated file is placed in `src/components/ui/` as a starting point. Move and adapt it into `src/components/<Name>/` — replacing shadcn's hardcoded Tailwind utilities with our `--ds-*` token variables — then delete the `ui/` file.
-
 ---
 
 ## Components
 
-Components are available from the package root:
+Components are added on-demand as they're needed in product screens. See `CLAUDE.md` for the full guide on adding new components.
+
+Available components:
 
 ```tsx
-import { Button, Input, Badge, FilterBadge, IconButton, Spinner } from '@nangohq/design-system';
+import { Button, IconButton, Spinner, buttonVariants } from '@nangohq/design-system';
 ```
 
 The consumer must also import the token CSS once at the app root (see above). Components use only semantic CSS variables — no raw hex, hardcoded sizes, or hardcoded spacing.
@@ -207,7 +171,9 @@ Components apply focus rings via `box-shadow` using `--focus-outline-default` (o
 
 This is included in Storybook's `preview.css` automatically.
 
-### Tokens Studio GitHub sync config
+---
+
+## Tokens Studio GitHub sync config
 
 | Field | Value |
 |---|---|
