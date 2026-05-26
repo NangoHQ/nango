@@ -5,11 +5,11 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
-import { useMeta } from '../hooks/useMeta';
-import { useUser } from '../hooks/useUser';
-import { useStore } from '../store';
-import { globalEnv } from '../utils/env';
-import { LocalStorageKeys } from '../utils/local-storage';
+import { useMeta } from '@/hooks/useMeta';
+import { useUser } from '@/hooks/useUser';
+import { useStore } from '@/store';
+import { globalEnv } from '@/utils/env';
+import { LocalStorageKeys } from '@/utils/local-storage';
 
 import 'react-toastify/dist/ReactToastify.css';
 

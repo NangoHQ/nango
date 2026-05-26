@@ -27,7 +27,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
-import { githubRepo as INTEGRATION_TEMPLATES_GITHUB_URL } from '@/utils/cloud';
+import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
@@ -133,7 +133,7 @@ export const FunctionsOne: React.FC = () => {
     }
 
     const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
-    const gitUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${gitDir}.ts`;
+    const gitUrl = `${githubRepo}/tree/main/integrations/${gitDir}.ts`;
 
     return (
         <DashboardLayout>

@@ -6,11 +6,11 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { SWRConfig } from 'swr';
 
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { queryClient } from '../store';
-import { fetcher } from '../utils/api';
-import { SentryErrorBoundary } from '../utils/sentry';
-import { useSignout } from '../utils/user';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { queryClient } from '@/store';
+import { fetcher } from '@/utils/api';
+import { SentryErrorBoundary } from '@/utils/sentry';
+import { useSignout } from '@/utils/user';
 
 import type { ReactNode } from 'react';
 
