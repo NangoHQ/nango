@@ -87,7 +87,7 @@ function IconGrid() {
                         placeholder={`Search ${ALL_ICONS.length} icons…`}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        style={{ maxWidth: '20rem' }}
+                        className="max-w-80"
                     />
                     <p
                         style={{
