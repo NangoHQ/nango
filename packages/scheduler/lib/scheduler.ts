@@ -431,7 +431,8 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
-        return this.db.transaction(async (trx) => {
+        const cancelledTasks: Task[] = [];
+        const res: Result<Schedule> = await this.db.transaction(async (trx) => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
             const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (found.isErr()) {
@@ -447,7 +448,6 @@ export class Scheduler {
                 return Ok(schedule);
             }
 
-            const cancelledTasks = [];
             if (state === 'DELETED' || state === 'PAUSED') {
                 const runningTasks = await tasks.search(trx, {
                     scheduleId: schedule.id,
@@ -470,13 +470,21 @@ export class Scheduler {
                 }
             }
 
-            const res = await schedules.transitionState(trx, schedule.id, state);
-            if (res.isErr()) {
-                return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(res.error)}`);
+            const scheduleRes = await schedules.transitionState(trx, schedule.id, state);
+            if (scheduleRes.isErr()) {
+                return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(scheduleRes.error)}`);
             }
-            cancelledTasks.forEach((task) => this.onCallbacks[task.state](task));
-            return res;
+            return scheduleRes;
         });
+
+        if (res.isOk()) {
+            for (const task of cancelledTasks) {
+                await this.scheduleAbortTask({ aborted: task, reason: `schedule ${state}` });
+                this.onCallbacks[task.state](task);
+            }
+        }
+
+        return res;
     }
 
     /**
