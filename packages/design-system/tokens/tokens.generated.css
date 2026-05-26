@@ -609,6 +609,49 @@
     --color-control-switch-track-off: var(--control-switch-track-off);
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+    --shadow-focus-outline-default: var(--focus-outline-default);
+    --shadow-focus-outline-danger: var(--focus-outline-danger);
+    --shadow-container-inset: var(--container-inset);
+    --shadow-container-panel: var(--container-panel);
+    --shadow-container-sheet: var(--container-sheet);
+}
+
+/*
+ * Tailwind v4 @theme registration — primitive tokens.
+ * Radius → rounded-ds-*, border-width → border-ds-*,
+ * font-size → text-ds-*, font-weight → font-ds-*, letter-spacing → tracking-ds-*
+ */
+@theme {
+    --text-ds-3xs: var(--ds-typography-font-size-3xs);
+    --text-ds-2xs: var(--ds-typography-font-size-2xs);
+    --text-ds-xs: var(--ds-typography-font-size-xs);
+    --text-ds-sm: var(--ds-typography-font-size-sm);
+    --text-ds-md: var(--ds-typography-font-size-md);
+    --text-ds-lg: var(--ds-typography-font-size-lg);
+    --text-ds-xl: var(--ds-typography-font-size-xl);
+    --text-ds-2xl: var(--ds-typography-font-size-2xl);
+    --text-ds-3xl: var(--ds-typography-font-size-3xl);
+    --text-ds-4xl: var(--ds-typography-font-size-4xl);
+    --font-weight-ds-regular: var(--ds-typography-font-weight-regular);
+    --font-weight-ds-medium: var(--ds-typography-font-weight-medium);
+    --font-weight-ds-semibold: var(--ds-typography-font-weight-semibold);
+    --font-weight-ds-bold: var(--ds-typography-font-weight-bold);
+    --tracking-ds-tight: var(--ds-typography-letter-spacing-tight);
+    --tracking-ds-normal: var(--ds-typography-letter-spacing-normal);
+    --tracking-ds-wide: var(--ds-typography-letter-spacing-wide);
+    --radius-ds-none: var(--ds-radius-none);
+    --radius-ds-xs: var(--ds-radius-xs);
+    --radius-ds-sm: var(--ds-radius-sm);
+    --radius-ds-md: var(--ds-radius-md);
+    --radius-ds-lg: var(--ds-radius-lg);
+    --radius-ds-xl: var(--ds-radius-xl);
+    --radius-ds-2xl: var(--ds-radius-2xl);
+    --radius-ds-3xl: var(--ds-radius-3xl);
+    --radius-ds-full: var(--ds-radius-full);
+    --border-width-ds-0: var(--ds-border-width-0);
+    --border-width-ds-1: var(--ds-border-width-1);
+    --border-width-ds-2: var(--ds-border-width-2);
+    --border-width-ds-hairline: var(--ds-border-width-hairline);
 }
 @theme inline {
     --shadow-focus-outline-default: var(--focus-outline-default);
