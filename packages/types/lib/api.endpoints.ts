@@ -65,6 +65,7 @@ import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuil
 import type {
     GetIntegrationFunction,
     GetIntegrationFunctions,
+    GetIntegrationTemplates,
     GetProviderTemplates,
     PostRemoteFunctionCompile,
     PostRemoteFunctionDeploy,
@@ -182,6 +183,7 @@ export type PrivateApiEndpoints =
     | GetIntegrationFlows
     | GetIntegrationFunction
     | GetIntegrationFunctions
+    | GetIntegrationTemplates
     | GetProviderTemplates
     | DeleteIntegration
     | PatchIntegration
