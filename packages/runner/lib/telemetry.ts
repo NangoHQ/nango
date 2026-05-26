@@ -38,9 +38,9 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
 
 function createTelemetryBatcher({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): {
     batcher: Batcher<RunnerTelemetry>;
-    waitForInFlights: () => Promise<void>;
+    allInFlightLanded: (waitFor: number) => Promise<boolean>;
 } {
-    const inFlight = new Set<Promise<unknown>>();
+    const inFlight = new Set<Promise<void>>();
 
     const batcher = new Batcher<RunnerTelemetry>({
         maxBatchSize: telemetryBatchSize,
@@ -48,7 +48,7 @@ function createTelemetryBatcher({ environmentId, persistClient }: { environmentI
         grouping: telemetryGrouping,
         // eslint-disable-next-line @typescript-eslint/require-await
         process: async (events) => {
-            // Fire-and-forget to avoid blocking runner script execution.
+            // fire-and-forget to avoid blocking runner script execution.
             const p = persistClient
                 .postRunnerTelemetry(environmentId, events)
                 .then((res) => {
@@ -61,11 +61,25 @@ function createTelemetryBatcher({ environmentId, persistClient }: { environmentI
         }
     });
 
-    const waitForInFlights = async (): Promise<void> => {
-        await Promise.allSettled([...inFlight]);
+    const allInFlightLanded = async (waitFor: number): Promise<boolean> => {
+        if (inFlight.size === 0) return true;
+        if (waitFor <= 0) return false;
+
+        let timerId: NodeJS.Timeout;
+        let timedOut = false;
+        const timer = new Promise(
+            (resolve) =>
+                (timerId = setTimeout(() => {
+                    timedOut = true;
+                    resolve(null);
+                }, waitFor))
+        );
+        await Promise.race([Promise.allSettled([...inFlight]), timer]);
+        clearTimeout(timerId!);
+        return !timedOut;
     };
 
-    return { batcher, waitForInFlights };
+    return { batcher, allInFlightLanded };
 }
 
 export function createTelemetryRecorder({
@@ -77,7 +91,7 @@ export function createTelemetryRecorder({
     persistClient: PersistClient;
     exportRunnerTelemetry: boolean;
 }): TelemetryRecorder {
-    const { batcher, waitForInFlights } = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : {};
+    const { batcher, allInFlightLanded } = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : {};
 
     return {
         environmentId,
@@ -89,17 +103,20 @@ export function createTelemetryRecorder({
             }
         },
         async shutdown({ timeoutMs = 5_000 }: { timeoutMs?: number } = {}) {
-            if (!batcher || !waitForInFlights) return Ok(undefined);
+            if (!batcher || !allInFlightLanded) return Ok(undefined);
+
             const start = Date.now();
             const res = await batcher.shutdown({ timeoutMs });
             if (res.isErr()) {
                 logger.error(`Telemetry recorder shutdown error: ${res.error.message}`);
                 return res;
             }
-            const remaining = timeoutMs - (Date.now() - start);
-            if (remaining > 0) {
-                await Promise.race([waitForInFlights(), new Promise<void>((resolve) => setTimeout(resolve, remaining))]);
+
+            const timeRemaining = timeoutMs - (Date.now() - start);
+            if (!(await allInFlightLanded(timeRemaining))) {
+                logger.warning(`Not all in-flight telemetry entries landed within ${timeoutMs}ms`);
             }
+
             return Ok(undefined);
         }
     };
