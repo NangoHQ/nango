@@ -1,6 +1,6 @@
 import { Circle } from 'lucide-react';
 
-import { FilterBadge } from './FilterBadge';
+import { FilterBadge } from './filter-badge';
 
 import type { Meta, StoryObj } from '@storybook/react';
 

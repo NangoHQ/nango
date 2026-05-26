@@ -2,8 +2,8 @@ import { cva } from 'class-variance-authority';
 import { Eye, EyeOff } from 'lucide-react';
 import { forwardRef, useState } from 'react';
 
+import { IconButton } from './icon-button';
 import { cn } from '../../lib/cn';
-import { IconButton } from '../IconButton/IconButton';
 
 import type { VariantProps } from 'class-variance-authority';
 import type { ReactNode } from 'react';
