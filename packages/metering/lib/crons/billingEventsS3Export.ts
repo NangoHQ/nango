@@ -12,7 +12,6 @@ import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.billingEventsS3Export');
 const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
-const cronSchedule = envs.CRON_BILLING_EVENTS_S3_EXPORT_SCHEDULE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
@@ -157,7 +156,7 @@ export function billingEventsS3ExportCron(): void {
         return;
     }
 
-    cron.schedule(cronSchedule, () => {
+    cron.schedule(`*/${cronMinutes} * * * *`, () => {
         exec().catch((err: unknown) => {
             logger.error('Cron tick failed unexpectedly', err);
         });
