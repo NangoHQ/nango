@@ -5,6 +5,10 @@ import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import { PROD_ENVIRONMENT_NAME, useStore } from '../store';
 
+/**
+ * Rendered at `/`. Redirects the user to the right starting route based on
+ * auth state and environment — no UI of its own.
+ */
 export const Root: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
