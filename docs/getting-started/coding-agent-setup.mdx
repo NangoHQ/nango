@@ -1,10 +1,10 @@
 ---
 title: 'Coding agent setup'
 sidebarTitle: '✨ Coding agent setup'
-description: 'Give coding agents the Nango docs, skills, and MCP tools.'
+description: 'Give coding agents the Nango docs, core skill, and MCP tools.'
 ---
 
-Set up your coding agent with Nango's public docs MCP server, skills, and reference files so it can help implement Nango auth and functions.
+Set up your coding agent with Nango's public docs MCP server, core skill, and reference files so it can help implement Nango auth and functions.
 
 This page is for coding agents that write code with you. To expose Nango integrations to your product's agents at runtime, see [Tool calling & MCP](/guides/functions/tool-calling).
 
@@ -24,67 +24,19 @@ Use it when the agent needs current Nango docs, API references, function example
 <a id="skills"></a>
 ## Skills
 
-Nango's public skills live in [NangoHQ/skills](https://github.com/NangoHQ/skills). Install the skill that matches the job:
+Nango's public skills live in [NangoHQ/skills](https://github.com/NangoHQ/skills). Install the core Nango functions skill:
 
 ```bash
-npx skills add NangoHQ/skills -s building-nango-functions-locally
+npx skills add NangoHQ/skills -s building-nango-functions
 ```
 
-Current skills include:
+The `building-nango-functions` skill gives agents the fundamentals they need to work with Nango functions: function types, project layout, schemas, and common implementation rules.
 
-| Skill | Use it for |
-| --- | --- |
-| `building-nango-functions-locally` | Build or update functions in a checked-out `nango-integrations/` folder with the Nango CLI. |
-| `building-nango-functions-remotely` | Build functions headlessly by calling Nango remote compile, dry run, and deploy APIs. |
-| `migrating-to-zero-yaml` | Move integrations away from the deprecated `nango.yaml` format. |
-| `migrating-to-checkpoints` | Replace legacy incremental sync patterns with checkpoint-based syncs. |
-| `migrating-nango-deletion-detection` | Replace deprecated deletion detection helpers with `trackDeletesStart()` and `trackDeletesEnd()`. |
+Use it with the docs MCP server so the agent can fetch current guides, API references, and provider setup details while it works.
 
-Install a different skill by changing the `-s` value:
+For more detail on what functions are, when to use each function type, and which workflow to follow (with an appropriate workflow-specific skill), see the [functions guide](/guides/functions/functions-guide).
 
-```bash
-npx skills add NangoHQ/skills -s building-nango-functions-remotely
-```
-
-If your coding agent is already running, restart it after installing a skill so it can load the instructions.
-
-## Build functions locally
-
-Use `building-nango-functions-locally` when your repo has, or can create, a Nango integrations folder. This is the default workflow for functions you want to keep in source control.
-
-The agent should work inside the folder that contains `.nango/`, `index.ts`, and one folder per integration. If the folder does not exist yet, initialize it at the root of your repo:
-
-```bash
-nango init nango-integrations
-```
-
-The local workflow is:
-
-1. Install the local builder skill and add the docs MCP server.
-2. Configure the CLI with a [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys**. The CLI reads it from `NANGO_SECRET_KEY_<ENV_NAME>` in `nango-integrations/.env`; despite the variable name, it stores a [Nango API key](/reference/backend/http-api/api-keys). Keep `.env` untracked.
-3. The agent will ask you for the integration ID, connection ID for dry runs, function name, expected input and output, and the provider API reference or a sample payload if you do not provide them explicitly.
-4. For sync functions, have the agent choose a checkpoint and deletion strategy before writing code.
-5. Have the agent create or update the function under `<integration-id>/actions/`, `<integration-id>/syncs/`, or `<integration-id>/on-events/`, then import it from `index.ts`. Webhook function logic usually lives on a sync function.
-6. Run `nango dryrun <function-name> '<CONNECTION-ID>' -e dev`, iterate on failures, generate tests when appropriate, and deploy with `nango deploy` only when ready.
-
-See the [functions guide](/guides/functions/functions-guide) for the full local project layout, CLI setup, dry run commands, and deployment flow.
-
-## Build functions remotely
-
-Use `building-nango-functions-remotely` when the agent needs to build a function without a checked-out Nango integrations folder. This is useful for headless workflows, prototypes, or agents running outside your app repo.
-
-The remote workflow is:
-
-1. Install the remote builder skill and add the docs MCP server.
-2. Provide a [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys** as `NANGO_SECRET_KEY`; despite the variable name, it stores a [Nango API key](/reference/backend/http-api/api-keys).
-3. The agent will ask you for the integration ID, connection ID, function name, function type, input and output shape, metadata or checkpoint values, and the provider API reference or a sample payload if you do not provide them explicitly.
-4. The agent writes one self-contained TypeScript function using `createAction()` or `createSync()`.
-5. The agent compiles remotely, dry-runs against the target connection, and iterates on API or type errors.
-6. The agent deploys remotely only when requested.
-
-The remote skill uses the Functions API. See the [HTTP API reference](/reference/backend/http-api/authentication) for authentication, scopes, and endpoint details.
-
-Remote dry runs do not create local mock files or run your repo's tests. Use the local workflow when you need committed function code, generated test fixtures, or CI/CD deployment.
+If your coding agent is already running, restart it after installing the skill so it can load the instructions.
 
 ## Other agent tools
 

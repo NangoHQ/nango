@@ -1,7 +1,7 @@
 ---
 title: 'Functions guide'
 sidebarTitle: 'Functions guide'
-description: 'Understand Nango Functions, set up your functions project, and choose the right function type.'
+description: 'Understand Nango Functions and choose the right way to start using them.'
 ---
 
 ## Overview
@@ -16,7 +16,7 @@ You write functions in TypeScript and deploy them to Nango. Your app can call th
 
 1. Your user authorizes an external API through [Nango Auth](/guides/auth/auth-guide).
 2. Your app stores the resulting `connectionId`.
-3. You deploy functions for the integration.
+3. You enable or deploy functions for the integration.
 4. Nango runs the function on demand, on a schedule, from an external webhook, or after a connection lifecycle event.
 5. Your app receives the function result, sync records, or webhooks from Nango.
 
@@ -29,13 +29,23 @@ Functions are the right layer when you need custom API logic, data syncing, webh
 - **Multiple trigger types** — call functions on demand, run them on a schedule, route external webhooks into them, or react to connection lifecycle events.
 - **Agent-ready tools** — expose selected functions to agents through the API or Nango's MCP server while keeping provider credentials out of the model loop.
 - **Built-in integration infrastructure** — retries, rate-limit handling, logs, OpenTelemetry export, records storage, checkpoints, and per-connection metadata.
-- **Local development and CI/CD** — dry run functions against real connections, snapshot test them, and deploy them with your application pipeline.
+- **Flexible development workflows** — enable a template, build headlessly through the Functions API, or keep function code in a local CLI project.
 
-## Template catalog
+## Choose a starting path
 
-Nango's template catalog contains template functions for common provider use cases. Use it to ship faster, inspect implementation patterns, or bootstrap a custom function.
+Start with the workflow that matches how much control you need:
 
-Template functions are normal Nango functions. You can deploy them as-is when they fit your use case, or pull the source into your functions project and customize it.
+| If you want to... | Start with |
+| --- | --- |
+| Use a common provider operation with minimal setup | [Templates](#start-with-templates) |
+| Have an agent build an integration without a checked-out functions project | [Remote development with the Functions API](#build-remotely-with-the-functions-api) |
+| Own the function code in source control, tests, and CI/CD | [Local development with the CLI](#build-locally-with-the-cli) |
+
+## Start with templates
+
+Nango's template catalog contains template functions for common provider use cases. This is the easiest way to start using functions: enable a template for your integration, then call it from your app, backend job, or agent workflow.
+
+Template functions are normal Nango functions. You can deploy them as-is when they fit your use case, or use them as a starting point for a custom function.
 
 You can browse template functions in three places:
 
@@ -47,85 +57,77 @@ Generated integration docs also list template use cases for many providers, with
 
 When a template function already matches your use case, enable it for the integration and deploy it without changing the code. Before using it in production, check the function type, required scopes, input and output schema, synced record model, and provider plan requirements.
 
-Use the CLI to clone template code into your local functions project:
-
-```bash
-nango clone github
-nango clone github/actions
-nango clone github/actions/list-repos
-```
-
-You can clone an entire integration, a function-type folder, or a single function. After cloning, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
-
-<Tip>
-  Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
-</Tip>
+If a template is close but not exact, [clone it into a local functions project and customize it](#extend-a-template).
 
 Template action functions can also be exposed as agent tools. Enable the action function, discover its schema with the [Get integration functions config API](/reference/backend/http-api/scripts/config), then execute it through [tool calling](/guides/functions/tool-calling), the action trigger API, or Nango's MCP server.
 
-## Function AI Builder
+## Choose a function type
 
-Nango's Function AI Builder is a workflow for building functions with the coding agent, IDE, and model of your choice.
+Choose the function type by starting from the event that should cause Nango to run your logic.
 
-Instead of using a black-box integration generator, you get TypeScript function code that you can review, test, customize, deploy, and maintain in your own repo.
+<a id="trigger-asynchronously"></a>
 
-Use both sources of context when asking an agent to build a function:
-
-1. Add Nango's documentation MCP server: `https://nango.dev/docs/mcp`
-2. Install the Nango function builder skill:
-
-```bash
-npx skills add NangoHQ/skills -s building-nango-functions-locally
-```
-
-<Note>
-  If your coding agent is already running, restart it after installing the skill so it can load the new instructions.
-</Note>
-
-<Warning>
-  Claude Code users: the default symlink install currently skips the `.claude/skills/` symlinks when `.claude/` doesn't already exist, so Claude Code won't see the skill. As a workaround, choose **Copy to all agents** during the interactive prompt (or create `.claude/` before running the command). Tracked upstream in [vercel-labs/skills#1138](https://github.com/vercel-labs/skills/issues/1138).
-</Warning>
-
-The docs MCP and skill give the agent current Nango function APIs, CLI commands, project layout, Zod schema patterns, testing guidance, deployment expectations, and examples for action, sync, webhook, and event functions.
-
-You can start with a short request:
-
-```text
-Build a Nango action that gets Slack channel information.
-```
-
-You will get better output if you include the integration ID, connection ID, desired input and output models, and the provider API reference:
-
-```text
-Build a Nango action that gets Slack channel information.
-
-Integration ID: slack
-Connection ID for dry run: my-slack-connection
-Inputs: channel_id
-Outputs: id, name, is_private
-API reference: https://api.slack.com/methods/conversations.info
-```
-
-For syncs, include the record model, frequency, pagination and incremental hints if you already know them, and any customer-specific metadata the function needs:
-
-```text
-Build a Nango sync that stores Figma projects.
-
-Integration ID: figma
-Connection ID for dry run: my-figma-connection
-Frequency: every hour
-Metadata: team_id
-Records: Project with id, name, last_modified
-API reference: https://www.figma.com/developers/api#projects-endpoints
-```
-
-A good agent workflow generates the function code, imports it from `index.ts`, adds schemas, writes or updates tests, runs `nango dryrun`, iterates on failures, and leaves the function ready for `nango deploy`.
-
-## Guide
+| If you need to... | Guides | Trigger types | Common examples |
+| --- | --- | --- | --- |
+| Keep external API data fresh in your app, or react to changes | [Sync function](/guides/functions/syncs/sync-functions) | Schedule, manual sync trigger, or external webhook reconciliation | Sync contacts/files/events/tickets, RAG, change detection / triggers |
+| Run an operation when your app or agent asks for it | [Action function](/guides/functions/action-functions) | HTTP API, SDK, async action queue, or MCP/tool call | Create an issue, send a message, fetch details, perform a write |
+| Process an external provider webhook inside Nango | [Webhook function](/guides/functions/webhook-functions) | External API sends a webhook to Nango | Update records from a webhook payload, normalize events, mark data for reconciliation |
+| React when a Nango connection is created, validated, or deleted | [Event function](/guides/functions/event-functions) | Nango connection lifecycle event | Validate credentials, register provider webhooks, seed metadata, clean up subscriptions |
 
 <Tip>
-  **Using a coding agent?** Set up the [docs MCP](/getting-started/coding-agent-setup#docs-mcp-server) and [skills](/getting-started/coding-agent-setup#skills), then copy this page as prompt.
+  Use [webhook forwarding](/guides/platform/webhook-forwarding) instead of a webhook function when you want Nango to receive an external webhook, attribute it to a connection when possible, and forward the payload to your app for handling.
 </Tip>
+
+## Build remotely with the Functions API
+
+Remote development lets you build a function without a checked-out Nango integrations folder. You send TypeScript function source to Nango's Functions API, compile it, dry run it against a connection, and deploy it to an integration.
+
+Use this workflow when function creation should happen inside another system: a setup wizard, an internal tool, a CI job, a hosted builder, or a coding agent. The caller owns the orchestration, and Nango handles compilation, execution, credentials, logs, and deployment.
+
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s building-nango-functions-remotely"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install remote skill</span>
+    <span className="agent-quickstart-action-description">Copy the command for coding agents using the Functions API workflow.</span>
+  </button>
+</div>
+
+The remote workflow is:
+
+1. Prepare API access. Send every request with `Authorization: Bearer <NANGO-API-KEY>`. Get the [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys**. [Scoped API keys](/reference/backend/http-api/api-keys#scopes) need the Functions compile, dry run, and deploy scopes; the default full-access key already includes them.
+2. Collect the function context. Your builder needs the integration ID, connection ID for validation, function name, function type, input and output shape, metadata or checkpoint values, and the provider API reference or a sample payload. A coding agent can usually figure these out by itself and ask for missing values.
+3. Generate the TypeScript function source. Produce one self-contained function using `createAction()` or `createSync()`. Include schemas and provider request logic in the submitted source so the remote API can compile it without a local project. Example implementations are available in the [Nango integration templates repository](https://github.com/NangoHQ/integration-templates).
+4. Compile the function with `POST /functions/compile`. This is mainly a code validation step: it checks TypeScript, bundles the submitted source, and returns compilation output and bundle metadata. Use compiler errors to update the source before running it.
+5. Start a dry run with `POST /functions/dryruns`. Provide the TypeScript function source, not the bundled output, plus the target integration, target connection, and any input, metadata, or checkpoint payload needed for execution. Nango recompiles the TypeScript internally as a validation step, starts the dry run asynchronously, and returns an ID and initial status.
+6. Poll the dry run with `GET /functions/dryruns/{id}`. Continue until the status is `success` or `failed`. On success, inspect the output, records, logs, and timing. On failure, use the returned error to update the source and go back to compile or dry run.
+7. Deploy with `POST /functions/deployments`. Send the final TypeScript source and target integration so Nango deploys the function. Nango recompiles the TypeScript internally as a validation step before deployment. After deployment, your app can call the function through the action trigger API, SDKs, sync triggers, schedules, webhooks, or Nango's MCP server depending on the function type.
+
+Functions API references:
+
+- [Compile function](#)
+- [Create dry run](#)
+- [Get dry run](#)
+- [Create deployment](#)
+
+## Build locally with the CLI
+
+Local development gives you the most control. Use it when your engineering team wants function code in source control, reviewable diffs, local tests, CI/CD, and a stable project layout.
+
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s building-nango-functions-locally"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install local skill</span>
+    <span className="agent-quickstart-action-description">Copy the command for the local CLI workflow.</span>
+  </button>
+</div>
 
 <Steps>
   <Step id="install-and-initialize" title="Install and initialize">
@@ -145,16 +147,16 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
   </Step>
 
   <Step id="configure-api-keys" title="Configure API keys">
-    Add your API keys to a `.env` file inside `nango-integrations/`. The CLI currently reads these API keys from `NANGO_SECRET_KEY_<ENV_NAME>` variables:
+    Add your [API keys](/reference/backend/http-api/api-keys) to a `.env` file inside `nango-integrations/`. The CLI currently reads these API keys from `NANGO_SECRET_KEY_<ENV_NAME>` variables:
 
     ```bash
     NANGO_SECRET_KEY_PROD='<PROD-API-KEY>'
     NANGO_SECRET_KEY_DEV='<DEV-API-KEY>'
     ```
 
-    Get your API keys from **Environment Settings > API Keys**. The CLI picks up the matching key for whichever environment you deploy to.
+    Get your [API keys](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys**. Despite the variable name, each value stores a [Nango API key](/reference/backend/http-api/api-keys). The CLI picks up the matching key for whichever environment you deploy to.
 
-    `nango init` creates `nango-integrations/.gitignore` with `.env` ignored. Keep the `.env` file untracked so Nango API keys are not committed.
+    `nango init` creates `nango-integrations/.gitignore` with `.env` ignored. Keep the `.env` file untracked so [Nango API keys](/reference/backend/http-api/api-keys) are not committed.
 
     <Note>
       Keys are matched by environment name: `NANGO_SECRET_KEY_<ENV_NAME>`. If you rename an environment in the UI, update the variable name in `.env` to match.
@@ -179,9 +181,9 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     </Accordion>
 
     <Accordion title="For agents">
-      Run `nango init nango-integrations` to scaffold the folder. Ask the user for their API key from **Environment Settings > API Keys** and write it to the matching `NANGO_SECRET_KEY_<ENV_NAME>` variable in `nango-integrations/.env`. Confirm that `nango-integrations/.gitignore` ignores `.env`.
+      Run `nango init nango-integrations` to scaffold the folder. Ask the user for their [Nango API key](/reference/backend/http-api/api-keys) from **Environment Settings > API Keys** and write it to the matching `NANGO_SECRET_KEY_<ENV_NAME>` variable in `nango-integrations/.env`. Confirm that `nango-integrations/.gitignore` ignores `.env`.
 
-      For additional context while building, add Nango's documentation MCP server (`https://nango.dev/docs/mcp`) and install the Nango function builder skill:
+      For additional context while building, add Nango's documentation MCP server (`https://nango.dev/docs/mcp`) and install the local builder skill:
 
       ```bash
       npx skills add NangoHQ/skills -s building-nango-functions-locally
@@ -190,7 +192,13 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
   </Step>
 
   <Step id="understand-folder-layout" title="Understand the folder layout">
-    Each integration gets its own folder, with subfolders by function type. `index.ts` imports every function file you want deployed:
+    A Nango integrations folder is a small TypeScript project. The root contains shared project files, and each integration gets its own folder named after the integration ID.
+
+    Inside each integration folder, keep function files grouped by type. Sync functions live in `syncs/`, action functions in `actions/`, and event functions in `on-events/`. This keeps the trigger model visible from the file path and matches how the CLI discovers function code.
+
+    The root `index.ts` is the deployment entry point. It should import every function file you want Nango to compile and deploy, for example `import './github/syncs/github-issues';`. Files that are not imported from `index.ts` are not part of the deployed function set.
+
+    The `.nango/` folder stores CLI-managed project state, including deployment tracking. Commit it so teammates and CI deploy from the same baseline.
 
     ```
     nango-integrations/
@@ -207,8 +215,6 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
         └── on-events/
             └── post-connection-creation.ts
     ```
-
-    Each new function file must be imported in `index.ts`, for example `import './github/syncs/github-issues';`.
   </Step>
 
   <Step id="run-dev-mode" title="Run dev mode">
@@ -219,23 +225,6 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
     ```
 
     `nango dev` continuously type-checks and compiles your function files, surfacing errors immediately.
-  </Step>
-
-  <Step id="choose-function-type" title="Choose a function type">
-    Choose the function type by starting from the event that should cause Nango to run your logic.
-
-    <a id="trigger-asynchronously"></a>
-
-    | If you need to... | Guides | Trigger types | Common examples |
-    | --- | --- | --- | --- |
-    | Keep external API data fresh in your app, or react to changes | [Sync function](/guides/functions/syncs/sync-functions) | Schedule, manual sync trigger, or external webhook reconciliation | Sync contacts/files/events/tickets, RAG, change detection / triggers |
-    | Run an operation when your app or agent asks for it | [Action function](/guides/functions/action-functions) | HTTP API, SDK, async action queue, or MCP/tool call | Create an issue, send a message, fetch details, perform a write |
-    | Process an external provider webhook inside Nango | [Webhook function](/guides/functions/webhook-functions) | External API sends a webhook to Nango | Update records from a webhook payload, normalize events, mark data for reconciliation |
-    | React when a Nango connection is created, validated, or deleted | [Event function](/guides/functions/event-functions) | Nango connection lifecycle event | Validate credentials, register provider webhooks, seed metadata, clean up subscriptions |
-
-    <Tip>
-      Use [webhook forwarding](/guides/platform/webhook-forwarding) instead of a webhook function when you want Nango to receive an external webhook, attribute it to a connection when possible, and forward the payload to your app for handling.
-    </Tip>
   </Step>
 
   <Step id="build-function" title="Build the function">
@@ -270,65 +259,82 @@ A good agent workflow generates the function code, imports it from `index.ts`, a
 
     For function-type-specific commands, see the [Sync function guide](/guides/functions/syncs/sync-functions#test-and-deploy), [Action function guide](/guides/functions/action-functions#test-and-deploy), and [Testing](/guides/functions/testing).
   </Step>
-
-  <Step id="receive-nango-webhooks" title="Receive webhooks from Nango">
-    Nango sends webhooks to your app when important events happen: a connection is created, a sync run finishes, an async action completes, or an external webhook is forwarded.
-
-    Configure your app endpoint in **Environment Settings > Webhook URLs**. Webhook URLs are environment-specific, and you can configure up to two URLs per environment. Your endpoint should accept `POST` requests, verify the `X-Nango-Hmac-Sha256` signature, and return a 2xx response after processing.
-
-    Common webhook payloads:
-
-    ```json Auth creation
-    {
-      "type": "auth",
-      "operation": "creation",
-      "connectionId": "<CONNECTION-ID>",
-      "providerConfigKey": "<INTEGRATION-ID>",
-      "provider": "<PROVIDER>",
-      "environment": "DEV",
-      "success": true,
-      "tags": {
-        "end_user_id": "<USER-ID>",
-        "organization_id": "<ORG-ID>"
-      }
-    }
-    ```
-
-    ```json Sync completion
-    {
-      "type": "sync",
-      "connectionId": "<CONNECTION-ID>",
-      "providerConfigKey": "<INTEGRATION-ID>",
-      "syncName": "<SYNC-NAME>",
-      "model": "<MODEL-NAME>",
-      "success": true,
-      "modifiedAfter": "<TIMESTAMP>",
-      "responseResults": {
-        "added": 10,
-        "updated": 5,
-        "deleted": 1
-      }
-    }
-    ```
-
-    ```json Async action completion
-    {
-      "type": "async_action",
-      "from": "nango",
-      "connectionId": "<CONNECTION-ID>",
-      "providerConfigKey": "<INTEGRATION-ID>",
-      "payload": {
-        "id": "<ACTION-ID>",
-        "statusUrl": "/action/<ACTION-ID>"
-      }
-    }
-    ```
-
-    For sync webhooks, fetch changed records from the [records API](/reference/backend/http-api/sync/records-list), process them in your app, and persist the last processed cursor. For forwarded external webhooks, see [Webhook forwarding](/guides/platform/webhook-forwarding).
-
-    Read [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for signature verification, retry behavior, failure payloads, and the full webhook reference.
-  </Step>
 </Steps>
+
+<a id="extend-a-template"></a>
+### Extend a template
+
+Use the CLI to clone template code into your local functions project:
+
+```bash
+nango clone github
+nango clone github/actions
+nango clone github/actions/list-repos
+```
+
+You can clone an entire integration, a function-type folder, or a single function. After cloning, review the source and schemas, import the function from `index.ts` if needed, adjust inputs, outputs, record models, metadata, or provider mapping logic, then run `nango dryrun` and deploy with `nango deploy`.
+
+<Tip>
+  Pull template code when you need custom fields, a smaller output shape, customer-specific filtering, different retry behavior, or a provider workflow that is close to a template function but not identical.
+</Tip>
+
+## Receive webhooks from Nango
+
+Nango sends webhooks to your app when important events happen: a connection is created, a sync run finishes, an async action completes, or an external webhook is forwarded.
+
+Configure your app endpoint in **Environment Settings > Webhook URLs**. Webhook URLs are environment-specific, and you can configure up to two URLs per environment. Your endpoint should accept `POST` requests, verify the `X-Nango-Hmac-Sha256` signature, and return a 2xx response after processing.
+
+Common webhook payloads:
+
+```json Auth creation
+{
+  "type": "auth",
+  "operation": "creation",
+  "connectionId": "<CONNECTION-ID>",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "provider": "<PROVIDER>",
+  "environment": "DEV",
+  "success": true,
+  "tags": {
+    "end_user_id": "<USER-ID>",
+    "organization_id": "<ORG-ID>"
+  }
+}
+```
+
+```json Sync completion
+{
+  "type": "sync",
+  "connectionId": "<CONNECTION-ID>",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "syncName": "<SYNC-NAME>",
+  "model": "<MODEL-NAME>",
+  "success": true,
+  "modifiedAfter": "<TIMESTAMP>",
+  "responseResults": {
+    "added": 10,
+    "updated": 5,
+    "deleted": 1
+  }
+}
+```
+
+```json Async action completion
+{
+  "type": "async_action",
+  "from": "nango",
+  "connectionId": "<CONNECTION-ID>",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "payload": {
+    "id": "<ACTION-ID>",
+    "statusUrl": "/action/<ACTION-ID>"
+  }
+}
+```
+
+For sync webhooks, fetch changed records from the [records API](/reference/backend/http-api/sync/records-list), process them in your app, and persist the last processed cursor. For forwarded external webhooks, see [Webhook forwarding](/guides/platform/webhook-forwarding).
+
+Read [Receive webhooks from Nango](/guides/platform/webhooks-from-nango) for signature verification, retry behavior, failure payloads, and the full webhook reference.
 
 ## Related guides
 

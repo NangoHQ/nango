@@ -5,8 +5,31 @@ description: 'Authorize an API and run your first Nango function'
 ---
 
 <Tip>
-  **Using a coding agent?** Set up the [docs MCP](/getting-started/coding-agent-setup#docs-mcp-server) and [skills](/getting-started/coding-agent-setup#skills), then copy this page as prompt.
+  **AI-assisted quickstart** Have a coding agent guide you through signup, [API key](/reference/backend/http-api/api-keys) setup, integration setup, connection authorization, and function next steps.
 </Tip>
+
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-url="/prompts/onboarding-nango-customers.txt"
+    data-copy-success="Prompt copied"
+  >
+    <span className="agent-quickstart-action-title">Copy prompt</span>
+    <span className="agent-quickstart-action-description">Paste the onboarding prompt into Claude, Cursor, or another coding agent.</span>
+  </button>
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s onboarding-nango-customers"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install skill</span>
+    <span className="agent-quickstart-action-description">
+      Copy the command to install the onboarding skill from <code>NangoHQ/skills</code>.
+    </span>
+  </button>
+</div>
 
 This quickstart uses the GitHub API as an example, but you can choose any of the [800+ APIs](/integrations/overview).
 
@@ -17,9 +40,9 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
 
     <Accordion title="For agents">
-      Signup cannot be automated. Ask the user to create a free Nango account in the UI first if they have not already done so, then ask for their Nango API key from the Environment settings tab > API Keys.
+      Signup cannot be automated. Ask the user to create a free Nango account in the UI first if they have not already done so, then ask for their [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys.
 
-      Use the API key as `Authorization: Bearer <NANGO-API-KEY>`. The default API key created on signup has full access and is the simplest option. If the user creates a scoped API key instead, this quickstart needs `environment:connect_sessions:write` and `environment:actions:execute`. Add `environment:connections:list` if you confirm authorization through the API.
+      Use the [API key](/reference/backend/http-api/api-keys) as `Authorization: Bearer <NANGO-API-KEY>`. The default [API key](/reference/backend/http-api/api-keys) created on signup has full access and is the simplest option. If the user creates a [scoped API key](/reference/backend/http-api/api-keys#scopes) instead, this quickstart needs `environment:connect_sessions:write` and `environment:actions:execute`. Add `environment:connections:list` if you confirm authorization through the API.
 
       For GitHub, use the pre-created integration ID `github-getting-started`; no integration creation or OAuth developer app setup is needed.
 
@@ -35,12 +58,13 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
 
       For provider details and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list).
     </Accordion>
+
   </Step>
 
   <Step id="authorize-api" title="Authorize the API">
     Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow. For the GitHub example, pick `github-getting-started`.
 
-    Copy the connection ID and your Nango API key from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
+    Copy the connection ID and your [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
 
     <Accordion title="For agents">
       To create a browser auth link programmatically, call:
@@ -58,6 +82,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
 
       Send the returned `connect_link` to the user. Once they complete authorization, confirm the connection in the dashboard or with the [List connections API](/reference/backend/http-api/connections/list).
     </Accordion>
+
   </Step>
 
   <Step id="enable-template-function" title="Enable a template function">
@@ -70,6 +95,7 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
 
       Ask the user to go to the Nango dashboard > Integrations tab > open the integration > Functions sub-tab, then deploy the template function they want to test. For this example, deploy `get-repository`.
     </Accordion>
+
   </Step>
 
   <Step id="call-function" title="Call the function">
@@ -118,12 +144,14 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
     </Tabs>
 
     You should receive GitHub repository details such as the repository ID, full name, visibility, default branch, and owner.
+
   </Step>
 
   <Step id="inspect-run" title="Inspect the run">
     Open the Logs tab to inspect the function execution, provider request, response, and any errors.
 
     🎉 You connected an API and ran your first integration function.
+
   </Step>
 
   <Step id="choose-next-steps" title="Next steps">
@@ -144,6 +172,4 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
   </Step>
 </Steps>
 
-<Tip>
-  **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+<Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>

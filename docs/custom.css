@@ -1,5 +1,111 @@
 /* ── Nango Docs custom styles ──────────────────────────────────── */
 
+/* ══ AGENT QUICKSTART CTA ════════════════════════════════════════ */
+.agent-quickstart-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.agent-quickstart-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.agent-quickstart-action:hover,
+.agent-quickstart-action:focus-visible {
+  border-color: rgba(41, 171, 226, 0.7);
+  background: rgba(41, 171, 226, 0.06);
+  transform: translateY(-1px);
+}
+
+.agent-quickstart-action[aria-busy='true'] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.agent-quickstart-action-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.agent-quickstart-action-description {
+  color: #515556;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.dark .agent-quickstart-action {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dark .agent-quickstart-action:hover,
+.dark .agent-quickstart-action:focus-visible {
+  border-color: rgba(41, 171, 226, 0.8);
+  background: rgba(41, 171, 226, 0.12);
+}
+
+.dark .agent-quickstart-action-description {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.agent-copy-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 250;
+  max-width: min(320px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.agent-copy-toast[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.agent-copy-toast[data-kind='error'] {
+  background: #7f1d1d;
+}
+
+@media (max-width: 640px) {
+  .agent-quickstart-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-copy-toast {
+    right: 16px;
+    bottom: 16px;
+    max-width: calc(100vw - 32px);
+  }
+}
+
 /* ══ BORDER RADIUS — 4px everywhere ═════════════════════════════ */
 /* Override all Tailwind rounded utilities */
 .rounded-sm, .rounded, .rounded-md, .rounded-lg,
@@ -463,4 +569,3 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 #content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
 }
-

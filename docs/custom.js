@@ -1,4 +1,4 @@
-/* global document, window, requestAnimationFrame, history */
+/* global document, window, requestAnimationFrame, history, MutationObserver */
 /* ── Changelog TOC scroll-active fallback ──────────────────────────────── */
 /*
  * Mintlify clears the TOC active highlight as soon as a section anchor
@@ -68,5 +68,132 @@
     document.addEventListener('DOMContentLoaded', updateActive);
   } else {
     updateActive();
+  }
+})();
+
+/* ── Copy buttons with lightweight toast ──────────────────────────────── */
+(function () {
+  var toast;
+  var toastTimeout;
+  var copyCache = {};
+
+  function showToast(message, kind) {
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'agent-copy-toast';
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.setAttribute('data-kind', kind || 'success');
+    toast.setAttribute('data-visible', 'true');
+
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(function () {
+      toast.removeAttribute('data-visible');
+    }, 2200);
+  }
+
+  function getCopyText(button) {
+    var inlineText = button.getAttribute('data-copy-text');
+    var url = button.getAttribute('data-copy-url');
+
+    if (inlineText) {
+      return Promise.resolve(inlineText);
+    }
+
+    if (!url) {
+      return Promise.reject(new Error('Missing copy source'));
+    }
+
+    if (copyCache[url]) {
+      return Promise.resolve(copyCache[url]);
+    }
+
+    return fetch(url).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Copy source unavailable');
+      }
+
+      return response.text().then(function (text) {
+        copyCache[url] = text;
+        return text;
+      });
+    });
+  }
+
+  function writeClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', 'true');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      document.execCommand('copy');
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+  function bindCopyButtons(root) {
+    root.querySelectorAll('[data-copy-text], [data-copy-url]').forEach(function (button) {
+      if (button.getAttribute('data-copy-bound') === 'true') {
+        return;
+      }
+
+      button.setAttribute('data-copy-bound', 'true');
+
+      var url = button.getAttribute('data-copy-url');
+      if (url && !copyCache[url]) {
+        getCopyText(button).catch(function () {});
+      }
+
+      button.addEventListener('click', function () {
+        button.setAttribute('aria-busy', 'true');
+
+        getCopyText(button)
+          .then(writeClipboard)
+          .then(function () {
+            showToast(button.getAttribute('data-copy-success') || 'Copied');
+          })
+          .catch(function () {
+            showToast(button.getAttribute('data-copy-error') || 'Could not copy', 'error');
+          })
+          .finally(function () {
+            button.removeAttribute('aria-busy');
+          });
+      });
+    });
+  }
+
+  function init() {
+    bindCopyButtons(document);
+
+    var observer = new MutationObserver(function () {
+      bindCopyButtons(document);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 })();
