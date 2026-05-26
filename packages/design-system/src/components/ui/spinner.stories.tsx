@@ -1,4 +1,4 @@
-import { Spinner } from './Spinner';
+import { Spinner } from './spinner';
 
 import type { Meta, StoryObj } from '@storybook/react';
 

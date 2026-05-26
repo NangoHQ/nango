@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 
-import { IconButton } from './IconButton';
+import { IconButton } from './icon-button';
 
 import type { Meta, StoryObj } from '@storybook/react';
 

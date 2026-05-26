@@ -1,5 +1,5 @@
-import { Tooltip, TooltipContent, TooltipKbd, TooltipProvider, TooltipTrigger } from './Tooltip';
-import { Button } from '../Button/Button';
+import { Button } from './button';
+import { Tooltip, TooltipContent, TooltipKbd, TooltipProvider, TooltipTrigger } from './tooltip';
 
 import type { Meta, StoryObj } from '@storybook/react';
 

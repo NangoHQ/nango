@@ -1,6 +1,6 @@
 import { AtSign, Search } from 'lucide-react';
 
-import { Input, PasswordInput } from './Input';
+import { Input, PasswordInput } from './input';
 
 import type { Meta, StoryObj } from '@storybook/react';
 
