@@ -1,5 +1,7 @@
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, Ok, getLogger, metrics } from '@nangohq/utils';
+
+const logger = getLogger('webhooks.forward');
 
 import { deliver, shouldSend } from './utils.js';
 
@@ -126,7 +128,7 @@ export const forwardWebhook = async ({
         try {
             onBytes?.(totalBytes);
         } catch (err) {
-            console.error('onBytes callback failed', err);
+            logger.error('onBytes callback failed', err);
         }
     }
 };

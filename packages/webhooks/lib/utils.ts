@@ -4,7 +4,9 @@ import { isAxiosError } from 'axios';
 
 import { getRedis } from '@nangohq/kvstore';
 import { createMeteringTransport } from '@nangohq/shared';
-import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
+import { Err, Ok, axiosInstance as axios, getLogger, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
+
+const logger = getLogger('webhooks.utils');
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
@@ -241,7 +243,7 @@ export const deliver = async ({
                             try {
                                 onBytes?.(attemptBytes);
                             } catch (err) {
-                                console.error('onBytes callback failed', err);
+                                logger.error('onBytes callback failed', err);
                             }
                         }
                     });
