@@ -11,17 +11,17 @@ import type { Knex } from 'knex';
 const API_SECRETS_TABLE = 'api_secrets';
 
 class SecretService {
-    public async getDefaultSecretForEnv(trx: Knex, envId: number): Promise<Result<DBAPISecret>> {
+    public async getDefaultSecretForEnv(trx: Knex, env: Pick<DBEnvironment, 'id' | 'name'>): Promise<Result<DBAPISecret>> {
         try {
             const [secret] = await trx<DBAPISecret>(API_SECRETS_TABLE).select('*').where({
-                environment_id: envId,
+                environment_id: env.id,
                 is_default: true
             });
             if (!secret) {
                 // Invariant violation: There is no default secret for this environment.
                 // This should never happen. If it somehow does, we roll back the surrounding trx
                 // by throwing, and let the exception bubble up the call chain.
-                throw new NangoError('no_default_api_secret', { environment_id: envId });
+                throw new NangoError('no_default_api_secret', { environment_id: env.id });
             }
             const decrypted = encryptionManager.decryptAPISecret(secret); // Callers expect unencrypted secret.
 
@@ -30,8 +30,7 @@ class SecretService {
             // and the dashboard's getEnvironment controller. Without this, webhook HMAC
             // signing diverges from what callers expect when they configure the env var.
             if (!isCloud) {
-                const env = await trx.select<Pick<DBEnvironment, 'name'>>('name').from<DBEnvironment>('_nango_environments').where({ id: envId }).first();
-                const override = env?.name && process.env[`NANGO_SECRET_KEY_${env.name.toUpperCase()}`];
+                const override = process.env[`NANGO_SECRET_KEY_${env.name.toUpperCase()}`];
                 if (override) {
                     decrypted.secret = override;
                 }

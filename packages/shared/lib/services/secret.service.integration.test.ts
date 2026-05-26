@@ -27,7 +27,7 @@ describe('Secret service', () => {
     it('creates a default secret for each environment', async () => {
         const env = await newEnv();
         // Note: getDefaultSecretForEnv will throw if no default secret exists.
-        (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
     });
 
     it('refuses to create two default secrets', async () => {
@@ -59,7 +59,7 @@ describe('Secret service', () => {
             })
         ).unwrap();
         (await secretService.markDefault(db.knex, secret.id)).unwrap();
-        const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const newDefault = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
         expect(newDefault.id).toEqual(secret.id);
     });
 
@@ -105,7 +105,7 @@ describe('Secret service', () => {
     it('applies NANGO_SECRET_KEY_<ENV_NAME> override when self-hosted', async () => {
         const env = await newEnv();
         vi.stubEnv(`NANGO_SECRET_KEY_${env.name.toUpperCase()}`, 'override-secret-value');
-        const fetched = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+        const fetched = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
         expect(fetched.secret).toBe('override-secret-value');
     });
 });

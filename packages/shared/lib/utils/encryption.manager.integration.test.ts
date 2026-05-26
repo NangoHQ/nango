@@ -74,7 +74,7 @@ describe('encryption', () => {
             const { env } = await seedAccountEnvAndUser();
             expect(env.secret_key).toBeUUID();
 
-            const defaultSecret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            const defaultSecret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
             expect(defaultSecret.secret).toBeUUID();
             expect(defaultSecret.secret).toEqual(env.secret_key);
             expect(defaultSecret.iv).toEqual('');
@@ -88,7 +88,7 @@ describe('encryption', () => {
             const envAfterEnc = (await environmentService.getById(env.id))!;
             expect(envAfterEnc.secret_key).toEqual(env.secret_key);
 
-            const defaultSecretAfterEnc = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
+            const defaultSecretAfterEnc = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
             expect(defaultSecretAfterEnc.secret).toBeUUID();
             expect(defaultSecretAfterEnc.secret).toEqual(env.secret_key);
         });
