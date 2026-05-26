@@ -16211,6 +16211,49 @@ sage:
         base_url: https://api.accounting.sage.com
     docs: https://nango.dev/docs/integrations/all/sage
 
+sage-200:
+    display_name: Sage 200
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://id.sage.com/authorize
+    token_url: https://id.sage.com/oauth/token
+    authorization_params:
+        audience: s200ukipd/sage200
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    scope_separator: ' '
+    post_connection_script: sage200PostConnection
+    proxy:
+        base_url: https://api.columbus.sage.com/uk/${connectionConfig.edition}
+        headers:
+            x-company: ${connectionConfig.company_id}
+            x-site: ${connectionConfig.site_id}
+    docs: https://nango.dev/docs/api-integrations/sage-200
+    setup_guide_url: https://nango.dev/docs/api-integrations/sage-200/how-to-register-your-own-sage-200-oauth-app
+    connection_config:
+        edition:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        company_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        site_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
 sage-hr:
     display_name: Sage HR
     categories:
