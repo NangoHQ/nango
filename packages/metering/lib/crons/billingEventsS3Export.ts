@@ -182,7 +182,7 @@ export async function exec(): Promise<void> {
                     const start = process.hrtime.bigint();
                     // Tracks which step is in flight so a catch can tag the failure
                     // without us having to introspect the thrown error.
-                    let step: 'head' | 'export' = 'head';
+                    let step: 's3_check' | 'export' = 's3_check';
                     try {
                         if (await objectExists(s3, key)) {
                             logger.info(`Skipping ${eventName} for day=${day} (already in s3://${bucket}/${key})`);
