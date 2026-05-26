@@ -74,9 +74,9 @@ All tokens in `tokens.generated.css` are registered in `@theme` and can be used 
 
 **Focus rings** use `box-shadow`, not `outline`:
 ```tsx
-'focus-visible:outline-none focus-visible:shadow-[var(--focus-outline-default)]'
+'focus-visible:outline-none focus-visible:shadow-focus-outline-default'
 // destructive actions:
-'focus-visible:outline-none focus-visible:shadow-[var(--focus-outline-danger)]'
+'focus-visible:outline-none focus-visible:shadow-focus-outline-danger'
 ```
 
 **Motion** — all interactive components transition the same properties:
@@ -153,7 +153,7 @@ type Story = StoryObj<typeof meta>;
 
 export const AllVariants: Story = {
     render: () => (
-        <div style={{ display: 'flex', gap: 'var(--ds-space-4)' }}>
+        <div className="flex gap-4">
             ...
         </div>
     )
