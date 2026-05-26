@@ -13,5 +13,6 @@ integration-templates/**/.nango
 integration-templates/**/schema.ts
 integration-templates/**/models.ts
 temp
+.context/
 .claude/settings.local.json
 CLAUDE.local.md
