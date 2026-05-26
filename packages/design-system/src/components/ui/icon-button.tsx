@@ -2,8 +2,8 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva } from 'class-variance-authority';
 import { forwardRef } from 'react';
 
+import { Spinner } from './spinner';
 import { cn } from '../../lib/cn';
-import { Spinner } from '../Spinner/Spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 

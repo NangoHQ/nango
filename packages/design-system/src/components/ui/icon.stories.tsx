@@ -1,9 +1,9 @@
 import * as LucideIcons from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { Icon } from './Icon';
-import { Input } from '../Input/Input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../Tooltip/Tooltip';
+import { Icon } from './icon';
+import { Input } from './input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 import type { Meta, StoryObj } from '@storybook/react';
 import type { LucideIcon } from 'lucide-react';
