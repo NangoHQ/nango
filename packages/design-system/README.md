@@ -19,19 +19,6 @@ Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) 
 
 > **Note:** The `storybook` script uses `NODE_PATH=./node_modules` to work around a Vite 7 CJS module resolution issue. This is safe to keep and should not be removed.
 
-### Stories
-
-| Story | Path |
-|---|---|
-| Button — All variants / sizes / states | `Design System / Components / Button` |
-| IconButton — All variants / sizes / states | `Design System / Components / Button` |
-| Input — States / with icons / password | `Design System / Components / Input` |
-| Badge — All variants / shapes | `Design System / Components / Badge` |
-| FilterBadge — Selected / unselected / disabled | `Design System / Components / Badge` |
-| Spinner — All sizes | `Design System / Components / Spinner` |
-| Typography — Type Scale | `Design System / Typography` |
-| Color Palette — Semantic Tokens | `Design System / Color Palette` |
-
 ### Storybook MCP
 
 Storybook ships with an [MCP server](https://storybook.js.org/docs/ai/mcp/overview) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
@@ -55,10 +42,6 @@ This stores the config in `.claude/settings.local.json` (gitignored). Then start
 ### Accessibility
 
 `@storybook/addon-a11y` runs an automated [axe-core](https://github.com/dequelabs/axe-core) audit on every story. Open the **Accessibility** panel (bottom of the Storybook UI) to see violations, incomplete checks, and passing rules for the rendered story. Fix any violations before shipping a component.
-
-### Adding component stories
-
-Token stories live in `packages/design-system/tokens/` alongside the token files they document. When adding component stories, place them under `packages/design-system/src/` and add `'../src/**/*.stories.@(ts|tsx)'` to the `stories` glob in `.storybook/main.ts`. Follow the `tokens/Typography.stories.tsx` pattern.
 
 ---
 
@@ -151,7 +134,7 @@ Primitives are excluded from `@theme` to nudge components toward semantic tokens
 
 ## Components
 
-Components are added on-demand as they're needed in product screens. See `CLAUDE.md` for the full guide on adding new components.
+Components are added on-demand as they're needed in product screens. See `AGENTS.md` for the full guide on adding new components.
 
 Available components:
 
