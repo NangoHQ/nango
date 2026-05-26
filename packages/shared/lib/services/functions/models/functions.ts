@@ -81,6 +81,17 @@ export async function findActiveDeployedMeta({
     environmentId: number;
     providerConfigKey: string;
 }): Promise<DeployedFunctionMetaRow[]> {
+    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<DeployedFunctionMetaRow[]>(
+        'sc.id',
+        'sc.sync_name AS name',
+        'sc.type',
+        'sc.enabled',
+        'sc.created_at AS last_deployed',
+        'sc.source'
+    );
+}
+
+function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
     return db.knex
         .from({ sc: '_nango_sync_configs' })
         .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
@@ -88,10 +99,7 @@ export async function findActiveDeployedMeta({
         .andWhere('nc.unique_key', providerConfigKey)
         .andWhere('nc.deleted', false)
         .andWhere('sc.deleted', false)
-        .andWhere('sc.active', true)
-        .select<
-            DeployedFunctionMetaRow[]
-        >('sc.id', db.knex.raw('sc.sync_name AS name'), 'sc.type', 'sc.enabled', db.knex.raw('sc.updated_at AS last_deployed'), 'sc.source');
+        .andWhere('sc.active', true);
 }
 
 export async function findActiveByName({
@@ -156,30 +164,22 @@ function buildSyncConfigBranch({
 }): Knex.QueryBuilder {
     // Cast on `source` (sync_config_source enum) is required for UNION ALL with the on-event branch —
     // Postgres only unions matching types.
-    const query = db.knex
-        .from({ sc: '_nango_sync_configs' })
-        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
-        .where('nc.environment_id', environmentId)
-        .andWhere('nc.unique_key', providerConfigKey)
-        .andWhere('nc.deleted', false)
-        .andWhere('sc.deleted', false)
-        .andWhere('sc.active', true)
-        .select(
-            'sc.id',
-            db.knex.raw('sc.sync_name AS name'),
-            'sc.type',
-            'sc.metadata',
-            'sc.input',
-            db.knex.raw('sc.models AS returns'),
-            db.knex.raw('sc.models_json_schema AS json_schema'),
-            'sc.runs',
-            'sc.auto_start',
-            'sc.track_deletes',
-            'sc.enabled',
-            db.knex.raw('sc.updated_at AS last_deployed'),
-            db.knex.raw('CAST(sc.source AS text) AS source'),
-            db.knex.raw('NULL::text AS event')
-        );
+    const query = activeSyncConfigBase({ environmentId, providerConfigKey }).select(
+        'sc.id',
+        'sc.sync_name AS name',
+        'sc.type',
+        'sc.metadata',
+        'sc.input',
+        'sc.models AS returns',
+        'sc.models_json_schema AS json_schema',
+        'sc.runs',
+        'sc.auto_start',
+        'sc.track_deletes',
+        'sc.enabled',
+        'sc.created_at AS last_deployed',
+        db.knex.raw('CAST(sc.source AS text) AS source'),
+        db.knex.raw('NULL::text AS event')
+    );
 
     if (type) {
         query.andWhere('sc.type', type);
@@ -221,7 +221,7 @@ function buildOnEventBranch({
             db.knex.raw('NULL::boolean AS auto_start'),
             db.knex.raw('NULL::boolean AS track_deletes'),
             db.knex.raw('oes.active AS enabled'),
-            db.knex.raw('oes.updated_at AS last_deployed'),
+            db.knex.raw('oes.created_at AS last_deployed'),
             db.knex.raw(`'repo'::text AS source`),
             db.knex.raw('CAST(oes.event AS text) AS event')
         );
