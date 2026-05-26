@@ -258,6 +258,15 @@ export default tseslint.config(
         }
     },
     {
+        // Design-system: disable type-aware rules to avoid loading a second
+        // TypeScript program alongside the root one, which OOMs in CI.
+        files: ['packages/design-system/{src,tokens,.storybook}/**/*.{tsx,ts}'],
+        extends: [tseslint.configs.disableTypeChecked],
+        rules: {
+            'import/extensions': 'off'
+        }
+    },
+    {
         files: ['packages/webapp/src/**/*.{tsx,ts}'],
         plugins: {
             react: react,

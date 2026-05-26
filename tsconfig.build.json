@@ -56,6 +56,9 @@
             "path": "packages/connect-ui"
         },
         {
+            "path": "packages/design-system"
+        },
+        {
             "path": "packages/webapp"
         },
         {
