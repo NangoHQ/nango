@@ -1,6 +1,6 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok, isCloud } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
 
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -29,11 +29,9 @@ class SecretService {
             // mirroring the override honored by account.service#getAccountContextBySecretKey
             // and the dashboard's getEnvironment controller. Without this, webhook HMAC
             // signing diverges from what callers expect when they configure the env var.
-            if (!isCloud) {
-                const override = process.env[`NANGO_SECRET_KEY_${env.name.toUpperCase()}`];
-                if (override) {
-                    decrypted.secret = override;
-                }
+            const override = process.env[`NANGO_SECRET_KEY_${env.name.toUpperCase()}`];
+            if (override) {
+                decrypted.secret = override;
             }
 
             return Ok(decrypted);
