@@ -16,17 +16,13 @@ export interface FeatureFlagsState {
     /** When true, shows the dark/light mode toggle button in the app header. */
     themeSwitcher: boolean;
 
-    setFlag: <K extends keyof FeatureFlagsFlags>(key: K, value: boolean) => void;
-}
-
-export interface FeatureFlagsFlags {
-    themeSwitcher: boolean;
+    setFlag: <K extends keyof Omit<FeatureFlagsState, 'setFlag'>>(key: K, value: boolean) => void;
 }
 
 export const useFeatureFlagsStore = create<FeatureFlagsState>()(
     persist(
         (set) => ({
-            // Off by default — enable via the dev panel (⌘⇧D)
+            // Off by default — enable via the dev panel (Ctrl+Shift+D)
             themeSwitcher: false,
 
             setFlag: (key, value) => set({ [key]: value })

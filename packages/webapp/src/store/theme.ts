@@ -6,7 +6,6 @@ import { LocalStorageKeys } from '../utils/local-storage';
 export interface ThemeState {
     darkMode: boolean;
     toggleDarkMode: () => void;
-    setDarkMode: (value: boolean) => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
@@ -15,8 +14,7 @@ export const useThemeStore = create<ThemeState>()(
             // Default to dark mode to match the existing app default
             darkMode: true,
 
-            toggleDarkMode: () => set({ darkMode: !get().darkMode }),
-            setDarkMode: (value) => set({ darkMode: value })
+            toggleDarkMode: () => set({ darkMode: !get().darkMode })
         }),
         {
             name: LocalStorageKeys.Theme,
