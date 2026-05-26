@@ -12,6 +12,7 @@ import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.billingEventsS3Export');
 const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
+const cronSchedule = envs.CRON_BILLING_EVENTS_S3_EXPORT_SCHEDULE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
@@ -21,11 +22,10 @@ const LOCK_KEY = 'lock:cron:billingEventsS3Export';
 const LOCK_TTL_MS_CAP = 30 * 60 * 1000; // hard cap; the export query is seconds, no reason to hold a lock for hours
 const lockTtlMs = Math.min(cronMinutes * 60 * 1000 * 0.8, LOCK_TTL_MS_CAP);
 
-// Fires every hour at :15 — the 15-min skew gives ClickHouse a buffer to ingest
-// late events from the previous UTC day before we snapshot it. Each (day, metric)
-// is uploaded exactly once (skip-if-exists below); later ticks on the same UTC
-// day no-op, providing only self-healing if the first attempt failed.
-const CRON_SCHEDULE = '15 * * * *';
+// Single S3 client reused across cron ticks — `new S3Client()` doesn't open any
+// connection eagerly so this is cheap at module load, and reusing the client lets
+// the SDK pool TCP connections across runs.
+const s3 = new S3Client({ region });
 
 const DEFAULT_DATABASE = 'usage';
 
@@ -157,7 +157,7 @@ export function billingEventsS3ExportCron(): void {
         return;
     }
 
-    cron.schedule(CRON_SCHEDULE, () => {
+    cron.schedule(cronSchedule, () => {
         exec().catch((err: unknown) => {
             logger.error('Cron tick failed unexpectedly', err);
         });
@@ -173,7 +173,6 @@ export async function exec(): Promise<void> {
                 logger.error(`Clickhouse client not configured`);
                 return;
             }
-            const s3 = new S3Client({ region });
             const day = yesterdayUTC();
             try {
                 for (const metric of METRICS) {
@@ -184,7 +183,7 @@ export async function exec(): Promise<void> {
                     // without us having to introspect the thrown error.
                     let step: 's3_check' | 'export' = 's3_check';
                     try {
-                        if (await objectExists(s3, key)) {
+                        if (await objectExists(key)) {
                             logger.info(`Skipping ${eventName} for day=${day} (already in s3://${bucket}/${key})`);
                             continue;
                         }
@@ -211,13 +210,12 @@ export async function exec(): Promise<void> {
                 logger.info(`✅ done`);
             } finally {
                 await client.close();
-                s3.destroy();
             }
         });
     });
 }
 
-async function objectExists(s3: S3Client, key: string): Promise<boolean> {
+async function objectExists(key: string): Promise<boolean> {
     try {
         await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
         return true;
