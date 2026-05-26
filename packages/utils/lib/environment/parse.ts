@@ -285,6 +285,7 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
