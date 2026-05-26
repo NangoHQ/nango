@@ -78,7 +78,7 @@ export const DevToolPanel: React.FC = () => {
             {/* Footer */}
             <div className="border-t border-border-muted px-3 py-2">
                 <p className="text-sm text-text-secondary">
-                    <kbd className="rounded border border-border-muted bg-surface-panel px-1.5 py-0.5 font-mono text-xs">⌥⇧D</kbd> to toggle
+                    <kbd className="rounded border border-border-muted bg-surface-panel px-1.5 py-0.5 font-mono text-xs">⌘⇧D</kbd> to toggle
                 </p>
             </div>
         </div>
