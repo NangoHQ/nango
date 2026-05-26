@@ -33,6 +33,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 const maxSizeJsonLog = '100kb';
 const maxSizeJsonRecords = '100mb';
+const maxSizeJsonRunnerTelemetry = '256kb';
 
 export const server = express();
 
@@ -48,7 +49,7 @@ server.use(getRecordsRoute.path, express.json());
 server.use(deleteOutdatedRecordsRoute.path, express.json());
 server.use(deleteHardRecordsRoute.path, express.json());
 server.use(getCheckpointRoute.path, express.json());
-server.use(postRunnerTelemetryRoute.path, express.json({ limit: '256kb' }));
+server.use(postRunnerTelemetryRoute.path, express.json({ limit: maxSizeJsonRunnerTelemetry }));
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
