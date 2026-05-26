@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { PROD_ENVIRONMENT_NAME } from '../constants';
+import { PROD_ENVIRONMENT_NAME } from '../utils/constants';
 import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';

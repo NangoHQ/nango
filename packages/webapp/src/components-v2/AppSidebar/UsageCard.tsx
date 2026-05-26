@@ -4,7 +4,7 @@ import { permissions } from '@nangohq/authz';
 
 import { Skeleton } from '../../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
-import { useStore } from '../../store.js';
+import { useStore } from '@/store';
 import { cn } from '../../utils/utils.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
 

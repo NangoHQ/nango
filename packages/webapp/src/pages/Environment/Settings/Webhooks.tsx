@@ -6,7 +6,7 @@ import SettingsContent from './components/SettingsContent.js';
 import SettingsGroup from './components/SettingsGroup.js';
 import { WebhookCheckboxes } from './components/WebhookCheckboxes.js';
 import { useEnvironment, usePatchWebhook } from '../../../hooks/useEnvironment.js';
-import { useStore } from '../../../store.js';
+import { useStore } from '@/store';
 import { EditableInput } from '@/components-v2/EditableInput.js';
 import { SecretInput } from '@/components-v2/SecretInput.js';
 import { ButtonLink } from '@/components-v2/ui/button.js';

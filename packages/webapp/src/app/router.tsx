@@ -1,58 +1,40 @@
-import { MantineProvider, createTheme } from '@mantine/core';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
-import { useEffect, useRef } from 'react';
-import { Navigate, RouterProvider, useLocation, useParams } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { useLocalStorage } from 'react-use';
-import { Toaster } from 'sonner';
-import { SWRConfig } from 'swr';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import { PrivateRoute } from './components/PrivateRoute';
-import { useMeta } from './hooks/useMeta';
-import { useUser } from './hooks/useUser';
-import { EmailVerified } from './pages/Account/EmailVerified';
-import ForgotPassword from './pages/Account/ForgotPassword';
-import { InviteSignup } from './pages/Account/InviteSignup';
-import { ManagedEmailVerification } from './pages/Account/ManagedEmailVerification';
-import ResetPassword from './pages/Account/ResetPassword';
-import { Signin } from './pages/Account/Signin';
-import { Signup } from './pages/Account/Signup';
-import { VerifyEmail } from './pages/Account/VerifyEmail';
-import { VerifyEmailByExpiredToken } from './pages/Account/VerifyEmailByExpiredToken';
-import { ConnectionCreate } from './pages/Connection/Create';
-import { ConnectionCreateLegacy } from './pages/Connection/CreateLegacy';
-import { ConnectionList } from './pages/Connection/List';
-import { ConnectionShow } from './pages/Connection/Show';
-import { EnvironmentSettings } from './pages/Environment/Settings/Show';
-import { ClassicGettingStarted } from './pages/GettingStarted/ClassicGettingStarted';
-import { GettingStarted } from './pages/GettingStarted/Show';
-import { Homepage } from './pages/Homepage/Show';
-import { CreateIntegration } from './pages/Integrations/Create';
-import { CreateIntegrationList } from './pages/Integrations/CreateList';
-import { IntegrationsList } from './pages/Integrations/Show';
-import { FunctionsOne } from './pages/Integrations/providerConfigKey/Functions/One';
-import { ShowIntegration } from './pages/Integrations/providerConfigKey/Show';
-import { LogsShow } from './pages/Logs/Show';
-import { NotFound } from './pages/NotFound';
-import { HearAboutUs } from './pages/Onboarding/HearAboutUs';
-import { Root } from './pages/Root';
-import { TeamBilling } from './pages/Team/Billing/Show';
-import { TeamSettingsPage } from './pages/Team/Settings';
-import { UserSettings } from './pages/User/Settings';
-import { useStore } from './store';
-import { fetcher } from './utils/api';
-import { globalEnv } from './utils/env';
-import { LocalStorageKeys } from './utils/local-storage';
-import { sentryCreateBrowserRouter } from './utils/sentry';
-import { useSignout } from './utils/user';
+import { PrivateRoute } from '../components/PrivateRoute';
+import { EmailVerified } from '../pages/Account/EmailVerified';
+import ForgotPassword from '../pages/Account/ForgotPassword';
+import { InviteSignup } from '../pages/Account/InviteSignup';
+import { ManagedEmailVerification } from '../pages/Account/ManagedEmailVerification';
+import ResetPassword from '../pages/Account/ResetPassword';
+import { Signin } from '../pages/Account/Signin';
+import { Signup } from '../pages/Account/Signup';
+import { VerifyEmail } from '../pages/Account/VerifyEmail';
+import { VerifyEmailByExpiredToken } from '../pages/Account/VerifyEmailByExpiredToken';
+import { ConnectionCreate } from '../pages/Connection/Create';
+import { ConnectionCreateLegacy } from '../pages/Connection/CreateLegacy';
+import { ConnectionList } from '../pages/Connection/List';
+import { ConnectionShow } from '../pages/Connection/Show';
+import { EnvironmentSettings } from '../pages/Environment/Settings/Show';
+import { ClassicGettingStarted } from '../pages/GettingStarted/ClassicGettingStarted';
+import { GettingStarted } from '../pages/GettingStarted/Show';
+import { Homepage } from '../pages/Homepage/Show';
+import { CreateIntegration } from '../pages/Integrations/Create';
+import { CreateIntegrationList } from '../pages/Integrations/CreateList';
+import { IntegrationsList } from '../pages/Integrations/Show';
+import { FunctionsOne } from '../pages/Integrations/providerConfigKey/Functions/One';
+import { ShowIntegration } from '../pages/Integrations/providerConfigKey/Show';
+import { LogsShow } from '../pages/Logs/Show';
+import { NotFound } from '../pages/NotFound';
+import { HearAboutUs } from '../pages/Onboarding/HearAboutUs';
+import { Root } from '../pages/Root';
+import { TeamBilling } from '../pages/Team/Billing/Show';
+import { TeamSettingsPage } from '../pages/Team/Settings';
+import { UserSettings } from '../pages/User/Settings';
+import { useStore } from '../store';
+import { globalEnv } from '../utils/env';
+import { sentryCreateBrowserRouter } from '../utils/sentry';
 
-import type { BreadcrumbHandle } from './hooks/useBreadcrumbs';
-
-import 'react-toastify/dist/ReactToastify.css';
-
-const theme = createTheme({
-    fontFamily: 'Inter'
-});
+import type { BreadcrumbHandle } from '../hooks/useBreadcrumbs';
 
 const GettingStartedRoute = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
@@ -135,7 +117,7 @@ const publicAuthRoutes = (() => {
     return routes;
 })();
 
-const router = sentryCreateBrowserRouter([
+export const router = sentryCreateBrowserRouter([
     {
         path: '/',
         element: <Root />
@@ -307,60 +289,3 @@ const router = sentryCreateBrowserRouter([
         element: <NotFound />
     }
 ]);
-
-const App = () => {
-    const env = useStore((state) => state.env);
-    const signout = useSignout();
-    const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
-    const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
-    const { user } = useUser();
-    const { data: metaData } = useMeta(!!user);
-    const meta = metaData?.data;
-
-    useEffect(() => {
-        setShowGettingStarted(env === 'dev' && globalEnv.features.gettingStarted);
-        if (env) {
-            setLastEnvironment(env);
-        }
-    }, [env, setShowGettingStarted, setLastEnvironment]);
-
-    // Print the version and git hash to the console (only once)
-    const hasPrintedVersion = useRef(false);
-    useEffect(() => {
-        if (!meta || hasPrintedVersion.current) {
-            return;
-        }
-
-        hasPrintedVersion.current = true;
-        console.log(`Nango v${meta.version} ${globalEnv.gitHash ? `(${globalEnv.gitHash})` : ''}`);
-    }, [meta]);
-
-    return (
-        <MantineProvider theme={theme}>
-            <TooltipProvider>
-                <SWRConfig
-                    value={{
-                        refreshInterval: 15 * 60000,
-                        // Our server is not well configured if we enable that it will just fetch all the time
-                        revalidateIfStale: false,
-                        revalidateOnFocus: false,
-                        revalidateOnReconnect: true,
-                        fetcher,
-                        onError: (error) => {
-                            if (error.status === 401) {
-                                return signout();
-                            }
-                        }
-                    }}
-                >
-                    <RouterProvider router={router} />
-                </SWRConfig>
-                {/* TODO: Remove once remaining legacy toasts have been replaced */}
-                <ToastContainer />
-            </TooltipProvider>
-            <Toaster />
-        </MantineProvider>
-    );
-};
-
-export default App;
