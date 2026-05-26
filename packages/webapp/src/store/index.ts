@@ -5,8 +5,6 @@ import { usePlaygroundStore } from './playground';
 import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
 
-export { PROD_ENVIRONMENT_NAME };
-
 interface Env {
     name: string;
 }
