@@ -36,28 +36,36 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
     }
 };
 
-function createTelemetryBatcher({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): Batcher<RunnerTelemetry> {
+function createTelemetryBatcher({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): {
+    batcher: Batcher<RunnerTelemetry>;
+    waitForInFlights: () => Promise<void>;
+} {
+    const inFlight = new Set<Promise<unknown>>();
+
     const batcher = new Batcher<RunnerTelemetry>({
         maxBatchSize: telemetryBatchSize,
         flushIntervalMs: telemetryFlushIntervalMs,
         grouping: telemetryGrouping,
         // eslint-disable-next-line @typescript-eslint/require-await
         process: async (events) => {
-            void persistClient.postRunnerTelemetry(environmentId, events).then((res) => {
-                if (res.isErr()) {
-                    logger.error(`Failed to post runner telemetry: ${res.error.message}`, { environmentId, events });
-                }
-            });
-
-            // NOTE: we're not awaiting/throwing here, so the batcher will not retry deliveries when requests fail.
-            // (Batcher retries processing events if the `process` method throws).
-            // Awaiting could impact runners performance, so while we're only instrumenting DD custom metrics, this is ok.
-            // We need to consider the long-term solution: do we await to guarantee billing accuracy and risk impacting performance?
-            // A possible compromise would be to await with a low timeout to mitigate performance impact while still retrying on failures.
+            // Fire-and-forget to avoid blocking runner script execution.
+            const p = persistClient
+                .postRunnerTelemetry(environmentId, events)
+                .then((res) => {
+                    if (res.isErr()) {
+                        logger.error(`Failed to post runner telemetry: ${res.error.message}`, { environmentId, events });
+                    }
+                })
+                .finally(() => inFlight.delete(p));
+            inFlight.add(p);
         }
     });
 
-    return batcher;
+    const waitForInFlights = async (): Promise<void> => {
+        await Promise.allSettled([...inFlight]);
+    };
+
+    return { batcher, waitForInFlights };
 }
 
 export function createTelemetryRecorder({
@@ -69,7 +77,7 @@ export function createTelemetryRecorder({
     persistClient: PersistClient;
     exportRunnerTelemetry: boolean;
 }): TelemetryRecorder {
-    const batcher = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : null;
+    const { batcher, waitForInFlights } = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : {};
 
     return {
         environmentId,
@@ -81,11 +89,16 @@ export function createTelemetryRecorder({
             }
         },
         async shutdown({ timeoutMs = 5_000 }: { timeoutMs?: number } = {}) {
-            if (!batcher) return Ok(undefined);
+            if (!batcher || !waitForInFlights) return Ok(undefined);
+            const start = Date.now();
             const res = await batcher.shutdown({ timeoutMs });
             if (res.isErr()) {
                 logger.error(`Telemetry recorder shutdown error: ${res.error.message}`);
                 return res;
+            }
+            const remaining = timeoutMs - (Date.now() - start);
+            if (remaining > 0) {
+                await Promise.race([waitForInFlights(), new Promise<void>((resolve) => setTimeout(resolve, remaining))]);
             }
             return Ok(undefined);
         }
