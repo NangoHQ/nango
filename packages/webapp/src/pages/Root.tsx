@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { PROD_ENVIRONMENT_NAME } from '../store';
 import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
-import { useStore } from '../store';
+import { PROD_ENVIRONMENT_NAME, useStore } from '../store';
 
 export const Root: React.FC = () => {
     const location = useLocation();

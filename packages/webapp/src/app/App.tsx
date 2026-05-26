@@ -7,10 +7,9 @@ import { Toaster } from 'sonner';
 import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
+import { router } from './router';
 import { globalEnv } from '../utils/env';
 import { LocalStorageKeys } from '../utils/local-storage';
-
-import { router } from './router';
 
 import 'react-toastify/dist/ReactToastify.css';
 

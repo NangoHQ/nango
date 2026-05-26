@@ -1,9 +1,9 @@
 import { MantineProvider, createTheme } from '@mantine/core';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
-import { PostHogProvider } from 'posthog-js/react';
 import posthog from 'posthog-js';
+import { PostHogProvider } from 'posthog-js/react';
 import { SWRConfig } from 'swr';
 
 import { ErrorBoundary } from '../components/ErrorBoundary';
