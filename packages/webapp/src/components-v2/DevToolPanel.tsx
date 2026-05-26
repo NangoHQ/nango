@@ -13,7 +13,7 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  */
 export const isDevToolsEnabled = import.meta.env.DEV || window.location.hostname.endsWith('.app-development.nango.dev');
 
-// Toggle with: Ctrl+Shift+D (Cmd+Shift+D on Mac)
+// Toggle with: Ctrl+Shift+D
 export const DEV_PANEL_SHORTCUT = 'KeyD';
 
 interface DevPanelState {
@@ -37,7 +37,7 @@ export const DevToolPanel: React.FC = () => {
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.code === DEV_PANEL_SHORTCUT && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+            if (e.code === DEV_PANEL_SHORTCUT && e.shiftKey && e.ctrlKey) {
                 e.preventDefault();
                 toggle();
             }
@@ -45,7 +45,7 @@ export const DevToolPanel: React.FC = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [toggle]);
 
     if (!open) {
         return null;
@@ -78,7 +78,7 @@ export const DevToolPanel: React.FC = () => {
             {/* Footer */}
             <div className="border-t border-border-muted px-3 py-2">
                 <p className="text-sm text-text-secondary">
-                    <kbd className="rounded border border-border-muted bg-surface-panel px-1.5 py-0.5 font-mono text-xs">⌘⇧D</kbd> to toggle
+                    <kbd className="rounded border border-border-muted bg-surface-panel px-1.5 py-0.5 font-mono text-xs">Ctrl+Shift+D</kbd> to toggle
                 </p>
             </div>
         </div>
