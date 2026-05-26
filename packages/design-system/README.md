@@ -157,6 +157,36 @@ Legacy tokens in `index.css` (`--color-*`) are separate and untouched.
 
 ---
 
+## Package structure
+
+```
+src/
+  components/
+    Button/
+      Button.tsx           component implementation
+      Button.stories.tsx   Storybook story
+    Input/
+      Input.tsx
+      Input.stories.tsx
+    …                      one directory per component
+    ui/                    shadcn CLI scratch pad — generated files land here,
+                           then get adapted into the component directory above
+  lib/
+    cn.ts                  cn() helper (twMerge + clsx)
+  index.ts                 barrel — all public exports
+  index.css                CSS entry point (imports tokens.generated.css)
+tokens/
+  tokens.json              Tokens Studio source of truth
+  tokens.generated.css     compiled CSS custom properties
+scripts/
+  tokens-fetch.mjs         token pipeline
+components.json            shadcn CLI config
+```
+
+Each component lives in its own directory alongside its story. When adding a new component via the shadcn CLI (`npx shadcn add <name>`), the generated file is placed in `src/components/ui/` as a starting point. Move and adapt it into `src/components/<Name>/` — replacing shadcn's hardcoded Tailwind utilities with our `--ds-*` token variables — then delete the `ui/` file.
+
+---
+
 ## Components
 
 Components are available from the package root:
