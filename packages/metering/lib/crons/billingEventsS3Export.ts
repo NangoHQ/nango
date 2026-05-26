@@ -180,11 +180,15 @@ export async function exec(): Promise<void> {
                     const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
                     const key = objectKey({ day, eventName });
                     const start = process.hrtime.bigint();
+                    // Tracks which step is in flight so a catch can tag the failure
+                    // without us having to introspect the thrown error.
+                    let step: 'head' | 'export' = 'head';
                     try {
                         if (await objectExists(s3, key)) {
                             logger.info(`Skipping ${eventName} for day=${day} (already in s3://${bucket}/${key})`);
                             continue;
                         }
+                        step = 'export';
                         logger.info(`Exporting ${eventName} for day=${day}`);
                         await client.command({ query: exportSql({ metric, day, eventName, key }) });
                         logger.info(`Exported ${eventName} for day=${day}`);
@@ -192,8 +196,12 @@ export async function exec(): Promise<void> {
                     } catch (err) {
                         // Per-metric catch so a single failure (e.g. CH timeout on
                         // a heavy table) does not abort the rest of the run.
-                        logger.error(`Failed to export ${eventName} for day=${day}`, err);
-                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, { metric: metric.canonicalEventName, success: 'false' });
+                        logger.error(`Failed to export ${eventName} for day=${day} at step=${step}`, err);
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, {
+                            metric: metric.canonicalEventName,
+                            success: 'false',
+                            step
+                        });
                     } finally {
                         metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS, Number(process.hrtime.bigint() - start) / 1e6, {
                             metric: metric.canonicalEventName
