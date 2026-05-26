@@ -1,9 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 
-import { PROD_ENVIRONMENT_NAME } from '../utils/constants';
 import { usePlaygroundStore } from './playground';
 import storage, { LocalStorageKeys } from '../utils/local-storage';
+
+export const PROD_ENVIRONMENT_NAME = 'prod';
 
 interface Env {
     name: string;

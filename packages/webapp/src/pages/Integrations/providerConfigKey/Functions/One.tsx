@@ -19,7 +19,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Skeleton } from '@/components-v2/ui/skeleton';
-import { githubRepo as INTEGRATION_TEMPLATES_GITHUB_URL } from '@/utils/cloud';
 import { apiFlowDownload } from '@/hooks/useFlow';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
@@ -28,6 +27,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import PageNotFound from '@/pages/PageNotFound';
 import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
+import { githubRepo as INTEGRATION_TEMPLATES_GITHUB_URL } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
 
 import type { JSONSchema7 } from 'json-schema';
