@@ -1,0 +1,21 @@
+.agents/skills/creating-skills-skill/SKILL.md
+  s_b98849faf5d942::t_a3ddbc7c4948f2 3,11,13,15,28,81,89,91,93,101,113,131,251,317,352,463,480,482
+AGENTS.md
+  ai_agent 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "94f123f976e799b8bbaddacb1b821791312cc18b",
+  "prompts": {},
+  "sessions": {
+    "s_b98849faf5d942": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5077-e043-74e2-8dce-099270e4e66f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

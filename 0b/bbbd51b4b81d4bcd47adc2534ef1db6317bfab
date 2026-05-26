@@ -1,0 +1,19 @@
+.agents/skills/creating-database-migrations/SKILL.md
+  s_b98849faf5d942::t_6641b713b64213 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "0bbbbd51b4b81d4bcd47adc2534ef1db6317bfab",
+  "prompts": {},
+  "sessions": {
+    "s_b98849faf5d942": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5077-e043-74e2-8dce-099270e4e66f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
