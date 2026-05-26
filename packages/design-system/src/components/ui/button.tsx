@@ -10,10 +10,10 @@ import type { ReactNode } from 'react';
 
 export const buttonVariants = cva(
     [
-        'inline-flex items-center justify-center gap-[var(--ds-space-1-5)] whitespace-nowrap',
-        'rounded-[var(--ds-radius-xs)] border-[length:var(--ds-border-width-hairline)] [font-weight:var(--ds-typography-font-weight-medium)]',
-        'text-[length:var(--ds-typography-font-size-md)] leading-[var(--ds-typography-line-height-normal)]',
-        'tracking-[var(--ds-typography-letter-spacing-normal)] cursor-pointer select-none',
+        'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
+        'rounded-ds-xs border-ds-hairline font-ds-medium',
+        'text-ds-md leading-[var(--ds-typography-line-height-normal)]',
+        'tracking-ds-normal cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
         'focus-visible:outline-none',
@@ -23,59 +23,59 @@ export const buttonVariants = cva(
         variants: {
             variant: {
                 primary: [
-                    'bg-[var(--button-primary-bg-default)] text-[var(--button-primary-text-default)]',
-                    'border-[var(--button-primary-border-default)]',
-                    'hover:bg-[var(--button-primary-bg-hover)]',
-                    'active:bg-[var(--button-primary-bg-active)]',
-                    'disabled:bg-[var(--button-primary-bg-disabled)] disabled:text-[var(--button-primary-text-disabled)] disabled:border-transparent',
-                    'focus-visible:shadow-[var(--focus-outline-default)]'
+                    'bg-button-primary-bg-default text-button-primary-text-default',
+                    'border-button-primary-border-default',
+                    'hover:bg-button-primary-bg-hover',
+                    'active:bg-button-primary-bg-active',
+                    'disabled:bg-button-primary-bg-disabled disabled:text-button-primary-text-disabled disabled:border-transparent',
+                    'focus-visible:shadow-focus-outline-default'
                 ],
                 secondary: [
-                    'bg-[var(--button-secondary-bg-default)] text-[var(--button-secondary-text-default)]',
-                    'border-[var(--button-secondary-border-default)]',
-                    'hover:bg-[var(--button-secondary-bg-hover)]',
-                    'active:bg-[var(--button-secondary-bg-active)]',
-                    'disabled:bg-[var(--button-secondary-bg-disabled)] disabled:text-[var(--button-secondary-text-disabled)] disabled:border-transparent',
-                    'focus-visible:shadow-[var(--focus-outline-default)]'
+                    'bg-button-secondary-bg-default text-button-secondary-text-default',
+                    'border-button-secondary-border-default',
+                    'hover:bg-button-secondary-bg-hover',
+                    'active:bg-button-secondary-bg-active',
+                    'disabled:bg-button-secondary-bg-disabled disabled:text-button-secondary-text-disabled disabled:border-transparent',
+                    'focus-visible:shadow-focus-outline-default'
                 ],
                 outline: [
-                    'bg-[var(--button-outline-bg-default)] text-[var(--button-outline-text-default)]',
-                    'border-[var(--button-outline-border-default)]',
-                    'hover:bg-[var(--button-outline-bg-hover)] hover:border-[var(--button-outline-border-hover)]',
-                    'active:bg-[var(--button-outline-bg-active)]',
-                    'disabled:bg-[var(--button-outline-bg-disabled)] disabled:text-[var(--button-outline-text-disabled)] disabled:border-[var(--button-outline-border-disabled)]',
-                    'focus-visible:shadow-[var(--focus-outline-default)]'
+                    'bg-button-outline-bg-default text-button-outline-text-default',
+                    'border-button-outline-border-default',
+                    'hover:bg-button-outline-bg-hover hover:border-button-outline-border-hover',
+                    'active:bg-button-outline-bg-active',
+                    'disabled:bg-button-outline-bg-disabled disabled:text-button-outline-text-disabled disabled:border-button-outline-border-disabled',
+                    'focus-visible:shadow-focus-outline-default'
                 ],
                 ghost: [
-                    'bg-[var(--button-ghost-bg-default)] text-[var(--button-ghost-text-default)]',
-                    'border-[var(--button-ghost-border-default)]',
-                    'hover:bg-[var(--button-ghost-bg-hover)]',
-                    'active:bg-[var(--button-ghost-bg-active)]',
-                    'disabled:bg-[var(--button-ghost-bg-disabled)] disabled:text-[var(--button-ghost-text-disabled)]',
-                    'focus-visible:shadow-[var(--focus-outline-default)]'
+                    'bg-button-ghost-bg-default text-button-ghost-text-default',
+                    'border-button-ghost-border-default',
+                    'hover:bg-button-ghost-bg-hover',
+                    'active:bg-button-ghost-bg-active',
+                    'disabled:bg-button-ghost-bg-disabled disabled:text-button-ghost-text-disabled',
+                    'focus-visible:shadow-focus-outline-default'
                 ],
                 danger: [
-                    'bg-[var(--button-danger-bg-default)] text-[var(--button-danger-text-default)]',
-                    'border-[var(--button-danger-border-default)]',
-                    'hover:bg-[var(--button-danger-bg-hover)]',
-                    'active:bg-[var(--button-danger-bg-active)]',
-                    'disabled:bg-[var(--button-danger-bg-disabled)] disabled:text-[var(--button-danger-text-disabled)] disabled:border-transparent',
-                    'focus-visible:shadow-[var(--focus-outline-danger)]'
+                    'bg-button-danger-bg-default text-button-danger-text-default',
+                    'border-button-danger-border-default',
+                    'hover:bg-button-danger-bg-hover',
+                    'active:bg-button-danger-bg-active',
+                    'disabled:bg-button-danger-bg-disabled disabled:text-button-danger-text-disabled disabled:border-transparent',
+                    'focus-visible:shadow-focus-outline-danger'
                 ],
                 'link-danger': [
-                    'bg-[var(--button-link-danger-bg-default)] text-[var(--button-link-danger-text-default)]',
-                    'border-[var(--button-link-danger-border-default)]',
-                    'hover:bg-[var(--button-link-danger-bg-hover)]',
-                    'active:bg-[var(--button-link-danger-bg-active)]',
-                    'disabled:bg-transparent disabled:text-[var(--button-link-danger-text-disabled)]',
-                    'focus-visible:shadow-[var(--focus-outline-danger)]'
+                    'bg-button-link-danger-bg-default text-button-link-danger-text-default',
+                    'border-button-link-danger-border-default',
+                    'hover:bg-button-link-danger-bg-hover',
+                    'active:bg-button-link-danger-bg-active',
+                    'disabled:bg-transparent disabled:text-button-link-danger-text-disabled',
+                    'focus-visible:shadow-focus-outline-danger'
                 ]
             },
             size: {
-                xs: 'h-6 px-[var(--ds-space-1-5)] text-[length:var(--ds-typography-font-size-xs)]',
-                sm: 'h-7 px-[var(--ds-space-2)]',
-                md: 'h-8 px-[var(--ds-space-2-5)]',
-                lg: 'h-9 px-[var(--ds-space-3)]'
+                xs: 'h-6 px-1.5 text-ds-xs',
+                sm: 'h-7 px-2',
+                md: 'h-8 px-2.5',
+                lg: 'h-9 px-3'
             }
         },
         defaultVariants: {
@@ -84,6 +84,8 @@ export const buttonVariants = cva(
         }
     }
 );
+
+// ─── Button ───────────────────────────────────────────────────────────────────
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     asChild?: boolean;
@@ -108,3 +110,36 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = 'Button';
+
+// ─── IconButton ───────────────────────────────────────────────────────────────
+
+export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
+    asChild?: boolean;
+    loading?: boolean;
+    /** Accessible label — applied as aria-label and title. Required for icon-only buttons. */
+    label: string;
+}
+
+export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
+        const Comp = asChild ? Slot : 'button';
+        const isDisabled = disabled || loading;
+        const iconSize = size === 'xs' ? 'xs' : size === 'sm' ? 'sm' : 'md';
+
+        return (
+            <Comp
+                ref={ref}
+                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', className)}
+                disabled={isDisabled}
+                aria-busy={loading || undefined}
+                aria-label={label}
+                title={label}
+                {...props}
+            >
+                {loading ? <Spinner size={iconSize} /> : children}
+            </Comp>
+        );
+    }
+);
+
+IconButton.displayName = 'IconButton';
