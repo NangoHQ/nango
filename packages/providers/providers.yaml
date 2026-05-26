@@ -5986,6 +5986,75 @@ drupal:
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
 
+dynatrace:
+    display_name: Dynatrace
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.environmentId}.live.dynatrace.com
+        headers:
+            authorization: Api-Token ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/dynatrace
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace/connect
+    connection_config:
+        environmentId:
+            type: string
+            title: Environment ID
+            description: Your Dynatrace environment ID.
+            pattern: '^[a-z0-9]+$'
+            example: mew08***
+            order: 1
+            doc_section: '#step-1-find-your-environment-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Dynatrace API token.
+            pattern: '^dt0[a-z]\d+\.[A-Z0-9]+\.[A-Z0-9]+$'
+            example: dt0s01.ST2EY72KQINMH5***********.G3DFPBEJYMODIDAEX454M7YWB***************************
+            doc_section: '#step-2-generate-an-api-token'
+
+dynatrace-oauth:
+    display_name: Dynatrace (OAuth)
+    categories:
+        - analytics
+        - dev-tools
+    auth_mode: OAUTH2_CC
+    token_url: https://sso.dynatrace.com/sso/oauth2/token
+    scope_separator: ' '
+    token_params:
+        grant_type: client_credentials
+        resource: urn:dtaccount:${connectionConfig.accountUuid}
+    proxy:
+        base_url: https://api.dynatrace.com
+    docs: https://nango.dev/docs/api-integrations/dynatrace-oauth
+    docs_connect: https://nango.dev/docs/api-integrations/dynatrace-oauth/connect
+    connection_config:
+        accountUuid:
+            type: string
+            title: Account UUID
+            description: Your Dynatrace account UUID.
+            example: 9a8b7c6d-1234-5678-abcd-ef0123456789
+            format: uuid
+            order: 1
+            doc_section: '#step-1-find-your-account-uuid'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Dynatrace OAuth client ID.
+            example: dt0s03.****************
+            doc_section: '#step-2-create-an-oauth-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Dynatrace OAuth client secret.
+            secret: true
+            example: dt0s03.5NJ******.GYWJPBF******************
+            doc_section: '#step-2-create-an-oauth-client'
+
 emarsys:
     display_name: Emarsys Core API (WSSE)
     categories:
@@ -9631,6 +9700,57 @@ itglue:
             doc_section: '#step-1-finding-your-subdomain'
             order: 1
 
+immybot:
+    display_name: ImmyBot
+    categories:
+        - dev-tools
+        - support
+    auth_mode: OAUTH2_CC
+    body_format: form
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenantId}/oauth2/v2.0/token
+    token_params:
+        grant_type: client_credentials
+        scope: https://${connectionConfig.instanceSubdomain}.immy.bot/.default
+    proxy:
+        base_url: https://${connectionConfig.instanceSubdomain}.immy.bot
+        headers:
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/immybot
+    docs_connect: https://nango.dev/docs/api-integrations/immybot/connect
+    connection_config:
+        tenantId:
+            type: string
+            title: Microsoft Entra Tenant ID
+            description: The Azure tenant ID that owns the ImmyBot app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            order: 1
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        instanceSubdomain:
+            type: string
+            title: ImmyBot Instance Subdomain
+            description: The first segment of your ImmyBot instance URL.
+            pattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$'
+            example: acme
+            prefix: https://
+            suffix: .immy.bot
+            order: 2
+            doc_section: '#step-6-find-your-immybot-instance-subdomain'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The Application client ID from the Microsoft Entra app registration.
+            format: uuid
+            example: 00000000-0000-0000-0000-000000000000
+            doc_section: '#step-1-create-or-find-your-microsoft-entra-app-registration'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret value from the Microsoft Entra app registration.
+            secret: true
+            doc_section: '#step-2-create-a-client-secret'
+
 intercom:
     display_name: Intercom
     categories:
@@ -11661,6 +11781,14 @@ microsoft-oauth2-cc:
             doc_section: '#step-1-finding-your-tenant-id'
             order: 1
 
+microsoft-intune:
+    display_name: Microsoft Intune
+    categories:
+        - dev-tools
+    alias: microsoft-oauth2-cc
+    docs: https://nango.dev/docs/api-integrations/microsoft-intune
+    docs_connect: https://nango.dev/docs/api-integrations/microsoft-intune/connect
+
 microsoft-planner:
     display_name: Microsoft Planner
     categories:
@@ -12523,6 +12651,50 @@ next-cloud-ocs:
             prefix: https://
             doc_section: '#step-1-locate-your-next-cloud-domain'
 
+nexthink:
+    display_name: Nexthink
+    categories:
+        - analytics
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.instance}-login.${connectionConfig.region}.nexthink.cloud/oauth2/default/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    default_scopes:
+        - service:integration
+    proxy:
+        base_url: https://${connectionConfig.instance}.api.${connectionConfig.region}.nexthink.cloud
+    docs: https://nango.dev/docs/api-integrations/nexthink
+    docs_connect: https://nango.dev/docs/api-integrations/nexthink/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Nexthink API Client ID.
+            doc_section: '#step-2-create-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Nexthink API Client Secret.
+            secret: true
+            doc_section: '#step-2-create-api-credentials'
+    connection_config:
+        instance:
+            type: string
+            title: Instance Name
+            description: The name of your Nexthink instance.
+            example: acme
+            order: 1
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+        region:
+            type: string
+            title: Region
+            description: 'Your Nexthink region'
+            example: eu
+            pattern: '^(us|eu|pac|meta)$'
+            order: 2
+            doc_section: '#step-1-locate-your-instance-name-and-region'
+
 ninjaone-rmm:
     display_name: NinjaOne RMM
     categories:
@@ -12573,6 +12745,50 @@ ninjaone-rmm-oauth2:
         base_url: https://app.ninjarmm.com
     docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
+
+ninjaone-saas-backup:
+    display_name: NinjaOne SaaS Backup
+    categories:
+        - storage
+        - productivity
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/api
+        headers:
+            x-reseller-token: ${connectionConfig.resellerToken}
+            x-access-token: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/ninjaone-saas-backup
+    docs_connect: https://nango.dev/docs/api-integrations/ninjaone-saas-backup/connect
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The host from your NinjaOne SaaS Backup API URL.
+            example: dropsuite.us
+            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            prefix: https://
+            suffix: /api
+            order: 1
+            doc_section: '#step-1-find-your-api-credentials'
+        resellerToken:
+            type: string
+            title: Reseller Token
+            description: The Reseller Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            order: 2
+            doc_section: '#step-1-find-your-api-credentials'
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: The Authentication Token from NinjaOne SaaS Backup API Settings.
+            format: uuid
+            secret: true
+            doc_section: '#step-1-find-your-api-credentials'
 
 nocrm:
     display_name: nocrm.io
@@ -14449,6 +14665,44 @@ planning-center-online-pat:
             example: 7f8e9d0c1b2a3847564930210fedcba9876543210fedcba9876543210
             doc_section: '#step-2-create-a-personal-access-token'
 
+pushpay-chms-v1:
+    display_name: Pushpay ChMS (v1)
+    categories:
+        - crm
+        - productivity
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.ccbchurch.com
+        retry:
+            after:
+                - 'retry-after'
+    credentials_verification_script: pushpayChmsV1CredentialsVerification
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v1
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v1/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for your Pushpay ChMS site.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            order: 1
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
+    credentials:
+        username:
+            type: string
+            title: API username
+            description: The API login created in Pushpay ChMS API Admin.
+            doc_section: '#step-2-create-an-api-user'
+        password:
+            type: string
+            title: API password
+            description: The password for your Pushpay ChMS API user.
+            secret: true
+            doc_section: '#step-2-create-an-api-user'
+
 plain:
     display_name: Plain
     categories:
@@ -14657,15 +14911,15 @@ prospeo:
                 content-type: application/json
             endpoints:
                 - /account-information
-    docs: https://nango.dev/docs/integrations/all/prospeo
-    docs_connect: https://nango.dev/docs/integrations/all/prospeo/connect
+    docs: https://nango.dev/docs/api-integrations/prospeo
+    docs_connect: https://nango.dev/docs/api-integrations/prospeo/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: Your Prospeo API Key
-            example: 65d2be5e227e447d8777d36f934c611c
-            pattern: '^[a-f0-9]{32}$'
+            example: pk_640edfcc************************304fca5e
+            pattern: '^(pk_[a-f0-9]{64}|[a-f0-9]{32})$'
             doc_section: '#step-1-finding-your-api-key'
 
 prtg-classic:
@@ -15990,6 +16244,49 @@ sage:
     proxy:
         base_url: https://api.accounting.sage.com
     docs: https://nango.dev/docs/integrations/all/sage
+
+sage-200:
+    display_name: Sage 200
+    categories:
+        - accounting
+        - erp
+    auth_mode: OAUTH2
+    authorization_url: https://id.sage.com/authorize
+    token_url: https://id.sage.com/oauth/token
+    authorization_params:
+        audience: s200ukipd/sage200
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline_access
+    scope_separator: ' '
+    post_connection_script: sage200PostConnection
+    proxy:
+        base_url: https://api.columbus.sage.com/uk/${connectionConfig.edition}
+        headers:
+            x-company: ${connectionConfig.company_id}
+            x-site: ${connectionConfig.site_id}
+    docs: https://nango.dev/docs/api-integrations/sage-200
+    setup_guide_url: https://nango.dev/docs/api-integrations/sage-200/how-to-register-your-own-sage-200-oauth-app
+    connection_config:
+        edition:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        company_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        site_id:
+            type: string
+            title: ''
+            description: ''
+            automated: true
 
 sage-hr:
     display_name: Sage HR
@@ -18886,6 +19183,39 @@ tableau:
             example: '3.26'
             doc_section: '#step-4-finding-your-api-version'
             description: The version of the Tableau API to use
+
+tanium:
+    display_name: Tanium
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            session: ${apiKey}
+            content-type: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /v2/session/info
+    docs: https://nango.dev/docs/api-integrations/tanium
+    docs_connect: https://nango.dev/docs/api-integrations/tanium/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Tanium API token.
+            doc_section: '#step-1-generate-an-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: Your Tanium Cloud hostname.
+            example: acme.cloud.tanium.com
+            format: hostname
+            prefix: https://
+            doc_section: '#step-2-find-your-hostname'
+            order: 1
 
 teamtailor:
     display_name: Teamtailor

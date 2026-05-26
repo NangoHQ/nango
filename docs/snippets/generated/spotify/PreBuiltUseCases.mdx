@@ -1,3 +1,109 @@
-_No pre-built syncs or actions available yet._
+### Albums
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-album` | Retrieve a single album from the Spotify catalog. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-album.ts) |
+
+### Artists
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-artist` | Retrieve a single artist from the Spotify catalog. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-artist.ts) |
+| `list-artists` | List artists followed by the current user | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-artists.ts) |
+
+### Episodes
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-episode` | Retrieve a single podcast episode from the Spotify catalog. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-episode.ts) |
+
+### Follow
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `follow-artist` | Follow one or more artists on behalf of the current user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/follow-artist.ts) |
+
+### Library
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-saved-album` | Save one or more albums to the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/create-saved-album.ts) |
+| `create-saved-track` | Save one or more tracks to the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/create-saved-track.ts) |
+| `delete-saved-album` | Remove one or more albums from the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/delete-saved-album.ts) |
+| `delete-saved-show` | Remove one or more shows (podcasts) from the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/delete-saved-show.ts) |
+| `list-albums` | List albums saved in the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-albums.ts) |
+| `list-saved-shows` | List shows (podcasts) saved in the current user's library | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-saved-shows.ts) |
+| `list-saved-tracks` | List tracks saved in the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-saved-tracks.ts) |
+
+### Player
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-to-queue` | Add a track or episode to the end of the user's current playback queue. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/add-to-queue.ts) |
+| `get-current-playback` | Fetch the user's current playback state including device, track, and progress. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-current-playback.ts) |
+| `get-devices` | List the user's available Spotify Connect devices | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-devices.ts) |
+| `get-queue` | Retrieve the user's current playback queue. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-queue.ts) |
+| `pause-playback` | Pause the user's Spotify playback. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/pause-playback.ts) |
+| `seek-to-position` | Seek to a specific position in the currently playing track. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/seek-to-position.ts) |
+| `set-repeat-mode` | Set the repeat mode for the user's playback. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/set-repeat-mode.ts) |
+| `set-volume` | Set the volume for the user's current playback device. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/set-volume.ts) |
+| `skip-to-next` | Skips to the next track in the user's queue. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/skip-to-next.ts) |
+| `skip-to-previous` | Skip to the previous track in the user's queue | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/skip-to-previous.ts) |
+| `start-playback` | Start or resume Spotify playback, optionally on a specific device or with a context | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/start-playback.ts) |
+| `toggle-shuffle` | Toggle shuffle mode on or off for the user's playback | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/toggle-shuffle.ts) |
+| `transfer-playback` | Transfer playback to a different Spotify Connect device | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/transfer-playback.ts) |
+
+### Playlists
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-playlist-track` | Add one or more tracks to a Spotify playlist | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/create-playlist-track.ts) |
+| `create-playlist` | Create a playlist in Spotify | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/create-playlist.ts) |
+| `delete-playlist-track` | Remove one or more tracks from a Spotify playlist | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/delete-playlist-track.ts) |
+| `delete-playlist` | Unfollow (remove) a playlist from the current user's library | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/delete-playlist.ts) |
+| `follow-playlist` | Follow a playlist on behalf of the current user | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/follow-playlist.ts) |
+| `get-playlist` | Retrieve a single playlist from Spotify | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-playlist.ts) |
+| `list-playlist-tracks` | List tracks in a Spotify playlist. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-playlist-tracks.ts) |
+| `list-playlists` | List playlists owned or followed by the current user. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/list-playlists.ts) |
+| `reorder-playlist-tracks` | Reorder tracks within a Spotify playlist. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/reorder-playlist-tracks.ts) |
+| `unfollow-playlist` | Unfollow a playlist on behalf of the current user | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/unfollow-playlist.ts) |
+| `update-playlist` | Update a playlist's details (name, description, public/private status). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/update-playlist.ts) |
+
+### Search
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `search` | Search the Spotify catalog for tracks, albums, artists, playlists, shows, or episodes. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/search.ts) |
+
+### Shows
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-show` | Retrieve a single show (podcast) from the Spotify catalog | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-show.ts) |
+
+### Tracks
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-track` | Retrieve a single track from the Spotify catalog. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-track.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-current-user` | Fetch the current Spotify user profile | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/get-current-user.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `delete-saved-track` | Remove one or more tracks from the current user's library. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/actions/delete-saved-track.ts) |
+| `albums` | Sync albums saved in the current user's library | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/albums.ts) |
+| `artists` | Sync artists followed by the current user. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/artists.ts) |
+| `playlist-tracks` | Sync tracks for a given playlist | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/playlist-tracks.ts) |
+| `playlists` | Sync playlists owned or followed by the current user | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/playlists.ts) |
+| `recently-played` | Sync recently played Spotify tracks | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/recently-played.ts) |
+| `saved-episodes` | Sync podcast episodes saved in the current user's library. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/saved-episodes.ts) |
+| `saved-shows` | Sync shows (podcasts) saved in the current user's library | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/saved-shows.ts) |
+| `saved-tracks` | Sync tracks saved in the current user's library | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/saved-tracks.ts) |
+| `top-items` | Sync the user's top artists and tracks across all time ranges. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/spotify/syncs/top-items.ts) |

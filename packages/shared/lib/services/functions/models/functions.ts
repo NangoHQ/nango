@@ -1,30 +1,13 @@
 import db from '@nangohq/database';
-import { Err, Ok } from '@nangohq/utils';
 
-import type {
-    FunctionSource,
-    FunctionType,
-    NangoActionFunctionDeployed,
-    NangoConfigMetadata,
-    NangoFunctionDeployed,
-    NangoOnEventFunctionDeployed,
-    NangoSyncFunctionDeployed,
-    OnEventType
-} from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
+import type { FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
 
-const DB_EVENT_TO_API: Record<string, OnEventType> = {
-    POST_CONNECTION_CREATION: 'post-connection-creation',
-    PRE_CONNECTION_DELETION: 'pre-connection-deletion',
-    VALIDATE_CONNECTION: 'validate-connection'
-};
-
-interface SyncConfigOrOnEventScriptRow {
+export interface FunctionRow {
     id: number;
     name: string;
-    type: 'sync' | 'action' | 'on-event';
+    type: string;
     metadata: NangoConfigMetadata | null;
     input: string | null;
     returns: string[] | null;
@@ -38,12 +21,7 @@ interface SyncConfigOrOnEventScriptRow {
     event: string | null;
 }
 
-/**
- * Lists active deployed functions for a single integration across syncs,
- * actions, and on-event scripts. Pagination total is returned independently
- * of the page so out-of-range pages still surface the correct total.
- */
-export async function listFunctions({
+export async function findActiveByEnvironment({
     environmentId,
     providerConfigKey,
     type,
@@ -57,13 +35,13 @@ export async function listFunctions({
     search: string | undefined;
     limit: number;
     offset: number;
-}): Promise<{ rows: NangoFunctionDeployed[]; total: number }> {
+}): Promise<{ rows: FunctionRow[]; total: number }> {
     const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search });
 
     const [pageRows, countRow] = await Promise.all([
         db.knex
             .from(listing)
-            .select<SyncConfigOrOnEventScriptRow[]>('*')
+            .select<FunctionRow[]>('*')
             .orderBy([
                 { column: 'type', order: 'asc' },
                 { column: 'name', order: 'asc' },
@@ -75,21 +53,11 @@ export async function listFunctions({
         db.knex.from(listing).count<{ total: string }[]>('* as total').first()
     ]);
 
-    const rows = pageRows.flatMap((row) => {
-        const fn = toNangoFunctionDeployed(row);
-        return fn ? [fn] : [];
-    });
     const total = countRow ? Number(countRow.total) : 0;
-
-    return { rows, total };
+    return { rows: pageRows, total };
 }
 
-/**
- * Fetches a single deployed function by name within a provider config.
- * If `type` is omitted and multiple types share the same name, the first
- * match by the listing's stable order is returned.
- */
-export async function getFunction({
+export async function findActiveByName({
     environmentId,
     providerConfigKey,
     name,
@@ -99,26 +67,22 @@ export async function getFunction({
     providerConfigKey: string;
     name: string;
     type: FunctionType | undefined;
-}): Promise<Result<NangoFunctionDeployed | undefined>> {
-    try {
-        const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
+}): Promise<FunctionRow | undefined> {
+    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
 
-        const row = await db.knex
-            .from(listing)
-            .select<SyncConfigOrOnEventScriptRow[]>('*')
-            .where('name', name)
-            .orderBy([
-                { column: 'type', order: 'asc' },
-                { column: 'name', order: 'asc' },
-                { column: 'event', order: 'asc' },
-                { column: 'id', order: 'asc' }
-            ])
-            .first();
+    const row = await db.knex
+        .from(listing)
+        .select<FunctionRow[]>('*')
+        .where('name', name)
+        .orderBy([
+            { column: 'type', order: 'asc' },
+            { column: 'name', order: 'asc' },
+            { column: 'event', order: 'asc' },
+            { column: 'id', order: 'asc' }
+        ])
+        .first();
 
-        return Ok(row ? toNangoFunctionDeployed(row) : undefined);
-    } catch (err) {
-        return Err(new Error('failed_to_get_function', { cause: err }));
-    }
+    return row;
 }
 
 function buildListingSubquery({
@@ -232,66 +196,6 @@ function buildOnEventBranch({
     return query;
 }
 
-// Escapes the LIKE wildcard meta-characters so user input is matched literally.
 function escapeLikePattern(value: string): string {
     return value.replace(/[\\%_]/g, (match) => `\\${match}`);
-}
-
-function toNangoFunctionDeployed(row: SyncConfigOrOnEventScriptRow): NangoFunctionDeployed | undefined {
-    const description = row.metadata?.description;
-    const scopes = row.metadata?.scopes;
-    const base = {
-        name: row.name,
-        ...(description !== undefined && { description }),
-        ...(scopes !== undefined && { scopes })
-    };
-    const deployedMeta = {
-        id: row.id,
-        enabled: row.enabled,
-        last_deployed: row.last_deployed.toISOString(),
-        source: row.source
-    };
-
-    switch (row.type) {
-        case 'sync': {
-            const out: NangoSyncFunctionDeployed = {
-                ...base,
-                type: 'sync',
-                ...(row.input !== null && { input: row.input }),
-                returns: row.returns ?? [],
-                json_schema: row.json_schema,
-                runs: row.runs,
-                auto_start: row.auto_start ?? false,
-                track_deletes: row.track_deletes ?? false,
-                ...deployedMeta
-            };
-            return out;
-        }
-        case 'on-event': {
-            const apiEvent = row.event ? DB_EVENT_TO_API[row.event] : undefined;
-            if (!apiEvent) {
-                return undefined;
-            }
-            const out: NangoOnEventFunctionDeployed = {
-                ...base,
-                type: 'on-event',
-                event: apiEvent,
-                ...deployedMeta
-            };
-            return out;
-        }
-        case 'action': {
-            const out: NangoActionFunctionDeployed = {
-                ...base,
-                type: 'action',
-                ...(row.input !== null && { input: row.input }),
-                returns: row.returns ?? [],
-                json_schema: row.json_schema,
-                ...deployedMeta
-            };
-            return out;
-        }
-        default:
-            return undefined;
-    }
 }

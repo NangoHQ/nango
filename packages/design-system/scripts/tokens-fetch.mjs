@@ -53,6 +53,18 @@ register(StyleDictionary);
 
 const SD_TRANSFORMS = [...getTransforms(), 'name/kebab'];
 
+// css/typography-classes — registered after buildTypographyBlock is defined below.
+// We defer registration to a function so the format can reference buildTypographyBlock
+// without a forward-reference issue.
+function registerTypographyFormat() {
+    if (!StyleDictionary.hooks.formats['css/typography-classes']) {
+        StyleDictionary.registerFormat({
+            name: 'css/typography-classes',
+            format: ({ dictionary }) => buildTypographyBlock(dictionary.allTokens)
+        });
+    }
+}
+
 // ─── CSS value formatting ──────────────────────────────────────────────────────
 
 /**
@@ -150,10 +162,67 @@ export function buildTailwindThemeBlock(tokens) {
     return `@theme {\n${vars.join('\n')}\n}`;
 }
 
+// ─── Typography class builder ──────────────────────────────────────────────────
+
+/**
+ * Generate a CSS class for each composite typography token.
+ * Each class sets font-family, font-size, font-weight, line-height, and letter-spacing.
+ * Class names follow the pattern: .type-{token-name}, e.g. .type-heading-lg
+ */
+export function buildTypographyBlock(tokens) {
+    const typTokens = tokens.filter((t) => t['$type'] === 'typography');
+    if (typTokens.length === 0) return '';
+
+    const classes = typTokens
+        .map((t) => {
+            const value = t.$value ?? t.value;
+            if (!value || typeof value !== 'object') return null;
+
+            const { fontFamily, fontWeight, fontSize, lineHeight, letterSpacing } = value;
+            const props = [
+                fontFamily && `    font-family: ${fontFamily};`,
+                fontSize && `    font-size: ${fontSize};`,
+                fontWeight && `    font-weight: ${fontWeight};`,
+                lineHeight && `    line-height: ${lineHeight};`,
+                letterSpacing != null && `    letter-spacing: ${letterSpacing};`
+            ]
+                .filter(Boolean)
+                .join('\n');
+
+            return `.type-${t.name} {\n${props}\n}`;
+        })
+        .filter(Boolean);
+
+    return classes.join('\n\n');
+}
+
+// ─── SD build pass with a registered format ───────────────────────────────────
+
+/**
+ * Run a Style Dictionary build pass using a named format and return the output as a string.
+ * SD requires a real file destination — we write to `outPath` (inside tmpDir) and read it back.
+ */
+async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format }) {
+    const sd = new StyleDictionary({
+        include: includeFiles,
+        source: [sourceFile],
+        platforms: {
+            out: {
+                transforms: SD_TRANSFORMS,
+                buildPath: path.dirname(outPath) + '/',
+                files: [{ destination: path.basename(outPath), format }]
+            }
+        },
+        log: { verbosity: 'silent', errors: { brokenReferences: 'warn' } }
+    });
+    await sd.buildAllPlatforms();
+    return readFileSync(outPath, 'utf8');
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function buildCss(tokensData) {
-    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark } = tokensData;
+    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark, Typography } = tokensData;
 
     if (!Primitives || !SemanticLight || !SemanticDark) {
         const found = Object.keys(tokensData)
@@ -161,6 +230,8 @@ export async function buildCss(tokensData) {
             .join(', ');
         throw new Error(`Expected Primitives, Semantic/Light, and Semantic/Dark in tokens.json. Found: ${found}`);
     }
+
+    registerTypographyFormat();
 
     // Write token sets to temp files for SD to consume.
     // SD requires file paths — it can't accept raw objects.
@@ -173,16 +244,41 @@ export async function buildCss(tokensData) {
     writeFileSync(lightFile, JSON.stringify(SemanticLight, null, 2));
     writeFileSync(darkFile, JSON.stringify(SemanticDark, null, 2));
 
-    let primTokens, lightTokens, darkTokens;
+    let typFile;
+    if (Typography) {
+        typFile = path.join(tmpDir, 'typography.json');
+        writeFileSync(typFile, JSON.stringify(Typography, null, 2));
+    }
+
+    let primTokens, lightTokens, darkTokens, typographyCss;
     try {
         [primTokens, lightTokens, darkTokens] = await Promise.all([
             resolveTokens({ sourceFiles: [primFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile] })
         ]);
+        typographyCss = typFile
+            ? await buildWithFormat({
+                  includeFiles: [primFile],
+                  sourceFile: typFile,
+                  outPath: path.join(tmpDir, 'typography.css'),
+                  format: 'css/typography-classes'
+              })
+            : '';
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
     }
+
+    const typographySection = typographyCss
+        ? [
+              '',
+              '/*',
+              ' * Typography tokens — composite text-style classes generated from Figma.',
+              ' * Apply to any element: class="type-heading-lg"',
+              ' */',
+              typographyCss
+          ].join('\n')
+        : '';
 
     const output = [
         '/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */',
@@ -207,6 +303,7 @@ export async function buildCss(tokensData) {
         ' * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.',
         ' */',
         buildTailwindThemeBlock(lightTokens),
+        typographySection,
         ''
     ].join('\n');
 

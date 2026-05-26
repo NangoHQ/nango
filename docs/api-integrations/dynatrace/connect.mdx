@@ -1,0 +1,64 @@
+---
+title: Dynatrace - How do I link my account?
+sidebarTitle: Dynatrace
+---
+
+# Overview
+
+To authenticate with Dynatrace, you need:
+1. **Environment ID** - The subdomain of your Dynatrace SaaS environment.
+2. **API Token** - A Dynatrace API token with the required scopes.
+
+This guide walks you through generating an API token in Dynatrace and connecting your account.
+
+### Prerequisites
+
+- Access to a Dynatrace SaaS environment
+- Permission to manage access tokens (requires the `apiTokens.write` scope or an admin account)
+
+### Instructions
+
+#### Step 1: Find your environment ID
+
+Your Dynatrace environment URL follows the pattern:
+
+```
+https://<environmentId>.apps.dynatrace.com
+```
+
+If you have more than one environment, select the one you want to connect to first. For example, if your URL is `https://abc12345.apps.dynatrace.com`, your environment ID is `abc12345`.
+
+#### Step 2: Generate an API token
+
+1. Log in to your Dynatrace account. If you have more than one environment, select the one you want to connect to.
+2. Use the search bar to find **Access Tokens**.
+
+<img src="/api-integrations/dynatrace/search_bar.png"/>
+
+3. Select **Generate new token**.
+
+<img src="/api-integrations/dynatrace/generate_api_key.png"/>
+
+4. Enter a name for your token. Use a meaningful name that identifies the application using it.
+5. Select the required scopes for your integration. For common scopes, see the [full scope reference](https://docs.dynatrace.com/docs/dynatrace-api/basics/dynatrace-api-authentication#token-scopes) for all available scopes.
+6. Select **Generate token**.
+
+<img src="/api-integrations/dynatrace/api_key_form.png"/>
+
+7. Copy the generated token immediately.
+
+<img src="/api-integrations/dynatrace/generated_api_key.png"/>
+
+<Note>
+The token is shown only once. Copy it and store it securely — it cannot be retrieved after you close the dialog. If lost, you must generate a new token.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Dynatrace.
+2. Enter your **Environment ID** and **API Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/dynatrace/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Dynatrace.
