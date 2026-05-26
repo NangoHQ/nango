@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:22.21.1-bookworm-slim AS build
+FROM node:22.22.2-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
@@ -80,7 +80,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:22.21.1-bookworm-slim AS web
+FROM node:22.22.2-bookworm-slim AS web
 
 # Install a more recent npm
 RUN npm install -g npm@11.10.1
