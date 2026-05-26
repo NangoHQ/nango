@@ -7402,6 +7402,20 @@ Indications of the error:
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-checkpoints.md
 Description: Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.
 
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s migrating-to-checkpoints"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install checkpoint migration skill</span>
+    <span className="agent-quickstart-action-description">
+      Copy the command to install <code>migrating-to-checkpoints</code> from <code>NangoHQ/skills</code>.
+    </span>
+  </button>
+</div>
+
 # Who is impacted
 
 If any of your sync functions read `nango.lastSyncDate` to determine where to resume syncing, you are impacted by this migration.
@@ -7846,6 +7860,20 @@ Finally, remove all usage of the **public key and HMAC** from your frontend.
 
 Source: https://nango.dev/docs/guides/platform/migrations/migrate-to-zero-yaml.md
 Description: Guide on how to migrate to Zero YAML in Nango.
+
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s migrating-to-zero-yaml"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install Zero YAML migration skill</span>
+    <span className="agent-quickstart-action-description">
+      Copy the command to install <code>migrating-to-zero-yaml</code> from <code>NangoHQ/skills</code>.
+    </span>
+  </button>
+</div>
 
 The `nango.yaml` configuration file is deprecated and should not be used for new integrations. If you are still using it, this guide will help you migrate your existing Nango integrations from the YAML-based approach to our new Zero YAML system, which uses pure TypeScript with modern tooling.
 
