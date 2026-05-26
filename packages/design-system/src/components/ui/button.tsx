@@ -100,7 +100,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const isDisabled = disabled || loading;
 
         return (
-            <Comp ref={ref} className={cn(buttonVariants({ variant, size }), className)} disabled={isDisabled} aria-busy={loading || undefined} {...props}>
+            <Comp ref={ref} type={asChild ? undefined : 'button'} className={cn(buttonVariants({ variant, size }), className)} disabled={isDisabled} aria-busy={loading || undefined} {...props}>
                 {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
                 {children}
                 {!loading && trailingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{trailingIcon}</span>}
@@ -124,7 +124,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        const iconSize = size === 'xs' ? 'xs' : size === 'sm' ? 'sm' : 'md';
+        const iconSize = size ?? 'md';
 
         return (
             <Comp
