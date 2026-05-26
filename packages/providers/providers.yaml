@@ -10891,7 +10891,6 @@ lightfield:
             description: Your Lightfield API key
             example: sk_lf_0_...
             pattern: '^sk_lf_0_[A-Za-z0-9_-]+$'
-            secret: true
             doc_section: '#step-1-create-an-api-key'
 
 lightspeed-retail:
