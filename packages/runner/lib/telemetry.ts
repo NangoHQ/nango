@@ -1,6 +1,5 @@
 import { Batcher, Ok } from '@nangohq/utils';
 
-import { telemetryBatchSize, telemetryFlushIntervalMs } from './env.js';
 import { logger } from './logger.js';
 
 import type { PersistClient } from './clients/persist.js';
@@ -8,9 +7,16 @@ import type { RunnerTelemetry } from '@nangohq/types';
 import type { Grouping, Result } from '@nangohq/utils';
 
 export interface TelemetryRecorder {
-    environmentId: number;
     record(entry: RunnerTelemetry): void;
     shutdown(opts?: { timeoutMs?: number }): Promise<Result<void>>;
+}
+
+export interface TelemetryRecorderConfig {
+    environmentId: number;
+    persistClient: PersistClient;
+    telemetryBatchSize: number;
+    telemetryFlushIntervalMs: number;
+    recordingEnabled?: boolean;
 }
 
 const telemetryGrouping: Grouping<RunnerTelemetry> = {
@@ -36,34 +42,29 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
     }
 };
 
-function createTelemetryBatcher({ environmentId, persistClient }: { environmentId: number; persistClient: PersistClient }): Batcher<RunnerTelemetry> {
+function createTelemetryBatcher(config: Omit<TelemetryRecorderConfig, 'recordingEnabled'>): Batcher<RunnerTelemetry> {
     return new Batcher<RunnerTelemetry>({
-        maxBatchSize: telemetryBatchSize,
-        flushIntervalMs: telemetryFlushIntervalMs,
+        maxBatchSize: config.telemetryBatchSize,
+        flushIntervalMs: config.telemetryFlushIntervalMs,
         grouping: telemetryGrouping,
         process: async (events) => {
-            const res = await persistClient.postRunnerTelemetry(environmentId, events);
+            const res = await config.persistClient.postRunnerTelemetry(config.environmentId, events);
             if (res.isErr()) {
-                logger.warning('Failed to post runner telemetry, might retry later', { environmentId, events, reason: res.error.message });
+                logger.warning('Failed to post runner telemetry, might retry later', {
+                    environmentId: config.environmentId,
+                    events,
+                    reason: res.error.message
+                });
                 throw res.error;
             }
         }
     });
 }
 
-export function createTelemetryRecorder({
-    environmentId,
-    persistClient,
-    exportRunnerTelemetry
-}: {
-    environmentId: number;
-    persistClient: PersistClient;
-    exportRunnerTelemetry: boolean;
-}): TelemetryRecorder {
-    const batcher = exportRunnerTelemetry ? createTelemetryBatcher({ environmentId, persistClient }) : undefined;
+export function createTelemetryRecorder(config: TelemetryRecorderConfig): TelemetryRecorder {
+    const batcher = config.recordingEnabled ? createTelemetryBatcher(config) : undefined;
 
     return {
-        environmentId,
         record(entry) {
             if (!batcher) return;
             const res = batcher.add(entry);

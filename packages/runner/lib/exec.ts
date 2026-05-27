@@ -14,6 +14,7 @@ import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
 import { Err, Ok, errorToObject, isEnterprise, truncateJson } from '@nangohq/utils';
 
 import { PersistClient } from './clients/persist.js';
+import { lambdaTelemetryBatchSize, lambdaTelemetryFlushIntervalMs } from './env.js';
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
 import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
@@ -58,12 +59,16 @@ export async function exec({
     telemetryRecorder?: TelemetryRecorder;
 }): Promise<Result<RunnerOutput, ExecutionError>> {
     const persistClient = externalPersistClient ?? new PersistClient({ secretKey: nangoProps.secretKey });
+    // if no external telemetry recorder is provided, create a local one with Lambda telemetry settings
+    // as it is likely we're running in a Lambda environment
     const telemetryRecorder =
         externalTelemetryRecorder ??
         createTelemetryRecorder({
             environmentId: nangoProps.environmentId,
-            exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
-            persistClient
+            telemetryBatchSize: lambdaTelemetryBatchSize,
+            telemetryFlushIntervalMs: lambdaTelemetryFlushIntervalMs,
+            persistClient,
+            recordingEnabled: nangoProps.runnerFlags.exportRunnerTelemetry
         });
     const rawNango = (() => {
         switch (nangoProps.scriptType) {
