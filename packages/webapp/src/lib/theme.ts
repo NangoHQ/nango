@@ -12,6 +12,17 @@ export function applyTheme(dark: boolean): void {
     root.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
+// Eagerly apply the persisted theme before the first React render.
+// Module code runs synchronously before ReactDOM.render(), so this prevents
+// a flash when the user has previously toggled to light mode.
+try {
+    const raw = localStorage.getItem(LocalStorageKeys.Theme);
+    const s = raw ? (JSON.parse(raw) as { state?: { darkMode?: boolean } }) : null;
+    applyTheme(s?.state?.darkMode ?? true);
+} catch {
+    // Keep the dark default already set on <html class="dark"> in index.html
+}
+
 // --- Store ---
 
 interface ThemeState {

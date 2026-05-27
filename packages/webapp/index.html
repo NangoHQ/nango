@@ -16,19 +16,6 @@
             rel="stylesheet"
         />
         <script src="/env.js?hash=%VITE_HASH%"></script>
-        <!-- Apply persisted theme before first paint to avoid flash of wrong theme -->
-        <script>
-            (function () {
-                try {
-                    var s = JSON.parse(localStorage.getItem('nango_theme') || '{}');
-                    var dark = s.state && s.state.darkMode === false ? false : true;
-                    document.documentElement.classList.toggle('dark', dark);
-                    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-                } catch (e) {
-                    // keep dark default already set on <html>
-                }
-            })();
-        </script>
     </head>
 
     <body class="bg-nav-gradient">
