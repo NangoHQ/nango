@@ -11,7 +11,10 @@ import { useFeatureFlagsStore } from '@/store/feature-flags';
  * - local Vite dev server
  * - *.app-development.nango.dev (development deployment and PR previews)
  */
-export const isDevToolsEnabled = import.meta.env.DEV || window.location.hostname.endsWith('.app-development.nango.dev');
+export const isDevToolsEnabled =
+    import.meta.env.DEV ||
+    window.location.hostname === 'app-development.nango.dev' ||
+    window.location.hostname.endsWith('.app-development.nango.dev');
 
 // Toggle with: Ctrl+Shift+D
 export const DEV_PANEL_SHORTCUT = 'KeyD';
