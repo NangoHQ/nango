@@ -8,7 +8,7 @@ import superjson from 'superjson';
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
 import { PersistClient } from './clients/persist.js';
-import { abortCheckIntervalMs, heartbeatIntervalMs, resourcePoolEvictIdleMs } from './env.js';
+import { abortCheckIntervalMs, heartbeatIntervalMs, resourcePoolEvictIdleMs, runnerTelemetryBatchSize, runnerTelemetryFlushIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
 import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
@@ -43,8 +43,10 @@ function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentRes
     const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
     const telemetryRecorder = createTelemetryRecorder({
         environmentId: nangoProps.environmentId,
-        exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
-        persistClient
+        telemetryBatchSize: runnerTelemetryBatchSize,
+        telemetryFlushIntervalMs: runnerTelemetryFlushIntervalMs,
+        persistClient,
+        recordingEnabled: nangoProps.runnerFlags.exportRunnerTelemetry
     });
     const resources: EnvironmentResources = { persistClient, telemetryRecorder, lastUsedAt: Date.now() };
     resourcesPool.set(key, resources);
