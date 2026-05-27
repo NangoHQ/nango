@@ -105,8 +105,7 @@ const handler = (scheduler: Scheduler) => {
             return;
         }
 
-        // The scheduler reports per-entry duplicate drops in the response rather than publishing
-        // metrics itself (it stays Nango-agnostic); the orchestrator owns the metric here.
+        // Scheduler returns duplicate drops per-entry; the orchestrator owns the metric.
         let duplicateCount = 0;
         const results: ImmediateBatchResult[] = batch.value.map((r) => {
             if (r.ok) {
