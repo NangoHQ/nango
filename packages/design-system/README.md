@@ -91,9 +91,11 @@ Token changes should always originate in Figma — the designer owns the source 
 ### Generated CSS structure
 
 ```css
-/* Primitives — --ds- prefix */
+/* Primitives — --ds- prefix, raw scale values */
 :root {
   --ds-color-neutral-50: #f9fafb;
+  --ds-radius-sm: 4px;
+  --ds-typography-font-size-md: 14px;
   ...
 }
 
@@ -110,17 +112,36 @@ Token changes should always originate in Figma — the designer owns the source 
   --text-strong: #f8fafc;
   ...
 }
+
+/* Tailwind @theme — semantic tokens → bg-*, text-*, border-*, shadow-* utilities */
+@theme {
+  --color-surface-canvas: var(--surface-canvas);
+  --shadow-focus-outline-default: var(--focus-outline-default);
+  ...
+}
+
+/* Tailwind @theme — primitive tokens → rounded-ds-*, text-ds-*, font-ds-*, etc. */
+@theme {
+  --radius-ds-sm: var(--ds-radius-sm);
+  --text-ds-md: var(--ds-typography-font-size-md);
+  --font-weight-ds-medium: var(--ds-typography-font-weight-medium);
+  ...
+}
 ```
 
 ### Token naming
 
-| Token                           | CSS var                 | Tailwind utility    |
-| ------------------------------- | ----------------------- | ------------------- |
-| `Primitives.color.neutral.50`   | `--ds-color-neutral-50` | —                   |
-| `Semantic/Light.surface.canvas` | `--surface-canvas`      | `bg-surface-canvas` |
-| `Semantic/Light.text.strong`    | `--text-strong`         | `text-text-strong`  |
+| Token                                   | CSS var                           | Tailwind utility          |
+| --------------------------------------- | --------------------------------- | ------------------------- |
+| `Primitives.color.neutral.50`           | `--ds-color-neutral-50`           | —                         |
+| `Primitives.radius.sm`                  | `--ds-radius-sm`                  | `rounded-ds-sm`           |
+| `Primitives.typography.font-size.md`    | `--ds-typography-font-size-md`    | `text-ds-md`              |
+| `Primitives.typography.font-weight.medium` | `--ds-typography-font-weight-medium` | `font-ds-medium`      |
+| `Semantic/Light.surface.canvas`         | `--surface-canvas`                | `bg-surface-canvas`       |
+| `Semantic/Light.text.strong`            | `--text-strong`                   | `text-text-strong`        |
+| `Semantic/Light.focus-outline-default`  | `--focus-outline-default`         | `shadow-focus-outline-default` |
 
-Primitives are excluded from `@theme` to nudge components toward semantic tokens. They can still be used directly via `var(--ds-*)` in CSS when a semantic token doesn't exist yet.
+Primitive color tokens (`--ds-color-*`) are excluded from `@theme` to keep components on semantic tokens. Primitive dimension/typography tokens are in `@theme` under the `ds-` prefix so they can be used as utilities without arbitrary `[var(...)]` wrappers.
 
 ### Consuming in webapp
 
