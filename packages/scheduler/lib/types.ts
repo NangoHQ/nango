@@ -31,8 +31,6 @@ export interface Task {
 
 export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
 
-export type ImmediateBatchEntryError = 'duplicate_task_name' | 'task_cap_exceeded';
-export type ImmediateBatchEntryResult = { ok: true; task: Task } | { ok: false; error: ImmediateBatchEntryError };
 export interface FromScheduleProps {
     scheduleName: string;
     extra: JsonObject;

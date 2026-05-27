@@ -10,7 +10,7 @@ import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger } from './utils/logger.js';
 
-import type { FromScheduleProps, ImmediateBatchEntryResult, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
+import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
@@ -206,7 +206,7 @@ export class Scheduler {
             if (created.isErr()) {
                 return Err(created.error);
             }
-            const task = created.value.tasks[0];
+            const task = created.value.created[0];
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
@@ -224,12 +224,13 @@ export class Scheduler {
     /**
      * Schedule a batch of tasks immediately in a single transaction.
      *
-     * Duplicates (existing task name) and per-group cap drops are reported per-entry instead of
-     * failing the whole batch. Results are returned in the same order as the input.
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
      */
-    public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<ImmediateBatchEntryResult[]>> {
+    public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
         if (propsList.length === 0) {
-            return Ok([]);
+            return Ok({ created: [], discarded: [] });
         }
         return this.db.transaction(async (trx) => {
             const now = new Date();
@@ -244,32 +245,11 @@ export class Scheduler {
                 return Err(created.error);
             }
 
-            const tasksByName = new Map(created.value.tasks.map((t) => [t.name, t]));
-            const duplicateNames = new Set(created.value.duplicateNames);
-            const cappedNames = new Set(created.value.cappedNames);
-
-            const results: ImmediateBatchEntryResult[] = propsList.map((props) => {
-                const task = tasksByName.get(props.name);
-                if (task) {
-                    return { ok: true, task };
-                }
-                if (duplicateNames.has(props.name)) {
-                    return { ok: false, error: 'duplicate_task_name' };
-                }
-                if (cappedNames.has(props.name)) {
-                    return { ok: false, error: 'task_cap_exceeded' };
-                }
-                // Defensive: should not happen — every input ends up as inserted, duplicate, or capped.
-                return { ok: false, error: 'duplicate_task_name' };
-            });
-
-            for (const result of results) {
-                if (result.ok) {
-                    this.onCallbacks[result.task.state](result.task);
-                }
+            for (const task of created.value.created) {
+                this.onCallbacks[task.state](task);
             }
 
-            return Ok(results);
+            return Ok(created.value);
         });
     }
 

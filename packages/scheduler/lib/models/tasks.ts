@@ -126,19 +126,22 @@ export const DbTask = {
 export interface CreateOpts {
     groupTaskCap?: number;
     // 'throw' (default): a single duplicate name aborts the batch with DuplicateTaskNameError.
-    // 'skip': duplicates are silently ignored at INSERT time and reported via duplicateNames.
+    // 'skip': duplicates are silently ignored at INSERT time and reported as discarded entries.
     onConflict?: 'throw' | 'skip';
 }
 
-export async function create(
-    db: knex.Knex,
-    taskProps: TaskProps[],
-    opts: CreateOpts = {}
-): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[]; cappedNames: string[]; duplicateNames: string[] }>> {
+export type DiscardReason = 'capped' | 'duplicate';
+// A task that wasn't created, with the reason why. The caller decides what to do with it.
+export interface DiscardedTask {
+    props: TaskProps;
+    reason: DiscardReason;
+}
+
+export async function create(db: knex.Knex, taskProps: TaskProps[], opts: CreateOpts = {}): Promise<Result<{ created: Task[]; discarded: DiscardedTask[] }>> {
     const groupTaskCap = opts.groupTaskCap ?? envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX;
     const onConflict = opts.onConflict ?? 'throw';
     if (taskProps.length === 0) {
-        return Ok({ tasks: [], cappedGroupKeys: [], cappedNames: [], duplicateNames: [] });
+        return Ok({ created: [], discarded: [] });
     }
     try {
         // safeguard to prevent creating an unbounded number of tasks for the same group
@@ -150,64 +153,72 @@ export async function create(
         }
 
         const now = new Date();
-        const toInsertPerGroup = new Map<string, Task[]>();
-        const cappedGroupCounts = new Map<string, number>();
-        const cappedNames: string[] = [];
+        const candidatesPerGroup = new Map<string, { props: TaskProps; task: Task }[]>();
+        const discarded: DiscardedTask[] = [];
         for (const props of taskProps) {
-            if (!toInsertPerGroup.has(props.groupKey)) {
-                toInsertPerGroup.set(props.groupKey, []);
+            if (!candidatesPerGroup.has(props.groupKey)) {
+                candidatesPerGroup.set(props.groupKey, []);
             }
-            const group = toInsertPerGroup.get(props.groupKey)!;
+            const group = candidatesPerGroup.get(props.groupKey)!;
             if (group.length < groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
                 group.push({
-                    ...props,
-                    id: uuidv7(),
-                    state: 'CREATED',
-                    createdAt: now,
-                    lastStateTransitionAt: now,
-                    lastHeartbeatAt: now,
-                    terminated: false,
-                    output: null,
-                    retryKey: props.retryKey || uuidv4()
+                    props,
+                    task: {
+                        ...props,
+                        id: uuidv7(),
+                        state: 'CREATED',
+                        createdAt: now,
+                        lastStateTransitionAt: now,
+                        lastHeartbeatAt: now,
+                        terminated: false,
+                        output: null,
+                        retryKey: props.retryKey || uuidv4()
+                    }
                 });
             } else {
-                cappedGroupCounts.set(props.groupKey, (cappedGroupCounts.get(props.groupKey) ?? 0) + 1);
-                cappedNames.push(props.name);
+                discarded.push({ props, reason: 'capped' });
             }
         }
-        const droppedCountPerPrimitive = new Map<string, number>();
-        for (const [groupKey, droppedCount] of cappedGroupCounts.entries()) {
-            const primitive = groupKey.split(':')[0] || 'unknown';
-            droppedCountPerPrimitive.set(primitive, (droppedCountPerPrimitive.get(primitive) ?? 0) + droppedCount);
+        // task_cap drops are still surfaced as a metric here (pre-existing; see scheduler-metrics thread).
+        // Only cap drops exist at this point; duplicates are appended after the INSERT below.
+        const cappedCountPerPrimitive = new Map<string, number>();
+        for (const { props } of discarded) {
+            const primitive = props.groupKey.split(':')[0] || 'unknown';
+            cappedCountPerPrimitive.set(primitive, (cappedCountPerPrimitive.get(primitive) ?? 0) + 1);
         }
-        for (const [primitive, droppedCount] of droppedCountPerPrimitive.entries()) {
+        for (const [primitive, droppedCount] of cappedCountPerPrimitive.entries()) {
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
         }
-        const toInsert = Array.from(toInsertPerGroup.values()).flat();
-        const attemptedNames = new Set(toInsert.map((t) => t.name));
-        const insertedTasks: Task[] = [];
-        const insertedNames = new Set<string>();
-        while (toInsert.length) {
-            const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
-            const query = db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to));
+
+        const candidates = Array.from(candidatesPerGroup.values()).flat();
+        const created: Task[] = [];
+        const insertedNameCounts = new Map<string, number>();
+        for (let i = 0; i < candidates.length; i += TASKS_INSERT_BATCH_SIZE) {
+            const chunk = candidates.slice(i, i + TASKS_INSERT_BATCH_SIZE);
+            const query = db.from<DBTask>(TASKS_TABLE).insert(chunk.map((c) => DbTask.to(c.task)));
             if (onConflict === 'skip') {
                 query.onConflict('name').ignore();
             }
             const batch = await query.returning('*');
             for (const dbTask of batch) {
                 const t = DbTask.from(dbTask);
-                insertedTasks.push(t);
-                insertedNames.add(t.name);
+                created.push(t);
+                insertedNameCounts.set(t.name, (insertedNameCounts.get(t.name) ?? 0) + 1);
             }
         }
-        // Names attempted but not inserted were dropped by ON CONFLICT; returned for the caller to act on.
-        const duplicateNames = onConflict === 'skip' ? [...attemptedNames].filter((name) => !insertedNames.has(name)) : [];
-        return Ok({
-            tasks: insertedTasks,
-            cappedGroupKeys: Array.from(cappedGroupCounts.keys()),
-            cappedNames,
-            duplicateNames
-        });
+        // In 'skip' mode, a candidate whose name has no remaining inserted row was dropped by
+        // ON CONFLICT (a duplicate of an existing task or of an earlier candidate in this batch).
+        if (onConflict === 'skip') {
+            for (const { props } of candidates) {
+                const remaining = insertedNameCounts.get(props.name) ?? 0;
+                if (remaining > 0) {
+                    insertedNameCounts.set(props.name, remaining - 1);
+                } else {
+                    discarded.push({ props, reason: 'duplicate' });
+                }
+            }
+        }
+        return Ok({ created, discarded });
     } catch (err) {
         if (isTasksUniqueNameViolation(err)) {
             return Err(new DuplicateTaskNameError());
