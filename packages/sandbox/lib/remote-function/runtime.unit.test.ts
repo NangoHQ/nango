@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getRemoteFunctionNangoHost } from './runtime.js';
-
 describe('remote function runtime config', () => {
     const originalNangoServerUrl = process.env['NANGO_SERVER_URL'];
 
     afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.resetModules();
+
         if (originalNangoServerUrl === undefined) {
             delete process.env['NANGO_SERVER_URL'];
         } else {
@@ -13,8 +14,11 @@ describe('remote function runtime config', () => {
         }
     });
 
-    it('prefers the public API URL for sandboxed CLI calls', () => {
+    it('prefers the public API URL for sandboxed CLI calls', async () => {
         process.env['NANGO_SERVER_URL'] = 'https://api.example.test';
+
+        vi.resetModules();
+        const { getRemoteFunctionNangoHost } = await import('./runtime.js');
 
         expect(getRemoteFunctionNangoHost()).toBe('https://api.example.test');
     });

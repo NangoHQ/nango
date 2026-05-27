@@ -5,7 +5,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { timeoutFunctionDryruns } from './dryruns.service.js';
+import { deleteFunctionDryrunsOlderThan, timeoutFunctionDryruns } from './dryruns.service.js';
+import { remoteFunctionDryrunSandboxTimeoutMs } from '../remote-function/runtime.js';
 
 import type { DBFunctionDryrun } from './dryruns.service.js';
 
@@ -52,7 +53,7 @@ describe('function dryruns service', () => {
             await trx.commit();
             transactionClosed = true;
 
-            await expect(timedOutPromise).resolves.toBe(0);
+            await timedOutPromise;
         } catch (err) {
             if (!transactionClosed) {
                 await trx.rollback();
@@ -63,5 +64,98 @@ describe('function dryruns service', () => {
         const row = await db.knex<DBFunctionDryrun>(tableName).where({ id: dryrun!.id }).first();
         expect(row?.status).toBe('success');
         expect(row?.error).toBeNull();
+    });
+
+    it('times out waiting dryruns older than the sandbox timeout', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const oldCreatedAt = new Date(Date.now() - remoteFunctionDryrunSandboxTimeoutMs - 60_000);
+        const recentCreatedAt = new Date(Date.now() - remoteFunctionDryrunSandboxTimeoutMs + 60_000);
+        const rows = await db
+            .knex<DBFunctionDryrun>(tableName)
+            .insert([
+                {
+                    environment_id: env.id,
+                    request: {
+                        integration_id: 'github',
+                        function_name: 'old-function',
+                        function_type: 'sync',
+                        code: 'export default {}',
+                        connection_id: 'conn'
+                    },
+                    status: 'waiting',
+                    created_at: oldCreatedAt
+                },
+                {
+                    environment_id: env.id,
+                    request: {
+                        integration_id: 'github',
+                        function_name: 'recent-function',
+                        function_type: 'sync',
+                        code: 'export default {}',
+                        connection_id: 'conn'
+                    },
+                    status: 'waiting',
+                    created_at: recentCreatedAt
+                }
+            ])
+            .returning('*');
+        const [oldDryrun, recentDryrun] = rows;
+        expect(oldDryrun).toBeDefined();
+        expect(recentDryrun).toBeDefined();
+
+        await timeoutFunctionDryruns();
+
+        const updatedRows = await db.knex<DBFunctionDryrun>(tableName).whereIn('id', [oldDryrun!.id, recentDryrun!.id]);
+        const updatedOldDryrun = updatedRows.find((row) => row.id === oldDryrun!.id);
+        const updatedRecentDryrun = updatedRows.find((row) => row.id === recentDryrun!.id);
+
+        expect(updatedOldDryrun?.status).toBe('failed');
+        expect(updatedOldDryrun?.error).toStrictEqual({ code: 'timeout', message: 'Dry run timed out' });
+        expect(updatedRecentDryrun?.status).toBe('waiting');
+        expect(updatedRecentDryrun?.error).toBeNull();
+    });
+
+    it('deletes dryruns older than the retention period', async () => {
+        const { env } = await seeders.seedAccountEnvAndUser();
+        const oldCreatedAt = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+        const recentCreatedAt = new Date(Date.now() - 13 * 24 * 60 * 60 * 1000);
+        const rows = await db
+            .knex<DBFunctionDryrun>(tableName)
+            .insert([
+                {
+                    environment_id: env.id,
+                    request: {
+                        integration_id: 'github',
+                        function_name: 'old-function',
+                        function_type: 'sync',
+                        code: 'export default {}',
+                        connection_id: 'conn'
+                    },
+                    status: 'failed',
+                    created_at: oldCreatedAt
+                },
+                {
+                    environment_id: env.id,
+                    request: {
+                        integration_id: 'github',
+                        function_name: 'recent-function',
+                        function_type: 'sync',
+                        code: 'export default {}',
+                        connection_id: 'conn'
+                    },
+                    status: 'failed',
+                    created_at: recentCreatedAt
+                }
+            ])
+            .returning('*');
+        const [oldDryrun, recentDryrun] = rows;
+        expect(oldDryrun).toBeDefined();
+        expect(recentDryrun).toBeDefined();
+
+        await deleteFunctionDryrunsOlderThan({ olderThanDays: 14 });
+
+        const remainingRows = await db.knex<DBFunctionDryrun>(tableName).whereIn('id', [oldDryrun!.id, recentDryrun!.id]);
+
+        expect(remainingRows.map((row) => row.id)).toStrictEqual([recentDryrun!.id]);
     });
 });

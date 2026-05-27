@@ -28,9 +28,16 @@ exports.up = async function (knex) {
         CREATE INDEX IF NOT EXISTS function_dryruns_environment_id_id_idx
             ON ${table} (environment_id, id);
 
+        CREATE INDEX IF NOT EXISTS function_dryruns_created_at_idx
+            ON ${table} (created_at);
+
         CREATE INDEX IF NOT EXISTS function_dryruns_running_timeout_idx
             ON ${table} (execution_timeout_at)
             WHERE status = 'running' AND execution_timeout_at IS NOT NULL;
+
+        CREATE INDEX IF NOT EXISTS function_dryruns_waiting_created_at_idx
+            ON ${table} (created_at)
+            WHERE status = 'waiting';
     `);
 };
 

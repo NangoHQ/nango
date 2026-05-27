@@ -18,7 +18,7 @@ async function renameDryrunApiKeyScope(knex) {
                     FROM (
                         SELECT
                             CASE
-                                WHEN scope = ? THEN ?
+                                WHEN scope = :oldScope THEN :newScope
                                 ELSE scope
                             END AS scope,
                             MIN(ordinality) AS first_position
@@ -29,7 +29,7 @@ async function renameDryrunApiKeyScope(knex) {
                 ) AS scopes
             FROM customer_keys
             WHERE key_type = 'api'
-              AND ? = ANY(scopes)
+              AND :oldScope = ANY(scopes)
         )
         UPDATE customer_keys
         SET
@@ -38,7 +38,7 @@ async function renameDryrunApiKeyScope(knex) {
         FROM renamed
         WHERE customer_keys.id = renamed.id
         `,
-        [OLD_SCOPE, NEW_SCOPE, OLD_SCOPE]
+        { newScope: NEW_SCOPE, oldScope: OLD_SCOPE }
     );
 }
 

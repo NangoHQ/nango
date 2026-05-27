@@ -49,7 +49,7 @@ class SandboxApiKeyService {
             }
 
             // Sandbox API keys are meant to stay short-lived; this cap can be modified if there is a good reason.
-            const maxExpiresAt = new Date(now + 24 * 60 * 60 * 1000);
+            const maxExpiresAt = new Date(now + 24 * 60 * 60 * 1000); // 24 hours
             const cappedExpiresAt = expiresAtMs > maxExpiresAt.getTime() ? maxExpiresAt : expiresAt;
 
             const token = await trx.transaction(async (innerTrx) => {

@@ -25,6 +25,14 @@ const functionErrorCodes = new Set<string>([
     'validation_error'
 ] satisfies FunctionErrorCode[]);
 
+export function isFunctionErrorCode(code: string | undefined): code is FunctionErrorCode {
+    return Boolean(code && functionErrorCodes.has(code));
+}
+
+export function normalizeFunctionErrorCode(code: string | undefined, fallback: FunctionErrorCode = 'dryrun_error'): FunctionErrorCode {
+    return isFunctionErrorCode(code) ? code : fallback;
+}
+
 export function sendStepError({ res, error, status }: { res: Response; error: unknown; status?: number }): void {
     const normalized = normalizeError(error);
 
@@ -47,7 +55,7 @@ function normalizeError(error: unknown): {
         const err = error as Record<string, unknown>;
         const message = typeof err['message'] === 'string' ? sanitizeMessage(err['message']) : sanitizeMessage(stringifyError(error));
         const rawCode = typeof err['type'] === 'string' ? err['type'] : typeof err['code'] === 'string' ? err['code'] : undefined;
-        const code = rawCode && functionErrorCodes.has(rawCode) ? rawCode : undefined;
+        const code = isFunctionErrorCode(rawCode) ? rawCode : undefined;
         const payload = 'payload' in err ? err['payload'] : undefined;
         const status = typeof err['status'] === 'number' ? err['status'] : undefined;
         return { message, ...(code ? { code } : {}), ...(payload !== undefined ? { payload } : {}), ...(status ? { status } : {}) };

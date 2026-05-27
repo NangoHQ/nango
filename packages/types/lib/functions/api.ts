@@ -50,14 +50,6 @@ export interface FunctionDryrunBody {
     last_sync_date?: string | undefined;
 }
 
-export interface FunctionDryrunSuccess {
-    integration_id: string;
-    function_type: RunnableFunctionType;
-    duration_ms: number;
-    output: string;
-    result?: unknown;
-}
-
 export type FunctionDryrunStatus = 'waiting' | 'running' | 'success' | 'failed';
 
 export interface FunctionDryrunCreateSuccess {

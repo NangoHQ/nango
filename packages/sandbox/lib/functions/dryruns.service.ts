@@ -1,9 +1,20 @@
 import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
-import type { FunctionDryrunBody, FunctionDryrunCreateSuccess, FunctionDryrunResultSuccess, FunctionDryrunStatus, FunctionErrorCode } from '@nangohq/types';
+import { remoteFunctionDryrunSandboxTimeoutMs } from '../remote-function/runtime.js';
+
+import type {
+    FunctionDryrunBody,
+    FunctionDryrunCreateSuccess,
+    FunctionDryrunResultSuccess,
+    FunctionDryrunStatus,
+    FunctionErrorCode,
+    Result
+} from '@nangohq/types';
 import type { Knex } from 'knex';
 
 const tableName = 'function_dryruns';
+const dryrunTimeoutError = { code: 'timeout', message: 'Dry run timed out' } satisfies FunctionDryrunError;
 
 export interface FunctionDryrunStoredRequest extends FunctionDryrunBody {
     function_name: string;
@@ -41,20 +52,24 @@ export async function createFunctionDryrun({
     environmentId: number;
     request: FunctionDryrunStoredRequest;
     trx?: Knex;
-}): Promise<FunctionDryrunCreateSuccess> {
-    const [row] = await trx<DBFunctionDryrun>(tableName)
-        .insert({
-            environment_id: environmentId,
-            request: jsonb(trx, request),
-            status: 'waiting'
-        })
-        .returning('*');
+}): Promise<Result<FunctionDryrunCreateSuccess>> {
+    try {
+        const [row] = await trx<DBFunctionDryrun>(tableName)
+            .insert({
+                environment_id: environmentId,
+                request: jsonb(trx, request),
+                status: 'waiting'
+            })
+            .returning('*');
 
-    if (!row) {
-        throw new Error('Failed to create function dryrun');
+        if (!row) {
+            return Err(new Error('Failed to create function dryrun'));
+        }
+
+        return Ok(toFunctionDryrunCreate(row));
+    } catch (err) {
+        return Err(err);
     }
-
-    return toFunctionDryrunCreate(row);
 }
 
 export async function getFunctionDryrunRow({
@@ -181,13 +196,21 @@ export async function markFunctionDryrunFailed({
 
 export async function timeoutFunctionDryruns({ limit = 100, trx }: { limit?: number; trx?: Knex.Transaction } = {}): Promise<number> {
     const updateTimedOutDryruns = async (transaction: Knex.Transaction): Promise<number> => {
+        const waitingTimeoutThreshold = transaction.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 millisecond')", [remoteFunctionDryrunSandboxTimeoutMs]);
+
         // Hold locks through the update so a sandbox callback completing the row is not overwritten.
         const candidates = await transaction<DBFunctionDryrun>(tableName)
             .select('id')
-            .where({ status: 'running' })
-            .whereNotNull('execution_timeout_at')
-            .where('execution_timeout_at', '<', transaction.fn.now())
-            .orderBy('execution_timeout_at', 'asc')
+            .where((query) => {
+                query
+                    .where((running) => {
+                        running.where({ status: 'running' }).whereNotNull('execution_timeout_at').where('execution_timeout_at', '<', transaction.fn.now());
+                    })
+                    .orWhere((waiting) => {
+                        waiting.where({ status: 'waiting' }).where('created_at', '<', waitingTimeoutThreshold);
+                    });
+            })
+            .orderByRaw('COALESCE(execution_timeout_at, created_at) ASC')
             .limit(limit)
             .forUpdate()
             .skipLocked();
@@ -197,14 +220,14 @@ export async function timeoutFunctionDryruns({ limit = 100, trx }: { limit?: num
         }
 
         const rows = await transaction<DBFunctionDryrun>(tableName)
-            .where({ status: 'running' })
+            .whereIn('status', ['waiting', 'running'])
             .whereIn(
                 'id',
                 candidates.map((candidate) => candidate.id)
             )
             .update({
                 status: 'failed',
-                error: jsonb(transaction, { code: 'timeout', message: 'Dry run timed out' } satisfies FunctionDryrunError),
+                error: jsonb(transaction, dryrunTimeoutError),
                 completed_at: transaction.fn.now(),
                 updated_at: transaction.fn.now()
             })
@@ -216,10 +239,30 @@ export async function timeoutFunctionDryruns({ limit = 100, trx }: { limit?: num
     return trx ? updateTimedOutDryruns(trx) : db.knex.transaction(updateTimedOutDryruns);
 }
 
+export async function deleteFunctionDryrunsOlderThan({
+    limit = 1000,
+    olderThanDays = 14,
+    trx = db.knex
+}: {
+    limit?: number;
+    olderThanDays?: number;
+    trx?: Knex;
+} = {}): Promise<number> {
+    const cutoff = trx.raw("CURRENT_TIMESTAMP - (? * INTERVAL '1 day')", [olderThanDays]);
+    const ids = trx<DBFunctionDryrun>(tableName).select('id').where('created_at', '<', cutoff).orderBy('created_at', 'asc').limit(limit);
+    const rows = await trx<DBFunctionDryrun>(tableName).whereIn('id', ids).delete().returning('id');
+
+    return rows.length;
+}
+
 export function toFunctionDryrunCreate(row: DBFunctionDryrun): FunctionDryrunCreateSuccess {
+    if (row.status !== 'waiting' && row.status !== 'running') {
+        throw new Error(`Cannot create function dryrun response for '${row.status}' dryrun`);
+    }
+
     return {
         id: row.id,
-        status: row.status === 'running' ? 'running' : 'waiting',
+        status: row.status,
         created_at: toIsoString(row.created_at)
     };
 }
