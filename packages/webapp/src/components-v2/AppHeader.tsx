@@ -1,16 +1,19 @@
-import { BookOpen, Box } from 'lucide-react';
+import { BookOpen, Box, LifeBuoy, SunMedium } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
 import { Breadcrumbs } from './Breadcrumbs';
 import { PermissionGate } from './PermissionGate';
-import { Button, ButtonLink } from './ui/button';
-import { SlackIcon } from '@/assets/SlackIcon';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
-import { cn } from '@/utils/utils';
+
+const headerButtonClass =
+    'inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-[2px] border-[0.5px] border-[color:var(--border-default)] bg-[var(--interactive-outline)] px-2.5 text-[13px] font-medium leading-none text-text-default transition-colors hover:bg-[var(--state-hover)] disabled:cursor-not-allowed disabled:opacity-50';
+
+const headerIconButtonClass =
+    'inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-[2px] border-[0.5px] border-[color:var(--border-default)] bg-[var(--interactive-outline)] text-text-default transition-colors hover:bg-[var(--state-hover)] disabled:cursor-not-allowed disabled:opacity-50';
 
 export const AppHeader: React.FC = () => {
     const env = useStore((s) => s.env);
@@ -22,39 +25,32 @@ export const AppHeader: React.FC = () => {
     const canUsePlayground = envData != null && (can(permissions.canUseProdPlayground) || !environment?.is_production);
 
     return (
-        <header className="h-16 px-10 pl-2 py-2.5 items-center flex justify-between shrink-0 gap-1.5">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-[color:var(--border-default)] bg-surface-canvas px-6">
             <Breadcrumbs />
-            <div className="flex gap-1.5 justify-end">
+            <div className="flex items-center gap-1.5">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <div className="relative">
-                            <div className="pointer-events-none absolute -top-[-2px] -left-[2px] -z-10 h-[19px] w-[25px] rounded-full blur-[6px] [background:linear-gradient(263deg,var(--color-brand-500)_8.44%,var(--color-brand-700)_100%)]" />
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                disabled={!allowed}
-                                onClick={() => setPlaygroundOpen(!playgroundOpen)}
-                                className={cn(
-                                    'relative z-10 overflow-visible rounded-sm [border:0.5px_solid_transparent] text-btn-tertiary-fg hover:[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)_border-box] active:[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)_border-box] focus:[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)_border-box] disabled:bg-btn-tertiary-disabled data-loading:bg-btn-tertiary-loading data-loading:opacity-100',
-                                    playgroundOpen
-                                        ? '[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)_border-box]'
-                                        : '[background:linear-gradient(var(--color-bg-surface),var(--color-bg-surface))_padding-box,linear-gradient(90deg,var(--color-brand-500)_0%,var(--color-border-default)_100%)_border-box]'
-                                )}
-                            >
-                                <Box />
-                                Playground
-                            </Button>
-                        </div>
+                        <button
+                            className={headerButtonClass}
+                            disabled={!allowed}
+                            onClick={() => setPlaygroundOpen(!playgroundOpen)}
+                            aria-pressed={playgroundOpen}
+                        >
+                            <Box size={16} />
+                            Playground
+                        </button>
                     )}
                 </PermissionGate>
-                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="secondary" size="sm">
-                    <BookOpen />
-                    Docs
-                </ButtonLink>
-                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="secondary" size="sm">
-                    <SlackIcon />
-                    Help
-                </ButtonLink>
+                <a href="https://nango.dev/docs" target="_blank" rel="noreferrer" className={headerIconButtonClass} aria-label="Documentation">
+                    <BookOpen size={16} />
+                </a>
+                <a href="https://nango.dev/slack" target="_blank" rel="noreferrer" className={headerIconButtonClass} aria-label="Help">
+                    <LifeBuoy size={16} />
+                </a>
+                {/* TODO: wire up runtime theme switching — NAN-XXXX */}
+                <button className={headerIconButtonClass} aria-label="Toggle theme" disabled>
+                    <SunMedium size={16} />
+                </button>
             </div>
         </header>
     );

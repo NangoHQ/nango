@@ -3,7 +3,8 @@ import React from 'react';
 import { AppSidebar } from '../components-v2/AppSidebar';
 import { AppHeader } from '@/components-v2/AppHeader';
 import { Playground } from '@/components-v2/Playground';
-import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
+import { SectionHeader } from '@/components-v2/SectionHeader';
+import { SidebarProvider } from '@/components-v2/ui/sidebar';
 import { cn } from '@/utils/utils';
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -12,22 +13,16 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(({ children, className, fullWidth = false, ...props }, ref) => {
     return (
-        <SidebarProvider>
+        <SidebarProvider data-theme="dark" style={{ '--sidebar-width': '220px' } as React.CSSProperties}>
             <AppSidebar />
-            <SidebarInset className="max-h-screen overflow-hidden">
+            <main className="flex flex-1 flex-col min-w-0 max-h-screen overflow-hidden bg-surface-page">
                 <AppHeader />
-                <div
-                    ref={ref}
-                    className={cn(
-                        'relative w-full h-full overflow-auto rounded-tl-sm border border-border-muted bg-bg-surface min-w-3xl',
-                        fullWidth ? 'p-0' : 'p-11'
-                    )}
-                    {...props}
-                >
-                    <div className={cn('grow h-auto mx-auto w-full', fullWidth ? 'p-11' : 'min-w-[968px] max-w-[1056px]', className)}>{children}</div>
+                <SectionHeader />
+                <div ref={ref} className={cn('flex-1 overflow-auto', fullWidth ? 'p-0' : 'p-6')} {...props}>
+                    <div className={cn('mx-auto w-full', className)}>{children}</div>
                     <Playground />
                 </div>
-            </SidebarInset>
+            </main>
         </SidebarProvider>
     );
 });

@@ -1,10 +1,9 @@
-import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, X } from 'lucide-react';
+import { AreaChart, Blocks, Logs, Plug, Settings2, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { EnvironmentDropdown } from './EnvironmentDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
-import UsageCard from './UsageCard';
 import {
     Sidebar,
     SidebarContent,
@@ -17,7 +16,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '../ui/sidebar';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -36,18 +34,14 @@ export const AppSidebar: React.FC = () => {
     const { data: metaData, refetch: refetchMeta } = useMeta();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const { data: environmentData } = useEnvironment(env);
-    const plan = environmentData?.plan;
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
             title: 'Getting started',
             url: `/${env}/getting-started`,
-            icon: Sparkle,
+            icon: Sprout,
             onClose: async () => {
-                await apiPatchUser({
-                    gettingStartedClosed: true
-                });
+                await apiPatchUser({ gettingStartedClosed: true });
                 void refetchMeta();
             }
         };
@@ -62,23 +56,22 @@ export const AppSidebar: React.FC = () => {
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);
 
-    const showUsageCard = useMemo(() => {
-        if (!plan) return false;
-        return ['free', 'starter-v2', 'growth-v2'].includes(plan?.name);
-    }, [plan]);
-
     return (
-        <Sidebar collapsible="none">
-            <SidebarHeader className="p-0 px-3 pt-2.5 mb-7">
+        <Sidebar collapsible="none" className="border-r border-[color:var(--border-default)]">
+            <SidebarHeader className="p-0">
                 <EnvironmentDropdown />
             </SidebarHeader>
             <SidebarContent>
-                <SidebarGroup>
+                <SidebarGroup className="p-3 pt-4">
                     <SidebarGroupContent>
-                        <SidebarMenu>
+                        <SidebarMenu className="gap-0">
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild data-active={item.url === window.location.pathname}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        data-active={item.url === window.location.pathname}
+                                        className="h-8 gap-2.5 rounded-none px-2 text-[13px] [&>svg]:size-4"
+                                    >
                                         <Link to={item.url}>
                                             <item.icon />
                                             <span>{item.title}</span>
@@ -96,11 +89,6 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {showUsageCard && (
-                    <div className="px-3 mb-8">
-                        <UsageCard />
-                    </div>
-                )}
                 <ProfileDropdown />
             </SidebarFooter>
         </Sidebar>
