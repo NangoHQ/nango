@@ -15,6 +15,9 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
 
+// Mirrors the orchestrator's webhook args constraints (positive ids, non-empty strings). Keeping
+// these in sync means a malformed message is caught here as a poison pill and isolated, rather than
+// passing local validation and failing the whole batch at the orchestrator with invalid_request.
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
     kind: z.literal('webhook'),
@@ -23,14 +26,14 @@ const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     accountId: z.number(),
     integrationId: z.number(),
     provider: z.string(),
-    parentSyncName: z.string(),
+    parentSyncName: z.string().min(1),
     activityLogId: z.string(),
-    webhookName: z.string(),
+    webhookName: z.string().min(1),
     connection: z.object({
-        id: z.number(),
-        connection_id: z.string(),
-        provider_config_key: z.string(),
-        environment_id: z.number()
+        id: z.number().positive(),
+        connection_id: z.string().min(1),
+        provider_config_key: z.string().min(1),
+        environment_id: z.number().positive()
     }),
     payload: jsonSchema
 });
@@ -178,7 +181,7 @@ export class DispatchQueueConsumer {
                     if (responsePayload) {
                         span.setTag('error.details', responsePayload);
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, entries.length);
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
                     return;
                 }
@@ -199,7 +202,7 @@ export class DispatchQueueConsumer {
 
             const parsed = this.parseMessage(msg.Body);
             if (parsed.isErr()) {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_POISON_PILL);
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, 1, { reason: 'poison_pill' });
                 await this.tryDeleteMessage(msg.ReceiptHandle);
                 continue;
             }
@@ -211,7 +214,7 @@ export class DispatchQueueConsumer {
                 metrics.duration(metrics.Types.WEBHOOK_DISPATCH_DWELL_MS, dwellMs, { provider: message.provider });
 
                 if (this.maxAgeMs > 0 && dwellMs > this.maxAgeMs) {
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_STALE, 1, { accountId: message.accountId });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, 1, { reason: 'stale', accountId: message.accountId });
                     const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
                     await logCtx.warn('Webhook was discarded: it spent too long in the queue and was not processed.', { dwell_ms: dwellMs });
                     await this.tryDeleteMessage(msg.ReceiptHandle);
@@ -237,12 +240,12 @@ export class DispatchQueueConsumer {
             const count = group.length;
             if (!result) {
                 // Server should return one result per request entry; missing entries are a server bug.
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, count, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider });
                 continue;
             }
 
             if (result.isOk()) {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, count, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider });
                 await this.deleteGroup(group);
                 continue;
             }
@@ -253,13 +256,13 @@ export class DispatchQueueConsumer {
             //   message (delete) rather than retry it to a DLQ. This is intentional shedding.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, count, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_TASK_CAP_DROPPED, count, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider });
                 await this.deleteGroup(group);
             } else {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, count, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider });
             }
         }
     }

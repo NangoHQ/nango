@@ -241,6 +241,18 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
     });
 
+    it('treats a message that fails the orchestrator constraints (non-positive ids) as poison, isolating it', async () => {
+        // environment_id=0 would be rejected by the orchestrator batch validation; catching it here
+        // as a poison pill keeps it from failing the whole batch.
+        const invalid = buildMessage({ connection: { id: 42, connection_id: 'c', provider_config_key: 'p', environment_id: 0 } });
+        const h = makeHarness({ badBody: JSON.stringify(invalid) });
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
+    });
+
     it('deletes a stale message without calling orchestrator', async () => {
         const h = makeHarness({ messages: [buildMessage()], maxAgeMs: 100 });
         // SentTimestamp in makeHarness is Date.now() - 500, which exceeds maxAgeMs of 100ms

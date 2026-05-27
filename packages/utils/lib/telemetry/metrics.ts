@@ -74,13 +74,12 @@ export enum Types {
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
     WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
-    WEBHOOK_DISPATCH_CONSUME_SUCCESS = 'nango.webhook.dispatch_queue.consume.success',
-    WEBHOOK_DISPATCH_CONSUME_FAILURE = 'nango.webhook.dispatch_queue.consume.failure',
-    WEBHOOK_DISPATCH_POISON_PILL = 'nango.webhook.dispatch_queue.poison_pill',
-    WEBHOOK_DISPATCH_STALE = 'nango.webhook.dispatch_queue.stale',
+    // Consume outcome, tagged result=success|failure.
+    WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
-    WEBHOOK_DISPATCH_TASK_CAP_DROPPED = 'nango.webhook.dispatch_queue.task_cap_dropped',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
