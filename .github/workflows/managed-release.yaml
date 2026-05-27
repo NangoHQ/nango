@@ -336,6 +336,10 @@ jobs:
               with:
                   app-id: ${{ secrets.GH_APP_PUSHER_ID }}
                   private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: |
+                      ${{ github.event.repository.name }}
+                      managed-image-releases
 
             - name: Checkout code
               uses: actions/checkout@v4
