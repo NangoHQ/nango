@@ -15,9 +15,6 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('jobs.webhook.dispatch-queue.consumer');
 
-// Mirrors the orchestrator's webhook args constraints (positive ids, non-empty strings). Keeping
-// these in sync means a malformed message is caught here as a poison pill and isolated, rather than
-// passing local validation and failing the whole batch at the orchestrator with invalid_request.
 const messageSchema: z.ZodType<WebhookDispatchMessage> = z.object({
     version: z.literal(1),
     kind: z.literal('webhook'),
@@ -139,9 +136,7 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                // Standard SQS can redeliver the same message, so one receive may contain several
-                // copies sharing a taskName. The batch route rejects repeated names outright, so
-                // collapse them here: send one entry per name and apply its result to every copy.
+                // SQS might deliver the same message multiple times, so we guard against duplicates
                 const groups = new Map<string, ParsedEntry[]>();
                 for (const entry of entries) {
                     const group = groups.get(entry.parsed.taskName);
@@ -252,8 +247,7 @@ export class DispatchQueueConsumer {
 
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
-            // - task_cap_exceeded: the group is saturated, so redelivering won't help — drop the
-            //   message (delete) rather than retry it to a DLQ. This is intentional shedding.
+            // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider });
