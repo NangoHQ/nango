@@ -3,6 +3,7 @@ import { Err, Ok, getLogger, retry, routeFetch } from '@nangohq/utils';
 import { validateSchedule, validateTask } from './validate.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
+import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
@@ -281,6 +282,58 @@ export class OrchestratorClient {
         return this.immediate(schedulingProps);
     }
 
+    /**
+     * Schedule a batch of webhooks in a single orchestrator call.
+     *
+     * Returns per-entry results in input order. Per-entry duplicate-name and cap errors do not abort
+     * the whole call. Transient top-level failures (5xx/network) are retried via the default config.
+     */
+    public async executeWebhookBatch(propsList: ExecuteWebhookProps[]): Promise<Result<ExecuteWebhookBatchEntryResult[], ClientError>> {
+        if (propsList.length === 0) {
+            return Ok([]);
+        }
+        const entries = propsList.map((props) => {
+            const { args, ownerKey, ...rest } = props;
+            return {
+                ...rest,
+                ownerKey: ownerKey ?? '',
+                retry: { count: 0, max: 0 },
+                timeoutSettingsInSecs: {
+                    createdToStarted: 5 * 60,
+                    startedToCompleted: 60 * 60,
+                    heartbeat: 5 * 60
+                },
+                args: {
+                    ...args,
+                    type: 'webhook' as const
+                }
+            };
+        });
+
+        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || 'Error scheduling immediate batch',
+                payload: { response: res.error.payload as any }
+            });
+        }
+
+        return Ok(
+            res.results.map<ExecuteWebhookBatchEntryResult>((entry) => {
+                if ('error' in entry) {
+                    return Err({
+                        name: entry.error.code,
+                        message: entry.error.message,
+                        payload: {}
+                    });
+                }
+                return Ok({ taskId: entry.taskId, retryKey: entry.retryKey });
+            })
+        );
+    }
+
     public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
         const { args, async, ...rest } = props;
         const schedulingProps: ImmediateProps = {
@@ -555,3 +608,5 @@ export function isDuplicateTaskNameClientError(err: unknown): boolean {
     const error = err as { name?: string };
     return error.name === 'duplicate_task_name';
 }
+
+export type ExecuteWebhookBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;

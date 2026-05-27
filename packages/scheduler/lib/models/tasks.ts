@@ -123,13 +123,22 @@ export const DbTask = {
     }
 };
 
+export interface CreateOpts {
+    groupTaskCap?: number;
+    // 'throw' (default): a single duplicate name aborts the batch with DuplicateTaskNameError.
+    // 'skip': duplicates are silently ignored at INSERT time and reported via duplicateNames.
+    onConflict?: 'throw' | 'skip';
+}
+
 export async function create(
     db: knex.Knex,
     taskProps: TaskProps[],
-    opts: { groupTaskCap: number } = { groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX }
-): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[] }>> {
+    opts: CreateOpts = {}
+): Promise<Result<{ tasks: Task[]; cappedGroupKeys: string[]; cappedNames: string[]; duplicateNames: string[] }>> {
+    const groupTaskCap = opts.groupTaskCap ?? envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX;
+    const onConflict = opts.onConflict ?? 'throw';
     if (taskProps.length === 0) {
-        return Ok({ tasks: [], cappedGroupKeys: [] });
+        return Ok({ tasks: [], cappedGroupKeys: [], cappedNames: [], duplicateNames: [] });
     }
     try {
         // safeguard to prevent creating an unbounded number of tasks for the same group
@@ -143,12 +152,13 @@ export async function create(
         const now = new Date();
         const toInsertPerGroup = new Map<string, Task[]>();
         const cappedGroupCounts = new Map<string, number>();
+        const cappedNames: string[] = [];
         for (const props of taskProps) {
             if (!toInsertPerGroup.has(props.groupKey)) {
                 toInsertPerGroup.set(props.groupKey, []);
             }
             const group = toInsertPerGroup.get(props.groupKey)!;
-            if (group.length < opts.groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
+            if (group.length < groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
                 group.push({
                     ...props,
                     id: uuidv7(),
@@ -162,6 +172,7 @@ export async function create(
                 });
             } else {
                 cappedGroupCounts.set(props.groupKey, (cappedGroupCounts.get(props.groupKey) ?? 0) + 1);
+                cappedNames.push(props.name);
             }
         }
         const droppedCountPerPrimitive = new Map<string, number>();
@@ -173,15 +184,31 @@ export async function create(
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
         }
         const toInsert = Array.from(toInsertPerGroup.values()).flat();
-        const tasks: Task[] = [];
+        const attemptedNames = new Set(toInsert.map((t) => t.name));
+        const insertedTasks: Task[] = [];
+        const insertedNames = new Set<string>();
         while (toInsert.length) {
             const chunk = toInsert.splice(0, TASKS_INSERT_BATCH_SIZE);
-            const batch = await db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to)).returning('*');
-            tasks.push(...batch.map(DbTask.from));
+            const query = db.from<DBTask>(TASKS_TABLE).insert(chunk.map(DbTask.to));
+            if (onConflict === 'skip') {
+                query.onConflict('name').ignore();
+            }
+            const batch = await query.returning('*');
+            for (const dbTask of batch) {
+                const t = DbTask.from(dbTask);
+                insertedTasks.push(t);
+                insertedNames.add(t.name);
+            }
         }
+        // Duplicate drops are reported back to the caller via `duplicateNames` rather than
+        // emitting a metric here — the scheduler stays Nango-agnostic and the orchestrator owns
+        // the metric for this path.
+        const duplicateNames = onConflict === 'skip' ? [...attemptedNames].filter((name) => !insertedNames.has(name)) : [];
         return Ok({
-            tasks,
-            cappedGroupKeys: Array.from(cappedGroupCounts.keys())
+            tasks: insertedTasks,
+            cappedGroupKeys: Array.from(cappedGroupCounts.keys()),
+            cappedNames,
+            duplicateNames
         });
     } catch (err) {
         if (isTasksUniqueNameViolation(err)) {
