@@ -100,6 +100,15 @@ exec: async () => {
   };
 };
             `
+            ],
+            [
+                'constructor key built from many single-character literals',
+                `
+exec: async () => {
+  const ctor = setTimeout['c'+'o'+'n'+'s'+'t'+'r'+'u'+'c'+'t'+'o'+'r'];
+  return ctor('return process')();
+}
+`
             ]
         ])('%s', (_name, source) => {
             expectRejectsConstructorGadget(source);

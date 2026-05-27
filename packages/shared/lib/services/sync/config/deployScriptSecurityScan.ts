@@ -17,40 +17,51 @@ export type DeployScriptScanResult =
     | { ok: false; rule: 'constructor_string_call'; hits: DeployScriptScanHit[] }
     | { ok: false; rule: 'parse_error'; message: string };
 
-function evalStaticString(expr: BabelNode, depth = 0): string | null {
-    // Keep this conservative: just enough to catch common obfuscations like
-    // `['con' + 'structor']` without trying to be a general evaluator.
-    if (depth > 8) {
+/** Max AST nodes visited while flattening a static `+` chain (abuse guard, not a depth limit). */
+const MAX_STATIC_STRING_NODES = 64;
+
+/**
+ * If `expr` is only string literals / template literals joined by `+`, returns the concatenated value.
+ * Flattens left- or right-associative `+` trees iteratively so long chains like `['c'+'o'+…+'r']` are not missed.
+ */
+function evalStaticString(expr: BabelNode): string | null {
+    const parts: string[] = [];
+    const stack: BabelNode[] = [expr];
+    let nodesVisited = 0;
+
+    while (stack.length > 0) {
+        const node = stack.pop();
+        if (!node) {
+            continue;
+        }
+        nodesVisited += 1;
+        if (nodesVisited > MAX_STATIC_STRING_NODES) {
+            return null;
+        }
+
+        if (node.type === 'StringLiteral') {
+            parts.push(node.value);
+            continue;
+        }
+
+        if (node.type === 'TemplateLiteral') {
+            if (node.expressions.length > 0) {
+                return null;
+            }
+            parts.push(node.quasis.map((q) => q.value.cooked ?? q.value.raw).join(''));
+            continue;
+        }
+
+        if (node.type === 'BinaryExpression' && node.operator === '+') {
+            stack.push(node.right);
+            stack.push(node.left);
+            continue;
+        }
+
         return null;
     }
 
-    if (expr.type === 'StringLiteral') {
-        return expr.value;
-    }
-
-    if (expr.type === 'TemplateLiteral') {
-        if (expr.expressions.length > 0) {
-            return null;
-        }
-        return expr.quasis.map((q) => q.value.cooked ?? q.value.raw).join('');
-    }
-
-    if (expr.type === 'BinaryExpression') {
-        if (expr.operator !== '+') {
-            return null;
-        }
-        const left = evalStaticString(expr.left, depth + 1);
-        if (left == null) {
-            return null;
-        }
-        const right = evalStaticString(expr.right, depth + 1);
-        if (right == null) {
-            return null;
-        }
-        return left + right;
-    }
-
-    return null;
+    return parts.join('');
 }
 
 /** `obj.constructor` or `obj["constructor"]` / `obj['constructor']` (same runtime property). */
