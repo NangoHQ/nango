@@ -30,7 +30,6 @@ export interface Task {
 }
 
 export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
-
 export interface FromScheduleProps {
     scheduleName: string;
     extra: JsonObject;

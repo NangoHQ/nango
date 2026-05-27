@@ -202,11 +202,11 @@ export class Scheduler {
                 };
             }
 
-            const created = await tasks.create(trx, [taskProps]);
-            if (created.isErr()) {
-                return Err(created.error);
+            const createResult = await tasks.create(trx, [taskProps]);
+            if (createResult.isErr()) {
+                return Err(createResult.error);
             }
-            const task = created.value.created[0];
+            const task = createResult.value.created[0];
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
@@ -240,16 +240,16 @@ export class Scheduler {
                 scheduleId: null
             }));
 
-            const created = await tasks.create(trx, taskPropsList, { onConflict: 'skip' });
-            if (created.isErr()) {
-                return Err(created.error);
+            const createResult = await tasks.create(trx, taskPropsList, { onConflict: 'skip' });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
             }
 
-            for (const task of created.value.created) {
+            for (const task of createResult.value.created) {
                 this.onCallbacks[task.state](task);
             }
 
-            return Ok(created.value);
+            return Ok(createResult.value);
         });
     }
 

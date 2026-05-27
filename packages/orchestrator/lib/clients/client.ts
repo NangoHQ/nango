@@ -285,8 +285,7 @@ export class OrchestratorClient {
     /**
      * Schedule a batch of webhooks in a single orchestrator call.
      *
-     * Returns per-entry results in input order. Per-entry duplicate-name and cap errors do not abort
-     * the whole call. Transient top-level failures (5xx/network) are retried via the default config.
+     * Returns per-entry results in input order.
      */
     public async executeWebhookBatch(propsList: ExecuteWebhookProps[]): Promise<Result<ExecuteWebhookBatchEntryResult[], ClientError>> {
         if (propsList.length === 0) {
