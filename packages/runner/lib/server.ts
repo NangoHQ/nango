@@ -64,10 +64,10 @@ const evictionInterval = setInterval(async () => {
     }
 }, resourcePoolEvictIdleMs);
 
-process.on('SIGTERM', async () => {
+export async function shutdownResources(): Promise<void> {
     clearInterval(evictionInterval);
     await Promise.all([...resourcesPool.values()].map(({ telemetryRecorder }) => telemetryRecorder.shutdown({ timeoutMs: 5000 })));
-});
+}
 
 export const t = initTRPC.create({
     transformer: superjson
