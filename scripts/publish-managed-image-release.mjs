@@ -93,6 +93,66 @@ function getPreviousReleaseCommit(manifest, currentCommitHash) {
     return manifest.history.findLast((release) => isCommitHash(release.commitHash) && release.commitHash !== currentCommitHash)?.commitHash;
 }
 
+const GITHUB_COMPARE_URL_PATTERN = /github\.com\/([^/]+)\/([^/]+)\/compare\/([a-f0-9]{40})\.\.\.([a-f0-9]{40})/i;
+
+function parseGitHubCompareUrl(url) {
+    if (!url) {
+        return null;
+    }
+
+    const match = url.match(GITHUB_COMPARE_URL_PATTERN);
+    if (!match) {
+        return null;
+    }
+
+    return {
+        owner: match[1],
+        repo: match[2],
+        from: match[3],
+        to: match[4]
+    };
+}
+
+function buildGitHubComparisonUrl(fromCommit, toCommit, owner, repo) {
+    if (!isCommitHash(fromCommit) || !isCommitHash(toCommit) || fromCommit === toCommit) {
+        return null;
+    }
+
+    return `https://github.com/${owner}/${repo}/compare/${fromCommit}...${toCommit}`;
+}
+
+function getNangoGitHubRepo(cwd = NANGO_REPO_PATH) {
+    try {
+        const remoteUrl = runSilent('git', ['remote', 'get-url', 'origin'], { cwd }).trim();
+        const match = remoteUrl.match(/github\.com[:/]([^/]+)\/([^/]+?)(?:\.git)?$/);
+        if (match) {
+            return { owner: match[1], repo: match[2] };
+        }
+    } catch {
+        // Fall back to the canonical Nango repository when the checkout is unavailable.
+    }
+
+    return { owner: 'NangoHQ', repo: 'nango' };
+}
+
+function resolveComparisonUrl(manifestComparisonUrl, prevCommit, currentCommitHash) {
+    const parsed = parseGitHubCompareUrl(manifestComparisonUrl);
+    if (
+        parsed &&
+        parsed.from.toLowerCase() !== parsed.to.toLowerCase() &&
+        parsed.to.toLowerCase() === currentCommitHash.toLowerCase()
+    ) {
+        return manifestComparisonUrl;
+    }
+
+    if (!prevCommit) {
+        return null;
+    }
+
+    const { owner, repo } = getNangoGitHubRepo();
+    return buildGitHubComparisonUrl(prevCommit, currentCommitHash, owner, repo);
+}
+
 function generateCliffNotes(prevCommit, commitHash) {
     if (!prevCommit) {
         return '_No previous managed release commit is available for changelog generation._';
@@ -111,8 +171,9 @@ function generateCliffNotes(prevCommit, commitHash) {
     }
 }
 
-function buildReleaseNotes({ manifest, cliffNotes, tagName, imageVersion, appVersion }) {
-    const { comparisonUrl, releaseDate } = manifest.latest;
+function buildReleaseNotes({ manifest, cliffNotes, tagName, imageVersion, appVersion, prevCommit, currentCommitHash }) {
+    const { releaseDate } = manifest.latest;
+    const comparisonUrl = resolveComparisonUrl(manifest.latest.comparisonUrl, prevCommit, currentCommitHash);
     const releasedOn = releaseDate ? new Date(releaseDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
 
     const sections = [
@@ -219,7 +280,9 @@ function main() {
         cliffNotes,
         tagName: TAG_NAME,
         imageVersion: IMAGE_VERSION,
-        appVersion: APP_VERSION
+        appVersion: APP_VERSION,
+        prevCommit,
+        currentCommitHash: COMMIT_HASH
     });
     const releaseTitle = `Managed ${IMAGE_VERSION} (${APP_VERSION})`;
 
@@ -248,4 +311,8 @@ function main() {
     console.log(`Published managed release ${TAG_NAME} to ${TARGET_REPO}`);
 }
 
-main();
+export { buildGitHubComparisonUrl, parseGitHubCompareUrl, resolveComparisonUrl };
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main();
+}
