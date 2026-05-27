@@ -1,0 +1,23 @@
+packages/sandbox/lib/env.ts
+  s_b39de48b60dddc::t_76164916ac2386 1-3
+packages/sandbox/lib/remote-function/runtime.ts
+  s_b39de48b60dddc::t_76164916ac2386 3-4,6
+packages/sandbox/lib/remote-function/runtime.unit.test.ts
+  s_b39de48b60dddc::t_76164916ac2386 36-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "99ce60c81b0bcca1c71203f1e47e733535dafd9c",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
