@@ -128,47 +128,63 @@ describe('buildTailwindThemeBlock', () => {
         expect(buildTailwindThemeBlock(tokens)).toBe('@theme {\n  --color-surface-canvas: var(--surface-canvas);\n}');
     });
 
-    it('returns an empty @theme block for no color tokens', () => {
+    it('returns an empty @theme block for an empty token list', () => {
         expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}');
+    });
+
+    it('throws when tokens are present but none are color type', () => {
+        const tokens = [{ name: 'focus-outline-default', $type: 'boxShadow' }];
+        expect(() => buildTailwindThemeBlock(tokens)).toThrow(/no color tokens found/);
     });
 });
 
 // ─── buildPrimitivesThemeBlock ────────────────────────────────────────────────
 
 describe('buildPrimitivesThemeBlock', () => {
+    // Minimal token set that satisfies all required prefix groups.
+    // Per-mapping tests use this fixture to avoid tripping the completeness guard,
+    // then assert on the specific entry they care about via toContain.
+    const BASE_TOKENS = [
+        { name: 'radius-sm', $type: 'borderRadius', $value: '4px' },
+        { name: 'border-width-1', $type: 'borderWidth', $value: '1px' },
+        { name: 'typography-font-size-md', $type: 'dimension', $value: '14px' },
+        { name: 'typography-font-weight-medium', $type: 'fontWeight', $value: '500' },
+        { name: 'typography-line-height-normal', $type: 'dimension', $value: '1.5' },
+        { name: 'typography-letter-spacing-tight', $type: 'dimension', $value: '-0.01em' },
+    ];
+
     it('maps radius-* tokens to --radius-ds-*', () => {
-        const tokens = [{ name: 'radius-sm', $type: 'borderRadius', $value: '4px' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --radius-ds-sm: var(--ds-radius-sm);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--radius-ds-sm: var(--ds-radius-sm)');
     });
 
     it('maps border-width-* tokens to --border-width-ds-*', () => {
-        const tokens = [{ name: 'border-width-1', $type: 'borderWidth', $value: '1px' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --border-width-ds-1: var(--ds-border-width-1);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--border-width-ds-1: var(--ds-border-width-1)');
     });
 
     it('maps typography-font-size-* tokens to --text-ds-*', () => {
-        const tokens = [{ name: 'typography-font-size-md', $type: 'dimension', $value: '14px' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --text-ds-md: var(--ds-typography-font-size-md);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--text-ds-md: var(--ds-typography-font-size-md)');
     });
 
     it('maps typography-font-weight-* tokens to --font-weight-ds-*', () => {
-        const tokens = [{ name: 'typography-font-weight-medium', $type: 'fontWeight', $value: '500' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --font-weight-ds-medium: var(--ds-typography-font-weight-medium);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--font-weight-ds-medium: var(--ds-typography-font-weight-medium)');
     });
 
     it('maps typography-line-height-* tokens to --leading-ds-*', () => {
-        const tokens = [{ name: 'typography-line-height-normal', $type: 'dimension', $value: '1.5' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --leading-ds-normal: var(--ds-typography-line-height-normal);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--leading-ds-normal: var(--ds-typography-line-height-normal)');
     });
 
     it('maps typography-letter-spacing-* tokens to --tracking-ds-*', () => {
-        const tokens = [{ name: 'typography-letter-spacing-tight', $type: 'dimension', $value: '-0.01em' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --tracking-ds-tight: var(--ds-typography-letter-spacing-tight);\n}');
+        expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--tracking-ds-tight: var(--ds-typography-letter-spacing-tight)');
     });
 
     it('ignores tokens that do not match any mapped prefix', () => {
-        const tokens = [{ name: 'color-neutral-50', $type: 'color', $value: '#f9fafb' }];
-        expect(buildPrimitivesThemeBlock(tokens)).toBe('');
+        const tokens = [...BASE_TOKENS, { name: 'color-neutral-50', $type: 'color', $value: '#f9fafb' }];
+        expect(buildPrimitivesThemeBlock(tokens)).not.toContain('color-neutral-50');
+    });
+
+    it('throws when a required prefix group produces no entries', () => {
+        const missingRadius = BASE_TOKENS.filter((t) => !t.name.startsWith('radius-'));
+        expect(() => buildPrimitivesThemeBlock(missingRadius)).toThrow(/prefix 'radius-'.*renamed or deleted/);
     });
 
     it('returns empty string for an empty token list', () => {

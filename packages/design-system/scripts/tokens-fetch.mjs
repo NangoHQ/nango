@@ -165,52 +165,76 @@ export function buildTailwindThemeBlock(tokens) {
     // `shadow-focus-outline-default` instead of `shadow-[var(--focus-outline-default)]`.
     const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
 
+    if (tokens.length > 0 && colorVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
+
     return `@theme {\n${[...colorVars, ...shadowVars].join('\n')}\n}`;
 }
+
+// Token name prefixes that must each produce at least one entry.
+// If a prefix yields zero matches the build throws — catches renames/deletions early.
+const EXPECTED_PRIM_PREFIXES = [
+    'radius-',
+    'border-width-',
+    'typography-font-size-',
+    'typography-font-weight-',
+    'typography-line-height-',
+    'typography-letter-spacing-',
+];
 
 /**
  * Maps primitive dimension/typography tokens into Tailwind @theme namespaces so they
  * can be used as plain utilities instead of arbitrary `[var(--ds-*)]` values.
  *
  * Mappings (all prefixed with `ds-` to avoid overriding Tailwind built-ins):
- *   --ds-radius-*               → --radius-ds-*        → rounded-ds-xs, rounded-ds-sm …
- *   --ds-border-width-*         → --border-width-ds-*  → border-ds-hairline, border-ds-1 …
- *   --ds-typography-font-size-* → --text-ds-*          → text-ds-xs, text-ds-md …
- *   --ds-typography-font-weight-* → --font-weight-ds-* → font-ds-regular, font-ds-medium …
- *   --ds-typography-letter-spacing-* → --tracking-ds-* → tracking-ds-tight …
+ *   --ds-radius-*                    → --radius-ds-*        → rounded-ds-xs, rounded-ds-sm …
+ *   --ds-border-width-*              → --border-width-ds-*  → border-ds-hairline, border-ds-1 …
+ *   --ds-typography-font-size-*      → --text-ds-*          → text-ds-xs, text-ds-md …
+ *   --ds-typography-font-weight-*    → --font-weight-ds-*   → font-ds-regular, font-ds-medium …
+ *   --ds-typography-line-height-*    → --leading-ds-*       → leading-ds-tight, leading-ds-normal …
+ *   --ds-typography-letter-spacing-* → --tracking-ds-*      → tracking-ds-tight …
  *
  * Spacing (--ds-space-*) is intentionally omitted: Tailwind's default 4px spacing scale
  * already matches the ds-space tokens, so `gap-2` === `--ds-space-2` without any additions.
  */
 export function buildPrimitivesThemeBlock(tokens) {
+    if (tokens.length === 0) return '';
+
     const entries = [];
+    const matched = new Set();
 
     for (const t of tokens) {
         const name = t.name; // kebab name produced by the name/kebab transform
         const ref = `var(--ds-${name})`;
 
         if (name.startsWith('radius-')) {
-            const suffix = name.slice('radius-'.length);
-            entries.push(`  --radius-ds-${suffix}: ${ref};`);
+            matched.add('radius-');
+            entries.push(`  --radius-ds-${name.slice('radius-'.length)}: ${ref};`);
         } else if (name.startsWith('border-width-')) {
-            const suffix = name.slice('border-width-'.length);
-            entries.push(`  --border-width-ds-${suffix}: ${ref};`);
+            matched.add('border-width-');
+            entries.push(`  --border-width-ds-${name.slice('border-width-'.length)}: ${ref};`);
         } else if (name.startsWith('typography-font-size-')) {
-            const suffix = name.slice('typography-font-size-'.length);
-            entries.push(`  --text-ds-${suffix}: ${ref};`);
+            matched.add('typography-font-size-');
+            entries.push(`  --text-ds-${name.slice('typography-font-size-'.length)}: ${ref};`);
         } else if (name.startsWith('typography-font-weight-')) {
-            const suffix = name.slice('typography-font-weight-'.length);
-            entries.push(`  --font-weight-ds-${suffix}: ${ref};`);
+            matched.add('typography-font-weight-');
+            entries.push(`  --font-weight-ds-${name.slice('typography-font-weight-'.length)}: ${ref};`);
         } else if (name.startsWith('typography-line-height-')) {
-            const suffix = name.slice('typography-line-height-'.length);
-            entries.push(`  --leading-ds-${suffix}: ${ref};`);
+            matched.add('typography-line-height-');
+            entries.push(`  --leading-ds-${name.slice('typography-line-height-'.length)}: ${ref};`);
         } else if (name.startsWith('typography-letter-spacing-')) {
-            const suffix = name.slice('typography-letter-spacing-'.length);
-            entries.push(`  --tracking-ds-${suffix}: ${ref};`);
+            matched.add('typography-letter-spacing-');
+            entries.push(`  --tracking-ds-${name.slice('typography-letter-spacing-'.length)}: ${ref};`);
         }
     }
 
-    if (entries.length === 0) return '';
+    for (const prefix of EXPECTED_PRIM_PREFIXES) {
+        if (!matched.has(prefix)) {
+            throw new Error(`buildPrimitivesThemeBlock: no tokens matched prefix '${prefix}' — was a token group renamed or deleted?`);
+        }
+    }
+
     return `@theme {\n${entries.join('\n')}\n}`;
 }
 
