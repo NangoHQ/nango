@@ -110,13 +110,13 @@ describe('buildTailwindThemeBlock', () => {
         );
     });
 
-    it('includes boxShadow tokens as --shadow-* vars', () => {
+    it('emits boxShadow tokens in a separate @theme inline block', () => {
         const tokens = [
             { name: 'surface-canvas', $type: 'color' },
             { name: 'focus-outline-default', $type: 'boxShadow' }
         ];
         expect(buildTailwindThemeBlock(tokens)).toBe(
-            '@theme {\n  --color-surface-canvas: var(--surface-canvas);\n  --shadow-focus-outline-default: var(--focus-outline-default);\n}'
+            '@theme {\n  --color-surface-canvas: var(--surface-canvas);\n}\n@theme inline {\n  --shadow-focus-outline-default: var(--focus-outline-default);\n}'
         );
     });
 

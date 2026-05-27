@@ -609,6 +609,8 @@
     --color-control-switch-track-off: var(--control-switch-track-off);
     --color-control-switch-track-off-danger: var(--control-switch-track-off-danger);
     --color-control-switch-thumb-off: var(--control-switch-thumb-off);
+}
+@theme inline {
     --shadow-focus-outline-default: var(--focus-outline-default);
     --shadow-focus-outline-danger: var(--focus-outline-danger);
     --shadow-container-inset: var(--container-inset);

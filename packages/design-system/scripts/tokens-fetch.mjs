@@ -163,13 +163,20 @@ export function buildTailwindThemeBlock(tokens) {
     // Semantic boxShadow tokens → --shadow-* → shadow-*
     // Covers --focus-outline-default / --focus-outline-danger so components can write
     // `shadow-focus-outline-default` instead of `shadow-[var(--focus-outline-default)]`.
+    //
+    // @theme inline is used so the generated utility references the semantic variable
+    // directly (e.g. `var(--focus-outline-default)`) rather than going through an
+    // intermediate `--shadow-*` CSS property. This ensures dark-theme overrides on the
+    // underlying semantic vars are always picked up.
     const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
 
     if (tokens.length > 0 && colorVars.length === 0) {
         throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
     }
 
-    return `@theme {\n${[...colorVars, ...shadowVars].join('\n')}\n}`;
+    const colorBlock = `@theme {\n${colorVars.join('\n')}\n}`;
+    const shadowBlock = shadowVars.length > 0 ? `\n@theme inline {\n${shadowVars.join('\n')}\n}` : '';
+    return colorBlock + shadowBlock;
 }
 
 // Token name prefixes that must each produce at least one entry.
