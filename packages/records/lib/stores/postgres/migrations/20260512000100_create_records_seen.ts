@@ -1,6 +1,9 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+
 import type { Knex } from 'knex';
 
-import { ensureSeenPartition } from '../../models/records.js';
+dayjs.extend(utc);
 
 const TABLE = 'records_seen';
 
@@ -20,10 +23,12 @@ export async function up(knex: Knex): Promise<void> {
     `);
     await knex.raw(`CREATE INDEX IF NOT EXISTS records_seen_connection_model_job ON "${TABLE}" (connection_id, model, sync_job_id)`);
 
-    const res = await ensureSeenPartition({ date: new Date() });
-    if (res.isErr()) {
-        throw res.error;
-    }
+    const day = dayjs().utc().startOf('day');
+    const suffix = day.format('YYYYMMDD');
+    const next = day.add(1, 'day');
+    await knex.raw(
+        `CREATE TABLE IF NOT EXISTS "${TABLE}_${suffix}" PARTITION OF "${TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+    );
 }
 
 export async function down(): Promise<void> {}

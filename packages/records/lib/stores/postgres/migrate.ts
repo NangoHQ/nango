@@ -1,13 +1,17 @@
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { db } from './client.js';
 import { config, schema } from './config.js';
-import { dirname } from '../env.js';
-import { logger } from '../utils/logger.js';
+import { logger } from '../../utils/logger.js';
 
-export async function migrate(): Promise<void> {
+const filename = fileURLToPath(import.meta.url);
+const dirname = path.dirname(path.join(filename, '../../../../'));
+
+import type { Knex } from 'knex';
+
+export async function migrate(db: Knex): Promise<void> {
     logger.info('[records] migration');
-    const dir = path.join(dirname, 'records/dist/db/migrations');
+    const dir = path.join(dirname, 'records/dist/stores/postgres/migrations');
     await db.raw(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
 
     const [, pendingMigrations] = (await db.migrate.list({ ...config.migrations, directory: dir })) as [unknown, string[]];

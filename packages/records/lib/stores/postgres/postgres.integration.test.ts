@@ -1,22 +1,25 @@
 import dayjs from 'dayjs';
+import knex from 'knex';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../constants.js';
-import { Cursor } from '../cursor.js';
-import { db } from '../db/client.js';
-import { migrate } from '../db/migrate.js';
-import { envs } from '../env.js';
-import { formatRecords } from '../helpers/format.js';
-import * as Records from '../models/records.js';
-import { decryptRecordData, encryptRecords } from '../utils/encryption.js';
+import { config } from './config.js';
+import { PostgresStore, incrCount } from './postgres.js';
+import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import { Cursor } from '../../cursor.js';
+import { envs } from '../../env.js';
+import { formatRecords } from '../../helpers/format.js';
+import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
 
-import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../types.js';
+const db = knex(config);
+const store = new PostgresStore();
+
+import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
 
-describe('Records service', () => {
+describe('PostgresStore', () => {
     beforeAll(async () => {
-        await migrate();
+        await store.migrate();
     });
 
     afterAll(async () => {
@@ -38,12 +41,12 @@ describe('Records service', () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
-            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            const fetched = (await store.getRecords({ connectionId, model })).unwrap();
             const firstRecord = fetched.records[0];
             const expectedFirstCursor = firstRecord?.['_nango_metadata'].cursor;
             expect(expectedFirstCursor).not.toBe(undefined);
 
-            const firstCursor = (await Records.getCursor({ connectionId, model, offset: 'first' })).unwrap();
+            const firstCursor = (await store.getCursor({ connectionId, model, offset: 'first' })).unwrap();
             expect(firstCursor).not.toBe(undefined);
             expect(firstCursor).toBe(expectedFirstCursor);
         });
@@ -52,12 +55,12 @@ describe('Records service', () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
-            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            const fetched = (await store.getRecords({ connectionId, model })).unwrap();
             const lastRecord = fetched.records[fetched.records.length - 1];
             const expectedLastCursor = lastRecord?.['_nango_metadata'].cursor;
             expect(expectedLastCursor).not.toBe(undefined);
 
-            const lastCursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
+            const lastCursor = (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap();
             expect(lastCursor).not.toBe(undefined);
             expect(lastCursor).toBe(expectedLastCursor);
         });
@@ -85,7 +88,7 @@ describe('Records service', () => {
             nonUniqueKeys: ['1'],
             nextMerging: { strategy: 'override' }
         });
-        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        let stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(536);
 
@@ -103,7 +106,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
@@ -125,7 +128,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(560);
         await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
@@ -223,7 +226,7 @@ describe('Records service', () => {
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
-                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                        cursor: (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap()
                     }
                 });
 
@@ -267,7 +270,7 @@ describe('Records service', () => {
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
-                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                        cursor: (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap()
                     }
                 });
             });
@@ -318,7 +321,7 @@ describe('Records service', () => {
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
-                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                        cursor: (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap()
                     }
                 });
 
@@ -345,7 +348,7 @@ describe('Records service', () => {
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
-                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                        cursor: (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap()
                     }
                 });
             });
@@ -366,7 +369,7 @@ describe('Records service', () => {
                     syncJobId: 1,
                     softDelete: false
                 }).unwrap();
-                return Records.upsert({ records, connectionId, environmentId, model });
+                return store.upsert({ records, connectionId, environmentId, model });
             };
             const res = (await Promise.all([upsert(), upsert(), upsert(), upsert(), upsert()])).map((r) => r.unwrap());
 
@@ -390,7 +393,7 @@ describe('Records service', () => {
                 unchangedKeys: ['1', '1', '1', '1'],
                 nextMerging: { strategy: 'override' }
             });
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(1);
             expect(stats[model]?.size_bytes).toBe(139);
         });
@@ -448,7 +451,7 @@ describe('Records service', () => {
                 }
             });
 
-            const { records: found } = (await Records.getRecords({ connectionId, model })).unwrap();
+            const { records: found } = (await store.getRecords({ connectionId, model })).unwrap();
             expect(found.length).toBe(1);
             expect(found?.[0]).toMatchObject({
                 person: {
@@ -528,7 +531,7 @@ describe('Records service', () => {
                     nonUniqueKeys: [],
                     nextMerging: {
                         strategy: 'ignore_if_modified_after_cursor',
-                        cursor: (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap()
+                        cursor: (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap()
                     }
                 });
 
@@ -565,7 +568,7 @@ describe('Records service', () => {
                     merging: inserted.nextMerging
                 });
                 // only '1' should be updated because '4' were modified after the cursor
-                const nextCursor = (await Records.getCursor({ connectionId, model, offset: 'last' })).unwrap();
+                const nextCursor = (await store.getCursor({ connectionId, model, offset: 'last' })).unwrap();
                 expect(upserted).toStrictEqual({
                     addedKeys: [],
                     updatedKeys: ['1'],
@@ -616,7 +619,7 @@ describe('Records service', () => {
             { id: '3', name: 'Max Doe' }
         ];
         await upsertRecords({ records, connectionId, environmentId, model, syncId });
-        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        let stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(3);
         expect(stats[model]?.size_bytes).toBe(401);
 
@@ -635,7 +638,7 @@ describe('Records service', () => {
             nextMerging: { strategy: 'override' }
         });
 
-        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(1);
         expect(stats[model]?.size_bytes).toBe(401); // size remains the same since we are soft deleting
 
@@ -651,7 +654,7 @@ describe('Records service', () => {
             nonUniqueKeys: [],
             nextMerging: { strategy: 'override' }
         });
-        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(1);
         expect(stats[model]?.size_bytes).toBe(401);
     });
@@ -673,18 +676,18 @@ describe('Records service', () => {
         const deleted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
         expect(deleted.deletedKeys).toEqual(expect.arrayContaining(['1', '2']));
 
-        let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        let stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(0);
 
         // Re-upsert (undelete) the same records
         const undeleted = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 3 });
         expect(undeleted.addedKeys).toStrictEqual(expect.arrayContaining(['1', '2']));
 
-        stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+        stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
         expect(stats[model]?.count).toBe(2);
 
         // Verify deleted_at is cleared
-        const response = (await Records.getRecords({ connectionId, model })).unwrap();
+        const response = (await store.getRecords({ connectionId, model })).unwrap();
         expect(response.records).toHaveLength(2);
         for (const record of response.records) {
             expect(record['_nango_metadata'].deleted_at).toBeNull();
@@ -696,7 +699,7 @@ describe('Records service', () => {
         it('Should retrieve records', async () => {
             const n = 10;
             const { connectionId, model } = await upsertNRecords(n);
-            const response = await Records.getRecords({ connectionId, model });
+            const response = await store.getRecords({ connectionId, model });
             if (response.isErr()) {
                 throw new Error('Response is undefined');
             }
@@ -720,7 +723,7 @@ describe('Records service', () => {
             let cursor: string | undefined | null = null;
             const allFetchedRecords = [];
             do {
-                const response = await Records.getRecords({
+                const response = await store.getRecords({
                     connectionId,
                     model,
                     limit,
@@ -753,7 +756,7 @@ describe('Records service', () => {
         it('Should retrieve records by external_id', async () => {
             const { connectionId, model } = await upsertNRecords(10);
 
-            const response = await Records.getRecords({
+            const response = await store.getRecords({
                 connectionId,
                 model,
                 externalIds: ['1', '3', '5']
@@ -776,7 +779,7 @@ describe('Records service', () => {
             const toInsert = [{ id: '1', name: 'John Doe' }];
             await upsertRecords({ records: toInsert, connectionId, environmentId, model, syncId });
 
-            const response = await Records.getRecords({ connectionId, model, externalIds: ['\x001'] });
+            const response = await store.getRecords({ connectionId, model, externalIds: ['\x001'] });
 
             expect(response.isOk()).toBe(true);
             const { records } = response.unwrap();
@@ -795,7 +798,7 @@ describe('Records service', () => {
 
             const startTime = Date.now();
             do {
-                const response = await Records.getRecords({
+                const response = await store.getRecords({
                     connectionId,
                     model,
                     limit,
@@ -848,7 +851,7 @@ describe('Records service', () => {
 
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
 
-                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
 
@@ -873,7 +876,7 @@ describe('Records service', () => {
                 let cursor: string | undefined | null = null;
                 let pages = 0;
                 do {
-                    const response = await Records.getRecords({
+                    const response = await store.getRecords({
                         connectionId,
                         model,
                         limit: numOfRecords,
@@ -907,7 +910,7 @@ describe('Records service', () => {
 
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 0;
 
-                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
                 expect(records.length).toBe(numOfRecords);
@@ -933,7 +936,7 @@ describe('Records service', () => {
 
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 100;
 
-                const response = await Records.getRecords({ connectionId, model, limit: 10 });
+                const response = await store.getRecords({ connectionId, model, limit: 10 });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
                 expect(records.length).toBe(1);
@@ -953,7 +956,7 @@ describe('Records service', () => {
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_BYTES = 10_000;
                 (envs as any).RECORDS_MAX_RESPONSE_SIZE_DRY_RUN = true;
 
-                const response = await Records.getRecords({ connectionId, model, limit: numOfRecords });
+                const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
                 expect(response.isOk()).toBe(true);
                 const { records, next_cursor } = response.unwrap();
                 expect(records.length).toBe(numOfRecords);
@@ -975,14 +978,14 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
 
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsBefore[model]?.count).toBe(2);
             expect(statsBefore[model]?.size_bytes).toBeGreaterThan(0);
 
             // Mark generation 1 as outdated (deleted)
-            await Records.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 });
+            await store.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 });
 
-            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfter = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfter[model]?.count).toBe(0);
             expect(statsAfter[model]?.size_bytes).toBe(0);
         });
@@ -1010,7 +1013,7 @@ describe('Records service', () => {
 
             // Mark previous generations (1 and 2) as deleted
             const deletedIds = (
-                await Records.deleteOutdatedRecords({
+                await store.deleteOutdatedRecords({
                     environmentId,
                     connectionId,
                     model,
@@ -1062,7 +1065,7 @@ describe('Records service', () => {
             });
 
             const deletedIds = (
-                await Records.deleteOutdatedRecords({
+                await store.deleteOutdatedRecords({
                     environmentId,
                     connectionId,
                     model,
@@ -1088,7 +1091,7 @@ describe('Records service', () => {
 
             // Mark previous generation as deleted
             const deletedIds = (
-                await Records.deleteOutdatedRecords({
+                await store.deleteOutdatedRecords({
                     environmentId,
                     connectionId,
                     model,
@@ -1112,11 +1115,11 @@ describe('Records service', () => {
             // Insert an additional record to ensure total count is correct
             await upsertRecords({ records: [{ id: '99', name: '99' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
 
-            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(initialStats[model]?.count).toBe(11);
 
             const deletedIds = (
-                await Records.deleteOutdatedRecords({
+                await store.deleteOutdatedRecords({
                     environmentId,
                     connectionId,
                     model,
@@ -1126,7 +1129,7 @@ describe('Records service', () => {
             ).unwrap();
             expect(deletedIds).toHaveLength(count);
 
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]?.count).toBe(1); // only the last record should remain
         });
 
@@ -1144,11 +1147,11 @@ describe('Records service', () => {
 
             await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
 
-            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(initialStats[model]?.count).toBe(3);
 
             const deletedIds = (
-                await Records.deleteOutdatedRecords({
+                await store.deleteOutdatedRecords({
                     environmentId,
                     connectionId,
                     model,
@@ -1157,7 +1160,7 @@ describe('Records service', () => {
             ).unwrap();
             expect(deletedIds).toHaveLength(3);
 
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]?.count).toBe(0);
         });
     });
@@ -1173,7 +1176,7 @@ describe('Records service', () => {
             const res3 = await upsertNRecords(35);
 
             const received = [];
-            for await (const res of Records.paginateCounts({ batchSize: 2 })) {
+            for await (const res of store.paginateCounts({ batchSize: 2 })) {
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -1221,7 +1224,7 @@ describe('Records service', () => {
             const targetEnvironments = [res1.environmentId, res2.environmentId];
 
             const received = [];
-            for await (const res of Records.paginateCounts({ environmentIds: targetEnvironments, batchSize: 2 })) {
+            for await (const res of store.paginateCounts({ environmentIds: targetEnvironments, batchSize: 2 })) {
                 if (res.isErr()) {
                     throw res.error;
                 }
@@ -1270,16 +1273,16 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            let stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            let stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length);
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', batchSize: 2 })).unwrap();
+            const deletedCount = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', batchSize: 2 })).unwrap();
             expect(deletedCount.count).toBe(records.length);
 
-            stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBe(undefined);
 
-            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            const res = (await store.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(0);
         });
 
@@ -1298,18 +1301,18 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(initialStats[model]?.count).toBe(5);
             const initialSize = initialStats[model]?.size_bytes || 0;
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 3 })).unwrap();
+            const deletedCount = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 3 })).unwrap();
             expect(deletedCount.count).toBe(3);
 
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]?.count).toBe(2);
             expect(finalStats[model]?.size_bytes).toBeLessThan(initialSize);
 
-            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            const res = (await store.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(2);
         });
 
@@ -1325,10 +1328,10 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const deletedCount = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 2 })).unwrap();
+            const deletedCount = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 2 })).unwrap();
             expect(deletedCount.count).toBe(2);
 
-            const finalStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const finalStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(finalStats[model]).toBeUndefined();
         });
 
@@ -1337,13 +1340,13 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const zeroResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 0 });
+            const zeroResult = await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: 0 });
             expect(zeroResult.isErr()).toBe(true);
             if (zeroResult.isErr()) {
                 expect(zeroResult.error.message).toBe('limit must be greater than 0');
             }
 
-            const negativeResult = await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: -5 });
+            const negativeResult = await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard', limit: -5 });
             expect(negativeResult.isErr()).toBe(true);
             if (negativeResult.isErr()) {
                 expect(negativeResult.error.message).toBe('limit must be greater than 0');
@@ -1370,7 +1373,7 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const inserted = (await Records.getRecords({ connectionId, model })).unwrap();
+            const inserted = (await store.getRecords({ connectionId, model })).unwrap();
             expect(inserted.records.length).toBe(records.length);
 
             const toDelete = 4;
@@ -1378,7 +1381,7 @@ describe('Records service', () => {
             expect(someRecordCursor).toBeDefined();
 
             const deletion = (
-                await Records.deleteRecords({
+                await store.deleteRecords({
                     connectionId,
                     environmentId,
                     model,
@@ -1391,13 +1394,13 @@ describe('Records service', () => {
             expect(deletion.count).toBe(toDelete);
             expect(deletion.lastCursor).toBe(someRecordCursor);
 
-            const remaining = (await Records.getRecords({ connectionId, model })).unwrap();
+            const remaining = (await store.getRecords({ connectionId, model })).unwrap();
             expect(remaining.records.length).toBe(records.length - toDelete);
 
             const remainingIds = remaining.records.map((r) => r.id);
             expect(remainingIds).toEqual(expect.arrayContaining(inserted.records.slice(toDelete).map((r) => r.id)));
 
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(records.length - toDelete);
         });
 
@@ -1406,7 +1409,7 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
+            const deleteResult = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
 
             expect(deleteResult.count).toBe(0);
             expect(deleteResult.lastCursor).toBeNull();
@@ -1424,12 +1427,12 @@ describe('Records service', () => {
             }));
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const allRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            const allRecords = (await store.getRecords({ connectionId, model })).unwrap();
             const twelfthRecordCursor = allRecords.records[11]?._nango_metadata.cursor;
             expect(twelfthRecordCursor).toBeDefined();
 
             const deleteResult = (
-                await Records.deleteRecords({
+                await store.deleteRecords({
                     connectionId,
                     environmentId,
                     model,
@@ -1442,7 +1445,7 @@ describe('Records service', () => {
             expect(deleteResult.count).toBe(12);
             expect(deleteResult.lastCursor).toBe(twelfthRecordCursor);
 
-            const remainingRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            const remainingRecords = (await store.getRecords({ connectionId, model })).unwrap();
             expect(remainingRecords.records.length).toBe(8);
         });
 
@@ -1451,7 +1454,7 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const invalidCursorResult = await Records.deleteRecords({
+            const invalidCursorResult = await store.deleteRecords({
                 connectionId,
                 environmentId,
                 model,
@@ -1477,9 +1480,9 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
 
-            const recs = (await Records.getRecords({ connectionId, model })).unwrap();
+            const recs = (await store.getRecords({ connectionId, model })).unwrap();
             const last = recs.records[recs.records.length - 1]!;
             const cursor = last._nango_metadata.cursor;
 
@@ -1487,16 +1490,16 @@ describe('Records service', () => {
             await upsertRecords({ records: [{ id: last.id, name: 'Maxwell Doe' }], connectionId, environmentId, model, syncId });
 
             // prune all records but the last one that was just updated
-            const prune = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            const prune = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
             expect(prune.count).toBe(2);
             expect(prune.lastCursor).toBe(recs.records[recs.records.length - 2]!._nango_metadata.cursor); // second last record's cursor since last record was updated and not deleted
 
             // try to prune again, should not do anything
-            const prune2 = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
+            const prune2 = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'prune', toCursorIncluded: cursor })).unwrap();
             expect(prune2.count).toBe(0);
             expect(prune2.lastCursor).toBeNull();
 
-            const res = (await Records.getRecords({ connectionId, model })).unwrap();
+            const res = (await store.getRecords({ connectionId, model })).unwrap();
             expect(res.records.length).toBe(3);
             res.records.forEach((r) => {
                 if (r.id === last.id) {
@@ -1510,7 +1513,7 @@ describe('Records service', () => {
             });
 
             // count should remain the same but size should be reduced
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(3);
             expect(stats[model]?.size_bytes).toBeLessThan(statsBefore[model]?.size_bytes || 0);
         });
@@ -1530,12 +1533,12 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsBefore[model]?.count).toBe(5);
             const initialSize = statsBefore[model]?.size_bytes || 0;
 
             const res = (
-                await Records.deleteRecords({
+                await store.deleteRecords({
                     connectionId,
                     environmentId,
                     model,
@@ -1550,11 +1553,11 @@ describe('Records service', () => {
             expect(res.lastCursor).toBeDefined();
 
             // Verify records were not actually deleted
-            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfterDryRun = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfterDryRun[model]?.count).toBe(5);
             expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
 
-            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            const recordsAfterDryRun = (await store.getRecords({ connectionId, model })).unwrap();
             expect(recordsAfterDryRun.records.length).toBe(5);
         });
 
@@ -1572,7 +1575,7 @@ describe('Records service', () => {
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
             const res = (
-                await Records.deleteRecords({
+                await store.deleteRecords({
                     connectionId,
                     environmentId,
                     model,
@@ -1586,10 +1589,10 @@ describe('Records service', () => {
             expect(res.lastCursor).toBeDefined();
 
             // Verify records were not actually deleted
-            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
+            const recordsAfterDryRun = (await store.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
             expect(recordsAfterDryRun.records.length).toBe(0);
 
-            const allRecords = (await Records.getRecords({ connectionId, model })).unwrap();
+            const allRecords = (await store.getRecords({ connectionId, model })).unwrap();
             expect(allRecords.records.length).toBe(3);
             allRecords.records.forEach((r) => {
                 expect(r._nango_metadata.deleted_at).toBeNull();
@@ -1608,11 +1611,11 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             const initialSize = statsBefore[model]?.size_bytes || 0;
 
             const res = (
-                await Records.deleteRecords({
+                await store.deleteRecords({
                     connectionId,
                     environmentId,
                     model,
@@ -1625,7 +1628,7 @@ describe('Records service', () => {
             expect(res.lastCursor).toBeDefined();
 
             // Verify records were not actually pruned
-            const recordsAfterDryRun = (await Records.getRecords({ connectionId, model })).unwrap();
+            const recordsAfterDryRun = (await store.getRecords({ connectionId, model })).unwrap();
             expect(recordsAfterDryRun.records.length).toBe(2);
             recordsAfterDryRun.records.forEach((r) => {
                 expect(r._nango_metadata.pruned_at).toBeNull();
@@ -1633,7 +1636,7 @@ describe('Records service', () => {
             });
 
             // Size should remain unchanged
-            const statsAfterDryRun = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfterDryRun = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfterDryRun[model]?.size_bytes).toBe(initialSize);
         });
     });
@@ -1644,7 +1647,7 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            const newCount = await Records.incrCount(db, {
+            const newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1661,7 +1664,7 @@ describe('Records service', () => {
             const environmentId = rnd.number();
             const model = rnd.string();
 
-            let newCount = await Records.incrCount(db, {
+            let newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1671,7 +1674,7 @@ describe('Records service', () => {
             expect(newCount.count).toBe(10);
             expect(newCount.size_bytes).toBe(1000);
 
-            newCount = await Records.incrCount(db, {
+            newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1681,7 +1684,7 @@ describe('Records service', () => {
             expect(newCount.count).toBe(15);
             expect(newCount.size_bytes).toBe(1500);
 
-            newCount = await Records.incrCount(db, {
+            newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1705,11 +1708,11 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             const initialCount = initialStats[model]?.count || 0;
             const initialSize = initialStats[model]?.size_bytes || 0;
 
-            const newCount = await Records.incrCount(db, {
+            const newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1730,9 +1733,9 @@ describe('Records service', () => {
             const records = [{ id: '1', name: 'John Doe' }];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const initialStats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const initialStats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
 
-            const newCount = await Records.incrCount(db, {
+            const newCount = await incrCount(db, {
                 connectionId,
                 environmentId,
                 model,
@@ -1768,7 +1771,7 @@ describe('Records service', () => {
             // Since we're picking a random partition, we might need to try multiple times
             const staleAfterMs = 60 * 60 * 1000; // 1 hour
             for (let i = 0; i < 1000; i++) {
-                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                const candidate = (await store.autoPruningCandidate({ staleAfterMs })).unwrap();
                 if (candidate) {
                     expect(candidate.connectionId).toBe(connectionId);
                     expect(candidate.model).toBe(model);
@@ -1776,9 +1779,8 @@ describe('Records service', () => {
                     if (!decodedCursor) {
                         throw new Error('Failed to decode cursor');
                     }
-                    const staleRecord = (
-                        await Records.getRecords({ connectionId: candidate.connectionId, model: candidate.model, externalIds: ['1'] })
-                    ).unwrap().records[0];
+                    const staleRecord = (await store.getRecords({ connectionId: candidate.connectionId, model: candidate.model, externalIds: ['1'] })).unwrap()
+                        .records[0];
                     expect(staleRecord?._nango_metadata.cursor).toBe(candidate.cursor);
                     return;
                 }
@@ -1801,7 +1803,7 @@ describe('Records service', () => {
             // Since we're picking a random partition we need to try multiple times
             const staleAfterMs = 60 * 60 * 1000; // 1 hour
             for (let i = 0; i < 1000; i++) {
-                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                const candidate = (await store.autoPruningCandidate({ staleAfterMs })).unwrap();
                 if (candidate) {
                     throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
                 }
@@ -1829,7 +1831,7 @@ describe('Records service', () => {
             // Since we're picking a random partition we need to try multiple times
             const staleAfterMs = 60 * 60 * 1000; // 1 hour
             for (let i = 0; i < 50; i++) {
-                const candidate = (await Records.autoPruningCandidate({ staleAfterMs })).unwrap();
+                const candidate = (await store.autoPruningCandidate({ staleAfterMs })).unwrap();
                 if (candidate) {
                     throw new Error(`Expected no candidate, but found ${JSON.stringify(candidate)}`);
                 }
@@ -1860,7 +1862,7 @@ describe('Records service', () => {
             const twoDaysAgo = new Date(Date.now() - 2 * oneDay);
             await db(RECORD_COUNTS_TABLE).where({ connection_id: connectionId, environment_id: environmentId, model }).update({ updated_at: twoDaysAgo });
 
-            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+            const candidate = (await store.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
 
             expect(candidate?.connectionId).toBe(connectionId);
             expect(candidate?.model).toBe(model);
@@ -1879,7 +1881,7 @@ describe('Records service', () => {
             ];
             await upsertRecords({ records, connectionId, environmentId, model, syncId });
 
-            const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: 60 * 1000 })).unwrap();
+            const candidate = (await store.autoDeletingCandidate({ staleAfterMs: 60 * 1000 })).unwrap();
 
             expect(candidate).toBeNull();
         });
@@ -1905,7 +1907,7 @@ describe('Records service', () => {
             // Each call should advance to a different candidate; after `total` calls all must have been seen
             const candidates = new Set<string>();
             for (let i = 0; i < total; i++) {
-                const candidate = (await Records.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
+                const candidate = (await store.autoDeletingCandidate({ staleAfterMs: oneDay })).unwrap();
                 if (candidate) {
                     candidates.add(`${candidate.environmentId}-${candidate.connectionId}-${candidate.model}`);
                 }
@@ -1926,11 +1928,11 @@ describe('Records service', () => {
 
             await insertLegacyRecords({ records, connectionId, environmentId, model, syncId });
 
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(2);
             expect(stats[model]?.size_bytes).toBe(255);
 
-            const fetched = (await Records.getRecords({ connectionId, model })).unwrap();
+            const fetched = (await store.getRecords({ connectionId, model })).unwrap();
             expect(fetched.records).toHaveLength(2);
             expect(fetched.records).toEqual(
                 expect.arrayContaining([expect.objectContaining({ id: '1', name: 'Alice' }), expect.objectContaining({ id: '2', name: 'Bob' })])
@@ -1945,7 +1947,7 @@ describe('Records service', () => {
             const records = [{ id: '1', name: 'Alice' }];
 
             await insertLegacyRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
 
             const result = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2 });
             expect(result.unchangedKeys).toContain('1');
@@ -1955,7 +1957,7 @@ describe('Records service', () => {
             expect(after.legacyData).toBeNull();
             expect(after.data).toMatchObject({ id: '1', name: 'Alice' });
 
-            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfter = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfter[model]?.count).toBe(1);
             expect(statsAfter[model]?.size_bytes).toBe(statsBefore[model]?.size_bytes);
         });
@@ -1967,7 +1969,7 @@ describe('Records service', () => {
             const syncId = uuid.v4();
 
             await insertLegacyRecords({ records: [{ id: '1', name: 'Alice' }], connectionId, environmentId, model, syncId, syncJobId: 1 });
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
 
             const result = await upsertRecords({ records: [{ id: '1', name: 'Alice Updated' }], connectionId, environmentId, model, syncId, syncJobId: 2 });
             expect(result.updatedKeys).toContain('1');
@@ -1976,7 +1978,7 @@ describe('Records service', () => {
             expect(after.legacyData).toBeNull();
             expect(after.data).toMatchObject({ id: '1', name: 'Alice Updated' });
 
-            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfter = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfter[model]?.count).toBe(1);
             expect(statsAfter[model]?.size_bytes).toBeGreaterThan(statsBefore[model]?.size_bytes ?? 0);
         });
@@ -1996,7 +1998,7 @@ describe('Records service', () => {
             expect(after.legacyData).toBeNull();
             expect(after.data).toMatchObject({ id: '1', name: 'Alice', role: 'user' });
 
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(1);
             expect(stats[model]?.size_bytes).toBe(147);
         });
@@ -2009,7 +2011,7 @@ describe('Records service', () => {
             const records = [{ id: '1', name: 'Alice' }];
 
             await insertLegacyRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
-            const statsBefore = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsBefore = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
 
             const result = await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2, softDelete: true });
             expect(result.deletedKeys).toContain('1');
@@ -2018,12 +2020,12 @@ describe('Records service', () => {
             expect(after.legacyData).toBeNull();
             expect(after.data).toStrictEqual({ id: '1', name: 'Alice' }); // soft-deleted records still have their data
 
-            const fetched = (await Records.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
+            const fetched = (await store.getRecords({ connectionId, model, filter: 'deleted' })).unwrap();
             expect(fetched.records).toHaveLength(1);
             expect(fetched.records[0]).toMatchObject({ id: '1', name: 'Alice' });
 
             // soft delete: count drops to 0 but size is preserved (data still stored in records_data)
-            const statsAfter = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const statsAfter = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(statsAfter[model]?.count).toBe(0);
             expect(statsAfter[model]?.size_bytes).toBe(statsBefore[model]?.size_bytes);
         });
@@ -2046,10 +2048,10 @@ describe('Records service', () => {
                 syncJobId: 1
             });
 
-            const deletedIds = (await Records.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 })).unwrap();
+            const deletedIds = (await store.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 })).unwrap();
             expect(deletedIds).toEqual(expect.arrayContaining(['1', '2']));
 
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]?.count).toBe(0);
             expect(stats[model]?.size_bytes).toBe(0);
         });
@@ -2062,7 +2064,7 @@ describe('Records service', () => {
 
             await insertLegacyRecords({ records: [{ id: '1', name: 'Alice' }], connectionId, environmentId, model, syncId });
 
-            const deleteResult = (await Records.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
+            const deleteResult = (await store.deleteRecords({ connectionId, environmentId, model, mode: 'hard' })).unwrap();
             expect(deleteResult.count).toBe(1);
 
             const recordsRow = await db(RECORDS_TABLE).where({ connection_id: connectionId, model }).first();
@@ -2072,7 +2074,7 @@ describe('Records service', () => {
             expect(dataRow).toBeUndefined();
 
             // hard delete removes the count entry entirely when count reaches 0
-            const stats = (await Records.getCountsByModel({ connectionId, environmentId })).unwrap();
+            const stats = (await store.getCountsByModel({ connectionId, environmentId })).unwrap();
             expect(stats[model]).toBeUndefined();
         });
     });
@@ -2131,7 +2133,7 @@ describe('Records service', () => {
     describe('ensureSeenPartition', () => {
         it('should create a partition for the given date', async () => {
             const date = new Date('2025-01-15T00:00:00Z');
-            const res = await Records.ensureSeenPartition({ date });
+            const res = await store.ensureSeenPartition({ date });
             expect(res.isOk()).toBe(true);
 
             const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
@@ -2142,8 +2144,8 @@ describe('Records service', () => {
 
         it('should be idempotent', async () => {
             const date = new Date('2025-01-16T00:00:00Z');
-            const res1 = await Records.ensureSeenPartition({ date });
-            const res2 = await Records.ensureSeenPartition({ date });
+            const res1 = await store.ensureSeenPartition({ date });
+            const res2 = await store.ensureSeenPartition({ date });
             expect(res1.isOk()).toBe(true);
             expect(res2.isOk()).toBe(true);
         });
@@ -2152,9 +2154,9 @@ describe('Records service', () => {
     describe('dropSeenPartition', () => {
         it('should drop an existing partition', async () => {
             const date = new Date('2025-02-10T00:00:00Z');
-            await Records.ensureSeenPartition({ date });
+            await store.ensureSeenPartition({ date });
 
-            const res = await Records.dropSeenPartition({ date });
+            const res = await store.dropSeenPartition({ date });
             expect(res.isOk()).toBe(true);
 
             const { rows } = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = ?)`, [
@@ -2165,7 +2167,7 @@ describe('Records service', () => {
 
         it('should not error when partition does not exist', async () => {
             const date = new Date('2025-02-11T00:00:00Z');
-            const res = await Records.dropSeenPartition({ date });
+            const res = await store.dropSeenPartition({ date });
             expect(res.isOk()).toBe(true);
         });
     });
@@ -2210,7 +2212,7 @@ async function upsertRecords({
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const upsertRes = await Records.upsert({ records: formatRes.value, connectionId, environmentId, model, softDelete, merging });
+    const upsertRes = await store.upsert({ records: formatRes.value, connectionId, environmentId, model, softDelete, merging });
     if (upsertRes.isErr()) {
         throw new Error(`Failed to update records: ${upsertRes.error.message}`);
     }
@@ -2238,7 +2240,7 @@ async function updateRecords({
     if (formatRes.isErr()) {
         throw new Error(`Failed to format records: ${formatRes.error.message}`);
     }
-    const updateRes = await Records.update({ records: formatRes.value, connectionId, environmentId, model, merging });
+    const updateRes = await store.update({ records: formatRes.value, connectionId, environmentId, model, merging });
     if (updateRes.isErr()) {
         throw new Error(`Failed to update records: ${updateRes.error.message}`);
     }
