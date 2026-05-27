@@ -17,6 +17,42 @@ export type DeployScriptScanResult =
     | { ok: false; rule: 'constructor_string_call'; hits: DeployScriptScanHit[] }
     | { ok: false; rule: 'parse_error'; message: string };
 
+function evalStaticString(expr: BabelNode, depth = 0): string | null {
+    // Keep this conservative: just enough to catch common obfuscations like
+    // `['con' + 'structor']` without trying to be a general evaluator.
+    if (depth > 8) {
+        return null;
+    }
+
+    if (expr.type === 'StringLiteral') {
+        return expr.value;
+    }
+
+    if (expr.type === 'TemplateLiteral') {
+        if (expr.expressions.length > 0) {
+            return null;
+        }
+        return expr.quasis.map((q) => q.value.cooked ?? q.value.raw).join('');
+    }
+
+    if (expr.type === 'BinaryExpression') {
+        if (expr.operator !== '+') {
+            return null;
+        }
+        const left = evalStaticString(expr.left, depth + 1);
+        if (left == null) {
+            return null;
+        }
+        const right = evalStaticString(expr.right, depth + 1);
+        if (right == null) {
+            return null;
+        }
+        return left + right;
+    }
+
+    return null;
+}
+
 /** `obj.constructor` or `obj["constructor"]` / `obj['constructor']` (same runtime property). */
 function isConstructorMemberCallee(expr: BabelNode): expr is MemberExpression {
     if (expr.type !== 'MemberExpression') {
@@ -24,7 +60,7 @@ function isConstructorMemberCallee(expr: BabelNode): expr is MemberExpression {
     }
     if (expr.computed) {
         const p = expr.property;
-        return p.type === 'StringLiteral' && p.value === 'constructor';
+        return evalStaticString(p) === 'constructor';
     }
     const prop = expr.property;
     return prop.type === 'Identifier' && prop.name === 'constructor';

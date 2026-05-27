@@ -85,6 +85,21 @@ exec: async () => {
   return c("return this.process")().env;
 }
 `
+            ],
+            [
+                'use setTimeout.constructor to escape the sandbox',
+                `
+exec: async () => {
+  const ctor = setTimeout['con' + 'structor'];
+  const hostProcess = ctor('return process')();
+  return {
+    sandbox_global_process: typeof process,
+    escaped_node_version: hostProcess.version,
+    escaped_platform: hostProcess.platform,
+    escaped_cwd: hostProcess.cwd()
+  };
+};
+            `
             ]
         ])('%s', (_name, source) => {
             expectRejectsConstructorGadget(source);
