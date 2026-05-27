@@ -186,12 +186,12 @@ export function buildTailwindThemeBlock(tokens) {
 // Each entry drives both the CSS variable name and the completeness guard.
 // To add a new token group, add one row here — no other changes needed.
 const PRIM_MAPPINGS = [
-    { prefix: 'radius-',                    cssVar: 'radius-ds-'       },
-    { prefix: 'border-width-',              cssVar: 'border-width-ds-' },
-    { prefix: 'typography-font-size-',      cssVar: 'text-ds-'         },
-    { prefix: 'typography-font-weight-',    cssVar: 'font-weight-ds-'  },
-    { prefix: 'typography-line-height-',    cssVar: 'leading-ds-'      },
-    { prefix: 'typography-letter-spacing-', cssVar: 'tracking-ds-'     },
+    { prefix: 'radius-', cssVar: 'radius-ds-' },
+    { prefix: 'border-width-', cssVar: 'border-width-ds-' },
+    { prefix: 'typography-font-size-', cssVar: 'text-ds-' },
+    { prefix: 'typography-font-weight-', cssVar: 'font-weight-ds-' },
+    { prefix: 'typography-line-height-', cssVar: 'leading-ds-' },
+    { prefix: 'typography-letter-spacing-', cssVar: 'tracking-ds-' }
 ];
 
 /**
