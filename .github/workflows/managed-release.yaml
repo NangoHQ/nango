@@ -33,7 +33,6 @@ jobs:
               uses: ./.github/actions/setup-node
               with:
                   node-version: '22'
-                  check-lockfile: 'false'
 
             - name: Install dependencies
               run: |
@@ -344,7 +343,6 @@ jobs:
               uses: ./.github/actions/setup-node
               with:
                   node-version: '22'
-                  check-lockfile: 'false'
 
             - name: Download manifest artifact
               uses: actions/download-artifact@v4

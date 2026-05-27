@@ -33,7 +33,6 @@ jobs:
             - uses: ./.github/actions/setup-node
               with:
                   registry-url: 'https://registry.npmjs.org'
-                  check-lockfile: 'false'
 
             - name: Update npm to latest
               run: npm install -g npm@11.5.1
