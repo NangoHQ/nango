@@ -17,7 +17,7 @@ export const buttonVariants = cva(
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
         'focus-visible:outline-none',
-        'disabled:cursor-not-allowed'
+        'disabled:cursor-not-allowed aria-disabled:cursor-not-allowed'
     ],
     {
         variants: {
@@ -28,6 +28,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-primary-bg-hover',
                     'active:bg-button-primary-bg-active',
                     'disabled:bg-button-primary-bg-disabled disabled:text-button-primary-text-disabled disabled:border-transparent',
+                    'aria-disabled:bg-button-primary-bg-disabled aria-disabled:text-button-primary-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 secondary: [
@@ -36,6 +37,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-secondary-bg-hover',
                     'active:bg-button-secondary-bg-active',
                     'disabled:bg-button-secondary-bg-disabled disabled:text-button-secondary-text-disabled disabled:border-transparent',
+                    'aria-disabled:bg-button-secondary-bg-disabled aria-disabled:text-button-secondary-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 outline: [
@@ -44,6 +46,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-outline-bg-hover hover:border-button-outline-border-hover',
                     'active:bg-button-outline-bg-active',
                     'disabled:bg-button-outline-bg-disabled disabled:text-button-outline-text-disabled disabled:border-button-outline-border-disabled',
+                    'aria-disabled:bg-button-outline-bg-disabled aria-disabled:text-button-outline-text-disabled aria-disabled:border-button-outline-border-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 ghost: [
@@ -52,6 +55,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-ghost-bg-hover',
                     'active:bg-button-ghost-bg-active',
                     'disabled:bg-button-ghost-bg-disabled disabled:text-button-ghost-text-disabled',
+                    'aria-disabled:bg-button-ghost-bg-disabled aria-disabled:text-button-ghost-text-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 danger: [
@@ -60,6 +64,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-danger-bg-hover',
                     'active:bg-button-danger-bg-active',
                     'disabled:bg-button-danger-bg-disabled disabled:text-button-danger-text-disabled disabled:border-transparent',
+                    'aria-disabled:bg-button-danger-bg-disabled aria-disabled:text-button-danger-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 'link-danger': [
@@ -68,6 +73,7 @@ export const buttonVariants = cva(
                     'hover:bg-button-link-danger-bg-hover',
                     'active:bg-button-link-danger-bg-active',
                     'disabled:bg-transparent disabled:text-button-link-danger-text-disabled',
+                    'aria-disabled:bg-transparent aria-disabled:text-button-link-danger-text-disabled',
                     'focus-visible:shadow-focus-outline-danger'
                 ]
             },
@@ -95,22 +101,18 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, leadingIcon, trailingIcon, onClick, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, leadingIcon, trailingIcon, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
-        // When asChild wraps a non-button element (e.g. <Link>), the `disabled` HTML attribute
-        // has no effect. Intercept clicks to prevent navigation/action in those cases.
-        const handleClick = isDisabled && asChild ? (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault() : onClick;
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), className)}
+                className={cn(buttonVariants({ variant, size }), isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
-                onClick={handleClick}
                 {...props}
             >
                 {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
@@ -133,23 +135,21 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, onClick, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const iconSize = size ?? 'md';
-        const handleClick = isDisabled && asChild ? (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault() : onClick;
 
         return (
             <Comp
                 ref={ref}
                 type={asChild ? undefined : 'button'}
-                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', className)}
+                className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', isDisabled && asChild && 'pointer-events-none', className)}
                 disabled={isDisabled}
                 aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
                 aria-label={label}
                 title={label}
-                onClick={handleClick}
                 {...props}
             >
                 {loading ? <Spinner size={iconSize} /> : children}
