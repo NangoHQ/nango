@@ -149,6 +149,18 @@ function resolveComparisonUrl(manifestComparisonUrl, prevCommit, currentCommitHa
     return buildGitHubComparisonUrl(prevCommit, currentCommitHash, owner, repo);
 }
 
+function normalizeManifestForPublish(manifest, prevCommit, currentCommitHash) {
+    const comparisonUrl = resolveComparisonUrl(manifest.latest.comparisonUrl, prevCommit, currentCommitHash);
+
+    return {
+        ...manifest,
+        latest: {
+            ...manifest.latest,
+            comparisonUrl
+        }
+    };
+}
+
 function generateCliffNotes(prevCommit, commitHash) {
     if (!prevCommit) {
         return '_No previous managed release commit is available for changelog generation._';
@@ -205,12 +217,12 @@ function prependCustomerChangelog(changelogPath, releaseTitle, releaseNotes) {
     fs.writeFileSync(changelogPath, `${header}${entry}${body.trimStart()}`);
 }
 
-function publishToCustomerRepo({ manifestPath, releaseNotes, releaseTitle, tagName }) {
+function publishToCustomerRepo({ manifest, releaseNotes, releaseTitle, tagName }) {
     const customerManifestPath = path.join(MANAGED_RELEASES_REPO_PATH, 'managed-manifest.json');
     const customerChangelogPath = path.join(MANAGED_RELEASES_REPO_PATH, 'CHANGELOG.md');
 
     fs.mkdirSync(MANAGED_RELEASES_REPO_PATH, { recursive: true });
-    fs.copyFileSync(manifestPath, customerManifestPath);
+    fs.writeFileSync(customerManifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
     prependCustomerChangelog(customerChangelogPath, releaseTitle, releaseNotes);
 
     const gitCwd = MANAGED_RELEASES_REPO_PATH;
@@ -270,9 +282,10 @@ function main() {
 
     const manifest = readManifest(MANIFEST_PATH);
     const prevCommit = getPreviousReleaseCommit(manifest, COMMIT_HASH);
+    const publishManifest = normalizeManifestForPublish(manifest, prevCommit, COMMIT_HASH);
     const cliffNotes = generateCliffNotes(prevCommit, COMMIT_HASH);
     const releaseNotes = buildReleaseNotes({
-        manifest,
+        manifest: publishManifest,
         cliffNotes,
         tagName: TAG_NAME,
         imageVersion: IMAGE_VERSION,
@@ -298,7 +311,7 @@ function main() {
     }
 
     publishToCustomerRepo({
-        manifestPath: MANIFEST_PATH,
+        manifest: publishManifest,
         releaseNotes,
         releaseTitle,
         tagName: TAG_NAME
@@ -307,7 +320,7 @@ function main() {
     console.log(`Published managed release ${TAG_NAME} to ${TARGET_REPO}`);
 }
 
-export { buildGitHubComparisonUrl, parseGitHubCompareUrl, resolveComparisonUrl };
+export { buildGitHubComparisonUrl, normalizeManifestForPublish, parseGitHubCompareUrl, resolveComparisonUrl };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     main();
