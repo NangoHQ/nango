@@ -9,7 +9,9 @@ const ADMIN_ONLY: Permission[] = [
     p.canInviteMember,
     p.canCancelInvitation,
     p.canManageConnectUI,
-    p.canManageBilling,
+    p.canReadBilling,
+    p.canUpdateBilling,
+    p.canDeleteBilling,
     p.canChangePlan,
     p.canToggleIsProduction,
     p.canCreateEnvironment
