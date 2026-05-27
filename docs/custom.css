@@ -8,6 +8,11 @@
   margin: 16px 0 24px;
 }
 
+.agent-quickstart-actions--single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 720px;
+}
+
 .agent-quickstart-action {
   display: flex;
   flex-direction: column;
@@ -31,6 +36,11 @@
   border-color: rgba(41, 171, 226, 0.7);
   background: rgba(41, 171, 226, 0.06);
   transform: translateY(-1px);
+}
+
+.agent-quickstart-action--primary {
+  border-color: rgba(41, 171, 226, 0.4);
+  background: rgba(41, 171, 226, 0.08);
 }
 
 .agent-quickstart-action[aria-busy='true'] {

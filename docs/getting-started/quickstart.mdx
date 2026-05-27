@@ -4,60 +4,33 @@ sidebarTitle: '🚀 Quickstart'
 description: 'Authorize an API and run your first Nango function'
 ---
 
-<Tip>
-  **AI-assisted quickstart** Have a coding agent guide you through signup, [API key](/reference/backend/http-api/api-keys) setup, integration setup, connection authorization, and function next steps.
-</Tip>
+## AI-assisted quickstart
 
-<div className="agent-quickstart-actions">
+Copy this prompt into Claude, Cursor, or another coding agent to get guided through signup, API key setup, connection authorization, and your first function call.
+
+<div className="agent-quickstart-actions agent-quickstart-actions--single">
   <button
     type="button"
-    className="agent-quickstart-action"
+    className="agent-quickstart-action agent-quickstart-action--primary"
     data-copy-url="/prompts/onboarding-nango-customers.txt"
     data-copy-success="Prompt copied"
   >
-    <span className="agent-quickstart-action-title">Copy prompt</span>
-    <span className="agent-quickstart-action-description">Paste the onboarding prompt into Claude, Cursor, or another coding agent.</span>
-  </button>
-  <button
-    type="button"
-    className="agent-quickstart-action"
-    data-copy-text="npx skills add NangoHQ/skills -s onboarding-nango-customers"
-    data-copy-success="Install command copied"
-  >
-    <span className="agent-quickstart-action-title">Install skill</span>
-    <span className="agent-quickstart-action-description">
-      Copy the command to install the onboarding skill from <code>NangoHQ/skills</code>.
-    </span>
+    <span className="agent-quickstart-action-title">Copy AI quickstart prompt</span>
+    <span className="agent-quickstart-action-description">Paste it into your coding agent to walk through this quickstart.</span>
   </button>
 </div>
 
-This quickstart uses the GitHub API as an example, but you can choose any of the [800+ APIs](/integrations/overview).
+For skills, the docs MCP server, and other agent setup options, see [Coding agent setup](/getting-started/coding-agent-setup).
+
+## Manual quickstart
+
+The steps below show the flow end to end. This quickstart uses the GitHub API as an example, but you can choose any of the [800+ APIs](/integrations/overview).
 
 <Steps>
   <Step id="create-integration" title="Create an integration">
     [Sign up](https://app.nango.dev/signup) for free. This quickstart uses GitHub (User OAuth), which is pre-created with integration ID `github-getting-started`.
 
     If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
-
-    <Accordion title="For agents">
-      Signup cannot be automated. Ask the user to create a free Nango account in the UI first if they have not already done so, then ask for their [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys.
-
-      Use the [API key](/reference/backend/http-api/api-keys) as `Authorization: Bearer <NANGO-API-KEY>`. The default [API key](/reference/backend/http-api/api-keys) created on signup has full access and is the simplest option. If the user creates a [scoped API key](/reference/backend/http-api/api-keys#scopes) instead, this quickstart needs `environment:connect_sessions:write` and `environment:actions:execute`. Add `environment:connections:list` if you confirm authorization through the API.
-
-      For GitHub, use the pre-created integration ID `github-getting-started`; no integration creation or OAuth developer app setup is needed.
-
-      If the user wants another API, ask them to create the integration in the Nango dashboard. You can list providers first and use the matching `name` to help them pick the right API:
-
-      ```bash
-      curl --request GET \
-        --url https://api.nango.dev/providers \
-        --header 'Authorization: Bearer <NANGO-API-KEY>'
-      ```
-
-      For OAuth APIs, walk the user through registering an OAuth developer app on the provider's portal, then ask them to paste the `Client ID`, `Client Secret`, and required scopes into the Nango integration settings. If the dashboard offers Nango-provided developer app credentials, they can use that option for testing. This OAuth setup can be ignored when using the GitHub example.
-
-      For provider details and response shapes, see the [List all providers API](/reference/backend/http-api/providers/list).
-    </Accordion>
 
   </Step>
 
@@ -66,35 +39,18 @@ This quickstart uses the GitHub API as an example, but you can choose any of the
 
     Copy the connection ID and your [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
 
-    <Accordion title="For agents">
-      To create a browser auth link programmatically, call:
-
-      ```bash
-      curl --request POST \
-        --url https://api.nango.dev/connect/sessions \
-        --header 'Authorization: Bearer <NANGO-API-KEY>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-          "tags": { "end_user_id": "quickstart-user" },
-          "allowed_integrations": ["github-getting-started"]
-        }'
-      ```
-
-      Send the returned `connect_link` to the user. Once they complete authorization, confirm the connection in the dashboard or with the [List connections API](/reference/backend/http-api/connections/list).
-    </Accordion>
-
   </Step>
 
-  <Step id="enable-template-function" title="Enable a template function">
-    Open your integration and enable a template function. For GitHub, enable the `get-repository` template.
+  <Step id="enable-function" title="Enable an integration function">
+    The fastest way to enable a function is to use a template.
+
+    Go to the Integrations tab > open the `github-getting-started` integration > Functions sub-tab. In the functions table, turn on the toggle in the Enable column for `get-repository`.
 
     This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
 
-    <Accordion title="For agents">
-      Enabling template functions is only available in the Nango dashboard at the moment, and will be accessible via API soon.
-
-      Ask the user to go to the Nango dashboard > Integrations tab > open the integration > Functions sub-tab, then deploy the template function they want to test. For this example, deploy `get-repository`.
-    </Accordion>
+    <Tip>
+      You can also [build a custom function](/guides/functions/functions-guide#build-locally-with-the-cli) in your codebase, or use the [Functions API](/guides/functions/functions-guide#build-with-the-functions-api) to let an agent turn text-defined behavior into deployed function code.
+    </Tip>
 
   </Step>
 

@@ -178,11 +178,42 @@
     });
   }
 
+  function isQuickstartPage() {
+    return (
+      window.location.pathname.replace(/\/$/, '').endsWith('/getting-started/quickstart') ||
+      Boolean(document.querySelector('[data-page-href*="getting-started/quickstart"]'))
+    );
+  }
+
+  function updateQuickstartCopyPageAction() {
+    var isQuickstart = isQuickstartPage();
+
+    if (!isQuickstart) {
+      document.querySelectorAll('[data-quickstart-hidden-copy-page="true"]').forEach(function (element) {
+        element.style.display = '';
+        element.removeAttribute('data-quickstart-hidden-copy-page');
+      });
+      return;
+    }
+
+    document.querySelectorAll('a, button, [role="menuitem"]').forEach(function (element) {
+      var label = element.getAttribute('aria-label') || '';
+      var text = (element.textContent || '').replace(/\s+/g, ' ').trim();
+
+      if (label === 'Copy page' || text === 'Copy page' || (label === 'More actions' && element.getAttribute('aria-haspopup') === 'menu')) {
+        element.style.display = 'none';
+        element.setAttribute('data-quickstart-hidden-copy-page', 'true');
+      }
+    });
+  }
+
   function init() {
     bindCopyButtons(document);
+    updateQuickstartCopyPageAction();
 
     var observer = new MutationObserver(function () {
       bindCopyButtons(document);
+      updateQuickstartCopyPageAction();
     });
 
     observer.observe(document.body, {
