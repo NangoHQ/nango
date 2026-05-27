@@ -1,5 +1,5 @@
 import type { ApiError, Endpoint } from '../api.js';
-import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoSyncFunction } from './domain.js';
+import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
 
 export type FunctionErrorCode =
     | 'invalid_request'
@@ -121,4 +121,12 @@ export type GetProviderTemplates = Endpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: { data: (NangoSyncFunction | NangoActionFunction)[] };
+}>;
+
+export type GetIntegrationTemplates = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/integrations/:providerConfigKey/templates';
+    Querystring: { env: string };
+    Params: { providerConfigKey: string };
+    Success: { data: NangoFunctionTemplate[] };
 }>;

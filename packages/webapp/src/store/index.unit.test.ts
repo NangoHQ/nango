@@ -37,8 +37,8 @@ const storageState = vi.hoisted(() => {
     return { localStore, sessionStore };
 });
 
-import { useStore } from './store';
-import { defaultPlaygroundState, usePlaygroundStore } from './store/playground';
+import { useStore } from './index';
+import { defaultPlaygroundState, usePlaygroundStore } from './playground';
 
 describe('useStore', () => {
     afterEach(() => {

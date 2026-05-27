@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCss, buildCssBlock, buildPrimitivesBlock, buildTailwindThemeBlock, formatTokenValue } from './tokens-fetch.mjs';
+import { buildCss, buildCssBlock, buildPrimitivesBlock, buildTailwindThemeBlock, buildTypographyBlock, formatTokenValue } from './tokens-fetch.mjs';
 
 // ─── formatTokenValue ──────────────────────────────────────────────────────────
 
@@ -112,6 +112,73 @@ describe('buildTailwindThemeBlock', () => {
 
     it('returns an empty @theme block for no color tokens', () => {
         expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}');
+    });
+});
+
+// ─── buildTypographyBlock ──────────────────────────────────────────────────────
+
+describe('buildTypographyBlock', () => {
+    it('returns empty string when no typography tokens', () => {
+        expect(buildTypographyBlock([])).toBe('');
+        expect(buildTypographyBlock([{ name: 'heading-lg', $type: 'color', $value: '#fff' }])).toBe('');
+    });
+
+    it('generates a CSS class for a typography token', () => {
+        const tokens = [
+            {
+                name: 'heading-lg',
+                $type: 'typography',
+                $value: { fontFamily: 'Geist', fontSize: '24px', fontWeight: '400', lineHeight: '1.2', letterSpacing: '-0.01em' }
+            }
+        ];
+        expect(buildTypographyBlock(tokens)).toBe(
+            '.type-heading-lg {\n    font-family: Geist;\n    font-size: 24px;\n    font-weight: 400;\n    line-height: 1.2;\n    letter-spacing: -0.01em;\n}'
+        );
+    });
+
+    it('omits optional properties that are absent', () => {
+        const tokens = [
+            {
+                name: 'text-regular-md',
+                $type: 'typography',
+                $value: { fontFamily: 'Geist', fontSize: '14px', fontWeight: '400', lineHeight: '1.5' }
+            }
+        ];
+        const result = buildTypographyBlock(tokens);
+        expect(result).toContain('font-family: Geist');
+        expect(result).not.toContain('letter-spacing');
+    });
+
+    it('includes letter-spacing when value is 0', () => {
+        const tokens = [
+            {
+                name: 'text-regular-md',
+                $type: 'typography',
+                $value: { fontFamily: 'Geist', fontSize: '14px', fontWeight: '400', lineHeight: '1.5', letterSpacing: '0em' }
+            }
+        ];
+        expect(buildTypographyBlock(tokens)).toContain('letter-spacing: 0em');
+    });
+
+    it('generates multiple classes separated by a blank line', () => {
+        const tokens = [
+            { name: 'heading-lg', $type: 'typography', $value: { fontFamily: 'Geist', fontSize: '24px', fontWeight: '400', lineHeight: '1.2' } },
+            { name: 'heading-md', $type: 'typography', $value: { fontFamily: 'Geist', fontSize: '20px', fontWeight: '400', lineHeight: '1.2' } }
+        ];
+        const result = buildTypographyBlock(tokens);
+        expect(result).toContain('.type-heading-lg {');
+        expect(result).toContain('.type-heading-md {');
+        expect(result).toContain('}\n\n.');
+    });
+
+    it('skips tokens with a non-object value', () => {
+        const tokens = [
+            { name: 'broken', $type: 'typography', $value: 'invalid' },
+            { name: 'heading-lg', $type: 'typography', $value: { fontFamily: 'Geist', fontSize: '24px', fontWeight: '400', lineHeight: '1.2' } }
+        ];
+        const result = buildTypographyBlock(tokens);
+        expect(result).not.toContain('.type-broken');
+        expect(result).toContain('.type-heading-lg');
     });
 });
 

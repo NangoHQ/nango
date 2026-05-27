@@ -4,7 +4,7 @@ import express from 'express';
 import passport from 'passport';
 
 import { permissions as p } from '@nangohq/authz';
-import { basePublicUrl, baseUrl, flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
+import { flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
 import { can, envScope } from './authz/middleware.js';
 import { setupAuth } from './clients/auth.client.js';
@@ -67,6 +67,7 @@ import { getIntegrationFunction } from './controllers/v1/integrations/providerCo
 import { getIntegrationFunctions } from './controllers/v1/integrations/providerConfigKey/functions/getFunctions.js';
 import { getIntegration } from './controllers/v1/integrations/providerConfigKey/getIntegration.js';
 import { patchIntegration } from './controllers/v1/integrations/providerConfigKey/patchIntegration.js';
+import { getIntegrationTemplates } from './controllers/v1/integrations/providerConfigKey/templates/getTemplates.js';
 import { acceptInvite } from './controllers/v1/invite/acceptInvite.js';
 import { declineInvite } from './controllers/v1/invite/declineInvite.js';
 import { deleteInvite } from './controllers/v1/invite/deleteInvite.js';
@@ -105,6 +106,7 @@ import authMiddleware from './middleware/access.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
+import { isAllowedWebCorsOrigin } from './utils/cors.js';
 
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -127,7 +129,10 @@ const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
     exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
-    origin: [basePublicUrl, baseUrl],
+    // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
+    origin: (origin, callback) => {
+        callback(null, isAllowedWebCorsOrigin(origin));
+    },
     credentials: true
 });
 web.use(webCorsHandler);
@@ -235,6 +240,7 @@ web.route('/integrations/:providerConfigKey/functions/:functionName').get(
     can({ action: 'read', resource: 'flow', scopedBy: envScope }),
     getIntegrationFunction
 );
+web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);

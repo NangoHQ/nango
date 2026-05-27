@@ -21,6 +21,15 @@ export interface FunctionRow {
     event: string | null;
 }
 
+export interface DeployedFunctionMetaRow {
+    id: number;
+    name: string;
+    type: 'sync' | 'action';
+    enabled: boolean;
+    last_deployed: Date;
+    source: FunctionSource;
+}
+
 export async function findActiveByEnvironment({
     environmentId,
     providerConfigKey,
@@ -55,6 +64,42 @@ export async function findActiveByEnvironment({
 
     const total = countRow ? Number(countRow.total) : 0;
     return { rows: pageRows, total };
+}
+
+/**
+ * Returns a slim list of active deployed sync/action functions for an integration,
+ * intended for cross-referencing the template catalog with what is already deployed.
+ *
+ * Unpaginated and excludes on-event scripts — the templates catalog contains only
+ * syncs and actions, so callers building a `(name, type) -> deployed` lookup only
+ * need those two types.
+ */
+export async function findActiveDeployedMeta({
+    environmentId,
+    providerConfigKey
+}: {
+    environmentId: number;
+    providerConfigKey: string;
+}): Promise<DeployedFunctionMetaRow[]> {
+    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<DeployedFunctionMetaRow[]>(
+        'sc.id',
+        'sc.sync_name AS name',
+        'sc.type',
+        'sc.enabled',
+        'sc.created_at AS last_deployed',
+        'sc.source'
+    );
+}
+
+function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
+    return db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.unique_key', providerConfigKey)
+        .andWhere('nc.deleted', false)
+        .andWhere('sc.deleted', false)
+        .andWhere('sc.active', true);
 }
 
 export async function findActiveByName({
@@ -119,30 +164,22 @@ function buildSyncConfigBranch({
 }): Knex.QueryBuilder {
     // Cast on `source` (sync_config_source enum) is required for UNION ALL with the on-event branch —
     // Postgres only unions matching types.
-    const query = db.knex
-        .from({ sc: '_nango_sync_configs' })
-        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
-        .where('nc.environment_id', environmentId)
-        .andWhere('nc.unique_key', providerConfigKey)
-        .andWhere('nc.deleted', false)
-        .andWhere('sc.deleted', false)
-        .andWhere('sc.active', true)
-        .select(
-            'sc.id',
-            db.knex.raw('sc.sync_name AS name'),
-            'sc.type',
-            'sc.metadata',
-            'sc.input',
-            db.knex.raw('sc.models AS returns'),
-            db.knex.raw('sc.models_json_schema AS json_schema'),
-            'sc.runs',
-            'sc.auto_start',
-            'sc.track_deletes',
-            'sc.enabled',
-            db.knex.raw('sc.updated_at AS last_deployed'),
-            db.knex.raw('CAST(sc.source AS text) AS source'),
-            db.knex.raw('NULL::text AS event')
-        );
+    const query = activeSyncConfigBase({ environmentId, providerConfigKey }).select(
+        'sc.id',
+        'sc.sync_name AS name',
+        'sc.type',
+        'sc.metadata',
+        'sc.input',
+        'sc.models AS returns',
+        'sc.models_json_schema AS json_schema',
+        'sc.runs',
+        'sc.auto_start',
+        'sc.track_deletes',
+        'sc.enabled',
+        'sc.created_at AS last_deployed',
+        db.knex.raw('CAST(sc.source AS text) AS source'),
+        db.knex.raw('NULL::text AS event')
+    );
 
     if (type) {
         query.andWhere('sc.type', type);
@@ -184,7 +221,7 @@ function buildOnEventBranch({
             db.knex.raw('NULL::boolean AS auto_start'),
             db.knex.raw('NULL::boolean AS track_deletes'),
             db.knex.raw('oes.active AS enabled'),
-            db.knex.raw('oes.updated_at AS last_deployed'),
+            db.knex.raw('oes.created_at AS last_deployed'),
             db.knex.raw(`'repo'::text AS source`),
             db.knex.raw('CAST(oes.event AS text) AS event')
         );
