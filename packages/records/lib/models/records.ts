@@ -502,7 +502,7 @@ export async function upsert({
                             r.external_id,
                             r.data_hash,
                             r.sync_id,
-                            null, // records.sync_job_id deprecated (NAN-5491); no longer populated, records_seen owns the generation
+                            null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                             r.deleted_at ?? null,
                             ...(hasUpdatedAt ? [r.updated_at ?? null] : [])
                         ]);
@@ -897,7 +897,7 @@ export async function update({
                                         json: trx.raw('NULL'),
                                         data_hash: r.data_hash,
                                         sync_id: r.sync_id,
-                                        sync_job_id: null, // records.sync_job_id deprecated (NAN-5491); no longer populated, records_seen owns the generation
+                                        sync_job_id: null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                         pruned_at: null, // clear pruned_at when record is updated
                                         updated_at: r.updated_at
                                     }))
