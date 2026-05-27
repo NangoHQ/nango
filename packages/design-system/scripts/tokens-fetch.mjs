@@ -173,9 +173,12 @@ export function buildTailwindThemeBlock(tokens) {
     if (tokens.length > 0 && colorVars.length === 0) {
         throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
     }
+    if (tokens.length > 0 && shadowVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no boxShadow tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
 
     const colorBlock = `@theme {\n${colorVars.join('\n')}\n}`;
-    const shadowBlock = shadowVars.length > 0 ? `\n@theme inline {\n${shadowVars.join('\n')}\n}` : '';
+    const shadowBlock = `\n@theme inline {\n${shadowVars.join('\n')}\n}`;
     return colorBlock + shadowBlock;
 }
 

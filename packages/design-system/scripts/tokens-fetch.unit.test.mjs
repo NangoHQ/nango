@@ -100,41 +100,41 @@ describe('buildPrimitivesBlock', () => {
 // ─── buildTailwindThemeBlock ───────────────────────────────────────────────────
 
 describe('buildTailwindThemeBlock', () => {
+    // Minimal valid token set — both color and boxShadow are always required.
+    const BASE_TOKENS = [
+        { name: 'surface-canvas', $type: 'color' },
+        { name: 'focus-outline-default', $type: 'boxShadow' }
+    ];
+
     it('maps color tokens to --color-* vars', () => {
-        const tokens = [
-            { name: 'surface-canvas', $type: 'color' },
-            { name: 'text-strong', $type: 'color' }
-        ];
-        expect(buildTailwindThemeBlock(tokens)).toBe(
-            '@theme {\n  --color-surface-canvas: var(--surface-canvas);\n  --color-text-strong: var(--text-strong);\n}'
-        );
+        const tokens = [...BASE_TOKENS, { name: 'text-strong', $type: 'color' }];
+        expect(buildTailwindThemeBlock(tokens)).toContain('--color-surface-canvas: var(--surface-canvas)');
+        expect(buildTailwindThemeBlock(tokens)).toContain('--color-text-strong: var(--text-strong)');
     });
 
     it('emits boxShadow tokens in a separate @theme inline block', () => {
-        const tokens = [
-            { name: 'surface-canvas', $type: 'color' },
-            { name: 'focus-outline-default', $type: 'boxShadow' }
-        ];
-        expect(buildTailwindThemeBlock(tokens)).toBe(
+        expect(buildTailwindThemeBlock(BASE_TOKENS)).toBe(
             '@theme {\n  --color-surface-canvas: var(--surface-canvas);\n}\n@theme inline {\n  --shadow-focus-outline-default: var(--focus-outline-default);\n}'
         );
     });
 
     it('excludes non-color, non-boxShadow tokens', () => {
-        const tokens = [
-            { name: 'surface-canvas', $type: 'color' },
-            { name: 'ds-space-2', $type: 'spacing' }
-        ];
-        expect(buildTailwindThemeBlock(tokens)).toBe('@theme {\n  --color-surface-canvas: var(--surface-canvas);\n}');
+        const tokens = [...BASE_TOKENS, { name: 'ds-space-2', $type: 'spacing' }];
+        expect(buildTailwindThemeBlock(tokens)).not.toContain('ds-space-2');
     });
 
-    it('returns an empty @theme block for an empty token list', () => {
-        expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}');
+    it('returns empty @theme blocks for an empty token list', () => {
+        expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}\n@theme inline {\n\n}');
     });
 
     it('throws when tokens are present but none are color type', () => {
         const tokens = [{ name: 'focus-outline-default', $type: 'boxShadow' }];
         expect(() => buildTailwindThemeBlock(tokens)).toThrow(/no color tokens found/);
+    });
+
+    it('throws when tokens are present but none are boxShadow type', () => {
+        const tokens = [{ name: 'surface-canvas', $type: 'color' }];
+        expect(() => buildTailwindThemeBlock(tokens)).toThrow(/no boxShadow tokens found/);
     });
 });
 
