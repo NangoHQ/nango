@@ -150,7 +150,7 @@ describe('buildPrimitivesThemeBlock', () => {
         { name: 'typography-font-size-md', $type: 'dimension', $value: '14px' },
         { name: 'typography-font-weight-medium', $type: 'fontWeight', $value: '500' },
         { name: 'typography-line-height-normal', $type: 'dimension', $value: '1.5' },
-        { name: 'typography-letter-spacing-tight', $type: 'dimension', $value: '-0.01em' },
+        { name: 'typography-letter-spacing-tight', $type: 'dimension', $value: '-0.01em' }
     ];
 
     it('maps radius-* tokens to --radius-ds-*', () => {

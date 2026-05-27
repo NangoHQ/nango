@@ -180,7 +180,7 @@ const EXPECTED_PRIM_PREFIXES = [
     'typography-font-size-',
     'typography-font-weight-',
     'typography-line-height-',
-    'typography-letter-spacing-',
+    'typography-letter-spacing-'
 ];
 
 /**
