@@ -15,13 +15,13 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 primary:
-                    'bg-btn-primary-bg text-btn-primary-fg hover:bg-btn-primary-hover active:bg-btn-primary-press focus:bg-btn-primary-hover disabled:bg-btn-primary-disabled data-loading:bg-btn-primary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-primary-bg aria-disabled:active:bg-btn-primary-bg',
+                    'bg-btn-primary-bg text-btn-primary-fg hover:bg-btn-primary-hover active:bg-btn-primary-press focus-visible:bg-btn-primary-hover disabled:bg-btn-primary-disabled data-loading:bg-btn-primary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-primary-bg aria-disabled:active:bg-btn-primary-bg',
                 destructive:
-                    'bg-btn-destructive-bg text-btn-destructive-fg hover:bg-btn-destructive-hover active:bg-btn-destructive-press focus:bg-btn-destructive-hover disabled:bg-btn-destructive-disabled data-loading:bg-btn-destructive-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-destructive-bg aria-disabled:active:bg-btn-destructive-bg',
+                    'bg-btn-destructive-bg text-btn-destructive-fg hover:bg-btn-destructive-hover active:bg-btn-destructive-press focus-visible:bg-btn-destructive-hover disabled:bg-btn-destructive-disabled data-loading:bg-btn-destructive-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-destructive-bg aria-disabled:active:bg-btn-destructive-bg',
                 secondary:
-                    'bg-btn-secondary-bg text-btn-secondary-fg hover:bg-btn-secondary-hover active:bg-btn-secondary-press focus:bg-btn-secondary-hover disabled:bg-btn-secondary-disabled data-loading:bg-btn-secondary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-secondary-bg aria-disabled:active:bg-btn-secondary-bg',
+                    'bg-btn-secondary-bg text-btn-secondary-fg hover:bg-btn-secondary-hover active:bg-btn-secondary-press focus-visible:bg-btn-secondary-hover disabled:bg-btn-secondary-disabled data-loading:bg-btn-secondary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-secondary-bg aria-disabled:active:bg-btn-secondary-bg',
                 tertiary:
-                    'bg-btn-tertiary-bg text-btn-tertiary-fg hover:bg-btn-tertiary-hover active:bg-btn-tertiary-press focus:bg-btn-tertiary-hover disabled:bg-btn-tertiary-disabled data-loading:bg-btn-tertiary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-tertiary-bg aria-disabled:active:bg-btn-tertiary-bg',
+                    'bg-btn-tertiary-bg text-btn-tertiary-fg hover:bg-btn-tertiary-hover active:bg-btn-tertiary-press focus-visible:bg-btn-tertiary-hover disabled:bg-btn-tertiary-disabled data-loading:bg-btn-tertiary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-tertiary-bg aria-disabled:active:bg-btn-tertiary-bg',
                 ghost: 'bg-transparent text-text-tertiary hover:text-text-primary aria-disabled:hover:text-text-tertiary'
             },
             size: {
