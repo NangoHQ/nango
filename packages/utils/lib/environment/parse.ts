@@ -82,6 +82,10 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
     CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
+    // Minute-of-the-hour offset for the billing-events S3 export cron. Default 0
+    // fires at HH:00; set to 15 to give ClickHouse a ~15min buffer to ingest the
+    // tail end of the previous UTC day before we snapshot it.
+    CRON_BILLING_EVENTS_S3_EXPORT_OFFSET_MINUTES: z.coerce.number().min(0).max(59).optional().default(0),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
