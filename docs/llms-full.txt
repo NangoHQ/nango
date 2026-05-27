@@ -2243,7 +2243,7 @@ Local development is the default path for production integrations. Use it when y
   </Step>
 
   <Step id="build-function" title="Build the function">
-    Choose the function type from the event that should run your integration logic, then follow the matching guide:
+    Choose the right function type for your integration use case:
 
     <a id="trigger-asynchronously"></a>
 
@@ -2253,10 +2253,6 @@ Local development is the default path for production integrations. Use it when y
     | Run an operation when your app, backend job, or agent asks for it | Action function | HTTP API, SDK, async action queue, or MCP/tool call | [Action functions](/guides/functions/action-functions) |
     | Process an external provider webhook inside Nango | Webhook function | External API webhook | [Webhook functions](/guides/functions/webhook-functions) |
     | React to Nango connection lifecycle events | Event function | Connection creation, validation, or deletion | [Event functions](/guides/functions/event-functions) |
-
-    <Tip>
-      Use [webhook forwarding](/guides/platform/webhook-forwarding) instead of a webhook function when you want Nango to receive an external webhook, attribute it to a connection when possible, and forward the payload to your app for handling.
-    </Tip>
 
     For shared primitives, use [Storage](/guides/functions/storage) for connection metadata and [Data validation](/guides/functions/data-validation) for function input, output, and provider response validation.
   </Step>
