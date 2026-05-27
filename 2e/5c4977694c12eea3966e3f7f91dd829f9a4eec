@@ -1,0 +1,23 @@
+docs/spec.yaml
+  s_b39de48b60dddc::t_00d96facb2066d 3075-3077
+packages/server/lib/crons/timeoutFunctionDryruns.ts
+  s_b39de48b60dddc::t_7699e1a84276e4 28-29
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_617643cb4f0406 5,19,208-210,235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2e5c4977694c12eea3966e3f7f91dd829f9a4eec",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
