@@ -56,8 +56,8 @@ export const DevToolPanel: React.FC = () => {
         <div className="fixed bottom-11 right-11 z-50 w-64 rounded border border-border-muted bg-dropdown-bg-press shadow-md">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border-muted px-3 py-2">
-                <span className="text-sm font-medium text-text-default">Dev Tools</span>
-                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-default">
+                <span className="text-sm font-medium text-text-primary">Dev Tools</span>
+                <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="size-5 text-text-secondary hover:text-text-primary">
                     <X className="size-3.5" />
                 </Button>
             </div>
@@ -69,7 +69,7 @@ export const DevToolPanel: React.FC = () => {
                     <li className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Sun className="size-4 shrink-0 text-text-secondary" />
-                            <span className="text-sm text-text-default">Theme switcher</span>
+                            <span className="text-sm text-text-primary">Theme switcher</span>
                         </div>
                         <Switch checked={themeSwitcher} onCheckedChange={(v) => setFlag('themeSwitcher', v)} />
                     </li>
