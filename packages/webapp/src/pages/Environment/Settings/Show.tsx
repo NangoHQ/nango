@@ -84,11 +84,11 @@ export const EnvironmentSettings: React.FC = () => {
                         <NavigationTrigger value="api-keys" onClick={() => setApiKeysResetKey((k) => k + 1)}>
                             API Keys
                         </NavigationTrigger>
-                        <NavigationTrigger value="backend">Backend</NavigationTrigger>
+                        <NavigationTrigger value="auth-callback">Auth callback</NavigationTrigger>
                         <NavigationTrigger value="connect-ui">Connect UI</NavigationTrigger>
                         <NavigationTrigger value="webhooks">Webhooks</NavigationTrigger>
                         <NavigationTrigger value="slack-alerts">Slack alerts</NavigationTrigger>
-                        <NavigationTrigger value="functions">Functions</NavigationTrigger>
+                        <NavigationTrigger value="function-env-vars">Function env vars</NavigationTrigger>
                         <NavigationTrigger value="telemetry">Telemetry</NavigationTrigger>
                         {canSeeDeprecatedAuthorization && <NavigationTrigger value="deprecated">Deprecated</NavigationTrigger>}
                     </NavigationList>
@@ -98,7 +98,7 @@ export const EnvironmentSettings: React.FC = () => {
                     <EnvironmentSettingsContent value={'api-keys'}>
                         <ApiKeys key={apiKeysResetKey} />
                     </EnvironmentSettingsContent>
-                    <EnvironmentSettingsContent value={'backend'}>
+                    <EnvironmentSettingsContent value={'auth-callback'}>
                         <BackendSettings />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'connect-ui'}>
@@ -110,7 +110,7 @@ export const EnvironmentSettings: React.FC = () => {
                     <EnvironmentSettingsContent value={'slack-alerts'}>
                         <SlackAlertsSettings />
                     </EnvironmentSettingsContent>
-                    <EnvironmentSettingsContent value={'functions'}>
+                    <EnvironmentSettingsContent value={'function-env-vars'}>
                         <Functions />
                     </EnvironmentSettingsContent>
                     <EnvironmentSettingsContent value={'telemetry'}>

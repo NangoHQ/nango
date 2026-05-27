@@ -5,8 +5,10 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
+import { DevToolPanel, isDevToolsEnabled } from '@/components-v2/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
+import { useTheme } from '@/lib/theme';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
@@ -16,6 +18,8 @@ import 'react-toastify/dist/ReactToastify.css';
 const App = () => {
     const env = useStore((state) => state.env);
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
+    // Sync persisted theme preference to the DOM
+    useTheme();
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
     const { user } = useUser();
     const { data: metaData } = useMeta(!!user);
@@ -45,6 +49,7 @@ const App = () => {
             {/* TODO: Remove once remaining legacy toasts have been replaced */}
             <ToastContainer />
             <Toaster />
+            {isDevToolsEnabled && <DevToolPanel />}
         </>
     );
 };
