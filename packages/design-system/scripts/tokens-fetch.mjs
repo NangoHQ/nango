@@ -157,9 +157,61 @@ export function buildPrimitivesBlock(tokens) {
 }
 
 export function buildTailwindThemeBlock(tokens) {
-    // Only semantic color tokens → Tailwind utility classes (bg-*, text-*, border-*, etc.)
-    const vars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
-    return `@theme {\n${vars.join('\n')}\n}`;
+    // Semantic color tokens → --color-* → bg-*, text-*, border-*, fill-*, etc.
+    const colorVars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
+
+    // Semantic boxShadow tokens → --shadow-* → shadow-*
+    // Covers --focus-outline-default / --focus-outline-danger so components can write
+    // `shadow-focus-outline-default` instead of `shadow-[var(--focus-outline-default)]`.
+    const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
+
+    return `@theme {\n${[...colorVars, ...shadowVars].join('\n')}\n}`;
+}
+
+/**
+ * Maps primitive dimension/typography tokens into Tailwind @theme namespaces so they
+ * can be used as plain utilities instead of arbitrary `[var(--ds-*)]` values.
+ *
+ * Mappings (all prefixed with `ds-` to avoid overriding Tailwind built-ins):
+ *   --ds-radius-*               → --radius-ds-*        → rounded-ds-xs, rounded-ds-sm …
+ *   --ds-border-width-*         → --border-width-ds-*  → border-ds-hairline, border-ds-1 …
+ *   --ds-typography-font-size-* → --text-ds-*          → text-ds-xs, text-ds-md …
+ *   --ds-typography-font-weight-* → --font-weight-ds-* → font-ds-regular, font-ds-medium …
+ *   --ds-typography-letter-spacing-* → --tracking-ds-* → tracking-ds-tight …
+ *
+ * Spacing (--ds-space-*) is intentionally omitted: Tailwind's default 4px spacing scale
+ * already matches the ds-space tokens, so `gap-2` === `--ds-space-2` without any additions.
+ */
+export function buildPrimitivesThemeBlock(tokens) {
+    const entries = [];
+
+    for (const t of tokens) {
+        const name = t.name; // kebab name produced by the name/kebab transform
+        const ref = `var(--ds-${name})`;
+
+        if (name.startsWith('radius-')) {
+            const suffix = name.slice('radius-'.length);
+            entries.push(`  --radius-ds-${suffix}: ${ref};`);
+        } else if (name.startsWith('border-width-')) {
+            const suffix = name.slice('border-width-'.length);
+            entries.push(`  --border-width-ds-${suffix}: ${ref};`);
+        } else if (name.startsWith('typography-font-size-')) {
+            const suffix = name.slice('typography-font-size-'.length);
+            entries.push(`  --text-ds-${suffix}: ${ref};`);
+        } else if (name.startsWith('typography-font-weight-')) {
+            const suffix = name.slice('typography-font-weight-'.length);
+            entries.push(`  --font-weight-ds-${suffix}: ${ref};`);
+        } else if (name.startsWith('typography-line-height-')) {
+            const suffix = name.slice('typography-line-height-'.length);
+            entries.push(`  --leading-ds-${suffix}: ${ref};`);
+        } else if (name.startsWith('typography-letter-spacing-')) {
+            const suffix = name.slice('typography-letter-spacing-'.length);
+            entries.push(`  --tracking-ds-${suffix}: ${ref};`);
+        }
+    }
+
+    if (entries.length === 0) return '';
+    return `@theme {\n${entries.join('\n')}\n}`;
 }
 
 // ─── Typography class builder ──────────────────────────────────────────────────
@@ -298,11 +350,18 @@ export async function buildCss(tokensData) {
         buildCssBlock(darkTokens, '[data-theme="dark"]'),
         '',
         '/*',
-        ' * Tailwind v4 @theme registration.',
-        ' * Maps semantic color vars to --color-* so Tailwind generates',
-        ' * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.',
+        ' * Tailwind v4 @theme registration — semantic tokens.',
+        ' * Colors → --color-* (bg-*, text-*, border-*, etc.)',
+        ' * Box shadows → --shadow-* (shadow-focus-outline-default, etc.)',
         ' */',
         buildTailwindThemeBlock(lightTokens),
+        '',
+        '/*',
+        ' * Tailwind v4 @theme registration — primitive tokens.',
+        ' * Radius → rounded-ds-*, border-width → border-ds-*,',
+        ' * font-size → text-ds-*, font-weight → font-ds-*, letter-spacing → tracking-ds-*',
+        ' */',
+        buildPrimitivesThemeBlock(primTokens),
         typographySection,
         ''
     ].join('\n');

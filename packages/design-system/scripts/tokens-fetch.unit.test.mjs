@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCss, buildCssBlock, buildPrimitivesBlock, buildTailwindThemeBlock, buildTypographyBlock, formatTokenValue } from './tokens-fetch.mjs';
+import {
+    buildCss,
+    buildCssBlock,
+    buildPrimitivesBlock,
+    buildPrimitivesThemeBlock,
+    buildTailwindThemeBlock,
+    buildTypographyBlock,
+    formatTokenValue
+} from './tokens-fetch.mjs';
 
 // ─── formatTokenValue ──────────────────────────────────────────────────────────
 
@@ -102,16 +110,69 @@ describe('buildTailwindThemeBlock', () => {
         );
     });
 
-    it('excludes non-color tokens', () => {
+    it('includes boxShadow tokens as --shadow-* vars', () => {
         const tokens = [
             { name: 'surface-canvas', $type: 'color' },
             { name: 'focus-outline-default', $type: 'boxShadow' }
+        ];
+        expect(buildTailwindThemeBlock(tokens)).toBe(
+            '@theme {\n  --color-surface-canvas: var(--surface-canvas);\n  --shadow-focus-outline-default: var(--focus-outline-default);\n}'
+        );
+    });
+
+    it('excludes non-color, non-boxShadow tokens', () => {
+        const tokens = [
+            { name: 'surface-canvas', $type: 'color' },
+            { name: 'ds-space-2', $type: 'spacing' }
         ];
         expect(buildTailwindThemeBlock(tokens)).toBe('@theme {\n  --color-surface-canvas: var(--surface-canvas);\n}');
     });
 
     it('returns an empty @theme block for no color tokens', () => {
         expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}');
+    });
+});
+
+// ─── buildPrimitivesThemeBlock ────────────────────────────────────────────────
+
+describe('buildPrimitivesThemeBlock', () => {
+    it('maps radius-* tokens to --radius-ds-*', () => {
+        const tokens = [{ name: 'radius-sm', $type: 'borderRadius', $value: '4px' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --radius-ds-sm: var(--ds-radius-sm);\n}');
+    });
+
+    it('maps border-width-* tokens to --border-width-ds-*', () => {
+        const tokens = [{ name: 'border-width-1', $type: 'borderWidth', $value: '1px' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --border-width-ds-1: var(--ds-border-width-1);\n}');
+    });
+
+    it('maps typography-font-size-* tokens to --text-ds-*', () => {
+        const tokens = [{ name: 'typography-font-size-md', $type: 'dimension', $value: '14px' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --text-ds-md: var(--ds-typography-font-size-md);\n}');
+    });
+
+    it('maps typography-font-weight-* tokens to --font-weight-ds-*', () => {
+        const tokens = [{ name: 'typography-font-weight-medium', $type: 'fontWeight', $value: '500' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --font-weight-ds-medium: var(--ds-typography-font-weight-medium);\n}');
+    });
+
+    it('maps typography-line-height-* tokens to --leading-ds-*', () => {
+        const tokens = [{ name: 'typography-line-height-normal', $type: 'dimension', $value: '1.5' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --leading-ds-normal: var(--ds-typography-line-height-normal);\n}');
+    });
+
+    it('maps typography-letter-spacing-* tokens to --tracking-ds-*', () => {
+        const tokens = [{ name: 'typography-letter-spacing-tight', $type: 'dimension', $value: '-0.01em' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --tracking-ds-tight: var(--ds-typography-letter-spacing-tight);\n}');
+    });
+
+    it('ignores tokens that do not match any mapped prefix', () => {
+        const tokens = [{ name: 'color-neutral-50', $type: 'color', $value: '#f9fafb' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('');
+    });
+
+    it('returns empty string for an empty token list', () => {
+        expect(buildPrimitivesThemeBlock([])).toBe('');
     });
 });
 
