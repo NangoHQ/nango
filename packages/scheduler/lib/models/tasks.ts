@@ -200,9 +200,7 @@ export async function create(
                 insertedNames.add(t.name);
             }
         }
-        // Duplicate drops are reported back to the caller via `duplicateNames` rather than
-        // emitting a metric here — the scheduler stays Nango-agnostic and the orchestrator owns
-        // the metric for this path.
+        // Names attempted but not inserted were dropped by ON CONFLICT; returned for the caller to act on.
         const duplicateNames = onConflict === 'skip' ? [...attemptedNames].filter((name) => !insertedNames.has(name)) : [];
         return Ok({
             tasks: insertedTasks,
