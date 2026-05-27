@@ -224,6 +224,11 @@ export const ENVS = z.object({
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
     RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(10),
     RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(2000),
+    RUNNER_RESOURCE_POOL_EVICT_IDLE_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .default(5 * 60 * 1000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
