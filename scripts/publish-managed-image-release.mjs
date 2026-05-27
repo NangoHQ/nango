@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -20,25 +20,64 @@ const {
     ACT
 } = process.env;
 
-function run(command, options = {}) {
-    return execSync(command, {
+const COMMIT_HASH_PATTERN = /^[a-f0-9]{40}$/i;
+const TAG_NAME_PATTERN = /^(?!-)[A-Za-z0-9_./-]+$/;
+
+function run(command, args = [], options = {}) {
+    return execFileSync(command, args, {
         encoding: 'utf-8',
-        stdio: options.silent ? 'pipe' : 'inherit',
+        stdio: options.silent ? ['ignore', 'pipe', 'pipe'] : 'inherit',
         cwd: options.cwd,
         env: { ...process.env, ...options.env }
     });
 }
 
-function runSilent(command, options = {}) {
-    return run(command, { ...options, silent: true });
+function runSilent(command, args = [], options = {}) {
+    return run(command, args, { ...options, silent: true });
+}
+
+function isCommitHash(value) {
+    return typeof value === 'string' && COMMIT_HASH_PATTERN.test(value);
+}
+
+function validateInputs() {
+    if (!isCommitHash(COMMIT_HASH)) {
+        console.error('COMMIT_HASH must be a full 40-character hexadecimal commit SHA');
+        process.exit(1);
+    }
+
+    if (!TAG_NAME_PATTERN.test(TAG_NAME)) {
+        console.error('TAG_NAME contains unsupported characters');
+        process.exit(1);
+    }
 }
 
 function remoteTagExists(tagName, cwd) {
     try {
-        runSilent(`git ls-remote --exit-code --refs origin "refs/tags/${tagName}"`, { cwd });
+        runSilent('git', ['ls-remote', '--exit-code', '--refs', 'origin', `refs/tags/${tagName}`], { cwd });
         return true;
     } catch (err) {
         if (err.status === 2) {
+            return false;
+        }
+
+        throw err;
+    }
+}
+
+function ghEnv() {
+    return {
+        GH_TOKEN: GITHUB_TOKEN,
+        GH_HOST
+    };
+}
+
+function githubReleaseExists(tagName) {
+    try {
+        runSilent('gh', ['release', 'view', tagName, '--repo', TARGET_REPO], { env: ghEnv() });
+        return true;
+    } catch (err) {
+        if (err.status === 1) {
             return false;
         }
 
@@ -51,7 +90,7 @@ function readManifest(manifestPath) {
 }
 
 function getPreviousReleaseCommit(manifest, currentCommitHash) {
-    return manifest.history.findLast((release) => release.commitHash && release.commitHash !== currentCommitHash)?.commitHash;
+    return manifest.history.findLast((release) => isCommitHash(release.commitHash) && release.commitHash !== currentCommitHash)?.commitHash;
 }
 
 function generateCliffNotes(prevCommit, commitHash) {
@@ -62,7 +101,7 @@ function generateCliffNotes(prevCommit, commitHash) {
     const range = `${prevCommit}..${commitHash}`;
     const configPath = path.join(REPO_ROOT, 'cliff.toml');
     try {
-        return runSilent(`npx git-cliff "${range}" --config "${configPath}" --workdir "${NANGO_REPO_PATH}" --strip all`, {
+        return runSilent('npx', ['git-cliff', range, '--config', configPath, '--workdir', NANGO_REPO_PATH, '--strip', 'all'], {
             cwd: REPO_ROOT
         }).trim();
     } catch (err) {
@@ -93,19 +132,20 @@ function buildReleaseNotes({ manifest, cliffNotes, tagName, imageVersion, appVer
     return sections.filter((line) => line !== null).join('\n');
 }
 
-function appendCustomerChangelog(changelogPath, releaseTitle, releaseNotes) {
+function prependCustomerChangelog(changelogPath, releaseTitle, releaseNotes) {
     const header = '# Managed image releases\n\n';
-    const entry = `\n## ${releaseTitle}\n\n${releaseNotes}\n`;
+    const entry = `## ${releaseTitle}\n\n${releaseNotes}\n\n`;
     const existing = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf-8') : header;
     const normalized = existing.startsWith('#') ? existing : `${header}${existing}`;
     const releaseExists = normalized.split('\n').some((line) => line.trim() === `## ${releaseTitle}`);
 
     if (releaseExists) {
-        console.log(`Release ${releaseTitle} already exists in CHANGELOG.md, skipping changelog append`);
+        console.log(`Release ${releaseTitle} already exists in CHANGELOG.md, skipping changelog update`);
         return;
     }
 
-    fs.writeFileSync(changelogPath, `${normalized.trimEnd()}${entry}`);
+    const body = normalized.startsWith(header) ? normalized.slice(header.length) : normalized;
+    fs.writeFileSync(changelogPath, `${header}${entry}${body.trimStart()}`);
 }
 
 function publishToCustomerRepo({ manifestPath, releaseNotes, releaseTitle, tagName }) {
@@ -114,17 +154,17 @@ function publishToCustomerRepo({ manifestPath, releaseNotes, releaseTitle, tagNa
 
     fs.mkdirSync(MANAGED_RELEASES_REPO_PATH, { recursive: true });
     fs.copyFileSync(manifestPath, customerManifestPath);
-    appendCustomerChangelog(customerChangelogPath, releaseTitle, releaseNotes);
+    prependCustomerChangelog(customerChangelogPath, releaseTitle, releaseNotes);
 
     const gitCwd = MANAGED_RELEASES_REPO_PATH;
-    run('git config user.name "GitHub Actions"', { cwd: gitCwd });
-    run('git config user.email "actions@github.com"', { cwd: gitCwd });
-    run('git add managed-manifest.json CHANGELOG.md', { cwd: gitCwd });
+    run('git', ['config', 'user.name', 'GitHub Actions'], { cwd: gitCwd });
+    run('git', ['config', 'user.email', 'actions@github.com'], { cwd: gitCwd });
+    run('git', ['add', 'managed-manifest.json', 'CHANGELOG.md'], { cwd: gitCwd });
 
-    const status = runSilent('git status --porcelain', { cwd: gitCwd }).trim();
+    const status = runSilent('git', ['status', '--porcelain'], { cwd: gitCwd }).trim();
     if (status) {
-        run(`git commit -m "chore: publish managed release ${tagName}"`, { cwd: gitCwd });
-        run('git push origin HEAD', { cwd: gitCwd });
+        run('git', ['commit', '-m', `chore: publish managed release ${tagName}`], { cwd: gitCwd });
+        run('git', ['push', 'origin', 'HEAD'], { cwd: gitCwd });
     } else {
         console.log('No changes to commit in managed-image-releases');
     }
@@ -132,21 +172,23 @@ function publishToCustomerRepo({ manifestPath, releaseNotes, releaseTitle, tagNa
     if (remoteTagExists(tagName, gitCwd)) {
         console.log(`Tag ${tagName} already exists in ${TARGET_REPO}, skipping tag creation`);
     } else {
-        run(`git tag -a "${tagName}" -m "Managed release ${tagName}"`, { cwd: gitCwd });
-        run(`git push origin "${tagName}"`, { cwd: gitCwd });
+        run('git', ['tag', '-a', tagName, '-m', `Managed release ${tagName}`], { cwd: gitCwd });
+        run('git', ['push', 'origin', tagName], { cwd: gitCwd });
     }
 }
 
 function createGithubRelease({ tagName, releaseTitle, releaseNotes }) {
+    if (githubReleaseExists(tagName)) {
+        console.log(`Release ${tagName} already exists in ${TARGET_REPO}, skipping release creation`);
+        return;
+    }
+
     const notesFile = path.join(REPO_ROOT, '.managed-release-notes.md');
     fs.writeFileSync(notesFile, releaseNotes);
 
     try {
-        run(`gh release create "${tagName}" --repo "${TARGET_REPO}" --title "${releaseTitle}" --notes-file "${notesFile}"`, {
-            env: {
-                GH_TOKEN: GITHUB_TOKEN,
-                GH_HOST
-            }
+        run('gh', ['release', 'create', tagName, '--repo', TARGET_REPO, '--title', releaseTitle, '--notes-file', notesFile], {
+            env: ghEnv()
         });
     } finally {
         if (fs.existsSync(notesFile)) {
@@ -161,6 +203,8 @@ function main() {
         console.error(`Missing required environment variables: ${missing.join(', ')}`);
         process.exit(1);
     }
+
+    validateInputs();
 
     if (!fs.existsSync(MANIFEST_PATH)) {
         console.error(`Manifest not found at ${MANIFEST_PATH}`);

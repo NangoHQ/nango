@@ -450,17 +450,18 @@ jobs:
 
             - name: Checkout release commit for changelog
               if: ${{ !env.ACT }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: ${{ github.repository }}
                   ref: ${{ needs.manage-versions.outputs.commit_hash }}
                   fetch-depth: 0
                   path: nango-src
                   token: ${{ steps.create_github_app_token.outputs.token }}
+                  persist-credentials: false
 
             - name: Checkout managed-image-releases
               if: ${{ !env.ACT }}
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   repository: NangoHQ/managed-image-releases
                   token: ${{ steps.create_github_app_token.outputs.token }}
