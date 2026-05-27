@@ -11,7 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
-import { useThemeStore } from '@/store/theme';
+import { useThemeStore } from '@/lib/theme';
 import { cn } from '@/utils/utils';
 
 export const AppHeader: React.FC = () => {
