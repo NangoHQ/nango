@@ -85,6 +85,39 @@ exec: async () => {
   return c("return this.process")().env;
 }
 `
+            ],
+            [
+                'use setTimeout.constructor to escape the sandbox',
+                `
+exec: async () => {
+  const ctor = setTimeout['con' + 'structor'];
+  const hostProcess = ctor('return process')();
+  return {
+    sandbox_global_process: typeof process,
+    escaped_node_version: hostProcess.version,
+    escaped_platform: hostProcess.platform,
+    escaped_cwd: hostProcess.cwd()
+  };
+};
+            `
+            ],
+            [
+                'constructor key built from many single-character literals',
+                `
+exec: async () => {
+  const ctor = setTimeout['c'+'o'+'n'+'s'+'t'+'r'+'u'+'c'+'t'+'o'+'r'];
+  return ctor('return process')();
+}
+`
+            ],
+            [
+                'constructor key with empty-string padding to inflate node count',
+                `
+exec: async () => {
+  const ctor = setTimeout['c'${" + ''".repeat(60)} + 'onstructor'];
+  return ctor('return process')();
+}
+`
             ]
         ])('%s', (_name, source) => {
             expectRejectsConstructorGadget(source);
