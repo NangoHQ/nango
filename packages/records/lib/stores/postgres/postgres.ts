@@ -356,7 +356,7 @@ export class PostgresStore implements RecordsStore {
                 recordsMetadata.pop();
             }
             let budgetTotalBytes = 0;
-            if (budgetEnabled) {
+            if (budgetEnabled && !metadataOnly) {
                 let acc = 0;
                 let truncateAt: number | null = null;
                 for (let i = 0; i < recordsMetadata.length; i++) {
