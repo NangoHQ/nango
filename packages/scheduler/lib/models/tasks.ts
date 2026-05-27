@@ -125,13 +125,10 @@ export const DbTask = {
 
 export interface CreateOpts {
     groupTaskCap?: number;
-    // 'throw' (default): a single duplicate name aborts the batch with DuplicateTaskNameError.
-    // 'skip': duplicates are silently ignored at INSERT time and reported as discarded entries.
     onConflict?: 'throw' | 'skip';
 }
 
 export type DiscardReason = 'capped' | 'duplicate';
-// A task that wasn't created, with the reason why. The caller decides what to do with it.
 export interface DiscardedTask {
     props: TaskProps;
     reason: DiscardReason;
@@ -179,8 +176,6 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                 discarded.push({ props, reason: 'capped' });
             }
         }
-        // task_cap drops are still surfaced as a metric here (pre-existing; see scheduler-metrics thread).
-        // Only cap drops exist at this point; duplicates are appended after the INSERT below.
         const cappedCountPerPrimitive = new Map<string, number>();
         for (const { props } of discarded) {
             const primitive = props.groupKey.split(':')[0] || 'unknown';
@@ -206,8 +201,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                 insertedNameCounts.set(t.name, (insertedNameCounts.get(t.name) ?? 0) + 1);
             }
         }
-        // In 'skip' mode, a candidate whose name has no remaining inserted row was dropped by
-        // ON CONFLICT (a duplicate of an existing task or of an earlier candidate in this batch).
+        // In onConflict 'skip' mode, we should report duplicates as discarded.
         if (onConflict === 'skip') {
             for (const { props } of candidates) {
                 const remaining = insertedNameCounts.get(props.name) ?? 0;
