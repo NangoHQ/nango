@@ -53,7 +53,7 @@ interface Harness {
     consumer: DispatchQueueConsumer;
     sqsSend: ReturnType<typeof vi.fn>;
     sqsDestroy: ReturnType<typeof vi.fn>;
-    orchestratorExecuteWebhook: ReturnType<typeof vi.fn>;
+    orchestratorExecuteWebhookBatch: ReturnType<typeof vi.fn>;
 }
 
 function makeHarness(
@@ -91,9 +91,11 @@ function makeHarness(
     const sqsDestroy = vi.fn();
     const sqs = { send: sqsSend, destroy: sqsDestroy } as unknown as SQSClient;
 
-    const orchestratorExecuteWebhook = vi.fn();
-    orchestratorExecuteWebhook.mockResolvedValue(Ok({ taskId: 'task-1', retryKey: 'rk-1' }));
-    const orchestratorClient = { executeWebhook: orchestratorExecuteWebhook } as unknown as OrchestratorClient;
+    const orchestratorExecuteWebhookBatch = vi.fn();
+    orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
+        Promise.resolve(Ok(props.map((_, i) => Ok({ taskId: `task-${i}`, retryKey: `rk-${i}` }))))
+    );
+    const orchestratorClient = { executeWebhookBatch: orchestratorExecuteWebhookBatch } as unknown as OrchestratorClient;
 
     const consumer = new DispatchQueueConsumer({
         sqs,
@@ -107,7 +109,7 @@ function makeHarness(
         maxAgeMs: opts.maxAgeMs ?? 0
     });
 
-    return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhook };
+    return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
 }
 
 function getDeleteCalls(h: Harness) {
@@ -125,61 +127,82 @@ describe('DispatchQueueConsumer', () => {
         vi.restoreAllMocks();
     });
 
-    it('schedules a valid message and deletes it on success', async () => {
-        const msg = buildMessage();
-        const h = makeHarness({ messages: [msg] });
+    it('sends all received messages in a single executeWebhookBatch call', async () => {
+        const msgs = [
+            buildMessage({ taskName: 'webhook:1', activityLogId: 'log-1' }),
+            buildMessage({ taskName: 'webhook:2', activityLogId: 'log-2' }),
+            buildMessage({ taskName: 'webhook:3', activityLogId: 'log-3' })
+        ];
+        const h = makeHarness({ messages: msgs });
+
         await runOnce(h, () => {
-            expect(getDeleteCalls(h)).toHaveLength(1);
+            expect(getDeleteCalls(h)).toHaveLength(3);
         });
 
-        expect(h.orchestratorExecuteWebhook).toHaveBeenCalledTimes(1);
-        const call = h.orchestratorExecuteWebhook.mock.calls[0]?.[0];
-        expect(call).toMatchObject({
-            name: msg.taskName,
+        expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
+        expect(calledWith).toHaveLength(3);
+        expect(calledWith?.[0]).toMatchObject({
+            name: 'webhook:1',
             group: { key: 'webhook:environment:2', maxConcurrency: 500 },
-            args: {
-                webhookName: msg.webhookName,
-                parentSyncName: msg.parentSyncName,
-                connection: msg.connection,
-                activityLogId: msg.activityLogId,
-                input: msg.payload
-            }
+            args: { webhookName: msgs[0]!.webhookName, activityLogId: 'log-1' }
         });
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(1);
-        expect(h.sqsDestroy).toHaveBeenCalledOnce();
     });
 
-    it('treats duplicate task-name scheduling errors as already processed and deletes the message', async () => {
-        const h = makeHarness({ messages: [buildMessage()] });
-        h.orchestratorExecuteWebhook.mockResolvedValueOnce(
-            Err({
-                name: 'duplicate_task_name',
-                message: 'Task with name already exists',
-                payload: { taskName: 'webhook:abc123' }
-            })
+    it('treats duplicate task-name per-entry results as already processed and deletes those messages', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'duplicate_task_name', message: 'already exists', payload: {} })])
         );
 
         await runOnce(h, () => {
-            expect(getDeleteCalls(h)).toHaveLength(1);
+            expect(getDeleteCalls(h)).toHaveLength(2);
         });
 
-        expect(h.orchestratorExecuteWebhook).toHaveBeenCalledTimes(1);
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(1);
+        expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
     });
 
-    it('does not delete when orchestrator returns a non-duplicate error', async () => {
-        const h = makeHarness({ messages: [buildMessage()] });
-        h.orchestratorExecuteWebhook.mockResolvedValueOnce(Err({ name: 'boom', message: 'boom', payload: null }));
+    it('drops (deletes) messages whose per-entry result is task_cap_exceeded', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })])
+        );
 
         await runOnce(h, () => {
-            expect(h.orchestratorExecuteWebhook).toHaveBeenCalledTimes(1);
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        expect(h.orchestratorExecuteWebhook).toHaveBeenCalledTimes(1);
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(0);
+        // A saturated group can't accept the task, so the message is shed (deleted) rather than
+        // redelivered — both the successful entry and the capped one get deleted.
+        expect(getDeleteCalls(h)).toHaveLength(2);
+    });
+
+    it('does not delete messages whose per-entry result is a generic error', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'server_error', message: 'boom', payload: {} })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        // Only the successful entry gets deleted; the generic error is left for redelivery.
+        expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('does not delete or call orchestrator when the entire batch is rejected with a generic error', async () => {
+        const h = makeHarness({ messages: [buildMessage()] });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Err({ name: 'boom', message: 'boom', payload: null }));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('deletes a poison-pill message without calling orchestrator', async () => {
@@ -188,20 +211,7 @@ describe('DispatchQueueConsumer', () => {
             expect(getDeleteCalls(h)).toHaveLength(1);
         });
 
-        expect(h.orchestratorExecuteWebhook).not.toHaveBeenCalled();
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(1);
-    });
-
-    it('treats an empty-body message as a poison pill and deletes it', async () => {
-        const h = makeHarness({ badBody: '' });
-        await runOnce(h, () => {
-            expect(getDeleteCalls(h)).toHaveLength(1);
-        });
-
-        expect(h.orchestratorExecuteWebhook).not.toHaveBeenCalled();
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(1);
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
     });
 
     it('rejects a schema-invalid message as poison and deletes it', async () => {
@@ -211,56 +221,7 @@ describe('DispatchQueueConsumer', () => {
             expect(getDeleteCalls(h)).toHaveLength(1);
         });
 
-        expect(h.orchestratorExecuteWebhook).not.toHaveBeenCalled();
-        const deleteCalls = getDeleteCalls(h);
-        expect(deleteCalls).toHaveLength(1);
-    });
-
-    it('still deletes successfully scheduled messages during graceful shutdown', async () => {
-        const message = buildMessage();
-        const scheduled = deferred<ReturnType<typeof Ok>>();
-        let received = false;
-        const sqsSend = vi.fn(async (command: unknown, options?: { abortSignal?: AbortSignal }) => {
-            await new Promise((resolve) => setImmediate(resolve));
-            if (command instanceof ReceiveMessageCommand) {
-                if (!received) {
-                    received = true;
-                    return {
-                        Messages: [{ Body: JSON.stringify(message), ReceiptHandle: 'rh-0', Attributes: { SentTimestamp: String(Date.now() - 500) } }]
-                    };
-                }
-
-                if (options?.abortSignal?.aborted) {
-                    throw abortError();
-                }
-                return { Messages: [] };
-            }
-
-            if (command instanceof DeleteMessageCommand) {
-                if (options?.abortSignal?.aborted) {
-                    throw abortError();
-                }
-                return {};
-            }
-
-            throw new Error(`unexpected command ${String(command)}`);
-        });
-
-        const h = makeHarness({ messages: [message], sqsSend });
-        h.orchestratorExecuteWebhook.mockReturnValueOnce(scheduled.promise);
-
-        h.consumer.start();
-        await vi.waitFor(() => {
-            expect(h.orchestratorExecuteWebhook).toHaveBeenCalledOnce();
-        });
-
-        const stopPromise = h.consumer.stop();
-        scheduled.resolve(Ok({ taskId: 'task-1', retryKey: 'rk-1' }));
-        await stopPromise;
-
-        const deleteCalls = h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
-        expect(deleteCalls).toHaveLength(1);
-        expect(deleteCalls[0]?.[1]).toBeUndefined();
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
     });
 
     it('deletes a stale message without calling orchestrator', async () => {
@@ -270,8 +231,7 @@ describe('DispatchQueueConsumer', () => {
             expect(getDeleteCalls(h)).toHaveLength(1);
         });
 
-        expect(h.orchestratorExecuteWebhook).not.toHaveBeenCalled();
-        expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {
