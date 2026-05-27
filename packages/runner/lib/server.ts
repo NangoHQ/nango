@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
+import { createHash } from 'node:crypto';
+
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import timeout from 'connect-timeout';
@@ -31,7 +33,8 @@ function poolKey(nangoProps: NangoProps): string {
     // NOTE: exportRunnerTelemetry flag is included in the key so that when the flag flips, a new pool entry is created
     // with the proper settings (which are applied at `TelemetryRecorder` creation time). The old pool entry will fade
     // away if it stays idle for 5m.
-    return `${nangoProps.environmentId}:${nangoProps.secretKey}:${nangoProps.runnerFlags.exportRunnerTelemetry}`;
+    const keyHash = createHash('sha256').update(nangoProps.secretKey).digest('hex');
+    return `${nangoProps.environmentId}:${keyHash}:${nangoProps.runnerFlags.exportRunnerTelemetry}`;
 }
 
 function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentResources {
