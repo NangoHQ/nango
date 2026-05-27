@@ -39,7 +39,7 @@ describe('Task', () => {
 
     it('should be successfully created', async () => {
         const res = (await tasks.create(db, [props])).unwrap();
-        expect(res.tasks[0]).toMatchObject({
+        expect(res.created[0]).toMatchObject({
             id: expect.any(String),
             name: props.name,
             payload: props.payload,
@@ -65,7 +65,7 @@ describe('Task', () => {
         const n = 1200;
         const taskProps = Array.from({ length: n }, (_, i) => ({ ...props, name: `n=${i}` }));
         const res = (await tasks.create(db, taskProps)).unwrap();
-        expect(res.tasks).toHaveLength(n);
+        expect(res.created).toHaveLength(n);
     });
     it('should not create tasks exceeding the cap', async () => {
         const groupTaskCap = 1;
@@ -80,10 +80,8 @@ describe('Task', () => {
                 { groupTaskCap }
             )
         ).unwrap();
-        expect(res.tasks).toHaveLength(2);
-        expect(res.tasks[0]?.name).toBe('Not capped');
-        expect(res.tasks[1]?.name).toBe('Also not capped');
-        expect(res.cappedGroupKeys).toEqual([props.groupKey]);
+        expect(res.created.map((t) => t.name).sort()).toEqual(['Also not capped', 'Not capped']);
+        expect(res.discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: 'Capped', reason: 'capped' }]);
     });
     it('should error on unique-name collision', async () => {
         const name = `dup-${nanoid()}`;
@@ -96,7 +94,7 @@ describe('Task', () => {
             expect(isDuplicateTaskNameError(second.error)).toBe(true);
         }
     });
-    it('should skip duplicates and report duplicateNames when onConflict is "skip"', async () => {
+    it('should skip duplicates and report them as discarded when onConflict is "skip"', async () => {
         const existingName = `existing-${nanoid()}`;
         (await tasks.create(db, [{ ...props, name: existingName }])).unwrap();
 
@@ -111,12 +109,11 @@ describe('Task', () => {
                 { onConflict: 'skip' }
             )
         ).unwrap();
-        expect(res.tasks).toHaveLength(1);
-        expect(res.tasks[0]?.name).toBe(newName);
-        expect(res.duplicateNames).toEqual([existingName]);
-        expect(res.cappedNames).toEqual([]);
+        expect(res.created).toHaveLength(1);
+        expect(res.created[0]?.name).toBe(newName);
+        expect(res.discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: existingName, reason: 'duplicate' }]);
     });
-    it('should report cappedNames distinct from duplicateNames when onConflict is "skip"', async () => {
+    it('should distinguish capped from duplicate discards when onConflict is "skip"', async () => {
         const groupKey = nanoid();
         const seedName = `seed-${nanoid()}`;
         (await tasks.create(db, [{ ...props, groupKey, name: seedName }])).unwrap();
@@ -138,9 +135,12 @@ describe('Task', () => {
                 { groupTaskCap: 2, onConflict: 'skip' }
             )
         ).unwrap();
-        expect(res.tasks.map((t) => t.name)).toEqual([okName]);
-        expect(res.duplicateNames).toEqual([dupName]);
-        expect(res.cappedNames).toEqual([cappedName]);
+        expect(res.created.map((t) => t.name)).toEqual([okName]);
+        const discarded = res.discarded.map((d) => ({ name: d.props.name, reason: d.reason })).sort((a, b) => a.name.localeCompare(b.name));
+        expect(discarded).toEqual([
+            { name: cappedName, reason: 'capped' },
+            { name: dupName, reason: 'duplicate' }
+        ]);
     });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
@@ -433,7 +433,7 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
     if (res.isErr()) {
         throw new Error(`Failed to create task: ${res.error.message}`);
     }
-    const task = res.value.tasks[0];
+    const task = res.value.created[0];
     if (!task) {
         throw new Error('No task created');
     }

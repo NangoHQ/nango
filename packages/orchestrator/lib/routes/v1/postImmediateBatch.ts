@@ -105,21 +105,29 @@ const handler = (scheduler: Scheduler) => {
             return;
         }
 
-        // Scheduler returns duplicate drops per-entry; the orchestrator owns the metric.
+        // The scheduler returns created tasks + discards (capped/duplicate) with their props; the
+        // orchestrator maps them back to per-entry results. Names are unique within a batch (the
+        // validator rejects repeats), so a name keys exactly one outcome.
+        const resultByName = new Map<string, ImmediateBatchResult>();
+        for (const task of batch.value.created) {
+            resultByName.set(task.name, { taskId: task.id, retryKey: task.retryKey! });
+        }
         let duplicateCount = 0;
-        const results: ImmediateBatchResult[] = batch.value.map((r) => {
-            if (r.ok) {
-                return { taskId: r.task.id, retryKey: r.task.retryKey! };
-            }
-            if (r.error === 'duplicate_task_name') {
+        for (const { props, reason } of batch.value.discarded) {
+            if (reason === 'duplicate') {
                 duplicateCount++;
+                resultByName.set(props.name, { error: { code: 'duplicate_task_name', message: 'Task with this name already exists' } });
+            } else {
+                resultByName.set(props.name, { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } });
             }
-            const message = r.error === 'duplicate_task_name' ? 'Task with this name already exists' : 'Per-group task cap exceeded';
-            return { error: { code: r.error, message } };
-        });
+        }
         if (duplicateCount > 0) {
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, duplicateCount, { reason: 'duplicate' });
         }
+
+        const results: ImmediateBatchResult[] = entries.map(
+            (entry) => resultByName.get(entry.name) ?? { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } }
+        );
         res.status(200).json({ results });
     };
 };

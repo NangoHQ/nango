@@ -255,35 +255,31 @@ describe('Scheduler', () => {
     });
 
     describe('immediateBatch', () => {
-        it('should insert a batch of tasks in input order', async () => {
+        it('should create a batch of tasks', async () => {
             const groupKey = nanoid();
             const propsList = [batchProps({ groupKey }), batchProps({ groupKey }), batchProps({ groupKey })];
-            const results = (await scheduler.immediateBatch(propsList)).unwrap();
-            expect(results).toHaveLength(3);
-            results.forEach((r, i) => {
-                expect(r.ok).toBe(true);
-                if (r.ok) {
-                    expect(r.task.name).toBe(propsList[i]!.name);
-                    expect(r.task.state).toBe('CREATED');
-                }
-            });
+            const { created, discarded } = (await scheduler.immediateBatch(propsList)).unwrap();
+            expect(created).toHaveLength(3);
+            expect(created.map((t) => t.name).sort()).toEqual(propsList.map((p) => p.name).sort());
+            expect(created.every((t) => t.state === 'CREATED')).toBe(true);
+            expect(discarded).toEqual([]);
             expect(callbacks.CREATED).toHaveBeenCalledTimes(3);
         });
-        it('should report duplicate-name per-entry without failing the whole batch', async () => {
+        it('should report a duplicate as discarded without failing the whole batch', async () => {
             const groupKey = nanoid();
             const existing = batchProps({ groupKey });
             (await scheduler.immediate(existing)).unwrap();
             callbacks.CREATED.mockReset();
 
             const newProp = batchProps({ groupKey });
-            const results = (await scheduler.immediateBatch([existing, newProp])).unwrap();
-            expect(results[0]).toEqual({ ok: false, error: 'duplicate_task_name' });
-            expect(results[1]?.ok).toBe(true);
+            const { created, discarded } = (await scheduler.immediateBatch([existing, newProp])).unwrap();
+            expect(created.map((t) => t.name)).toEqual([newProp.name]);
+            expect(discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: existing.name, reason: 'duplicate' }]);
             expect(callbacks.CREATED).toHaveBeenCalledOnce();
         });
-        it('should return an empty array for an empty batch', async () => {
-            const results = (await scheduler.immediateBatch([])).unwrap();
-            expect(results).toEqual([]);
+        it('should return empty created/discarded for an empty batch', async () => {
+            const res = (await scheduler.immediateBatch([])).unwrap();
+            expect(res).toEqual({ created: [], discarded: [] });
         });
     });
 });
