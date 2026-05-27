@@ -3,6 +3,7 @@ import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 import { permissions } from '@nangohq/authz';
 
 import { Breadcrumbs } from './Breadcrumbs';
+import { isDevToolsEnabled } from './DevToolPanel';
 import { PermissionGate } from './PermissionGate';
 import { Button, ButtonLink } from './ui/button';
 import { SlackIcon } from '@/assets/SlackIcon';
@@ -61,7 +62,7 @@ export const AppHeader: React.FC = () => {
                     <SlackIcon />
                     Help
                 </ButtonLink>
-                {themeSwitcher && (
+                {isDevToolsEnabled && themeSwitcher && (
                     <Button
                         variant="secondary"
                         size="sm"
