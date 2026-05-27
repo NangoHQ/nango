@@ -137,11 +137,7 @@ function getNangoGitHubRepo(cwd = NANGO_REPO_PATH) {
 
 function resolveComparisonUrl(manifestComparisonUrl, prevCommit, currentCommitHash) {
     const parsed = parseGitHubCompareUrl(manifestComparisonUrl);
-    if (
-        parsed &&
-        parsed.from.toLowerCase() !== parsed.to.toLowerCase() &&
-        parsed.to.toLowerCase() === currentCommitHash.toLowerCase()
-    ) {
+    if (parsed && parsed.from.toLowerCase() !== parsed.to.toLowerCase() && parsed.to.toLowerCase() === currentCommitHash.toLowerCase()) {
         return manifestComparisonUrl;
     }
 

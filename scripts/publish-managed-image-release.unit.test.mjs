@@ -7,9 +7,7 @@ const CURRENT_COMMIT = '0fe07a6d83aea0becc4cea382c5cead2f555718d';
 
 describe('parseGitHubCompareUrl', () => {
     it('parses a GitHub compare URL', () => {
-        expect(
-            parseGitHubCompareUrl(`https://github.com/NangoHQ/nango/compare/${PREV_COMMIT}...${CURRENT_COMMIT}`)
-        ).toEqual({
+        expect(parseGitHubCompareUrl(`https://github.com/NangoHQ/nango/compare/${PREV_COMMIT}...${CURRENT_COMMIT}`)).toEqual({
             owner: 'NangoHQ',
             repo: 'nango',
             from: PREV_COMMIT,
