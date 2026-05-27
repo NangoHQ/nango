@@ -395,30 +395,45 @@ export class Scheduler {
         nextExecutionInMs?: number | undefined;
     }): Promise<Result<Task>> {
         const newState: TaskState = 'CANCELLED';
-        const cancelled: Result<Task> = await this.db.transaction(async (trx) => {
-            const res = await tasks.transitionState(this.db, {
-                taskId: taskId,
+        const result = await this.db.transaction(async (trx): Promise<Result<{ task: Task; wasStarted: boolean }>> => {
+            const fetched = await tasks.get(trx, taskId);
+            if (fetched.isErr()) {
+                return Err(fetched.error);
+            }
+            const currentState = fetched.value.state;
+            if (currentState !== 'CREATED' && currentState !== 'STARTED') {
+                // task already in a terminal state — no-op
+                return Ok({ task: fetched.value, wasStarted: false });
+            }
+            const wasStarted = currentState === 'STARTED';
+            const res = await tasks.transitionState(trx, {
+                taskId,
                 newState,
                 output: { reason }
             });
-            if (res.isOk()) {
-                const scheduleRes = await schedules.scheduleNextExecution(trx, {
-                    taskIds: [taskId],
-                    taskState: newState,
-                    nextExecutionInMs
-                });
-                if (scheduleRes.isErr()) {
-                    return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
-                }
+            if (res.isErr()) {
+                return Err(res.error);
             }
-            return res;
+            const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                taskIds: [taskId],
+                taskState: newState,
+                nextExecutionInMs
+            });
+            if (scheduleRes.isErr()) {
+                return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
+            }
+            return Ok({ task: res.value, wasStarted });
         });
-        if (cancelled.isOk()) {
-            const task = cancelled.value;
-            await this.scheduleAbortTask({ aborted: task, reason: `Execution was cancelled` });
-            this.onCallbacks[task.state](task);
+        if (result.isErr()) {
+            return Err(result.error);
         }
-        return cancelled;
+        const { task, wasStarted } = result.value;
+        if (wasStarted) {
+            const abortReason = typeof reason === 'string' ? reason : JSON.stringify(reason);
+            await this.scheduleAbortTask({ aborted: task, reason: abortReason });
+        }
+        this.onCallbacks[task.state](task);
+        return Ok(task);
     }
 
     /**
@@ -431,8 +446,7 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
-        const cancelledTasks: Task[] = [];
-        const res: Result<Schedule> = await this.db.transaction(async (trx) => {
+        const res = await this.db.transaction(async (trx): Promise<Result<{ schedule: Schedule; taskIds: string[] }>> => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
             const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (found.isErr()) {
@@ -445,9 +459,10 @@ export class Scheduler {
 
             if (schedule.state === state) {
                 // No-op if the schedule is already in the desired state
-                return Ok(schedule);
+                return Ok({ schedule, taskIds: [] });
             }
 
+            let taskIds: string[] = [];
             if (state === 'DELETED' || state === 'PAUSED') {
                 const runningTasks = await tasks.search(trx, {
                     scheduleId: schedule.id,
@@ -456,35 +471,38 @@ export class Scheduler {
                 if (runningTasks.isErr()) {
                     return Err(`Error fetching tasks for schedule '${scheduleName}': ${stringifyError(runningTasks.error)}`);
                 }
-                for (const task of runningTasks.value) {
-                    const newState = 'CANCELLED';
-                    const t = await tasks.transitionState(trx, { taskId: task.id, newState, output: { reason: `schedule ${state}` } });
-                    if (t.isErr()) {
-                        return Err(`Error cancelling task '${task.id}': ${stringifyError(t.error)}`);
-                    }
-                    const scheduleRes = await schedules.scheduleNextExecution(trx, { taskIds: [task.id], taskState: newState });
-                    if (scheduleRes.isErr()) {
-                        return Err(`Error updating last scheduled task state for task '${task.id}': ${stringifyError(scheduleRes.error)}`);
-                    }
-                    cancelledTasks.push(t.value);
-                }
+                taskIds = runningTasks.value.map((t) => t.id);
             }
 
             const scheduleRes = await schedules.transitionState(trx, schedule.id, state);
             if (scheduleRes.isErr()) {
                 return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(scheduleRes.error)}`);
             }
-            return scheduleRes;
+            return Ok({ schedule: scheduleRes.value, taskIds });
         });
 
-        if (res.isOk()) {
-            for (const task of cancelledTasks) {
-                await this.scheduleAbortTask({ aborted: task, reason: `schedule ${state}` });
-                this.onCallbacks[task.state](task);
-            }
+        if (res.isErr()) {
+            return Err(res.error);
         }
 
-        return res;
+        const { schedule, taskIds } = res.value;
+        for (const taskId of taskIds) {
+            const cancelRes = await this.cancel({ taskId, reason: `schedule ${state}` });
+            if (cancelRes.isErr()) {
+                return Err(cancelRes.error);
+            }
+        }
+        if (taskIds.length === 0) {
+            return Ok(schedule);
+        }
+        const refreshed = await schedules.search(this.db, { names: [scheduleName], limit: 1 });
+        if (refreshed.isErr()) {
+            return Err(refreshed.error);
+        }
+        if (!refreshed.value[0]) {
+            return Err(`Schedule '${scheduleName}' not found after update`);
+        }
+        return Ok(refreshed.value[0]);
     }
 
     /**
