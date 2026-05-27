@@ -20,6 +20,7 @@ import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js'
 import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
+import type { TelemetryRecorder } from './telemetry.js';
 import type { CreateAnyResponse } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
@@ -44,20 +45,26 @@ export async function exec({
     code,
     codeParams,
     abortController = new AbortController(),
-    locks = new MapLocks()
+    locks = new MapLocks(),
+    persistClient: externalPersistClient,
+    telemetryRecorder: externalTelemetryRecorder
 }: {
     nangoProps: NangoProps;
     code: string;
     codeParams?: object | undefined;
     abortController?: AbortController;
     locks?: Locks;
+    persistClient?: PersistClient;
+    telemetryRecorder?: TelemetryRecorder;
 }): Promise<Result<RunnerOutput, ExecutionError>> {
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
-    const telemetryRecorder = createTelemetryRecorder({
-        environmentId: nangoProps.environmentId,
-        exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
-        persistClient
-    });
+    const persistClient = externalPersistClient ?? new PersistClient({ secretKey: nangoProps.secretKey });
+    const telemetryRecorder =
+        externalTelemetryRecorder ??
+        createTelemetryRecorder({
+            environmentId: nangoProps.environmentId,
+            exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
+            persistClient
+        });
     const rawNango = (() => {
         switch (nangoProps.scriptType) {
             case 'sync':

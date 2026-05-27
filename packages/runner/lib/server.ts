@@ -7,13 +7,64 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
+import { PersistClient } from './clients/persist.js';
+import { abortCheckIntervalMs, heartbeatIntervalMs, resourcePoolEvictIdleMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
 import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
+import { createTelemetryRecorder } from './telemetry.js';
 
+import type { TelemetryRecorder } from './telemetry.js';
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
+
+interface EnvironmentResources {
+    persistClient: PersistClient;
+    telemetryRecorder: TelemetryRecorder;
+    lastUsedAt: number;
+}
+
+const resourcesPool = new Map<string, EnvironmentResources>();
+
+function poolKey(nangoProps: NangoProps): string {
+    // NOTE: exportRunnerTelemetry flag is included in the key so that when the flag flips, a new pool entry is created
+    // with the proper settings (which are applied at `TelemetryRecorder` creation time). The old pool entry will fade
+    // away if it stays idle for 5m.
+    return `${nangoProps.environmentId}:${nangoProps.secretKey}:${nangoProps.runnerFlags.exportRunnerTelemetry}`;
+}
+
+function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentResources {
+    const key = poolKey(nangoProps);
+    const existing = resourcesPool.get(key);
+    if (existing) {
+        existing.lastUsedAt = Date.now();
+        return existing;
+    }
+    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    const telemetryRecorder = createTelemetryRecorder({
+        environmentId: nangoProps.environmentId,
+        exportRunnerTelemetry: nangoProps.runnerFlags.exportRunnerTelemetry,
+        persistClient
+    });
+    const resources: EnvironmentResources = { persistClient, telemetryRecorder, lastUsedAt: Date.now() };
+    resourcesPool.set(key, resources);
+    return resources;
+}
+
+const evictionInterval = setInterval(async () => {
+    const now = Date.now();
+    for (const [key, entry] of resourcesPool) {
+        if (now - entry.lastUsedAt > resourcePoolEvictIdleMs) {
+            resourcesPool.delete(key);
+            await entry.telemetryRecorder.shutdown({ timeoutMs: 5000 });
+        }
+    }
+}, resourcePoolEvictIdleMs);
+
+process.on('SIGTERM', async () => {
+    clearInterval(evictionInterval);
+    await Promise.all([...resourcesPool.values()].map(({ telemetryRecorder }) => telemetryRecorder.shutdown({ timeoutMs: 5000 })));
+});
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -111,7 +162,8 @@ function startProcedure() {
                 }, heartbeatIntervalMs);
 
                 try {
-                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks });
+                    const { persistClient, telemetryRecorder } = getOrCreateEnvironmentResources(nangoProps);
+                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks, persistClient, telemetryRecorder });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;
