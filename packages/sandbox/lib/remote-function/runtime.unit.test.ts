@@ -33,4 +33,11 @@ describe('remote function runtime config', () => {
 
         expect(getRemoteFunctionNangoHost()).toBe('https://api.nango.dev');
     });
+
+    it('rejects an empty compiler template instead of falling back silently', async () => {
+        vi.stubEnv('E2B_SANDBOX_COMPILER_TEMPLATE', '');
+
+        vi.resetModules();
+        await expect(import('./runtime.js')).rejects.toThrow(/E2B_SANDBOX_COMPILER_TEMPLATE/);
+    });
 });
