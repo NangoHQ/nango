@@ -136,20 +136,38 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, entries.length);
-                span.setTag('batch_size', entries.length);
-
-                const propsList: ExecuteWebhookProps[] = entries.map(({ parsed: m }) => ({
-                    name: m.taskName,
-                    group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
-                    args: {
-                        webhookName: m.webhookName,
-                        parentSyncName: m.parentSyncName,
-                        connection: m.connection,
-                        activityLogId: m.activityLogId,
-                        input: m.payload
+                // Standard SQS can redeliver the same message, so one receive may contain several
+                // copies sharing a taskName. The batch route rejects repeated names outright, so
+                // collapse them here: send one entry per name and apply its result to every copy.
+                const groups = new Map<string, ParsedEntry[]>();
+                for (const entry of entries) {
+                    const group = groups.get(entry.parsed.taskName);
+                    if (group) {
+                        group.push(entry);
+                    } else {
+                        groups.set(entry.parsed.taskName, [entry]);
                     }
-                }));
+                }
+                const groupedEntries = [...groups.values()];
+
+                metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
+                span.setTag('batch_size', groupedEntries.length);
+                span.setTag('received', entries.length);
+
+                const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
+                    const m = group[0]!.parsed;
+                    return {
+                        name: m.taskName,
+                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                        args: {
+                            webhookName: m.webhookName,
+                            parentSyncName: m.parentSyncName,
+                            connection: m.connection,
+                            activityLogId: m.activityLogId,
+                            input: m.payload
+                        }
+                    };
+                });
 
                 const res = await this.orchestratorClient.executeWebhookBatch(propsList);
                 if (res.isErr()) {
@@ -165,7 +183,7 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                await this.handleBatchResult(entries, res.value);
+                await this.handleBatchResult(groupedEntries, res.value);
             } finally {
                 span.finish();
             }
@@ -206,23 +224,26 @@ export class DispatchQueueConsumer {
         return entries;
     }
 
+    // `groupedEntries[i]` is the set of messages that shared one taskName and map to `results[i]`.
+    // Each result applies to every message in its group (deduped SQS copies of the same task).
     private async handleBatchResult(
-        entries: ParsedEntry[],
+        groupedEntries: ParsedEntry[][],
         results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never
     ): Promise<void> {
-        for (let i = 0; i < entries.length; i++) {
-            const entry = entries[i]!;
+        for (let i = 0; i < groupedEntries.length; i++) {
+            const group = groupedEntries[i]!;
             const result = results[i];
-            const provider = entry.parsed.provider;
+            const provider = group[0]!.parsed.provider;
+            const count = group.length;
             if (!result) {
                 // Server should return one result per request entry; missing entries are a server bug.
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, 1, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, count, { provider });
                 continue;
             }
 
             if (result.isOk()) {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, 1, { provider });
-                await this.tryDeleteMessage(entry.msg.ReceiptHandle!);
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, count, { provider });
+                await this.deleteGroup(group);
                 continue;
             }
 
@@ -232,15 +253,19 @@ export class DispatchQueueConsumer {
             //   message (delete) rather than retry it to a DLQ. This is intentional shedding.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, 1, { provider });
-                await this.tryDeleteMessage(entry.msg.ReceiptHandle!);
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_SUCCESS, count, { provider });
+                await this.deleteGroup(group);
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_TASK_CAP_DROPPED, 1, { provider });
-                await this.tryDeleteMessage(entry.msg.ReceiptHandle!);
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_TASK_CAP_DROPPED, count, { provider });
+                await this.deleteGroup(group);
             } else {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, 1, { provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME_FAILURE, count, { provider });
             }
         }
+    }
+
+    private async deleteGroup(group: ParsedEntry[]): Promise<void> {
+        await Promise.all(group.map((entry) => this.tryDeleteMessage(entry.msg.ReceiptHandle!)));
     }
 
     private parseMessage(body: string): Result<WebhookDispatchMessage> {

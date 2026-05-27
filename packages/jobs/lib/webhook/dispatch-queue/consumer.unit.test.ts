@@ -149,6 +149,23 @@ describe('DispatchQueueConsumer', () => {
         });
     });
 
+    it('dedupes repeated task names in one receive, scheduling once and deleting every copy', async () => {
+        // Standard SQS can redeliver the same message within a single receive.
+        const msgs = [buildMessage({ taskName: 'webhook:dup' }), buildMessage({ taskName: 'webhook:dup' }), buildMessage({ taskName: 'webhook:other' })];
+        const h = makeHarness({ messages: msgs });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(3);
+        });
+
+        // The batch sent to the orchestrator collapses the duplicate to a single entry...
+        expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
+        expect(calledWith).toHaveLength(2);
+        expect(calledWith?.map((p: { name: string }) => p.name)).toEqual(['webhook:dup', 'webhook:other']);
+        // ...but all three SQS messages (both copies + the other) are deleted on success.
+    });
+
     it('treats duplicate task-name per-entry results as already processed and deletes those messages', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
         const h = makeHarness({ messages: msgs });
@@ -232,6 +249,28 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(h.orchestratorExecuteWebhookBatch).not.toHaveBeenCalled();
+    });
+
+    it('still deletes successfully scheduled messages during graceful shutdown', async () => {
+        const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1' })] });
+        const gate = deferred<void>();
+        h.orchestratorExecuteWebhookBatch.mockImplementationOnce(async (props: unknown[]) => {
+            await gate.promise;
+            return Ok(props.map((_, i) => Ok({ taskId: `t${i}`, retryKey: `r${i}` })));
+        });
+
+        h.consumer.start();
+        await vi.waitFor(() => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        // Begin shutdown while the batch is in flight, then let it complete: the in-flight batch
+        // must still finish and delete its scheduled message rather than being abandoned.
+        const stopPromise = h.consumer.stop();
+        gate.resolve();
+        await stopPromise;
+
+        expect(getDeleteCalls(h)).toHaveLength(1);
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {
