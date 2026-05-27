@@ -491,8 +491,8 @@ export async function upsert({
                         const incomingPlaceholders = chunk
                             .map(() =>
                                 hasUpdatedAt
-                                    ? '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::integer, ?::timestamptz, ?::timestamptz)'
-                                    : '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::integer, ?::timestamptz)'
+                                    ? '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::bigint, ?::timestamptz, ?::timestamptz)'
+                                    : '(?::integer, ?::text, ?::uuid, ?::text, ?::text, ?::uuid, ?::bigint, ?::timestamptz)'
                             )
                             .join(', ');
                         const incomingBindings = chunk.flatMap((r) => [
