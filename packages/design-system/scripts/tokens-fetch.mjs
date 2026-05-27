@@ -184,6 +184,8 @@ export function buildTailwindThemeBlock(tokens) {
 
 // Token name prefixes that must each produce at least one entry.
 // If a prefix yields zero matches the build throws — catches renames/deletions early.
+// IMPORTANT: keep this list in sync with the if/else chain in buildPrimitivesThemeBlock below.
+// Adding a new token group requires updating both places.
 const EXPECTED_PRIM_PREFIXES = [
     'radius-',
     'border-width-',
