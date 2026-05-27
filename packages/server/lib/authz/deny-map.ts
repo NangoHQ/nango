@@ -30,7 +30,7 @@ const PROD_WRITES: Permission[] = [
     p.canWriteProdWebhooks
 ];
 
-const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials];
+const PROD_SECRETS: Permission[] = [p.canReadProdSecretKey, p.canReadProdConnectionCredentials, p.canReadProdEnvironmentVariables];
 
 export const ROLE_DENY_MAP: Record<Role, Permission[]> = {
     administrator: [],
