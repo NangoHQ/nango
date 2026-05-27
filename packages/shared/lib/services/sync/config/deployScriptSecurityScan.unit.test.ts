@@ -109,6 +109,15 @@ exec: async () => {
   return ctor('return process')();
 }
 `
+            ],
+            [
+                'constructor key with empty-string padding to inflate node count',
+                `
+exec: async () => {
+  const ctor = setTimeout['c'${" + ''".repeat(60)} + 'onstructor'];
+  return ctor('return process')();
+}
+`
             ]
         ])('%s', (_name, source) => {
             expectRejectsConstructorGadget(source);
