@@ -58,6 +58,30 @@ All tokens in `tokens.generated.css` are registered in `@theme` and can be used 
 'px-2.5'    // 10px (= --ds-space-2-5)
 ```
 
+**When to use DS utilities vs native Tailwind:**
+
+Use `ds-*` utilities for any value that is a design decision — something a designer would specify:
+
+| Category | Use | Example |
+|---|---|---|
+| Colors | Semantic utilities | `bg-surface-canvas`, `text-text-default`, `border-border-default` |
+| Focus rings | `shadow-*` semantic | `shadow-focus-outline-default` |
+| Font size | `text-ds-*` | `text-ds-md` not `text-sm` |
+| Font weight | `font-ds-*` | `font-ds-medium` not `font-medium` |
+| Line height | `leading-ds-*` | `leading-ds-normal` not `leading-normal` |
+| Letter spacing | `tracking-ds-*` | `tracking-ds-tight` not `tracking-tight` |
+| Border radius | `rounded-ds-*` | `rounded-ds-sm` not `rounded` |
+| Border width | `border-ds-*` | `border-ds-1` not `border` |
+| Spacing | Native Tailwind scale | `gap-2`, `px-3` — the 4px scale matches `--ds-space-*` exactly |
+
+Use native Tailwind for everything structural — things that are about layout, not appearance:
+`flex`, `grid`, `block`, `hidden`, `items-center`, `justify-between`, `relative`, `absolute`,
+`overflow-hidden`, `truncate`, `whitespace-nowrap`, `cursor-pointer`, `z-10`, `transition`, `duration-200`, etc.
+
+> **Note on existing app code:** Files written before the DS token pipeline may use `text-sm`, `rounded-md`,
+> `font-medium` etc. with Tailwind's built-in values. Those are not equivalent to the DS utilities — don't
+> treat them as interchangeable when editing existing components.
+
 **Key token namespaces** (see `tokens/tokens.generated.css` for the full list):
 
 | What | Token pattern | Example |
