@@ -173,6 +173,11 @@ describe('buildPrimitivesThemeBlock', () => {
         expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--leading-ds-normal: var(--ds-typography-line-height-normal)');
     });
 
+    it('maps typography-line-height-* tokens to --leading-ds-*', () => {
+        const tokens = [{ name: 'typography-line-height-normal', $type: 'dimension', $value: '1.5' }];
+        expect(buildPrimitivesThemeBlock(tokens)).toBe('@theme {\n  --leading-ds-normal: var(--ds-typography-line-height-normal);\n}');
+    });
+
     it('maps typography-letter-spacing-* tokens to --tracking-ds-*', () => {
         expect(buildPrimitivesThemeBlock(BASE_TOKENS)).toContain('--tracking-ds-tight: var(--ds-typography-letter-spacing-tight)');
     });

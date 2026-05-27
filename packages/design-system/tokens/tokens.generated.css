@@ -636,6 +636,10 @@
     --font-weight-ds-medium: var(--ds-typography-font-weight-medium);
     --font-weight-ds-semibold: var(--ds-typography-font-weight-semibold);
     --font-weight-ds-bold: var(--ds-typography-font-weight-bold);
+    --leading-ds-tight: var(--ds-typography-line-height-tight);
+    --leading-ds-snug: var(--ds-typography-line-height-snug);
+    --leading-ds-normal: var(--ds-typography-line-height-normal);
+    --leading-ds-relaxed: var(--ds-typography-line-height-relaxed);
     --tracking-ds-tight: var(--ds-typography-letter-spacing-tight);
     --tracking-ds-normal: var(--ds-typography-letter-spacing-normal);
     --tracking-ds-wide: var(--ds-typography-letter-spacing-wide);
