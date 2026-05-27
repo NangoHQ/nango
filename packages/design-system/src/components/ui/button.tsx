@@ -95,12 +95,24 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, leadingIcon, trailingIcon, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, leadingIcon, trailingIcon, onClick, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
+        // When asChild wraps a non-button element (e.g. <Link>), the `disabled` HTML attribute
+        // has no effect. Intercept clicks to prevent navigation/action in those cases.
+        const handleClick = isDisabled && asChild ? (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault() : onClick;
 
         return (
-            <Comp ref={ref} type={asChild ? undefined : 'button'} className={cn(buttonVariants({ variant, size }), className)} disabled={isDisabled} aria-busy={loading || undefined} {...props}>
+            <Comp
+                ref={ref}
+                type={asChild ? undefined : 'button'}
+                className={cn(buttonVariants({ variant, size }), className)}
+                disabled={isDisabled}
+                aria-disabled={isDisabled || undefined}
+                aria-busy={loading || undefined}
+                onClick={handleClick}
+                {...props}
+            >
                 {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
                 {children}
                 {!loading && trailingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{trailingIcon}</span>}
@@ -121,19 +133,23 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 }
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    ({ className, variant, size, asChild = false, loading = false, disabled, label, children, ...props }, ref) => {
+    ({ className, variant, size, asChild = false, loading = false, disabled, label, onClick, children, ...props }, ref) => {
         const Comp = asChild ? Slot : 'button';
         const isDisabled = disabled || loading;
         const iconSize = size ?? 'md';
+        const handleClick = isDisabled && asChild ? (e: React.MouseEvent<HTMLButtonElement>) => e.preventDefault() : onClick;
 
         return (
             <Comp
                 ref={ref}
+                type={asChild ? undefined : 'button'}
                 className={cn(buttonVariants({ variant, size }), 'aspect-square px-0', className)}
                 disabled={isDisabled}
+                aria-disabled={isDisabled || undefined}
                 aria-busy={loading || undefined}
                 aria-label={label}
                 title={label}
+                onClick={handleClick}
                 {...props}
             >
                 {loading ? <Spinner size={iconSize} /> : children}
