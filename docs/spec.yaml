@@ -3072,6 +3072,9 @@ components:
                 error:
                     type: object
                     additionalProperties: false
+                    required:
+                        - code
+                        - message
                     properties:
                         code:
                             type: string

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 import { CommandExitError, TimeoutError } from 'e2b';
 
-import { isLocal, stringifyError } from '@nangohq/utils';
+import { getLogger, isLocal, stringifyError } from '@nangohq/utils';
 
 import { NangoCliExitCode, getDryrunErrorCode } from './cli-exit-codes.js';
 import { buildDryrunArgs } from './command-builders.js';
@@ -16,6 +16,7 @@ import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');
+const logger = getLogger('RemoteFunctionDryrun');
 
 export interface DryrunRequest {
     integration_id: string;
@@ -204,7 +205,9 @@ function prepareLocalAsyncDryrun(request: AsyncDryrunRequest): PreparedAsyncDryr
         startedAt,
         executionTimeoutAt,
         start: () => {
-            void runLocalAsyncDryrun(request, startedAt).catch(() => undefined);
+            void runLocalAsyncDryrun(request, startedAt).catch((err: unknown) => {
+                logger.error(`Failed to complete local async dryrun callback: ${stringifyError(err)}`, { dryrunId: request.dryrun_id });
+            });
             return Promise.resolve();
         },
         kill: () => Promise.resolve()
@@ -229,7 +232,7 @@ async function runLocalAsyncDryrun(request: AsyncDryrunRequest, startedAt: Date)
             status: 'failed',
             duration_ms: Date.now() - startedAt.getTime(),
             error
-        }).catch(() => undefined);
+        });
     }
 }
 

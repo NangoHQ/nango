@@ -25,8 +25,8 @@ export async function exec(): Promise<void> {
 
     try {
         lock = await locking.acquire('lock:functionDryrunsTimeout:cron', lockTtlMs);
-    } catch {
-        logger.info('Could not acquire lock, skipping');
+    } catch (err) {
+        logger.info('Could not acquire lock, skipping', err);
         return;
     }
 
