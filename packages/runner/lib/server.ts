@@ -22,6 +22,7 @@ interface EnvironmentResources {
     persistClient: PersistClient;
     telemetryRecorder: TelemetryRecorder;
     lastUsedAt: number;
+    activeTaskCount: number;
 }
 
 const resourcesPool = new Map<string, EnvironmentResources>();
@@ -48,7 +49,7 @@ function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentRes
         persistClient,
         recordingEnabled: nangoProps.runnerFlags.exportRunnerTelemetry
     });
-    const resources: EnvironmentResources = { persistClient, telemetryRecorder, lastUsedAt: Date.now() };
+    const resources: EnvironmentResources = { persistClient, telemetryRecorder, lastUsedAt: Date.now(), activeTaskCount: 0 };
     resourcesPool.set(key, resources);
     return resources;
 }
@@ -56,7 +57,7 @@ function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentRes
 const evictionInterval = setInterval(async () => {
     const now = Date.now();
     for (const [key, entry] of resourcesPool) {
-        if (now - entry.lastUsedAt > resourcePoolEvictIdleMs) {
+        if (now - entry.lastUsedAt > resourcePoolEvictIdleMs && entry.activeTaskCount === 0) {
             resourcesPool.delete(key);
             await entry.telemetryRecorder.shutdown({ timeoutMs: 5000 });
         }
@@ -163,8 +164,11 @@ function startProcedure() {
                     }
                 }, heartbeatIntervalMs);
 
+                const resources = getOrCreateEnvironmentResources(nangoProps);
+                resources.activeTaskCount++;
+
                 try {
-                    const { persistClient, telemetryRecorder } = getOrCreateEnvironmentResources(nangoProps);
+                    const { persistClient, telemetryRecorder } = resources;
                     const execRes = await exec({ nangoProps, code, codeParams, abortController, locks, persistClient, telemetryRecorder });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
@@ -178,6 +182,7 @@ function startProcedure() {
                         checkpoints
                     });
                 } finally {
+                    resources.activeTaskCount--;
                     clearInterval(heartbeat);
                     if (abortPoll) {
                         clearInterval(abortPoll);
