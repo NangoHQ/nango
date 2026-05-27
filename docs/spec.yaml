@@ -3111,7 +3111,7 @@ components:
                     description: Optional version tag for this deployment.
                 allow_destructive:
                     type: boolean
-                    description: Allow overwriting existing non-standalone functions with the same name.
+                    description: Allow overwriting an existing standalone function with the same name.
 
         FunctionDeployResponse:
             type: object
