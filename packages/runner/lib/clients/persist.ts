@@ -378,18 +378,6 @@ export class PersistClient {
         return res;
     }
 
-    public async postRunnerTelemetry(environmentId: number, events: RunnerTelemetry[]): Promise<Result<void>> {
-        const res = await this.fetch<void>({
-            method: 'POST',
-            path: `/environment/${environmentId}/runner/telemetry`,
-            data: { events }
-        });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
-        }
-        return res;
-    }
-
     public async deleteCheckpoint({
         environmentId,
         nangoConnectionId,
@@ -408,6 +396,18 @@ export class PersistClient {
         });
         if (res.isErr()) {
             return Err(new Error(`Failed to delete checkpoint: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async postRunnerTelemetry(environmentId: number, events: RunnerTelemetry[]): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/telemetry`,
+            data: { events }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
         }
         return res;
     }
