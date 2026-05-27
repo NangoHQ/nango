@@ -18963,6 +18963,32 @@ survey-monkey:
         base_url: https://api.surveymonkey.com
     docs: https://nango.dev/docs/integrations/all/survey-monkey
 
+swoogo:
+    display_name: Swoogo
+    categories:
+        - marketing
+    auth_mode: OAUTH2_CC
+    token_url: https://api.swoogo.com/api/v1/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.swoogo.com/api/v1
+    docs: https://nango.dev/docs/api-integrations/swoogo
+    docs_connect: https://nango.dev/docs/api-integrations/swoogo/connect
+    credentials:
+        client_id:
+            type: string
+            title: Consumer Key
+            description: Your Swoogo consumer key, found under My Profile > API Credentials.
+            doc_section: '#step-1-find-your-consumer-key-and-secret'
+        client_secret:
+            type: string
+            title: Consumer Secret
+            description: Your Swoogo consumer secret, found under My Profile > API Credentials.
+            secret: true
+            doc_section: '#step-1-find-your-consumer-key-and-secret'
+
 tailscale:
     display_name: Tailscale (OAuth)
     auth_mode: TWO_STEP
