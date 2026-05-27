@@ -14,7 +14,7 @@ export interface TelemetryRecorder {
 }
 
 const telemetryGrouping: Grouping<RunnerTelemetry> = {
-    groupingKey: (event) => `${event.type}:${event.integrationId}:${event.connectionId}`,
+    groupingKey: (event) => `${event.type}:${event.integrationId}:${event.connectionId}:${event.syncId ?? ''}`,
     aggregate: (accumulated, event) => {
         if (accumulated.type !== event.type) {
             return event; // defensive check (shouldn't happen): not the same type, cannot aggregate

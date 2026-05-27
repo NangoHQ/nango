@@ -19,7 +19,7 @@ export type PostLog = Endpoint<{
     Success: never;
 }>;
 
-type WithTags<T> = T & { integrationId: string; connectionId: string };
+type WithTags<T> = T & { integrationId: string; connectionId: string; syncId?: string | undefined };
 
 export type RunnerDataTransferTelemetry = WithTags<{
     type: 'data_transfer';

@@ -7,6 +7,7 @@ export const telemetryEntrySchema = z.discriminatedUnion('type', [
         .object({
             integrationId: z.string(),
             connectionId: z.string(),
+            syncId: z.string().optional(),
             type: z.literal('data_transfer'),
             bytesSent: z.number().int().nonnegative(),
             bytesReceived: z.number().int().nonnegative()

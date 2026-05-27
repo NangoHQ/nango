@@ -161,7 +161,8 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     bytesSent: sent,
                     bytesReceived: received,
                     integrationId: providerConfigKey ?? this.providerConfigKey,
-                    connectionId: connectionId ?? this.connectionId
+                    connectionId: connectionId ?? this.connectionId,
+                    syncId: this.syncId
                 });
             }
         });
