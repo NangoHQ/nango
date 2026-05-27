@@ -182,17 +182,16 @@ export function buildTailwindThemeBlock(tokens) {
     return colorBlock + shadowBlock;
 }
 
-// Token name prefixes that must each produce at least one entry.
-// If a prefix yields zero matches the build throws — catches renames/deletions early.
-// IMPORTANT: keep this list in sync with the if/else chain in buildPrimitivesThemeBlock below.
-// Adding a new token group requires updating both places.
-const EXPECTED_PRIM_PREFIXES = [
-    'radius-',
-    'border-width-',
-    'typography-font-size-',
-    'typography-font-weight-',
-    'typography-line-height-',
-    'typography-letter-spacing-'
+// Single source of truth for primitive token mappings.
+// Each entry drives both the CSS variable name and the completeness guard.
+// To add a new token group, add one row here — no other changes needed.
+const PRIM_MAPPINGS = [
+    { prefix: 'radius-',                    cssVar: 'radius-ds-'       },
+    { prefix: 'border-width-',              cssVar: 'border-width-ds-' },
+    { prefix: 'typography-font-size-',      cssVar: 'text-ds-'         },
+    { prefix: 'typography-font-weight-',    cssVar: 'font-weight-ds-'  },
+    { prefix: 'typography-line-height-',    cssVar: 'leading-ds-'      },
+    { prefix: 'typography-letter-spacing-', cssVar: 'tracking-ds-'     },
 ];
 
 /**
@@ -219,29 +218,16 @@ export function buildPrimitivesThemeBlock(tokens) {
     for (const t of tokens) {
         const name = t.name; // kebab name produced by the name/kebab transform
         const ref = `var(--ds-${name})`;
-
-        if (name.startsWith('radius-')) {
-            matched.add('radius-');
-            entries.push(`  --radius-ds-${name.slice('radius-'.length)}: ${ref};`);
-        } else if (name.startsWith('border-width-')) {
-            matched.add('border-width-');
-            entries.push(`  --border-width-ds-${name.slice('border-width-'.length)}: ${ref};`);
-        } else if (name.startsWith('typography-font-size-')) {
-            matched.add('typography-font-size-');
-            entries.push(`  --text-ds-${name.slice('typography-font-size-'.length)}: ${ref};`);
-        } else if (name.startsWith('typography-font-weight-')) {
-            matched.add('typography-font-weight-');
-            entries.push(`  --font-weight-ds-${name.slice('typography-font-weight-'.length)}: ${ref};`);
-        } else if (name.startsWith('typography-line-height-')) {
-            matched.add('typography-line-height-');
-            entries.push(`  --leading-ds-${name.slice('typography-line-height-'.length)}: ${ref};`);
-        } else if (name.startsWith('typography-letter-spacing-')) {
-            matched.add('typography-letter-spacing-');
-            entries.push(`  --tracking-ds-${name.slice('typography-letter-spacing-'.length)}: ${ref};`);
+        for (const { prefix, cssVar } of PRIM_MAPPINGS) {
+            if (name.startsWith(prefix)) {
+                matched.add(prefix);
+                entries.push(`  --${cssVar}${name.slice(prefix.length)}: ${ref};`);
+                break;
+            }
         }
     }
 
-    for (const prefix of EXPECTED_PRIM_PREFIXES) {
+    for (const { prefix } of PRIM_MAPPINGS) {
         if (!matched.has(prefix)) {
             throw new Error(`buildPrimitivesThemeBlock: no tokens matched prefix '${prefix}' — was a token group renamed or deleted?`);
         }
