@@ -12,6 +12,7 @@ import { useStore } from '@/store';
 import { useThemeStore } from '@/store/theme';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
+import { applyTheme } from '@/utils/theme';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,14 +23,7 @@ const App = () => {
 
     // Sync theme state to DOM so CSS tokens respond to dark/light mode
     useEffect(() => {
-        const root = document.documentElement;
-        if (darkMode) {
-            root.classList.add('dark');
-            root.setAttribute('data-theme', 'dark');
-        } else {
-            root.classList.remove('dark');
-            root.setAttribute('data-theme', 'light');
-        }
+        applyTheme(darkMode);
     }, [darkMode]);
     const [_, setLastEnvironment] = useLocalStorage(LocalStorageKeys.LastEnvironment);
     const { user } = useUser();
