@@ -8,10 +8,10 @@ import { Button, ButtonLink } from './ui/button';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
-import { useThemeStore } from '@/lib/theme';
 import { cn } from '@/utils/utils';
 
 export const AppHeader: React.FC = () => {
