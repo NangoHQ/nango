@@ -96,6 +96,52 @@ describe('Task', () => {
             expect(isDuplicateTaskNameError(second.error)).toBe(true);
         }
     });
+    it('should skip duplicates and report duplicateNames when onConflict is "skip"', async () => {
+        const existingName = `existing-${nanoid()}`;
+        (await tasks.create(db, [{ ...props, name: existingName }])).unwrap();
+
+        const newName = `new-${nanoid()}`;
+        const res = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, name: existingName },
+                    { ...props, name: newName }
+                ],
+                { onConflict: 'skip' }
+            )
+        ).unwrap();
+        expect(res.tasks).toHaveLength(1);
+        expect(res.tasks[0]?.name).toBe(newName);
+        expect(res.duplicateNames).toEqual([existingName]);
+        expect(res.cappedNames).toEqual([]);
+    });
+    it('should report cappedNames distinct from duplicateNames when onConflict is "skip"', async () => {
+        const groupKey = nanoid();
+        const seedName = `seed-${nanoid()}`;
+        (await tasks.create(db, [{ ...props, groupKey, name: seedName }])).unwrap();
+
+        // cap=2, group already has 1 → only 1 more slot. The first prop (dupName, a known duplicate)
+        // takes that slot but conflicts at INSERT; the second prop (cappedName) is dropped by the cap
+        // before reaching the INSERT; the third (okName, fresh group) succeeds.
+        const dupName = seedName;
+        const cappedName = `capped-${nanoid()}`;
+        const okName = `ok-${nanoid()}`;
+        const res = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, groupKey, name: dupName },
+                    { ...props, groupKey, name: cappedName },
+                    { ...props, groupKey: nanoid(), name: okName }
+                ],
+                { groupTaskCap: 2, onConflict: 'skip' }
+            )
+        ).unwrap();
+        expect(res.tasks.map((t) => t.name)).toEqual([okName]);
+        expect(res.duplicateNames).toEqual([dupName]);
+        expect(res.cappedNames).toEqual([cappedName]);
+    });
     it('should have their heartbeat updated', async () => {
         const t = await startTask(db);
         await new Promise((resolve) => void setTimeout(resolve, 20));

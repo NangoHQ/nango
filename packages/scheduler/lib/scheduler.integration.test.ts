@@ -253,7 +253,56 @@ describe('Scheduler', () => {
         expect(found.length).toBe(1);
         expect(found[0]?.id).toBe(schedule.id);
     });
+
+    describe('immediateBatch', () => {
+        it('should insert a batch of tasks in input order', async () => {
+            const groupKey = nanoid();
+            const propsList = [batchProps({ groupKey }), batchProps({ groupKey }), batchProps({ groupKey })];
+            const results = (await scheduler.immediateBatch(propsList)).unwrap();
+            expect(results).toHaveLength(3);
+            results.forEach((r, i) => {
+                expect(r.ok).toBe(true);
+                if (r.ok) {
+                    expect(r.task.name).toBe(propsList[i]!.name);
+                    expect(r.task.state).toBe('CREATED');
+                }
+            });
+            expect(callbacks.CREATED).toHaveBeenCalledTimes(3);
+        });
+        it('should report duplicate-name per-entry without failing the whole batch', async () => {
+            const groupKey = nanoid();
+            const existing = batchProps({ groupKey });
+            (await scheduler.immediate(existing)).unwrap();
+            callbacks.CREATED.mockReset();
+
+            const newProp = batchProps({ groupKey });
+            const results = (await scheduler.immediateBatch([existing, newProp])).unwrap();
+            expect(results[0]).toEqual({ ok: false, error: 'duplicate_task_name' });
+            expect(results[1]?.ok).toBe(true);
+            expect(callbacks.CREATED).toHaveBeenCalledOnce();
+        });
+        it('should return an empty array for an empty batch', async () => {
+            const results = (await scheduler.immediateBatch([])).unwrap();
+            expect(results).toEqual([]);
+        });
+    });
 });
+
+function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['immediateBatch']>[0][number] {
+    return {
+        name: overrides.name || nanoid(),
+        payload: overrides.payload || {},
+        groupKey: overrides.groupKey || nanoid(),
+        groupMaxConcurrency: overrides.groupMaxConcurrency ?? 0,
+        retryMax: overrides.retryMax ?? 0,
+        retryCount: overrides.retryCount ?? 0,
+        createdToStartedTimeoutSecs: overrides.createdToStartedTimeoutSecs ?? 3600,
+        startedToCompletedTimeoutSecs: overrides.startedToCompletedTimeoutSecs ?? 3600,
+        heartbeatTimeoutSecs: overrides.heartbeatTimeoutSecs ?? 600,
+        ownerKey: overrides.ownerKey ?? null,
+        retryKey: overrides.retryKey ?? null
+    };
+}
 
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
     const recurringProps = {
