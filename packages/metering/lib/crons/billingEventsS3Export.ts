@@ -11,16 +11,17 @@ import { envs } from '../env.js';
 import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.billingEventsS3Export');
-const cronMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_MINUTES;
-const cronOffsetMinutes = envs.CRON_BILLING_EVENTS_S3_EXPORT_OFFSET_MINUTES;
+// Minute-of-the-hour to fire on (0–59). -1 disables the cron entirely.
+// See CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE in packages/utils/lib/environment/parse.ts.
+const cronMinute = envs.CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE;
 const bucket = envs.BILLING_EVENTS_S3_BUCKET;
 const roleArn = envs.BILLING_EVENTS_S3_WRITER_ROLE_ARN;
 const region = envs.BILLING_EVENTS_S3_REGION;
 const eventNameSuffix = envs.BILLING_EVENTS_S3_EVENT_NAME_SUFFIX ?? '';
 
 const LOCK_KEY = 'lock:cron:billingEventsS3Export';
-const LOCK_TTL_MS_CAP = 30 * 60 * 1000; // hard cap; the export query is seconds, no reason to hold a lock for hours
-const lockTtlMs = Math.min(cronMinutes * 60 * 1000 * 0.8, LOCK_TTL_MS_CAP);
+// Cron fires hourly; lock should expire well before the next tick.
+const lockTtlMs = 30 * 60 * 1000;
 
 // Single S3 client reused across cron ticks — `new S3Client()` doesn't open any
 // connection eagerly so this is cheap at module load, and reusing the client lets
@@ -144,8 +145,8 @@ export const METRICS: MetricSpec[] = [
 ];
 
 export function billingEventsS3ExportCron(): void {
-    if (cronMinutes <= 0) {
-        logger.info(`Skipping (CRON_BILLING_EVENTS_S3_EXPORT_MINUTES=${cronMinutes})`);
+    if (cronMinute < 0) {
+        logger.info(`Skipping (CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE=${cronMinute})`);
         return;
     }
     if (!bucket || !roleArn) {
@@ -157,10 +158,8 @@ export function billingEventsS3ExportCron(): void {
         return;
     }
 
-    // Hourly cron with a configurable minute-of-the-hour offset
-    // (CRON_BILLING_EVENTS_S3_EXPORT_OFFSET_MINUTES — default 0). The MINUTES var
-    // stays the kill switch (0 = disabled, anything > 0 enables).
-    cron.schedule(`${cronOffsetMinutes} * * * *`, () => {
+    // Hourly cron at minute `cronMinute` of every hour.
+    cron.schedule(`${cronMinute} * * * *`, () => {
         exec().catch((err: unknown) => {
             logger.error('Cron tick failed unexpectedly', err);
         });
