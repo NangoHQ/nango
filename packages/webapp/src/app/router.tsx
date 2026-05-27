@@ -14,6 +14,11 @@ import { ConnectionCreate } from '@/pages/Connection/Create';
 import { ConnectionCreateLegacy } from '@/pages/Connection/CreateLegacy';
 import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
+import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
+import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
+import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
+import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
+import { SyncsTab as ConnectionSyncsTab } from '@/pages/Connection/components/SyncsTab';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from '@/pages/GettingStarted/Show';
@@ -35,11 +40,6 @@ import { globalEnv } from '@/utils/env';
 import { sentryCreateBrowserRouter } from '@/utils/sentry';
 
 import type { BreadcrumbHandle } from '@/hooks/useBreadcrumbs';
-import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
-import { SyncsTab as ConnectionSyncsTab } from '@/pages/Connection/components/SyncsTab';
-import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
-import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
-import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
 
 const GettingStartedRoute = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
