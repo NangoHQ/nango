@@ -39,7 +39,7 @@ export const PaymentMethodDialog: React.FC<{
     useEffect(() => {
         if (open && !clientSecret) {
             const fetchClientSecret = async () => {
-                const secret = (await apiPostStripeCollectPayment(env)).json.data.secret;
+                const secret = ((await apiPostStripeCollectPayment(env)).json as PostStripeCollectPayment['Success']).data.secret;
                 setClientSecret(secret);
             };
             void fetchClientSecret();
