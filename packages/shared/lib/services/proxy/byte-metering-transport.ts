@@ -95,6 +95,13 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
     };
 }
 
+function wireBeforeRedirect(options: TransportOptions, fn: (options: Record<string, unknown>, responseDetails?: unknown) => void): void {
+    const beforeRedirects = (options as unknown as Record<string, unknown>)['beforeRedirects'] as Record<string, unknown> | undefined;
+    if (beforeRedirects && !beforeRedirects['config']) {
+        beforeRedirects['config'] = fn;
+    }
+}
+
 /**
  * Axios-compatible `transport` that meters transferred bytes.
  *
@@ -124,10 +131,7 @@ export function createMeteringTransport(
     return {
         request(options, callback) {
             if (userBeforeRedirect) {
-                const beforeRedirects = (options as unknown as Record<string, unknown>)['beforeRedirects'] as Record<string, unknown> | undefined;
-                if (beforeRedirects && !beforeRedirects['config']) {
-                    beforeRedirects['config'] = userBeforeRedirect;
-                }
+                wireBeforeRedirect(options, userBeforeRedirect);
             }
             const target = options.protocol === 'https:' ? wrapped.https : wrapped.http;
             return target.request(options, callback);

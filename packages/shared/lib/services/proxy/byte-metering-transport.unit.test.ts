@@ -251,31 +251,18 @@ describe('createMeteringTransport (socket bytes)', () => {
     });
 
     describe('userBeforeRedirect (header forwarding through redirects)', () => {
-        let redirectHandle: ServerHandle | undefined;
-        let targetHandle: ServerHandle | undefined;
-
-        afterEach(async () => {
-            if (redirectHandle) {
-                await closeServer(redirectHandle);
-                redirectHandle = undefined;
-            }
-            if (targetHandle) {
-                await closeServer(targetHandle);
-                targetHandle = undefined;
-            }
-        });
-
-        it('forwards headers through redirect when userBeforeRedirect is provided', async () => {
-            const capturedHeaders: http.IncomingHttpHeaders[] = [];
-
-            targetHandle = await startServer((req, res) => {
-                capturedHeaders.push(req.headers);
+        it('restores Authorization after cross-host redirect strips it', async () => {
+            // follow-redirects strips sensitive headers (Authorization, Cookie) on cross-host
+            // redirects. userBeforeRedirect must re-add them; a same-host redirect would not
+            // trigger stripping, so we need two servers on different ports here.
+            const targetHandle = await startServer((req, res) => {
                 res.writeHead(200, { 'content-type': 'application/json' });
                 res.end(JSON.stringify({ headers: req.headers }));
             });
+            const targetPort = targetHandle.port;
 
-            redirectHandle = await startServer((_req, res) => {
-                res.writeHead(302, { location: `http://127.0.0.1:${targetHandle!.port}/target` });
+            handle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetPort}/target` });
                 res.end();
             });
 
@@ -288,41 +275,45 @@ describe('createMeteringTransport (socket bytes)', () => {
             };
 
             const transport = createMeteringTransport(() => {}, userBeforeRedirect);
-            const res = await axios.request({
-                url: `http://127.0.0.1:${redirectHandle.port}/`,
-                method: 'GET',
-                headers: { ...headersToForward },
-                beforeRedirect: userBeforeRedirect as any,
-                transport: transport as any
-            });
-
-            expect(res.data.headers['authorization']).toBe('Bearer test-token');
-            expect(res.data.headers['x-custom']).toBe('value');
+            try {
+                const res = await axios.request({
+                    url: `http://127.0.0.1:${handle.port}/`,
+                    method: 'GET',
+                    headers: { ...headersToForward },
+                    beforeRedirect: userBeforeRedirect as any,
+                    transport: transport as any
+                });
+                expect(res.data.headers['authorization']).toBe('Bearer test-token');
+                expect(res.data.headers['x-custom']).toBe('value');
+            } finally {
+                await closeServer(targetHandle);
+            }
         });
 
-        it('does not forward headers when userBeforeRedirect is omitted', async () => {
-            const capturedHeaders: http.IncomingHttpHeaders[] = [];
-
-            targetHandle = await startServer((req, res) => {
-                capturedHeaders.push(req.headers);
+        it('strips Authorization on cross-host redirect when userBeforeRedirect is omitted', async () => {
+            const targetHandle = await startServer((req, res) => {
                 res.writeHead(200, { 'content-type': 'application/json' });
                 res.end(JSON.stringify({ headers: req.headers }));
             });
+            const targetPort = targetHandle.port;
 
-            redirectHandle = await startServer((_req, res) => {
-                res.writeHead(302, { location: `http://127.0.0.1:${targetHandle!.port}/target` });
+            handle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetPort}/target` });
                 res.end();
             });
 
             const transport = createMeteringTransport(() => {});
-            const res = await axios.request({
-                url: `http://127.0.0.1:${redirectHandle.port}/`,
-                method: 'GET',
-                headers: { authorization: 'Bearer test-token' },
-                transport: transport as any
-            });
-
-            expect(res.data.headers['authorization']).toBeUndefined();
+            try {
+                const res = await axios.request({
+                    url: `http://127.0.0.1:${handle.port}/`,
+                    method: 'GET',
+                    headers: { authorization: 'Bearer test-token' },
+                    transport: transport as any
+                });
+                expect(res.data.headers['authorization']).toBeUndefined();
+            } finally {
+                await closeServer(targetHandle);
+            }
         });
     });
 
