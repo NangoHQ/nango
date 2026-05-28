@@ -1,6 +1,7 @@
 import http from 'node:http';
 import zlib from 'node:zlib';
 
+import axios from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createMeteringTransport } from './byte-metering-transport.js';
@@ -247,6 +248,82 @@ describe('createMeteringTransport (socket bytes)', () => {
         expect(hops[1]!.received).toBeGreaterThanOrEqual(smallBody.length);
         expect(hops[1]!.received).toBeLessThan(largeBody.length); // delta reset — not accumulating across hops
         agent.destroy();
+    });
+
+    describe('userBeforeRedirect (header forwarding through redirects)', () => {
+        let redirectHandle: ServerHandle | undefined;
+        let targetHandle: ServerHandle | undefined;
+
+        afterEach(async () => {
+            if (redirectHandle) {
+                await closeServer(redirectHandle);
+                redirectHandle = undefined;
+            }
+            if (targetHandle) {
+                await closeServer(targetHandle);
+                targetHandle = undefined;
+            }
+        });
+
+        it('forwards headers through redirect when userBeforeRedirect is provided', async () => {
+            const capturedHeaders: http.IncomingHttpHeaders[] = [];
+
+            targetHandle = await startServer((req, res) => {
+                capturedHeaders.push(req.headers);
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ headers: req.headers }));
+            });
+
+            redirectHandle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetHandle!.port}/target` });
+                res.end();
+            });
+
+            const headersToForward = { authorization: 'Bearer test-token', 'x-custom': 'value' };
+            const userBeforeRedirect = (options: Record<string, unknown>) => {
+                const hdrs = options['headers'] as Record<string, string>;
+                for (const [key, value] of Object.entries(headersToForward)) {
+                    hdrs[key] = value;
+                }
+            };
+
+            const transport = createMeteringTransport(() => {}, userBeforeRedirect);
+            const res = await axios.request({
+                url: `http://127.0.0.1:${redirectHandle.port}/`,
+                method: 'GET',
+                headers: { ...headersToForward },
+                beforeRedirect: userBeforeRedirect as any,
+                transport: transport as any
+            });
+
+            expect(res.data.headers['authorization']).toBe('Bearer test-token');
+            expect(res.data.headers['x-custom']).toBe('value');
+        });
+
+        it('does not forward headers when userBeforeRedirect is omitted', async () => {
+            const capturedHeaders: http.IncomingHttpHeaders[] = [];
+
+            targetHandle = await startServer((req, res) => {
+                capturedHeaders.push(req.headers);
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ headers: req.headers }));
+            });
+
+            redirectHandle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetHandle!.port}/target` });
+                res.end();
+            });
+
+            const transport = createMeteringTransport(() => {});
+            const res = await axios.request({
+                url: `http://127.0.0.1:${redirectHandle.port}/`,
+                method: 'GET',
+                headers: { authorization: 'Bearer test-token' },
+                transport: transport as any
+            });
+
+            expect(res.data.headers['authorization']).toBeUndefined();
+        });
     });
 
     it('does not double-fire when both request write and response read complete', async () => {
