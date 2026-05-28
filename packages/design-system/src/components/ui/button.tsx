@@ -115,9 +115,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 aria-busy={loading || undefined}
                 {...props}
             >
-                {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
-                {children}
-                {!loading && trailingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{trailingIcon}</span>}
+                {asChild ? (
+                    children
+                ) : (
+                    <>
+                        {loading ? <Spinner size="sm" /> : leadingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{leadingIcon}</span>}
+                        {children}
+                        {!loading && trailingIcon && <span className="shrink-0 [&_svg]:size-[1em]">{trailingIcon}</span>}
+                    </>
+                )}
             </Comp>
         );
     }
@@ -152,7 +158,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
                 title={label}
                 {...props}
             >
-                {loading ? <Spinner size={iconSize} /> : children}
+                {!asChild && loading ? <Spinner size={iconSize} /> : children}
             </Comp>
         );
     }

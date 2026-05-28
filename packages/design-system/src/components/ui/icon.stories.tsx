@@ -45,11 +45,11 @@ export const Sizes: Story = {
                     >
                         {size}
                     </span>
-                    <Icon icon={LucideIcons.Activity} size={size} className="text-[var(--icon-default)]" />
-                    <Icon icon={LucideIcons.Settings} size={size} className="text-[var(--icon-default)]" />
-                    <Icon icon={LucideIcons.Search} size={size} className="text-[var(--icon-default)]" />
-                    <Icon icon={LucideIcons.Bell} size={size} className="text-[var(--icon-default)]" />
-                    <Icon icon={LucideIcons.User} size={size} className="text-[var(--icon-default)]" />
+                    <Icon icon={LucideIcons.Activity} size={size} className="text-icon-default" />
+                    <Icon icon={LucideIcons.Settings} size={size} className="text-icon-default" />
+                    <Icon icon={LucideIcons.Search} size={size} className="text-icon-default" />
+                    <Icon icon={LucideIcons.Bell} size={size} className="text-icon-default" />
+                    <Icon icon={LucideIcons.User} size={size} className="text-icon-default" />
                 </div>
             ))}
         </div>
@@ -85,7 +85,7 @@ function IconGrid() {
                     placeholder={`Search ${ALL_ICONS.length} icons…`}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="max-w-80 h-8 w-full rounded px-2.5 text-sm border border-[var(--input-border-default)] bg-[var(--input-bg-default)] text-[var(--text-default)] placeholder:text-[var(--text-placeholder)] outline-none focus:border-[var(--input-border-focus)]"
+                    className="max-w-80 h-8 w-full rounded-ds-xs px-2.5 text-ds-sm border border-ds-1 border-border-input bg-surface-input text-text-default placeholder:text-text-secondary outline-none focus-visible:border-border-input-hover"
                 />
                 <p
                     style={{
