@@ -176,6 +176,7 @@ export async function exec(): Promise<void> {
                 return;
             }
             const day = yesterdayUTC();
+            let anyFailure = false;
             try {
                 for (const metric of METRICS) {
                     const eventName = `${metric.canonicalEventName}${eventNameSuffix}`;
@@ -193,12 +194,16 @@ export async function exec(): Promise<void> {
                         logger.info(`Exporting ${eventName} for day=${day}`);
                         await client.command({ query: exportSql({ metric, day, eventName, key }) });
                         logger.info(`Exported ${eventName} for day=${day}`);
-                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, { metric: metric.canonicalEventName, success: 'true' });
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
+                            metric: metric.canonicalEventName,
+                            success: 'true'
+                        });
                     } catch (err) {
                         // Per-metric catch so a single failure (e.g. CH timeout on
                         // a heavy table) does not abort the rest of the run.
+                        anyFailure = true;
                         logger.error(`Failed to export ${eventName} for day=${day} at step=${step}`, err);
-                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RESULT, 1, {
+                        metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT, 1, {
                             metric: metric.canonicalEventName,
                             success: 'false',
                             step
@@ -211,6 +216,14 @@ export async function exec(): Promise<void> {
                 }
                 logger.info(`✅ done`);
             } finally {
+                // One emit per cron tick so a monitor like
+                // `sum:...run.result{success:false}.as_count() > 3` over a 3h
+                // window reliably counts consecutive failed runs (cron is hourly).
+                // A run is failed if any single metric failed — already-uploaded
+                // skips count as success because that's the self-heal succeeding.
+                metrics.increment(metrics.Types.BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT, 1, {
+                    success: anyFailure ? 'false' : 'true'
+                });
                 await client.close();
             }
         });
