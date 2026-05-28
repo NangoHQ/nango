@@ -10,6 +10,7 @@ import { UsageCache } from './cache.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
+import type { GetDailySumAndBatchesResult, GetDailySumAndBatchesSeries } from './clickhouse/clickhouse.query.js';
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -342,4 +343,79 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
         total: Math.floor(previousQuantity),
         usage: cumulativeUsage
     };
+}
+
+/**
+ * CH-path sibling of `toCumulativeUsage`. Turns the per-day `(sum, batches)`
+ * accumulators returned by `Clickhouse.getDailySumAndBatches` into
+ * `BillingUsageMetric[]` with `view_mode='cumulative'` — the same wire shape
+ * the dashboard already consumes for `records` / `connections` from the Orb
+ * path. One `BillingUsageMetric` per series (no-dim → 1; dim → one per dim
+ * value with `group: {key, value}`).
+ *
+ * Walks each series in day order, accumulates `running_sum` and
+ * `running_batches`, and emits `Math.round(running_sum / running_batches)` per
+ * day. Bypasses `toCumulativeUsage` because the output is already
+ * cumulative-shaped (running averages, not running sums of deltas).
+ *
+ * Dim-breakdown additivity contract: per-dim series share the same global
+ * per-day batches (by design of `getDailySumAndBatches`' dim branch), so the
+ * sum of per-dim running averages equals the global running average exactly
+ * at every day — the breakdown decomposes the bill total rather than being
+ * a "size when active" view.
+ *
+ * Worked example (10×100 vs 2×1000 → 100, 250) lives in
+ * `getDailySumAndBatches`' docstring.
+ */
+export function toRunningAvgUsage(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
+    return result.series.map((series) => seriesToCumulativeAvg(result.metric, series)).filter((m): m is BillingUsageMetric => m !== null);
+}
+
+function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries): BillingUsageMetric | null {
+    if (series.days.length === 0) {
+        return null;
+    }
+
+    const sorted = [...series.days].sort((a, b) => a.day.getTime() - b.day.getTime());
+
+    let runningSum = 0;
+    let runningBatches = 0;
+    const usage: BillingUsageMetric['usage'] = [];
+    for (const day of sorted) {
+        runningSum += day.sum;
+        runningBatches += day.batches;
+        if (runningBatches === 0) {
+            // Defensive: a series shouldn't appear with batches=0 (the SQL filters
+            // empty-day groups out), but if it does we skip rather than divide by zero.
+            continue;
+        }
+        const quantity = Math.round(runningSum / runningBatches);
+        usage.push({
+            timeframeStart: day.day,
+            timeframeEnd: addOneDay(day.day),
+            quantity
+        });
+    }
+
+    if (usage.length === 0) {
+        return null;
+    }
+
+    const lastQuantity = usage[usage.length - 1]!.quantity;
+    const base: BillingUsageMetric = {
+        externalId: metric,
+        total: lastQuantity,
+        usage,
+        view_mode: 'cumulative'
+    };
+    if ('dimension' in series) {
+        base.group = { key: series.dimension, value: String(series.dimensionValue) };
+    }
+    return base;
+}
+
+function addOneDay(d: Date): Date {
+    const out = new Date(d);
+    out.setUTCDate(out.getUTCDate() + 1);
+    return out;
 }
