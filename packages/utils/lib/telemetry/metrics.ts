@@ -68,6 +68,8 @@ export enum Types {
     WEBHOOK_ASYNC_ACTION_SUCCESS = 'nango.webhook.async_action.success',
     WEBHOOK_ASYNC_ACTION_FAILED = 'nango.webhook.async_action.failed',
     WEBHOOK_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.webhook.incoming.payloadSizeBytes',
+    WEBHOOK_REQUEST_SIZE_IN_BYTES = 'nango.webhook.request.sizeInBytes',
+    WEBHOOK_RESPONSE_SIZE_IN_BYTES = 'nango.webhook.response.sizeInBytes',
     WEBHOOK_DIRECT_TRIGGER_SUCCESS = 'nango.webhook.direct_trigger.success',
 
     WEBHOOK_DISPATCH_PUBLISH_SUCCESS = 'nango.webhook.dispatch_queue.publish.success',

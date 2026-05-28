@@ -3,12 +3,16 @@ import crypto from 'crypto';
 import { isAxiosError } from 'axios';
 
 import { getRedis } from '@nangohq/kvstore';
-import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
+import { createMeteringTransport } from '@nangohq/shared';
+import { Err, Ok, axiosInstance as axios, getLogger, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
+
+const logger = getLogger('webhooks.utils');
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';
 
 import type { LogContext } from '@nangohq/logs';
+import type { MeteredBytes } from '@nangohq/shared';
 import type { DBAPISecret, DBExternalWebhook, MessageHTTPResponse, MessageRow, WebhookTypes } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AxiosError, AxiosResponse } from 'axios';
@@ -149,7 +153,8 @@ export const deliver = async ({
     logCtx,
     secret,
     endingMessage = '',
-    incomingHeaders
+    incomingHeaders,
+    onBytes
 }: {
     webhooks: { url: string; type: string }[];
     body: unknown;
@@ -158,6 +163,7 @@ export const deliver = async ({
     logCtx?: LogContext | undefined;
     endingMessage?: string;
     incomingHeaders?: Record<string, string>;
+    onBytes?: (bytes: MeteredBytes) => void;
 }): Promise<Result<void>> => {
     let success = true;
 
@@ -193,8 +199,13 @@ export const deliver = async ({
                 async () => {
                     const result = await circuitBreaker.execute(url, async () => {
                         const createdAt = new Date();
+                        const attemptBytes: MeteredBytes = { sent: 0, received: 0 };
+                        const transport = createMeteringTransport((hop) => {
+                            attemptBytes.sent += hop.sent;
+                            attemptBytes.received += hop.received;
+                        });
                         try {
-                            const res = await axios.post(url, bodyString.value, { headers, timeout: envs.NANGO_WEBHOOK_TIMEOUT_MS });
+                            const res = await axios.post(url, bodyString.value, { headers, timeout: envs.NANGO_WEBHOOK_TIMEOUT_MS, transport });
 
                             void logCtx?.http(`POST ${url}`, { request: logRequest, response: formatLogResponse(res), context: 'webhook', createdAt });
                             if (res.status >= 200 && res.status < 300) {
@@ -227,6 +238,12 @@ export const deliver = async ({
                                     createdAt
                                 });
                                 return Err(new Error('unknown_error', { cause: err }));
+                            }
+                        } finally {
+                            try {
+                                onBytes?.(attemptBytes);
+                            } catch (err) {
+                                logger.error('onBytes callback failed', err);
                             }
                         }
                     });

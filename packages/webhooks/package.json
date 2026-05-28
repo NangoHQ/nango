@@ -16,6 +16,7 @@
     "keywords": [],
     "dependencies": {
         "@nangohq/logs": "file:../logs",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/kvstore": "file:../kvstore",
         "axios": "1.15.2",
