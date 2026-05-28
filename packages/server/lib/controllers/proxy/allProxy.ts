@@ -242,6 +242,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 void logCtx?.log(msg);
             },
             onRefreshToken: async () => {
+                let refreshed = false;
                 const credentialResponse = await refreshOrTestCredentials({
                     account,
                     environment,
@@ -249,8 +250,11 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     integration,
                     logContextGetter,
                     instantRefresh: false,
-                    skipIntrospection: true,
-                    onRefreshSuccess: connectionRefreshSuccess,
+                    skipIntrospection: false,
+                    onRefreshSuccess: async (args) => {
+                        refreshed = true;
+                        await connectionRefreshSuccess(args);
+                    },
                     onRefreshFailed: connectionRefreshFailed
                 });
                 if (credentialResponse.isErr()) {
@@ -258,6 +262,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 }
                 freshConnection = credentialResponse.value;
                 lastConnectionRefresh = Date.now();
+                return refreshed;
             },
             getConnection: async () => {
                 if (Date.now() - lastConnectionRefresh < MEMOIZED_CONNECTION_TTL) {
@@ -272,7 +277,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     integration,
                     logContextGetter,
                     instantRefresh: false,
-                    skipIntrospection: true,
+                    skipIntrospection: false,
                     onRefreshSuccess: connectionRefreshSuccess,
                     onRefreshFailed: connectionRefreshFailed
                 });

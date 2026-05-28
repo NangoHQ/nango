@@ -360,7 +360,9 @@ export async function refreshCredentialsIfNeeded({
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
-    const cacheKey = `${environment_id}:${providerConfigKey}:${connectionId}`;
+    // skipIntrospection=true forces a direct refresh without checking token validity first,
+    // so it must not collapse onto an in-flight refresh that may decide "no refresh needed"
+    const cacheKey = `${environment_id}:${providerConfigKey}:${connectionId}:${skipIntrospection ? 'skip' : 'full'}`;
 
     // if a refresh is already in-flight for this connection, return the existing promise
     const existingPromise = inFlightRefreshes.get(cacheKey);

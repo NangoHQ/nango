@@ -16,7 +16,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const logger = getLogger('proxy:metering');
 
-const MAX_REFRESH_TOKEN_ATTEMPTS = 2;
+const MAX_REFRESH_TOKEN_ATTEMPTS = 1;
 
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
@@ -25,8 +25,9 @@ interface Props {
     onBytes?: (bytes: MeteredBytes) => MaybePromise<void>;
     /**
      * Called when retry reason is refresh_token; use to introspect and refresh credentials before the next attempt.
+     * Return true if a refresh actually happened (retry is worthwhile), false if token is still active (stop retrying).
      */
-    onRefreshToken?: () => Promise<void>;
+    onRefreshToken?: () => Promise<boolean>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
 }
@@ -164,7 +165,10 @@ export class ProxyRequest {
                             } else {
                                 this.refreshTokenAttempts++;
                                 if (this.onRefreshToken) {
-                                    await this.onRefreshToken();
+                                    const refreshed = await this.onRefreshToken();
+                                    if (!refreshed) {
+                                        retry = { retry: false, reason: 'token_still_active' };
+                                    }
                                 }
                             }
                         } else if (retry.retry && attempt > (this.config.retries || 0)) {

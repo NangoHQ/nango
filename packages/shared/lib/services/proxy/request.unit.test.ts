@@ -121,7 +121,7 @@ describe('call', () => {
 
 describe('Salesforce introspect-on-error (refreshTokenOn)', () => {
     it('should call onRefreshToken on 401 and succeed on retry', async () => {
-        const onRefreshToken = vi.fn();
+        const onRefreshToken = vi.fn().mockResolvedValue(true);
         const proxy = new ProxyRequest({
             logger: vi.fn(),
             proxyConfig: getDefaultProxy({
@@ -140,8 +140,8 @@ describe('Salesforce introspect-on-error (refreshTokenOn)', () => {
         expect(onRefreshToken).toHaveBeenCalledTimes(1);
     });
 
-    it('should cap onRefreshToken at 2 attempts then stop retrying', { timeout: 15000 }, async () => {
-        const onRefreshToken = vi.fn();
+    it('should cap onRefreshToken at 1 attempt then stop retrying', { timeout: 15000 }, async () => {
+        const onRefreshToken = vi.fn().mockResolvedValue(true);
         const proxy = new ProxyRequest({
             logger: vi.fn(),
             proxyConfig: getDefaultProxy({
@@ -157,7 +157,27 @@ describe('Salesforce introspect-on-error (refreshTokenOn)', () => {
 
         const res = await proxy.request();
         expect(res.isErr()).toBe(true);
-        expect(onRefreshToken).toHaveBeenCalledTimes(2);
+        expect(onRefreshToken).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop retrying immediately when onRefreshToken returns false (token still active)', async () => {
+        const onRefreshToken = vi.fn().mockResolvedValue(false);
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({
+                provider: { auth_mode: 'OAUTH2', proxy: { base_url: 'https://example.com' } },
+                endpoint: '/api',
+                refreshTokenOn: [401, 403]
+            }),
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            onRefreshToken
+        });
+        vi.spyOn(proxy, 'httpCall').mockRejectedValue(createAxiosError(401));
+
+        const res = await proxy.request();
+        expect(res.isErr()).toBe(true);
+        expect(onRefreshToken).toHaveBeenCalledTimes(1);
     });
 
     it('should not call onRefreshToken for non-Salesforce provider (refreshTokenOn is null)', async () => {

@@ -126,7 +126,7 @@ describe('getProxyRetryFromErr', () => {
             expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
         });
 
-        it('should not return refresh_token for 401 when refreshTokenOn is null (non-Salesforce)', () => {
+        it('should return status_code_401 for 401 when refreshTokenOn is null (non-Salesforce)', () => {
             const err = getDefaultError({ response: { status: 401 } });
             const res = getProxyRetryFromErr({
                 err,
