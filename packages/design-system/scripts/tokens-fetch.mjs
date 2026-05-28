@@ -157,6 +157,8 @@ export function buildPrimitivesBlock(tokens) {
 }
 
 export function buildTailwindThemeBlock(tokens) {
+    if (tokens.length === 0) return '';
+
     // Semantic color tokens → --color-* → bg-*, text-*, border-*, fill-*, etc.
     const colorVars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
 
@@ -170,10 +172,10 @@ export function buildTailwindThemeBlock(tokens) {
     // underlying semantic vars are always picked up.
     const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
 
-    if (tokens.length > 0 && colorVars.length === 0) {
+    if (colorVars.length === 0) {
         throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
     }
-    if (tokens.length > 0 && shadowVars.length === 0) {
+    if (shadowVars.length === 0) {
         throw new Error(`buildTailwindThemeBlock: no boxShadow tokens found — was the $type renamed or the semantic token set emptied?`);
     }
 
@@ -381,7 +383,7 @@ export async function buildCss(tokensData) {
         '/*',
         ' * Tailwind v4 @theme registration — primitive tokens.',
         ' * Radius → rounded-ds-*, border-width → border-ds-*,',
-        ' * font-size → text-ds-*, font-weight → font-ds-*, letter-spacing → tracking-ds-*',
+        ' * font-size → text-ds-*, font-weight → font-ds-*, line-height → leading-ds-*, letter-spacing → tracking-ds-*',
         ' */',
         buildPrimitivesThemeBlock(primTokens),
         typographySection,

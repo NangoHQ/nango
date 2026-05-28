@@ -123,8 +123,8 @@ describe('buildTailwindThemeBlock', () => {
         expect(buildTailwindThemeBlock(tokens)).not.toContain('ds-space-2');
     });
 
-    it('returns empty @theme blocks for an empty token list', () => {
-        expect(buildTailwindThemeBlock([])).toBe('@theme {\n\n}\n@theme inline {\n\n}');
+    it('returns empty string for an empty token list', () => {
+        expect(buildTailwindThemeBlock([])).toBe('');
     });
 
     it('throws when tokens are present but none are color type', () => {
