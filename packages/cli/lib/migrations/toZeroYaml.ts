@@ -221,7 +221,7 @@ function buildExecProp(j: typeof jscodeshift, func: any, execReturnType?: string
         bodyNode = func.body;
         isAsync = !!func.async;
     }
-    params[0].extra = { ...(params[0].extra || {}), parenthesized: true };
+    params[0].extra = { ...params[0].extra, parenthesized: true };
     const execArrow = j.arrowFunctionExpression(params, bodyNode);
     execArrow.async = isAsync;
     // Add return type if provided
@@ -620,7 +620,7 @@ function reImportTypes({ root, j, usedModels }: { root: Collection; j: jscodeshi
     }
     if (usedModelTypes.size > 0) {
         importDecls.push(
-            j.importDeclaration([...Array.from(usedModelTypes.values()).map((name) => j.importSpecifier(j.identifier(name)))], j.literal('../../models.js'))
+            j.importDeclaration(Array.from(usedModelTypes.values()).map((name) => j.importSpecifier(j.identifier(name))), j.literal('../../models.js'))
         );
     }
 

@@ -65,10 +65,6 @@ jobs:
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm ci
 
-            - name: Build
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build -- --noCheck
-
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run lint -- --quiet

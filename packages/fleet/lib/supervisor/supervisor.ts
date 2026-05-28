@@ -129,7 +129,7 @@ export class Supervisor {
 
     private async plan(): Promise<Result<Operation[]>> {
         const activeSpan = tracer.scope().active();
-        return tracer.trace('fleet.supervisor.plan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (span) => {
+        return tracer.trace('fleet.supervisor.plan', (activeSpan ? { childOf: activeSpan } : {}), async (span) => {
             const getDeployment = await deployments.getActive(this.dbClient.db);
             if (getDeployment.isErr()) {
                 span?.setTag('error', getDeployment.error);
@@ -294,7 +294,7 @@ export class Supervisor {
 
     private async executePlan(plan: Operation[]): Promise<void> {
         const activeSpan = tracer.scope().active();
-        return tracer.trace('fleet.supervisor.executePlan', { ...(activeSpan ? { childOf: activeSpan } : {}) }, async (executePlanSpan) => {
+        return tracer.trace('fleet.supervisor.executePlan', (activeSpan ? { childOf: activeSpan } : {}), async (executePlanSpan) => {
             for (const operation of plan) {
                 if (this.tickCancelled) {
                     executePlanSpan?.setTag('error', 'tick_cancelled');

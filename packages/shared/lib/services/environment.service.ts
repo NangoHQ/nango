@@ -166,7 +166,7 @@ class EnvironmentService {
         return environment;
     }
 
-    async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
+    async createDefaultEnvironments(trx: Knex, { accountId }: { accountId: number }): Promise<void> {
         for (const environment of defaultEnvironments) {
             const newEnv = await this.createEnvironment(trx, { accountId, name: environment });
             if (newEnv) {

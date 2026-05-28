@@ -53,7 +53,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should not return result from an other account', async () => {
-        const { account: account, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
         const { account: account2 } = await seeders.seedAccountEnvAndUser();
 
         await seeders.createEnvironmentSeed(account.id, 'test');

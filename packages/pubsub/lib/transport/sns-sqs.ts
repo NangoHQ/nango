@@ -95,7 +95,7 @@ export class SnsSqs implements Transport {
         this.sns = props?.snsClient ?? new SNSClient({});
         this.sqs = props?.sqsClient ?? new SQSClient({});
         this.queueUrls = props?.queueUrls ?? {};
-        this.topicArns = { ...(props?.topicArns ?? {}) };
+        this.topicArns = { ...props?.topicArns };
     }
 
     public async connect(_props?: { timeoutMs: number }): Promise<Result<void>> {

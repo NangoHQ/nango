@@ -1042,7 +1042,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
