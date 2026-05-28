@@ -11595,14 +11595,30 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    authorization_url: https://oauth2.mercury.com/oauth2/auth
-    token_url: https://oauth2.mercury.com/oauth2/token
+    authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
+    token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
         - offline_access
     proxy:
-        base_url: https://api.mercury.com
+        base_url: https://${connectionConfig.hostname} || https://api.mercury.com
     docs: https://nango.dev/docs/api-integrations/mercury
+    docs_connect: https://nango.dev/docs/api-integrations/mercury/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+    connection_config:
+        oauth_hostname:
+            type: string
+            title: OAuth Hostname
+            description: Your Mercury OAuth hostname.
+            example: oauth2-sandbox.mercury.com
+            optional: true
+            pattern: '^oauth2(?:-sandbox)?\.mercury\.com$'
+        hostname:
+            type: string
+            title: API Hostname
+            description: Your Mercury API hostname.
+            example: api-sandbox.mercury.com
+            optional: true
+            pattern: '^api(?:-sandbox)?\.mercury\.com$'
 
 meta-marketing-api:
     display_name: Meta Marketing API
