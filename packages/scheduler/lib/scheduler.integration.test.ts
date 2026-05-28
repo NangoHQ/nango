@@ -287,6 +287,43 @@ describe('Scheduler', () => {
             expect(res).toEqual({ created: [], discarded: [] });
         });
     });
+
+    it('should not propagate errors thrown by the onEvent handler', async () => {
+        const throwingOnEvent = vi.fn(() => {
+            throw new Error('error from onEvent');
+        });
+        const localScheduler = new Scheduler({
+            db: dbClient.db,
+            on: { CREATED: () => {}, STARTED: () => {}, SUCCEEDED: () => {}, FAILED: () => {}, EXPIRED: () => {}, CANCELLED: () => {} },
+            onError: () => {},
+            onEvent: throwingOnEvent,
+            config: { ...defaultSchedulerConfig, limits: { ...defaultSchedulerConfig.limits, groupTaskCap: 1 } }
+        });
+        const groupKey = nanoid();
+        await immediate(localScheduler, { taskProps: { groupKey } });
+
+        // Second task in the same group exceeds groupTaskCap=1 -> Scheduler.immediate fires onEvent.
+        // The handler throws; the Scheduler must isolate that throw and return a normal Err.
+        const second = await localScheduler.immediate({
+            name: nanoid(),
+            payload: {},
+            groupKey,
+            groupMaxConcurrency: 0,
+            retryMax: 1,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: 3600,
+            startedToCompletedTimeoutSecs: 3600,
+            heartbeatTimeoutSecs: 600,
+            ownerKey: null,
+            retryKey: null
+        });
+        expect(throwingOnEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'task_dropped', groupKey }));
+        expect(second.isErr()).toBe(true);
+        if (second.isErr()) {
+            expect(String(second.error)).not.toContain('error from onEvent');
+        }
+        await localScheduler.stop();
+    });
 });
 
 function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['immediateBatch']>[0][number] {
