@@ -897,6 +897,58 @@ algolia:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-2-finding-your-admin-api-key'
 
+altrata:
+    display_name: Altrata
+    categories:
+        - analytics
+    auth_mode: TWO_STEP
+    token_url: https://api-auth.altrata.com/oauth2/token
+    token_request_params:
+        grant_type: client_credentials
+    token_headers:
+        authorization: Basic ${base64(${credentials.username}:${credentials.password})}
+        x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: ${connectionConfig.hostname}
+        headers:
+            x-api-key: ${credentials.apiKey}
+    docs: https://nango.dev/docs/api-integrations/altrata
+    docs_connect: https://nango.dev/docs/api-integrations/altrata/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Service Hostname
+            description: The Altrata service hostname to connect to.
+            example: events.altrata.com
+            format: hostname
+            order: 1
+            doc_section: '#step-2-choose-a-service-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Altrata API key.
+            secret: true
+            example: mN3pQv8wLc2jXs5rKt4bGy6uFd1eAh7Z*******
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-getting-your-credentials'
+        username:
+            type: string
+            title: Username
+            description: Your Altrata account username.
+            example: john_doe
+            doc_section: '#step-1-getting-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Altrata account password.
+            secret: true
+            doc_section: '#step-1-getting-your-credentials'
+
 amazon:
     display_name: Amazon
     categories:

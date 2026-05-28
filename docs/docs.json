@@ -921,6 +921,7 @@
               "api-integrations/airtable",
               "integrations/all/airtable-pat",
               "integrations/all/algolia",
+              "api-integrations/altrata",
               "api-integrations/amazon",
               "api-integrations/amazon-selling-partner",
               "api-integrations/amazon-selling-partner-beta",
