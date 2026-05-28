@@ -38,7 +38,7 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2'>,
                     ...(useUserCredentials && formData.clientId && { clientId: formData.clientId }),
                     ...(useUserCredentials && formData.clientSecret && { clientSecret: formData.clientSecret }),
                     scopes: formData.scopes

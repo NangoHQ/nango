@@ -36,7 +36,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'APP'>,
                     appId: formData.appId,
                     appLink: formData.appLink,
                     privateKey: formData.privateKey

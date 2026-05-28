@@ -36,7 +36,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'INSTALL_PLUGIN'>,
                     appLink: formData.appLink,
                     username: formData.username,
                     password: formData.password

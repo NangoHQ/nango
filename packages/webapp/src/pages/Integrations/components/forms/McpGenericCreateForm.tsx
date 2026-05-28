@@ -34,7 +34,7 @@ export const McpGenericCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2_GENERIC'>,
                     clientName: formData.clientName,
                     clientUri: formData.clientUri,
                     clientLogoUri: formData.clientLogoUri

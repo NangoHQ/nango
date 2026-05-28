@@ -53,7 +53,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
                     clientId: formData.clientId,
                     clientSecret: formData.clientSecret,
                     scopes: formData.scopes

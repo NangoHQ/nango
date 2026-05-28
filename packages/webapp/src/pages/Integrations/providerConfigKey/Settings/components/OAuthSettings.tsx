@@ -41,7 +41,7 @@ export const OAuthSettings: React.FC<{ data: GetIntegration['Success']['data']; 
     const onSave = async (field: Partial<PatchIntegration['Body']>, supressToast = false) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode,
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
                 ...field
             });
             if (!supressToast) {

@@ -38,7 +38,7 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode,
+                    authType: provider.authMode as Extract<typeof provider.authMode, 'CUSTOM'>,
                     appId: formData.appId,
                     appLink: formData.appLink,
                     clientId: formData.clientId,

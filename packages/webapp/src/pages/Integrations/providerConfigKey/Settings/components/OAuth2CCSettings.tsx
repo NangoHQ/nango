@@ -25,7 +25,7 @@ export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'
     const handleScopesChange = async (scopes: string, countDifference: number) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode,
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH2_CC'>,
                 scopes
             });
             if (countDifference > 0) {

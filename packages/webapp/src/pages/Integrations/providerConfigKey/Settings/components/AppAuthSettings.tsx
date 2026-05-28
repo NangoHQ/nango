@@ -25,7 +25,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode,
+                authType: template.auth_mode as Extract<typeof template.auth_mode, 'APP'>,
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
