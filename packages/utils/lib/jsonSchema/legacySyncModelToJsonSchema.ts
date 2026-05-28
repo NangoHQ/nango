@@ -21,7 +21,7 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
 
     for (const field of fields) {
         // Optional fields end with '?' or '| undefined'
-        const isOptional = /\?$/.test(field.name) || (typeof field.type === 'string' && /\|\s*undefined$/.test(field.type));
+        const isOptional = field.name.endsWith('?') || (typeof field.type === 'string' && /\|\s*undefined$/.test(field.type));
         // Remove the optional marker.
         const cleanName = field.name.replace(/\?$/, '');
 

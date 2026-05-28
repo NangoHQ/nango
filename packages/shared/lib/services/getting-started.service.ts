@@ -181,7 +181,7 @@ export async function patchProgressByUser(db: Knex, user: DBUser, input: PatchGe
                     );
 
                     if (error || !connection) {
-                        return Err(new Error('connection_not_found', { ...(error ? { cause: error } : {}) }));
+                        return Err(new Error('connection_not_found', (error ? { cause: error } : {})));
                     }
 
                     update.connection_id = connection.id;

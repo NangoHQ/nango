@@ -100,7 +100,7 @@ function legacySyncModelToJsonSchema(model: LegacySyncModelSchema, allModels: Le
     const fields = Array.isArray(model.fields) ? model.fields : [];
     for (const field of fields) {
         // Optional fields end with '?' or '| undefined'
-        const isOptional = /\?$/.test(field.name) || /\|\s*undefined$/.test(field.type);
+        const isOptional = field.name.endsWith('?') || /\|\s*undefined$/.test(field.type);
         const cleanName = field.name.replace(/\?$/, '');
         properties[cleanName] = legacySyncFieldToJsonSchema(field, allModels);
         if (!isOptional) {

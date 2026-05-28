@@ -164,7 +164,7 @@ export abstract class NangoActionBase<
             ...config,
             providerConfigKey: config.providerConfigKey || this.providerConfigKey,
             headers: {
-                ...(config.headers || {}),
+                ...config.headers,
                 'user-agent': this.nango.userAgent
             }
         };
@@ -411,8 +411,8 @@ export abstract class NangoActionBase<
         }
 
         const paginationConfig = {
-            ...(templatePaginationConfig || {}),
-            ...(config.paginate || {})
+            ...templatePaginationConfig,
+            ...config.paginate
         } as Pagination;
 
         paginateService.validateConfiguration(paginationConfig);

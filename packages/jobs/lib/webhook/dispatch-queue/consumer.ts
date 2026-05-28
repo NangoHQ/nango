@@ -121,9 +121,7 @@ export class DispatchQueueConsumer {
 
     private async processMessage(msg: Message): Promise<void> {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('jobs.webhook.dispatch_queue.process', {
-            ...(active ? { childOf: active } : {})
-        });
+        const span = tracer.startSpan('jobs.webhook.dispatch_queue.process', (active ? { childOf: active } : {}));
 
         return await tracer.scope().activate(span, async () => {
             try {

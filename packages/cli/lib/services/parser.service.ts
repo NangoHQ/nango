@@ -258,7 +258,6 @@ class ParserService {
 
         if (
             batchingRecordsLines.length > 0 &&
-            setMergingStrategyLines.length > 0 &&
             setMergingStrategyLines.some((line) => line > Math.min(...batchingRecordsLines))
         ) {
             console.log(
@@ -266,7 +265,7 @@ class ParserService {
             );
             usedCorrectly = false;
         }
-        if (proxyLines.length > 0 && setMergingStrategyLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...proxyLines))) {
+        if (proxyLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...proxyLines))) {
             console.log(chalk.red(`setMergingStrategy should be called before any proxy function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`));
             usedCorrectly = false;
         }

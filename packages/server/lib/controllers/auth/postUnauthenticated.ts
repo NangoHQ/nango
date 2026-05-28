@@ -65,7 +65,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
     let config: ProviderConfig | null = null;
 
     try {
-        const logCtx =
+        logCtx =
             isConnectSession && connectSession.operationId
                 ? logContextGetter.get({ id: connectSession.operationId, accountId: account.id })
                 : await logContextGetter.create(

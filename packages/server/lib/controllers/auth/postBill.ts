@@ -76,7 +76,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { username, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
+    const { username, password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
