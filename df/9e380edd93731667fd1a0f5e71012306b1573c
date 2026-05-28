@@ -1,0 +1,34 @@
+docs/docs.json
+  s_b39de48b60dddc::t_fe505002df5112 636-643,1111-1112,1163,1262,1347,1373,1380,1460,1465,1582,1613,1617
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_11ab1c8aa7c051 168-171
+  s_b39de48b60dddc::t_e13f1d49bcc8b2 622-624
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_a43e28c5bb980f 55,201-202
+packages/sandbox/lib/remote-function/runtime.unit.test.ts
+  s_b39de48b60dddc::t_76164916ac2386 31
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_6f5ad2d6412e36 14
+docs/spec.yaml
+  s_b39de48b60dddc::t_fe505002df5112 3471-3473
+docs/llms-full.txt
+  s_b39de48b60dddc::t_fe505002df5112 8729,8736-8750,8753-8781,9831,9842,9845,9847,13914-13915,13962,14061,14148,14180,14183,14266,14269,14376,14407,14414
+packages/server/package.json
+  s_b39de48b60dddc::t_fe505002df5112 51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "df9e380edd93731667fd1a0f5e71012306b1573c",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

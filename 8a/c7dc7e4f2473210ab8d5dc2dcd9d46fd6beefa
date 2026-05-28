@@ -1,0 +1,28 @@
+packages/server/lib/controllers/functions/remote-function.integration.test.ts
+  s_b39de48b60dddc::t_11ab1c8aa7c051 176-179,180-181,183,185-188,191-193
+  s_b39de48b60dddc::t_e13f1d49bcc8b2 646-648,33,182,184,189-190,194-195,649-672
+  s_b39de48b60dddc::t_af0fef9d898269 622
+  s_b39de48b60dddc::t_2339a8c9ec0e8d 623
+  s_b39de48b60dddc::t_4bc63e5b15ea80 713-714
+  s_b39de48b60dddc::t_d57586cc89e585 604-605,620
+  s_b39de48b60dddc::t_233abea224d62a 26-32
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_ae4017e72408eb 39-42
+  s_b39de48b60dddc::t_331da5ac2c8ab4 102-103,112-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8ac7dc7e4f2473210ab8d5dc2dcd9d46fd6beefa",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

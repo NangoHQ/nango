@@ -1,0 +1,23 @@
+Dockerfile
+  s_b39de48b60dddc::t_fe505002df5112 22
+  s_b39de48b60dddc::t_031e99246fb297 34
+packages/lambda-runner/Dockerfile.lambda
+  s_b39de48b60dddc::t_fe505002df5112 22
+  s_b39de48b60dddc::t_031e99246fb297 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c7eeb446d28786a610c5332b2657099f7cd50607",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

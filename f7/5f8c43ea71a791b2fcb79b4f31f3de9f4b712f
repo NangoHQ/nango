@@ -1,0 +1,78 @@
+packages/server/lib/controllers/functions/dryrun/postDryrunResult.ts
+  s_b39de48b60dddc::t_14150abe6c61fb 1
+  s_b39de48b60dddc::t_f51cc645860646 2-72
+packages/server/lib/controllers/functions/dryrun/postRemoteDryrun.ts
+  s_b39de48b60dddc::t_f51cc645860646 1-80
+packages/server/lib/controllers/functions/dryrun/helpers.ts
+  s_b39de48b60dddc::t_f51cc645860646 1-22,24,26-31,33,35-54
+  s_b39de48b60dddc::t_14150abe6c61fb 23,25,32,34
+packages/server/lib/crons/deleteOldData.ts
+  s_b39de48b60dddc::t_a43e28c5bb980f 7,49,133-136
+packages/server/lib/routes.public.ts
+  s_b39de48b60dddc::t_ae4017e72408eb 39-42
+packages/sandbox/tsconfig.json
+  s_b39de48b60dddc::t_6c505d78451629 4
+packages/sandbox/lib/remote-function/runtime.unit.test.ts
+  s_b39de48b60dddc::t_76164916ac2386 35,8-9,20,22
+  s_b39de48b60dddc::t_934bfdde43d873 7,17
+  s_b39de48b60dddc::t_5eeeeb71b412d0 21
+packages/sandbox/lib/remote-function/runtime.ts
+  s_b39de48b60dddc::t_37b45c972c30de 1,18
+packages/sandbox/lib/remote-function/dryrun-client.ts
+  s_b39de48b60dddc::t_6f5ad2d6412e36 16,2,19
+  s_b39de48b60dddc::t_6c505d78451629 1,17
+  s_b39de48b60dddc::t_20f6f165dcd43d 18,258
+packages/server/lib/controllers/functions/errors.ts
+  s_b39de48b60dddc::t_ae4017e72408eb 28-35,58
+packages/database/lib/migrations/20260519120000_create_function_dryruns.cjs
+  s_b39de48b60dddc::t_a43e28c5bb980f 31-32
+  s_b39de48b60dddc::t_ec9f1d7c615404 33,37-40
+packages/database/lib/migration-helpers/renameDryrunApiKeyScope.cjs
+  s_b39de48b60dddc::t_37b45c972c30de 21,32,41
+packages/sandbox/lib/functions/dryruns.service.integration.test.ts
+  s_b39de48b60dddc::t_7c8dabd8e760a6 8,68,70,73-84,86-96,98-105,107,111,116-160
+  ai_agent 9
+  s_b39de48b60dddc::t_5ab78d05c349be 56,69,71-72,85,97,106,108-110,112-115
+packages/sandbox/lib/api-keys/sandbox-api-key.service.ts
+  s_b39de48b60dddc::t_37b45c972c30de 52
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_b39de48b60dddc::t_a43e28c5bb980f 238,2,17,55-61,63,65-66,69-71,230,242-253,255
+  s_b39de48b60dddc::t_a20cdd6107d84e 197-198,202-203,214-216,218-220,222,224-229,231-234,236-237,239,62,67,212
+  s_b39de48b60dddc::t_a2ea373da101c2 201
+  s_b39de48b60dddc::t_6c505d78451629 217,221,235,5,72,200,254,257,259-262,265
+  s_b39de48b60dddc::t_2339a8c9ec0e8d 266
+  s_b39de48b60dddc::t_5ab78d05c349be 4,199,204-206,208-211,213,223
+  s_b39de48b60dddc::t_62198d1d1c444a 6-13,207
+packages/server/lib/controllers/functions/dryrun/postDryrun.ts
+  s_b39de48b60dddc::t_764c5a3d012aa2 11,15-16,18,35,56,70-73,75
+  s_b39de48b60dddc::t_c9f8938d7c0aaf 117,119
+  s_b39de48b60dddc::t_20f6f165dcd43d 118
+packages/sandbox/lib/remote-function/async-dryrun-script.js
+  s_b39de48b60dddc::t_6c505d78451629 1-119
+packages/server/lib/controllers/functions/dryrun/getDryrun.ts
+  s_b39de48b60dddc::t_f51cc645860646 1-30
+packages/shared/lib/utils/utils.ts
+  s_b39de48b60dddc::t_5eeeeb71b412d0 9
+  s_b39de48b60dddc::t_37b45c972c30de 54-58
+  s_b39de48b60dddc::t_6c505d78451629 172-173,175-176
+  s_b39de48b60dddc::t_4ac66b9a1ea276 174
+  s_b39de48b60dddc::t_62198d1d1c444a 177
+packages/sandbox/lib/functions/dryruns.service.unit.test.ts
+  s_b39de48b60dddc::t_6fb1cc9eb50c33 1-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f75f8c43ea71a791b2fcb79b4f31f3de9f4b712f",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

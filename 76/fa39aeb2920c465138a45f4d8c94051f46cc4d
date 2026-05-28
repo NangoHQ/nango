@@ -1,0 +1,20 @@
+docs/spec.yaml
+  s_b39de48b60dddc::t_fe505002df5112 3459-3461
+  s_b39de48b60dddc::t_38a1642592be61 3114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "76fa39aeb2920c465138a45f4d8c94051f46cc4d",
+  "prompts": {},
+  "sessions": {
+    "s_b39de48b60dddc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e44bb-ee38-7a00-8c79-07c22e2758ea",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
