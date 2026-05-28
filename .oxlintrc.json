@@ -1,0 +1,87 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["import", "typescript", "unicorn"],
+    "ignorePatterns": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/coverage/**",
+        "**/bin/**",
+        "packages/server/nango-integrations/**",
+        "packages/node-client/tests/**",
+        "packages/cli/fixtures/**",
+        "docs/script.js",
+        "packages/runner-sdk/models.d.ts",
+        "packages/cli/templates/**"
+    ],
+    "rules": {
+        "no-unused-vars": [
+            "error",
+            {
+                "args": "all",
+                "argsIgnorePattern": "^_",
+                "caughtErrors": "all",
+                "caughtErrorsIgnorePattern": "^_",
+                "destructuredArrayIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "ignoreRestSiblings": true
+            }
+        ],
+
+        "typescript/consistent-type-imports": [
+            "error",
+            {
+                "prefer": "type-imports",
+                "fixStyle": "separate-type-imports"
+            }
+        ],
+        "typescript/consistent-type-exports": "error",
+        "typescript/no-explicit-any": "warn",
+        "typescript/no-non-null-assertion": "warn",
+
+        "import/no-duplicates": "error",
+        "import/no-absolute-path": "error",
+        "import/no-self-import": "error",
+        "import/newline-after-import": "error",
+        "import/no-empty-named-blocks": "error",
+        "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+
+        "unicorn/catch-error-name": ["error", { "name": "err" }],
+
+        "no-unused-expressions": [
+            "warn",
+            {
+                "allowShortCircuit": true,
+                "allowTernary": true,
+                "allowTaggedTemplates": true
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["integration-templates/**/*.ts"],
+            "rules": {
+                "no-constant-condition": "off"
+            }
+        },
+        {
+            "files": ["packages/connect-ui/src/**/*.{tsx,ts}"],
+            "rules": {
+                "typescript/no-non-null-assertion": "error",
+                "typescript/no-explicit-any": "error"
+            }
+        },
+        {
+            "files": ["packages/webapp/src/**/*.{tsx,ts}", "packages/connect-ui/src/**/*.{tsx,ts}"],
+            "plugins": ["react"],
+            "rules": {
+                "react/jsx-key": "error",
+                "react/jsx-no-target-blank": "error",
+                "react/no-danger-with-children": "error",
+                "react/no-unescaped-entities": "error",
+                "react/rules-of-hooks": "error",
+                "react/exhaustive-deps": "warn"
+            }
+        }
+    ]
+}
