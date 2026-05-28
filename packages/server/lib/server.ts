@@ -13,7 +13,7 @@ import db, { KnexDatabase } from '@nangohq/database';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
-import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
+import { records } from '@nangohq/records';
 import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
 import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nangohq/utils';
 
@@ -82,7 +82,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate(db);
     await migrateKeystore(db.knex);
     await migrateLogs();
-    await migrateRecords();
+    await records.migrate();
     await migrateFleets();
     await db.destroy();
 } else {
@@ -125,7 +125,7 @@ const close = once(() => {
         wss.close();
         await stopFleets();
         await db.destroy();
-        await destroyRecords();
+        await records.close();
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();

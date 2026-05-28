@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
-import { clearDbTestsOnly as clearRecordsDb, format as recordsFormatter, migrate as migrateRecords, records as recordsService } from '@nangohq/records';
+import { clearDbTestsOnly as clearRecordsDb, format as recordsFormatter, records as recordsService } from '@nangohq/records';
 import { getLatestSyncJob, isSyncJobRunning, seeders, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 
@@ -170,7 +170,7 @@ describe('Running sync', () => {
 
 const initDb = async () => {
     await multipleMigrations();
-    await migrateRecords();
+    await recordsService.migrate();
 };
 
 const runJob = async (

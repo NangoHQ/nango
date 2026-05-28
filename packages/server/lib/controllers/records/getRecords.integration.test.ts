@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { format, migrate as migrateRecords, records } from '@nangohq/records';
+import { format, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
 import { getLookbackCutoff } from './getRecords.js';
@@ -11,7 +11,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 describe(`GET ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        await migrateRecords();
+        await records.migrate();
     });
     afterAll(() => {
         api.server.close();

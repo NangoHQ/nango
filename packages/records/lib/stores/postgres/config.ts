@@ -1,4 +1,4 @@
-import { envs } from '../env.js';
+import { envs } from '../../env.js';
 
 import type { Knex } from 'knex';
 

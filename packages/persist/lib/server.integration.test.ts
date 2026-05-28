@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
-import { migrate as migrateRecords, records } from '@nangohq/records';
+import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
     SyncJobsType,
@@ -45,7 +45,7 @@ describe('Persist API', () => {
 
     beforeAll(async () => {
         await multipleMigrations();
-        await migrateRecords();
+        await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
         server.listen(port);
