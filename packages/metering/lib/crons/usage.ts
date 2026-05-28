@@ -12,6 +12,7 @@ import { flagHasUsage, getLogger, metrics } from '@nangohq/utils';
 import { envs } from '../env.js';
 
 import type { Lock } from '@nangohq/kvstore';
+import type { RecordCount } from '@nangohq/records';
 import type { RecordsBillingEvent } from '@nangohq/types';
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 
@@ -108,28 +109,39 @@ const usage = {
                         if (recordCounts.isErr()) {
                             throw recordCounts.error;
                         }
-                        for (const recordCount of recordCounts.value) {
+                        // Drop slices whose per-connection sum is <= 0. This mirrors the
+                        // semantics of the HTTP `usageBilling.add` path right below
+                        // (line ~232), where connections with non-positive aggregated
+                        // counts are skipped before the event is emitted. Without the
+                        // same filter here, CH-fed consumers (dashboard / S3 export)
+                        // would expose values Orb has never seen and would shift
+                        // billing on cutover. Root cause of the non-positive counts
+                        // is upstream in `records.paginateCounts` and needs separate
+                        // investigation.
+                        const positiveSlices = filterPositiveConnectionSlices(recordCounts.value);
+                        for (const recordCount of positiveSlices) {
                             const connection = connectionsMap.get(recordCount.connection_id);
-                            if (connection) {
-                                const res = clickhouse.addRaw([
-                                    {
-                                        ts: now.getTime(),
-                                        idempotency_key: uuidv7(),
-                                        type: 'usage.records',
-                                        value: recordCount.count,
-                                        account_id: connection.account.id,
-                                        attributes: {
-                                            environmentId: connection.environment.id,
-                                            integrationId: connection.connection.provider_config_key,
-                                            connectionId: connection.connection.connection_id,
-                                            model: recordCount.model,
-                                            batchId
-                                        }
+                            if (!connection) {
+                                continue;
+                            }
+                            const res = clickhouse.addRaw([
+                                {
+                                    ts: now.getTime(),
+                                    idempotency_key: uuidv7(),
+                                    type: 'usage.records',
+                                    value: recordCount.count,
+                                    account_id: connection.account.id,
+                                    attributes: {
+                                        environmentId: connection.environment.id,
+                                        integrationId: connection.connection.provider_config_key,
+                                        connectionId: connection.connection.connection_id,
+                                        model: recordCount.model,
+                                        batchId
                                     }
-                                ]);
-                                if (res.isErr()) {
-                                    throw res.error;
                                 }
+                            ]);
+                            if (res.isErr()) {
+                                throw res.error;
                             }
                         }
                     }
@@ -312,3 +324,29 @@ const billing = {
         });
     }
 };
+
+/**
+ * Returns the subset of slices whose per-connection sum of `count` is strictly
+ * positive. Slices belonging to a connection with a non-positive aggregate are
+ * dropped entirely (including any positive ones in the same connection), so
+ * the surviving set mirrors the HTTP path's behaviour: a connection is either
+ * fully present (with its model-level granularity intact) or fully absent.
+ *
+ * Exported for unit testing.
+ */
+export function filterPositiveConnectionSlices(slices: RecordCount[]): RecordCount[] {
+    const byConnection = new Map<number, RecordCount[]>();
+    for (const slice of slices) {
+        const bucket = byConnection.get(slice.connection_id) ?? [];
+        bucket.push(slice);
+        byConnection.set(slice.connection_id, bucket);
+    }
+    const out: RecordCount[] = [];
+    for (const bucket of byConnection.values()) {
+        const sum = bucket.reduce((acc, s) => acc + s.count, 0);
+        if (sum > 0) {
+            out.push(...bucket);
+        }
+    }
+    return out;
+}
