@@ -23,15 +23,15 @@ describe('remote function runtime config', () => {
         expect(getRemoteFunctionNangoHost()).toBe('https://api.example.test');
     });
 
-    it('uses the public cloud host even when an internal server URL is configured', async () => {
-        process.env['NANGO_SERVER_URL'] = 'http://nango-server:3003';
+    it('uses the configured server URL in cloud environments', async () => {
+        process.env['NANGO_SERVER_URL'] = 'https://api-development.nango.dev';
 
         vi.resetModules();
         vi.stubEnv('NANGO_CLOUD', 'true');
         vi.stubEnv('NODE_ENV', 'production');
         const { getRemoteFunctionNangoHost } = await import('./runtime.js');
 
-        expect(getRemoteFunctionNangoHost()).toBe('https://api.nango.dev');
+        expect(getRemoteFunctionNangoHost()).toBe('https://api-development.nango.dev');
     });
 
     it('rejects an empty compiler template instead of falling back silently', async () => {

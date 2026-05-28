@@ -1,4 +1,4 @@
-import { RemoteFunctionError, invokeDryrun, parseDryrunSuccessOutput } from '@nangohq/sandbox';
+import { RemoteFunctionError, getRemoteFunctionNangoHost, invokeDryrun, parseDryrunSuccessOutput } from '@nangohq/sandbox';
 import { connectionService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
@@ -6,7 +6,6 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
 import { remoteFunctionDryrunBodySchema } from '../validation.js';
 import { createDryrunSandboxApiKey, requireCustomerKeyId } from './helpers.js';
-import { getFunctionSandboxNangoHost } from '../requestHost.js';
 
 import type { PostRemoteFunctionDryrun } from '@nangohq/types';
 
@@ -50,7 +49,7 @@ export const postRemoteFunctionDryrun = asyncWrapper<PostRemoteFunctionDryrun>(a
     const startedAt = new Date();
 
     try {
-        const nangoHost = getFunctionSandboxNangoHost(req);
+        const nangoHost = getRemoteFunctionNangoHost();
         const result = await invokeDryrun({
             integration_id: body.integration_id,
             function_name: body.function_name,

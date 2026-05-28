@@ -1,6 +1,7 @@
 import {
     RemoteFunctionError,
     createFunctionDryrun,
+    getRemoteFunctionNangoHost,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
     prepareAsyncDryrun,
@@ -13,7 +14,6 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
 import { functionDryrunBodySchema } from '../validation.js';
 import { createDryrunSandboxApiKey, defaultFunctionName, requireCustomerKeyId, toFunctionDryrunError } from './helpers.js';
-import { getFunctionSandboxNangoHost } from '../requestHost.js';
 
 import type { PostFunctionDryrun } from '@nangohq/types';
 
@@ -75,7 +75,7 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
     const dryrun = dryrunResult.value;
     let prepared: Awaited<ReturnType<typeof prepareAsyncDryrun>> | null = null;
     try {
-        const nangoHost = getFunctionSandboxNangoHost(req);
+        const nangoHost = getRemoteFunctionNangoHost();
         const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id, dryrun.id);
         if (sandboxApiKey.isErr()) {
             throw sandboxApiKey.error;

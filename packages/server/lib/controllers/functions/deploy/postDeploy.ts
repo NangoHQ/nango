@@ -1,11 +1,17 @@
 import db from '@nangohq/database';
-import { RemoteFunctionError, invokeDeploy, parseDeploySuccessOutput, remoteFunctionDeploySandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import {
+    RemoteFunctionError,
+    getRemoteFunctionNangoHost,
+    invokeDeploy,
+    parseDeploySuccessOutput,
+    remoteFunctionDeploySandboxTimeoutMs,
+    sandboxApiKeyService
+} from '@nangohq/sandbox';
 import { configService, getSyncConfigRaw } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
-import { getFunctionSandboxNangoHost } from '../requestHost.js';
 import { functionDeploymentBodySchema, remoteFunctionDeployBodySchema } from '../validation.js';
 
 import type { DBSyncConfig, PostFunctionDeployment, PostRemoteFunctionDeploy } from '@nangohq/types';
@@ -88,7 +94,6 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
     const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
 
     try {
-        const nangoHost = getFunctionSandboxNangoHost(req);
         const result = await invokeDeploy({
             integration_id: body.integration_id,
             function_name: body.function_name,
@@ -96,7 +101,7 @@ export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(a
             code: body.code,
             environment_name: environment.name,
             nango_secret_key: sandboxApiKey,
-            nango_host: nangoHost,
+            nango_host: getRemoteFunctionNangoHost(),
             allow_destructive: allowDestructiveDeploy
         });
         const output = parseDeploySuccessOutput(result.output);
@@ -161,7 +166,6 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
     const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
 
     try {
-        const nangoHost = getFunctionSandboxNangoHost(req);
         const result = await invokeDeploy({
             integration_id: body.integration_id,
             function_name: body.function_name,
@@ -169,7 +173,7 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
             code: body.code,
             environment_name: environment.name,
             nango_secret_key: sandboxApiKey,
-            nango_host: nangoHost,
+            nango_host: getRemoteFunctionNangoHost(),
             ...(body.version ? { version: body.version } : {}),
             allow_destructive: allowDestructiveDeploy
         });

@@ -17,5 +17,5 @@ export const remoteFunctionDeploySandboxTimeoutMs = remoteFunctionDeployTimeoutM
 export const remoteFunctionDryrunSandboxTimeoutMs = remoteFunctionCompileTimeoutMs + remoteFunctionDryrunTimeoutMs + remoteFunctionSandboxTimeoutBufferMs;
 
 export function getRemoteFunctionNangoHost(): string {
-    return getApiUrl();
+    return envs.NANGO_SERVER_URL ?? getApiUrl();
 }
