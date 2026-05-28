@@ -17294,6 +17294,7 @@ sap-ariba:
             description: Your SAP Ariba API subdomain. Use "api" for US, "api-eu" for Europe, or "api.au.cloud" for Australia.
             example: api-eu
             default_value: api
+            pattern: '^(api|api-eu|api\.au\.cloud)$'
             doc_section: '#step-1-select-your-subdomain'
             order: 1
         apiKey:
