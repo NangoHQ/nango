@@ -201,7 +201,7 @@ src/
       button.stories.tsx
       icon-button.tsx
       icon-button.stories.tsx
-      spinner.tsx          internal — used by Button for loading state
+      spinner.tsx          standalone loading indicator; also used by Button internally
       …                    add new components here
   lib/
     cn.ts                  cn() helper: twMerge + clsx
