@@ -3,10 +3,11 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { ENVS, Err, Ok, parseEnvs } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
+import { Clickhouse } from './clickhouse/clickhouse.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
@@ -14,6 +15,8 @@ import type { GetDailySumAndBatchesResult, GetDailySumAndBatchesSeries } from '.
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+const parsedEnvs = parseEnvs(ENVS);
 
 const cacheKeyPrefix = 'usageV2';
 
@@ -28,7 +31,7 @@ export interface IUsageTracker {
     getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number; forceRevalidation?: boolean }): Promise<Result<UsageStatus>>;
     revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>>;
-    getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
+    getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
 }
 
 export class UsageTrackerNoOps implements IUsageTracker {
@@ -76,10 +79,21 @@ export class UsageTrackerNoOps implements IUsageTracker {
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
     public billingClient: UsageBillingClient;
+    // Read-only client for the AVG-from-ClickHouse path (guarded by
+    // USAGE_BILLING_AVG_FROM_CLICKHOUSE). Lazy-init keeps the dependency out
+    // of code paths that never read records/connections from CH.
+    private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
         this.billingClient = new UsageBillingClient(redis);
+    }
+
+    private getClickhouse(): Clickhouse {
+        if (!this.clickhouse) {
+            this.clickhouse = new Clickhouse();
+        }
+        return this.clickhouse;
     }
 
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
@@ -220,11 +234,36 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
-    public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
+    public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
 
         if (billingUsageMetrics.isErr()) {
             return billingUsageMetrics;
+        }
+
+        // CH-backed AVG path. Counter metrics always come from Orb; only
+        // records / connections can be overridden. Scope intentionally limited:
+        //   - flag is on
+        //   - caller asked for a day-granularity series within an explicit
+        //     timeframe (the dashboard path; capping calls without timeframe
+        //     stay on Orb)
+        // The dim breakdown wiring belongs to a follow-up — `BillingUsageMetric`
+        // is single-series, so it can't represent per-dim panels here yet.
+        const useClickhouseForAvg = parsedEnvs.USAGE_BILLING_AVG_FROM_CLICKHOUSE && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
+
+        if (useClickhouseForAvg) {
+            const [records, connections] = await Promise.all([
+                this.getCumulativeAvgFromClickhouse({ accountId, metric: 'records', timeframe: opts.timeframe! }),
+                this.getCumulativeAvgFromClickhouse({ accountId, metric: 'connections', timeframe: opts.timeframe! })
+            ]);
+            return Ok({
+                ...billingUsageMetrics.value,
+                // Fall back to the Orb-derived value if the CH read failed; we'd
+                // rather show stale data than no data while the dashboard adopts
+                // the new path.
+                connections: connections ?? (billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined),
+                records: records ?? (billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined)
+            });
         }
 
         return Ok({
@@ -232,6 +271,35 @@ export class UsageTracker implements IUsageTracker {
             connections: billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined,
             records: billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined
         });
+    }
+
+    /**
+     * Reads the AVG-metric daily series from ClickHouse and turns it into the
+     * single-series BillingUsageMetric the dashboard already consumes. Returns
+     * `null` on read error (caller falls back to Orb) or when CH has no data
+     * for the window (treated like the metric being absent).
+     */
+    private async getCumulativeAvgFromClickhouse({
+        accountId,
+        metric,
+        timeframe
+    }: {
+        accountId: number;
+        metric: 'records' | 'connections';
+        timeframe: { start: Date; end: Date };
+    }): Promise<BillingUsageMetric | null> {
+        const res = await this.getClickhouse().getDailySumAndBatches({
+            accountId,
+            metric,
+            dimension: 'none',
+            timeframe
+        });
+        if (res.isErr()) {
+            logger.error(`CH AVG read failed for accountId=${accountId} metric=${metric}, falling back to Orb`, res.error);
+            return null;
+        }
+        const series = toRunningAvgUsage(res.value);
+        return series[0] ?? null;
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -256,7 +324,9 @@ export class UsageTracker implements IUsageTracker {
         if (!plan.value.orb_subscription_id) {
             return Err(new Error('orb_subscription_id_missing'));
         }
-        const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id);
+        // No timeframe / no granularity → CH path is bypassed inside
+        // getBillingUsage, capping continues to read from Orb.
+        const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id, accountId);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
             // revalidateAfter isn't being updated, so next incr will attempt to revalidate again

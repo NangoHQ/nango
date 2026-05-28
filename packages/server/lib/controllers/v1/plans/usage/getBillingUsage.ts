@@ -73,7 +73,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
-    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, account.id, {
         granularity: 'day',
         ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {})
     });

@@ -297,7 +297,12 @@ export class Clickhouse {
 
         try {
             const res = await this.client.query({ query: sql, format: 'JSONEachRow' });
-            const rows = await res.json();
+            const rows = await res.json<{
+                day: string;
+                sum: string | number;
+                batches: string | number;
+                dimensionValue?: string;
+            }>();
 
             // One series per distinct dimensionValue; preserve insertion order for stability.
             const seriesMap = new Map<string, GetDailySumAndBatchesSeries>();
