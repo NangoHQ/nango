@@ -6,13 +6,13 @@ import z from 'zod';
 
 import { NangoProvidedInput } from '../NangoProvidedInput';
 import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
 import { Button } from '@/components-v2/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-v2/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Label } from '@/components-v2/ui/Label';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';

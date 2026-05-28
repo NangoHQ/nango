@@ -1,6 +1,6 @@
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';

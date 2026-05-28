@@ -7,10 +7,10 @@ import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../compon
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
+import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { EmptyCard } from '@/components-v2/ui/EmptyCard';
 import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';

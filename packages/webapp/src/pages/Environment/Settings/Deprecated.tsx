@@ -9,11 +9,11 @@ import Spinner from '../../../components/ui/Spinner';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { ButtonLink } from '@/components-v2/ui/Button';
 import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { Label } from '@/components-v2/ui/Label';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { SecretInput } from '@/components-v2/patterns/SecretInput';
+import { ButtonLink } from '@/components-v2/ui/Button';
+import { Label } from '@/components-v2/ui/Label';
 import { Switch } from '@/components-v2/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 

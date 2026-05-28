@@ -1,6 +1,6 @@
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Label } from '@/components-v2/ui/Label';

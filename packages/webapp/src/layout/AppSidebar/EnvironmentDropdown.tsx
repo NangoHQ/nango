@@ -6,10 +6,10 @@ import { permissions } from '@nangohq/authz';
 
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 import { LogoInverted } from '@/assets/LogoInverted';
+import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
 import { Badge } from '@/components-v2/ui/Badge.js';
 import { Button } from '@/components-v2/ui/Button.js';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components-v2/ui/Sidebar.js';
 import { StyledLink } from '@/components-v2/ui/StyledLink.js';

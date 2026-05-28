@@ -3,10 +3,10 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Label } from '@/components-v2/ui/Label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';

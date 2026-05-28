@@ -4,10 +4,10 @@ import { useForm } from 'react-hook-form';
 import z from 'zod';
 
 import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { Button } from '@/components-v2/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
 import { InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
