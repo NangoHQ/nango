@@ -3,12 +3,8 @@ description: 'Sets up Node.js with npm caching enabled by default.'
 
 inputs:
     node-version:
-        description: 'Node.js version to use. When set, overrides node-version-file.'
+        description: 'Node.js version to use. When set, overrides .nvmrc.'
         required: false
-    node-version-file:
-        description: 'Path to a file containing the Node.js version. Defaults to .nvmrc.'
-        required: false
-        default: '.nvmrc'
     registry-url:
         description: 'Optional registry URL for npm publishing or private registry auth.'
         required: false
@@ -26,19 +22,9 @@ runs:
         - uses: actions/setup-node@v4
           with:
               node-version: ${{ inputs.node-version }}
-              node-version-file: ${{ inputs.node-version-file }}
+              node-version-file: .nvmrc
               cache: 'npm'
               cache-dependency-path: 'package-lock.json'
               registry-url: ${{ inputs.registry-url }}
               scope: ${{ inputs.scope }}
               always-auth: ${{ inputs.always-auth }}
-
-        - name: Upgrade npm
-          shell: bash
-          run: npm install -g npm@11.12.1
-
-        - name: Check lockfile consistency
-          shell: bash
-          run: |
-              npm install --package-lock-only --ignore-scripts
-              git diff --exit-code package-lock.json
