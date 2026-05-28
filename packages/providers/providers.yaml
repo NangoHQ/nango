@@ -19265,6 +19265,30 @@ the-swarm:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-get-your-api-key'
 
+theirstack:
+    display_name: TheirStack
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.theirstack.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/billing/credit-balance
+    docs: https://nango.dev/docs/api-integrations/theirstack
+    docs_connect: https://nango.dev/docs/api-integrations/theirstack/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TheirStack API key.
+            example: eyJhbGci*******.eyJ2ZX********.kWB5********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-api-key'
+
 terraform:
     display_name: Terraform
     categories:
