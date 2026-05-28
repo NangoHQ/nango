@@ -30,6 +30,9 @@ export class CleaningDaemon extends SchedulerDaemon {
             abortSignal,
             onError
         });
+        if (!Number.isInteger(olderThanDays) || olderThanDays < 0) {
+            throw new Error(`CleaningDaemon: olderThanDays must be a non-negative integer, got ${String(olderThanDays)}`);
+        }
         this.olderThanDays = olderThanDays;
     }
 

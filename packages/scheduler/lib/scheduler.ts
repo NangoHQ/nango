@@ -65,8 +65,16 @@ export class Scheduler {
         this.onCallbacks = on;
         this.db = db;
         this.config = config;
-        this.onEvent = onEvent;
         setLogger(injectedLogger ?? noopLogger);
+
+        const safeOnEvent = (event: SchedulerEvent): void => {
+            try {
+                onEvent(event);
+            } catch (err) {
+                logger.error(`Scheduler onEvent handler threw for ${event.type}`, err);
+            }
+        };
+        this.onEvent = safeOnEvent;
 
         this.expiring = new ExpiringDaemon({
             db,
@@ -89,7 +97,7 @@ export class Scheduler {
             onScheduling: (task: Task) => {
                 this.onCallbacks[task.state](task);
             },
-            onEvent,
+            onEvent: safeOnEvent,
             onError
         });
         this.cleaning = new CleaningDaemon({
@@ -104,7 +112,7 @@ export class Scheduler {
             abortSignal: this.ac.signal,
             tickIntervalMs: config.daemons.monitoringTickIntervalMs,
             topN: config.daemons.monitoringTopN,
-            onEvent,
+            onEvent: safeOnEvent,
             onError
         });
     }
