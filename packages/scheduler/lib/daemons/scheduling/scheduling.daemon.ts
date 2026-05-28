@@ -4,38 +4,52 @@ import tracer from 'dd-trace';
 
 import { stringifyError } from '@nangohq/utils';
 
-import * as schedules from '../../models/schedules.js';
-import { SchedulerDaemon } from '../daemon.js';
 import { dueSchedules } from './scheduling.js';
-import { envs } from '../../env.js';
+import * as schedules from '../../models/schedules.js';
 import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
+import { SchedulerDaemon } from '../daemon.js';
 
+import type { SchedulerEvent } from '../../config.js';
 import type { Task } from '../../types.js';
 import type knex from 'knex';
 
 export class SchedulingDaemon extends SchedulerDaemon {
     private readonly onScheduling: (task: Task) => void;
+    private readonly onEvent: (event: SchedulerEvent) => void;
+    private readonly groupTaskCap: number;
+    private readonly recurringGroupMaxConcurrency: number;
 
     constructor({
         db,
         abortSignal,
+        tickIntervalMs,
+        groupTaskCap,
+        recurringGroupMaxConcurrency,
         onScheduling,
+        onEvent,
         onError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
+        tickIntervalMs: number;
+        groupTaskCap: number;
+        recurringGroupMaxConcurrency: number;
         onScheduling: (task: Task) => void;
+        onEvent: (event: SchedulerEvent) => void;
         onError: (err: Error) => void;
     }) {
         super({
             name: 'Scheduling',
             db,
-            tickIntervalMs: envs.ORCHESTRATOR_SCHEDULING_TICK_INTERVAL_MS,
+            tickIntervalMs,
             abortSignal,
             onError
         });
         this.onScheduling = onScheduling;
+        this.onEvent = onEvent;
+        this.groupTaskCap = groupTaskCap;
+        this.recurringGroupMaxConcurrency = recurringGroupMaxConcurrency;
     }
 
     async run(): Promise<void> {
@@ -64,7 +78,7 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     name: `${schedule.name}:${now.toISOString()}`,
                                     payload: schedule.payload,
                                     groupKey: schedule.groupKey,
-                                    groupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY,
+                                    groupMaxConcurrency: this.recurringGroupMaxConcurrency,
                                     retryCount: 0,
                                     retryMax: schedule.retryMax,
                                     createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
@@ -72,15 +86,22 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                     heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
                                     ownerKey: null
                                 }));
-                                const createRes = await tasks.create(trx, taskProps);
+                                const createRes = await tasks.create(trx, taskProps, { groupTaskCap: this.groupTaskCap });
                                 if (createRes.isErr()) {
                                     throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
                                 }
-                                const cappedGroupKeys = [
-                                    ...new Set(createRes.value.discarded.filter((d) => d.reason === 'capped').map((d) => d.props.groupKey))
-                                ];
-                                if (cappedGroupKeys.length > 0) {
+                                const cappedCounts = new Map<string, number>();
+                                for (const d of createRes.value.discarded) {
+                                    if (d.reason === 'capped') {
+                                        cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                                    }
+                                }
+                                if (cappedCounts.size > 0) {
+                                    const cappedGroupKeys = Array.from(cappedCounts.keys());
                                     logger.warning(`Capped scheduling tasks for group keys: ${cappedGroupKeys.join(', ')}`);
+                                    for (const [groupKey, count] of cappedCounts) {
+                                        this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+                                    }
                                 }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];

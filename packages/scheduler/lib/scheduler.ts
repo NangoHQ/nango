@@ -2,16 +2,18 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
+import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
-import { logger } from './utils/logger.js';
+import { logger, setLogger } from './utils/logger.js';
 
+import type { SchedulerConfig, SchedulerEvent } from './config.js';
 import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
-import type { Result } from '@nangohq/utils';
+import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
 
@@ -41,14 +43,36 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ db, on, onError }: { db: knex.Knex; on: Record<TaskState, (task: Task) => void>; onError: (err: Error) => void }) {
+    private readonly config: SchedulerConfig;
+    private readonly onEvent: (event: SchedulerEvent) => void;
+
+    constructor({
+        db,
+        on,
+        onError,
+        config = defaultSchedulerConfig,
+        onEvent = () => {},
+        logger: injectedLogger
+    }: {
+        db: knex.Knex;
+        on: Record<TaskState, (task: Task) => void>;
+        onError: (err: Error) => void;
+        config?: SchedulerConfig;
+        onEvent?: (event: SchedulerEvent) => void;
+        logger?: StrictLogger;
+    }) {
         this.ac = new AbortController();
         this.onCallbacks = on;
         this.db = db;
+        this.config = config;
+        this.onEvent = onEvent;
+        setLogger(injectedLogger ?? noopLogger);
 
         this.expiring = new ExpiringDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.expiringTickIntervalMs,
+            batchSize: config.limits.expiringBatchSize,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
                 this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
@@ -59,13 +83,30 @@ export class Scheduler {
         this.scheduling = new SchedulingDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.schedulingTickIntervalMs,
+            groupTaskCap: config.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: config.limits.recurringGroupMaxConcurrency,
             onScheduling: (task: Task) => {
                 this.onCallbacks[task.state](task);
             },
+            onEvent,
             onError
         });
-        this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
-        this.backpressureMonitor = new BackpressureMonitoringDaemon({ db, abortSignal: this.ac.signal, onError });
+        this.cleaning = new CleaningDaemon({
+            db,
+            abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.cleaningTickIntervalMs,
+            olderThanDays: config.daemons.cleaningOlderThanDays,
+            onError
+        });
+        this.backpressureMonitor = new BackpressureMonitoringDaemon({
+            db,
+            abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.monitoringTickIntervalMs,
+            topN: config.daemons.monitoringTopN,
+            onEvent,
+            onError
+        });
     }
 
     start(): void {
@@ -202,9 +243,18 @@ export class Scheduler {
                 };
             }
 
-            const createResult = await tasks.create(trx, [taskProps]);
+            const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
             if (createResult.isErr()) {
                 return Err(createResult.error);
+            }
+            const cappedCounts = new Map<string, number>();
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                }
+            }
+            for (const [groupKey, count] of cappedCounts) {
+                this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
             }
             const task = createResult.value.created[0];
             if (!task) {

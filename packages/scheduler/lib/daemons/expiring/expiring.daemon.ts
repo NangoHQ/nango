@@ -2,7 +2,6 @@ import { setTimeout } from 'node:timers/promises';
 
 import { stringifyError } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
 import * as schedules from '../../models/schedules.js';
 import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
@@ -13,26 +12,32 @@ import type knex from 'knex';
 
 export class ExpiringDaemon extends SchedulerDaemon {
     private onExpiring: (task: Task) => void;
+    private readonly batchSize: number;
 
     constructor({
         db,
         abortSignal,
+        tickIntervalMs,
+        batchSize,
         onExpiring,
         onError
     }: {
         db: knex.Knex;
         abortSignal: AbortSignal;
+        tickIntervalMs: number;
+        batchSize: number;
         onExpiring: (task: Task) => void;
         onError: (err: Error) => void;
     }) {
         super({
             name: 'Monitor',
             db,
-            tickIntervalMs: envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS,
+            tickIntervalMs,
             abortSignal,
             onError
         });
         this.onExpiring = onExpiring;
+        this.batchSize = batchSize;
     }
 
     async run(): Promise<void> {
@@ -42,7 +47,7 @@ export class ExpiringDaemon extends SchedulerDaemon {
             const lockGranted = res?.rows.length > 0 ? res.rows[0]!.lock_expire : false;
 
             if (lockGranted) {
-                const expired = await tasks.expiresIfTimeout(trx);
+                const expired = await tasks.expiresIfTimeout(trx, { batchSize: this.batchSize });
                 if (expired.isErr()) {
                     logger.error(`Error expiring tasks: ${stringifyError(expired.error)}`);
                     return;

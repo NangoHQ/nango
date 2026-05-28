@@ -5,11 +5,20 @@ import knex from 'knex';
 
 import { isTest } from '@nangohq/utils';
 
-import { envs } from '../env.js';
 import { logger } from '../utils/logger.js';
 
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
+
+export interface DatabaseClientOptions {
+    url: string;
+    schema: string;
+    poolMin?: number;
+    poolMax?: number;
+    ssl?: boolean;
+    applicationName?: string;
+    statementTimeoutMs?: number;
+}
 
 export class DatabaseClient {
     public db: knex.Knex;
@@ -17,19 +26,19 @@ export class DatabaseClient {
     public url: string;
     private config: knex.Knex.Config;
 
-    constructor({ url, schema, poolMax = envs.ORCHESTRATOR_DB_POOL_MAX }: { url: string; schema: string; poolMax?: number }) {
+    constructor({ url, schema, poolMin = 2, poolMax = 50, ssl = false, applicationName = '[unknown]', statementTimeoutMs = 60000 }: DatabaseClientOptions) {
         this.url = url;
         this.schema = schema;
         this.config = {
             client: 'postgres',
             connection: {
                 connectionString: url,
-                ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
-                statement_timeout: 60000,
-                application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
+                ssl: ssl ? { rejectUnauthorized: false } : false,
+                statement_timeout: statementTimeoutMs,
+                application_name: applicationName
             },
             searchPath: schema,
-            pool: { min: 2, max: poolMax },
+            pool: { min: poolMin, max: poolMax },
             migrations: {
                 extension: isJS ? 'js' : 'ts',
                 directory: 'migrations',

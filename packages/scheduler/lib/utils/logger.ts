@@ -1,3 +1,11 @@
-import { getLogger } from '@nangohq/utils';
+import { noopLogger } from '../config.js';
 
-export const logger = getLogger('scheduler');
+import type { StrictLogger } from '@nangohq/utils';
+
+// Mutable module-level logger so daemons and models can call it without threading.
+// Consumers override via Scheduler({ logger }) which calls setLogger().
+export let logger: StrictLogger = noopLogger;
+
+export function setLogger(next: StrictLogger): void {
+    logger = next;
+}

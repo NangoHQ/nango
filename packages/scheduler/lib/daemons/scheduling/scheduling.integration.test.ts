@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { SchedulingDaemon } from './scheduling.daemon.js';
 import { dueSchedules } from './scheduling.js';
+import { defaultSchedulerConfig } from '../../config.js';
 import { DatabaseClient } from '../../db/client.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
-import { envs } from '../../env.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
 import * as schedules from '../../models/schedules.js';
 import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
@@ -109,12 +109,16 @@ describe('SchedulingDaemon', () => {
         await dbClient.clearDatabase();
     });
 
-    it('should stamp materialized tasks with SYNC_ENVIRONMENT_MAX_CONCURRENCY', async () => {
+    it('should stamp materialized tasks with the configured recurringGroupMaxConcurrency', async () => {
         const schedule = await addSchedule(db);
         const daemon = new SchedulingDaemon({
             db,
             abortSignal: new AbortController().signal,
+            tickIntervalMs: defaultSchedulerConfig.daemons.schedulingTickIntervalMs,
+            groupTaskCap: defaultSchedulerConfig.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: defaultSchedulerConfig.limits.recurringGroupMaxConcurrency,
             onScheduling: () => {},
+            onEvent: () => {},
             onError: () => {}
         });
 
@@ -122,7 +126,7 @@ describe('SchedulingDaemon', () => {
 
         const created = (await tasks.search(db, { scheduleId: schedule.id })).unwrap();
         expect(created).toHaveLength(1);
-        expect(created[0]?.groupMaxConcurrency).toBe(envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY);
+        expect(created[0]?.groupMaxConcurrency).toBe(defaultSchedulerConfig.limits.recurringGroupMaxConcurrency);
     });
 });
 
