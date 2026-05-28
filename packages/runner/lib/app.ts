@@ -5,7 +5,7 @@ import { stringifyError } from '@nangohq/utils';
 import { envs } from './env.js';
 import { logger } from './logger.js';
 import { register } from './register.js';
-import { server, shutdownResources } from './server.js';
+import { server } from './server.js';
 
 const providersMonitorCleanup = await monitorProviders();
 
@@ -25,8 +25,7 @@ try {
         logger.info(`${id} Closing...`);
         providersMonitorCleanup();
 
-        srv.close(async () => {
-            await shutdownResources();
+        srv.close(() => {
             process.exit();
         });
     };
