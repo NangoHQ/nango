@@ -12,7 +12,7 @@ export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
         'rounded-ds-xs border-ds-hairline font-ds-medium',
-        'text-ds-md leading-[var(--ds-typography-line-height-normal)]',
+        'text-ds-md leading-ds-normal',
         'tracking-ds-normal cursor-pointer select-none',
         'transition-[background-color,border-color,color,box-shadow]',
         'duration-[var(--ds-motion-duration-fast)] ease-[var(--ds-motion-easing-standard)]',
