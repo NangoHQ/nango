@@ -15124,6 +15124,55 @@ provenexpert:
             example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
             doc_section: '#step-1-getting-your-credentials'
 
+pverify:
+    display_name: pVerify
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.apiHost}/Token
+    token_params:
+        Client_Id: ${credentials.clientId}
+        Client_Secret: ${credentials.clientSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        Client-API-Id: ${credentials.clientId}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client-api-id: ${credentials.clientId}
+    docs: https://nango.dev/docs/api-integrations/pverify
+    docs_connect: https://nango.dev/docs/api-integrations/pverify/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your pVerify Client ID.
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            format: uuid
+            doc_section: '#step-1-getting-your-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your pVerify Client Secret.
+            secret: true
+            example: aB3mNpQr7sXwYz2t***************
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-getting-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: Your pVerify API hostname.
+            example: api.pverify.com
+            pattern: '^(api|testapi)\.pverify\.com$'
+            doc_section: '#step-2-choosing-your-environment'
+
 qualtrics:
     display_name: Qualtrics
     categories:
