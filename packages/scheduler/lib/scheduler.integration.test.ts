@@ -220,6 +220,11 @@ describe('Scheduler', () => {
         await immediate(scheduler, { schedule }); // first task: OK
         await expect(immediate(scheduler, { schedule })).rejects.toThrow();
     });
+    it('should create an uncapped task when immediate is called for a schedule', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        expect(task.groupMaxConcurrency).toBe(0);
+    });
     it('should change schedule state', async () => {
         const paused = await recurring({ scheduler, state: 'PAUSED' });
         expect(paused.state).toBe('PAUSED');
