@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import GoogleButton from '@/components/ui/button/Auth/Google';
+import GoogleButton from '@/components-v2/ui/GoogleButton';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';

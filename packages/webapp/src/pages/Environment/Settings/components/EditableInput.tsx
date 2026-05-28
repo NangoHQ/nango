@@ -2,17 +2,16 @@ import { Edit } from 'lucide-react';
 import { useState } from 'react';
 
 import { SimpleTooltip } from '@/components/SimpleTooltip';
-import { CopyButton } from '@/components/ui/button/CopyButton';
-import { Input } from '@/components/ui/input/Input';
+import { CopyButton } from '@/components-v2/CopyButton';
 import { Button } from '@/components-v2/ui/button';
+import { Input } from '@/components-v2/ui/input';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/utils';
 
-import type { InputProps } from '@/components/ui/input/Input';
 import type { ApiError } from '@nangohq/types';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-interface EditableInputProps extends InputProps {
+interface EditableInputProps extends ComponentProps<typeof Input> {
     title?: string;
     subTitle?: boolean;
     secret?: boolean;
@@ -75,38 +74,32 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     {title}
                 </label>
             )}
-            <Input
-                inputSize={'lg'}
-                variant={'black'}
-                name={name}
-                value={secret && !edit ? '*'.repeat(value.length) : value}
-                onChange={(e) => setValue(e.target.value)}
-                disabled={loading || !edit}
-                className={cn(error && 'border-alert-400')}
-                after={
-                    !edit && (
-                        <div className="flex">
-                            {secret && (
-                                <div className="py-1">
-                                    <CopyButton text={value} />
-                                </div>
-                            )}
-                            {blocked ? (
-                                <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
-                                    <Button variant={'ghost'} size={'sm'} disabled>
-                                        <Edit size={18} />
-                                    </Button>
-                                </SimpleTooltip>
-                            ) : (
-                                <Button variant={'ghost'} size={'sm'} onClick={() => setEdit(true)}>
+            <div className="flex items-center gap-1">
+                <Input
+                    name={name}
+                    value={secret && !edit ? '*'.repeat(value.length) : value}
+                    onChange={(e) => setValue(e.target.value)}
+                    disabled={loading || !edit}
+                    className={cn('flex-1', error && 'border-feedback-error-border')}
+                    {...rest}
+                />
+                {!edit && (
+                    <>
+                        {secret && <CopyButton text={value} />}
+                        {blocked ? (
+                            <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
+                                <Button variant={'ghost'} size={'sm'} disabled>
                                     <Edit size={18} />
                                 </Button>
-                            )}
-                        </div>
-                    )
-                }
-                {...rest}
-            />
+                            </SimpleTooltip>
+                        ) : (
+                            <Button variant={'ghost'} size={'sm'} onClick={() => setEdit(true)}>
+                                <Edit size={18} />
+                            </Button>
+                        )}
+                    </>
+                )}
+            </div>
             {error && <div className="text-alert-400 text-s">{error}</div>}
             {edit && editInfo}
             {edit && (

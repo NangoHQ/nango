@@ -5,8 +5,7 @@ import { permissions } from '@nangohq/authz';
 
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { Dot } from '../../../../components-v2/Dot.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
-import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components-v2/ui/dialog.jsx';
 import { PermissionGate } from '@/components-v2/PermissionGate.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
