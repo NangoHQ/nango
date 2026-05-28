@@ -17491,6 +17491,44 @@ signnow-sandbox:
         base_url: https://api-eval.signnow.com
     docs: https://nango.dev/docs/integrations/all/signnow-sandbox
 
+signaliz:
+    display_name: Signaliz
+    categories:
+        - marketing
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.signaliz.com
+        headers:
+            authorization: Bearer ${apiKey}
+            content-type: application/json
+        verification:
+            method: POST
+            headers:
+                content-type: application/json
+                accept: application/json,text/event-stream
+            endpoints:
+                - /functions/v1/signaliz-mcp
+            data:
+                jsonrpc: '2.0'
+                id: 1
+                method: initialize
+                params:
+                    protocolVersion: '2024-11-05'
+                    capabilities: {}
+                    clientInfo:
+                        name: nango-client
+                        version: '1.0.0'
+    docs: https://nango.dev/docs/integrations/all/signaliz
+    docs_connect: https://nango.dev/docs/integrations/all/signaliz/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Signaliz workspace
+            example: sk_live_...
+            doc_section: '#step-1-create-a-signaliz-api-key'
+
 servicenow:
     display_name: ServiceNow
     categories:
