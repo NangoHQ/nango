@@ -115,8 +115,8 @@ describe('Task', () => {
                     // sleep to ensure lastStateTransitionAt is different from the previous state
                     await new Promise((resolve) => void setTimeout(resolve, 10));
                     const updated = await doTransition({ taskId: t.id, newState: to });
-                    expect(updated.unwrap().state).toBe(to);
-                    expect(updated.unwrap().lastStateTransitionAt.getTime()).toBeGreaterThan(t.lastStateTransitionAt.getTime());
+                    expect(updated.unwrap().task.state).toBe(to);
+                    expect(updated.unwrap().task.lastStateTransitionAt.getTime()).toBeGreaterThan(t.lastStateTransitionAt.getTime());
                 } else {
                     const updated = await doTransition({ taskId: t.id, newState: to });
                     expect(updated.isErr(), `transition from ${from} to ${to} failed`).toBe(true);
@@ -351,16 +351,20 @@ async function createTaskWithState(db: knex.Knex, state: TaskState): Promise<Tas
         case 'STARTED':
             return startTask(db);
         case 'FAILED':
-            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'FAILED', output: { foo: 'bar' } })).unwrap());
+            return startTask(db).then(
+                async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'FAILED', output: { foo: 'bar' } })).unwrap().task
+            );
         case 'SUCCEEDED':
-            return startTask(db).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'SUCCEEDED', output: { foo: 'bar' } })).unwrap());
+            return startTask(db).then(
+                async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'SUCCEEDED', output: { foo: 'bar' } })).unwrap().task
+            );
         case 'EXPIRED':
-            return startTask(db).then(async (t) =>
-                (await tasks.transitionState(db, { taskId: t.id, newState: 'EXPIRED', output: { reason: `timeout_exceeded` } })).unwrap()
+            return startTask(db).then(
+                async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'EXPIRED', output: { reason: `timeout_exceeded` } })).unwrap().task
             );
         case 'CANCELLED':
-            return startTask(db).then(async (t) =>
-                (await tasks.transitionState(db, { taskId: t.id, newState: 'CANCELLED', output: { reason: 'cancelled_via_ui' } })).unwrap()
+            return startTask(db).then(
+                async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'CANCELLED', output: { reason: 'cancelled_via_ui' } })).unwrap().task
             );
     }
 }
@@ -395,9 +399,9 @@ async function createTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Prom
 }
 
 async function startTask(db: knex.Knex, props?: Partial<tasks.TaskProps>): Promise<Task> {
-    return createTask(db, props).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'STARTED' })).unwrap());
+    return createTask(db, props).then(async (t) => (await tasks.transitionState(db, { taskId: t.id, newState: 'STARTED' })).unwrap().task);
 }
 
 async function succeedTask(db: knex.Knex, taskId: string): Promise<Task> {
-    return tasks.transitionState(db, { taskId, newState: 'SUCCEEDED', output: true }).then((t) => t.unwrap());
+    return tasks.transitionState(db, { taskId, newState: 'SUCCEEDED', output: true }).then((t) => t.unwrap().task);
 }

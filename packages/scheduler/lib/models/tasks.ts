@@ -301,13 +301,14 @@ export async function transitionState(
               taskId: string;
               newState: TaskNonTerminalState;
           }
-): Promise<Result<Task>> {
-    const task = await get(db, props.taskId);
-    if (task.isErr()) {
+): Promise<Result<{ task: Task; previousState: TaskState }>> {
+    const fetched = await get(db, props.taskId);
+    if (fetched.isErr()) {
         return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
 
-    const transition = TaskStateTransition.validate({ from: task.value.state, to: props.newState });
+    const previousState = fetched.value.state;
+    const transition = TaskStateTransition.validate({ from: previousState, to: props.newState });
     if (transition.isErr()) {
         return Err(transition.error);
     }
@@ -344,7 +345,7 @@ export async function transitionState(
         return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
 
-    return Ok(DbTask.from(updated[0]));
+    return Ok({ task: DbTask.from(updated[0]), previousState });
 }
 
 export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { groupKeyPattern: string; limit: number }): Promise<Result<Task[]>> {
