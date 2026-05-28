@@ -17,7 +17,8 @@ services:
     nango-server:
         # It's recommended to pin the version using the commit hash tag or a version tag
         # https://hub.docker.com/r/nangohq/nango-server/tags
-        image: nangohq/nango-server:hosted
+        # Pinned to 0.70.5 — unpin after fix for records package public index lands on master
+        image: nangohq/nango-server:hosted-0.70.5
         container_name: nango-server
         platform: linux/amd64
         environment:
