@@ -34,7 +34,7 @@ try {
         url: databaseUrl,
         schema: databaseSchema,
         poolMax: envs.ORCHESTRATOR_DB_POOL_MAX,
-        ssl: envs.ORCHESTRATOR_DB_SSL,
+        ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
         applicationName: envs.NANGO_DB_APPLICATION_NAME
     });
     await dbClient.migrate();

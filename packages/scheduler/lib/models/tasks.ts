@@ -472,7 +472,7 @@ export async function expiresIfTimeout(db: knex.Knex, opts: { batchSize?: number
                        )
                     )
                 FOR UPDATE SKIP LOCKED
-                LIMIT ${batchSize}
+                LIMIT :batchSize
             )
             UPDATE ${TASKS_TABLE} t
             SET state = 'EXPIRED',
@@ -482,7 +482,8 @@ export async function expiresIfTimeout(db: knex.Knex, opts: { batchSize?: number
             FROM eligible_tasks e
             WHERE t.id = e.id
             RETURNING t.*;
-        `
+        `,
+            { batchSize }
         );
         if (!tasks?.[0]) {
             return Ok([]);

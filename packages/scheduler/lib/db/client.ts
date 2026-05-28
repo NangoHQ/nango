@@ -7,15 +7,19 @@ import { isTest } from '@nangohq/utils';
 
 import { logger } from '../utils/logger.js';
 
+import type { ConnectionConfig } from 'pg';
+
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
+
+export type DatabaseClientSslOption = ConnectionConfig['ssl'];
 
 export interface DatabaseClientOptions {
     url: string;
     schema: string;
     poolMin?: number;
     poolMax?: number;
-    ssl?: boolean;
+    ssl?: DatabaseClientSslOption;
     applicationName?: string;
     statementTimeoutMs?: number;
 }
@@ -33,7 +37,7 @@ export class DatabaseClient {
             client: 'postgres',
             connection: {
                 connectionString: url,
-                ssl: ssl ? { rejectUnauthorized: false } : false,
+                ssl,
                 statement_timeout: statementTimeoutMs,
                 application_name: applicationName
             },

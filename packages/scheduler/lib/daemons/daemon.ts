@@ -28,6 +28,9 @@ export abstract class SchedulerDaemon {
         abortSignal: AbortSignal;
         onError: (err: Error) => void;
     }) {
+        if (!Number.isInteger(tickIntervalMs) || tickIntervalMs < 0) {
+            throw new Error(`${name}: tickIntervalMs must be a non-negative integer, got ${String(tickIntervalMs)}`);
+        }
         this.name = name;
         this.tickIntervalMs = tickIntervalMs;
         this.db = db;
