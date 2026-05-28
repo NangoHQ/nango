@@ -23,7 +23,7 @@ export const buttonVariants = cva(
         variants: {
             variant: {
                 primary: [
-                    'bg-interactive-primary text-text-on-brand border-transparent',
+                    'bg-interactive-primary text-text-on-accent border-transparent',
                     'hover:bg-interactive-primary-hover',
                     'active:bg-interactive-primary-active',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
@@ -55,7 +55,7 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 danger: [
-                    'bg-interactive-danger text-text-on-brand border-transparent',
+                    'bg-interactive-danger text-text-on-accent border-transparent',
                     'hover:bg-interactive-danger-hover',
                     'active:bg-interactive-danger-active',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
