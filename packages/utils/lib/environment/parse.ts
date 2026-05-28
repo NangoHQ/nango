@@ -301,11 +301,13 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // When true, `records` and `connections` in `getBillingUsage` come from
-    // ClickHouse (getDailySumAndBatches + toRunningAvgUsage) instead of Orb.
-    // Counter metrics still come from Orb. Off by default until per-day +
-    // cumulative parity (NAN-5684 / EXT-1138) clears against prod data.
-    USAGE_BILLING_AVG_FROM_CLICKHOUSE: z.stringbool().optional().default(false),
+    // When true, the dashboard path of `getBillingUsage` (granularity='day' +
+    // explicit timeframe) reads ALL metrics — counters and AVG — from
+    // ClickHouse and skips Orb entirely. Capping (`getBillingMetrics`, no
+    // granularity / timeframe) still hits Orb regardless. Off by default
+    // until per-day + cumulative parity (NAN-5684 / EXT-1138) clears
+    // against prod data.
+    USAGE_BILLING_FROM_CLICKHOUSE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS

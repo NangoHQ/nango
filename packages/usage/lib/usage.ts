@@ -11,7 +11,7 @@ import { Clickhouse } from './clickhouse/clickhouse.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
-import type { GetDailySumAndBatchesResult, GetDailySumAndBatchesSeries } from './clickhouse/clickhouse.query.js';
+import type { CounterUsageMetric, GetDailySumAndBatchesResult, GetDailySumAndBatchesSeries, GetUsageResult } from './clickhouse/clickhouse.query.js';
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -79,9 +79,9 @@ export class UsageTrackerNoOps implements IUsageTracker {
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
     public billingClient: UsageBillingClient;
-    // Read-only client for the AVG-from-ClickHouse path (guarded by
-    // USAGE_BILLING_AVG_FROM_CLICKHOUSE). Lazy-init keeps the dependency out
-    // of code paths that never read records/connections from CH.
+    // Read-only client for the dashboard CH path (guarded by
+    // USAGE_BILLING_FROM_CLICKHOUSE). Lazy-init keeps the dependency out
+    // of code paths that never read billing usage from CH.
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
@@ -235,35 +235,28 @@ export class UsageTracker implements IUsageTracker {
     }
 
     public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
-
-        if (billingUsageMetrics.isErr()) {
-            return billingUsageMetrics;
-        }
-
-        // CH-backed AVG path. Counter metrics always come from Orb; only
-        // records / connections can be overridden. Scope intentionally limited:
-        //   - flag is on
-        //   - caller asked for a day-granularity series within an explicit
-        //     timeframe (the dashboard path; capping calls without timeframe
-        //     stay on Orb)
+        // CH-only dashboard path. Skips Orb entirely for the dashboard shape
+        // (granularity='day' + explicit timeframe). Counter metrics use
+        // `Clickhouse.getUsage`, AVG metrics use `getDailySumAndBatches` +
+        // `toRunningAvgUsage`. Errors propagate — no silent Orb fallback,
+        // so any regression surfaces immediately in dev.
+        //
+        // Capping (`getBillingMetrics`, no granularity / timeframe) continues
+        // to use the Orb path regardless of the flag — the CH side doesn't
+        // have an equivalent of Orb's "current period totals" yet.
+        //
         // The dim breakdown wiring belongs to a follow-up — `BillingUsageMetric`
         // is single-series, so it can't represent per-dim panels here yet.
-        const useClickhouseForAvg = parsedEnvs.USAGE_BILLING_AVG_FROM_CLICKHOUSE && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
+        const useClickhouseForDashboard =
+            parsedEnvs.USAGE_BILLING_FROM_CLICKHOUSE && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
-        if (useClickhouseForAvg) {
-            const [records, connections] = await Promise.all([
-                this.getCumulativeAvgFromClickhouse({ accountId, metric: 'records', timeframe: opts.timeframe! }),
-                this.getCumulativeAvgFromClickhouse({ accountId, metric: 'connections', timeframe: opts.timeframe! })
-            ]);
-            return Ok({
-                ...billingUsageMetrics.value,
-                // Fall back to the Orb-derived value if the CH read failed; we'd
-                // rather show stale data than no data while the dashboard adopts
-                // the new path.
-                connections: connections ?? (billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined),
-                records: records ?? (billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined)
-            });
+        if (useClickhouseForDashboard) {
+            return this.getBillingUsageFromClickhouse(accountId, opts.timeframe!);
+        }
+
+        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
+        if (billingUsageMetrics.isErr()) {
+            return billingUsageMetrics;
         }
 
         return Ok({
@@ -274,32 +267,44 @@ export class UsageTracker implements IUsageTracker {
     }
 
     /**
-     * Reads the AVG-metric daily series from ClickHouse and turns it into the
-     * single-series BillingUsageMetric the dashboard already consumes. Returns
-     * `null` on read error (caller falls back to Orb) or when CH has no data
-     * for the window (treated like the metric being absent).
+     * Reads all 7 billable metrics (5 counter + 2 AVG) from ClickHouse and
+     * shapes them into BillingUsageMetric. Skips Orb entirely.
      */
-    private async getCumulativeAvgFromClickhouse({
-        accountId,
-        metric,
-        timeframe
-    }: {
-        accountId: number;
-        metric: 'records' | 'connections';
-        timeframe: { start: Date; end: Date };
-    }): Promise<BillingUsageMetric | null> {
-        const res = await this.getClickhouse().getDailySumAndBatches({
-            accountId,
-            metric,
-            dimension: 'none',
-            timeframe
-        });
-        if (res.isErr()) {
-            logger.error(`CH AVG read failed for accountId=${accountId} metric=${metric}, falling back to Orb`, res.error);
-            return null;
+    private async getBillingUsageFromClickhouse(accountId: number, timeframe: { start: Date; end: Date }): Promise<Result<BillingUsageMetrics>> {
+        const counterMetrics: CounterUsageMetric[] = ['proxy', 'function_executions', 'function_logs', 'function_compute_gbms', 'webhook_forwards'];
+
+        const ch = this.getClickhouse();
+        const [counterRes, recordsRes, connectionsRes] = await Promise.all([
+            ch.getUsage({
+                accountId,
+                granularity: 'day',
+                timeframe,
+                metrics: Object.fromEntries(counterMetrics.map((m) => [m, { dimension: 'none' as const }]))
+            }),
+            ch.getDailySumAndBatches({ accountId, metric: 'records', dimension: 'none', timeframe }),
+            ch.getDailySumAndBatches({ accountId, metric: 'connections', dimension: 'none', timeframe })
+        ]);
+
+        if (counterRes.isErr()) {
+            return Err(counterRes.error);
         }
-        const series = toRunningAvgUsage(res.value);
-        return series[0] ?? null;
+        if (recordsRes.isErr()) {
+            return Err(recordsRes.error);
+        }
+        if (connectionsRes.isErr()) {
+            return Err(connectionsRes.error);
+        }
+
+        const result: BillingUsageMetrics = {};
+        for (const metric of counterMetrics) {
+            const m = counterRes.value.metrics[metric];
+            if (m) {
+                result[metric] = toCounterBillingMetric(metric, m);
+            }
+        }
+        result.records = toRunningAvgUsage(recordsRes.value)[0];
+        result.connections = toRunningAvgUsage(connectionsRes.value)[0];
+        return Ok(result);
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -488,4 +493,30 @@ function addOneDay(d: Date): Date {
     const out = new Date(d);
     out.setUTCDate(out.getUTCDate() + 1);
     return out;
+}
+
+/**
+ * Single-metric counter result from `Clickhouse.getUsage` → `BillingUsageMetric`.
+ * No dim, so we take the single series and map per-day dataPoints into the
+ * `usage` array. Counter metrics are always `view_mode='periodic'` (Orb's same
+ * shape — daily deltas not running totals); the dashboard adds them itself if
+ * needed.
+ */
+type CounterUsageMetricResult = NonNullable<GetUsageResult['metrics'][CounterUsageMetric]>;
+
+export function toCounterBillingMetric(metric: CounterUsageMetric, result: CounterUsageMetricResult): BillingUsageMetric {
+    // With `dimension: 'none'` the result has exactly one series; the inner
+    // dataPoints carry per-day quantities sized by the query's timeframe.
+    const series = result.series[0];
+    const dataPoints = series && 'dataPoints' in series ? series.dataPoints : [];
+    return {
+        externalId: metric,
+        total: result.total,
+        usage: dataPoints.map((dp) => ({
+            timeframeStart: dp.timeframe.start,
+            timeframeEnd: dp.timeframe.end,
+            quantity: dp.quantity
+        })),
+        view_mode: 'periodic'
+    };
 }
