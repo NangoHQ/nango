@@ -178,7 +178,7 @@ export class OrchestratorClient {
         } as ImmediateProps;
         const res = await this.immediate(scheduleProps);
         if (res.isErr()) {
-            return res;
+            return Err(res.error);
         }
         const taskId = res.value.taskId;
         const retryUntil = Date.now() + (scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted) * 1000;
@@ -264,9 +264,9 @@ export class OrchestratorClient {
         return this.immediate(schedulingProps);
     }
 
-    public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
+    private buildWebhookSchedulingProps(props: ExecuteWebhookProps) {
         const { args, ...rest } = props;
-        const schedulingProps: ImmediateProps = {
+        return {
             ...rest,
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
@@ -279,7 +279,14 @@ export class OrchestratorClient {
                 type: 'webhook' as const
             }
         };
-        return this.immediate(schedulingProps);
+    }
+
+    public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
+        const res = await this.immediate(this.buildWebhookSchedulingProps(props));
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ taskId: res.value.taskId, retryKey: res.value.retryKey });
     }
 
     /**
@@ -292,20 +299,10 @@ export class OrchestratorClient {
             return Ok([]);
         }
         const entries = propsList.map((props) => {
-            const { args, ownerKey, ...rest } = props;
+            const schedulingProps = this.buildWebhookSchedulingProps(props);
             return {
-                ...rest,
-                ownerKey: ownerKey ?? '',
-                retry: { count: 0, max: 0 },
-                timeoutSettingsInSecs: {
-                    createdToStarted: 5 * 60,
-                    startedToCompleted: 60 * 60,
-                    heartbeat: 5 * 60
-                },
-                args: {
-                    ...args,
-                    type: 'webhook' as const
-                }
+                ...schedulingProps,
+                ownerKey: schedulingProps.ownerKey ?? ''
             };
         });
 
