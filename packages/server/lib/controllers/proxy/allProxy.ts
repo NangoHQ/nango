@@ -454,6 +454,17 @@ function proxyErrorFromErrorChain(error: unknown): ProxyError | null {
     return null;
 }
 
+function stripFramingHeaders(headers: object): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(headers)) {
+        if (key.toLowerCase() === 'transfer-encoding' || key.toLowerCase() === 'content-length') {
+            continue;
+        }
+        result[key] = value;
+    }
+    return result;
+}
+
 export function handleErrorResponse({
     res,
     error,
@@ -505,7 +516,9 @@ export function handleErrorResponse({
         const responseStatus = error.response?.status || 500;
         const responseHeaders = error.response?.headers || {};
 
-        res.status(responseStatus).set(responseHeaders).send(errorObject);
+        res.status(responseStatus)
+            .set(stripFramingHeaders(responseHeaders) as any)
+            .send(errorObject);
 
         return;
     }
@@ -538,7 +551,9 @@ export function handleErrorResponse({
             const responseHeaders = error.response?.headers || {};
             void logCtx.error('Failed with this body', { body: parsedBody });
 
-            res.status(responseStatus).set(responseHeaders).send(data);
+            res.status(responseStatus)
+                .set(stripFramingHeaders(responseHeaders) as any)
+                .send(data);
         });
     }
 }
