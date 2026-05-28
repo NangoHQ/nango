@@ -298,9 +298,22 @@ export class Scheduler {
                 scheduleId: null
             }));
 
-            const createResult = await tasks.create(trx, taskPropsList, { onConflict: 'skip' });
+            const createResult = await tasks.create(trx, taskPropsList, {
+                groupTaskCap: this.config.limits.groupTaskCap,
+                onConflict: 'skip'
+            });
             if (createResult.isErr()) {
                 return Err(createResult.error);
+            }
+
+            const cappedCounts = new Map<string, number>();
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                }
+            }
+            for (const [groupKey, count] of cappedCounts) {
+                this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
             }
 
             for (const task of createResult.value.created) {
