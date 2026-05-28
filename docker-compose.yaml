@@ -17,8 +17,9 @@ services:
     nango-server:
         # It's recommended to pin the version using the commit hash tag or a version tag
         # https://hub.docker.com/r/nangohq/nango-server/tags
-        # Pinned to 0.70.5 — unpin after fix for records package public index lands on master
-        image: nangohq/nango-server:hosted-0.70.5
+        # Pinned to the 0.70.5 release commit hash — unpin after fix for records package
+        # public index (which causes ERR_MODULE_NOT_FOUND on startup) lands on master.
+        image: nangohq/nango-server:hosted-7faf2c303bbb0322333f526e9ca31c0fe95ef58e
         container_name: nango-server
         platform: linux/amd64
         environment:
