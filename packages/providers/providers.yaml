@@ -17300,7 +17300,7 @@ sap-ariba:
         apiKey:
             type: string
             title: Application Key (API Key)
-            description: Your SAP Ariba application's API Key from the Developer Portal
+            description: Your SAP Ariba application's API Key.
             secret: true
             doc_section: '#step-2-get-your-api-key'
             order: 2
