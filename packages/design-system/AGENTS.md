@@ -21,9 +21,7 @@ shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in th
 
 **Tailwind v4 syntax for token values:**
 
-All tokens in `tokens.generated.css` that are registered in `@theme` can be used as regular Tailwind utilities — no `[var(...)]` needed for colours:
-
-All tokens in `tokens.generated.css` are registered in `@theme` and can be used as plain Tailwind utilities:
+Tokens registered in `@theme` inside `tokens.generated.css` are available as plain Tailwind utilities — no `[var(...)]` needed:
 
 ```tsx
 // colours — component and semantic tokens
@@ -37,10 +35,11 @@ All tokens in `tokens.generated.css` are registered in `@theme` and can be used 
 'focus-visible:shadow-focus-outline-default'
 'focus-visible:shadow-focus-outline-danger'
 
-// typography — registered as --text-ds-*, --font-weight-ds-*, --tracking-ds-*
+// typography — registered as --text-ds-*, --font-weight-ds-*, --leading-ds-*, --tracking-ds-*
 'text-ds-md'          // font-size: 14px
 'text-ds-xs'          // font-size: 12px
 'font-ds-medium'      // font-weight: 500
+'leading-ds-normal'   // line-height: 1.5
 'tracking-ds-tight'   // letter-spacing: -0.01em
 
 // radius — registered as --radius-ds-* → rounded-ds-*
