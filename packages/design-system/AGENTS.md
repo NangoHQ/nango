@@ -97,15 +97,50 @@ Use native Tailwind for everything structural — things that are about layout, 
 
 | What | Token pattern | Example |
 |---|---|---|
-| Component colours | `--<component>-<variant>-<property>-<state>` | `--button-primary-bg-default` |
-| Text colours | `--text-<role>` | `--text-default`, `--text-secondary`, `--text-disabled` |
+| Interactive fills | `--interactive-<variant>[-hover|-active]` | `--interactive-primary`, `--interactive-danger` |
+| Surface fills | `--surface-<role>` | `--surface-canvas`, `--surface-panel`, `--surface-panel-inset` |
+| Text colours | `--text-<role>` | `--text-default`, `--text-on-accent` (white on fills), `--text-danger` |
+| Border colours | `--border-<role>` | `--border-default`, `--border-strong`, `--border-danger` |
+| State overlays | `--state-<state>` | `--state-hover`, `--state-pressed`, `--state-selected` |
+| Focus rings | `--focus-outline-default`, `--focus-outline-danger` | (box-shadow value) |
 | Spacing | `--ds-space-<n>` | `--ds-space-2` (8px), `--ds-space-2-5` (10px) |
 | Radius | `--ds-radius-<size>` | `--ds-radius-sm` (4px), `--ds-radius-full` |
 | Border width | `--ds-border-width-<n>` | `--ds-border-width-1` (1px), `--ds-border-width-hairline` (0.5px) |
 | Typography | `--ds-typography-font-size-<size>` | `--ds-typography-font-size-md` (14px) |
 | Motion | `--ds-motion-duration-<speed>`, `--ds-motion-easing-<curve>` | `--ds-motion-duration-fast` (100ms) |
-| Focus rings | `--focus-outline-default`, `--focus-outline-danger` | (box-shadow value, not a colour) |
 | Icon sizes | `--ds-icon-size-<size>` | `--ds-icon-size-sm` (14px) |
+
+> **No component-level tokens.** There are no `--button-*`, `--input-*`, etc. tokens. The token set is intentionally semantic-only; component variants are composed from the namespaces above (see `button.tsx` for the pattern).
+
+**Figma variable → CSS custom property → Tailwind utility**
+
+Figma variables use `/` separators and camelCase. The CSS pipeline converts them to kebab-case with `-` separators. The Tailwind utility is just the CSS var name used as a class suffix:
+
+```
+Figma variable path          CSS custom property              Tailwind utility
+──────────────────────────   ─────────────────────────────   ─────────────────────────────
+interactive/primary          --interactive-primary           bg-interactive-primary
+interactive/primaryHover     --interactive-primary-hover     bg-interactive-primary-hover
+interactive/danger           --interactive-danger            bg-interactive-danger
+text/onAccent                --text-on-accent                text-text-on-accent
+text/default                 --text-default                  text-text-default
+text/danger                  --text-danger                   text-text-danger
+text/disabled                --text-disabled                 text-text-disabled
+surface/panel                --surface-panel                 bg-surface-panel
+surface/panelInset           --surface-panel-inset           bg-surface-panel-inset
+border/default               --border-default                border-border-default
+border/strong                --border-strong                 border-border-strong
+border/disabled              --border-disabled               border-border-disabled
+state/hover                  --state-hover                   bg-state-hover
+state/pressed                --state-pressed                 bg-state-pressed
+state/selected               --state-selected                bg-state-selected
+focus/outlineDefault         --focus-outline-default         shadow-focus-outline-default
+icon/default                 --icon-default                  text-icon-default
+```
+
+**Transformation rule:** replace `/` with `-`, convert camelCase to kebab-case (e.g. `onAccent` → `on-accent`). The result is the CSS variable name (without `--`); the Tailwind utility prefixes `bg-`, `text-`, `border-`, etc. depending on the property.
+
+When inspecting a node in Figma Dev Mode, the variable panel shows paths like `interactive/primary`. Apply this rule to get the Tailwind class directly without guessing.
 
 **Focus rings** use `box-shadow`, not `outline`:
 ```tsx
