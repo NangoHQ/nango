@@ -1,7 +1,7 @@
 import { IconInfoCircleFilled, IconX } from '@tabler/icons-react';
 
-import { Alert, AlertDescription, AlertTitle } from './ui/Alert';
 import { cn } from '../utils/utils';
+import { Alert, AlertDescription, AlertTitle } from './ui/Alert';
 import { Button } from './ui/button/Button';
 
 import type React from 'react';

@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, Ok, getLogger, stringifyError } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';

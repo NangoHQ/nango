@@ -7,9 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AuthBadge } from './components/AuthBadge';
-import { AutoIdlingBanner } from './components/AutoIdlingBanner';
-import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { PermissionGate } from '@/components-v2/PermissionGate';
@@ -17,11 +14,14 @@ import { ButtonLink } from '@/components-v2/ui/button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { AuthBadge } from './components/AuthBadge';
+import { AutoIdlingBanner } from './components/AutoIdlingBanner';
 
 import type { ApiIntegrationList, GetIntegrations } from '@nangohq/types';
 

@@ -2,6 +2,9 @@ import { IconBrandNodejs, IconTerminal2 } from '@tabler/icons-react';
 import { CodeXml, Loader } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Button } from '@/components-v2/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 import { MultiLanguageCodeBlock } from '../../components-v2/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -9,9 +12,6 @@ import { useToast } from '../../hooks/useToast';
 import { useStore } from '../../store';
 import { publicApiFetch } from '../../utils/api';
 import { cn, truncateMiddle } from '../../utils/utils';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button } from '@/components-v2/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
 
 function getNodeClientCode(connectionId?: string, providerConfigKey?: string) {
     return `

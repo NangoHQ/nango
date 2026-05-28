@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NangoCliExitCode } from './cli-exit-codes.js';
+import { buildAsyncDryrunScript, invokeDryrun, prepareAsyncDryrun } from './dryrun-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+
+import type { RemoteFunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {
         stdout: string | undefined;
@@ -48,12 +54,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return { ...actual, isLocal: false };
 });
-
-import { NangoCliExitCode } from './cli-exit-codes.js';
-import { buildAsyncDryrunScript, invokeDryrun, prepareAsyncDryrun } from './dryrun-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
-
-import type { RemoteFunctionError } from './helpers.js';
 
 const request = {
     integration_id: 'github',

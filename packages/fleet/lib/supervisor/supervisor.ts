@@ -2,16 +2,16 @@ import { setTimeout } from 'node:timers/promises';
 
 import tracer from 'dd-trace';
 
-import { Err, Ok, errorToObject, report } from '@nangohq/utils';
+import { Err, errorToObject, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { Operation } from './operation.js';
 import * as deployments from '../models/deployments.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
 import * as nodes from '../models/nodes.js';
 import { FleetError } from '../utils/errors.js';
 import { withPgLock } from '../utils/locking.js';
 import { logger } from '../utils/logger.js';
+import { Operation } from './operation.js';
 
 import type { DatabaseClient } from '../db/client.js';
 import type { NodeProvider } from '../node-providers/node_provider.js';
@@ -129,7 +129,7 @@ export class Supervisor {
 
     private async plan(): Promise<Result<Operation[]>> {
         const activeSpan = tracer.scope().active();
-        return tracer.trace('fleet.supervisor.plan', (activeSpan ? { childOf: activeSpan } : {}), async (span) => {
+        return tracer.trace('fleet.supervisor.plan', activeSpan ? { childOf: activeSpan } : {}, async (span) => {
             const getDeployment = await deployments.getActive(this.dbClient.db);
             if (getDeployment.isErr()) {
                 span?.setTag('error', getDeployment.error);
@@ -294,7 +294,7 @@ export class Supervisor {
 
     private async executePlan(plan: Operation[]): Promise<void> {
         const activeSpan = tracer.scope().active();
-        return tracer.trace('fleet.supervisor.executePlan', (activeSpan ? { childOf: activeSpan } : {}), async (executePlanSpan) => {
+        return tracer.trace('fleet.supervisor.executePlan', activeSpan ? { childOf: activeSpan } : {}, async (executePlanSpan) => {
             for (const operation of plan) {
                 if (this.tickCancelled) {
                     executePlanSpan?.setTag('error', 'tick_cancelled');

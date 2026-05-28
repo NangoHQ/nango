@@ -1,9 +1,9 @@
 import { isTest } from '@nangohq/utils';
 
-import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
 import { client } from '../es/client.js';
 import { indexOperations } from '../es/schema.js';
 import { ResponseError } from '../utils.js';
+import { createCursor, getFullIndexName, parseCursor } from './helpers.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type {

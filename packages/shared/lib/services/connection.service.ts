@@ -6,9 +6,8 @@ import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import configService from './config.service.js';
 import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as billClient from '../auth/bill.js';
@@ -18,14 +17,6 @@ import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import {
-    DEFAULT_INFINITE_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    REFRESH_MARGIN_MS,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
-import syncManager from './sync/manager.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
@@ -43,6 +34,15 @@ import {
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
+import configService from './config.service.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    getExpiresAtFromCredentials,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS
+} from './connections/utils.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';

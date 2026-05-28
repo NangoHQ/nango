@@ -1,7 +1,7 @@
 import { billing } from '@nangohq/billing';
 import { Subscriber } from '@nangohq/pubsub';
 import { connectionService } from '@nangohq/shared';
-import { Err, Ok, metrics, report, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, report, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 

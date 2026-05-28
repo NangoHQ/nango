@@ -1,7 +1,7 @@
 import { validateRequest } from '@nangohq/utils';
 
-import { recordsRequestParser } from './validate.js';
 import { persistRecords, recordsPath } from '../../../../../../../../../records.js';
+import { recordsRequestParser } from './validate.js';
 
 import type { AuthLocals } from '../../../../../../../../../middleware/auth.middleware.js';
 import type { ApiError, Endpoint, MergingStrategy, PostRecordsSuccess } from '@nangohq/types';

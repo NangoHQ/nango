@@ -3,18 +3,18 @@ import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);

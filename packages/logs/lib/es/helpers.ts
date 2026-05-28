@@ -1,14 +1,14 @@
 import { errors } from '@elastic/elasticsearch';
 
-import { Err, Ok, isTest } from '@nangohq/utils';
+import { Err, isTest, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { logger } from '../utils.js';
-import { client } from './client.js';
-import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
 import { getFormattedMessage, getFormattedOperation } from '../models/helpers.js';
 import { createMessage } from '../models/messages.js';
 import { createOperation } from '../models/operations.js';
+import { logger } from '../utils.js';
+import { client } from './client.js';
+import { getDailyIndexPipeline, indexMessages, indexOperations, policyMessages, policyOperations } from './schema.js';
 
 import type { Result } from '@nangohq/utils';
 

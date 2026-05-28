@@ -3,9 +3,6 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import {
-    NangoError,
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
     createSyncJob,
@@ -16,18 +13,21 @@ import {
     getEndUserByConnectionId,
     getSync,
     getSyncConfigRaw,
+    NangoError,
     secretService,
+    SyncJobsType,
+    SyncStatus,
     updateSyncJobStatus
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendSync as sendSyncWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { Config, Job, Sync } from '@nangohq/shared';

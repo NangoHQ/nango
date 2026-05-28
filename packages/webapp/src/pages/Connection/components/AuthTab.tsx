@@ -1,13 +1,13 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { AuthCredentials } from './AuthCredentials/AuthCredentials';
-import { ConnectionExtras } from './ConnectionExtras';
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/alert';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
+import { AuthCredentials } from './AuthCredentials/AuthCredentials';
+import { ConnectionExtras } from './ConnectionExtras';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 
 import type { GetConnection } from '@nangohq/types';
 

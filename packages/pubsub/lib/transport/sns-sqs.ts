@@ -2,7 +2,7 @@ import { PublishCommand, SNSClient } from '@aws-sdk/client-sns';
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import * as z from 'zod';
 
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { serde } from '../utils/serde.js';

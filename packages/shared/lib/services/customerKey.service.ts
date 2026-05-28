@@ -2,9 +2,9 @@ import * as uuid from 'uuid';
 
 import { Err, Ok, stringToHash } from '@nangohq/utils';
 
-import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
 import encryptionManager, { pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
 
 import type { DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
 import type { Knex } from 'knex';

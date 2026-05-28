@@ -2,9 +2,9 @@ import { Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
+import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
-import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 /**
  * True when the dev tool panel should be available:

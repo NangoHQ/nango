@@ -3,17 +3,17 @@ import utc from 'dayjs/plugin/utc.js';
 import tracer from 'dd-trace';
 import knex from 'knex';
 
-import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
+import { cancellableDaemon, Err, Ok, retry, stringToHash } from '@nangohq/utils';
 
-import { config, configRead } from './config.js';
-import { migrate } from './migrate.js';
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import { DEFAULT_RECORDS_LIMIT, RECORD_COUNTS_TABLE, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
 import { getUniqueId, removeDuplicateKey } from '../../helpers/uniqueKey.js';
 import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
 import { logger } from '../../utils/logger.js';
+import { config, configRead } from './config.js';
+import { migrate } from './migrate.js';
 
 import type { RecordsStore } from '../../store.js';
 import type {

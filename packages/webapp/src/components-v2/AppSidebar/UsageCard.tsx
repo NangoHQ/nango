@@ -2,11 +2,11 @@ import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
+import { usePermissions } from '@/hooks/usePermissions.js';
+import { useStore } from '@/store';
 import { Skeleton } from '../../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { cn } from '../../utils/utils.js';
-import { usePermissions } from '@/hooks/usePermissions.js';
-import { useStore } from '@/store';
 
 const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 /**

@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 
-import { OtlpSpan, logContextGetter } from '@nangohq/logs';
-import { Ok, metrics } from '@nangohq/utils';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
+import { metrics, Ok } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';
 

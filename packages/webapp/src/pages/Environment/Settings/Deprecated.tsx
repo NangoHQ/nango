@@ -3,12 +3,6 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import Spinner from '../../../components/ui/Spinner';
-import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { SecretInput } from '@/components-v2/SecretInput';
@@ -16,6 +10,12 @@ import { ButtonLink } from '@/components-v2/ui/button';
 import { Label } from '@/components-v2/ui/label';
 import { Switch } from '@/components-v2/ui/switch';
 import { usePermissions } from '@/hooks/usePermissions';
+import Spinner from '../../../components/ui/Spinner';
+import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const DeprecatedSettings: React.FC = () => {
     const { toast } = useToast();

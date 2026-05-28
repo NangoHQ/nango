@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 import { permissions } from '@nangohq/authz';
 
-import { RoleSelect } from './RoleSelect';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
@@ -18,6 +17,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { RoleSelect } from './RoleSelect';
 
 const inviteSchema = z.object({
     email: z.string().email('Please enter a valid email address'),

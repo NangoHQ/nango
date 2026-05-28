@@ -2,10 +2,10 @@ import * as Collapsible from '@radix-ui/react-collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
-import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
-import { CatalogBadge } from '../CatalogBadge';
 import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
 import { cn } from '@/utils/utils';
+import { CatalogBadge } from '../CatalogBadge';
+import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';
 

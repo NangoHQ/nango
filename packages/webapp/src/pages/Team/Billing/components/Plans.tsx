@@ -3,16 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { Dot } from '../../../../components-v2/Dot.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
-import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { PermissionGate } from '@/components-v2/PermissionGate.js';
 import { StyledLink } from '@/components-v2/StyledLink.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { Dialog } from '@/components-v2/ui/dialog.js';
 import { Table, TableBody, TableCell, TableRow } from '@/components-v2/ui/table';
+import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
@@ -20,6 +17,9 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
+import { Dot } from '../../../../components-v2/Dot.js';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/dialog.jsx';
+import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';

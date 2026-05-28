@@ -1,10 +1,10 @@
 import db from '@nangohq/database';
 import {
-    RemoteFunctionError,
     getRemoteFunctionNangoHost,
     invokeDeploy,
     parseDeploySuccessOutput,
     remoteFunctionDeploySandboxTimeoutMs,
+    RemoteFunctionError,
     sandboxApiKeyService
 } from '@nangohq/sandbox';
 import { configService, getSyncConfigRaw } from '@nangohq/shared';

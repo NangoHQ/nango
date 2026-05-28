@@ -2,7 +2,7 @@ import * as k8s from '@kubernetes/client-node';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { notifyOnIdle } from './runner.js';

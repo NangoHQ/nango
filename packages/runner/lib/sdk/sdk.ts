@@ -1,10 +1,10 @@
 import { Nango } from '@nangohq/node';
 import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import {
-    MAX_LOG_PAYLOAD,
     getCheckpointKey,
     isTest,
+    MAX_LOG_PAYLOAD,
     metrics,
     redactHeaders,
     redactURL,
@@ -13,10 +13,10 @@ import {
     truncateJson
 } from '@nangohq/utils';
 
-import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { Checkpointing } from './checkpointing.js';
 
 import type { Locks } from './locks.js';
 import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
@@ -725,7 +725,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         let cursor: string | null | undefined = options?.cursor;
         do {
             this.throwIfAbortedOrKilled();
-            const pageOptions: { cursor?: string } = (cursor ? { cursor } : {});
+            const pageOptions: { cursor?: string } = cursor ? { cursor } : {};
             const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
 
             for (const record of records) {

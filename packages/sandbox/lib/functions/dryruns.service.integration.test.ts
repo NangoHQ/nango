@@ -5,8 +5,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { deleteFunctionDryrunsOlderThan, timeoutFunctionDryruns } from './dryruns.service.js';
 import { remoteFunctionDryrunSandboxTimeoutMs } from '../remote-function/runtime.js';
+import { deleteFunctionDryrunsOlderThan, timeoutFunctionDryruns } from './dryruns.service.js';
 
 import type { DBFunctionDryrun } from './dryruns.service.js';
 

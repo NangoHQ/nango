@@ -8,8 +8,6 @@ import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
 
-import { ConnectionCount } from './components/ConnectionCount';
-import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { Avatar } from '@/components-v2/Avatar';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
@@ -21,6 +19,7 @@ import { ComboboxSelect } from '@/components-v2/ui/combobox';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { ErrorPageComponent } from '@/components/ErrorComponent';
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
@@ -29,6 +28,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
+import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components-v2/ui/combobox';
 import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';

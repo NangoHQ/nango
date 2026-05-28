@@ -3,20 +3,6 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import {
-    SCOPE_GROUPS,
-    allGroupScopes,
-    groupWildcard,
-    isScopeSelected,
-    toggleCredential as toggleCredentialFn,
-    toggleGroup as toggleGroupFn,
-    toggleScope as toggleScopeFn
-} from './scope-logic';
-import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
 import { PermissionGate } from '@/components-v2/PermissionGate';
@@ -27,9 +13,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
+import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '../../../hooks/useApiKeys';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import SettingsContent from './components/SettingsContent';
+import {
+    allGroupScopes,
+    groupWildcard,
+    isScopeSelected,
+    SCOPE_GROUPS,
+    toggleCredential as toggleCredentialFn,
+    toggleGroup as toggleGroupFn,
+    toggleScope as toggleScopeFn
+} from './scope-logic';
 
-import type { ScopeGroup } from './scope-logic';
 import type { ApiKeyListItem } from '../../../hooks/useApiKeys';
+import type { ScopeGroup } from './scope-logic';
 
 function formatRelativeTime(dateStr: string | null): string {
     if (!dateStr) return 'Never';

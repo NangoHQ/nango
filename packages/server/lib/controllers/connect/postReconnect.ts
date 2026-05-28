@@ -3,13 +3,13 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, buildTagsFromEndUser, configService, connectionService, getEndUser } from '@nangohq/shared';
+import { buildTagsFromEndUser, configService, connectionService, EndUserMapper, getEndUser } from '@nangohq/shared';
 import { connectUrl, flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { bodySchema as originalBodySchema, checkIntegrationsExist } from './postSessions.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { checkIntegrationsExist, bodySchema as originalBodySchema } from './postSessions.js';
 
 import type { PostPublicConnectSessionsReconnect } from '@nangohq/types';
 

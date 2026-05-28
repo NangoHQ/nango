@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
+import { Err, metrics, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
 import {
     connectionCopyWithParsedConnectionConfig,

@@ -4,21 +4,21 @@ import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { PlaygroundInputs } from './PlaygroundInputs';
-import { PlaygroundResult } from './PlaygroundResult';
-import { PlaygroundSelectors } from './PlaygroundSelectors';
-import { getInputFields } from './types';
-import { usePlayground } from './usePlayground';
-import { ConditionalTooltip } from '../ConditionalTooltip';
-import { PermissionGate } from '../PermissionGate';
-import { Button } from '../ui/button';
-import { Sheet, SheetContent } from '../ui/sheet';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
+import { ConditionalTooltip } from '../ConditionalTooltip';
+import { PermissionGate } from '../PermissionGate';
+import { Button } from '../ui/button';
+import { Sheet, SheetContent } from '../ui/sheet';
+import { PlaygroundInputs } from './PlaygroundInputs';
+import { PlaygroundResult } from './PlaygroundResult';
+import { PlaygroundSelectors } from './PlaygroundSelectors';
+import { getInputFields } from './types';
+import { usePlayground } from './usePlayground';
 
 import type { NangoSyncConfig } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';

@@ -2,8 +2,8 @@ import tracer from 'dd-trace';
 
 import { logContextGetter } from '@nangohq/logs';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
-import { ErrorSourceEnum, LogActionEnum, connectionService, errorManager, getSyncConfigByJobId, updateSyncJobResult } from '@nangohq/shared';
-import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
+import { connectionService, errorManager, ErrorSourceEnum, getSyncConfigByJobId, LogActionEnum, updateSyncJobResult } from '@nangohq/shared';
+import { Err, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { pubsub } from './pubsub.js';

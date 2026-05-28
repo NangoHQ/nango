@@ -5,9 +5,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationWithNangoYaml as validation } from './validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { validationWithNangoYaml as validation } from './validation.js';
 
 import type { PostDeployInternal } from '@nangohq/types';
 

@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
+import { Button } from '@/components-v2/ui/button';
+import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { Button } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 

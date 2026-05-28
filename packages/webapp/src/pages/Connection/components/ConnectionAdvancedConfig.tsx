@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { InfoTooltip } from '../../../components-v2/InfoTooltip';
 import { KeyValueInput } from '../../../components-v2/KeyValueInput';
 import { ScopesInput } from '../../../components-v2/ScopesInput';
@@ -11,7 +11,7 @@ import { BinaryToggle } from '../../../components-v2/ui/binary-toggle';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components-v2/ui/form';
 import { Input } from '../../../components-v2/ui/input';
 import { Separator } from '../../../components-v2/ui/separator';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
 
 import type { ConnectionFormData } from '../Create';
 

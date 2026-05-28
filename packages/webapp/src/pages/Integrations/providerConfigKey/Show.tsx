@@ -4,10 +4,6 @@ import { Link, useParams } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { FunctionsTab } from './Functions/Tab';
-import { SettingsTab } from './Settings/Tab';
-import { IntegrationSideInfo } from './components/IntegrationSideInfo';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { PermissionGate } from '@/components-v2/PermissionGate';
@@ -21,6 +17,10 @@ import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
+import { IntegrationSideInfo } from './components/IntegrationSideInfo';
+import { FunctionsTab } from './Functions/Tab';
+import { SettingsTab } from './Settings/Tab';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();

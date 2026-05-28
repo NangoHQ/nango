@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { NangoProvidedInput } from '../NangoProvidedInput';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { ScopesInput } from '@/components-v2/ScopesInput';
 import { SecretInput } from '@/components-v2/SecretInput';
@@ -14,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Label } from '@/components-v2/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { NangoProvidedInput } from '../NangoProvidedInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

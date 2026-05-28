@@ -4,12 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { DeleteButton } from './components/DeleteButton';
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
-import { useMeta } from '../../../hooks/useMeta';
-import { useStore } from '../../../store';
 import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { EditableInput } from '@/components-v2/EditableInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
@@ -21,6 +15,12 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
 import { PROD_ENVIRONMENT_NAME } from '@/utils/environments';
+import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
+import { useMeta } from '../../../hooks/useMeta';
+import { useStore } from '../../../store';
+import { DeleteButton } from './components/DeleteButton';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const General: React.FC = () => {
     const navigate = useNavigate();

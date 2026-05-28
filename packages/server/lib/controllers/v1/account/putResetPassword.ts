@@ -4,9 +4,9 @@ import * as z from 'zod';
 import { pbkdf2, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { passwordSchema } from './signup.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
+import { passwordSchema } from './signup.js';
 
 import type { PutResetPassword } from '@nangohq/types';
 

@@ -1,9 +1,9 @@
 import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
-import type { IntegrationConfig } from './db.js';
-import type { AuthModeType, AuthModes } from '../auth/api.js';
+import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 import type { Provider } from '../providers/provider.js';
+import type { IntegrationConfig } from './db.js';
 import type { Merge } from 'type-fest';
 
 export type ApiPublicIntegration = Merge<

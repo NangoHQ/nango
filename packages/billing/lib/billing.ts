@@ -1,4 +1,4 @@
-import { Err, Ok, flagHasUsage } from '@nangohq/utils';
+import { Err, flagHasUsage, Ok } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
 import { envs } from './envs.js';

@@ -1,4 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration } from '@nangohq/shared';
+import { configService, connectionService, getProxyConfiguration, ProxyRequest } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 
 import type { Config } from '@nangohq/shared';

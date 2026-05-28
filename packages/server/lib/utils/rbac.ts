@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getPlan } from '@nangohq/shared';
-import { Err, Ok, flagHasPlan } from '@nangohq/utils';
+import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
 import type { DBPlan } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

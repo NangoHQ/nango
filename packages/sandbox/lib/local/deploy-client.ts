@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 
-import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { getDeployErrorCode } from '../remote-function/cli-exit-codes.js';
 import { buildDeployArgs } from '../remote-function/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
@@ -11,6 +10,7 @@ import {
     remoteFunctionLocalImage,
     remoteFunctionProjectPath
 } from '../remote-function/runtime.js';
+import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 
 import type { DeployRequest, DeployResult } from '../remote-function/deploy-client.js';
 

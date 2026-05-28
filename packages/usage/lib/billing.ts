@@ -4,7 +4,7 @@ import { RateLimiterQueue, RateLimiterRedis, RateLimiterRes } from 'rate-limiter
 import { stringify as stableStringify } from 'safe-stable-stringify';
 
 import { billing } from '@nangohq/billing';
-import { Ok, metrics } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 
 import { envs } from './env.js';
 

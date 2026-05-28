@@ -4,20 +4,20 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { StyledLink } from '../StyledLink.js';
-import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { ConditionalTooltip } from '../ConditionalTooltip.js';
-import { PermissionGate } from '../PermissionGate.js';
-import { Badge } from '../ui/badge.js';
-import { Button } from '../ui/button.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
-import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
 import { LogoInverted } from '@/assets/LogoInverted';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
+import { ConditionalTooltip } from '../ConditionalTooltip.js';
+import { PermissionGate } from '../PermissionGate.js';
+import { StyledLink } from '../StyledLink.js';
+import { Badge } from '../ui/badge.js';
+import { Button } from '../ui/button.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
+import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
+import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
 
 export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);

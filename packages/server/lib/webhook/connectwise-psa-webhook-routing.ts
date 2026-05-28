@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 
-import { Err, Ok, axiosInstance } from '@nangohq/utils';
+import { axiosInstance, Err, Ok } from '@nangohq/utils';
 
 import type { ConnectWisePsaWebhookPayload, WebhookHandler } from './types.js';
 import type { Result } from '@nangohq/utils';

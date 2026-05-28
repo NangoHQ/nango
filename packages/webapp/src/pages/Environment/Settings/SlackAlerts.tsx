@@ -2,18 +2,18 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
-import { useToast } from '../../../hooks/useToast';
-import { apiFetch } from '../../../utils/api';
-import { globalEnv } from '../../../utils/env';
-import { connectSlack } from '../../../utils/slack-connection';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useEnvironment, usePatchEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useStore } from '@/store';
+import { useToast } from '../../../hooks/useToast';
+import { apiFetch } from '../../../utils/api';
+import { globalEnv } from '../../../utils/env';
+import { connectSlack } from '../../../utils/slack-connection';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const SlackAlertsSettings: React.FC = () => {
     const env = useStore((state) => state.env);

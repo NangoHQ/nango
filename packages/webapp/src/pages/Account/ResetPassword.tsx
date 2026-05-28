@@ -6,13 +6,13 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Password, passwordSchema } from './components/Password';
-import { useResetPasswordAPI } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { Form, FormField } from '@/components-v2/ui/form';
 import { useToast } from '@/hooks/useToast';
+import { useResetPasswordAPI } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { Password, passwordSchema } from './components/Password';
 
 const resetPasswordSchema = z.object({
     password: passwordSchema

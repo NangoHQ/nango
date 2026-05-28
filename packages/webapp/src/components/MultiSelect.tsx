@@ -1,10 +1,10 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from './ui/Command';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/Popover';
 import { cn } from '../utils/utils';
 import { Button } from './ui/button/Button';
+import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from './ui/Command';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/Popover';
 
 export interface MultiSelectArgs<T> {
     label: string;

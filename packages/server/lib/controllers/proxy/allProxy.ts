@@ -3,28 +3,28 @@ import { PassThrough } from 'node:stream';
 import { isAxiosError } from 'axios';
 import * as z from 'zod';
 
-import { LogContextOrigin, OtlpSpan, logContextGetter } from '@nangohq/logs';
+import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    ProxyError,
-    ProxyRequest,
     configService,
     connectionService,
     errorManager,
+    ErrorSourceEnum,
     getProxyConfiguration,
+    LogActionEnum,
+    ProxyError,
+    ProxyRequest,
     pubsub,
     refreshOrTestCredentials
 } from '@nangohq/shared';
 import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
-import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDenylist.js';
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { capping } from '../../utils/usage.js';
 import { featureFlags } from '../../utils/utils.js';
+import { isBaseUrlOverrideDenied, normalizeDenylist } from './baseUrlOverrideDenylist.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { AllPublicProxy, HTTP_METHOD, InternalProxyConfiguration, ProxyFile } from '@nangohq/types';

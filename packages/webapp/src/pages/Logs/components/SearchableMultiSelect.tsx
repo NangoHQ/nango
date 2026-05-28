@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 
 import { Info } from '../../../components/Info';
+import { Button } from '../../../components/ui/button/Button';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
+import { Input } from '../../../components/ui/input/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import Spinner from '../../../components/ui/Spinner';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';

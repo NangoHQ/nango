@@ -5,7 +5,7 @@ import { metrics, report } from '@nangohq/utils';
 
 import { runWithConcurrencyLimit } from '../runWithConcurrencyLimit.js';
 
-import type { SQSClient, SendMessageBatchCommandOutput, SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs';
+import type { SendMessageBatchCommandOutput, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;

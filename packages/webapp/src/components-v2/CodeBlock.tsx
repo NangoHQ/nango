@@ -2,8 +2,8 @@ import { Prism } from '@mantine/prism';
 import { Eye, EyeOff, Loader, Play } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
-import { CopyButton } from './CopyButton.js';
 import { cn } from '../utils/utils.js';
+import { CopyButton } from './CopyButton.js';
 import { Badge } from './ui/badge.js';
 import { Button } from './ui/button.js';
 

@@ -4,7 +4,6 @@ import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
-import { router } from './router';
 import { DevToolPanel, isDevToolsEnabled } from '@/components-v2/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
@@ -12,6 +11,7 @@ import { useTheme } from '@/lib/theme';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
+import { router } from './router';
 
 import 'react-toastify/dist/ReactToastify.css';
 

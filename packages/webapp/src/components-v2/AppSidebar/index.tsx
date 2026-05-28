@@ -2,9 +2,10 @@ import { AreaChart, Blocks, Logs, Plug, Settings2, Sparkle, X } from 'lucide-rea
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
-import { EnvironmentDropdown } from './EnvironmentDropdown';
-import { ProfileDropdown } from './ProfileDropdown';
-import UsageCard from './UsageCard';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { useMeta } from '@/hooks/useMeta';
+import { apiPatchUser } from '@/hooks/useUser';
+import { useStore } from '@/store';
 import {
     Sidebar,
     SidebarContent,
@@ -17,10 +18,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '../ui/sidebar';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { useMeta } from '@/hooks/useMeta';
-import { apiPatchUser } from '@/hooks/useUser';
-import { useStore } from '@/store';
+import { EnvironmentDropdown } from './EnvironmentDropdown';
+import { ProfileDropdown } from './ProfileDropdown';
+import UsageCard from './UsageCard';
 
 import type { LucideIcon } from 'lucide-react';
 

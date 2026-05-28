@@ -4,8 +4,6 @@ import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { ConnectUIPreview } from './components/ConnectUIPreview';
-import SettingsContent from '../components/SettingsContent';
 import { ColorInput } from '@/components-v2/ColorInput';
 import { InfoTooltip } from '@/components-v2/InfoTooltip';
 import { PermissionGate } from '@/components-v2/PermissionGate';
@@ -21,6 +19,8 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { cn } from '@/utils/utils';
+import SettingsContent from '../components/SettingsContent';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';

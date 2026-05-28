@@ -3,15 +3,15 @@ import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
 
-import { MonthSelector } from './components/MonthSelector';
-import { Payment } from './components/Payment';
-import { Plans } from './components/Plans';
-import { Usage } from './components/Usage';
-import DashboardLayout from '../../../layout/DashboardLayout';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { MonthSelector } from './components/MonthSelector';
+import { Payment } from './components/Payment';
+import { Plans } from './components/Plans';
+import { Usage } from './components/Usage';
 
 export const TeamBilling: React.FC = () => {
     const [activeTab, setActiveTab] = useHashNavigation('usage');

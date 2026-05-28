@@ -1,4 +1,4 @@
-import type { ConnectUISettings, ConnectionResponseSuccess } from '@nangohq/types';
+import type { ConnectionResponseSuccess, ConnectUISettings } from '@nangohq/types';
 
 export type AuthErrorType =
     | 'missing_auth_token'

@@ -1,10 +1,10 @@
 import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { buildIntegrationConfig } from './buildIntegrationConfig.js';
-import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { buildIntegrationConfig } from './buildIntegrationConfig.js';
+import { postIntegrationBodySchema } from './validation.js';
 
 import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 

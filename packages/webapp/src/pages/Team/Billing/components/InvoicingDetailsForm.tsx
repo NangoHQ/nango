@@ -3,9 +3,6 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { InvoicingAddressFields } from './InvoicingAddressFields';
-import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
-import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
@@ -14,6 +11,9 @@ import { Skeleton } from '@/components-v2/ui/skeleton';
 import { usePutBillingInvoicingDetails } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { countryCodes, taxIdTypes } from '../invoicingConstants';
+import { InvoicingAddressFields } from './InvoicingAddressFields';
+import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
 
 import type { BillingCustomer } from '@nangohq/types';
 

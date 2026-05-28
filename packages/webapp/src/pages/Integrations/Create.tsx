@@ -2,9 +2,6 @@ import { BookOpen } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
-import { AuthCreateForm } from './components/forms/AuthCreateForm';
-import { getDisplayName } from './utils';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Badge } from '@/components-v2/ui/badge';
 import { ButtonLink } from '@/components-v2/ui/button';
@@ -14,6 +11,9 @@ import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
+import { AuthCreateForm } from './components/forms/AuthCreateForm';
+import { getDisplayName } from './utils';
 
 import type { PostIntegration } from '@nangohq/types';
 

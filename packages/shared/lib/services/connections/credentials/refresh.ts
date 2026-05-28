@@ -2,14 +2,14 @@ import tracer from 'dd-trace';
 
 import { getLocking } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
-import { Err, FixedSizeMap, Ok, getLogger, metrics } from '@nangohq/utils';
+import { Err, FixedSizeMap, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import { decode as decodeJwt } from '../../../auth/jwt.js';
 import providerClient from '../../../clients/provider.client.js';
 import { NangoError } from '../../../utils/error.js';
 import { isTokenExpired } from '../../../utils/utils.js';
 import connectionService from '../../connection.service.js';
-import { REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_MS, getExpiresAtFromCredentials } from '../utils.js';
+import { getExpiresAtFromCredentials, REFRESH_FAILURE_COOLDOWN_MS, REFRESH_MARGIN_MS } from '../utils.js';
 
 import type { Config, Config as ProviderConfig } from '../../../models/index.js';
 import type { NangoInternalError } from '../../../utils/error.js';

@@ -34,7 +34,6 @@ import type {
     PostPublicConnectSessionsReconnect,
     PostPublicConnectTelemetry
 } from './connect/api.js';
-import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type {
     DeletePublicConnection,
     GetConnection,
@@ -47,6 +46,7 @@ import type {
     PostPublicConnection
 } from './connection/api/get.js';
 import type { SetMetadata, UpdateMetadata } from './connection/api/metadata.js';
+import type { GetConnectUISettings, PutConnectUISettings } from './connectUISettings/api.js';
 import type { PostDeploy, PostDeployConfirmation, PostDeployInternal } from './deploy/api.js';
 import type {
     CreateApiKey,

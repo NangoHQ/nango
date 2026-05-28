@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { isDuplicateTaskNameClientError, jsonSchema } from '@nangohq/nango-orchestrator';
-import { Err, Ok, getLogger, metrics, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 
@@ -121,7 +121,7 @@ export class DispatchQueueConsumer {
 
     private async processMessage(msg: Message): Promise<void> {
         const active = tracer.scope().active();
-        const span = tracer.startSpan('jobs.webhook.dispatch_queue.process', (active ? { childOf: active } : {}));
+        const span = tracer.startSpan('jobs.webhook.dispatch_queue.process', active ? { childOf: active } : {});
 
         return await tracer.scope().activate(span, async () => {
             try {

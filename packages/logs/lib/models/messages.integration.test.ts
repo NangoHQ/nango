@@ -2,10 +2,10 @@ import { afterEach } from 'node:test';
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { logContextGetter } from './logContextGetter.js';
-import { listMessages } from './messages.js';
 import { deleteIndex, migrateMapping } from '../es/helpers.js';
 import { indexMessages } from '../es/schema.js';
+import { logContextGetter } from './logContextGetter.js';
+import { listMessages } from './messages.js';
 
 import type { ListMessages } from './messages.js';
 import type { OperationRowInsert } from '@nangohq/types';

@@ -14,8 +14,8 @@ import {
     IconX
 } from '@tabler/icons-react';
 
-import * as Tooltip from '../../../components/ui/Tooltip';
 import { Tag } from '../../../components/ui/label/Tag';
+import * as Tooltip from '../../../components/ui/Tooltip';
 
 import type { SearchOperationsData } from '@nangohq/types';
 

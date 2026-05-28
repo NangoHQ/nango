@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
+import { LambdaRuntimeAdapter } from './lambda.adapter.js';
+
+import type { FunctionSource } from '@nangohq/types';
+
 const { mockS3Send, mockLambdaSend, mockEnvs } = vi.hoisted(() => ({
     mockS3Send: vi.fn(),
     mockLambdaSend: vi.fn(),
@@ -42,10 +46,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
         }))
     };
 });
-
-import { LambdaRuntimeAdapter } from './lambda.adapter.js';
-
-import type { FunctionSource } from '@nangohq/types';
 
 function minimalNangoProps(overrides: { environmentId?: number } = {}) {
     return {

@@ -1,12 +1,12 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { CodeBlock } from '../CodeBlock';
-import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
-import { Input } from '../ui/input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
+import { CodeBlock } from '../CodeBlock';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
+import { Input } from '../ui/input';
+import { JSON_DISPLAY_LIMIT } from './types';
 
 import type { InputField } from './types';
 

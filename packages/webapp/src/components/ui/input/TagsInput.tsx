@@ -2,9 +2,9 @@ import { X } from '@geist-ui/icons';
 import { PlusSmallIcon } from '@heroicons/react/24/outline';
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Input } from './Input';
 import useSet from '../../../hooks/useSet';
 import { CopyButton } from '../button/CopyButton';
+import { Input } from './Input';
 
 import type { KeyboardEvent } from 'react';
 

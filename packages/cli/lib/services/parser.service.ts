@@ -256,10 +256,7 @@ class ParserService {
             }
         });
 
-        if (
-            batchingRecordsLines.length > 0 &&
-            setMergingStrategyLines.some((line) => line > Math.min(...batchingRecordsLines))
-        ) {
+        if (batchingRecordsLines.length > 0 && setMergingStrategyLines.some((line) => line > Math.min(...batchingRecordsLines))) {
             console.log(
                 chalk.red(`setMergingStrategy should be called before any batching records function in "${filePath}:${Math.min(...setMergingStrategyLines)}".`)
             );

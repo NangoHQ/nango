@@ -1,5 +1,5 @@
 import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { deliver, shouldSend } from './utils.js';
 
