@@ -31,9 +31,9 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 secondary: [
-                    'bg-surface-panel text-text-default border-border-strong',
-                    'hover:bg-surface-panel-inset',
-                    'active:bg-state-selected',
+                    'bg-surface-inverse text-text-inverse border-transparent',
+                    'hover:bg-surface-inverse-hover',
+                    'active:bg-surface-inverse-pressed',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-default'
@@ -42,12 +42,12 @@ export const buttonVariants = cva(
                     'bg-interactive-outline text-text-default border-border-default',
                     'hover:bg-interactive-outline-hover hover:border-border-strong',
                     'active:bg-interactive-outline-active',
-                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-border-disabled',
-                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-border-disabled',
+                    'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
+                    'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 ghost: [
-                    'bg-interactive-ghost text-text-default border-transparent',
+                    'bg-interactive-ghost text-text-secondary border-transparent',
                     'hover:bg-interactive-ghost-hover',
                     'active:bg-interactive-ghost-active',
                     'disabled:text-text-disabled',
