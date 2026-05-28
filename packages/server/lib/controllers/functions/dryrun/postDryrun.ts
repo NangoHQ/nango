@@ -1,7 +1,6 @@
 import {
     RemoteFunctionError,
     createFunctionDryrun,
-    getRemoteFunctionNangoHost,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
     prepareAsyncDryrun,
@@ -14,6 +13,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
 import { functionDryrunBodySchema } from '../validation.js';
 import { createDryrunSandboxApiKey, defaultFunctionName, requireCustomerKeyId, toFunctionDryrunError } from './helpers.js';
+import { getFunctionSandboxNangoHost } from '../requestHost.js';
 
 import type { PostFunctionDryrun } from '@nangohq/types';
 
@@ -75,12 +75,13 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
     const dryrun = dryrunResult.value;
     let prepared: Awaited<ReturnType<typeof prepareAsyncDryrun>> | null = null;
     try {
+        const nangoHost = getFunctionSandboxNangoHost(req);
         const sandboxApiKey = await createDryrunSandboxApiKey(parentCustomerKeyId, environment.id, dryrun.id);
         if (sandboxApiKey.isErr()) {
             throw sandboxApiKey.error;
         }
 
-        const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, getRemoteFunctionNangoHost()).toString();
+        const callbackUrl = new URL(`/functions/dryruns/${dryrun.id}/result`, nangoHost).toString();
         prepared = await prepareAsyncDryrun({
             integration_id: body.integration_id,
             function_name: defaultFunctionName,
@@ -89,7 +90,7 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
             environment_name: environment.name,
             connection_id: body.connection_id,
             nango_secret_key: sandboxApiKey.value,
-            nango_host: getRemoteFunctionNangoHost(),
+            nango_host: nangoHost,
             dryrun_id: dryrun.id,
             callback_url: callbackUrl,
             ...(body.input !== undefined ? { input: body.input } : {}),
