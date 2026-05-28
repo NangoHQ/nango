@@ -99,8 +99,8 @@ const remoteFunctionAuth: RequestHandler[] = [
         next();
     }
 ];
-const functionCompileAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:functions:compile')];
-const functionDryrunAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:functions:dryrun')];
+const functionCompileAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:compile')];
+const functionDryrunAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:dryrun')];
 const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
     if (res.locals['apiKeyAuthSource'] !== 'sandbox_token') {
         res.status(403).send({ error: { code: 'forbidden', message: 'This endpoint only accepts sandbox tokens' } });
@@ -109,8 +109,8 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
-const functionDryrunResultAuth: RequestHandler[] = [...remoteFunctionAuth, sandboxTokenOnly];
-const functionDeployAuth: RequestHandler[] = [...remoteFunctionAuth, withScope('environment:deploy')];
+const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
+const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
 
 export const publicAPI = express.Router();
 

@@ -23,6 +23,14 @@ async function seedAccountWithRemoteFunctions(scopes?: ApiKeyScope[]) {
     return seed;
 }
 
+async function seedAccountWithoutRemoteFunctions(scopes?: ApiKeyScope[]) {
+    const seed = await seeders.seedAccountEnvAndUser({ plan: { remote_functions: false } });
+    if (scopes) {
+        await db.knex('customer_keys').where('id', seed.apiKey.id).update({ scopes });
+    }
+    return seed;
+}
+
 async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccountWithRemoteFunctions>>, scopes: string[]) {
     const key = await customerKeyService.createApiKey(db.knex, {
         accountId: seed.account.id,
@@ -167,6 +175,22 @@ describe('remote-function public API', () => {
                 message: 'Remote functions are not enabled for this account'
             }
         });
+    });
+
+    it('allows POST /functions/compile without remote functions plan flag', async () => {
+        const { apiKey } = await seedAccountWithoutRemoteFunctions(['environment:functions:compile']);
+
+        const res = await api.fetch('/functions/compile', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                code: ''
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        isError(res.json);
+        expect(res.json.error.code).toBe('invalid_body');
     });
 
     it('rejects POST /remote-function/dryrun without dryrun scope', async () => {
@@ -620,6 +644,30 @@ describe('remote-function public API', () => {
                 message: 'This endpoint only accepts sandbox tokens'
             }
         });
+    });
+
+    it('allows POST /functions/dryruns/:id/result without remote functions plan flag', async () => {
+        const seed = await seedAccountWithoutRemoteFunctions(['environment:functions:dryrun']);
+        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
+        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+            parentApiKeyId: seed.apiKey.id,
+            environmentId: seed.env.id,
+            purpose: 'dryrun',
+            dryrunId: dryrun.id,
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${sandboxToken.unwrap()}`,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ status: 'success', output: 'Executing -> function\nDone\n{"ok":true}' })
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.json()).toStrictEqual({ ok: true });
     });
 
     it('accepts POST /functions/dryruns/:id/result with a sandbox token', async () => {
