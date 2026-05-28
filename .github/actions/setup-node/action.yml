@@ -32,3 +32,13 @@ runs:
               registry-url: ${{ inputs.registry-url }}
               scope: ${{ inputs.scope }}
               always-auth: ${{ inputs.always-auth }}
+
+        - name: Upgrade npm
+          shell: bash
+          run: npm install -g npm@11.12.1
+
+        - name: Check lockfile consistency
+          shell: bash
+          run: |
+              npm install --package-lock-only --ignore-scripts
+              git diff --exit-code package-lock.json
