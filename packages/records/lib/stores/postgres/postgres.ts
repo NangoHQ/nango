@@ -244,8 +244,8 @@ export class PostgresStore implements RecordsStore {
                 .timeout(60000) // timeout after 1 minute
                 .where({ connection_id: connectionId, model })
                 .orderBy([
-                    { column: 'updated_at', order: isDesc ? 'desc' : 'asc' },
-                    { column: 'id', order: isDesc ? 'desc' : 'asc' }
+                    { column: 'updated_at', order: sortOrder },
+                    { column: 'id', order: sortOrder }
                 ]);
 
             if (cursor) {
@@ -331,7 +331,7 @@ export class PostgresStore implements RecordsStore {
                     tableoid::regclass as partition,
                     id,
                     external_id,
-                    json,
+                    ${metadataOnly ? '' : 'json,'}
                     to_json(created_at) as first_seen_at,
                     to_json(updated_at) as last_modified_at,
                     to_json(deleted_at) as deleted_at,
