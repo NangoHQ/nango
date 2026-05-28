@@ -430,7 +430,13 @@ export class Scheduler {
         }
         if (wasStarted) {
             const abortReason = typeof reason === 'string' ? reason : JSON.stringify(reason);
-            await this.scheduleAbortTask({ aborted: task, reason: abortReason });
+            const abortRes = await this.scheduleAbortTask({ aborted: task, reason: abortReason });
+            if (abortRes.isErr()) {
+                // Task is already CANCELLED in the DB.
+                // Log but don't fail, the runner will error on its next
+                // state transition regardless.
+                logger.error(`Failed to schedule abort task for cancelled task '${taskId}'`, abortRes.error);
+            }
         }
         this.onCallbacks[task.state](task);
         return Ok(task);
@@ -505,7 +511,10 @@ export class Scheduler {
 
         const { schedule, cancelledTasks, startedTasks } = res.value;
         for (const task of startedTasks) {
-            await this.scheduleAbortTask({ aborted: task, reason: `schedule ${state}` });
+            const abortRes = await this.scheduleAbortTask({ aborted: task, reason: `schedule ${state}` });
+            if (abortRes.isErr()) {
+                logger.error(`Failed to schedule abort task for task '${task.id}' on schedule ${state}`, abortRes.error);
+            }
         }
         for (const task of cancelledTasks) {
             this.onCallbacks[task.state](task);

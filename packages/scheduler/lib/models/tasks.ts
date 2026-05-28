@@ -233,8 +233,12 @@ async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | und
     }
 }
 
-export async function get(db: knex.Knex, taskId: string): Promise<Result<Task>> {
-    const task = await db.from<DBTask>(TASKS_TABLE).where('id', taskId).first();
+export async function get(db: knex.Knex, taskId: string, { forUpdate }: { forUpdate?: boolean } = {}): Promise<Result<Task>> {
+    const query = db.from<DBTask>(TASKS_TABLE).where('id', taskId);
+    if (forUpdate) {
+        query.forUpdate();
+    }
+    const task = await query.first();
     if (!task) {
         return Err(new Error(`Task with id '${taskId}' not found`));
     }
@@ -302,7 +306,7 @@ export async function transitionState(
               newState: TaskNonTerminalState;
           }
 ): Promise<Result<{ task: Task; previousState: TaskState }>> {
-    const fetched = await get(db, props.taskId);
+    const fetched = await get(db, props.taskId, { forUpdate: true });
     if (fetched.isErr()) {
         return Err(new Error(`Task with id '${props.taskId}' not found`));
     }
