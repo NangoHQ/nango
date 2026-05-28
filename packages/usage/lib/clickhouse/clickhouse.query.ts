@@ -1,7 +1,18 @@
 import type { UsageEvent, UsageMetric } from '@nangohq/types';
 
+// Top-N + 'rest' breakdown: any dimension query is collapsed to the top N
+// dimension values (by SUM of the metric's quantity over the window) plus a
+// single 'rest' bucket aggregating the long tail. Cap exists so callers can't
+// blow up the response — the long tail can be tens of thousands of values
+// (e.g., `records` by `connection_id` on the doomsday account).
+export const TOP_N_BREAKDOWN_DEFAULT = 10;
+export const TOP_N_BREAKDOWN_CAP = 25;
+
 interface GetUsageQueryMetricDimensions<TDimension extends string = 'none'> {
     dimension: 'none' | 'environment_id' | 'integration_id' | TDimension;
+    // Optional override for the top-N breakdown size when `dimension !== 'none'`.
+    // Defaults to TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
+    top?: number;
 }
 
 // `getUsage` covers counter metrics only — the SUM-aggregated tables that don't
@@ -143,6 +154,9 @@ export type GetDailySumAndBatchesQuery =
           accountId: number;
           metric: 'records';
           dimension: 'none' | 'environment_id' | 'integration_id' | 'connection_id' | 'model';
+          // Optional top-N breakdown size when `dimension !== 'none'`. Defaults to
+          // TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
+          top?: number;
           timeframe: {
               // exclusive end (timeframe includes events with timestamp >= start and < end)
               start: Date;
@@ -153,6 +167,7 @@ export type GetDailySumAndBatchesQuery =
           accountId: number;
           metric: 'connections';
           dimension: 'none' | 'environment_id' | 'integration_id';
+          top?: number;
           timeframe: { start: Date; end: Date };
       };
 

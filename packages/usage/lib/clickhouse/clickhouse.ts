@@ -1,7 +1,15 @@
 import { ENVS, Err, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
+import {
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT,
+    granularityGroupBy,
+    granularityOrderBy,
+    quantityForMetric,
+    startSelect,
+    tableForMetric
+} from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -115,23 +123,43 @@ export class Clickhouse {
         }
 
         try {
+            const startDate = query.timeframe.start.toISOString().split('T')[0];
+            const endDate = query.timeframe.end.toISOString().split('T')[0];
             const qs = (Object.keys(query.metrics) as CounterUsageMetric[]).map(async (metric) => {
-                const dimension = query.metrics[metric]?.dimension || 'none';
-                const dimensionColumn = dimension === 'none' ? "'none'" : dimension; // quoted 'none' to be used directly in SQL queries as a string literal when no dimension is needed
-                const dimensionSelect = `, ${dimensionColumn}`;
-                const dimensionGroupBy = dimensionColumn ? `, ${dimensionColumn}` : '';
-                const dimensionOrderBy = dimensionColumn ? `, ${dimensionColumn}` : '';
+                const metricCfg = query.metrics[metric];
+                const dimension = metricCfg?.dimension || 'none';
+                const table = `${this.database}.${tableForMetric(metric)}`;
+                // Dimension breakdown is always top-N + 'rest' bounded. `top_dims` picks the
+                // top N dimension values by total SUM across the window; anything outside
+                // collapses into a single 'rest' bucket. When dimension === 'none' we emit
+                // the literal 'none' so a single series falls out of the same machinery.
+                const dimensionValueExpr = dimension === 'none' ? `'none'` : `IF(${dimension} IN (SELECT dim FROM top_dims), toString(${dimension}), 'rest')`;
+                const top = Math.min(metricCfg?.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
+                const topDimsCte =
+                    dimension === 'none'
+                        ? ''
+                        : `WITH top_dims AS (
+                            SELECT ${dimension} AS dim, ${quantityForMetric(metric)} AS total
+                            FROM ${table}
+                            WHERE account_id = ${query.accountId}
+                              AND day >= toDate('${startDate}')
+                              AND day < toDate('${endDate}')
+                            GROUP BY ${dimension}
+                            ORDER BY total DESC
+                            LIMIT ${top}
+                        )`;
                 const sql = `
+                    ${topDimsCte}
                     SELECT
                         ${quantityForMetric(metric)} AS quantity,
-                        ${startSelect(query)}
-                        ${dimensionSelect} AS dimension
-                    FROM ${this.database}.${tableForMetric(metric)}
+                        ${startSelect(query)},
+                        ${dimensionValueExpr} AS dimension
+                    FROM ${table}
                     WHERE account_id = ${query.accountId}
-                    AND day >= toDate('${query.timeframe.start.toISOString().split('T')[0]}')
-                    AND day < toDate('${query.timeframe.end.toISOString().split('T')[0]}')
-                    GROUP BY account_id ${granularityGroupBy(query)} ${dimensionGroupBy}
-                    ORDER BY account_id ${granularityOrderBy(query)} ${dimensionOrderBy}
+                    AND day >= toDate('${startDate}')
+                    AND day < toDate('${endDate}')
+                    GROUP BY account_id ${granularityGroupBy(query)}, dimension
+                    ORDER BY account_id ${granularityOrderBy(query)}, dimension
                 `;
                 const res = await this.client?.query({ query: sql, format: 'JSONEachRow' });
                 return {
@@ -158,13 +186,17 @@ export class Clickhouse {
                     const { metric, dimension, rows } = entry.value;
                     const seriesMap: Record<string, GetUsageResultSeries> = {};
                     for (const row of rows) {
-                        const dimensionValue = row.dimension;
-                        if (!seriesMap[dimensionValue]) {
-                            seriesMap[dimensionValue] =
-                                dimension !== 'none' ? { dimension, dimensionValue: dimensionValue, total: 0, dataPoints: [] } : { total: 0, dataPoints: [] };
+                        // CH returns the dimension value as a string (toString in the IF
+                        // is required so 'rest' and the raw column share a type). Coerce
+                        // back to the typed value so downstream consumers get the same
+                        // shape the no-top-N variant used to return.
+                        const dimensionValue = coerceDimensionValue(row.dimension, dimension);
+                        const key = String(row.dimension);
+                        if (!seriesMap[key]) {
+                            seriesMap[key] = dimension !== 'none' ? { dimension, dimensionValue, total: 0, dataPoints: [] } : { total: 0, dataPoints: [] };
                         }
-                        seriesMap[dimensionValue].total += row.quantity;
-                        seriesMap[dimensionValue].dataPoints.push({
+                        seriesMap[key].total += row.quantity;
+                        seriesMap[key].dataPoints.push({
                             timeframe: {
                                 start: new Date(row.start),
                                 end: new Date(row.end)
@@ -252,12 +284,15 @@ export class Clickhouse {
         const startDate = timeframe.start.toISOString().split('T')[0];
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
+        const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
 
         // 'none' branch: per-day batch count IS the no-dim denominator, simple SQL.
         // dim branch: per-dim sum + day-level global batches (so series are additive
-        // to the global). The CTE `global_batches` is a single tiny aggregate scan;
-        // the outer GROUP BY adds the dimension while keeping the same denominator
-        // across dim values via INNER JOIN on day.
+        // to the global), with a hard top-N + 'rest' cap on the dimension. The
+        // `top_dims` CTE picks the top-N dimension values by total SUM across the
+        // window; anything outside lands in a single 'rest' bucket. `global_batches`
+        // keeps every series sharing the same per-day denominator so per-series
+        // running averages still sum to the global running average.
         const sql =
             dimension === 'none'
                 ? `
@@ -280,19 +315,29 @@ export class Clickhouse {
                 AND day >= toDate('${startDate}')
                 AND day < toDate('${endDate}')
                 GROUP BY day
+            ),
+            top_dims AS (
+                SELECT ${dimension} AS dim, SUM(value) AS total
+                FROM ${table}
+                WHERE account_id = ${accountId}
+                AND day >= toDate('${startDate}')
+                AND day < toDate('${endDate}')
+                GROUP BY ${dimension}
+                ORDER BY total DESC
+                LIMIT ${top}
             )
             SELECT
                 t.day AS day,
                 SUM(t.value) AS sum,
                 any(g.batches) AS batches,
-                t.${dimension} AS dimensionValue
+                IF(t.${dimension} IN (SELECT dim FROM top_dims), toString(t.${dimension}), 'rest') AS dimensionValue
             FROM ${table} t
             INNER JOIN global_batches g ON g.day = t.day
             WHERE t.account_id = ${accountId}
             AND t.day >= toDate('${startDate}')
             AND t.day < toDate('${endDate}')
-            GROUP BY t.day, t.${dimension}
-            ORDER BY t.day, t.${dimension}
+            GROUP BY t.day, dimensionValue
+            ORDER BY t.day, dimensionValue
         `;
 
         try {
@@ -351,6 +396,20 @@ export class Clickhouse {
 
         return res;
     }
+}
+
+// Coerces the raw string value returned by ClickHouse (forced to String by the
+// `toString` inside the top-N IF, so the 'rest' literal and the column share a
+// type) back to the typed value expected by GetUsageResultSeries.dimensionValue.
+// `none` stays as 'none' so the no-dim series falls out untouched.
+function coerceDimensionValue(raw: string, dimension: string): string | number | boolean {
+    if (raw === 'rest' || dimension === 'none') {
+        return raw;
+    }
+    if (dimension === 'success') {
+        return raw === 'true';
+    }
+    return raw;
 }
 
 function toRaw(event: UsageEvent): ClickhouseRawUsageEvent | null {
