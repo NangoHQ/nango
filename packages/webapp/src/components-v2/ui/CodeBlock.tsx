@@ -2,10 +2,10 @@ import { Prism } from '@mantine/prism';
 import { Eye, EyeOff, Loader, Play } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
+import { Badge } from './Badge.js';
+import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
-import { cn } from '../utils/utils.js';
-import { Badge } from './ui/badge.js';
-import { Button } from './ui/button.js';
+import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';

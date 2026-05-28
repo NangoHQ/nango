@@ -1,6 +1,6 @@
 import { CircleHelp } from 'lucide-react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
 interface InfoTooltipProps {
     children: React.ReactNode;

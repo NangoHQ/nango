@@ -6,7 +6,7 @@ import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { SWRConfig } from 'swr';
 
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';
 import { fetcher } from '@/utils/api';
 import { SentryErrorBoundary } from '@/utils/sentry';

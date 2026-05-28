@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 
-import { cn } from '../utils/utils';
+import { cn } from '../../utils/utils';
 
 import type { NangoSyncEndpointV2 } from '@nangohq/types';
 import type { VariantProps } from 'class-variance-authority';

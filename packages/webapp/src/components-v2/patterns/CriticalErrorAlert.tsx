@@ -1,8 +1,8 @@
 import { CircleX } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { StyledLink } from './StyledLink';
-import { Alert, AlertDescription } from './ui/alert';
+import { Alert, AlertDescription } from '../ui/Alert';
+import { StyledLink } from '../ui/StyledLink';
 
 /**
  * For reuse on generic error scenarios.

@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import { Button } from '@/components-v2/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { SecretInput } from '@/components-v2/ui/SecretInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -36,7 +36,7 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode as Extract<typeof provider.authMode, 'INSTALL_PLUGIN'>,
+                    authType: provider.authMode,
                     appLink: formData.appLink,
                     username: formData.username,
                     password: formData.password

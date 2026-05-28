@@ -17,14 +17,14 @@ import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '.
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
-import { Input } from '@/components-v2/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Button } from '@/components-v2/ui/Button';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { DestructiveActionModal } from '@/components-v2/ui/DestructiveActionModal';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
+import { Input } from '@/components-v2/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
@@ -203,7 +203,7 @@ const ScopeSelector: React.FC<ScopeSelectorProps> = ({ selectedScopes, onChange,
                                                             type="checkbox"
                                                             checked={isScopeSelected(item.credentials, selectedScopes)}
                                                             disabled={disabled || wildcardSelected}
-                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials!, selectedScopes))}
+                                                            onChange={() => onChange(toggleCredentialFn(item.value, item.credentials, selectedScopes))}
                                                             className="accent-brand shrink-0"
                                                         />
                                                         <span

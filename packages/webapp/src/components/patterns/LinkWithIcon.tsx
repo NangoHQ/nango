@@ -2,7 +2,7 @@ import { IconExternalLink, IconLink } from '@tabler/icons-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { cn } from '../utils/utils';
+import { cn } from '../../utils/utils';
 
 interface LinkWithIconProps {
     to: string;

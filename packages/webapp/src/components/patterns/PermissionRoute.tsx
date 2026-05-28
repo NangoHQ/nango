@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { usePermissions } from '../hooks/usePermissions';
-import { useUser } from '../hooks/useUser';
-import { useStore } from '../store';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useUser } from '../../hooks/useUser';
+import { useStore } from '../../store';
 
 import type { Permission } from '@nangohq/types';
 

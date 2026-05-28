@@ -2,12 +2,12 @@ import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Popover, PopoverContent, PopoverTrigger } from './ui/Popover';
-import { matchPresetFromPeriod, parsePeriod } from '../utils/dates';
-import { cn } from '../utils/utils';
-import { Button } from './ui/button/Button';
+import { Popover, PopoverContent, PopoverTrigger } from './Popover';
+import { Button } from './button/Button';
+import { matchPresetFromPeriod, parsePeriod } from '../../utils/dates';
+import { cn } from '../../utils/utils';
 
-import type { Period, PeriodPreset } from '../utils/dates';
+import type { Period, PeriodPreset } from '../../utils/dates';
 
 const dateTimeFormat = 'LLL dd, yyyy, HH:mm:ss';
 

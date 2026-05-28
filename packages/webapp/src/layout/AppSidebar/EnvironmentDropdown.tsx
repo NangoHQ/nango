@@ -4,15 +4,15 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { StyledLink } from '../StyledLink.js';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
-import { ConditionalTooltip } from '../ConditionalTooltip.js';
-import { PermissionGate } from '../PermissionGate.js';
-import { Badge } from '../ui/badge.js';
-import { Button } from '../ui/button.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu.js';
-import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar.js';
 import { LogoInverted } from '@/assets/LogoInverted';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
+import { Badge } from '@/components-v2/ui/Badge.js';
+import { Button } from '@/components-v2/ui/Button.js';
+import { ConditionalTooltip } from '@/components-v2/ui/ConditionalTooltip.js';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu.js';
+import { SidebarMenu, SidebarMenuItem } from '@/components-v2/ui/Sidebar.js';
+import { StyledLink } from '@/components-v2/ui/StyledLink.js';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';

@@ -1,9 +1,8 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { CopyButton } from './CopyButton.js';
-import { Badge } from './ui/badge.js';
-import { Button } from './ui/button.js';
+import { Badge } from '../ui/Badge.js';
+import { Button } from '../ui/Button.js';
 import {
     Combobox,
     ComboboxChip,
@@ -14,8 +13,9 @@ import {
     ComboboxItem,
     ComboboxList,
     ComboboxValue
-} from './ui/combobox.js';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip.js';
+} from '../ui/Combobox.js';
+import { CopyButton } from '../ui/CopyButton.js';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
 import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {

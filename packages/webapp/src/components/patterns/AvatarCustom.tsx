@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 
-import { toAcronym } from '../utils/avatar';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/Avatar';
-import { globalEnv } from '../utils/env';
+import { toAcronym } from '../../utils/avatar';
+import { globalEnv } from '../../utils/env';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 
-import type { AvatarProps } from './ui/Avatar';
+import type { AvatarProps } from '../ui/Avatar';
 
 type Props = {
     displayName: string;

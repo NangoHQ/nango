@@ -1,8 +1,8 @@
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
@@ -26,7 +26,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
     const onSaveCredentials = async (field: { clientId?: string; clientSecret?: string }) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                authType: template.auth_mode,
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });
@@ -40,7 +40,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
     const handleScopesChange = async (scopes: string, countDifference: number) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2'>,
+                authType: template.auth_mode,
                 scopes
             });
             if (countDifference > 0) {

@@ -5,15 +5,15 @@ import { useForm } from 'react-hook-form';
 import z from 'zod';
 
 import { NangoProvidedInput } from '../NangoProvidedInput';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tooltip';
+import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
+import { Button } from '@/components-v2/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components-v2/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/ui/Navigation';
+import { SecretInput } from '@/components-v2/ui/SecretInput';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -53,7 +53,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode as Extract<typeof provider.authMode, 'OAUTH1' | 'OAUTH2' | 'TBA'>,
+                    authType: provider.authMode,
                     clientId: formData.clientId,
                     clientSecret: formData.clientSecret,
                     scopes: formData.scopes

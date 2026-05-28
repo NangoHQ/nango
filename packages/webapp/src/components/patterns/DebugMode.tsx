@@ -1,4 +1,4 @@
-import { useStore } from '../store';
+import { useStore } from '../../store';
 
 export const DebugMode: React.FC = () => {
     const debugMode = useStore((state) => state.debugMode);

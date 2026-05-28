@@ -2,9 +2,9 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from './button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from './input-group';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { Button } from './Button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
+import { Popover, PopoverContent, PopoverTrigger } from './Popover';
 import { cn } from '@/utils/utils';
 
 export interface ComboboxChildOption<TValue extends string = string> {

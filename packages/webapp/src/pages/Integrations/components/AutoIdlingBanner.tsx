@@ -7,8 +7,8 @@ import { useEnvironment } from '../../../hooks/useEnvironment';
 import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const AutoIdlingBanner: React.FC = () => {

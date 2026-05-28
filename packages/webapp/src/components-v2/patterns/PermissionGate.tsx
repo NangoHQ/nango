@@ -1,4 +1,4 @@
-import { ConditionalTooltip } from './ConditionalTooltip';
+import { ConditionalTooltip } from '../ui/ConditionalTooltip';
 
 interface PermissionGateProps {
     condition: boolean;

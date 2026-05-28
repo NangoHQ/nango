@@ -2,8 +2,8 @@ import { Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
-import { Skeleton } from './ui/skeleton';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
+import { Skeleton } from '../ui/Skeleton';
 
 import type { ApiBillingUsageMetric } from '@nangohq/types';
 

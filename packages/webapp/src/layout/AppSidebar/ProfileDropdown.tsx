@@ -2,9 +2,9 @@ import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRou
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { isDevToolsEnabled, useDevPanelStore } from '../DevToolPanel';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
+import { isDevToolsEnabled, useDevPanelStore } from '@/app/DevToolPanel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu';
+import { SidebarMenu, SidebarMenuItem } from '@/components-v2/ui/Sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';

@@ -1,7 +1,7 @@
 import { permissions } from '@nangohq/authz';
 
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { Label } from '@/components-v2/ui/label';
+import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -25,7 +25,7 @@ export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'
     const handleScopesChange = async (scopes: string, countDifference: number) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'OAUTH2_CC'>,
+                authType: template.auth_mode,
                 scopes
             });
             if (countDifference > 0) {

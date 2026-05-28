@@ -4,10 +4,10 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Button } from '../ui/button';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '../ui/form';
-import { Input } from '../ui/input';
+import { Button } from '@/components-v2/ui/Button';
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components-v2/ui/Dialog';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/components-v2/ui/Form';
+import { Input } from '@/components-v2/ui/Input';
 import { usePostEnvironment } from '@/hooks/useEnvironment';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';

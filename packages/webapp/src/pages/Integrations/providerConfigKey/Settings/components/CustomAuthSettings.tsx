@@ -2,12 +2,12 @@ import { AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';

@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip';
 
 import type * as TooltipPrimitive from '@radix-ui/react-tooltip';
 

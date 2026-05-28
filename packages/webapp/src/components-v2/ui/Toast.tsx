@@ -1,7 +1,7 @@
 import { CircleAlert, CircleCheck, CircleX, Info, X } from 'lucide-react';
 import { toast as sonnerToast } from 'sonner';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './ui/alert';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './Alert';
 
 interface ToastProps {
     title?: string;

@@ -1,9 +1,9 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { CodeBlock } from '../CodeBlock';
 import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
-import { Input } from '../ui/input';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/Alert';
+import { CodeBlock } from '@/components-v2/ui/CodeBlock';
+import { Input } from '@/components-v2/ui/Input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';

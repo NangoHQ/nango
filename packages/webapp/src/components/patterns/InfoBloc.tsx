@@ -1,8 +1,8 @@
 import { IconHelpCircle } from '@tabler/icons-react';
 
-import { SimpleTooltip } from './SimpleTooltip';
-import { cn } from '../utils/utils';
-import { Button } from './ui/button/Button';
+import { cn } from '../../utils/utils';
+import { SimpleTooltip } from '../ui/SimpleTooltip';
+import { Button } from '../ui/button/Button';
 
 export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; children: React.ReactNode; className?: string; horizontal?: boolean }> = ({
     title,

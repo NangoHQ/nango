@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { StyledLink } from './StyledLink';
-import { Button } from './ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
+import { Button } from '../ui/Button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/Dialog';
+import { StyledLink } from '../ui/StyledLink';
 
 export interface ConfirmDialogOptions {
     title: string;

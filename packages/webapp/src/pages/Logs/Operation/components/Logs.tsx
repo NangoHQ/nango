@@ -7,9 +7,9 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
-import { PeriodSelector } from '../../../../components/PeriodSelector';
-import { SimpleTooltip } from '../../../../components/SimpleTooltip';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
+import { PeriodSelector } from '../../../../components/ui/PeriodSelector';
+import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
 import { Skeleton } from '../../../../components/ui/Skeleton';
 import Spinner from '../../../../components/ui/Spinner';
 import * as Table from '../../../../components/ui/Table';

@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ConditionalTooltip } from './ConditionalTooltip';
 import { CopyButton } from './CopyButton';
-import { PermissionGate } from './PermissionGate';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './ui/input-group';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './InputGroup';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 
 export interface EditableInputProps {
     id?: string;

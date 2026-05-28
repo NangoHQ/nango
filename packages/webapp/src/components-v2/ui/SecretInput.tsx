@@ -2,10 +2,10 @@ import { EyeSlashIcon } from '@heroicons/react/24/outline';
 import { EyeIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
+import { Button } from './Button';
 import { CopyButton } from './CopyButton';
-import { PermissionGate } from './PermissionGate';
-import { Button } from './ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from './ui/input-group';
+import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 
 interface SecretInputProps extends React.ComponentProps<'input'> {
     copy?: boolean;

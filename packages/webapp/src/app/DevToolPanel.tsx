@@ -2,8 +2,8 @@ import { Sun, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
-import { Button } from './ui/button';
-import { Switch } from './ui/switch';
+import { Button } from '@/components-v2/ui/Button';
+import { Switch } from '@/components-v2/ui/Switch';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 /**

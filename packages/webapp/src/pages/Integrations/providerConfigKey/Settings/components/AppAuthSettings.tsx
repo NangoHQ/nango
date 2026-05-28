@@ -1,9 +1,9 @@
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
@@ -25,7 +25,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'APP'>,
+                authType: template.auth_mode,
                 ...field
             });
             toast({ title: 'Successfully updated', variant: 'success' });

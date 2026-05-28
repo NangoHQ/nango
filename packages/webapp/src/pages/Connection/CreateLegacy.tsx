@@ -107,8 +107,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
         if (integrations && integrations.length > 0) {
             const defaultIntegration = providerConfigKey ? integrations.find((i) => i.unique_key === providerConfigKey) : integrations[0];
 
-            setIntegration(defaultIntegration!);
-            setUpConnectionConfigParams(defaultIntegration!);
+            setIntegration(defaultIntegration);
+            setUpConnectionConfigParams(defaultIntegration);
             setAuthMode(defaultIntegration!.meta.authMode);
         }
     }, [integrations]);

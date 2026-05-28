@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './Tooltip';
 
 import type { Content } from '@radix-ui/react-tooltip';
 import type React from 'react';

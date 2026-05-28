@@ -1,7 +1,7 @@
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Button } from './ui/button';
+import { Button } from './Button';
 import { cn } from '@/utils/utils';
 
 export const CopyButton: React.FC<{ text: string; disabled?: boolean }> = ({ text, disabled }) => {

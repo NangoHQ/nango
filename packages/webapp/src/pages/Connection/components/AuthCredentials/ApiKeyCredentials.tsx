@@ -1,5 +1,5 @@
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Label } from '@/components-v2/ui/label';
+import { Label } from '@/components-v2/ui/Label';
+import { SecretInput } from '@/components-v2/ui/SecretInput';
 
 import type { ApiKeyCredentials } from '@nangohq/types';
 

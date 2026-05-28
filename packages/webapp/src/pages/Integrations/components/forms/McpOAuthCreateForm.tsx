@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
-import { InputGroupInput } from '@/components-v2/ui/input-group';
+import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
+import { Button } from '@/components-v2/ui/Button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
+import { InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { SecretInput } from '@/components-v2/ui/SecretInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -38,7 +38,7 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
                 provider: provider.name,
                 useSharedCredentials: false,
                 auth: {
-                    authType: provider.authMode as Extract<typeof provider.authMode, 'MCP_OAUTH2'>,
+                    authType: provider.authMode,
                     ...(useUserCredentials && formData.clientId && { clientId: formData.clientId }),
                     ...(useUserCredentials && formData.clientSecret && { clientSecret: formData.clientSecret }),
                     scopes: formData.scopes

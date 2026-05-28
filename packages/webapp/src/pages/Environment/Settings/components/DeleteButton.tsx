@@ -2,10 +2,10 @@ import { IconTrash } from '@tabler/icons-react';
 
 import { permissions } from '@nangohq/authz';
 
-import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
-import { DestructiveActionModal } from '@/components-v2/DestructiveActionModal';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button } from '@/components-v2/ui/button';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Button } from '@/components-v2/ui/Button';
+import { ConditionalTooltip } from '@/components-v2/ui/ConditionalTooltip';
+import { DestructiveActionModal } from '@/components-v2/ui/DestructiveActionModal';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 

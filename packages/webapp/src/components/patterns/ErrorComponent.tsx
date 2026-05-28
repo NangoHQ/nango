@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet';
 
 import { Info } from './Info';
-import DashboardLayout from '../layout/DashboardLayout';
-import PageNotFound from '../pages/PageNotFound';
+import DashboardLayout from '../../layout/DashboardLayout';
+import PageNotFound from '../../pages/PageNotFound';
 
 import type { ApiError } from '@nangohq/types';
 

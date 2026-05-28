@@ -8,9 +8,9 @@ import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment'
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { KeyValueInput } from '@/components-v2/KeyValueInput';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components-v2/ui/Button';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';

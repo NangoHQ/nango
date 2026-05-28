@@ -16,7 +16,7 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem
-} from '../ui/sidebar';
+} from '@/components-v2/ui/Sidebar';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { apiPatchUser } from '@/hooks/useUser';

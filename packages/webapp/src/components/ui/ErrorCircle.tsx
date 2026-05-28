@@ -1,8 +1,8 @@
 import { IconCircleCheckFilled, IconCircleXFilled, IconClockHour4Filled, IconExclamationCircleFilled, IconInfoCircleFilled } from '@tabler/icons-react';
 
-import { cn } from '../utils/utils';
-import { IconAuth } from './icons/auth';
-import { IconSync } from './icons/sync';
+import { cn } from '../../utils/utils';
+import { IconAuth } from '../icons/auth';
+import { IconSync } from '../icons/sync';
 
 import type React from 'react';
 

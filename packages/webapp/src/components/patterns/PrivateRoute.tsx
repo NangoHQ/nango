@@ -3,15 +3,15 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { useEnvironment } from '../hooks/useEnvironment';
-import { useMeta } from '../hooks/useMeta';
-import { usePermissions } from '../hooks/usePermissions';
-import { useUser } from '../hooks/useUser';
-import PageEnvironmentUnauthorized from '../pages/PageEnvironmentUnauthorized';
-import PageNotFound from '../pages/PageNotFound';
-import { useStore } from '../store';
-import { useAnalyticsIdentify } from '../utils/analytics';
-import { isNonEnvPath } from '../utils/routes';
+import { useEnvironment } from '../../hooks/useEnvironment';
+import { useMeta } from '../../hooks/useMeta';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useUser } from '../../hooks/useUser';
+import PageEnvironmentUnauthorized from '../../pages/PageEnvironmentUnauthorized';
+import PageNotFound from '../../pages/PageNotFound';
+import { useStore } from '../../store';
+import { useAnalyticsIdentify } from '../../utils/analytics';
+import { isNonEnvPath } from '../../utils/routes';
 
 export const PrivateRoute: React.FC = () => {
     const { user, loading: loadingUser, error: userError } = useUser();

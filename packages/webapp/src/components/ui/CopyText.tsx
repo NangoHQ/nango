@@ -1,8 +1,8 @@
 import { IconCopy } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/Tooltip';
-import { cn } from '../utils/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from './Tooltip';
+import { cn } from '../../utils/utils';
 
 import type { ClassValue } from 'clsx';
 
