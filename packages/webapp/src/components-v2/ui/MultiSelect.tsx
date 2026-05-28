@@ -98,7 +98,6 @@ export function MultiSelect<T extends string = string>({
     useEffect(() => {
         prevOpenRef.current = open;
         prevInitialOptionsRef.current = initialOptions;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, initialOptions, sortOptionsWithSelectedFirst]);
 
     const handleInputChange = useCallback(
