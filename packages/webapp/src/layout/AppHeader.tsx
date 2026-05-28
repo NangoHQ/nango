@@ -2,7 +2,7 @@ import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
-import { isDevToolsEnabled } from '../app/DevToolPanel';
+import { isDevToolsEnabled } from '@/features/DevToolPanel';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { Breadcrumbs } from '@/components-v2/patterns/Breadcrumbs';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';

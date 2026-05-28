@@ -5,7 +5,7 @@ import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
 import { router } from './router';
-import { DevToolPanel, isDevToolsEnabled } from '@/app/DevToolPanel';
+import { DevToolPanel, isDevToolsEnabled } from '@/features/DevToolPanel';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useTheme } from '@/lib/theme';
