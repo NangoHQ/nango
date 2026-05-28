@@ -76,8 +76,7 @@ function IconGrid() {
                     position: 'sticky',
                     top: 0,
                     zIndex: 10,
-                    paddingBlock: 'var(--ds-space-2)',
-                    background: 'var(--surface-canvas)'
+                    paddingBlock: 'var(--ds-space-2)'
                 }}
             >
                 <input
@@ -85,7 +84,7 @@ function IconGrid() {
                     placeholder={`Search ${ALL_ICONS.length} icons…`}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    style={{ background: 'var(--surface-canvas)' }}
+                    style={{ background: 'white' }}
                     className="max-w-80 h-8 w-full rounded-ds-xs px-2.5 text-ds-sm border border-ds-1 border-border-input text-text-default placeholder:text-text-secondary outline-none focus-visible:border-border-input-hover"
                 />
                 <p style={{ marginTop: 'var(--ds-space-1)', fontSize: 'var(--ds-typography-font-size-xs)', color: 'var(--text-secondary)' }}>
