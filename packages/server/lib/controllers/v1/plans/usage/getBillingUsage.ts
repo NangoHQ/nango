@@ -15,10 +15,11 @@ const querySchema = z
         env: z.string(),
         from: z.iso.datetime().optional(),
         to: z.iso.datetime().optional(),
-        // Per-request override of the USAGE_BILLING_FROM_CLICKHOUSE default,
-        // for dev-tools flipping without a redeploy. Webapp picks it up from
-        // localStorage('nango.billingUsageSource') and forwards. Missing
-        // → falls back to the env flag.
+        // Per-request dashboard backend override. Webapp picks it up from
+        // localStorage('nango.billingUsageSource') and forwards. Honoured
+        // server-side only when ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev
+        // gate). Without the gate, this is ignored and the dashboard stays
+        // on Orb.
         source: z.enum(['clickhouse', 'orb']).optional()
     })
     .refine(

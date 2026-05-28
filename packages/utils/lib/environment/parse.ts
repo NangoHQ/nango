@@ -301,13 +301,14 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(3600 * 6), // 6 hour
-    // When true, the dashboard path of `getBillingUsage` (granularity='day' +
-    // explicit timeframe) reads ALL metrics — counters and AVG — from
-    // ClickHouse and skips Orb entirely. Capping (`getBillingMetrics`, no
-    // granularity / timeframe) still hits Orb regardless. Off by default
-    // until per-day + cumulative parity (NAN-5684 / EXT-1138) clears
-    // against prod data.
-    USAGE_BILLING_FROM_CLICKHOUSE: z.stringbool().optional().default(false),
+    // Gate that *permits* the per-request `source` override on
+    // `getBillingUsage` (dashboard path). When OFF (prod default), the
+    // `source` query param is ignored and the dashboard always uses Orb;
+    // when ON (dev), the param is honoured, letting individual sessions
+    // flip via localStorage('nango.billingUsageSource') without a redeploy.
+    // The flag does NOT change the default — even when on, missing override
+    // → Orb. Capping is unaffected (no override mechanism there).
+    ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS

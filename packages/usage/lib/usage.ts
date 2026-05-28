@@ -79,9 +79,10 @@ export class UsageTrackerNoOps implements IUsageTracker {
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
     public billingClient: UsageBillingClient;
-    // Read-only client for the dashboard CH path (guarded by
-    // USAGE_BILLING_FROM_CLICKHOUSE). Lazy-init keeps the dependency out
-    // of code paths that never read billing usage from CH.
+    // Read-only client for the dashboard CH path (gated by
+    // ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
+    // Lazy-init keeps the dependency out of code paths that never read
+    // billing usage from CH.
     private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
@@ -242,18 +243,21 @@ export class UsageTracker implements IUsageTracker {
         // so any regression surfaces immediately in dev.
         //
         // Capping (`getBillingMetrics`, no granularity / timeframe) continues
-        // to use the Orb path regardless of the flag — the CH side doesn't
-        // have an equivalent of Orb's "current period totals" yet.
+        // to use the Orb path — the CH side doesn't have an equivalent of
+        // Orb's "current period totals" yet.
         //
         // The dim breakdown wiring belongs to a follow-up — `BillingUsageMetric`
         // is single-series, so it can't represent per-dim panels here yet.
         //
-        // `opts.source` is a per-request override (webapp reads it from
-        // `localStorage('nango.billingUsageSource')` and forwards as a query
-        // param). When set, it takes precedence over the env-level default —
-        // lets dev tools flip paths without a redeploy.
-        const sourceIsClickhouse = opts?.source ? opts.source === 'clickhouse' : parsedEnvs.USAGE_BILLING_FROM_CLICKHOUSE;
-        const useClickhouseForDashboard = sourceIsClickhouse && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
+        // Resolution: `opts.source` is a per-request override (webapp reads it
+        // from `localStorage('nango.billingUsageSource')` and forwards as a
+        // query param). It's honoured ONLY when
+        // `ALLOW_OVERRIDE_GETUSAGE_SERVICE` is set (gate, dev-only) — otherwise
+        // the param is ignored and Orb is always used. The flag does not
+        // change the default; even on dev, a request with no override stays
+        // on Orb until someone explicitly opts in.
+        const requestedSource = parsedEnvs.ALLOW_OVERRIDE_GETUSAGE_SERVICE ? opts?.source : undefined;
+        const useClickhouseForDashboard = requestedSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
         if (useClickhouseForDashboard) {
             return this.getBillingUsageFromClickhouse(accountId, opts.timeframe!);
