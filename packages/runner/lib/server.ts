@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { createHash } from 'node:crypto';
-
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import timeout from 'connect-timeout';
@@ -9,68 +7,13 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
-import { PersistClient } from './clients/persist.js';
-import { abortCheckIntervalMs, heartbeatIntervalMs, resourcePoolEvictIdleMs, runnerTelemetryBatchSize, runnerTelemetryFlushIntervalMs } from './env.js';
+import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
 import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
-import { createTelemetryRecorder } from './telemetry.js';
 
-import type { TelemetryRecorder } from './telemetry.js';
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
-
-interface EnvironmentResources {
-    persistClient: PersistClient;
-    telemetryRecorder: TelemetryRecorder;
-    lastUsedAt: number;
-    activeTaskCount: number;
-}
-
-const resourcesPool = new Map<string, EnvironmentResources>();
-
-function poolKey(nangoProps: NangoProps): string {
-    // NOTE: exportRunnerTelemetry flag is included in the key so that when the flag flips, a new pool entry is created
-    // with the proper settings (which are applied at `TelemetryRecorder` creation time). The old pool entry will fade
-    // away if it stays idle for 5m.
-    const keyHash = createHash('sha256').update(nangoProps.secretKey).digest('hex');
-    return `${nangoProps.environmentId}:${keyHash}:${nangoProps.runnerFlags.exportRunnerTelemetry}`;
-}
-
-function getOrCreateEnvironmentResources(nangoProps: NangoProps): EnvironmentResources {
-    const key = poolKey(nangoProps);
-    const existing = resourcesPool.get(key);
-    if (existing) {
-        existing.lastUsedAt = Date.now();
-        return existing;
-    }
-    const persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
-    const telemetryRecorder = createTelemetryRecorder({
-        environmentId: nangoProps.environmentId,
-        telemetryBatchSize: runnerTelemetryBatchSize,
-        telemetryFlushIntervalMs: runnerTelemetryFlushIntervalMs,
-        persistClient,
-        recordingEnabled: nangoProps.runnerFlags.exportRunnerTelemetry
-    });
-    const resources: EnvironmentResources = { persistClient, telemetryRecorder, lastUsedAt: Date.now(), activeTaskCount: 0 };
-    resourcesPool.set(key, resources);
-    return resources;
-}
-
-const evictionInterval = setInterval(async () => {
-    const now = Date.now();
-    for (const [key, entry] of resourcesPool) {
-        if (now - entry.lastUsedAt > resourcePoolEvictIdleMs && entry.activeTaskCount === 0) {
-            resourcesPool.delete(key);
-            await entry.telemetryRecorder.shutdown({ timeoutMs: 5000 });
-        }
-    }
-}, resourcePoolEvictIdleMs);
-
-export async function shutdownResources(): Promise<void> {
-    clearInterval(evictionInterval);
-    await Promise.all([...resourcesPool.values()].map(({ telemetryRecorder }) => telemetryRecorder.shutdown({ timeoutMs: 5000 })));
-}
 
 export const t = initTRPC.create({
     transformer: superjson
@@ -167,12 +110,8 @@ function startProcedure() {
                     }
                 }, heartbeatIntervalMs);
 
-                const resources = getOrCreateEnvironmentResources(nangoProps);
-                resources.activeTaskCount++;
-
                 try {
-                    const { persistClient, telemetryRecorder } = resources;
-                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks, persistClient, telemetryRecorder });
+                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;
@@ -185,7 +124,6 @@ function startProcedure() {
                         checkpoints
                     });
                 } finally {
-                    resources.activeTaskCount--;
                     clearInterval(heartbeat);
                     if (abortPoll) {
                         clearInterval(abortPoll);
