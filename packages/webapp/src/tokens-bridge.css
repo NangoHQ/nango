@@ -16,9 +16,9 @@
 :root {
     /* Surface / Background */
     --color-bg-surface: var(--surface-panel);
-    --color-bg-elevated: var(--surface-panel-muted);
-    --color-bg-muted: var(--surface-panel-inset); /* gap: v2 mid-gray has no DS counterpart */
-    --color-bg-subtle: var(--surface-panel-inset); /* gap: same as muted, distinction collapses */
+    --color-bg-elevated: var(--surface-raised);
+    --color-bg-muted: var(--surface-panel-muted);
+    --color-bg-subtle: var(--surface-panel-inset);
     --color-bg-accent: var(--status-info-bg);
     --color-bg-success: var(--status-success-bg);
 
