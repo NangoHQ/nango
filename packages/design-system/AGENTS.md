@@ -24,12 +24,24 @@ shadcn's variables (`border-input`, `ring`, `bg-primary`, ...) don't exist in th
 Tokens registered in `@theme` inside `tokens.generated.css` are available as plain Tailwind utilities — no `[var(...)]` needed:
 
 ```tsx
-// colours — component and semantic tokens
-'bg-button-primary-bg-default'
-'text-text-default'
-'border-input-border-default'
-'hover:bg-button-primary-bg-hover'
-'disabled:text-button-primary-text-disabled'
+// colours — semantic tokens (there are no component-level button-* tokens;
+// compose variants from the semantic interactive/text/border/surface namespaces)
+'bg-interactive-primary'          // filled primary button background
+'text-text-on-brand'              // white text on filled interactive backgrounds
+'bg-interactive-primary-hover'    // hover state
+'bg-interactive-primary-active'   // active/pressed state
+'bg-interactive-disabled'         // disabled fill for any variant
+'bg-interactive-ghost'            // transparent (ghost / link variants)
+'bg-interactive-ghost-hover'      // subtle hover overlay (transparent dark/light)
+'bg-interactive-danger'           // danger fill
+'bg-surface-panel'                // white panel fill (secondary variant)
+'bg-surface-panel-inset'          // light gray inset fill
+'text-text-default'               // body text
+'text-text-disabled'              // muted text for disabled states
+'text-text-danger'                // danger text (link-danger variant)
+'border-border-default'           // default border
+'border-border-strong'            // stronger border (secondary hover, outline hover)
+'border-border-disabled'          // faint border for disabled outlines
 
 // focus rings — registered as --shadow-* → shadow-*
 'focus-visible:shadow-focus-outline-default'
