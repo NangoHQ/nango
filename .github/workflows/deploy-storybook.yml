@@ -1,0 +1,49 @@
+name: '[Release] Deploy Storybook'
+run-name: '[Release] Deploy Storybook (${{ github.ref_name }})'
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - 'packages/design-system/**'
+    workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+    group: deploy-storybook
+    cancel-in-progress: true
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: write
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build Storybook
+              run: npm run -w @nangohq/design-system build-storybook
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ vars.STORYBOOK_DEPLOY_ROLE }}
+                  role-session-name: GitHub_to_AWS_via_FederatedOIDC
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Deploy to S3
+              run: |
+                  aws s3 sync --delete packages/design-system/storybook-static/ s3://${{ vars.STORYBOOK_BUCKET }}
+
+            - name: Invalidate CloudFront cache
+              run: |
+                  aws cloudfront create-invalidation \
+                    --distribution-id ${{ vars.STORYBOOK_DISTRIBUTION_ID }} \
+                    --paths "/*"
