@@ -1,5 +1,5 @@
 import { Label } from '@/components-v2/ui/Label';
-import { SecretInput } from '@/components-v2/ui/SecretInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 
 import type { OAuth1Credentials } from '@nangohq/types';
 

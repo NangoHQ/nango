@@ -11,7 +11,7 @@ import { getInputFields } from './types';
 import { usePlayground } from './usePlayground';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { Button } from '@/components-v2/ui/Button';
-import { ConditionalTooltip } from '@/components-v2/ui/ConditionalTooltip';
+import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
 import { Sheet, SheetContent } from '@/components-v2/ui/Sheet';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';

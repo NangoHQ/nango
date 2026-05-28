@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Label } from '@/components-v2/ui/Label';

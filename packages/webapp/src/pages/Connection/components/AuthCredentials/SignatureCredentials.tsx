@@ -3,7 +3,7 @@ import { RefreshCwIcon } from 'lucide-react';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { Button } from '@/components-v2/ui/Button';
 import { Label } from '@/components-v2/ui/Label';
-import { SecretInput } from '@/components-v2/ui/SecretInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { useRefreshConnectionWithToast } from '@/hooks/useRefreshConnectionWithToast';
 
 import type { ApiConnectionFull, SignatureCredentials } from '@nangohq/types';

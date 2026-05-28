@@ -1,4 +1,4 @@
-import { ConditionalTooltip } from '@/components-v2/ui/ConditionalTooltip';
+import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
 import { StyledLink } from '@/components-v2/ui/StyledLink';
 

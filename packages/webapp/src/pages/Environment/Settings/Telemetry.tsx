@@ -12,7 +12,7 @@ import { APIError } from '../../../utils/api';
 import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { Label } from '@/components-v2/ui/Label';
 import { usePermissions } from '@/hooks/usePermissions';
 

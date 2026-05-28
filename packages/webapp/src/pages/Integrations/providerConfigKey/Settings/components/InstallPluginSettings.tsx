@@ -1,4 +1,4 @@
-import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';

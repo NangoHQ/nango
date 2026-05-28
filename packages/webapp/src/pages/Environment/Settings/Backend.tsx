@@ -11,7 +11,7 @@ import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { StyledLink } from '@/components-v2/ui/StyledLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';

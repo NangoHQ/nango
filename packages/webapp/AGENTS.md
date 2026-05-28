@@ -8,8 +8,8 @@ The `src/` directory encodes *shared vs app-specific* in the folder name. Read t
 
 | Layer | Definition | Directory |
 |-------|-----------|-----------|
-| **Elements / Components** | Generic, reusable — no Nango-specific logic | `components-v2/ui/` |
-| **Patterns** | App-specific reusable compositions — used across multiple screens | `components-v2/patterns/` |
+| **Elements / Components** | Design-system lift candidates — generic primitives that belong in a published component library; Storybook story required | `components-v2/ui/` |
+| **Patterns** | Stays in the webapp — either Nango-specific compositions, or generic helpers not suitable for a design system (e.g. wrappers that reduce boilerplate without adding visual value) | `components-v2/patterns/` |
 | **Features** | Self-contained modules with their own Zustand store or dedicated utils | `features/` |
 | **Layout** | App shell — rendered once, frames the entire app | `layout/` |
 
@@ -24,8 +24,8 @@ src/
     Playground/
   pages/                Route-level page components
   components-v2/
-    ui/                 Elements + components (shadcn-flat, PascalCase filenames)
-    patterns/           App-specific reusable patterns
+    ui/                 Design-system lift candidates (PascalCase filenames)
+    patterns/           Webapp-only: Nango-specific compositions + generic helpers
   components/           Legacy components — do not add new files here
     ui/
     patterns/
@@ -36,8 +36,8 @@ src/
 
 ### Rules for placing new files
 
-- **Generic UI primitive** (no Nango imports, could live in any React app) → `components-v2/ui/`
-- **Nango-specific reusable composition** (used on 2+ screens) → `components-v2/patterns/`
+- **Would it belong in a published component library with a Storybook story?** → `components-v2/ui/`
+- **Otherwise (Nango-specific, or a generic helper/wrapper that doesn't fit a design system)** → `components-v2/patterns/`
 - **Has own Zustand store or dedicated utils** → `features/<FeatureName>`
 - **Part of the app shell** (header, sidebar, layout wrapper) → `layout/`
 - **Bootstrap / wiring only** (routing, providers, no independent state) → `app/`

@@ -7,7 +7,7 @@ import { Button } from '@/components-v2/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components-v2/ui/InputGroup';
-import { SecretInput } from '@/components-v2/ui/SecretInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

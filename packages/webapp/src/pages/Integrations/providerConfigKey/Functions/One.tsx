@@ -10,7 +10,7 @@ import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSch
 import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { ConditionalTooltip } from '@/components-v2/ui/ConditionalTooltip';
+import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { EmptyCard } from '@/components-v2/ui/EmptyCard';
 import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';

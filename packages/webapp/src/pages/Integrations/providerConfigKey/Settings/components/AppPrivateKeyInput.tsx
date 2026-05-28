@@ -1,4 +1,4 @@
-import { EditableInput } from '@/components-v2/ui/EditableInput';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { Label } from '@/components-v2/ui/Label';
 
