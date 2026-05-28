@@ -2,8 +2,8 @@ import { Check, Edit, Loader2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ConditionalTooltip } from './ConditionalTooltip';
-import { CopyButton } from './CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from './InputGroup';
+import { CopyButton } from '../ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '../ui/InputGroup';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 
 export interface EditableInputProps {
