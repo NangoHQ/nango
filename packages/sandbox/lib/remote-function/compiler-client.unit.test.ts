@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildIndexTs, getFilePaths } from './compiler-client.js';
+import { buildCompilerIndexTs, buildIndexTs, getCompilerFilePaths, getFilePaths } from './compiler-client.js';
 
 describe('remote function compiler client helpers', () => {
     it('builds action file paths', () => {
@@ -29,6 +29,13 @@ describe('remote function compiler client helpers', () => {
         });
     });
 
+    it('builds compiler file paths', () => {
+        expect(getCompilerFilePaths()).toStrictEqual({
+            tsFilePath: 'function/functions/function.ts',
+            cjsFilePath: 'build/function_functions_function.cjs'
+        });
+    });
+
     it('builds the single-entry index file', () => {
         expect(
             buildIndexTs({
@@ -37,5 +44,9 @@ describe('remote function compiler client helpers', () => {
                 function_type: 'sync'
             })
         ).toBe("import './github/syncs/syncIssues.js';\n");
+    });
+
+    it('builds the compiler index file', () => {
+        expect(buildCompilerIndexTs()).toBe("import './function/functions/function.js';\n");
     });
 });

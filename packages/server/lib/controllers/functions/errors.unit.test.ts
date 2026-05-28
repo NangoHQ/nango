@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { RemoteFunctionError, sendStepError } from './helpers.js';
+import { RemoteFunctionError } from '@nangohq/sandbox';
+
+import { sendStepError } from './errors.js';
 
 import type { Response } from 'express';
 
@@ -12,7 +14,7 @@ function mockResponse() {
     return { res, status, send };
 }
 
-describe('remote function helpers', () => {
+describe('function controller errors', () => {
     it('sends structured remote function errors with their status and code', () => {
         const { res, status, send } = mockResponse();
 
@@ -23,6 +25,27 @@ describe('remote function helpers', () => {
 
         expect(status).toHaveBeenCalledWith(400);
         expect(send).toHaveBeenCalledWith({ error: { code: 'deployment_error', message: 'Deploy failed' } });
+    });
+
+    it('sends execution environment unavailable errors as service unavailable', () => {
+        const { res, status, send } = mockResponse();
+
+        sendStepError({
+            res,
+            error: new RemoteFunctionError({
+                code: 'execution_environment_unavailable',
+                message: 'The function execution environment is temporarily unavailable. Please try again shortly.',
+                status: 503
+            })
+        });
+
+        expect(status).toHaveBeenCalledWith(503);
+        expect(send).toHaveBeenCalledWith({
+            error: {
+                code: 'execution_environment_unavailable',
+                message: 'The function execution environment is temporarily unavailable. Please try again shortly.'
+            }
+        });
     });
 
     it('does not expose arbitrary error codes as function API codes', () => {
