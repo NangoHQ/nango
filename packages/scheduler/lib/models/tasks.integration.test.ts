@@ -381,6 +381,19 @@ describe('Task', () => {
             expect(result).toEqual([]);
         });
     });
+    it('should hard-delete terminated tasks older than N days and keep newer ones', async () => {
+        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+        const oldTask = await createTask(db, { startsAfter: twoDaysAgo });
+        (await tasks.transitionState(db, { taskId: oldTask.id, newState: 'STARTED' })).unwrap();
+        (await tasks.transitionState(db, { taskId: oldTask.id, newState: 'SUCCEEDED', output: {} })).unwrap();
+        const newTask = await createTaskWithState(db, 'SUCCEEDED');
+
+        (await tasks.hardDeleteOlderThanNDays(db, 1)).unwrap();
+
+        const remaining = (await tasks.search(db)).unwrap().map((t) => t.id);
+        expect(remaining).toContain(newTask.id);
+        expect(remaining).not.toContain(oldTask.id);
+    });
     it('should be successfully saving json output', async () => {
         const outputs = [1, 'one', true, null, ['a', 'b'], { a: 1, b: 2, s: 'two', arr: ['a', 'b'] }, [{ id: 'a' }, { id: 'b' }]];
         for (const output of outputs) {
