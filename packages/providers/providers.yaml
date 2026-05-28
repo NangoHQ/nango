@@ -17272,13 +17272,13 @@ sap-ariba:
     categories:
         - erp
     auth_mode: OAUTH2_CC
-    token_url: https://api${connectionConfig.region}.ariba.com/v2/oauth/token || https://api.ariba.com/v2/oauth/token
+    token_url: https://${connectionConfig.subdomain}.ariba.com/v2/oauth/token
     token_params:
         grant_type: openapi_2lo
     token_request_auth_method: basic
     body_format: form
     proxy:
-        base_url: https://openapi${connectionConfig.region}.ariba.com || https://openapi.ariba.com
+        base_url: https://open${connectionConfig.subdomain}.ariba.com
         headers:
             apikey: ${connectionConfig.apiKey}
             X-ARIBA-NETWORK-ID: ${connectionConfig.anid}
@@ -17289,14 +17289,14 @@ sap-ariba:
     docs_connect: https://nango.dev/docs/api-integrations/sap-ariba/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/sap-ariba/sap-ariba-api-credentials-setup
     connection_config:
-        region:
+        subdomain:
             type: string
-            title: Region
-            description: Your SAP Ariba data center region. Leave empty for US, use "-eu" for Europe, or ".au.cloud" for Australia.
-            example: -eu
-            doc_section: '#step-1-select-your-region'
+            title: Subdomain
+            description: Your SAP Ariba API subdomain. Use "api" for US, "api-eu" for Europe, or "api.au.cloud" for Australia.
+            example: api-eu
+            default_value: api
+            doc_section: '#step-1-select-your-subdomain'
             order: 1
-            optional: true
         apiKey:
             type: string
             title: Application Key (API Key)

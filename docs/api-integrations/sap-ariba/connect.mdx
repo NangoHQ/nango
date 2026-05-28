@@ -8,7 +8,7 @@ sidebarTitle: 'SAP Ariba'
 To authenticate with SAP Ariba, you will need:
 1. **Client ID** - A unique identifier for your application.
 2. **Client Secret** - A confidential key used to authenticate the identity of your application.
-3. **Region** (optional) - Your SAP Ariba data center region (US, EU, or Australia).
+3. **Subdomain** - Your SAP Ariba API subdomain (`api`, `api-eu`, or `api.au.cloud`). Defaults to `api`.
 4. **Application Key (API Key)** - Required for all API requests.
 5. **Ariba Network ID (ANID)** - Your organization's unique identifier in SAP Ariba (e.g., `AN01234567890`).
 
@@ -21,17 +21,17 @@ This guide will walk you through obtaining these credentials within SAP Ariba.
 
 ### Instructions:
 
-#### Step 1: Select Your Region
+#### Step 1: Select Your Subdomain
 
-SAP Ariba has different data centers for different regions. Select the region where your SAP Ariba instance is hosted:
+SAP Ariba has different data centers for different regions. Select the API subdomain that matches where your SAP Ariba instance is hosted:
 
-| Region | Region Value | Description |
-|--------|--------------|-------------|
-| United States | *(leave empty)* | Default region for US-based customers |
-| Europe | `-eu` | For EU-based customers |
-| Australia | `.au.cloud` | For APAC customers |
+| Region | Subdomain | Description |
+|--------|-----------|-------------|
+| United States | `api` | Default subdomain for US-based customers |
+| Europe | `api-eu` | For EU-based customers |
+| Australia | `api.au.cloud` | For APAC customers |
 
-The region determines which API endpoints will be used for authentication and API calls. Enter the exact value shown in the "Region Value" column.
+The subdomain determines which API endpoints will be used for authentication and API calls. Enter the exact value shown in the "Subdomain" column.
 
 #### Step 2: Get Your API Key
 
@@ -62,7 +62,7 @@ Your Ariba Network ID (ANID) is your organization's unique identifier in SAP Ari
 
 Once you have all your credentials:
 1. Open the form where you need to authenticate with SAP Ariba.
-2. Enter your **Region** value (leave empty for US, use `-eu` for Europe, or `.au.cloud` for Australia).
+2. Enter your **Subdomain** value (`api` for US, `api-eu` for Europe, or `api.au.cloud` for Australia).
 3. Enter your **Application Key (API Key)**.
 4. Enter your **Ariba Network ID (ANID)**.
 5. Enter your **Client ID** and **Client Secret**.
