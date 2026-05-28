@@ -2,8 +2,9 @@ import * as z from 'zod';
 
 import { metrics, validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { immediateTaskSchema } from './postImmediate.js';
 
+import type { ImmediateSuccess } from './postImmediate.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
@@ -14,32 +15,9 @@ const method = 'POST';
 
 const MAX_BATCH_SIZE = 100;
 
-const argsUnion = z.union([syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema]);
+type ImmediateInput = z.infer<typeof immediateTaskSchema>;
 
-const entrySchema = z
-    .object({
-        name: z.string().min(1),
-        ownerKey: z.string().optional().default(''),
-        group: z.object({
-            key: z.string().min(1),
-            maxConcurrency: z.coerce.number()
-        }),
-        retry: z.object({
-            count: z.number().int(),
-            max: z.number().int()
-        }),
-        timeoutSettingsInSecs: z.object({
-            createdToStarted: z.number().int().positive(),
-            startedToCompleted: z.number().int().positive(),
-            heartbeat: z.number().int().positive()
-        }),
-        args: argsUnion
-    })
-    .strict();
-
-type ImmediateInput = z.infer<typeof entrySchema>;
-
-export type ImmediateBatchResult = { taskId: string; retryKey: string } | { error: { code: 'duplicate_task_name' | 'task_cap_exceeded'; message: string } };
+export type ImmediateBatchResult = ImmediateSuccess | { error: { code: 'duplicate_task_name' | 'task_cap_exceeded'; message: string } };
 
 export type PostImmediateBatch = Endpoint<{
     Method: typeof method;
@@ -56,7 +34,7 @@ const validate = validateRequest<PostImmediateBatch>({
         const schema = z
             .object({
                 tasks: z
-                    .array(entrySchema)
+                    .array(immediateTaskSchema)
                     .min(1)
                     .max(MAX_BATCH_SIZE)
                     // Reject batches that contain the same task name more than once.
