@@ -88,6 +88,24 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
+// Dev-tools toggle for flipping the billing-usage source per-request.
+// Set in the browser console with:
+//   localStorage.setItem('nango.billingUsageSource', 'clickhouse')   // or 'orb'
+//   localStorage.removeItem('nango.billingUsageSource')              // back to env default
+// Then reload the page (or wait for the next refetch). The server treats
+// missing as "use the env-level default" — no flipping in prod unless you
+// explicitly set the localStorage value.
+const BILLING_USAGE_SOURCE_KEY = 'nango.billingUsageSource';
+
+function readBillingUsageSourceOverride(): 'clickhouse' | 'orb' | null {
+    try {
+        const v = localStorage.getItem(BILLING_USAGE_SOURCE_KEY);
+        return v === 'clickhouse' || v === 'orb' ? v : null;
+    } catch {
+        return null;
+    }
+}
+
 export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
@@ -97,6 +115,10 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
+            }
+            const source = readBillingUsageSourceOverride();
+            if (source) {
+                params.append('source', source);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {

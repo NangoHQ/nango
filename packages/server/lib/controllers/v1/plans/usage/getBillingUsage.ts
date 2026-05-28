@@ -14,7 +14,12 @@ const querySchema = z
     .object({
         env: z.string(),
         from: z.iso.datetime().optional(),
-        to: z.iso.datetime().optional()
+        to: z.iso.datetime().optional(),
+        // Per-request override of the USAGE_BILLING_FROM_CLICKHOUSE default,
+        // for dev-tools flipping without a redeploy. Webapp picks it up from
+        // localStorage('nango.billingUsageSource') and forwards. Missing
+        // → falls back to the env flag.
+        source: z.enum(['clickhouse', 'orb']).optional()
     })
     .refine(
         (data) => {
@@ -75,7 +80,8 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
 
     const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, account.id, {
         granularity: 'day',
-        ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {})
+        ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {}),
+        ...(query.source ? { source: query.source } : {})
     });
 
     if (usage.isErr()) {

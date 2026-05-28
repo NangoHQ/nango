@@ -247,8 +247,13 @@ export class UsageTracker implements IUsageTracker {
         //
         // The dim breakdown wiring belongs to a follow-up — `BillingUsageMetric`
         // is single-series, so it can't represent per-dim panels here yet.
-        const useClickhouseForDashboard =
-            parsedEnvs.USAGE_BILLING_FROM_CLICKHOUSE && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
+        //
+        // `opts.source` is a per-request override (webapp reads it from
+        // `localStorage('nango.billingUsageSource')` and forwards as a query
+        // param). When set, it takes precedence over the env-level default —
+        // lets dev tools flip paths without a redeploy.
+        const sourceIsClickhouse = opts?.source ? opts.source === 'clickhouse' : parsedEnvs.USAGE_BILLING_FROM_CLICKHOUSE;
+        const useClickhouseForDashboard = sourceIsClickhouse && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
         if (useClickhouseForDashboard) {
             return this.getBillingUsageFromClickhouse(accountId, opts.timeframe!);

@@ -76,6 +76,12 @@ export interface GetBillingUsageOpts {
         id: string;
         group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
+    /**
+     * Per-request override of the env-level `USAGE_BILLING_FROM_CLICKHOUSE`
+     * default. Only used by `UsageTracker.getBillingUsage`; the Orb client
+     * itself ignores it. Lets dev tools flip between paths without redeploy.
+     */
+    source?: 'clickhouse' | 'orb';
 }
 
 export interface BillingUsageMetric {
