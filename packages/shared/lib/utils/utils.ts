@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import get from 'lodash-es/get.js';
 
-import { cloudHost, isCloud, isStaging, localhostUrl, stagingHost } from '@nangohq/utils';
+import { isEnterprise, localhostUrl } from '@nangohq/utils';
 
 import type { DBConnection, Provider } from '@nangohq/types';
 
@@ -51,11 +51,7 @@ export function getJobsUrl() {
 }
 
 function getServerHost() {
-    if (process.env['SERVER_HOST']) {
-        return process.env['SERVER_HOST'];
-    }
-
-    return process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'http://nango-server' : 'http://localhost';
+    return process.env['SERVER_HOST'] || process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'http://nango-server' : 'http://localhost';
 }
 
 export function getServerBaseUrl() {
@@ -169,12 +165,8 @@ export function getLocalOAuthCallbackUrlBaseUrl() {
 }
 
 export function getApiUrl() {
-    if (isCloud) {
-        return isStaging ? stagingHost : cloudHost;
-    }
-
-    if (process.env['NANGO_SERVER_URL']) {
-        return process.env['NANGO_SERVER_URL'];
+    if (isEnterprise) {
+        return process.env['NANGO_SERVER_URL'] as string;
     }
     if (process.env['SERVER_SERVICE_URL']) {
         return process.env['SERVER_SERVICE_URL'];
