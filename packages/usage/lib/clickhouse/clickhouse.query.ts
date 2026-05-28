@@ -1,84 +1,67 @@
 import type { UsageEvent, UsageMetric } from '@nangohq/types';
 
-interface GetUsageQueryMetricDimensions<TDimension extends string = 'none'> {
-    dimension: 'none' | 'environment_id' | 'integration_id' | TDimension;
-}
+// Top-N + 'rest' breakdown bound. Cap exists so callers can't blow up the
+// response — the long tail can be tens of thousands of values (e.g. `records`
+// by `connection_id` on a large account).
+export const TOP_N_BREAKDOWN_DEFAULT = 10;
+export const TOP_N_BREAKDOWN_CAP = 25;
 
-type ValidateMetrics<T extends Record<UsageMetric, unknown> & Record<Exclude<keyof T, UsageMetric>, never>> = T;
+export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
+export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
 
-type GetUsageQueryMetrics = ValidateMetrics<{
-    connections: GetUsageQueryMetricDimensions;
-    records: GetUsageQueryMetricDimensions<'connection_id' | 'model'>;
-    proxy: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
-    webhook_forwards: GetUsageQueryMetricDimensions<'connection_id' | 'success'>;
-    function_executions: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
-    function_logs: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
-    function_compute_gbms: GetUsageQueryMetricDimensions<'connection_id' | 'function_name' | 'function_type' | 'success'>;
-}>;
-export interface GetUsageQuery {
-    accountId: UsageEvent['payload']['properties']['accountId'];
-    metrics: Partial<GetUsageQueryMetrics>;
-    granularity: 'day' | 'none';
-    timeframe: {
-        // exclusive end (ie: the timeframe includes events with timestamp >= start and < end)
-        start: Date;
-        end: Date;
+export const COUNTER_METRICS = [
+    'proxy',
+    'function_executions',
+    'function_logs',
+    'function_compute_gbms',
+    'webhook_forwards'
+] as const satisfies readonly CounterUsageMetric[];
+export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
+
+// Per-metric dimension whitelist — single source of truth. The query types
+// below derive their `dimension` union from this const, and the controller
+// imports it to validate the `breakdown[<m>]=<d>` querystring.
+export const BREAKDOWN_DIMENSIONS = {
+    proxy: ['environment_id', 'integration_id', 'connection_id', 'success'],
+    function_executions: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
+    function_logs: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
+    function_compute_gbms: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
+    webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
+    records: ['environment_id', 'integration_id', 'connection_id', 'model'],
+    connections: ['environment_id', 'integration_id']
+} as const satisfies Record<UsageMetric, readonly string[]>;
+
+type DimensionFor<M extends UsageMetric> = 'none' | (typeof BREAKDOWN_DIMENSIONS)[M][number];
+
+export type GetDailyCounterQuery = {
+    [M in CounterUsageMetric]: {
+        accountId: UsageEvent['payload']['properties']['accountId'];
+        metric: M;
+        dimension: DimensionFor<M>;
+        // Optional top-N breakdown size when `dimension !== 'none'`. Defaults
+        // to TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
+        top?: number;
+        timeframe: {
+            // exclusive end (timeframe includes events with timestamp >= start and < end)
+            start: Date;
+            end: Date;
+        };
     };
+}[CounterUsageMetric];
+
+export interface GetDailyCounterDay {
+    day: Date;
+    value: number;
 }
 
-interface GetUsageResultDataPoint {
-    timeframe: {
-        start: Date;
-        end: Date;
-    };
-    quantity: number;
-}
+export type GetDailyCounterSeries =
+    | { days: GetDailyCounterDay[] }
+    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailyCounterDay[] };
 
-export type GetUsageResultSeries =
-    | { total: number; dataPoints: GetUsageResultDataPoint[] }
-    | { dimension: string; dimensionValue: string | number | boolean; total: number; dataPoints: GetUsageResultDataPoint[] };
-
-export interface GetUsageResult {
-    accountId: GetUsageQuery['accountId'];
-    granularity: GetUsageQuery['granularity'];
-    metrics: Partial<
-        Record<
-            UsageMetric,
-            {
-                series: GetUsageResultSeries[];
-                total: number;
-                view_mode: 'cumulative' | 'periodic';
-            }
-        >
-    >;
-}
-
-export function granularityGroupBy(query: GetUsageQuery): string {
-    switch (query.granularity) {
-        case 'day':
-            return `, day`;
-        case 'none':
-            return '';
-    }
-}
-
-export function granularityOrderBy(query: GetUsageQuery): string {
-    switch (query.granularity) {
-        case 'day':
-            return `, day`;
-        case 'none':
-            return '';
-    }
-}
-
-export function startSelect(query: GetUsageQuery): string {
-    switch (query.granularity) {
-        case 'day':
-            return `day AS start, addDays(day, 1) AS end`;
-        case 'none':
-            return `toDateTime64(${query.timeframe.start.getTime() / 1000}, 3) AS start,
-                    toDateTime64(${query.timeframe.end.getTime() / 1000}, 3) AS end`;
-    }
+export interface GetDailyCounterResult {
+    accountId: number;
+    metric: CounterUsageMetric;
+    series: GetDailyCounterSeries[];
 }
 
 export function tableForMetric(metric: UsageMetric): string {
@@ -98,7 +81,7 @@ export function tableForMetric(metric: UsageMetric): string {
     }
 }
 
-export function quantityForMetric(metric: UsageMetric): string {
+export function quantityForMetric(metric: CounterUsageMetric): string {
     switch (metric) {
         case 'function_executions':
         case 'proxy':
@@ -108,10 +91,40 @@ export function quantityForMetric(metric: UsageMetric): string {
             return `SUM(custom_logs)`;
         case 'function_compute_gbms':
             return `SUM(compute_gbms)`;
-        case 'records':
-        case 'connections':
-            // Records and connections build their own SQL in `clickhouse.ts` (three-level
-            // sum-then-avg over the raw projection MVs). This branch isn't reached for them.
-            return `SUM(value)`;
     }
+}
+
+// Returns the two accumulators the server-side formatter needs to reconstruct
+// the running period average for `view_mode='cumulative'`:
+//   running_avg(D) = SUM(value)[start..D] / uniqExact(batch_id)[start..D]
+//
+// `batches` is the number of distinct `batch_id`s for the day (NOT the row
+// count — each batch contributes multiple rows, one per slice). For the
+// dimension breakdown, `batches` is the GLOBAL per-day count (same for every
+// dimension value) so per-dimension running averages sum to the global
+// running average exactly — see `Clickhouse.getDailySumAndBatches` docstring.
+export type GetDailySumAndBatchesQuery = {
+    [M in AvgUsageMetric]: {
+        accountId: number;
+        metric: M;
+        dimension: DimensionFor<M>;
+        top?: number;
+        timeframe: { start: Date; end: Date };
+    };
+}[AvgUsageMetric];
+
+export interface GetDailySumAndBatchesDay {
+    day: Date;
+    sum: number;
+    batches: number;
+}
+
+export type GetDailySumAndBatchesSeries =
+    | { days: GetDailySumAndBatchesDay[] }
+    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailySumAndBatchesDay[] };
+
+export interface GetDailySumAndBatchesResult {
+    accountId: number;
+    metric: AvgUsageMetric;
+    series: GetDailySumAndBatchesSeries[];
 }

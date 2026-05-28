@@ -88,306 +88,271 @@ describe('Clickhouse', () => {
             ]);
             await clickhouse.flush(); // force flush to make sure all events are ingested before we query
         });
-        describe('with no granularity', () => {
-            it('for a periodic metric', async () => {
-                const res = await clickhouse.getUsage({
+        describe('getDailyCounter', () => {
+            it('for a single metric, no dimension', async () => {
+                const res = await clickhouse.getDailyCounter({
                     accountId,
-                    metrics: { proxy: { dimension: 'none' } },
-                    granularity: 'none',
+                    metric: 'proxy',
+                    dimension: 'none',
                     timeframe: { start, end }
                 });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'none',
-                    metrics: {
-                        proxy: {
-                            series: [
-                                {
-                                    dataPoints: [{ timeframe: { start, end }, quantity: 34 }],
-                                    total: 34
-                                }
-                            ],
-                            total: 34,
-                            view_mode: 'periodic'
-                        }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
-            });
-            it('for a cumulative metric', async () => {
-                const res = await clickhouse.getUsage({
+                expect(res.unwrap()).toStrictEqual({
                     accountId,
-                    metrics: { connections: { dimension: 'none' } },
-                    granularity: 'none',
-                    timeframe: { start, end }
-                });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'none',
-                    metrics: {
-                        connections: {
-                            series: [
-                                {
-                                    // (day0=70 + day1=10) / 7 days = 11
-                                    dataPoints: [{ timeframe: { start, end }, quantity: 11 }],
-                                    total: 11
-                                }
-                            ],
-                            total: 11,
-                            view_mode: 'cumulative'
+                    metric: 'proxy',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 10 },
+                                { day: dayFromNow(1), value: 11 },
+                                { day: dayFromNow(2), value: 13 }
+                            ]
                         }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
-            });
-        });
-
-        describe('with day granularity', () => {
-            it('for a single metric', async () => {
-                const res = await clickhouse.getUsage({
-                    accountId,
-                    metrics: { proxy: { dimension: 'none' } },
-                    granularity: 'day',
-                    timeframe: { start, end }
+                    ]
                 });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'day',
-                    metrics: {
-                        proxy: {
-                            series: [
-                                {
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 10 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 11 },
-                                        { timeframe: { start: dayFromNow(2), end: dayFromNow(3) }, quantity: 13 }
-                                    ],
-                                    total: 34
-                                }
-                            ],
-                            total: 34,
-                            view_mode: 'periodic'
-                        }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
             });
 
             it('with dimension', async () => {
-                const res = await clickhouse.getUsage({
+                const res = await clickhouse.getDailyCounter({
                     accountId,
-                    metrics: { proxy: { dimension: 'success' } },
-                    granularity: 'day',
+                    metric: 'proxy',
+                    dimension: 'success',
                     timeframe: { start, end }
                 });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'day',
-                    metrics: {
-                        proxy: {
-                            series: [
-                                {
-                                    dimension: 'success',
-                                    dimensionValue: false,
-                                    dataPoints: [{ timeframe: { start: dayFromNow(2), end: dayFromNow(3) }, quantity: 12 }],
-                                    total: 12
-                                },
-                                {
-                                    dimension: 'success',
-                                    dimensionValue: true,
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 10 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 11 },
-                                        { timeframe: { start: dayFromNow(2), end: dayFromNow(3) }, quantity: 1 }
-                                    ],
-                                    total: 22
-                                }
-                            ],
-                            total: 34,
-                            view_mode: 'periodic'
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'proxy',
+                    series: [
+                        {
+                            dimension: 'success',
+                            dimensionValue: false,
+                            days: [{ day: dayFromNow(2), value: 12 }]
+                        },
+                        {
+                            dimension: 'success',
+                            dimensionValue: true,
+                            days: [
+                                { day: dayFromNow(), value: 10 },
+                                { day: dayFromNow(1), value: 11 },
+                                { day: dayFromNow(2), value: 1 }
+                            ]
                         }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
+                    ]
+                });
             });
 
             it('for a single metric on a single day', async () => {
-                const res = await clickhouse.getUsage({
+                const res = await clickhouse.getDailyCounter({
                     accountId,
-                    metrics: { proxy: { dimension: 'none' } },
-                    granularity: 'day',
+                    metric: 'proxy',
+                    dimension: 'none',
                     timeframe: { start: dayFromNow(1), end: dayFromNow(2) }
                 });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'day',
-                    metrics: {
-                        proxy: {
-                            series: [
-                                {
-                                    dataPoints: [{ timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 11 }],
-                                    total: 11
-                                }
-                            ],
-                            total: 11,
-                            view_mode: 'periodic'
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'proxy',
+                    series: [
+                        {
+                            days: [{ day: dayFromNow(1), value: 11 }]
                         }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
+                    ]
+                });
             });
 
-            it('for multiple metrics', async () => {
-                const res = await clickhouse.getUsage({
+            it('function_executions broken down by function_type', async () => {
+                const res = await clickhouse.getDailyCounter({
                     accountId,
-                    metrics: {
-                        proxy: { dimension: 'success' },
-                        function_executions: { dimension: 'function_type' },
-                        function_logs: { dimension: 'none' },
-                        function_compute_gbms: { dimension: 'none' },
-                        webhook_forwards: { dimension: 'none' },
-                        connections: { dimension: 'none' },
-                        records: { dimension: 'integration_id' }
-                    },
-                    granularity: 'day',
+                    metric: 'function_executions',
+                    dimension: 'function_type',
                     timeframe: { start, end }
                 });
-                const expected = {
-                    accountId: accountId,
-                    granularity: 'day',
-                    metrics: {
-                        proxy: {
-                            series: [
-                                {
-                                    dimension: 'success',
-                                    dimensionValue: false,
-                                    dataPoints: [{ timeframe: { start: dayFromNow(2), end: dayFromNow(3) }, quantity: 12 }],
-                                    total: 12
-                                },
-                                {
-                                    dimension: 'success',
-                                    dimensionValue: true,
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 10 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 11 },
-                                        { timeframe: { start: dayFromNow(2), end: dayFromNow(3) }, quantity: 1 }
-                                    ],
-                                    total: 22
-                                }
-                            ],
-                            total: 34,
-                            view_mode: 'periodic'
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'function_executions',
+                    series: [
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'action',
+                            days: [{ day: dayFromNow(1), value: 1 }]
                         },
-                        function_executions: {
-                            series: [
-                                {
-                                    dimension: 'function_type',
-                                    dimensionValue: 'action',
-                                    dataPoints: [{ timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 1 }],
-                                    total: 1
-                                },
-                                {
-                                    dimension: 'function_type',
-                                    dimensionValue: 'sync',
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 1 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 1 }
-                                    ],
-                                    total: 2
-                                },
-                                {
-                                    dimension: 'function_type',
-                                    dimensionValue: 'webhook',
-                                    dataPoints: [{ timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 1 }],
-                                    total: 1
-                                }
-                            ],
-                            total: 4,
-                            view_mode: 'periodic'
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'sync',
+                            days: [
+                                { day: dayFromNow(), value: 1 },
+                                { day: dayFromNow(1), value: 1 }
+                            ]
                         },
-                        function_logs: {
-                            series: [
-                                {
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 10 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 120 }
-                                    ],
-                                    total: 130
-                                }
-                            ],
-                            total: 130,
-                            view_mode: 'periodic'
-                        },
-                        function_compute_gbms: {
-                            series: [
-                                {
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 30 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 3250 }
-                                    ],
-                                    total: 3280
-                                }
-                            ],
-                            total: 3280,
-                            view_mode: 'periodic'
-                        },
-
-                        // function webhook_forwards
-                        webhook_forwards: {
-                            series: [
-                                {
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 6 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 3 }
-                                    ],
-                                    total: 9
-                                }
-                            ],
-                            total: 9,
-                            view_mode: 'periodic'
-                        },
-                        // connections
-                        connections: {
-                            series: [
-                                {
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 70 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 10 }
-                                    ],
-                                    total: 11
-                                }
-                            ],
-                            total: 11,
-                            view_mode: 'cumulative'
-                        },
-                        // records
-                        records: {
-                            series: [
-                                {
-                                    dimension: 'integration_id',
-                                    dimensionValue: 'a',
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 1050 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 1100 }
-                                    ],
-                                    total: 307
-                                },
-                                {
-                                    dimension: 'integration_id',
-                                    dimensionValue: 'b',
-                                    dataPoints: [
-                                        { timeframe: { start: dayFromNow(), end: dayFromNow(1) }, quantity: 500 },
-                                        { timeframe: { start: dayFromNow(1), end: dayFromNow(2) }, quantity: 500 }
-                                    ],
-                                    total: 143
-                                }
-                            ],
-                            total: 450,
-                            view_mode: 'cumulative'
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'webhook',
+                            days: [{ day: dayFromNow(1), value: 1 }]
                         }
-                    }
-                };
-                expect(res.unwrap()).toStrictEqual(expected);
+                    ]
+                });
+            });
+
+            it('function_logs and function_compute_gbms expose their per-metric quantity', async () => {
+                const logs = await clickhouse.getDailyCounter({ accountId, metric: 'function_logs', dimension: 'none', timeframe: { start, end } });
+                expect(logs.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'function_logs',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 10 },
+                                { day: dayFromNow(1), value: 120 }
+                            ]
+                        }
+                    ]
+                });
+
+                const compute = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'function_compute_gbms',
+                    dimension: 'none',
+                    timeframe: { start, end }
+                });
+                expect(compute.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'function_compute_gbms',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 30 },
+                                { day: dayFromNow(1), value: 3250 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('webhook_forwards aggregates per-day successes and failures', async () => {
+                const res = await clickhouse.getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: 'none', timeframe: { start, end } });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'webhook_forwards',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), value: 6 },
+                                { day: dayFromNow(1), value: 3 }
+                            ]
+                        }
+                    ]
+                });
+            });
+        });
+
+        // Per-day (sum, batches) shape for AVG-style metrics. The running-period-average
+        // + delta math that turns this into Orb's `view_mode='cumulative'` wire shape
+        // lives in the server-side formatter (separate ticket); this method only
+        // exposes the two accumulators the formatter needs.
+        //
+        // For the dimension breakdown, `batches` is the GLOBAL per-day batch count
+        // (same for every dim value) so per-dim running averages are additive to
+        // the no-dim global running average — see method docstring for rationale.
+        //
+        // Fixture recap (account 1):
+        //   day 0 records: value=1000 (int=a), 1100 (int=a), 500 (int=b)
+        //                  → sum=2600, 3 distinct batches global
+        //                    per-int=a: sum=2100, per-int=b: sum=500; batches=3 for both
+        //   day 1 records: value=1100 (int=a), 500 (int=b)
+        //                  → sum=1600, 2 distinct batches global
+        //                    per-int=a: sum=1100, per-int=b: sum=500; batches=2 for both
+        //   day 0 connections: value=50, 60, 100 (each its own batch)
+        //                  → sum=210, batches=3
+        //   day 1 connections: value=20, 10, 0
+        //                  → sum=30,  batches=3
+        describe('getDailySumAndBatches', () => {
+            it('records, no dimension', async () => {
+                const res = await clickhouse.getDailySumAndBatches({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none',
+                    timeframe: { start, end }
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'records',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), sum: 2600, batches: 3 },
+                                { day: dayFromNow(1), sum: 1600, batches: 2 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('records, broken down by integration_id — batches is global per-day (additive to no-dim)', async () => {
+                const res = await clickhouse.getDailySumAndBatches({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end }
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'records',
+                    series: [
+                        {
+                            dimension: 'integration_id',
+                            dimensionValue: 'a',
+                            days: [
+                                { day: dayFromNow(), sum: 2100, batches: 3 },
+                                { day: dayFromNow(1), sum: 1100, batches: 2 }
+                            ]
+                        },
+                        {
+                            dimension: 'integration_id',
+                            dimensionValue: 'b',
+                            days: [
+                                { day: dayFromNow(), sum: 500, batches: 3 },
+                                { day: dayFromNow(1), sum: 500, batches: 2 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('connections, no dimension', async () => {
+                const res = await clickhouse.getDailySumAndBatches({
+                    accountId,
+                    metric: 'connections',
+                    dimension: 'none',
+                    timeframe: { start, end }
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'connections',
+                    series: [
+                        {
+                            days: [
+                                { day: dayFromNow(), sum: 210, batches: 3 },
+                                { day: dayFromNow(1), sum: 30, batches: 3 }
+                            ]
+                        }
+                    ]
+                });
+            });
+
+            it('excludes events outside the timeframe and from other accounts', async () => {
+                const res = await clickhouse.getDailySumAndBatches({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none',
+                    timeframe: { start: dayFromNow(1), end: dayFromNow(2) }
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'records',
+                    series: [
+                        {
+                            days: [{ day: dayFromNow(1), sum: 1600, batches: 2 }]
+                        }
+                    ]
+                });
             });
         });
     });

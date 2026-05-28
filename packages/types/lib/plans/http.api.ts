@@ -1,8 +1,8 @@
+import type { DBPlan } from './db.js';
+import type { Endpoint } from '../api.js';
 import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
-import type { DBPlan } from './db.js';
-import type { Endpoint } from '../api.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
@@ -62,7 +62,23 @@ export type GetUsage = Endpoint<{
 export type GetBillingUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
-    Querystring: { env: string; from?: string | undefined; to?: string | undefined };
+    Querystring: {
+        env: string;
+        from?: string | undefined;
+        to?: string | undefined;
+        source?: 'clickhouse' | 'orb' | undefined;
+        // Comma-separated subset of UsageMetric. When set on the CH path, only
+        // those metrics are fanned out and populated in the response; omitted
+        // → all 7. Ignored on the Orb path for now (Orb call still returns
+        // everything it has).
+        metrics?: string | undefined;
+        // Express qs bracket notation: `breakdown[<metric>]=<dimension>` →
+        // `breakdown: { records: 'connection_id', … }`. Per-metric dimension
+        // spec; entries whose dimension is invalid for the metric are
+        // rejected at validation time.
+        breakdown?: Partial<Record<string, string>> | undefined;
+        top?: string | undefined;
+    };
     Success: {
         data: {
             customer: BillingCustomer;

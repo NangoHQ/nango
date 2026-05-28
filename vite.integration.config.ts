@@ -21,7 +21,12 @@ export default defineConfig({
             FLAG_API_RATE_LIMIT_ENABLED: 'false',
             FLAG_AUTH_ROLES_ENABLED: 'true',
             // Used by allProxy.integration.test.ts denylist case; must be set before server modules load
-            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid'])
+            NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid']),
+            // Opens the per-request `source=clickhouse` override gate so
+            // getBillingUsage.integration.test.ts can exercise the CH path.
+            // No effect on default behavior — every other request without the
+            // explicit override still resolves to Orb.
+            ALLOW_OVERRIDE_GETUSAGE_SERVICE: 'true'
         },
         fileParallelism: false,
         pool: 'forks',
