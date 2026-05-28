@@ -65,11 +65,6 @@ jobs:
               with:
                   time: '30s'
 
-            - name: Dump container logs
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: docker compose logs --no-color
-              continue-on-error: true
-
             - name: Verify containers
               if: needs.should-run.outputs.should_skip != 'true'
               run: |
