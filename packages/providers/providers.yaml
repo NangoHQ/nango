@@ -14329,7 +14329,7 @@ sap-ariba:
         anid:
             type: string
             title: Ariba Network ID (ANID)
-            description: Your SAP Ariba Network ID (e.g., AN01234567890). Found in your SAP Ariba account settings.
+            description: Your SAP Ariba Network ID.
             example: AN01234567890
             pattern: '^AN[0-9]+$'
             doc_section: '#step-3-find-your-anid'
