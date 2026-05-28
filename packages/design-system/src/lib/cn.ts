@@ -19,11 +19,8 @@ import type { ClassValue } from 'clsx';
  * - `rounded-ds-*` → border-radius
  * - `leading-ds-*` → line-height
  * - `tracking-ds-*`→ letter-spacing
- * - `shadow-focus-*` / `shadow-container-*`  → shadow
+ * - `shadow-*`  → shadow
  */
-
-const isAny = () => true;
-
 const twMerge = extendTailwindMerge({
     extend: {
         classGroups: {
@@ -33,8 +30,13 @@ const twMerge = extendTailwindMerge({
             rounded: [{ 'rounded-ds': ['none', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', 'full'] }],
             leading: [{ 'leading-ds': ['tight', 'snug', 'normal', 'relaxed'] }],
             tracking: [{ 'tracking-ds': ['tight', 'normal', 'wide'] }],
-            // Prefix-based so new DS shadow tokens are picked up without editing this file
-            shadow: [{ 'shadow-focus': [isAny] }, { 'shadow-container': [isAny] }]
+            shadow: [
+                'shadow-focus-outline-default',
+                'shadow-focus-outline-danger',
+                'shadow-container-inset',
+                'shadow-container-panel',
+                'shadow-container-sheet'
+            ]
         }
     }
 });
