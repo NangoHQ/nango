@@ -1,0 +1,52 @@
+---
+title: Signaliz
+sidebarTitle: Signaliz
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/signaliz/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/signaliz/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Signaliz account | Required | Needed to create a workspace API key. |
+| Paid plan | Optional | Paid plans include full API and MCP access with monthly fresh enrichment credits. |
+| Partnership | Not required |  |
+| App review | Not required |  |
+| Security audit | Not required |  |
+
+## Setup guide
+
+See the [Signaliz connect guide](/integrations/all/signaliz/connect) to create an API key and add it to Nango.
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/signaliz.mdx)</Note>
+
+## Useful links
+
+- [Signaliz API documentation](https://signaliz.docs.buildwithfern.com/signaliz-api-public-docs/introduction)
+- [Signaliz REST API quickstart](https://help.signaliz.com/en/articles/14-rest-api-quickstart)
+- [Signaliz API keys and authentication](https://help.signaliz.com/en/articles/15-api-keys-and-authentication)
+- [Signaliz MCP documentation](https://signaliz.docs.buildwithfern.com/signaliz-api-public-docs/mcp-server)
+- [Signaliz homepage](https://signaliz.com)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/signaliz.mdx)</Note>
+
+## API gotchas
+
+- Signaliz uses `API_KEY` auth mode with `Authorization: Bearer API_KEY` in the request header.
+- The Nango proxy base URL is `https://api.signaliz.com`. Use the full Signaliz endpoint path when proxying requests, such as `/functions/v1/email-verification-2`, `/functions/v1/find-verified-email-v2`, `/functions/v1/company-signal-enrichment-v2`, `/functions/v1/custom-ai-prompt`, `/functions/v1/lead-generation-v2`, `/functions/v1/find-people-v2`, `/functions/v1/find-companies-v2`, or `/functions/v1/signaliz-mcp`.
+- API reads and MCP access are included on paid Signaliz plans. Fresh provider-backed work, live email verification, premium discovery, and Signaliz-hosted AI can consume fresh enrichment credits.
+- The hosted Signaliz MCP endpoint uses the same workspace API key and accepts JSON-RPC requests at `/functions/v1/signaliz-mcp`.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/signaliz.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Signaliz" icon="link" href="/integrations/all/signaliz/connect" horizontal>
+  Guide to connect to Signaliz using Nango Connect.
+</Card>

@@ -14364,6 +14364,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `shopware` | Shopware (Admin API) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/shopware.md) | [connect](https://nango.dev/docs/api-integrations/shopware/connect.md) |  | e-commerce |
 | `shopworks` | ShopWorks | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/shopworks.md) | [connect](https://nango.dev/docs/api-integrations/shopworks/connect.md) |  | other |
 | `shortcut` | Shortcut | API_KEY | [docs](https://nango.dev/docs/integrations/all/shortcut.md) |  |  | dev-tools, productivity |
+| `signaliz` | Signaliz | API_KEY | [docs](https://nango.dev/docs/integrations/all/signaliz.md) | [connect](https://nango.dev/docs/integrations/all/signaliz/connect.md) |  | marketing, dev-tools |
 | `signnow` | SignNow | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow.md) |  |  | legal |
 | `signnow-sandbox` | SignNow (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/signnow-sandbox.md) |  |  | legal |
 | `simpro` | Simpro | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/simpro.md) | [connect](https://nango.dev/docs/api-integrations/simpro/connect.md) | [setup](https://nango.dev/docs/api-integrations/simpro/how-to-register-your-own-simpro-api-oauth-app.md) | productivity, invoicing |

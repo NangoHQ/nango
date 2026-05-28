@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="32" fill="#070B1A"/>
+  <path d="M32 6.5C46.083 6.5 57.5 17.917 57.5 32S46.083 57.5 32 57.5 6.5 46.083 6.5 32 17.917 6.5 32 6.5Z" stroke="url(#signaliz_ring)" stroke-width="3"/>
+  <path d="M9.5 35.2H21.8L26.9 25.4L31.4 42.4L37.3 18.4L42.4 35.2H54.5" stroke="url(#signaliz_wave)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="signaliz_ring" x1="14" y1="51" x2="49.5" y2="11" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00D5FF"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+    <linearGradient id="signaliz_wave" x1="10" y1="42" x2="51" y2="21" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00D5FF"/>
+      <stop offset="0.55" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#A855F7"/>
+    </linearGradient>
+  </defs>
+</svg>
