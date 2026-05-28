@@ -20,7 +20,7 @@ import { useStore } from '../../../store';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { Button } from '@/components-v2/ui/Button';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { DestructiveActionModal } from '@/components-v2/ui/DestructiveActionModal';
+import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
 import { Input } from '@/components-v2/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
