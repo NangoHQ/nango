@@ -1,7 +1,6 @@
 import { getApiUrl } from '@nangohq/shared';
-import { cloudHost, isCloud, isStaging, stagingHost } from '@nangohq/utils';
 
-import { envs } from '../../env.js';
+import { envs } from '../env.js';
 
 export const remoteFunctionProjectPath = '/home/user/nango-integrations';
 export const remoteFunctionCompilerTemplate = envs.E2B_SANDBOX_COMPILER_TEMPLATE;
@@ -18,12 +17,5 @@ export const remoteFunctionDeploySandboxTimeoutMs = remoteFunctionDeployTimeoutM
 export const remoteFunctionDryrunSandboxTimeoutMs = remoteFunctionCompileTimeoutMs + remoteFunctionDryrunTimeoutMs + remoteFunctionSandboxTimeoutBufferMs;
 
 export function getRemoteFunctionNangoHost(): string {
-    if (isCloud) {
-        return isStaging ? stagingHost : cloudHost;
-    }
-    if (process.env['NANGO_SERVER_URL']) {
-        return process.env['NANGO_SERVER_URL'];
-    }
-
-    return getApiUrl();
+    return envs.NANGO_SERVER_URL ?? getApiUrl();
 }

@@ -8560,7 +8560,7 @@ For most functions, `environment:connections:read` is sufficient for `nango dryr
 
 Without `read_credentials`, these helpers return empty values because the API strips the `credentials` field from the response.
 
-The **Default - Full access** key that comes with each environment already has all required scopes for both deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
+The **Default - Full access** key that comes with each environment already has all required scopes for deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
 
 ## All Available Scopes
 
@@ -8610,6 +8610,13 @@ The **Default - Full access** key that comes with each environment already has a
 | Scope | Description |
 |-------|-------------|
 | `environment:deploy` | Deploy syncs and actions via CLI or API |
+
+### Functions
+
+| Scope | Description |
+|-------|-------------|
+| `environment:functions:compile` | Compile function source code |
+| `environment:functions:dryrun` | Dry run function source code |
 
 ### Records
 
@@ -8990,6 +8997,46 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
+
+## Compile a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/compile.md
+
+<Info>
+  Requires an API key with the `environment:functions:compile` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Compiles TypeScript function source code and returns the bundled JavaScript.
+
+## Dry run a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md
+
+<Info>
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
+
+## Get dry run results
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md
+
+<Info>
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the status and result of an asynchronous function dry run.
+
+## Create a function deployment
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+
+<Info>
+  Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deploys TypeScript function source code to an existing integration.
 
 ## Get integration functions config
 

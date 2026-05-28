@@ -1,6 +1,4 @@
-import { randomUUID } from 'node:crypto';
-
-import { CommandExitError, Sandbox, TimeoutError } from 'e2b';
+import { CommandExitError, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
@@ -9,7 +7,8 @@ import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
-import { remoteFunctionCompilerTemplate, remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { createRemoteFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
 
@@ -21,6 +20,8 @@ export interface DeployRequest {
     environment_name: string;
     nango_secret_key: string;
     nango_host: string;
+    version?: string;
+    allow_destructive?: boolean;
 }
 
 export interface DeployResult {
@@ -37,11 +38,9 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
     }
 
-    const sandbox = await Sandbox.create(remoteFunctionCompilerTemplate, {
+    const sandbox = await createRemoteFunctionSandbox({
+        purpose: 'nango-deploy',
         timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
-        allowInternetAccess: true,
-        metadata: { purpose: 'nango-deploy', requestId: randomUUID() },
-        network: { allowPublicTraffic: true },
         apiKey
     });
 

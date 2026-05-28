@@ -1,6 +1,5 @@
+import { remoteFunctionProjectPath } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
-
-import { remoteFunctionProjectPath } from './runtime.js';
 
 import type { FunctionErrorCode } from '@nangohq/types';
 import type { Response } from 'express';
@@ -8,7 +7,7 @@ import type { Response } from 'express';
 const maxRemoteFunctionErrorMessageLength = 20_000;
 
 /**
- * Runtime allow-list for error codes exposed by the remote-function API.
+ * Runtime allow-list for error codes exposed by the function API.
  * normalizeError receives arbitrary Error-like objects, so internal codes
  * such as ENOENT should not be returned as public API error codes.
  */
@@ -19,25 +18,19 @@ const functionErrorCodes = new Set<string>([
     'dryrun_error',
     'deployment_error',
     'connection_not_found',
+    'dryrun_not_found',
     'function_disabled',
+    'execution_environment_unavailable',
     'timeout',
     'validation_error'
 ] satisfies FunctionErrorCode[]);
 
-export class RemoteFunctionError extends Error {
-    public readonly code: FunctionErrorCode;
-    public readonly status: number;
-    public readonly payload?: unknown;
+export function isFunctionErrorCode(code: string | undefined): code is FunctionErrorCode {
+    return Boolean(code && functionErrorCodes.has(code));
+}
 
-    constructor({ code, message, status, payload }: { code: FunctionErrorCode; message: string; status: number; payload?: unknown }) {
-        super(message);
-        this.name = 'RemoteFunctionError';
-        this.code = code;
-        this.status = status;
-        if (payload !== undefined) {
-            this.payload = payload;
-        }
-    }
+export function normalizeFunctionErrorCode(code: string | undefined, fallback: FunctionErrorCode = 'dryrun_error'): FunctionErrorCode {
+    return isFunctionErrorCode(code) ? code : fallback;
 }
 
 export function sendStepError({ res, error, status }: { res: Response; error: unknown; status?: number }): void {
@@ -62,11 +55,12 @@ function normalizeError(error: unknown): {
         const err = error as Record<string, unknown>;
         const message = typeof err['message'] === 'string' ? sanitizeMessage(err['message']) : sanitizeMessage(stringifyError(error));
         const rawCode = typeof err['type'] === 'string' ? err['type'] : typeof err['code'] === 'string' ? err['code'] : undefined;
-        const code = rawCode && functionErrorCodes.has(rawCode) ? rawCode : undefined;
+        const code = isFunctionErrorCode(rawCode) ? rawCode : undefined;
         const payload = 'payload' in err ? err['payload'] : undefined;
         const status = typeof err['status'] === 'number' ? err['status'] : undefined;
         return { message, ...(code ? { code } : {}), ...(payload !== undefined ? { payload } : {}), ...(status ? { status } : {}) };
     }
+
     return { message: sanitizeMessage(stringifyError(error)) };
 }
 
