@@ -92,15 +92,7 @@ export interface RecordsStore {
 
     getCountsByModel: ({ connectionId, environmentId }: { connectionId: number; environmentId: number }) => Promise<Result<Record<string, RecordCount>>>;
 
-    paginateCounts: ({
-        environmentIds,
-        connectionIds,
-        batchSize
-    }: {
-        connectionIds?: number[];
-        environmentIds?: number[];
-        batchSize?: number;
-    }) => AsyncGenerator<Result<RecordCount[]>>;
+    paginateCounts: (params?: { connectionIds?: number[]; environmentIds?: number[]; batchSize?: number }) => AsyncGenerator<Result<RecordCount[]>>;
 
     autoPruningCandidate: ({ staleAfterMs }: { staleAfterMs: number }) => Promise<
         Result<{

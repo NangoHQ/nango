@@ -1,3 +1,6 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import tracer from 'dd-trace';
@@ -5,8 +8,6 @@ import knex from 'knex';
 
 import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
 
-import { config, configRead } from './config.js';
-import { migrate } from './migrate.js';
 import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
@@ -49,19 +50,37 @@ interface UpsertedMetadata {
 export class PostgresStore implements RecordsStore {
     private db: Knex;
     private dbRead: Knex;
+    private readonly migrationsConfig: Knex.MigratorConfig;
     private seenPartitionPromises = new Map<string, Promise<void>>();
     private daemon: { abort: () => Promise<void> } | null = null;
 
-    constructor() {
+    constructor(config: Knex.Config & { migrations: Knex.MigratorConfig }, configRead?: Knex.Config) {
         this.db = knex(config);
         this.dbRead = configRead ? knex(configRead) : this.db;
+        this.migrationsConfig = config.migrations;
     }
 
     async migrate(): Promise<void> {
-        await migrate(this.db);
+        logger.info('[records] migration');
+        const filename = fileURLToPath(import.meta.url);
+        const packagesDir = path.dirname(path.join(filename, '../../../'));
+        const dir = path.join(packagesDir, 'dist/stores/postgres/migrations');
+        const schema = this.migrationsConfig.schemaName;
+        if (schema) {
+            await this.db.raw(`CREATE SCHEMA IF NOT EXISTS ${schema}`);
+        }
+        const [, pendingMigrations] = (await this.db.migrate.list({ ...this.migrationsConfig, directory: dir })) as [unknown, string[]];
+        if (pendingMigrations.length === 0) {
+            logger.info('[records] nothing to do');
+            return;
+        }
+        await this.db.migrate.latest({ ...this.migrationsConfig, directory: dir });
+        logger.info('[records] migrations completed.');
     }
 
-    startDaemon({ tickIntervalMs, maxAgeMs }: { tickIntervalMs: number; maxAgeMs: number }): void {
+    startDaemon(): void {
+        const tickIntervalMs = envs.PERSIST_SEEN_PARTITION_INTERVAL_MS;
+        const maxAgeMs = envs.PERSIST_SEEN_PARTITION_MAX_AGE_MS;
         this.daemon = cancellableDaemon({
             tickIntervalMs,
             tick: async () => {

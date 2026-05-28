@@ -1,6 +1,6 @@
 import knex from 'knex';
 
-import { config, schema } from '../config.js';
+import { config, schema } from '../../../catalog/default.js';
 
 const db = knex(config);
 
