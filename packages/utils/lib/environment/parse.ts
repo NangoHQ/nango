@@ -81,7 +81,11 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
-    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
+    // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
+    // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
+    // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
+    // snapshot it.
+    CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -285,6 +289,7 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),

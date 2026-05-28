@@ -336,6 +336,10 @@ jobs:
               with:
                   app-id: ${{ secrets.GH_APP_PUSHER_ID }}
                   private-key: ${{ secrets.GH_APP_PUSHER_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+                  repositories: |
+                      ${{ github.event.repository.name }}
+                      managed-image-releases
 
             - name: Checkout code
               uses: actions/checkout@v4
@@ -432,6 +436,57 @@ jobs:
                   git commit -m "chore: update version in manifest" || echo "No manifest changes to commit"
                   git push origin master
 
+            # Publishes to NangoHQ/managed-image-releases via gh CLI (preinstalled on GitHub runners).
+            # Prerequisites (configure before first run):
+            #   - secrets.GH_APP_PUSHER_ID + secrets.GH_APP_PUSHER_PRIVATE_KEY (GitHub App token above)
+            #   - Install that app on NangoHQ/managed-image-releases with Contents: Read and write
+            #   - Grant customer GitHub users/teams read access so they can watch releases
+            - name: Resolve managed release versions
+              id: release-versions
+              run: |
+                  if [ "${{ needs.test-deployment.outputs.status }}" = "failure" ]; then
+                    echo "image_version=${{ steps.bump-major.outputs.image_version }}" >> $GITHUB_OUTPUT
+                    echo "app_version=${{ steps.bump-major.outputs.app_version }}" >> $GITHUB_OUTPUT
+                  else
+                    echo "image_version=${{ needs.manage-versions.outputs.image_version }}" >> $GITHUB_OUTPUT
+                    echo "app_version=${{ needs.manage-versions.outputs.app_version }}" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Checkout release commit for changelog
+              if: ${{ !env.ACT }}
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  repository: ${{ github.repository }}
+                  ref: ${{ needs.manage-versions.outputs.commit_hash }}
+                  fetch-depth: 0
+                  path: nango-src
+                  token: ${{ steps.create_github_app_token.outputs.token }}
+                  persist-credentials: false
+
+            - name: Checkout managed-image-releases
+              if: ${{ !env.ACT }}
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+              with:
+                  repository: NangoHQ/managed-image-releases
+                  token: ${{ steps.create_github_app_token.outputs.token }}
+                  path: managed-image-releases
+
+            - name: Publish managed image release
+              if: ${{ !env.ACT }}
+              env:
+                  GITHUB_TOKEN: ${{ steps.create_github_app_token.outputs.token }}
+                  GH_HOST: github.com
+                  TAG_NAME: ${{ steps.retag-image.outputs.tag_name }}
+                  IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
+                  APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
+                  COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
+                  MANIFEST_PATH: ${{ github.workspace }}/managed-manifest.json
+                  NANGO_REPO_PATH: ${{ github.workspace }}/nango-src
+                  MANAGED_RELEASES_REPO_PATH: ${{ github.workspace }}/managed-image-releases
+              run: |
+                  npm install -w scripts --ignore-scripts
+                  node scripts/publish-managed-image-release.mjs
+
             - name: Log PR creation (act)
               if: ${{ env.ACT }}
               run: |
@@ -439,6 +494,20 @@ jobs:
                   echo "Would commit changes to managed-manifest.json"
                   cat managed-manifest.json
                   echo "Would push changes to master"
+
+            - name: Log managed image release (act)
+              if: ${{ env.ACT }}
+              env:
+                  ACT: 'true'
+                  GITHUB_TOKEN: placeholder
+                  TAG_NAME: managed-${{ steps.release-versions.outputs.image_version }}-${{ steps.release-versions.outputs.app_version }}-${{ needs.manage-versions.outputs.commit_hash }}
+                  IMAGE_VERSION: ${{ steps.release-versions.outputs.image_version }}
+                  APP_VERSION: ${{ steps.release-versions.outputs.app_version }}
+                  COMMIT_HASH: ${{ needs.manage-versions.outputs.commit_hash }}
+                  MANIFEST_PATH: ${{ github.workspace }}/managed-manifest.json
+              run: |
+                  npm install -w scripts --ignore-scripts
+                  node scripts/publish-managed-image-release.mjs
 
             - name: Cleanup kind cluster
               if: always()

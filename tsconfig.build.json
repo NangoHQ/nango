@@ -41,6 +41,9 @@
             "path": "packages/runner-sdk"
         },
         {
+            "path": "packages/sandbox"
+        },
+        {
             "path": "packages/scheduler"
         },
         {

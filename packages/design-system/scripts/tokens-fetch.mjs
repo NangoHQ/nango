@@ -157,9 +157,83 @@ export function buildPrimitivesBlock(tokens) {
 }
 
 export function buildTailwindThemeBlock(tokens) {
-    // Only semantic color tokens → Tailwind utility classes (bg-*, text-*, border-*, etc.)
-    const vars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
-    return `@theme {\n${vars.join('\n')}\n}`;
+    // Semantic color tokens → --color-* → bg-*, text-*, border-*, fill-*, etc.
+    const colorVars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
+
+    // Semantic boxShadow tokens → --shadow-* → shadow-*
+    // Covers --focus-outline-default / --focus-outline-danger so components can write
+    // `shadow-focus-outline-default` instead of `shadow-[var(--focus-outline-default)]`.
+    //
+    // @theme inline is used so the generated utility references the semantic variable
+    // directly (e.g. `var(--focus-outline-default)`) rather than going through an
+    // intermediate `--shadow-*` CSS property. This ensures dark-theme overrides on the
+    // underlying semantic vars are always picked up.
+    const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
+
+    if (tokens.length > 0 && colorVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
+    if (tokens.length > 0 && shadowVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no boxShadow tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
+
+    const colorBlock = `@theme {\n${colorVars.join('\n')}\n}`;
+    const shadowBlock = `\n@theme inline {\n${shadowVars.join('\n')}\n}`;
+    return colorBlock + shadowBlock;
+}
+
+// Single source of truth for primitive token mappings.
+// Each entry drives both the CSS variable name and the completeness guard.
+// To add a new token group, add one row here — no other changes needed.
+const PRIM_MAPPINGS = [
+    { prefix: 'radius-', cssVar: 'radius-ds-' },
+    { prefix: 'border-width-', cssVar: 'border-width-ds-' },
+    { prefix: 'typography-font-size-', cssVar: 'text-ds-' },
+    { prefix: 'typography-font-weight-', cssVar: 'font-weight-ds-' },
+    { prefix: 'typography-line-height-', cssVar: 'leading-ds-' },
+    { prefix: 'typography-letter-spacing-', cssVar: 'tracking-ds-' }
+];
+
+/**
+ * Maps primitive dimension/typography tokens into Tailwind @theme namespaces so they
+ * can be used as plain utilities instead of arbitrary `[var(--ds-*)]` values.
+ *
+ * Mappings (all prefixed with `ds-` to avoid overriding Tailwind built-ins):
+ *   --ds-radius-*                    → --radius-ds-*        → rounded-ds-xs, rounded-ds-sm …
+ *   --ds-border-width-*              → --border-width-ds-*  → border-ds-hairline, border-ds-1 …
+ *   --ds-typography-font-size-*      → --text-ds-*          → text-ds-xs, text-ds-md …
+ *   --ds-typography-font-weight-*    → --font-weight-ds-*   → font-ds-regular, font-ds-medium …
+ *   --ds-typography-line-height-*    → --leading-ds-*       → leading-ds-tight, leading-ds-normal …
+ *   --ds-typography-letter-spacing-* → --tracking-ds-*      → tracking-ds-tight …
+ *
+ * Spacing (--ds-space-*) is intentionally omitted: Tailwind's default 4px spacing scale
+ * already matches the ds-space tokens, so `gap-2` === `--ds-space-2` without any additions.
+ */
+export function buildPrimitivesThemeBlock(tokens) {
+    if (tokens.length === 0) return '';
+
+    const entries = [];
+    const matched = new Set();
+
+    for (const t of tokens) {
+        const name = t.name; // kebab name produced by the name/kebab transform
+        const ref = `var(--ds-${name})`;
+        for (const { prefix, cssVar } of PRIM_MAPPINGS) {
+            if (name.startsWith(prefix)) {
+                matched.add(prefix);
+                entries.push(`  --${cssVar}${name.slice(prefix.length)}: ${ref};`);
+                break;
+            }
+        }
+    }
+
+    for (const { prefix } of PRIM_MAPPINGS) {
+        if (!matched.has(prefix)) {
+            throw new Error(`buildPrimitivesThemeBlock: no tokens matched prefix '${prefix}' — was a token group renamed or deleted?`);
+        }
+    }
+
+    return `@theme {\n${entries.join('\n')}\n}`;
 }
 
 // ─── Typography class builder ──────────────────────────────────────────────────
@@ -298,11 +372,18 @@ export async function buildCss(tokensData) {
         buildCssBlock(darkTokens, '[data-theme="dark"]'),
         '',
         '/*',
-        ' * Tailwind v4 @theme registration.',
-        ' * Maps semantic color vars to --color-* so Tailwind generates',
-        ' * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.',
+        ' * Tailwind v4 @theme registration — semantic tokens.',
+        ' * Colors → --color-* (bg-*, text-*, border-*, etc.)',
+        ' * Box shadows → --shadow-* (shadow-focus-outline-default, etc.)',
         ' */',
         buildTailwindThemeBlock(lightTokens),
+        '',
+        '/*',
+        ' * Tailwind v4 @theme registration — primitive tokens.',
+        ' * Radius → rounded-ds-*, border-width → border-ds-*,',
+        ' * font-size → text-ds-*, font-weight → font-ds-*, letter-spacing → tracking-ds-*',
+        ' */',
+        buildPrimitivesThemeBlock(primTokens),
         typographySection,
         ''
     ].join('\n');

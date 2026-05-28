@@ -6465,6 +6465,8 @@ By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nan
 
 Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
 
+You can also subscribe to release notifications in GitHub by watching **Releases** on the private [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository (your GitHub user or team must have read access). Each release includes the Docker tag, version metadata, and a generated changelog between managed releases.
+
 Managed image tags follow this format:
 
 ```
@@ -6476,7 +6478,7 @@ nangohq/nango:managed-{managed-release-version}-{application-version}-{commit-sh
 
 Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
 
-You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
+You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/master/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release).
 
 See the full [changelog](/updates/changelog) for details on each release.
 
@@ -8558,7 +8560,7 @@ For most functions, `environment:connections:read` is sufficient for `nango dryr
 
 Without `read_credentials`, these helpers return empty values because the API strips the `credentials` field from the response.
 
-The **Default - Full access** key that comes with each environment already has all required scopes for both deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
+The **Default - Full access** key that comes with each environment already has all required scopes for deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
 
 ## All Available Scopes
 
@@ -8608,6 +8610,13 @@ The **Default - Full access** key that comes with each environment already has a
 | Scope | Description |
 |-------|-------------|
 | `environment:deploy` | Deploy syncs and actions via CLI or API |
+
+### Functions
+
+| Scope | Description |
+|-------|-------------|
+| `environment:functions:compile` | Compile function source code |
+| `environment:functions:dryrun` | Dry run function source code |
 
 ### Records
 
@@ -8988,6 +8997,46 @@ Source: https://nango.dev/docs/reference/backend/http-api/connections/delete.md
 <Info>
   Requires an API key with the `environment:connections:delete` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
 </Info>
+
+## Compile a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/compile.md
+
+<Info>
+  Requires an API key with the `environment:functions:compile` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Compiles TypeScript function source code and returns the bundled JavaScript.
+
+## Dry run a function
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md
+
+<Info>
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
+
+## Get dry run results
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md
+
+<Info>
+  Requires an API key with the `environment:functions:dryrun` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Returns the status and result of an asynchronous function dry run.
+
+## Create a function deployment
+
+Source: https://nango.dev/docs/reference/backend/http-api/functions/deployments.md
+
+<Info>
+  Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deploys TypeScript function source code to an existing integration.
 
 ## Get integration functions config
 
@@ -13732,6 +13781,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
 | `bettercontact` | BetterContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/bettercontact.md) | [connect](https://nango.dev/docs/api-integrations/bettercontact/connect.md) |  | crm |
+| `bigchange` | BigChange | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bigchange.md) | [connect](https://nango.dev/docs/api-integrations/bigchange/connect.md) |  | productivity |
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bigcommerce.md) |  |  | e-commerce |
 | `bill` | Bill (Connect API) | BILL | [docs](https://nango.dev/docs/integrations/all/bill.md) |  |  | payment |
 | `bill-sandbox` | Bill (Connect API Sandbox) | BILL | [docs](https://nango.dev/docs/integrations/all/bill-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/bill-sandbox/connect.md) |  | payment |
@@ -14056,6 +14106,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `lever-basic` | Lever (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/lever-basic.md) | [connect](https://nango.dev/docs/integrations/all/lever-basic/connect.md) |  | ats |
 | `lever-basic-sandbox` | Lever (Basic Auth Sandbox)) | BASIC | [docs](https://nango.dev/docs/integrations/all/lever-basic-sandbox.md) |  |  | ats |
 | `lever-sandbox` | Lever (OAuth Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/lever-sandbox.md) |  |  | ats |
+| `lightfield` | Lightfield | API_KEY | [docs](https://nango.dev/docs/api-integrations/lightfield.md) | [connect](https://nango.dev/docs/api-integrations/lightfield/connect.md) |  | crm |
 | `lightspeed-retail` | Lightspeed Retail (X-Series) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lightspeed-retail.md) |  | [setup](https://nango.dev/docs/api-integrations/lightspeed-retail/how-to-register-your-own-lightspeed-retail-api-oauth-app.md) | e-commerce |
 | `linear` | Linear | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear.md) |  | [setup](https://nango.dev/docs/api-integrations/linear/how-to-register-your-own-linear-api-oauth-app.md) | popular, productivity, ticketing |
 | `linear-mcp` | Linear (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/linear-mcp.md) |  |  | popular, productivity, ticketing, mcp |

@@ -2577,6 +2577,40 @@ bliro:
             secret: true
             doc_section: '#step-1-creating-a-client-application'
 
+bigchange:
+    display_name: BigChange
+    categories:
+        - productivity
+    auth_mode: OAUTH2_CC
+    token_url: https://api.bigchange.com/auth/tokens
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.bigchange.com
+        headers:
+            customer-id: ${connectionConfig.customer_id}
+    docs: https://nango.dev/docs/api-integrations/bigchange
+    docs_connect: https://nango.dev/docs/api-integrations/bigchange/connect
+    connection_config:
+        customer_id:
+            type: string
+            title: BigChange Customer ID
+            description: Your numeric BigChange Customer ID.
+            example: '5690'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-bigchange-customer-id'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your BigChange Partner API client_id.
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your BigChange Partner API client_secret.
+            secret: true
+
 bigcommerce:
     display_name: BigCommerce
     categories:
@@ -10833,6 +10867,31 @@ lever-basic-sandbox:
             description: ''
             default_value: ''
             hidden: true
+
+lightfield:
+    display_name: Lightfield
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.lightfield.app
+        headers:
+            authorization: Bearer ${apiKey}
+            lightfield-version: '2026-03-01'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/auth/validate
+    docs: https://nango.dev/docs/api-integrations/lightfield
+    docs_connect: https://nango.dev/docs/api-integrations/lightfield/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Lightfield API key
+            example: sk_lf_0_...
+            pattern: '^sk_lf_0_[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-create-an-api-key'
 
 lightspeed-retail:
     display_name: Lightspeed Retail (X-Series)
