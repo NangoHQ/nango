@@ -1,0 +1,132 @@
+/*
+ * Phase 2B — tokens-bridge.css
+ *
+ * Aliases v2 component token names to DS semantic variables so designer changes
+ * in Figma flow through to v2 components without touching any component files.
+ *
+ * Technique: unlayered :root {} beats Tailwind's @layer theme, so these
+ * declarations override the hardcoded v2 @theme values in index.css.
+ * Dark mode is handled automatically because the DS tokens referenced here
+ * already switch via [data-theme='dark'].
+ *
+ * Short-lived debt — removed in Phase 4 when components migrate to DS token
+ * names directly (e.g. bg-surface-panel instead of bg-bg-surface).
+ */
+
+:root {
+    /* Surface / Background */
+    --color-bg-surface: var(--surface-panel);
+    --color-bg-elevated: var(--surface-panel-muted);
+    --color-bg-muted: var(--surface-panel-inset); /* gap: v2 mid-gray has no DS counterpart */
+    --color-bg-subtle: var(--surface-panel-inset); /* gap: same as muted, distinction collapses */
+    --color-bg-accent: var(--status-info-bg);
+    --color-bg-success: var(--status-success-bg);
+
+    --color-fg-error: var(--text-danger);
+
+    /* Navigation */
+    --color-nav-bg-hover: var(--interactive-ghost-hover); /* gap: v2 used solid fill, DS uses transparent overlay */
+    --color-nav-bg-press: var(--interactive-ghost-active);
+
+    /* Text */
+    --color-text-primary: var(--text-strong);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-muted);
+    --color-text-disabled: var(--text-disabled);
+    --color-text-brand: var(--text-brand);
+
+    /* Border */
+    --color-border-default: var(--border-default);
+    --color-border-muted: var(--border-muted);
+    --color-border-strong: var(--border-strong);
+    --color-border-extra-strong: var(--border-stronger);
+    --color-border-disabled: var(--border-disabled);
+    --color-border-brand: var(--border-selected);
+
+    /* Icon */
+    --color-icon-primary: var(--icon-default);
+    --color-icon-secondary: var(--icon-secondary);
+    --color-icon-tertiary: var(--icon-muted);
+    --color-icon-disabled: var(--icon-disabled);
+    --color-icon-brand: var(--icon-brand);
+
+    /* Badge */
+    --color-badge-bg-gray: var(--status-neutral-bg);
+    --color-badge-fg-gray: var(--status-neutral-text);
+    --color-badge-bg-mint: var(--status-success-bg);
+    --color-badge-fg-mint: var(--status-success-text);
+    --color-badge-bg-pink: var(--status-danger-bg); /* gap: no DS "pink"; danger is closest */
+    --color-badge-fg-pink: var(--status-danger-text);
+    --color-badge-bg-yellow: var(--status-warning-bg);
+    --color-badge-fg-yellow: var(--status-warning-text);
+
+    /* Focus / Shadow */
+    --color-focus-ring: var(--focus-ring-default);
+    --shadow-focus: var(--focus-outline-default);
+
+    /* Feedback */
+    --color-feedback-success-fg: var(--status-success-text);
+    --color-feedback-success-bg: var(--status-success-bg);
+    --color-feedback-success-alt: var(--status-success-bg);
+    --color-feedback-warning-fg: var(--status-warning-text);
+    --color-feedback-warning-bg: var(--status-warning-bg);
+    --color-feedback-warning-alt: var(--status-warning-bg);
+    --color-feedback-info-fg: var(--status-info-text);
+    --color-feedback-info-bg: var(--status-info-bg);
+    --color-feedback-info-alt: var(--status-info-bg);
+    --color-feedback-error-fg: var(--status-danger-text);
+    --color-feedback-error-bg: var(--status-danger-bg);
+    --color-feedback-error-alt: var(--status-danger-bg);
+    --color-feedback-error-border: var(--border-danger);
+    --color-feedback-neutral-fg: var(--status-neutral-text);
+    --color-feedback-neutral-bg: var(--status-neutral-bg);
+    --color-feedback-neutral-alt: var(--status-neutral-bg);
+
+    /* Dropdown */
+    --color-dropdown-bg-default: var(--surface-overlay);
+    --color-dropdown-bg-hover: var(--state-hover);
+    --color-dropdown-bg-press: var(--state-pressed);
+
+    /* Button — Primary */
+    --color-btn-primary-bg: var(--interactive-primary);
+    --color-btn-primary-fg: var(--text-on-brand);
+    --color-btn-primary-hover: var(--interactive-primary-hover);
+    --color-btn-primary-press: var(--interactive-primary-active);
+    --color-btn-primary-disabled: var(--interactive-disabled);
+    --color-btn-primary-loading: var(--interactive-primary-active);
+
+    /* Button — Secondary */
+    --color-btn-secondary-bg: var(--surface-panel-inset); /* gap: v2 filled gray; no DS secondary-button-fill token */
+    --color-btn-secondary-fg: var(--text-secondary);
+    --color-btn-secondary-hover: var(--state-hover);
+    --color-btn-secondary-press: var(--state-pressed);
+    --color-btn-secondary-disabled: var(--interactive-disabled);
+    --color-btn-secondary-loading: var(--state-pressed);
+
+    /* Button — Tertiary */
+    --color-btn-tertiary-bg: var(--surface-panel);
+    --color-btn-tertiary-fg: var(--text-default);
+    --color-btn-tertiary-hover: var(--state-hover);
+    --color-btn-tertiary-press: var(--state-pressed);
+    --color-btn-tertiary-disabled: var(--interactive-disabled);
+    --color-btn-tertiary-loading: var(--state-pressed);
+
+    /* Button — Destructive */
+    --color-btn-destructive-bg: var(--interactive-danger);
+    --color-btn-destructive-fg: var(--text-on-brand);
+    --color-btn-destructive-hover: var(--interactive-danger-hover);
+    --color-btn-destructive-press: var(--interactive-danger-active);
+    --color-btn-destructive-disabled: var(--interactive-disabled);
+    --color-btn-destructive-loading: var(--interactive-danger-active);
+
+    /* Link */
+    --color-link-default: var(--text-link);
+    --color-link-hover: var(--text-link-hover);
+    --color-link-press: var(--text-link-active);
+    --color-link-disabled: var(--text-disabled);
+
+    /* Breadcrumb */
+    --color-breadcrumb-default: var(--text-secondary);
+    --color-breadcrumb-hover: var(--text-default);
+    --color-breadcrumb-press: var(--text-strong);
+}
