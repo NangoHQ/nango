@@ -65,55 +65,55 @@
     --shadow-focus: var(--focus-outline-default);
 
     /* Feedback */
-    --color-feedback-success-fg: var(--status-success-text);
+    --color-feedback-success-fg: var(--status-success-icon);
     --color-feedback-success-bg: var(--status-success-bg);
-    --color-feedback-success-alt: var(--status-success-bg);
-    --color-feedback-warning-fg: var(--status-warning-text);
+    --color-feedback-success-alt: var(--status-success-bg-hover);
+    --color-feedback-warning-fg: var(--status-warning-icon);
     --color-feedback-warning-bg: var(--status-warning-bg);
-    --color-feedback-warning-alt: var(--status-warning-bg);
-    --color-feedback-info-fg: var(--status-info-text);
+    --color-feedback-warning-alt: var(--status-warning-bg-hover);
+    --color-feedback-info-fg: var(--status-info-icon);
     --color-feedback-info-bg: var(--status-info-bg);
-    --color-feedback-info-alt: var(--status-info-bg);
-    --color-feedback-error-fg: var(--status-danger-text);
+    --color-feedback-info-alt: var(--status-info-bg-hover);
+    --color-feedback-error-fg: var(--status-danger-icon);
     --color-feedback-error-bg: var(--status-danger-bg);
-    --color-feedback-error-alt: var(--status-danger-bg);
+    --color-feedback-error-alt: var(--status-danger-bg-hover);
     --color-feedback-error-border: var(--border-danger);
-    --color-feedback-neutral-fg: var(--status-neutral-text);
+    --color-feedback-neutral-fg: var(--status-neutral-icon);
     --color-feedback-neutral-bg: var(--status-neutral-bg);
     --color-feedback-neutral-alt: var(--status-neutral-bg);
 
     /* Dropdown */
     --color-dropdown-bg-default: var(--surface-overlay);
     --color-dropdown-bg-hover: var(--state-hover);
-    --color-dropdown-bg-press: var(--state-pressed);
+    --color-dropdown-bg-press: var(--surface-raised);
 
-    /* Button — Primary */
+    /* Button — Primary (DS: Primary) */
     --color-btn-primary-bg: var(--interactive-primary);
-    --color-btn-primary-fg: var(--text-on-brand);
+    --color-btn-primary-fg: var(--text-on-accent);
     --color-btn-primary-hover: var(--interactive-primary-hover);
     --color-btn-primary-press: var(--interactive-primary-active);
     --color-btn-primary-disabled: var(--interactive-disabled);
     --color-btn-primary-loading: var(--interactive-primary-active);
 
-    /* Button — Secondary */
-    --color-btn-secondary-bg: var(--surface-panel-inset); /* gap: v2 filled gray; no DS secondary-button-fill token */
-    --color-btn-secondary-fg: var(--text-secondary);
-    --color-btn-secondary-hover: var(--state-hover);
-    --color-btn-secondary-press: var(--state-pressed);
+    /* Button — Secondary (DS: Outline) */
+    --color-btn-secondary-bg: var(--interactive-outline);
+    --color-btn-secondary-fg: var(--text-default);
+    --color-btn-secondary-hover: var(--interactive-outline-hover);
+    --color-btn-secondary-press: var(--interactive-outline-active);
     --color-btn-secondary-disabled: var(--interactive-disabled);
-    --color-btn-secondary-loading: var(--state-pressed);
+    --color-btn-secondary-loading: var(--interactive-outline-active);
 
-    /* Button — Tertiary */
-    --color-btn-tertiary-bg: var(--surface-panel);
-    --color-btn-tertiary-fg: var(--text-default);
-    --color-btn-tertiary-hover: var(--state-hover);
-    --color-btn-tertiary-press: var(--state-pressed);
+    /* Button — Tertiary (DS: Ghost) */
+    --color-btn-tertiary-bg: var(--interactive-ghost);
+    --color-btn-tertiary-fg: var(--text-secondary);
+    --color-btn-tertiary-hover: var(--interactive-ghost-hover);
+    --color-btn-tertiary-press: var(--interactive-ghost-active);
     --color-btn-tertiary-disabled: var(--interactive-disabled);
-    --color-btn-tertiary-loading: var(--state-pressed);
+    --color-btn-tertiary-loading: var(--interactive-ghost-active);
 
-    /* Button — Destructive */
+    /* Button — Destructive (DS: Danger) */
     --color-btn-destructive-bg: var(--interactive-danger);
-    --color-btn-destructive-fg: var(--text-on-brand);
+    --color-btn-destructive-fg: var(--text-on-accent);
     --color-btn-destructive-hover: var(--interactive-danger-hover);
     --color-btn-destructive-press: var(--interactive-danger-active);
     --color-btn-destructive-disabled: var(--interactive-disabled);
@@ -128,5 +128,5 @@
     /* Breadcrumb */
     --color-breadcrumb-default: var(--text-secondary);
     --color-breadcrumb-hover: var(--text-default);
-    --color-breadcrumb-press: var(--text-strong);
+    --color-breadcrumb-press: var(--text-default);
 }
