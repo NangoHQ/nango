@@ -15,7 +15,9 @@ export const Default: Story = {
     render: () => (
         <div className="bg-bg-black p-6 rounded-md flex items-center gap-3 flex-wrap">
             {VARIANTS.map((variant) => (
-                <Tag key={variant} variant={variant}>{variant}</Tag>
+                <Tag key={variant} variant={variant}>
+                    {variant}
+                </Tag>
             ))}
         </div>
     )

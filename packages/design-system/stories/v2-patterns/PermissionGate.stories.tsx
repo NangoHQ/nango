@@ -1,5 +1,5 @@
-import { Button } from '@/components-v2/ui/Button';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -16,13 +16,21 @@ export const Default: Story = {
             <div className="flex flex-col gap-2">
                 <span className="story-section-heading">Allowed</span>
                 <PermissionGate condition={true}>
-                    {(allowed) => <Button variant="primary" size="sm" disabled={!allowed}>Edit</Button>}
+                    {(allowed) => (
+                        <Button variant="primary" size="sm" disabled={!allowed}>
+                            Edit
+                        </Button>
+                    )}
                 </PermissionGate>
             </div>
             <div className="flex flex-col gap-2">
                 <span className="story-section-heading">Denied (hover for tooltip)</span>
                 <PermissionGate condition={false} message="You need admin role to edit this.">
-                    {(allowed) => <Button variant="primary" size="sm" disabled={!allowed}>Edit</Button>}
+                    {(allowed) => (
+                        <Button variant="primary" size="sm" disabled={!allowed}>
+                            Edit
+                        </Button>
+                    )}
                 </PermissionGate>
             </div>
         </div>

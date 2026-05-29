@@ -20,18 +20,11 @@ export const Default: Story = {
             </div>
             <div className="flex flex-col gap-2">
                 <span className="story-section-heading">With values</span>
-                <KeyValueInput
-                    initialValues={{ Authorization: 'Bearer token123', 'X-Tenant-Id': 'acme' }}
-                    onChange={fn()}
-                />
+                <KeyValueInput initialValues={{ Authorization: 'Bearer token123', 'X-Tenant-Id': 'acme' }} onChange={fn()} />
             </div>
             <div className="flex flex-col gap-2">
                 <span className="story-section-heading">Secret</span>
-                <KeyValueInput
-                    initialValues={{ API_KEY: 'secret-key-abc' }}
-                    onChange={fn()}
-                    isSecret
-                />
+                <KeyValueInput initialValues={{ API_KEY: 'secret-key-abc' }} onChange={fn()} isSecret />
             </div>
         </div>
     )
