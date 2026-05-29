@@ -8,7 +8,7 @@ sidebarTitle: 'Toast'
 To authenticate with Toast, you need:
 1. **Client ID** - Your Toast API client identifier.
 2. **Client Secret** - Your Toast API client secret.
-3. **API Hostname** - The Toast API hostname for your environment.
+3. **API Subdomain** - The subdomain of your Toast API environment
 4. **Restaurant External ID** (optional) - The Toast GUID for the restaurant you want to access.
 
 This guide will walk you through obtaining your API credentials and locating your restaurant details.
@@ -42,7 +42,7 @@ How you obtain credentials depends on your integration type:
 <img src="/api-integrations/toast/create_credentials.png"/>
 
 4. Fill in the required fields per API type and submit. Toast generates your credentials immediately.
-5. Copy your **API Hostname**. **Client ID** and **Client Secret**, the secret is only shown once.
+5. Copy your **API Subdomain**, **Client ID**, and **Client Secret** — the secret is only shown once. The subdomain is the part before `.toasttab.com` and after `https://` in your API hostname.
 
 <img src="/api-integrations/toast/generated_credentials.png"/>
 
@@ -62,7 +62,7 @@ Once you have your credentials:
 
 1. Open the form where you need to authenticate with Toast.
 2. Enter your **Client ID** and **Client Secret**.
-3. Enter the **API Hostname** for your environment.
+3. Enter your **API Subdomain**.
 4. Enter the **Restaurant External ID** for the restaurant you want to access.
 5. Submit the form to complete authentication.
 

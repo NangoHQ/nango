@@ -9,13 +9,13 @@ description: 'Integrate your application with the Toast API'
 Connect to Toast with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Toast_.
     </Step>
-    <Step title="Authorize Toast">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_, then enter your Client ID, Client Secret, API Hostname, and Restaurant External ID. Later, you'll let your users do the same directly from your app.
+    <Step id="authorize-toast" title="Authorize Toast">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_, then enter your Client ID, Client Secret, API Subdomain (e.g. `ws-api` or `ws-sandbox-api`), and Restaurant External ID. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Toast API">
+    <Step id="call-api" title="Call the Toast API">
     Let's make your first request to the Toast API (retrieve a specific restaurant). The restaurant GUID comes from your connection config — it's the Restaurant External ID you entered when connecting. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -54,7 +54,7 @@ Connect to Toast with Nango and see data flow in 2 minutes.
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-nango" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To connect with your own credentials, follow the connect guide linked below.

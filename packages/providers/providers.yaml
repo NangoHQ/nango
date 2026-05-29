@@ -19778,7 +19778,7 @@ toast:
         - erp
     auth_mode: TWO_STEP
     body_format: json
-    token_url: https://${connectionConfig.hostname}/authentication/v1/authentication/login
+    token_url: https://${connectionConfig.subdomain}.toasttab.com/authentication/v1/authentication/login
     token_params:
         clientId: ${credentials.clientId}
         clientSecret: ${credentials.clientSecret}
@@ -19790,18 +19790,18 @@ toast:
         token_expiration: token.expiresIn
         token_expiration_strategy: expireIn
     proxy:
-        base_url: https://${connectionConfig.hostname}
+        base_url: https://${connectionConfig.subdomain}.toasttab.com
         headers:
             toast-restaurant-external-id: ${connectionConfig.restaurantId}
     docs: https://nango.dev/docs/api-integrations/toast
     docs_connect: https://nango.dev/docs/api-integrations/toast/connect
     connection_config:
-        hostname:
+        subdomain:
             type: string
-            title: API Hostname
-            description: The Toast API hostname for your environment.
-            example: ws-api.toasttab.com
-            format: hostname
+            title: API Subdomain
+            description: The Toast API subdomain for your environment.
+            example: ws-api
+            pattern: '^[a-z0-9-]+$'
             order: 1
         restaurantId:
             type: string
