@@ -15,9 +15,24 @@ export const COUNTER_METRICS = [
     'function_executions',
     'function_logs',
     'function_compute_gbms',
+    'function_compute_ms',
     'webhook_forwards'
 ] as const satisfies readonly CounterUsageMetric[];
 export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
+
+// Default fan-out set when the caller doesn't ask for a specific metric scope.
+// `function_compute_gbms` is excluded — it's an observability metric (memory-
+// weighted compute) kept available for callers who explicitly request it via
+// `?metrics=function_compute_gbms`, but the dashboard's default view uses
+// `function_compute_ms` which matches Orb's billed quantity.
+export const DEFAULT_COUNTER_METRICS = [
+    'proxy',
+    'function_executions',
+    'function_logs',
+    'function_compute_ms',
+    'webhook_forwards'
+] as const satisfies readonly CounterUsageMetric[];
+export const DEFAULT_AVG_METRICS = AVG_METRICS;
 
 // Runtime mirror of `BreakdownDimensions` from @nangohq/types — `satisfies`
 // keeps the per-key arrays in sync with the per-key dim union. Single
@@ -28,6 +43,7 @@ export const BREAKDOWN_DIMENSIONS = {
     function_executions: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
     function_logs: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
     function_compute_gbms: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
+    function_compute_ms: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
     webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
     records: ['environment_id', 'integration_id', 'connection_id', 'model'],
     connections: ['environment_id', 'integration_id']
@@ -77,6 +93,7 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'function_executions':
         case 'function_logs':
         case 'function_compute_gbms':
+        case 'function_compute_ms':
             return `daily_function_executions`;
         case 'webhook_forwards':
             return `daily_webhook_forwards`;
@@ -97,6 +114,8 @@ export function quantityForMetric(metric: CounterUsageMetric): string {
             return `SUM(custom_logs)`;
         case 'function_compute_gbms':
             return `SUM(compute_gbms)`;
+        case 'function_compute_ms':
+            return `SUM(duration_ms)`;
     }
 }
 

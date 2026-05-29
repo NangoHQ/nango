@@ -4,7 +4,8 @@ const labelMap: Record<UsageMetric, string> = {
     proxy: 'Proxy requests',
     connections: 'Connections',
     function_executions: 'Function runs',
-    function_compute_gbms: 'Function time (ms)',
+    function_compute_gbms: 'Function compute (GB-ms)',
+    function_compute_ms: 'Function compute time (ms)',
     function_logs: 'Function logs',
     records: 'Sync records',
     webhook_forwards: 'Webhook forwarding'
@@ -36,6 +37,7 @@ export function toApiBillingUsageMetrics(usageMetrics: BillingUsageMetrics): Api
         connections: toApiBillingUsageMetric(usageMetrics.connections, 'connections'),
         proxy: toApiBillingUsageMetric(usageMetrics.proxy, 'proxy'),
         function_compute_gbms: toApiBillingUsageMetric(usageMetrics.function_compute_gbms, 'function_compute_gbms'),
+        function_compute_ms: toApiBillingUsageMetric(usageMetrics.function_compute_ms, 'function_compute_ms'),
         function_executions: toApiBillingUsageMetric(usageMetrics.function_executions, 'function_executions'),
         function_logs: toApiBillingUsageMetric(usageMetrics.function_logs, 'function_logs'),
         records: toApiBillingUsageMetric(usageMetrics.records, 'records'),

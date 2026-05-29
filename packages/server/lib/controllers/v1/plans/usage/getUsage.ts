@@ -41,6 +41,11 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
             usage: usage.value.function_compute_gbms.current,
             limit: plan.function_compute_gbms_max
         },
+        function_compute_ms: {
+            label: getMetricLabel('function_compute_ms'),
+            usage: usage.value.function_compute_ms.current,
+            limit: null
+        },
         function_executions: {
             label: getMetricLabel('function_executions'),
             usage: usage.value.function_executions.current,
