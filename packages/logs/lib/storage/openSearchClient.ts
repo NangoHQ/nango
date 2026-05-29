@@ -22,34 +22,6 @@ import type {
     LogsUpdateParams
 } from './types.js';
 
-const SEARCH_BODY_FIELDS = new Set([
-    'query',
-    'aggs',
-    'aggregations',
-    'sort',
-    'search_after',
-    'track_total_hits',
-    'post_filter',
-    'collapse',
-    'pit',
-    'suggest',
-    'highlight',
-    'rescore',
-    'script_fields',
-    'stored_fields',
-    'docvalue_fields',
-    '_source',
-    'fields',
-    'runtime_mappings',
-    'indices_boost',
-    'min_score',
-    'seq_no_primary_term',
-    'explain',
-    'version'
-]);
-
-const UPDATE_BY_QUERY_BODY_FIELDS = new Set(['query', 'script', 'conflicts', 'max_docs', 'scroll', 'scroll_size', 'slices', 'sort']);
-
 function isTransportEnvelope(result: unknown): result is { body: unknown; statusCode: number } {
     return result !== null && typeof result === 'object' && 'body' in result && 'statusCode' in result;
 }
@@ -74,43 +46,60 @@ function unwrapOpenSearchResult<T>(result: unknown): T {
     return body as T;
 }
 
-function splitSearchParams(params: LogsSearchParams): Record<string, unknown> {
-    const body: Record<string, unknown> = {};
-    const rest: Record<string, unknown> = {};
-
-    for (const [key, val] of Object.entries(params)) {
-        if (SEARCH_BODY_FIELDS.has(key) && val !== undefined) {
-            body[key] = val;
-        } else {
-            rest[key] = val;
-        }
-    }
-
+function splitSearchParams(params: LogsSearchParams): Parameters<OpenSearchClient['search']>[0] {
+    const { index, size, sort, track_total_hits, search_after, query, aggs } = params;
+    const body = {
+        ...(query !== undefined ? { query } : {}),
+        ...(aggs !== undefined ? { aggs } : {}),
+        ...(sort !== undefined ? { sort } : {}),
+        ...(search_after !== undefined ? { search_after } : {}),
+        ...(track_total_hits !== undefined ? { track_total_hits } : {})
+    };
     if (Object.keys(body).length === 0) {
-        return { ...params };
+        return {
+            index,
+            ...(size !== undefined ? { size } : {})
+        };
     }
-    return { ...rest, body };
+    return {
+        index,
+        ...(size !== undefined ? { size } : {}),
+        body
+    };
 }
 
-function splitUpdateByQueryParams(params: LogsUpdateByQueryParams): Record<string, unknown> {
-    const body: Record<string, unknown> = {};
-    const rest: Record<string, unknown> = {};
-
-    for (const [key, val] of Object.entries(params)) {
-        if (UPDATE_BY_QUERY_BODY_FIELDS.has(key) && val !== undefined) {
-            body[key] = val;
-        } else {
-            rest[key] = val;
-        }
-    }
-
-    if (Object.keys(body).length === 0) {
-        return { ...params };
-    }
-    return { ...rest, body };
+function mapIndexParams<TDocument>(params: LogsIndexParams<TDocument>): Parameters<OpenSearchClient['index']>[0] {
+    const { index, document, refresh, pipeline } = params;
+    return {
+        index,
+        ...(refresh !== undefined ? { refresh } : {}),
+        ...(pipeline !== undefined ? { pipeline } : {}),
+        body: document
+    };
 }
 
-function mapPutIndexTemplateParams(params: LogsPutIndexTemplateParams): Record<string, unknown> {
+function mapCreateParams<TDocument>(params: LogsCreateParams<TDocument>): Parameters<OpenSearchClient['create']>[0] {
+    const { index, id, document, refresh, pipeline } = params;
+    return {
+        index,
+        id,
+        ...(refresh !== undefined ? { refresh } : {}),
+        ...(pipeline !== undefined ? { pipeline } : {}),
+        body: document
+    };
+}
+
+function splitUpdateByQueryParams(params: LogsUpdateByQueryParams): Parameters<OpenSearchClient['updateByQuery']>[0] {
+    const { index, wait_for_completion, refresh, query, script } = params;
+    return {
+        index,
+        ...(wait_for_completion !== undefined ? { wait_for_completion } : {}),
+        ...(refresh !== undefined ? { refresh } : {}),
+        body: { query, script }
+    };
+}
+
+function mapPutIndexTemplateParams(params: LogsPutIndexTemplateParams): Parameters<OpenSearchClient['indices']['putIndexTemplate']>[0] {
     const { name, index_patterns, template, create, cause, cluster_manager_timeout } = params;
     const patterns = Array.isArray(index_patterns) ? index_patterns : [index_patterns];
     return {
@@ -125,7 +114,7 @@ function mapPutIndexTemplateParams(params: LogsPutIndexTemplateParams): Record<s
     };
 }
 
-function mapPutPipelineParams(params: LogsPutPipelineParams): Record<string, unknown> {
+function mapPutPipelineParams(params: LogsPutPipelineParams): Parameters<OpenSearchClient['ingest']['putPipeline']>[0] {
     const { id, description, processors, timeout, cluster_manager_timeout } = params;
     return {
         id,
@@ -151,15 +140,13 @@ export class OpenSearchLogsClient implements LogsStorageClient {
     }
 
     async index<TDocument>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult> {
-        const { document, ...rest } = params;
-        const res = await this.client.index({ ...rest, body: document } as Parameters<OpenSearchClient['index']>[0]);
+        const res = await this.client.index(mapIndexParams(params));
         const body = unwrapOpenSearchResult<{ _index: string }>(res);
         return { _index: body._index };
     }
 
     async create<TDocument>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult> {
-        const { document, ...rest } = params;
-        const res = await this.client.create({ ...rest, body: document } as Parameters<OpenSearchClient['create']>[0]);
+        const res = await this.client.create(mapCreateParams(params));
         const body = unwrapOpenSearchResult<{ _index: string }>(res);
         return { _index: body._index };
     }
@@ -169,7 +156,7 @@ export class OpenSearchLogsClient implements LogsStorageClient {
     }
 
     async updateByQuery(params: LogsUpdateByQueryParams): Promise<void> {
-        await this.client.updateByQuery(splitUpdateByQueryParams(params) as unknown as Parameters<OpenSearchClient['updateByQuery']>[0]);
+        await this.client.updateByQuery(splitUpdateByQueryParams(params));
     }
 
     async get<TDocument>(params: LogsGetParams): Promise<LogsGetResult<TDocument>> {
@@ -184,9 +171,7 @@ export class OpenSearchLogsClient implements LogsStorageClient {
             return unwrapOpenSearchResult(res);
         },
         putIndexTemplate: async (params: LogsPutIndexTemplateParams): Promise<void> => {
-            await this.client.indices.putIndexTemplate(
-                mapPutIndexTemplateParams(params) as unknown as Parameters<OpenSearchClient['indices']['putIndexTemplate']>[0]
-            );
+            await this.client.indices.putIndexTemplate(mapPutIndexTemplateParams(params));
         },
         exists: async (params: { index: string }): Promise<boolean> => {
             const res = await this.client.indices.exists(params);
@@ -207,7 +192,7 @@ export class OpenSearchLogsClient implements LogsStorageClient {
 
     readonly ingest = {
         putPipeline: async (params: LogsPutPipelineParams): Promise<void> => {
-            await this.client.ingest.putPipeline(mapPutPipelineParams(params) as unknown as Parameters<OpenSearchClient['ingest']['putPipeline']>[0]);
+            await this.client.ingest.putPipeline(mapPutPipelineParams(params));
         }
     };
 
