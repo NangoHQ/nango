@@ -25,8 +25,8 @@
     --color-fg-error: var(--text-danger);
 
     /* Navigation */
-    --color-nav-bg-hover: var(--interactive-ghost-hover); /* gap: v2 used solid fill, DS uses transparent overlay */
-    --color-nav-bg-press: var(--interactive-ghost-active);
+    --color-nav-bg-hover: var(--state-hover);
+    --color-nav-bg-press: var(--state-selected);
 
     /* Text */
     --color-text-primary: var(--text-strong);
@@ -65,27 +65,27 @@
     --shadow-focus: var(--focus-outline-default);
 
     /* Feedback */
-    --color-feedback-success-fg: var(--status-success-icon);
+    --color-feedback-success-fg: var(--status-success-text);
     --color-feedback-success-bg: var(--status-success-bg);
     --color-feedback-success-alt: var(--status-success-bg-hover);
-    --color-feedback-warning-fg: var(--status-warning-icon);
+    --color-feedback-warning-fg: var(--status-warning-text);
     --color-feedback-warning-bg: var(--status-warning-bg);
     --color-feedback-warning-alt: var(--status-warning-bg-hover);
-    --color-feedback-info-fg: var(--status-info-icon);
+    --color-feedback-info-fg: var(--status-info-text);
     --color-feedback-info-bg: var(--status-info-bg);
     --color-feedback-info-alt: var(--status-info-bg-hover);
-    --color-feedback-error-fg: var(--status-danger-icon);
+    --color-feedback-error-fg: var(--status-danger-text);
     --color-feedback-error-bg: var(--status-danger-bg);
     --color-feedback-error-alt: var(--status-danger-bg-hover);
     --color-feedback-error-border: var(--border-danger);
-    --color-feedback-neutral-fg: var(--status-neutral-icon);
+    --color-feedback-neutral-fg: var(--status-neutral-text);
     --color-feedback-neutral-bg: var(--status-neutral-bg);
     --color-feedback-neutral-alt: var(--status-neutral-bg);
 
     /* Dropdown */
     --color-dropdown-bg-default: var(--surface-overlay);
     --color-dropdown-bg-hover: var(--state-hover);
-    --color-dropdown-bg-press: var(--surface-raised);
+    --color-dropdown-bg-press: var(--state-pressed);
 
     /* Button — Primary (DS: Primary) */
     --color-btn-primary-bg: var(--interactive-primary);
@@ -126,7 +126,7 @@
     --color-link-disabled: var(--text-disabled);
 
     /* Breadcrumb */
-    --color-breadcrumb-default: var(--text-secondary);
+    --color-breadcrumb-default: var(--text-muted);
     --color-breadcrumb-hover: var(--text-default);
     --color-breadcrumb-press: var(--text-default);
 }
