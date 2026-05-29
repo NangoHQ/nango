@@ -1,7 +1,7 @@
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
@@ -23,7 +23,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2_GENERIC'>,
+                authType: template.auth_mode,
                 ...field
             } as PatchIntegration['Body']);
             toast({ title: 'Successfully updated', variant: 'success' });

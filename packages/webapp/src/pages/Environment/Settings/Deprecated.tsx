@@ -9,12 +9,12 @@ import Spinner from '../../../components/ui/Spinner';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { ButtonLink } from '@/components-v2/ui/button';
-import { Label } from '@/components-v2/ui/label';
-import { Switch } from '@/components-v2/ui/switch';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
+import { ButtonLink } from '@/components-v2/ui/Button';
+import { Label } from '@/components-v2/ui/Label';
+import { Switch } from '@/components-v2/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const DeprecatedSettings: React.FC = () => {
