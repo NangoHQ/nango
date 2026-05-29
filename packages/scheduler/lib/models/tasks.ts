@@ -1,8 +1,8 @@
 import { uuidv4, uuidv7 } from 'uuidv7';
 
-import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
+import { Err, Ok, stringToHash, stringifyError } from '@nangohq/utils';
 
-import { envs } from '../env.js';
+import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
 import { SCHEDULES_TABLE } from './schedules.js';
@@ -135,7 +135,7 @@ export interface DiscardedTask {
 }
 
 export async function create(db: knex.Knex, taskProps: TaskProps[], opts: CreateOpts = {}): Promise<Result<{ created: Task[]; discarded: DiscardedTask[] }>> {
-    const groupTaskCap = opts.groupTaskCap ?? envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX;
+    const groupTaskCap = opts.groupTaskCap ?? defaultSchedulerConfig.limits.groupTaskCap;
     const onConflict = opts.onConflict ?? 'throw';
     if (taskProps.length === 0) {
         return Ok({ created: [], discarded: [] });
@@ -176,15 +176,6 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                 discarded.push({ props, reason: 'capped' });
             }
         }
-        const cappedCountPerPrimitive = new Map<string, number>();
-        for (const { props } of discarded) {
-            const primitive = props.groupKey.split(':')[0] || 'unknown';
-            cappedCountPerPrimitive.set(primitive, (cappedCountPerPrimitive.get(primitive) ?? 0) + 1);
-        }
-        for (const [primitive, droppedCount] of cappedCountPerPrimitive.entries()) {
-            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, droppedCount, { primitive, reason: 'task_cap' });
-        }
-
         const candidates = Array.from(candidatesPerGroup.values()).flat();
         const created: Task[] = [];
         const insertedNameCounts = new Map<string, number>();
@@ -454,7 +445,8 @@ export async function dequeue(db: knex.Knex, { groupKeyPattern, limit }: { group
     }
 }
 
-export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
+export async function expiresIfTimeout(db: knex.Knex, opts: { batchSize?: number } = {}): Promise<Result<Task[]>> {
+    const batchSize = opts.batchSize ?? defaultSchedulerConfig.limits.expiringBatchSize;
     try {
         const { rows: tasks } = await db.raw<{ rows: DBTask[] }>(
             `
@@ -480,7 +472,7 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
                        )
                     )
                 FOR UPDATE SKIP LOCKED
-                LIMIT ${envs.ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE}
+                LIMIT :batchSize
             )
             UPDATE ${TASKS_TABLE} t
             SET state = 'EXPIRED',
@@ -490,7 +482,8 @@ export async function expiresIfTimeout(db: knex.Knex): Promise<Result<Task[]>> {
             FROM eligible_tasks e
             WHERE t.id = e.id
             RETURNING t.*;
-        `
+        `,
+            { batchSize }
         );
         if (!tasks?.[0]) {
             return Ok([]);

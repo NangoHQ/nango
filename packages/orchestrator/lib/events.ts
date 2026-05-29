@@ -1,10 +1,11 @@
 import EventEmitter from 'node:events';
 
-import { GROUP_PREFIX_SEPARATOR, stringifyTask } from '@nangohq/scheduler';
+import { stringifyTask } from '@nangohq/scheduler';
 import { metrics, retryWithBackoff } from '@nangohq/utils';
 
 import { validateTask } from './clients/validate.js';
 import { envs } from './env.js';
+import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
 
 import type { Task } from '@nangohq/scheduler';
