@@ -1,8 +1,10 @@
-import { envs } from '../../env.js';
+import { envs } from '../env.js';
+import { PostgresStore } from '../stores/postgres/postgres.js';
 
 import type { Knex } from 'knex';
 
 export const schema = envs.RECORDS_DATABASE_SCHEMA;
+
 const databaseUrl =
     envs.RECORDS_DATABASE_URL ||
     envs.NANGO_DATABASE_URL ||
@@ -10,7 +12,7 @@ const databaseUrl =
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
 
-const config: Knex.Config = {
+export const config: Knex.Config & { migrations: Knex.MigratorConfig } = {
     client: 'postgres',
     connection: {
         connectionString: databaseUrl,
@@ -29,7 +31,6 @@ const config: Knex.Config = {
     }
 };
 
-// This config is optional because it can create issues if we have 2 pools connected to the same URL
 const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
     ? {
           ...config,
@@ -41,4 +42,4 @@ const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
       }
     : undefined;
 
-export { config, configRead };
+export const defaultStore = new PostgresStore(config, configRead);
