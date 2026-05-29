@@ -6,8 +6,6 @@ import App from './app/App';
 import { Providers } from './app/providers';
 import { globalEnv } from './utils/env';
 
-import './index.css';
-
 if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
         api_host: globalEnv.publicPosthogHost,

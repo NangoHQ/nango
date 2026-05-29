@@ -1,3 +1,5 @@
+import './index.css';
+
 import { loadRuntimeEnv } from './utils/loadRuntimeEnv';
 
 async function bootstrap() {
