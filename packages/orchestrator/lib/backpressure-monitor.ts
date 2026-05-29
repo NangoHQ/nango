@@ -40,7 +40,11 @@ export class BackpressureMonitor {
         try {
             while (!this.ac.signal.aborted) {
                 await this.run();
-                await setTimeout(this.tickIntervalMs);
+                await setTimeout(this.tickIntervalMs, undefined, { signal: this.ac.signal }).catch((err: unknown) => {
+                    if ((err as { name?: string }).name !== 'AbortError') {
+                        throw err;
+                    }
+                });
             }
         } catch (err) {
             this.onError(new Error('BackpressureMonitor error', { cause: err }));
