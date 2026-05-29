@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button/Button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/UI/Button',
+    title: 'Components v1/Button',
     parameters: { layout: 'padded' }
 };
 export default meta;
@@ -17,18 +17,10 @@ export const Default: Story = {
             {VARIANTS.map((variant) => (
                 <div key={variant} className="flex items-center gap-4 flex-wrap">
                     <span className="story-section-heading w-28 shrink-0">{variant}</span>
-                    <Button variant={variant} size="sm">
-                        Default
-                    </Button>
-                    <Button variant={variant} size="md">
-                        Medium
-                    </Button>
-                    <Button variant={variant} size="sm" disabled>
-                        Disabled
-                    </Button>
-                    <Button variant={variant} size="sm" isLoading>
-                        Loading
-                    </Button>
+                    <Button variant={variant} size="sm">Default</Button>
+                    <Button variant={variant} size="md">Medium</Button>
+                    <Button variant={variant} size="sm" disabled>Disabled</Button>
+                    <Button variant={variant} size="sm" isLoading>Loading</Button>
                 </div>
             ))}
         </div>

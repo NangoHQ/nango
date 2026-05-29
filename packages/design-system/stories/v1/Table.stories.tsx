@@ -1,4 +1,4 @@
-import { Body, Cell, Head, Header, Row, Table } from '@/components/ui/Table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -9,7 +9,7 @@ const rows = [
 ];
 
 const meta: Meta = {
-    title: 'Components v1/UI/Table',
+    title: 'Components v1/Table',
     parameters: { layout: 'padded' }
 };
 export default meta;
@@ -19,24 +19,24 @@ export const Default: Story = {
     render: () => (
         <div className="bg-bg-black p-6 rounded-md">
             <Table>
-                <Header>
-                    <Row>
-                        <Head>Connection ID</Head>
-                        <Head>Integration</Head>
-                        <Head>Status</Head>
-                        <Head>Last sync</Head>
-                    </Row>
-                </Header>
-                <Body>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Connection ID</TableHead>
+                        <TableHead>Integration</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Last sync</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
                     {rows.map((row) => (
-                        <Row key={row.id}>
-                            <Cell>{row.id}</Cell>
-                            <Cell>{row.integration}</Cell>
-                            <Cell>{row.status}</Cell>
-                            <Cell>{row.last}</Cell>
-                        </Row>
+                        <TableRow key={row.id}>
+                            <TableCell>{row.id}</TableCell>
+                            <TableCell>{row.integration}</TableCell>
+                            <TableCell>{row.status}</TableCell>
+                            <TableCell>{row.last}</TableCell>
+                        </TableRow>
                     ))}
-                </Body>
+                </TableBody>
             </Table>
         </div>
     )

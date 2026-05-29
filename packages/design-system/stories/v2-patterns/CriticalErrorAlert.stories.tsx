@@ -7,13 +7,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 const meta: Meta = {
     title: 'Components v2/Patterns/CriticalErrorAlert',
     parameters: { layout: 'padded' },
-    decorators: [
-        (Story) => (
-            <MemoryRouter>
-                <Story />
-            </MemoryRouter>
-        )
-    ]
+    decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>]
 };
 export default meta;
 type Story = StoryObj<typeof meta>;

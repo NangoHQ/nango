@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { ConfirmModal } from '@/components/patterns/ConfirmModal';
 import { Button } from '@/components/ui/button/Button';
+import { ConfirmModal } from '@/components/patterns/ConfirmModal';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -22,11 +22,7 @@ export const Default: Story = {
                     description="This will permanently remove the connection and all synced data."
                     confirmButtonText="Delete"
                     loading={loading}
-                    trigger={
-                        <Button variant="danger" size="sm">
-                            Delete connection
-                        </Button>
-                    }
+                    trigger={<Button variant="danger" size="sm">Delete connection</Button>}
                     onConfirm={() => setLoading(true)}
                 />
             </div>

@@ -3,7 +3,7 @@ import { SimpleTooltip } from '@/components/ui/SimpleTooltip';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/UI/SimpleTooltip',
+    title: 'Components v1/SimpleTooltip',
     parameters: { layout: 'padded' }
 };
 export default meta;

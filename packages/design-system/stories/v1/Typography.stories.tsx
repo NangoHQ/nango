@@ -1,9 +1,9 @@
-import Typography from '@/components/ui/typography/Typography';
+import { Typography } from '@/components/ui/typography/Typography';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/UI/Typography',
+    title: 'Components v1/Typography',
     parameters: { layout: 'padded' }
 };
 export default meta;

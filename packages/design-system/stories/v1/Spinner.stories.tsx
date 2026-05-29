@@ -3,7 +3,7 @@ import Spinner from '@/components/ui/Spinner';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/UI/Spinner',
+    title: 'Components v1/Spinner',
     parameters: { layout: 'padded' }
 };
 export default meta;
