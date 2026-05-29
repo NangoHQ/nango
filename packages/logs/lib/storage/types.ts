@@ -13,8 +13,8 @@ export interface LogsStorageClientConfig {
 }
 
 export interface LogsStoragePolicies {
-    messagesPolicy: unknown;
-    operationsPolicy: unknown;
+    messagesPolicy: estypes.IlmPutLifecycleRequest;
+    operationsPolicy: estypes.IlmPutLifecycleRequest;
 }
 
 export interface LogsSearchHit<TDocument> {

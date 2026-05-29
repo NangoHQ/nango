@@ -3,7 +3,7 @@ import { propsMessages, propsOperations } from '../schema/mappings.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 
-export const policyOperations = {
+export const policyOperations: estypes.IlmPutLifecycleRequest = {
     name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention_operations`,
     policy: {
         phases: {
@@ -13,7 +13,7 @@ export const policyOperations = {
     }
 };
 
-export const policyMessages = {
+export const policyMessages: estypes.IlmPutLifecycleRequest = {
     name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention`,
     policy: {
         phases: {

@@ -97,8 +97,8 @@ export class ElasticsearchLogsClient implements LogsStorageClient {
     }
 
     async setupRetentionPolicies(policies: LogsStoragePolicies): Promise<void> {
-        await this.client.ilm.putLifecycle(policies.messagesPolicy as Parameters<ElasticsearchClient['ilm']['putLifecycle']>[0]);
-        await this.client.ilm.putLifecycle(policies.operationsPolicy as Parameters<ElasticsearchClient['ilm']['putLifecycle']>[0]);
+        await this.client.ilm.putLifecycle(policies.messagesPolicy);
+        await this.client.ilm.putLifecycle(policies.operationsPolicy);
     }
 
     async close(): Promise<void> {
