@@ -13,13 +13,13 @@ import type { GetBillingUsage, UsageMetric } from '@nangohq/types';
 
 const breakdownSchema = z
     .object({
-        proxy: z.string().optional(),
-        function_executions: z.string().optional(),
-        function_logs: z.string().optional(),
-        function_compute_gbms: z.string().optional(),
-        webhook_forwards: z.string().optional(),
-        records: z.string().optional(),
-        connections: z.string().optional()
+        proxy: z.string().min(1).optional(),
+        function_executions: z.string().min(1).optional(),
+        function_logs: z.string().min(1).optional(),
+        function_compute_gbms: z.string().min(1).optional(),
+        webhook_forwards: z.string().min(1).optional(),
+        records: z.string().min(1).optional(),
+        connections: z.string().min(1).optional()
     })
     .strict()
     .optional()

@@ -227,6 +227,17 @@ describe(`GET ${route}`, () => {
             expect(res.res.status).toBe(400);
             expect(res.json.error.code).toBe('invalid_query_params');
         });
+
+        it('rejects an empty breakdown value (avoid silent "no breakdown" downstream)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: { env: 'dev', breakdown: { records: '' } } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
     });
 
     describe('ClickHouse happy path (source=clickhouse)', () => {

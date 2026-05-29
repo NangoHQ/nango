@@ -107,16 +107,19 @@ function readBillingUsageSourceOverride(): 'clickhouse' | 'orb' | null {
 }
 
 export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
+    // Read source override at hook-call time so it's part of the query key —
+    // otherwise React Query keeps showing data from the previous backend until
+    // the natural refetch when the developer flips the localStorage value.
+    const source = readBillingUsageSourceOverride();
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe],
+        queryKey: [...GetBillingUsageQueryKey, timeframe, source],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
             }
-            const source = readBillingUsageSourceOverride();
             if (source) {
                 params.append('source', source);
             }

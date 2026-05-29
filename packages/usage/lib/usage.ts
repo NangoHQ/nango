@@ -258,7 +258,17 @@ export class UsageTracker implements IUsageTracker {
             });
         }
 
-        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
+        // Orb path: strip CH-only fields so they don't pollute the billing
+        // client's Redis cache key. Orb itself ignores them, but the cache key
+        // hashes the full opts and would miss on otherwise-identical queries.
+        const orbOpts: GetBillingUsageOpts | undefined = opts
+            ? {
+                  ...(opts.timeframe ? { timeframe: opts.timeframe } : {}),
+                  ...(opts.granularity ? { granularity: opts.granularity } : {}),
+                  ...(opts.billingMetric ? { billingMetric: opts.billingMetric } : {})
+              }
+            : undefined;
+        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, orbOpts);
         if (billingUsageMetrics.isErr()) {
             return billingUsageMetrics;
         }

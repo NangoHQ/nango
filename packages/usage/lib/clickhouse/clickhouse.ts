@@ -204,6 +204,7 @@ export class Clickhouse {
                 ...tags,
                 success: 'false'
             });
+            logger.error(`Clickhouse getDailyCounter failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
             return Err(new Error('Failed to execute Clickhouse daily counter query', { cause: err }));
         }
     }
@@ -373,6 +374,7 @@ export class Clickhouse {
                 ...tags,
                 success: 'false'
             });
+            logger.error(`Clickhouse getDailySumAndBatches failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
             return Err(new Error('Failed to execute Clickhouse daily sum+batches query', { cause: err }));
         }
     }
