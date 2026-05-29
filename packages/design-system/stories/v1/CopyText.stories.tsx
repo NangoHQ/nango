@@ -1,11 +1,11 @@
 import { CopyText } from '@/components/ui/CopyText';
 import { TooltipProvider } from '@/components-v2/ui/Tooltip';
-
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
     title: 'Components v1/UI/CopyText',
-    parameters: { layout: 'padded' }
+    parameters: { layout: 'padded' },
+    decorators: [(Story) => <TooltipProvider><Story /></TooltipProvider>]
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
