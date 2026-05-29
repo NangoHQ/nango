@@ -2583,7 +2583,6 @@ bigchange:
         - productivity
     auth_mode: OAUTH2_CC
     token_url: https://api.bigchange.com/auth/tokens
-    token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
     proxy:
