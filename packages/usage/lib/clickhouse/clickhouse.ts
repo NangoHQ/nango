@@ -1,7 +1,7 @@
 import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, quantityForMetric, tableForMetric } from './clickhouse.query.js';
+import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimension, quantityForMetric, tableForMetric } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -111,6 +111,13 @@ export class Clickhouse {
         }
 
         const { accountId, metric, dimension, timeframe } = query;
+        // Defense-in-depth: TS types + controller zod schema already constrain
+        // `dimension` to BREAKDOWN_DIMENSIONS, but TS is erased at runtime and
+        // one `as never` cast exists in usage.ts. Reject anything else here
+        // before it reaches the SQL interpolation.
+        if (!isAllowedDimension(dimension)) {
+            return Err(new Error(`Invalid dimension: ${JSON.stringify(dimension)}`));
+        }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
         const startDate = timeframe.start.toISOString().split('T')[0];
@@ -250,6 +257,9 @@ export class Clickhouse {
             return Err(new Error('Clickhouse client not initialized'));
         }
         const { accountId, metric, dimension, timeframe } = query;
+        if (!isAllowedDimension(dimension)) {
+            return Err(new Error(`Invalid dimension: ${JSON.stringify(dimension)}`));
+        }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
         const startDate = timeframe.start.toISOString().split('T')[0];
