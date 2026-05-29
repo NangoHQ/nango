@@ -28,8 +28,8 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
             metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
             metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
         } else {
-            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
-            metrics.increment(metrics.Types.UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
+            metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
+            metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
         }
     }
 
