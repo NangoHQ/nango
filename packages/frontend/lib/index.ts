@@ -35,6 +35,7 @@ export type NangoOptions = {
     width?: number;
     height?: number;
     debug?: boolean;
+    allowedCallbackOrigins?: string[];
 } & (
     | {
           connectSessionToken?: string;
@@ -64,6 +65,7 @@ export default class Nango {
     private width: number = 500;
     private height: number = 600;
     private tm: null | NodeJS.Timer = null;
+    private allowedCallbackOrigins: string[] = [];
 
     // Do not rename, part of the public api
     public win: AuthorizationModal | null = null;
@@ -90,6 +92,22 @@ export default class Nango {
 
         this.publicKey = config.publicKey;
         this.connectSessionToken = config.connectSessionToken;
+
+        this.allowedCallbackOrigins = [];
+        try {
+            this.allowedCallbackOrigins.push(new URL(this.hostBaseUrl).origin);
+        } catch {
+            // Ignore invalid hostBaseUrl
+        }
+        if (config.allowedCallbackOrigins) {
+            for (const origin of config.allowedCallbackOrigins) {
+                try {
+                    this.allowedCallbackOrigins.push(new URL(origin).origin);
+                } catch {
+                    // Ignore invalid urls
+                }
+            }
+        }
 
         try {
             const baseUrl = new URL(this.hostBaseUrl);
@@ -206,13 +224,7 @@ export default class Nango {
                     return;
                 }
 
-                let trustedOrigin: string;
-                try {
-                    trustedOrigin = new URL(this.hostBaseUrl).origin;
-                } catch {
-                    return;
-                }
-                if (event.origin !== trustedOrigin) {
+                if (!this.allowedCallbackOrigins.includes(event.origin)) {
                     return;
                 }
 
