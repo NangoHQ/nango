@@ -12,7 +12,7 @@ type Story = StoryObj<typeof meta>;
 export const ReadOnly: Story = {
     name: 'Read-only',
     render: () => (
-        <div className="w-96 pt-4">
+        <div className="w-96">
             <ScopesInput scopesString="repo,read:user,read:org" readOnly />
         </div>
     )
@@ -20,7 +20,7 @@ export const ReadOnly: Story = {
 
 export const Editable: Story = {
     render: () => (
-        <div className="w-96 pt-4">
+        <div className="w-96">
             <ScopesInput
                 scopesString="repo,read:user"
                 availableScopes={['repo', 'read:user', 'read:org', 'write:packages', 'delete:packages']}

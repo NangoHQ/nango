@@ -4,7 +4,7 @@ import { Button } from '@/components-v2/ui/Button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/UI/DropdownMenu',
+    title: 'Components v1/DropdownMenu',
     parameters: { layout: 'padded' }
 };
 export default meta;
