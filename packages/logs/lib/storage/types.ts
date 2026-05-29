@@ -40,14 +40,17 @@ export interface LogsSearchParams {
     aggs?: Record<string, estypes.AggregationsAggregationContainer>;
 }
 
-export interface LogsIndexParams<TDocument> {
+/** JSON document body for Elasticsearch/OpenSearch index and create APIs. */
+export type LogsDocumentBody = Record<string, any>;
+
+export interface LogsIndexParams<TDocument extends LogsDocumentBody = LogsDocumentBody> {
     index: string;
     document: TDocument;
     refresh?: boolean;
     pipeline?: string;
 }
 
-export interface LogsCreateParams<TDocument> {
+export interface LogsCreateParams<TDocument extends LogsDocumentBody = LogsDocumentBody> {
     index: string;
     id: string;
     document: TDocument;
@@ -103,8 +106,8 @@ export interface LogsPutPipelineParams {
     id: string;
     description?: string;
     processors?: estypes.IngestProcessorContainer[];
-    timeout?: estypes.Duration;
-    cluster_manager_timeout?: estypes.Duration;
+    timeout?: string;
+    cluster_manager_timeout?: string;
 }
 
 export interface LogsCatIndexRow {

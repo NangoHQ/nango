@@ -1,6 +1,7 @@
 import type {
     LogsCatIndexRow,
     LogsCreateParams,
+    LogsDocumentBody,
     LogsGetParams,
     LogsGetResult,
     LogsIndexParams,
@@ -34,8 +35,8 @@ export interface LogsCatClient {
 
 export interface LogsStorageClient {
     search<TDocument = unknown, TAggregations = Record<string, unknown>>(params: LogsSearchParams): Promise<LogsSearchResponse<TDocument, TAggregations>>;
-    index<TDocument>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult>;
-    create<TDocument>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult>;
+    index<TDocument extends LogsDocumentBody>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult>;
+    create<TDocument extends LogsDocumentBody>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult>;
     update(params: LogsUpdateParams): Promise<void>;
     updateByQuery(params: LogsUpdateByQueryParams): Promise<void>;
     get<TDocument>(params: LogsGetParams): Promise<LogsGetResult<TDocument>>;

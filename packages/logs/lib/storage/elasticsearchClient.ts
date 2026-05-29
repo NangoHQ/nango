@@ -4,6 +4,7 @@ import type { LogsStorageClient } from './logsStorageClient.js';
 import type {
     LogsCatIndexRow,
     LogsCreateParams,
+    LogsDocumentBody,
     LogsGetParams,
     LogsGetResult,
     LogsIndexParams,
@@ -31,12 +32,12 @@ export class ElasticsearchLogsClient implements LogsStorageClient {
         return (await this.client.search(params)) as LogsSearchResponse<TDocument, TAggregations>;
     }
 
-    async index<TDocument>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult> {
+    async index<TDocument extends LogsDocumentBody>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult> {
         const res = await this.client.index(params);
         return { _index: res._index };
     }
 
-    async create<TDocument>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult> {
+    async create<TDocument extends LogsDocumentBody>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult> {
         const res = await this.client.create(params);
         return { _index: res._index };
     }

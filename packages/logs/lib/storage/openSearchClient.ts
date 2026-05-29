@@ -6,6 +6,7 @@ import type { LogsStorageClient } from './logsStorageClient.js';
 import type {
     LogsCatIndexRow,
     LogsCreateParams,
+    LogsDocumentBody,
     LogsGetParams,
     LogsGetResult,
     LogsIndexParams,
@@ -21,6 +22,7 @@ import type {
     LogsUpdateByQueryParams,
     LogsUpdateParams
 } from './types.js';
+import type { RequestParams } from '@opensearch-project/opensearch';
 
 function isTransportEnvelope(result: unknown): result is { body: unknown; statusCode: number } {
     return result !== null && typeof result === 'object' && 'body' in result && 'statusCode' in result;
@@ -68,7 +70,7 @@ function splitSearchParams(params: LogsSearchParams): Parameters<OpenSearchClien
     };
 }
 
-function mapIndexParams<TDocument>(params: LogsIndexParams<TDocument>): Parameters<OpenSearchClient['index']>[0] {
+function mapIndexParams<TBody extends LogsDocumentBody>(params: LogsIndexParams<TBody>): RequestParams.Index<TBody> {
     const { index, document, refresh, pipeline } = params;
     return {
         index,
@@ -78,7 +80,7 @@ function mapIndexParams<TDocument>(params: LogsIndexParams<TDocument>): Paramete
     };
 }
 
-function mapCreateParams<TDocument>(params: LogsCreateParams<TDocument>): Parameters<OpenSearchClient['create']>[0] {
+function mapCreateParams<TBody extends LogsDocumentBody>(params: LogsCreateParams<TBody>): RequestParams.Create<TBody> {
     const { index, id, document, refresh, pipeline } = params;
     return {
         index,
@@ -139,13 +141,13 @@ export class OpenSearchLogsClient implements LogsStorageClient {
         return unwrapOpenSearchResult(res);
     }
 
-    async index<TDocument>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult> {
+    async index<TDocument extends LogsDocumentBody>(params: LogsIndexParams<TDocument>): Promise<LogsIndexResult> {
         const res = await this.client.index(mapIndexParams(params));
         const body = unwrapOpenSearchResult<{ _index: string }>(res);
         return { _index: body._index };
     }
 
-    async create<TDocument>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult> {
+    async create<TDocument extends LogsDocumentBody>(params: LogsCreateParams<TDocument>): Promise<LogsIndexResult> {
         const res = await this.client.create(mapCreateParams(params));
         const body = unwrapOpenSearchResult<{ _index: string }>(res);
         return { _index: body._index };

@@ -1,6 +1,7 @@
 import { envs } from '../env.js';
 import { propsMessages, propsOperations } from '../schema/mappings.js';
 
+import type { LogsPutPipelineParams } from '../storage/types.js';
 import type { estypes } from '@elastic/elasticsearch';
 
 export const policyOperations: estypes.IlmPutLifecycleRequest = {
@@ -79,7 +80,7 @@ function buildMessagesSettings(): Record<string, unknown> {
     return base;
 }
 
-export function getDailyIndexPipeline(name: string): estypes.IngestPutPipelineRequest {
+export function getDailyIndexPipeline(name: string): LogsPutPipelineParams {
     return {
         id: `daily.${name}`,
         description: 'Daily index',
