@@ -446,6 +446,27 @@ describe('uncontrolledFetch transfer metering', () => {
         expect(transfers[1]!.bytesReceived).toBeGreaterThan(0);
     });
 
+    it('does not count redirect response Content-Length in bytesReceived', async () => {
+        const largeContentLength = 1_000_000; // 1 MB body that is never consumed
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response(null, {
+                    status: 302,
+                    headers: { Location: 'https://example.com/next', 'content-length': String(largeContentLength) }
+                })
+            )
+            .mockResolvedValueOnce(new Response('ok', { status: 200 }));
+        vi.stubGlobal('fetch', fetchMock as any);
+
+        const { action, transfers } = await makeActionInstance();
+        await action.uncontrolledFetch({ url: new URL('https://example.com/start') });
+
+        expect(transfers.length).toBe(2);
+        // Redirect hop must only count header bytes, not the body Content-Length.
+        expect(transfers[0]!.bytesReceived).toBeLessThan(largeContentLength);
+    });
+
     it('records streamed response body bytes when Content-Length is absent', async () => {
         const responseBody = 'streaming data here';
         const fetchMock = vi.fn().mockResolvedValue(new Response(responseBody)); // no Content-Length

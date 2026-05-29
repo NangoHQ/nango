@@ -76,7 +76,7 @@ export async function executeUncontrolledFetch(
             });
         }
 
-        recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + (parseContentLength(response.headers) ?? 0) });
+        recordTransfer({ bytesSent, bytesReceived });
 
         const location = response.headers.get('Location');
 
