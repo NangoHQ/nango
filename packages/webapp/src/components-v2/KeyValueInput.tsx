@@ -19,7 +19,6 @@ interface KeyValueInputProps {
     placeholderValue?: string;
     disabled?: boolean;
     isSecret?: boolean;
-    alwaysShowEmptyRow?: boolean;
 }
 
 let nextId = 0;
@@ -31,16 +30,13 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
     placeholderKey = 'Key',
     placeholderValue = 'Value',
     disabled = false,
-    isSecret = false,
-    alwaysShowEmptyRow = false
+    isSecret = false
 }) => {
+    const showEmptyRow = !disabled;
+
     const buildPairsFromValues = (values: Record<string, string>): KeyValuePair[] => {
-        const entries = Object.entries(values);
-        if (entries.length > 0) {
-            const mapped = entries.map(([key, value]) => ({ id: generateId(), key, value }));
-            return alwaysShowEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
-        }
-        return [{ id: generateId(), key: '', value: '' }];
+        const mapped = Object.entries(values).map(([key, value]) => ({ id: generateId(), key, value }));
+        return showEmptyRow ? [...mapped, { id: generateId(), key: '', value: '' }] : mapped;
     };
 
     const [pairs, setPairs] = useState<KeyValuePair[]>(() => buildPairsFromValues(initialValues));
@@ -54,7 +50,22 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
             lastReportedRef.current = initialValuesKey;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialValuesKey, alwaysShowEmptyRow]);
+    }, [initialValuesKey, showEmptyRow]);
+
+    useEffect(() => {
+        setPairs((prev) => {
+            const last = prev[prev.length - 1];
+            const hasTrailingEmpty = last && last.key === '' && last.value === '';
+
+            if (showEmptyRow && !hasTrailingEmpty) {
+                return [...prev, { id: generateId(), key: '', value: '' }];
+            }
+            if (!showEmptyRow && hasTrailingEmpty) {
+                return prev.slice(0, -1);
+            }
+            return prev;
+        });
+    }, [showEmptyRow]);
 
     useEffect(() => {
         const newValues = pairs.reduce<Record<string, string>>((acc, curr) => {

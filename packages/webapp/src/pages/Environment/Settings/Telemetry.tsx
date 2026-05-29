@@ -122,7 +122,6 @@ export const Telemetry: React.FC = () => {
                                 placeholderValue="value"
                                 disabled={!editHeaders || loading}
                                 isSecret={true}
-                                alwaysShowEmptyRow={editHeaders}
                             />
                             {errors.length > 0 && (
                                 <div className="flex flex-col gap-1">
