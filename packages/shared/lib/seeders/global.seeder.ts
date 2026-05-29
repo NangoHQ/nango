@@ -19,7 +19,7 @@ export async function seedAccountEnvAndUser({ plan: planOverride }: { plan?: Par
 }> {
     const account = await createAccount();
     const env = await createEnvironmentSeed(account.id, 'dev');
-    const secret = (await secretService.getInternalSecretForEnv(db.knex, env.id)).unwrap();
+    const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
     const apiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, env.id)).unwrap();
     const apiKey = apiKeys[0]!;
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free', ...planOverride })).unwrap();

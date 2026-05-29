@@ -202,11 +202,11 @@ export class Scheduler {
                 };
             }
 
-            const created = await tasks.create(trx, [taskProps]);
-            if (created.isErr()) {
-                return Err(created.error);
+            const createResult = await tasks.create(trx, [taskProps]);
+            if (createResult.isErr()) {
+                return Err(createResult.error);
             }
-            const task = created.value.tasks[0];
+            const task = createResult.value.created[0];
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
@@ -218,6 +218,38 @@ export class Scheduler {
             }
             this.onCallbacks[task.state](task);
             return Ok(task);
+        });
+    }
+
+    /**
+     * Schedule a batch of tasks immediately in a single transaction.
+     *
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
+     */
+    public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+        if (propsList.length === 0) {
+            return Ok({ created: [], discarded: [] });
+        }
+        return this.db.transaction(async (trx) => {
+            const now = new Date();
+            const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
+                ...props,
+                startsAfter: now,
+                scheduleId: null
+            }));
+
+            const createResult = await tasks.create(trx, taskPropsList, { onConflict: 'skip' });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
+            }
+
+            for (const task of createResult.value.created) {
+                this.onCallbacks[task.state](task);
+            }
+
+            return Ok(createResult.value);
         });
     }
 

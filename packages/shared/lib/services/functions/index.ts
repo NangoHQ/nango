@@ -4,3 +4,4 @@
 // so callers stop reaching into the underlying tables directly.
 
 export { getFunction, listFunctions } from './service.js';
+export { findActiveDeployedMeta } from './models/functions.js';

@@ -2,6 +2,62 @@
 
 Shared design system for the Nango app — design tokens, components, and Storybook.
 
+## Storybook
+
+Storybook is the living style guide for the design system. Run it locally to browse tokens and components in both light and dark themes.
+
+```bash
+# From the repo root
+npm run storybook
+
+# Or directly from this package
+cd packages/design-system
+npm run storybook
+```
+
+Opens at `http://localhost:6006`. Use the **Themes** toolbar button (top right) to toggle between light and dark.
+
+> **Note:** The `storybook` script uses `NODE_PATH=./node_modules` to work around a Vite 7 CJS module resolution issue. This is safe to keep and should not be removed.
+
+### Stories
+
+| Story | Path |
+|---|---|
+| Typography — Type Scale | `Design System / Typography` |
+| Typography — Font Families | `Design System / Typography` |
+| Color Palette — Semantic Tokens | `Design System / Color Palette` |
+| Color Palette — Primitive Ramps | `Design System / Color Palette` |
+
+### Storybook MCP
+
+Storybook ships with an [MCP server](https://storybook.js.org/docs/ai/mcp/overview) (`@storybook/addon-mcp`) that exposes story documentation to AI assistants. This lets you ask Claude to build or modify components with full knowledge of existing stories, props, and usage examples — no copy-pasting docs required.
+
+The server is **disabled by default** to avoid a connection error for engineers who don't run Storybook. To opt in, run once from the repo root:
+
+```bash
+claude mcp add --transport http storybook http://localhost:6006/mcp
+```
+
+This stores the config in `.claude/settings.local.json` (gitignored). Then start Storybook (`npm run storybook`) and reload Claude Code — the tools below will be available automatically.
+
+**Available MCP tools:**
+
+| Tool | What it does |
+|---|---|
+| `list-all-documentation` | Lists all story IDs and component names |
+| `get-documentation` | Returns props, variants, and usage for a component |
+| `preview-stories` | Renders a story and returns a preview URL |
+
+### Accessibility
+
+`@storybook/addon-a11y` runs an automated [axe-core](https://github.com/dequelabs/axe-core) audit on every story. Open the **Accessibility** panel (bottom of the Storybook UI) to see violations, incomplete checks, and passing rules for the rendered story. Fix any violations before shipping a component.
+
+### Adding component stories
+
+Token stories live in `packages/design-system/tokens/` alongside the token files they document. When adding component stories, place them under `packages/design-system/src/` and add `'../src/**/*.stories.@(ts|tsx)'` to the `stories` glob in `.storybook/main.ts`. Follow the `tokens/Typography.stories.tsx` pattern.
+
+---
+
 ## Tokens
 
 Design tokens are authored in Figma via [Tokens Studio](https://tokens.studio/) and compiled to CSS custom properties.

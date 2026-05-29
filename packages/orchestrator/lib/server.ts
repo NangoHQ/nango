@@ -6,6 +6,7 @@ import { serverRequestSizeLimit } from './constants.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
+import { routeHandler as postImmediateBatchHandler } from './routes/v1/postImmediateBatch.js';
 import { routeHandler as postRecurringHandler } from './routes/v1/postRecurring.js';
 import { routeHandler as putRecurringHandler } from './routes/v1/putRecurring.js';
 import { routeHandler as getRetryOutputHandler } from './routes/v1/retries/retryKey/getOutput.js';
@@ -30,6 +31,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
 
     createRoute(server, getHealthHandler);
     createRoute(server, postImmediateHandler(scheduler));
+    createRoute(server, postImmediateBatchHandler(scheduler));
     createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postScheduleRunHandler(scheduler));
     createRoute(server, putRecurringHandler(scheduler));
