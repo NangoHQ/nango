@@ -259,6 +259,27 @@ describe('Scheduler', () => {
         expect(found[0]?.id).toBe(schedule.id);
     });
 
+    describe('delayed', () => {
+        it('should create a task in CREATED state with the given startsAfter', async () => {
+            const startsAfter = new Date(Date.now() + 60_000);
+            const task = await delayed(scheduler, { startsAfter });
+            expect(task.state).toBe('CREATED');
+            expect(task.startsAfter).toBeWithinMs(startsAfter, 1_000);
+        });
+        it('should not be dequeue-able before startsAfter', async () => {
+            const task = await delayed(scheduler, { startsAfter: new Date(Date.now() + 60_000) });
+            const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
+            expect(dequeued.length).toBe(0);
+        });
+        it('should become dequeue-able once startsAfter has passed', async () => {
+            const delayMs = 1_000;
+            const task = await delayed(scheduler, { startsAfter: new Date(Date.now() + delayMs) });
+            expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(0);
+            await new Promise((resolve) => setTimeout(resolve, delayMs + 300));
+            expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(1);
+        });
+    });
+
     describe('immediateBatch', () => {
         it('should create a batch of tasks', async () => {
             const groupKey = nanoid();
@@ -340,6 +361,28 @@ function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['i
         ownerKey: overrides.ownerKey ?? null,
         retryKey: overrides.retryKey ?? null
     };
+}
+
+async function delayed(
+    scheduler: Scheduler,
+    { startsAfter, taskProps }: { startsAfter: Date; taskProps?: Partial<Omit<TaskProps, 'startsAfter' | 'scheduleId'>> }
+): Promise<Task> {
+    return (
+        await scheduler.delayed({
+            name: taskProps?.name || nanoid(),
+            payload: taskProps?.payload || {},
+            groupKey: taskProps?.groupKey || nanoid(),
+            groupMaxConcurrency: taskProps?.groupMaxConcurrency || 0,
+            retryMax: taskProps?.retryMax ?? 1,
+            retryCount: taskProps?.retryCount || 0,
+            createdToStartedTimeoutSecs: taskProps?.createdToStartedTimeoutSecs || 3600,
+            startedToCompletedTimeoutSecs: taskProps?.startedToCompletedTimeoutSecs || 3600,
+            heartbeatTimeoutSecs: taskProps?.heartbeatTimeoutSecs || 600,
+            ownerKey: taskProps?.ownerKey || null,
+            retryKey: taskProps?.retryKey || null,
+            startsAfter
+        })
+    ).unwrap();
 }
 
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {

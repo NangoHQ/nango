@@ -11,7 +11,7 @@ import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
 
 import type { SchedulerConfig, SchedulerEvent } from './config.js';
-import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
+import type { DelayedProps, FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
@@ -268,6 +268,44 @@ export class Scheduler {
                 if (scheduleRes.isErr()) {
                     return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
                 }
+            }
+            this.onCallbacks[task.state](task);
+            return Ok(task);
+        });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
+    }
+
+    /**
+     * Schedule a one-shot task that only becomes dequeue-able at/after `startsAfter`.
+     *
+     * Unlike `immediate`, the task waits until `startsAfter` before it can be dequeued. The
+     * created→started timeout is measured from `startsAfter`, so long delays don't cause the task
+     * to expire while waiting. Use this for deferred work (e.g. "run in 30 days").
+     * @example
+     * const scheduled = await scheduler.delayed({ ...props, startsAfter: addDays(new Date(), 30) });
+     */
+    public async delayed(props: DelayedProps): Promise<Result<Task>> {
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
+            const taskProps: tasks.TaskProps = {
+                ...props,
+                scheduleId: null
+            };
+            const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
+            }
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                }
+            }
+            const task = createResult.value.created[0];
+            if (!task) {
+                return Err(`Failed to create task '${taskProps.name}'`);
             }
             this.onCallbacks[task.state](task);
             return Ok(task);

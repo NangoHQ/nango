@@ -30,6 +30,8 @@ export interface Task {
 }
 
 export type ImmediateProps = SetOptional<Omit<TaskProps, 'startsAfter' | 'scheduleId'>, 'retryKey'>;
+/** Like ImmediateProps but the task only becomes dequeue-able at/after `startsAfter`. */
+export type DelayedProps = ImmediateProps & { startsAfter: Date };
 export interface FromScheduleProps {
     scheduleName: string;
     extra: JsonObject;
