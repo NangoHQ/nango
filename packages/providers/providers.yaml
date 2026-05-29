@@ -902,9 +902,7 @@ altrata:
     categories:
         - analytics
     auth_mode: TWO_STEP
-    token_url: https://api-auth.altrata.com/oauth2/token
-    token_request_params:
-        grant_type: client_credentials
+    token_url: https://api-auth.altrata.com/oauth2/token?grant_type=client_credentials
     token_headers:
         authorization: Basic ${base64(${credentials.username}:${credentials.password})}
         x-api-key: ${credentials.apiKey}
@@ -913,7 +911,7 @@ altrata:
         token_expiration: expires_in
         token_expiration_strategy: expireIn
     proxy:
-        base_url: ${connectionConfig.hostname}
+        base_url: https://${connectionConfig.hostname}
         headers:
             x-api-key: ${credentials.apiKey}
     docs: https://nango.dev/docs/api-integrations/altrata
@@ -925,6 +923,7 @@ altrata:
             description: The Altrata service hostname to connect to.
             example: events.altrata.com
             format: hostname
+            pattern: '^(matching|profile|events|relationships)\.altrata\.com$'
             order: 1
             doc_section: '#step-2-choose-a-service-hostname'
     credentials:
