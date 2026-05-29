@@ -20031,6 +20031,7 @@ toast:
         token: token.accessToken
         token_expiration: token.expiresIn
         token_expiration_strategy: expireIn
+    token_expiration_buffer: 60
     proxy:
         base_url: https://${connectionConfig.subdomain}.toasttab.com
         headers:
