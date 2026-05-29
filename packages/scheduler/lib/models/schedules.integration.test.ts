@@ -121,6 +121,16 @@ describe('Schedules', () => {
         // The next execution should be set to the next due date based on the frequency
         expect(updated?.nextExecutionAt).toBeWithinMs(new Date(schedule.startsAt.getTime() + schedule.frequencyMs), 3_000);
     });
+    it('should hard-delete schedules deleted longer than N days ago', async () => {
+        const schedule = await createSchedule(db);
+        await schedules.remove(db, schedule.id);
+        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+        await db.from('schedules').where('id', schedule.id).update({ deleted_at: twoDaysAgo });
+
+        const deleted = (await schedules.hardDeleteOlderThanNDays(db, 1)).unwrap();
+
+        expect(deleted.map((s) => s.id)).toContain(schedule.id);
+    });
     it('should override next execution when nextExecutionInMs is provided', async () => {
         const schedule = await createSchedule(db);
         const taskId = uuidv7();

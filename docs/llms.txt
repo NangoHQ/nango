@@ -85,6 +85,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Connections: Set connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/set-metadata.md)
 - [Backend: HTTP API: Connections: Edit connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/update-metadata.md)
 - [Backend: HTTP API: Connections: Delete a connection](https://nango.dev/docs/reference/backend/http-api/connections/delete.md)
+- [Backend: HTTP API: Functions: Compile a function](https://nango.dev/docs/reference/backend/http-api/functions/compile.md)
+- [Backend: HTTP API: Functions: Dry run a function](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md)
+- [Backend: HTTP API: Functions: Get dry run results](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md)
+- [Backend: HTTP API: Functions: Create a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments.md)
 - [Backend: HTTP API: Functions: Get integration functions config](https://nango.dev/docs/reference/backend/http-api/scripts/config.md)
 - [Backend: HTTP API: Syncs: Get records](https://nango.dev/docs/reference/backend/http-api/sync/records-list.md)
 - [Backend: HTTP API: Syncs: Prune records](https://nango.dev/docs/reference/backend/http-api/sync/prune-records.md)
@@ -130,7 +134,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 829 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 831 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Optional

@@ -53,6 +53,18 @@ register(StyleDictionary);
 
 const SD_TRANSFORMS = [...getTransforms(), 'name/kebab'];
 
+// css/typography-classes — registered after buildTypographyBlock is defined below.
+// We defer registration to a function so the format can reference buildTypographyBlock
+// without a forward-reference issue.
+function registerTypographyFormat() {
+    if (!StyleDictionary.hooks.formats['css/typography-classes']) {
+        StyleDictionary.registerFormat({
+            name: 'css/typography-classes',
+            format: ({ dictionary }) => buildTypographyBlock(dictionary.allTokens)
+        });
+    }
+}
+
 // ─── CSS value formatting ──────────────────────────────────────────────────────
 
 /**
@@ -145,15 +157,146 @@ export function buildPrimitivesBlock(tokens) {
 }
 
 export function buildTailwindThemeBlock(tokens) {
-    // Only semantic color tokens → Tailwind utility classes (bg-*, text-*, border-*, etc.)
-    const vars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
-    return `@theme {\n${vars.join('\n')}\n}`;
+    // Semantic color tokens → --color-* → bg-*, text-*, border-*, fill-*, etc.
+    const colorVars = tokens.filter((t) => t['$type'] === 'color').map((t) => `  --color-${t.name}: var(--${t.name});`);
+
+    // Semantic boxShadow tokens → --shadow-* → shadow-*
+    // Covers --focus-outline-default / --focus-outline-danger so components can write
+    // `shadow-focus-outline-default` instead of `shadow-[var(--focus-outline-default)]`.
+    //
+    // @theme inline is used so the generated utility references the semantic variable
+    // directly (e.g. `var(--focus-outline-default)`) rather than going through an
+    // intermediate `--shadow-*` CSS property. This ensures dark-theme overrides on the
+    // underlying semantic vars are always picked up.
+    const shadowVars = tokens.filter((t) => t['$type'] === 'boxShadow').map((t) => `  --shadow-${t.name}: var(--${t.name});`);
+
+    if (tokens.length > 0 && colorVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no color tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
+    if (tokens.length > 0 && shadowVars.length === 0) {
+        throw new Error(`buildTailwindThemeBlock: no boxShadow tokens found — was the $type renamed or the semantic token set emptied?`);
+    }
+
+    const colorBlock = `@theme {\n${colorVars.join('\n')}\n}`;
+    const shadowBlock = `\n@theme inline {\n${shadowVars.join('\n')}\n}`;
+    return colorBlock + shadowBlock;
+}
+
+// Single source of truth for primitive token mappings.
+// Each entry drives both the CSS variable name and the completeness guard.
+// To add a new token group, add one row here — no other changes needed.
+const PRIM_MAPPINGS = [
+    { prefix: 'radius-', cssVar: 'radius-ds-' },
+    { prefix: 'border-width-', cssVar: 'border-width-ds-' },
+    { prefix: 'typography-font-size-', cssVar: 'text-ds-' },
+    { prefix: 'typography-font-weight-', cssVar: 'font-weight-ds-' },
+    { prefix: 'typography-line-height-', cssVar: 'leading-ds-' },
+    { prefix: 'typography-letter-spacing-', cssVar: 'tracking-ds-' }
+];
+
+/**
+ * Maps primitive dimension/typography tokens into Tailwind @theme namespaces so they
+ * can be used as plain utilities instead of arbitrary `[var(--ds-*)]` values.
+ *
+ * Mappings (all prefixed with `ds-` to avoid overriding Tailwind built-ins):
+ *   --ds-radius-*                    → --radius-ds-*        → rounded-ds-xs, rounded-ds-sm …
+ *   --ds-border-width-*              → --border-width-ds-*  → border-ds-hairline, border-ds-1 …
+ *   --ds-typography-font-size-*      → --text-ds-*          → text-ds-xs, text-ds-md …
+ *   --ds-typography-font-weight-*    → --font-weight-ds-*   → font-ds-regular, font-ds-medium …
+ *   --ds-typography-line-height-*    → --leading-ds-*       → leading-ds-tight, leading-ds-normal …
+ *   --ds-typography-letter-spacing-* → --tracking-ds-*      → tracking-ds-tight …
+ *
+ * Spacing (--ds-space-*) is intentionally omitted: Tailwind's default 4px spacing scale
+ * already matches the ds-space tokens, so `gap-2` === `--ds-space-2` without any additions.
+ */
+export function buildPrimitivesThemeBlock(tokens) {
+    if (tokens.length === 0) return '';
+
+    const entries = [];
+    const matched = new Set();
+
+    for (const t of tokens) {
+        const name = t.name; // kebab name produced by the name/kebab transform
+        const ref = `var(--ds-${name})`;
+        for (const { prefix, cssVar } of PRIM_MAPPINGS) {
+            if (name.startsWith(prefix)) {
+                matched.add(prefix);
+                entries.push(`  --${cssVar}${name.slice(prefix.length)}: ${ref};`);
+                break;
+            }
+        }
+    }
+
+    for (const { prefix } of PRIM_MAPPINGS) {
+        if (!matched.has(prefix)) {
+            throw new Error(`buildPrimitivesThemeBlock: no tokens matched prefix '${prefix}' — was a token group renamed or deleted?`);
+        }
+    }
+
+    return `@theme {\n${entries.join('\n')}\n}`;
+}
+
+// ─── Typography class builder ──────────────────────────────────────────────────
+
+/**
+ * Generate a CSS class for each composite typography token.
+ * Each class sets font-family, font-size, font-weight, line-height, and letter-spacing.
+ * Class names follow the pattern: .type-{token-name}, e.g. .type-heading-lg
+ */
+export function buildTypographyBlock(tokens) {
+    const typTokens = tokens.filter((t) => t['$type'] === 'typography');
+    if (typTokens.length === 0) return '';
+
+    const classes = typTokens
+        .map((t) => {
+            const value = t.$value ?? t.value;
+            if (!value || typeof value !== 'object') return null;
+
+            const { fontFamily, fontWeight, fontSize, lineHeight, letterSpacing } = value;
+            const props = [
+                fontFamily && `    font-family: ${fontFamily};`,
+                fontSize && `    font-size: ${fontSize};`,
+                fontWeight && `    font-weight: ${fontWeight};`,
+                lineHeight && `    line-height: ${lineHeight};`,
+                letterSpacing != null && `    letter-spacing: ${letterSpacing};`
+            ]
+                .filter(Boolean)
+                .join('\n');
+
+            return `.type-${t.name} {\n${props}\n}`;
+        })
+        .filter(Boolean);
+
+    return classes.join('\n\n');
+}
+
+// ─── SD build pass with a registered format ───────────────────────────────────
+
+/**
+ * Run a Style Dictionary build pass using a named format and return the output as a string.
+ * SD requires a real file destination — we write to `outPath` (inside tmpDir) and read it back.
+ */
+async function buildWithFormat({ includeFiles = [], sourceFile, outPath, format }) {
+    const sd = new StyleDictionary({
+        include: includeFiles,
+        source: [sourceFile],
+        platforms: {
+            out: {
+                transforms: SD_TRANSFORMS,
+                buildPath: path.dirname(outPath) + '/',
+                files: [{ destination: path.basename(outPath), format }]
+            }
+        },
+        log: { verbosity: 'silent', errors: { brokenReferences: 'warn' } }
+    });
+    await sd.buildAllPlatforms();
+    return readFileSync(outPath, 'utf8');
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export async function buildCss(tokensData) {
-    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark } = tokensData;
+    const { Primitives, 'Semantic/Light': SemanticLight, 'Semantic/Dark': SemanticDark, Typography } = tokensData;
 
     if (!Primitives || !SemanticLight || !SemanticDark) {
         const found = Object.keys(tokensData)
@@ -161,6 +304,8 @@ export async function buildCss(tokensData) {
             .join(', ');
         throw new Error(`Expected Primitives, Semantic/Light, and Semantic/Dark in tokens.json. Found: ${found}`);
     }
+
+    registerTypographyFormat();
 
     // Write token sets to temp files for SD to consume.
     // SD requires file paths — it can't accept raw objects.
@@ -173,16 +318,41 @@ export async function buildCss(tokensData) {
     writeFileSync(lightFile, JSON.stringify(SemanticLight, null, 2));
     writeFileSync(darkFile, JSON.stringify(SemanticDark, null, 2));
 
-    let primTokens, lightTokens, darkTokens;
+    let typFile;
+    if (Typography) {
+        typFile = path.join(tmpDir, 'typography.json');
+        writeFileSync(typFile, JSON.stringify(Typography, null, 2));
+    }
+
+    let primTokens, lightTokens, darkTokens, typographyCss;
     try {
         [primTokens, lightTokens, darkTokens] = await Promise.all([
             resolveTokens({ sourceFiles: [primFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [lightFile] }),
             resolveTokens({ includeFiles: [primFile], sourceFiles: [darkFile] })
         ]);
+        typographyCss = typFile
+            ? await buildWithFormat({
+                  includeFiles: [primFile],
+                  sourceFile: typFile,
+                  outPath: path.join(tmpDir, 'typography.css'),
+                  format: 'css/typography-classes'
+              })
+            : '';
     } finally {
         rmSync(tmpDir, { recursive: true, force: true });
     }
+
+    const typographySection = typographyCss
+        ? [
+              '',
+              '/*',
+              ' * Typography tokens — composite text-style classes generated from Figma.',
+              ' * Apply to any element: class="type-heading-lg"',
+              ' */',
+              typographyCss
+          ].join('\n')
+        : '';
 
     const output = [
         '/* AUTO-GENERATED — do not edit by hand. Run: npm run tokens:fetch */',
@@ -202,11 +372,19 @@ export async function buildCss(tokensData) {
         buildCssBlock(darkTokens, '[data-theme="dark"]'),
         '',
         '/*',
-        ' * Tailwind v4 @theme registration.',
-        ' * Maps semantic color vars to --color-* so Tailwind generates',
-        ' * utility classes: bg-surface-canvas, text-text-strong, border-border-default, etc.',
+        ' * Tailwind v4 @theme registration — semantic tokens.',
+        ' * Colors → --color-* (bg-*, text-*, border-*, etc.)',
+        ' * Box shadows → --shadow-* (shadow-focus-outline-default, etc.)',
         ' */',
         buildTailwindThemeBlock(lightTokens),
+        '',
+        '/*',
+        ' * Tailwind v4 @theme registration — primitive tokens.',
+        ' * Radius → rounded-ds-*, border-width → border-ds-*,',
+        ' * font-size → text-ds-*, font-weight → font-ds-*, letter-spacing → tracking-ds-*',
+        ' */',
+        buildPrimitivesThemeBlock(primTokens),
+        typographySection,
         ''
     ].join('\n');
 
