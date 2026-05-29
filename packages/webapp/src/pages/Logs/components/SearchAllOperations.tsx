@@ -10,11 +10,6 @@ import { SearchableMultiSelect } from './SearchableMultiSelect';
 import { TypesSelect } from './TypesSelect';
 import { MultiSelect } from '../../../components/ui/MultiSelect';
 import { PeriodSelector } from '../../../components/ui/PeriodSelector';
-import { Skeleton } from '../../../components/ui/Skeleton';
-import Spinner from '../../../components/ui/Spinner';
-import * as Table from '../../../components/ui/Table';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
 import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList } from '../constants';
 import { OperationRow } from './OperationRow';
@@ -22,6 +17,11 @@ import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Spinner } from '@/components-v2/ui/Spinner';
+import { TableBody as Tbody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
 
 import type { Period } from '../../../utils/dates';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
@@ -255,28 +255,26 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     return (
         <>
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h2>
+                <h2 className="text-3xl font-semibold text-white mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner />}</h2>
                 <div className="text-white text-xs">
                     {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
                 <div className="w-full">
-                    <Input
-                        before={<IconSearch stroke={1} size={16} />}
-                        after={
-                            search && (
-                                <Button variant={'icon'} size={'xs'} onClick={() => setSearch('')}>
+                    <InputGroup className="border-grayscale-900">
+                        <InputGroupAddon>
+                            <IconSearch stroke={1} size={16} />
+                        </InputGroupAddon>
+                        <InputGroupInput placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} value={search} />
+                        {search && (
+                            <InputGroupAddon align="inline-end">
+                                <InputGroupButton variant={'ghost'} size={'icon-xs'} onClick={() => setSearch('')}>
                                     <IconX stroke={1} size={18} />
-                                </Button>
-                            )
-                        }
-                        placeholder="Search logs..."
-                        className="border-grayscale-900"
-                        onChange={(e) => setSearch(e.target.value)}
-                        inputSize={'sm'}
-                        value={search}
-                    />
+                                </InputGroupButton>
+                            </InputGroupAddon>
+                        )}
+                    </InputGroup>
                 </div>
                 <div className="flex gap-2">
                     <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} all />
@@ -299,14 +297,14 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <Table.Table className="grid">
-                    <Table.Header className="grid sticky top-0 z-10 bg-grayscale-900 ">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0">
+                    <TableHeader className="grid sticky top-0 z-10 bg-grayscale-900 ">
                         {table.getHeaderGroups().map((headerGroup) => {
                             return (
-                                <Table.Row key={headerGroup.id} className="flex w-full">
+                                <TableRow key={headerGroup.id} className="flex w-full">
                                     {headerGroup.headers.map((header) => {
                                         return (
-                                            <Table.Head
+                                            <TableHead
                                                 key={header.id}
                                                 className="flex"
                                                 style={{
@@ -314,50 +312,50 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                                 }}
                                             >
                                                 {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                            </Table.Head>
+                                            </TableHead>
                                         );
                                     })}
-                                </Table.Row>
+                                </TableRow>
                             );
                         })}
-                    </Table.Header>
+                    </TableHeader>
 
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectOperation={onSelectOperation} />}
 
                     {flatData.length > 0 && hasNextPage && (
-                        <Button onClick={onClickLoadMore} variant={'emptyFaded'} className="justify-center mt-4 text-s" isLoading={isFetchingNextPage}>
+                        <Button onClick={onClickLoadMore} variant={'tertiary'} className="justify-center mt-4 text-s" loading={isFetchingNextPage}>
                             Load more...
                         </Button>
                     )}
                     {flatData.length > 0 && !hasNextPage && <div className="text-xs text-grayscale-500 p-4 mt-2">Nothing more to load...</div>}
 
                     {isLoading && (
-                        <Table.Body>
-                            <Table.Row>
+                        <Tbody>
+                            <TableRow>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
-                                        <Table.Cell key={i}>
+                                        <TableCell key={i}>
                                             <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </Table.Cell>
+                                        </TableCell>
                                     );
                                 })}
-                            </Table.Row>
-                        </Table.Body>
+                            </TableRow>
+                        </Tbody>
                     )}
 
                     {!isLoading && flatData.length <= 0 && (
-                        <Table.Body>
-                            <Table.Row className="hover:bg-transparent flex absolute w-full">
-                                <Table.Cell colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
+                        <Tbody>
+                            <TableRow className="hover:bg-transparent flex absolute w-full">
+                                <TableCell colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
                                     <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
                                         <div className="text-center">No logs found</div>
                                         <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
                                     </div>
-                                </Table.Cell>
-                            </Table.Row>
-                        </Table.Body>
+                                </TableCell>
+                            </TableRow>
+                        </Tbody>
                     )}
-                </Table.Table>
+                </table>
             </div>
         </>
     );
@@ -382,7 +380,7 @@ const TableBody: React.FC<{
     });
 
     return (
-        <Table.Body className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <Tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
                 return (
@@ -395,6 +393,6 @@ const TableBody: React.FC<{
                     />
                 );
             })}
-        </Table.Body>
+        </Tbody>
     );
 };

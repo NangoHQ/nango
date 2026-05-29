@@ -4,13 +4,13 @@ import { useDebounce } from 'react-use';
 
 import { Info } from '../../../components/patterns/Info';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import Spinner from '../../../components/ui/Spinner';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
+import { Spinner } from '@/components-v2/ui/Spinner';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
@@ -80,7 +80,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="secondary" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
@@ -100,15 +100,17 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
             </PopoverTrigger>
             <PopoverContent className="p-0 text-white bg-active-gray w-80" align="end">
                 <Command>
-                    <Input
-                        before={<MagnifyingGlassIcon className="w-4 h-4" />}
-                        after={loading && <Spinner size={1} />}
-                        placeholder="Search..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        autoFocus
-                        className="border-b border-b-border-gray-400 py-1"
-                    />
+                    <InputGroup className="border-b border-b-border-gray-400 rounded-none border-x-0 border-t-0">
+                        <InputGroupAddon>
+                            <MagnifyingGlassIcon className="w-4 h-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
+                        {loading && (
+                            <InputGroupAddon align="inline-end">
+                                <Spinner />
+                            </InputGroupAddon>
+                        )}
+                    </InputGroup>
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
                         {maxed && <Info variant={'warning'}>Can&apos;t select more filters</Info>}

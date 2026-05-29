@@ -1,6 +1,6 @@
 import { flexRender } from '@tanstack/react-table';
 
-import * as Table from '../../../components/ui/Table';
+import { TableCell, TableRow } from '@/components-v2/ui/Table';
 
 import type { SearchOperationsData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
@@ -13,23 +13,23 @@ export const OperationRow: React.FC<{
     onSelectOperation: (open: boolean, operationId: string) => void;
 }> = ({ row, virtualRow, rowVirtualizer, onSelectOperation }) => {
     return (
-        <Table.Row
+        <TableRow
             data-state={row.getIsSelected() && 'selected'}
             className="hover:cursor-pointer flex absolute w-full"
             onClick={() => {
                 onSelectOperation(true, row.original.id);
             }}
-            data-index={virtualRow.index} //needed for dynamic row height measurement
-            ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
+            data-index={virtualRow.index}
+            ref={(node) => rowVirtualizer.measureElement(node)}
             style={{
-                transform: `translateY(${virtualRow.start}px)` //this should always be a `style` as it changes on scroll
+                transform: `translateY(${virtualRow.start}px)`
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <Table.Cell className="flex" style={{ width: cell.column.getSize() }} key={cell.id}>
+                <TableCell className="flex" style={{ width: cell.column.getSize() }} key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </Table.Cell>
+                </TableCell>
             ))}
-        </Table.Row>
+        </TableRow>
     );
 };

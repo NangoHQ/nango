@@ -3,16 +3,15 @@ import { useState } from 'react';
 
 import { SimpleTooltip } from '@/components/ui/SimpleTooltip';
 import { CopyButton } from '@/components/ui/button/CopyButton';
-import { Input } from '@/components/ui/input/Input';
 import { Button } from '@/components-v2/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/utils';
 
-import type { InputProps } from '@/components/ui/input/Input';
 import type { ApiError } from '@nangohq/types';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-interface EditableInputProps extends InputProps {
+interface EditableInputProps extends ComponentProps<'input'> {
     title?: string;
     subTitle?: boolean;
     secret?: boolean;
@@ -75,16 +74,21 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                     {title}
                 </label>
             )}
-            <Input
-                inputSize={'lg'}
-                variant={'black'}
-                name={name}
-                value={secret && !edit ? '*'.repeat(value.length) : value}
-                onChange={(e) => setValue(e.target.value)}
-                disabled={loading || !edit}
-                className={cn(error && 'border-alert-400')}
-                after={
-                    !edit && (
+            <InputGroup
+                className={cn(
+                    'h-[42px] bg-pure-black border-grayscale-600 hover:border-grayscale-500 focus-within:bg-grayscale-900',
+                    error && 'border-alert-400'
+                )}
+            >
+                <InputGroupInput
+                    name={name}
+                    value={secret && !edit ? '*'.repeat(value.length) : value}
+                    onChange={(e) => setValue(e.target.value)}
+                    disabled={loading || !edit}
+                    {...rest}
+                />
+                {!edit && (
+                    <InputGroupAddon align="inline-end">
                         <div className="flex">
                             {secret && (
                                 <div className="py-1">
@@ -93,20 +97,19 @@ export const EditableInput: React.FC<EditableInputProps> = ({
                             )}
                             {blocked ? (
                                 <SimpleTooltip tooltipContent={blockedTooltip} side="top" delay={0}>
-                                    <Button variant={'ghost'} size={'sm'} disabled>
+                                    <InputGroupButton variant={'ghost'} size={'icon-sm'} disabled>
                                         <Edit size={18} />
-                                    </Button>
+                                    </InputGroupButton>
                                 </SimpleTooltip>
                             ) : (
-                                <Button variant={'ghost'} size={'sm'} onClick={() => setEdit(true)}>
+                                <InputGroupButton variant={'ghost'} size={'icon-sm'} onClick={() => setEdit(true)}>
                                     <Edit size={18} />
-                                </Button>
+                                </InputGroupButton>
                             )}
                         </div>
-                    )
-                }
-                {...rest}
-            />
+                    </InputGroupAddon>
+                )}
+            </InputGroup>
             {error && <div className="text-alert-400 text-s">{error}</div>}
             {edit && editInfo}
             {edit && (

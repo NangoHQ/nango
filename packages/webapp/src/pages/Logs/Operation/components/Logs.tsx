@@ -10,17 +10,16 @@ import { LogRow } from './LogRow';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
 import { PeriodSelector } from '../../../../components/ui/PeriodSelector';
 import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
-import { Skeleton } from '../../../../components/ui/Skeleton';
-import Spinner from '../../../../components/ui/Spinner';
-import * as Table from '../../../../components/ui/Table';
-import { Button } from '../../../../components/ui/button/Button';
-import { Input } from '../../../../components/ui/input/Input';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';
 import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
 import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Spinner } from '@/components-v2/ui/Spinner';
+import { TableBody as Tbody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -190,7 +189,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
     return (
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner size={1} />}</h4>
+                <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner />}</h4>
                 <div className="flex gap-2 text-white text-xs">
                     <div>
                         {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
@@ -212,27 +211,26 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </div>
             </div>
             <header className="flex gap-2 items-center">
-                <Input
-                    before={<IconZoom stroke={1} size={18} />}
-                    after={
-                        search && (
-                            <Button
-                                variant={'icon'}
-                                size={'sm'}
+                <InputGroup className="grow border-border-gray-400">
+                    <InputGroupAddon>
+                        <IconZoom stroke={1} size={18} />
+                    </InputGroupAddon>
+                    <InputGroupInput value={search} placeholder="Search logs..." onChange={(e) => setSearch(e.target.value)} />
+                    {search && (
+                        <InputGroupAddon align="inline-end">
+                            <InputGroupButton
+                                variant={'ghost'}
+                                size={'icon-xs'}
                                 onClick={() => {
                                     setDebouncedSearch('');
                                     setSearch('');
                                 }}
                             >
                                 <IconX stroke={1} size={16} />
-                            </Button>
-                        )
-                    }
-                    value={search}
-                    placeholder="Search logs..."
-                    className="grow border-border-gray-400"
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+                            </InputGroupButton>
+                        </InputGroupAddon>
+                    )}
+                </InputGroup>
                 <div className="border border-transparent">
                     <PeriodSelector
                         period={period}
@@ -249,13 +247,13 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <Table.Table className="grid">
-                    <Table.Header className="grid sticky top-0 z-10 bg-grayscale-900 ">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0">
+                    <TableHeader className="grid sticky top-0 z-10 bg-grayscale-900 ">
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <Table.Row key={headerGroup.id} className="flex w-full">
+                            <TableRow key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <Table.Head
+                                        <TableHead
                                             key={header.id}
                                             className="flex"
                                             style={{
@@ -263,39 +261,39 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                             }}
                                         >
                                             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </Table.Head>
+                                        </TableHead>
                                     );
                                 })}
-                            </Table.Row>
+                            </TableRow>
                         ))}
-                    </Table.Header>
+                    </TableHeader>
 
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectMessage={setMessage} />}
 
                     {isLoading && (
-                        <Table.Body>
-                            <Table.Row>
+                        <Tbody>
+                            <TableRow>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
-                                        <Table.Cell key={i}>
+                                        <TableCell key={i}>
                                             <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </Table.Cell>
+                                        </TableCell>
                                     );
                                 })}
-                            </Table.Row>
-                        </Table.Body>
+                            </TableRow>
+                        </Tbody>
                     )}
 
                     {!isFetching && flatData.length <= 0 && (
-                        <Table.Body className="h-10">
-                            <Table.Row className="hover:bg-transparent flex absolute w-full">
-                                <Table.Cell colSpan={columns.length} className="text-center p-0 pt-4 w-full">
+                        <Tbody className="h-10">
+                            <TableRow className="hover:bg-transparent flex absolute w-full">
+                                <TableCell colSpan={columns.length} className="text-center p-0 pt-4 w-full">
                                     <div className="text-grayscale-400">No results.</div>
-                                </Table.Cell>
-                            </Table.Row>
-                        </Table.Body>
+                                </TableCell>
+                            </TableRow>
+                        </Tbody>
                     )}
-                </Table.Table>
+                </table>
             </div>
 
             <Drawer
@@ -344,11 +342,11 @@ const TableBody: React.FC<{
     });
 
     return (
-        <Table.Body className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <Tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
                 return <LogRow key={row.original.id} row={row} virtualRow={virtualRow} rowVirtualizer={rowVirtualizer} onSelectMessage={onSelectMessage} />;
             })}
-        </Table.Body>
+        </Tbody>
     );
 };

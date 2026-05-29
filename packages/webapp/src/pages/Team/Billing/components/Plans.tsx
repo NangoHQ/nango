@@ -4,9 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { permissions } from '@nangohq/authz';
 
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { DialogClose, DialogContent, DialogDescription, DialogFooter } from '../../../../components-v2/ui/Dialog.jsx';
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../../../../components-v2/ui/Dialog.jsx';
 import { Dot } from '../../../../components-v2/ui/Dot.js';
-import { DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog.js';
 import { PermissionGate } from '@/components-v2/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components-v2/ui/Alert.js';
 import { Button, ButtonLink } from '@/components-v2/ui/Button';

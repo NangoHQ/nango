@@ -2,14 +2,14 @@ import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Skeleton } from '../../components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
-import { Button } from '../../components/ui/button/Button';
-import { Input } from '../../components/ui/input/Input';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
+import { Button } from '@/components-v2/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
@@ -65,42 +65,35 @@ export const UserSettings: React.FC = () => {
             <div className="flex flex-col gap-12 mt-16">
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-white">Display Name</h3>
-                    <Input
-                        ref={ref}
-                        variant={edit ? 'border' : 'flat'}
-                        inputSize={'lg'}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        disabled={!edit}
-                        after={
-                            <div className="flex gap-1 items-center">
-                                {!edit && (
-                                    <Tooltip delayDuration={0}>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant={'icon'}
-                                                size={'sm'}
-                                                onClick={() => {
-                                                    setEdit(true);
-                                                    setTimeout(() => {
-                                                        ref.current?.focus();
-                                                    }, 100);
-                                                }}
-                                            >
-                                                <Pencil1Icon />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent sideOffset={10}>Edit</TooltipContent>
-                                    </Tooltip>
-                                )}
-                            </div>
-                        }
-                    />
+                    <InputGroup className="h-[42px]">
+                        <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
+                        <InputGroupAddon align="inline-end">
+                            {!edit && (
+                                <Tooltip delayDuration={0}>
+                                    <TooltipTrigger asChild>
+                                        <InputGroupButton
+                                            variant={'ghost'}
+                                            size={'icon-sm'}
+                                            onClick={() => {
+                                                setEdit(true);
+                                                setTimeout(() => {
+                                                    ref.current?.focus();
+                                                }, 100);
+                                            }}
+                                        >
+                                            <Pencil1Icon />
+                                        </InputGroupButton>
+                                    </TooltipTrigger>
+                                    <TooltipContent sideOffset={10}>Edit</TooltipContent>
+                                </Tooltip>
+                            )}
+                        </InputGroupAddon>
+                    </InputGroup>
                     {edit && (
                         <div className="flex justify-end gap-2 items-center">
                             <Button
-                                size={'md'}
-                                variant={'emptyFaded'}
+                                size={'sm'}
+                                variant={'tertiary'}
                                 onClick={() => {
                                     setName(user.name);
                                     setEdit(false);
@@ -108,7 +101,7 @@ export const UserSettings: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button size={'md'} onClick={onSave}>
+                            <Button size={'sm'} onClick={onSave}>
                                 Save
                             </Button>
                         </div>

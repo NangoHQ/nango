@@ -2,11 +2,11 @@ import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
 import { cn } from '../../../utils/utils';
 import { typesOptions } from '../constants';
+import { Button } from '@/components-v2/ui/Button';
+import { Input } from '@/components-v2/ui/Input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
 
 export interface SearchableMultiSelectArgs<T> {
     selected: string[];
@@ -50,7 +50,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="secondary" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     Type
                     {isDirty && (
                         <button
