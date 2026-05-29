@@ -70,7 +70,6 @@ export function createTelemetryRecorder({
     return {
         record(entry) {
             if (!batcher) return;
-            console.log(`Recording telemetry entry: ${JSON.stringify(entry)}`);
             const res = batcher.add(entry);
             if (res.isErr()) {
                 logger.error(`Telemetry recorder dropped entry: ${res.error.message}`);
