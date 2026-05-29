@@ -84,7 +84,7 @@ Local development is the default path for production integrations. Use it when y
     data-copy-text="npx skills add NangoHQ/skills -s building-nango-functions-locally"
     data-copy-success="Install command copied"
   >
-    <span className="agent-quickstart-action-title">Install local skill</span>
+    <span className="agent-quickstart-action-title">Install skill to build locally</span>
     <span className="agent-quickstart-action-description">Copy the command for the local CLI workflow.</span>
   </button>
 </div>
@@ -240,7 +240,7 @@ This is useful for prototypes, onboarding flows, provider operations not covered
     data-copy-text="npx skills add NangoHQ/skills -s building-nango-functions-remotely"
     data-copy-success="Install command copied"
   >
-    <span className="agent-quickstart-action-title">Install remote skill</span>
+    <span className="agent-quickstart-action-title">Install skill to build remotely</span>
     <span className="agent-quickstart-action-description">Copy the command for coding agents using the Functions API workflow.</span>
   </button>
 </div>
@@ -249,9 +249,12 @@ At a high level, the flow is:
 
 1. Give the agent the integration ID, a connection ID for validation, the intended behavior, input and output shape, and any provider API context.
 2. The agent generates a self-contained TypeScript function using the right function type.
-3. Compile the source with `POST /remote-function/compile` and use compiler errors to improve it.
-4. Dry run it with `POST /remote-function/dryrun` against a real connection and inspect the result, logs, records, or error.
-5. Deploy it with `POST /remote-function/deploy`. After deployment, your app can call or trigger the function like any other Nango function.
+3. Compile the source with `POST /functions/compile`. Send the TypeScript source as `code` and use compiler errors to improve it.
+4. Start a dry run with `POST /functions/dryruns`. Send the integration ID, function type, source `code`, connection ID, and any action input, sync metadata, or checkpoint payload needed for the run.
+5. Poll `GET /functions/dryruns/{id}` until the dry run reaches `success` or `failed`, then inspect the result, logs, records, or error.
+6. Deploy it with `POST /functions/deployments`. Send `type: "function"`, the integration ID, function name, function type, and final source `code`. After deployment, your app can call or trigger the function like any other Nango function.
+
+Resolve these endpoints against `NANGO_SERVER_URL`, or `https://api.nango.dev` by default. Send `Authorization: Bearer <NANGO-API-KEY>` and `Content-Type: application/json`. Scoped API keys need `environment:functions:compile` for compile, `environment:functions:dryrun` for dry run creation and polling, and `environment:deploy` for deployment.
 
 The Functions API is powerful, but it intentionally skips a local Git workflow. For production integrations that need code review, tests, ownership, and CI/CD, prefer [local development with the CLI](#build-locally-with-the-cli).
 
