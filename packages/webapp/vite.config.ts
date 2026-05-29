@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import tailwindcss from '@tailwindcss/vite';
@@ -30,5 +31,8 @@ export default defineConfig({
         proxy: {
             '/env.js': 'http://localhost:3003'
         }
+    },
+    define: {
+        'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
     }
 });
