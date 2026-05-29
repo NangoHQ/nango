@@ -95,21 +95,21 @@
     --color-btn-primary-disabled: var(--interactive-disabled);
     --color-btn-primary-loading: var(--interactive-primary-active);
 
-    /* Button — Secondary (DS: Outline) */
-    --color-btn-secondary-bg: var(--interactive-outline);
+    /* Button — Secondary (gap: DS has no gray-fill secondary; surface-raised is closest solid token) */
+    --color-btn-secondary-bg: var(--surface-raised);
     --color-btn-secondary-fg: var(--text-default);
-    --color-btn-secondary-hover: var(--interactive-outline-hover);
-    --color-btn-secondary-press: var(--interactive-outline-active);
+    --color-btn-secondary-hover: var(--state-hover);
+    --color-btn-secondary-press: var(--state-pressed);
     --color-btn-secondary-disabled: var(--interactive-disabled);
-    --color-btn-secondary-loading: var(--interactive-outline-active);
+    --color-btn-secondary-loading: var(--state-pressed);
 
-    /* Button — Tertiary (DS: Ghost) */
-    --color-btn-tertiary-bg: var(--interactive-ghost);
+    /* Button — Tertiary (gap: DS has no white-fill tertiary; surface-panel is closest solid token) */
+    --color-btn-tertiary-bg: var(--surface-panel);
     --color-btn-tertiary-fg: var(--text-secondary);
-    --color-btn-tertiary-hover: var(--interactive-ghost-hover);
-    --color-btn-tertiary-press: var(--interactive-ghost-active);
+    --color-btn-tertiary-hover: var(--state-hover);
+    --color-btn-tertiary-press: var(--state-pressed);
     --color-btn-tertiary-disabled: var(--interactive-disabled);
-    --color-btn-tertiary-loading: var(--interactive-ghost-active);
+    --color-btn-tertiary-loading: var(--state-pressed);
 
     /* Button — Destructive (DS: Danger) */
     --color-btn-destructive-bg: var(--interactive-danger);
