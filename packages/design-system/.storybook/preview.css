@@ -1,5 +1,7 @@
-@import 'tailwindcss';
-@import '../tokens/tokens.generated.css';
+@import '../../webapp/src/index.css';
+
+/* Tell Tailwind v4 to scan webapp source files for utility classes */
+@source '../../webapp/src';
 
 /* Wire Tailwind's font-sans / font-mono utilities to the DS fonts */
 @theme {
