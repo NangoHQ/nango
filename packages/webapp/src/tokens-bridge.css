@@ -85,7 +85,7 @@
     /* Dropdown */
     --color-dropdown-bg-default: var(--surface-overlay);
     --color-dropdown-bg-hover: var(--state-hover);
-    --color-dropdown-bg-press: var(--state-pressed);
+    --color-dropdown-bg-press: var(--surface-overlay);
 
     /* Button — Primary (DS: Primary) */
     --color-btn-primary-bg: var(--interactive-primary);
