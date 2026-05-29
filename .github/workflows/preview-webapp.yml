@@ -84,10 +84,8 @@ jobs:
             - name: Build Webapp
               run: npm run ts-build && npm run -w @nangohq/webapp build
 
-            - name: Replace env.js source with api path in dist/index.html
-              run: |
-                  FILE="packages/webapp/dist/index.html"
-                  sed -E -i 's#(src=")/env\.js\?hash=([^"]+)#\1${{ vars.API_DOMAIN }}/env.js?hash=\2#g' "$FILE"
+            - name: Inject env.js integrity into dist/index.html
+              run: node scripts/inject-env-js-integrity.mjs packages/webapp/dist/index.html "${{ vars.API_DOMAIN }}"
 
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
