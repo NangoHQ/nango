@@ -111,10 +111,6 @@ export class Clickhouse {
         }
 
         const { accountId, metric, dimension, timeframe } = query;
-        // Defense-in-depth: TS types + controller zod schema already constrain
-        // `dimension` to BREAKDOWN_DIMENSIONS, but TS is erased at runtime and
-        // one `as never` cast exists in usage.ts. Reject anything else here
-        // before it reaches the SQL interpolation.
         if (!isAllowedDimension(dimension)) {
             return Err(new Error(`Invalid dimension: ${JSON.stringify(dimension)}`));
         }

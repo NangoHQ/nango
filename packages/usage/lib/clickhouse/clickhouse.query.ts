@@ -33,12 +33,6 @@ export const BREAKDOWN_DIMENSIONS = {
 
 type DimensionFor<M extends UsageMetric> = 'none' | (typeof BREAKDOWN_DIMENSIONS)[M][number];
 
-// Runtime allowlist for the dimension identifier interpolated into the CH SQL.
-// TS types already narrow this at compile time and the controller's zod schema
-// validates the request, but TS types are erased at runtime and one `as never`
-// escape hatch exists in `usage.ts` (per-metric dim union can't narrow inside
-// a flatMap over the metric union — controller-validated, but worth a
-// defense-in-depth check at the SQL boundary).
 const ALLOWED_DIMENSIONS: ReadonlySet<string> = new Set<string>(['none', ...Object.values(BREAKDOWN_DIMENSIONS).flatMap((v) => [...v])]);
 
 export function isAllowedDimension(dimension: string): boolean {

@@ -12,8 +12,6 @@ describe('isAllowedDimension', () => {
         }
     });
 
-    // Defense-in-depth: TS types + zod schema already block these upstream,
-    // but the CH method takes a final cut at runtime before any SQL interp.
     it('rejects strings outside the allowlist (SQL injection guard)', () => {
         expect(isAllowedDimension('')).toBe(false);
         expect(isAllowedDimension('1; DROP TABLE users--')).toBe(false);
