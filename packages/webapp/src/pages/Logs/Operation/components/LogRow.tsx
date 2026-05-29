@@ -1,6 +1,7 @@
 import { flexRender } from '@tanstack/react-table';
 
 import { cn } from '../../../../utils/utils';
+import { TableCell, TableRow } from '@/components-v2/ui/Table';
 
 import type { SearchMessagesData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
