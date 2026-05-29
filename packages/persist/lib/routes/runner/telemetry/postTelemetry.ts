@@ -39,9 +39,14 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
         if (callsite === 'proxy') {
             metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
             metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
-        } else {
+        } else if (callsite === 'uncontrolled_fetch') {
             metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
             metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
+        } else if (callsite === 'persist_records') {
+            metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES, bytesSent);
+            metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES, bytesReceived);
+        } else if (callsite === 'persist_logs') {
+            metrics.increment(metrics.Types.RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES, bytesSent);
         }
     }
 
