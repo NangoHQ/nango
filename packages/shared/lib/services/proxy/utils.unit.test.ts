@@ -1228,7 +1228,7 @@ describe('getAxiosConfiguration', () => {
         expect(axiosConfig.beforeRedirect).toBeDefined();
     });
 
-    it('should set beforeRedirect when forwardHeadersOnRedirect is false (to track metric)', () => {
+    it('should not forward headers when forwardHeadersOnRedirect is false', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
@@ -1242,7 +1242,28 @@ describe('getAxiosConfiguration', () => {
             connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
         });
 
-        expect(axiosConfig.beforeRedirect).toBeDefined();
+        const redirectOptions: Record<string, any> = { headers: {} };
+        (axiosConfig.beforeRedirect as (opts: Record<string, any>) => void)(redirectOptions);
+        expect(redirectOptions['headers']['authorization']).toBeUndefined();
+    });
+
+    it('should forward headers when forwardHeadersOnRedirect is true', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            forwardHeadersOnRedirect: true
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'tok123', raw: {} } })
+        });
+
+        const redirectOptions: Record<string, any> = { headers: {} };
+        (axiosConfig.beforeRedirect as (opts: Record<string, any>) => void)(redirectOptions);
+        expect(redirectOptions['headers']['authorization']).toBe('Bearer tok123');
     });
 
     it('invokes validateProxyRedirectUrl with redirect href before other beforeRedirect work', () => {

@@ -11704,14 +11704,30 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    authorization_url: https://oauth2.mercury.com/oauth2/auth
-    token_url: https://oauth2.mercury.com/oauth2/token
+    authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
+    token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
         - offline_access
     proxy:
-        base_url: https://api.mercury.com
+        base_url: https://${connectionConfig.hostname} || https://api.mercury.com
     docs: https://nango.dev/docs/api-integrations/mercury
+    docs_connect: https://nango.dev/docs/api-integrations/mercury/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+    connection_config:
+        oauth_hostname:
+            type: string
+            title: OAuth Hostname
+            description: Your Mercury OAuth hostname.
+            example: oauth2-sandbox.mercury.com
+            optional: true
+            pattern: '^oauth2(?:-sandbox)?\.mercury\.com$'
+        hostname:
+            type: string
+            title: API Hostname
+            description: Your Mercury API hostname.
+            example: api-sandbox.mercury.com
+            optional: true
+            pattern: '^api(?:-sandbox)?\.mercury\.com$'
 
 meta-marketing-api:
     display_name: Meta Marketing API
@@ -19416,6 +19432,30 @@ the-swarm:
             example: aB3cD9eF************************wX6yZ2
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-get-your-api-key'
+
+theirstack:
+    display_name: TheirStack
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.theirstack.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/billing/credit-balance
+    docs: https://nango.dev/docs/api-integrations/theirstack
+    docs_connect: https://nango.dev/docs/api-integrations/theirstack/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TheirStack API key.
+            example: eyJhbGci*******.eyJ2ZX********.kWB5********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-api-key'
 
 terraform:
     display_name: Terraform
