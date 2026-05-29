@@ -7,7 +7,6 @@ import { permissions } from '@nangohq/authz';
 import { DeleteButton } from './components/DeleteButton';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
-import { PROD_ENVIRONMENT_NAME } from '../../../constants';
 import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
@@ -21,6 +20,7 @@ import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { APIError } from '@/utils/api';
+import { PROD_ENVIRONMENT_NAME } from '@/utils/environments';
 
 export const General: React.FC = () => {
     const navigate = useNavigate();

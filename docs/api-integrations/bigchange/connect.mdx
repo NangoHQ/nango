@@ -1,0 +1,44 @@
+---
+title: BigChange - How do I link my account?
+sidebarTitle: BigChange
+---
+
+# Overview
+
+To authenticate with BigChange, you will need:
+1. **Partner API Client ID and Client Secret** — issued by BigChange to the integrator (set once per Nango integration).
+2. **Customer ID** — the numeric Customer ID for the BigChange tenant you are connecting (per Nango connection).
+
+BigChange uses OAuth 2.0 Client Credentials authentication: a single Partner API `client_id` and `client_secret` are configured at the Nango integration level, and each individual BigChange customer is identified by their numeric Customer ID, passed in the `customer-id` request header.
+
+### Prerequisites:
+
+- Access to the [BigChange Developer Portal](https://developers.bigchange.com) with permission to create Partner API keys.
+- The numeric Customer ID for each BigChange tenant you intend to connect.
+
+### Instructions:
+
+#### Step 1: Generate your BigChange Partner API credentials
+
+1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com).
+2. Navigate to **API Key Management**.
+3. Click **Create new API Key**, give it a descriptive name, and confirm. BigChange will issue a `client_id` and `client_secret`.
+4. Copy both values. The `client_secret` is shown only once.
+5. In your Nango BigChange integration settings, paste the `client_id` and `client_secret` into the **Client ID** and **Client Secret** fields. These are shared across every BigChange tenant you connect.
+
+#### Step 2: Find your BigChange Customer ID
+
+1. Sign in to the [BigChange Developer Portal](https://developers.bigchange.com).
+2. Navigate to **API Key Management**. The numeric Customer ID is shown in the page description, e.g. `5690`.
+
+<Tip>The Customer ID is numeric only — digits 0-9.</Tip>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **BigChange Customer ID**:
+
+1. Open the form where you need to authenticate with BigChange.
+2. Enter your **BigChange Customer ID** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to BigChange.

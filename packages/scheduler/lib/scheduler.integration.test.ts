@@ -220,6 +220,11 @@ describe('Scheduler', () => {
         await immediate(scheduler, { schedule }); // first task: OK
         await expect(immediate(scheduler, { schedule })).rejects.toThrow();
     });
+    it('should create an uncapped task when immediate is called for a schedule', async () => {
+        const schedule = await recurring({ scheduler });
+        const task = await immediate(scheduler, { schedule });
+        expect(task.groupMaxConcurrency).toBe(0);
+    });
     it('should change schedule state', async () => {
         const paused = await recurring({ scheduler, state: 'PAUSED' });
         expect(paused.state).toBe('PAUSED');
@@ -253,7 +258,52 @@ describe('Scheduler', () => {
         expect(found.length).toBe(1);
         expect(found[0]?.id).toBe(schedule.id);
     });
+
+    describe('immediateBatch', () => {
+        it('should create a batch of tasks', async () => {
+            const groupKey = nanoid();
+            const propsList = [batchProps({ groupKey }), batchProps({ groupKey }), batchProps({ groupKey })];
+            const { created, discarded } = (await scheduler.immediateBatch(propsList)).unwrap();
+            expect(created).toHaveLength(3);
+            expect(created.map((t) => t.name).sort()).toEqual(propsList.map((p) => p.name).sort());
+            expect(created.every((t) => t.state === 'CREATED')).toBe(true);
+            expect(discarded).toEqual([]);
+            expect(callbacks.CREATED).toHaveBeenCalledTimes(3);
+        });
+        it('should report a duplicate as discarded without failing the whole batch', async () => {
+            const groupKey = nanoid();
+            const existing = batchProps({ groupKey });
+            (await scheduler.immediate(existing)).unwrap();
+            callbacks.CREATED.mockReset();
+
+            const newProp = batchProps({ groupKey });
+            const { created, discarded } = (await scheduler.immediateBatch([existing, newProp])).unwrap();
+            expect(created.map((t) => t.name)).toEqual([newProp.name]);
+            expect(discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: existing.name, reason: 'duplicate' }]);
+            expect(callbacks.CREATED).toHaveBeenCalledOnce();
+        });
+        it('should return empty created/discarded for an empty batch', async () => {
+            const res = (await scheduler.immediateBatch([])).unwrap();
+            expect(res).toEqual({ created: [], discarded: [] });
+        });
+    });
 });
+
+function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['immediateBatch']>[0][number] {
+    return {
+        name: overrides.name || nanoid(),
+        payload: overrides.payload || {},
+        groupKey: overrides.groupKey || nanoid(),
+        groupMaxConcurrency: overrides.groupMaxConcurrency ?? 0,
+        retryMax: overrides.retryMax ?? 0,
+        retryCount: overrides.retryCount ?? 0,
+        createdToStartedTimeoutSecs: overrides.createdToStartedTimeoutSecs ?? 3600,
+        startedToCompletedTimeoutSecs: overrides.startedToCompletedTimeoutSecs ?? 3600,
+        heartbeatTimeoutSecs: overrides.heartbeatTimeoutSecs ?? 600,
+        ownerKey: overrides.ownerKey ?? null,
+        retryKey: overrides.retryKey ?? null
+    };
+}
 
 async function recurring({ scheduler, state = 'PAUSED' }: { scheduler: Scheduler; state?: ScheduleState }): Promise<Schedule> {
     const recurringProps = {

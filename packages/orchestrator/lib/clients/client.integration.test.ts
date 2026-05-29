@@ -300,6 +300,116 @@ describe('OrchestratorClient', async () => {
             }
         });
     });
+    describe('executeWebhookBatch', () => {
+        it('should schedule a batch of webhooks in a single call', async () => {
+            const groupKey = nanoid();
+            const batchSize = 5;
+            const propsList = Array.from({ length: batchSize }, () => ({
+                name: nanoid(),
+                group: { key: groupKey, maxConcurrency: 0 },
+                args: {
+                    webhookName: 'W',
+                    parentSyncName: 'parent',
+                    connection: {
+                        id: 1,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 1
+                    },
+                    activityLogId: 'a',
+                    input: { foo: 'bar' }
+                }
+            }));
+
+            const res = await client.executeWebhookBatch(propsList);
+            expect(res.isOk()).toBe(true);
+            if (res.isOk()) {
+                expect(res.value).toHaveLength(batchSize);
+                for (let i = 0; i < batchSize; i++) {
+                    const entry = res.value[i]!;
+                    expect(entry.isOk()).toBe(true);
+                    if (entry.isOk()) {
+                        expect(entry.value.taskId).toMatch(/.+/);
+                        expect(entry.value.retryKey).toMatch(/.+/);
+                    }
+                }
+            }
+        });
+        it('should report duplicate-name failures per-entry without failing the whole batch', async () => {
+            const groupKey = nanoid();
+            const existingName = nanoid();
+
+            const firstRes = await client.executeWebhookBatch([
+                {
+                    name: existingName,
+                    group: { key: groupKey, maxConcurrency: 0 },
+                    args: {
+                        webhookName: 'W',
+                        parentSyncName: 'parent',
+                        connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                        activityLogId: 'a',
+                        input: {}
+                    }
+                }
+            ]);
+            expect(firstRes.isOk()).toBe(true);
+
+            const newName = nanoid();
+            const secondRes = await client.executeWebhookBatch([
+                {
+                    name: existingName,
+                    group: { key: groupKey, maxConcurrency: 0 },
+                    args: {
+                        webhookName: 'W',
+                        parentSyncName: 'parent',
+                        connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                        activityLogId: 'a',
+                        input: {}
+                    }
+                },
+                {
+                    name: newName,
+                    group: { key: groupKey, maxConcurrency: 0 },
+                    args: {
+                        webhookName: 'W',
+                        parentSyncName: 'parent',
+                        connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                        activityLogId: 'a',
+                        input: {}
+                    }
+                }
+            ]);
+            expect(secondRes.isOk()).toBe(true);
+            if (secondRes.isOk()) {
+                expect(secondRes.value[0]?.isErr()).toBe(true);
+                if (secondRes.value[0]?.isErr()) {
+                    expect(secondRes.value[0].error.name).toBe('duplicate_task_name');
+                }
+                expect(secondRes.value[1]?.isOk()).toBe(true);
+            }
+        });
+        it('should reject batches containing duplicate task names', async () => {
+            const sharedName = nanoid();
+            const groupKey = nanoid();
+            const props = {
+                name: sharedName,
+                group: { key: groupKey, maxConcurrency: 0 },
+                args: {
+                    webhookName: 'W',
+                    parentSyncName: 'parent',
+                    connection: { id: 1, connection_id: 'C', provider_config_key: 'P', environment_id: 1 },
+                    activityLogId: 'a',
+                    input: {}
+                }
+            };
+            const res = await client.executeWebhookBatch([props, props]);
+            expect(res.isErr()).toBe(true);
+            if (res.isErr()) {
+                expect(res.error.name).toBe('fetch_failed');
+                expect(JSON.stringify(res.error.payload)).toContain('duplicate task names within batch');
+            }
+        });
+    });
     describe('succeed', () => {
         it('should support big output', async () => {
             const groupKey = nanoid();

@@ -78,7 +78,7 @@ export const Functions: React.FC = () => {
     }
 
     return (
-        <SettingsContent title="Functions">
+        <SettingsContent title="Function env vars">
             <div className="flex flex-col gap-2.5">
                 <div className="inline-flex items-center gap-2">
                     Environment variables
@@ -95,7 +95,6 @@ export const Functions: React.FC = () => {
                             placeholderValue="value"
                             disabled={!edit || isPending}
                             isSecret={true}
-                            alwaysShowEmptyRow={edit}
                         />
                         {errors.length > 0 && (
                             <div className="flex flex-col gap-1">

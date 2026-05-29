@@ -1,0 +1,31 @@
+{
+    "name": "@nangohq/sandbox",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "private": true,
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/sandbox"
+    },
+    "dependencies": {
+        "@nangohq/database": "file:../database",
+        "@nangohq/shared": "file:../shared",
+        "@nangohq/utils": "file:../utils",
+        "e2b": "2.18.0",
+        "jsonwebtoken": "9.0.3"
+    },
+    "devDependencies": {
+        "@nangohq/types": "file:../types",
+        "@types/jsonwebtoken": "9.0.9",
+        "knex": "3.1.0",
+        "vitest": "3.2.4"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

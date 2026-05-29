@@ -39,6 +39,9 @@
             "path": "../records"
         },
         {
+            "path": "../sandbox"
+        },
+        {
             "path": "../orchestrator"
         },
         {

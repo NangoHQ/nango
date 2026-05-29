@@ -175,7 +175,6 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                             onChange={field.onChange}
                                             placeholderKey="Tag Name"
                                             placeholderValue="Tag Value"
-                                            alwaysShowEmptyRow={true}
                                         />
                                         <FormMessage />
                                     </FormItem>
@@ -219,7 +218,6 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             onChange={field.onChange}
                                                             placeholderKey="Param Name"
                                                             placeholderValue="Param Value"
-                                                            alwaysShowEmptyRow={true}
                                                         />
                                                     </FormItem>
                                                 )}

@@ -36,7 +36,7 @@ export const BackendSettings: React.FC = () => {
     }
 
     return (
-        <SettingsContent title="Backend">
+        <SettingsContent title="Auth callback">
             <SettingsGroup
                 label={
                     <>
