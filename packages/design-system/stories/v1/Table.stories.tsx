@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { Body, Cell, Head, Header, Row, Table } from '@/components/ui/Table';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -19,24 +19,24 @@ export const Default: Story = {
     render: () => (
         <div className="bg-bg-black p-6 rounded-md">
             <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Connection ID</TableHead>
-                        <TableHead>Integration</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last sync</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
+                <Header>
+                    <Row>
+                        <Head>Connection ID</Head>
+                        <Head>Integration</Head>
+                        <Head>Status</Head>
+                        <Head>Last sync</Head>
+                    </Row>
+                </Header>
+                <Body>
                     {rows.map((row) => (
-                        <TableRow key={row.id}>
-                            <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.integration}</TableCell>
-                            <TableCell>{row.status}</TableCell>
-                            <TableCell>{row.last}</TableCell>
-                        </TableRow>
+                        <Row key={row.id}>
+                            <Cell>{row.id}</Cell>
+                            <Cell>{row.integration}</Cell>
+                            <Cell>{row.status}</Cell>
+                            <Cell>{row.last}</Cell>
+                        </Row>
                     ))}
-                </TableBody>
+                </Body>
             </Table>
         </div>
     )

@@ -1,4 +1,4 @@
-import { Typography } from '@/components/ui/typography/Typography';
+import Typography from '@/components/ui/typography/Typography';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

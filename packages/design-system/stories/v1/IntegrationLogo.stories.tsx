@@ -1,4 +1,4 @@
-import { IntegrationLogo } from '@/components/ui/IntegrationLogo';
+import IntegrationLogo from '@/components/ui/IntegrationLogo';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
