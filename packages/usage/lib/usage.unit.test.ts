@@ -141,7 +141,7 @@ describe('toRunningAvgUsage', () => {
         expect(out!.total).toBe(70);
     });
 
-    it('rounds running averages to the nearest integer (matches Orb wire shape)', () => {
+    it('ships the float running-average as-is (Orb does the same; rounding crushes low-volume dims)', () => {
         // 100 / 3 = 33.33...
         const result: GetDailySumAndBatchesResult = {
             accountId,
@@ -149,8 +149,28 @@ describe('toRunningAvgUsage', () => {
             series: [{ days: [{ day: day(0), sum: 100, batches: 3 }] }]
         };
         const [out] = toRunningAvgUsage(result);
-        expect(out!.usage[0]!.quantity).toBe(33);
-        expect(out!.total).toBe(33);
+        expect(out!.usage[0]!.quantity).toBeCloseTo(33.333333, 5);
+        expect(out!.total).toBeCloseTo(33.333333, 5);
+    });
+
+    it('low-volume breakdown does NOT round to 0 (the reason we ship floats)', () => {
+        // 1 record split across 3 dims with batches=3 each.
+        // Pre-fix: each dim = round(1/3) = 0 → breakdown view showed all zeros.
+        // Post-fix: each dim = 0.333..., breakdown preserves the contribution.
+        const result: GetDailySumAndBatchesResult = {
+            accountId,
+            metric: 'records',
+            series: [
+                { dimension: 'integration_id', dimensionValue: 'a', days: [{ day: day(0), sum: 1, batches: 3 }] },
+                { dimension: 'integration_id', dimensionValue: 'b', days: [{ day: day(0), sum: 1, batches: 3 }] },
+                { dimension: 'integration_id', dimensionValue: 'c', days: [{ day: day(0), sum: 1, batches: 3 }] }
+            ]
+        };
+        const out = toRunningAvgUsage(result);
+        for (const m of out) {
+            expect(m.usage[0]!.quantity).toBeGreaterThan(0);
+            expect(m.usage[0]!.quantity).toBeCloseTo(1 / 3, 5);
+        }
     });
 });
 

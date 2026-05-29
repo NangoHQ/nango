@@ -561,11 +561,14 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
             // empty-day groups out), but if it does we skip rather than divide by zero.
             continue;
         }
-        const quantity = Math.round(runningSum / runningBatches);
+        // Ship the float — Orb returns floats too (e.g. 583418434.4342688).
+        // Rounding here crushes low-volume breakdown series to 0 (e.g. 1
+        // record split across 3 dims renders as 0, 0, 0). Presentation
+        // layer decides how to format.
         usage.push({
             timeframeStart: day.day,
             timeframeEnd: addOneDay(day.day),
-            quantity
+            quantity: runningSum / runningBatches
         });
     }
 
