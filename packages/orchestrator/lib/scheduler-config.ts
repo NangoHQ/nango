@@ -1,5 +1,7 @@
 import { metrics } from '@nangohq/utils';
 
+import { logger } from './utils.js';
+
 import type { SchedulerConfig, SchedulerEvent } from '@nangohq/scheduler';
 import type { ENVS, parseEnvs } from '@nangohq/utils';
 
@@ -29,6 +31,7 @@ export function handleSchedulerEvent(event: SchedulerEvent): void {
     switch (event.type) {
         case 'task_dropped': {
             const primitive = event.groupKey.split(GROUP_PREFIX_SEPARATOR)[0] || 'unknown';
+            logger.warning(`Dropped ${event.count} task(s) for group '${event.groupKey}' (reason: ${event.reason})`);
             metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, event.count, { primitive, reason: event.reason });
             return;
         }

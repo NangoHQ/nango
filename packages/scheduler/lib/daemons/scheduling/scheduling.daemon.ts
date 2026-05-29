@@ -53,7 +53,8 @@ export class SchedulingDaemon extends SchedulerDaemon {
     }
 
     async run(): Promise<void> {
-        return this.db.transaction(async (trx) => {
+        const cappedCounts = new Map<string, number>();
+        await this.db.transaction(async (trx) => {
             try {
                 // Try to acquire a lock to prevent multiple instances from scheduling at the same time
                 const res = await tracer.trace('scheduler.scheduling.acquire_lock', async () => {
@@ -90,17 +91,9 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                 if (createRes.isErr()) {
                                     throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
                                 }
-                                const cappedCounts = new Map<string, number>();
                                 for (const d of createRes.value.discarded) {
                                     if (d.reason === 'capped') {
                                         cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
-                                    }
-                                }
-                                if (cappedCounts.size > 0) {
-                                    const cappedGroupKeys = Array.from(cappedCounts.keys());
-                                    logger.warning(`Capped scheduling tasks for group keys: ${cappedGroupKeys.join(', ')}`);
-                                    for (const [groupKey, count] of cappedCounts) {
-                                        this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
                                     }
                                 }
                                 const scheduleUpdates = [];
@@ -135,5 +128,8 @@ export class SchedulingDaemon extends SchedulerDaemon {
                 throw err;
             }
         });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
     }
 }

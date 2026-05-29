@@ -12,17 +12,25 @@ import type { ConnectionConfig } from 'pg';
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
 
-export type DatabaseClientSslOption = ConnectionConfig['ssl'];
+export type DatabaseClientSslOption = NonNullable<ConnectionConfig['ssl']>;
 
 export interface DatabaseClientOptions {
     url: string;
     schema: string;
-    poolMin?: number;
-    poolMax?: number;
-    ssl?: DatabaseClientSslOption;
-    applicationName?: string;
-    statementTimeoutMs?: number;
+    poolMin: number;
+    poolMax: number;
+    ssl: DatabaseClientSslOption;
+    applicationName: string;
+    statementTimeoutMs: number;
 }
+
+export const defaultDatabaseClientOptions = {
+    poolMin: 2,
+    poolMax: 50,
+    ssl: false as DatabaseClientSslOption,
+    applicationName: '[unknown]',
+    statementTimeoutMs: 60_000
+} satisfies Omit<DatabaseClientOptions, 'url' | 'schema'>;
 
 export class DatabaseClient {
     public db: knex.Knex;
@@ -30,7 +38,7 @@ export class DatabaseClient {
     public url: string;
     private config: knex.Knex.Config;
 
-    constructor({ url, schema, poolMin = 2, poolMax = 50, ssl = false, applicationName = '[unknown]', statementTimeoutMs = 60000 }: DatabaseClientOptions) {
+    constructor({ url, schema, poolMin, poolMax, ssl, applicationName, statementTimeoutMs }: DatabaseClientOptions) {
         this.url = url;
         this.schema = schema;
         this.config = {

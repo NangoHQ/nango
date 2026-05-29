@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { SchedulingDaemon } from './scheduling.daemon.js';
 import { dueSchedules } from './scheduling.js';
 import { defaultSchedulerConfig } from '../../config.js';
-import { DatabaseClient } from '../../db/client.js';
+import { DatabaseClient, defaultDatabaseClientOptions } from '../../db/client.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
 import * as schedules from '../../models/schedules.js';
@@ -96,6 +96,7 @@ describe('SchedulingDaemon', () => {
     // Dedicated schema: running the daemon against the shared 'scheduler' schema races with the
     // looping daemons in scheduler.integration.test.ts via SKIP LOCKED.
     const dbClient = new DatabaseClient({
+        ...defaultDatabaseClientOptions,
         url: `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}/${process.env['NANGO_DB_NAME']}`,
         schema: 'scheduler_daemon'
     });

@@ -65,7 +65,6 @@ export class ExpiringDaemon extends SchedulerDaemon {
                     for (const task of expired.value) {
                         this.onExpiring(task);
                     }
-                    logger.info(`Expired tasks: ${JSON.stringify(expired.value.map((t) => t.id))}`);
                 }
             } else {
                 await setTimeout(1000); // wait for 1s to prevent retrying too quickly

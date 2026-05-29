@@ -204,7 +204,8 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | FromScheduleProps): Promise<Result<Task>> {
-        return this.db.transaction(async (trx) => {
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
             if ('scheduleName' in props) {
@@ -255,14 +256,10 @@ export class Scheduler {
             if (createResult.isErr()) {
                 return Err(createResult.error);
             }
-            const cappedCounts = new Map<string, number>();
             for (const d of createResult.value.discarded) {
                 if (d.reason === 'capped') {
                     cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
                 }
-            }
-            for (const [groupKey, count] of cappedCounts) {
-                this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
             }
             const task = createResult.value.created[0];
             if (!task) {
@@ -277,6 +274,10 @@ export class Scheduler {
             this.onCallbacks[task.state](task);
             return Ok(task);
         });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
     }
 
     /**
@@ -290,7 +291,8 @@ export class Scheduler {
         if (propsList.length === 0) {
             return Ok({ created: [], discarded: [] });
         }
-        return this.db.transaction(async (trx) => {
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>>(async (trx) => {
             const now = new Date();
             const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
                 ...props,
@@ -306,14 +308,10 @@ export class Scheduler {
                 return Err(createResult.error);
             }
 
-            const cappedCounts = new Map<string, number>();
             for (const d of createResult.value.discarded) {
                 if (d.reason === 'capped') {
                     cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
                 }
-            }
-            for (const [groupKey, count] of cappedCounts) {
-                this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
             }
 
             for (const task of createResult.value.created) {
@@ -322,6 +320,10 @@ export class Scheduler {
 
             return Ok(createResult.value);
         });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
     }
 
     /**

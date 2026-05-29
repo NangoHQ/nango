@@ -1,6 +1,6 @@
 import './tracer.js';
 
-import { DatabaseClient, Scheduler } from '@nangohq/scheduler';
+import { DatabaseClient, Scheduler, defaultDatabaseClientOptions } from '@nangohq/scheduler';
 import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
 import { envs } from './env.js';
@@ -31,6 +31,7 @@ const databaseUrl =
 
 try {
     const dbClient = new DatabaseClient({
+        ...defaultDatabaseClientOptions,
         url: databaseUrl,
         schema: databaseSchema,
         poolMax: envs.ORCHESTRATOR_DB_POOL_MAX,
