@@ -189,6 +189,8 @@ export default class Nango {
         //
         const modal = window.open('', '_blank', windowFeaturesToString(computeLayout({ expectedWidth: this.width, expectedHeight: this.height })));
 
+        let messageListener: ((event: MessageEvent) => void) | null = null;
+
         return new Promise<AuthSuccess>((resolve, reject) => {
             const successHandler = (authSuccess: AuthSuccess) => {
                 resolve(authSuccess);
@@ -198,6 +200,32 @@ export default class Nango {
                 reject(new AuthError(errorDesc, errorType));
                 return;
             };
+
+            messageListener = (event: MessageEvent) => {
+                if (typeof event.data !== 'object' || !event.data || !event.data.type) {
+                    return;
+                }
+
+                if (event.data.type === 'nango_oauth_callback_success') {
+                    if (this.debug) {
+                        console.log(debugLogPrefix, 'Success received via postMessage. Resolving...');
+                    }
+
+                    successHandler({
+                        providerConfigKey,
+                        connectionId: connectionId || 'unknown',
+                        isPending: false
+                    });
+                } else if (event.data.type === 'nango_oauth_callback_error') {
+                    if (this.debug) {
+                        console.log(debugLogPrefix, 'Error received via postMessage. Rejecting...');
+                    }
+
+                    const payload = event.data.payload;
+                    errorHandler(payload?.errorType || 'authorization_failed', payload?.message || 'Authorization failed');
+                }
+            };
+            window.addEventListener('message', messageListener);
 
             // Clear state if the modal is already opened
             if (this.win) {
@@ -246,6 +274,9 @@ export default class Nango {
                 }
             }, 500);
         }).finally(() => {
+            if (messageListener) {
+                window.removeEventListener('message', messageListener);
+            }
             this.clear();
         });
     }

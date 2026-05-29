@@ -68,8 +68,40 @@ server.headersTimeout = envs.NANGO_SERVER_KEEP_ALIVE_TIMEOUT + 1000; //needs to 
 // Websocket
 const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 
+interface ExtWebSocket extends WebSocket {
+    isAlive?: boolean;
+}
+
 wss.on('connection', async (ws: WebSocket) => {
+    const extWs = ws as ExtWebSocket;
+    extWs.isAlive = true;
+
+    ws.on('pong', () => {
+        extWs.isAlive = true;
+    });
+
+    ws.on('error', (err) => {
+        logger.error('WebSocket connection error:', err);
+    });
+
     await publisher.subscribe(ws);
+});
+
+const heartbeatInterval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        const extWs = ws as ExtWebSocket;
+        if (extWs.isAlive === false) {
+            logger.info('WebSocket connection inactive, terminating...');
+            return ws.terminate();
+        }
+
+        extWs.isAlive = false;
+        ws.ping();
+    });
+}, 30000);
+
+wss.on('close', () => {
+    clearInterval(heartbeatInterval);
 });
 
 // Set to 'false' to disable migration at startup. Appropriate when you
