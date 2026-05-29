@@ -5,6 +5,7 @@ import type { Result } from '@nangohq/utils';
 export interface RecordsStore {
     migrate: () => Promise<void>;
     close: () => Promise<void>;
+    startDaemons: () => void;
 
     getRecords: ({
         connectionId,

@@ -31,7 +31,6 @@ export const config: Knex.Config & { migrations: Knex.MigratorConfig } = {
     }
 };
 
-// Optional — avoids opening two pools to the same URL
 const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
     ? {
           ...config,
@@ -43,14 +42,4 @@ const configRead: Knex.Config | undefined = envs.RECORDS_DATABASE_READ_URL
       }
     : undefined;
 
-let defaultStore: PostgresStore | undefined;
-
-export const getDefaultStore = (): PostgresStore => {
-    if (!defaultStore) {
-        defaultStore = new PostgresStore(config, configRead);
-        // The implicit daemon startup is an intentional design choice to preserve abstraction boundaries
-        // Extracting startDaemon() would leak postgres-specific implementation details
-        defaultStore.startDaemon();
-    }
-    return defaultStore;
-};
+export const defaultStore = new PostgresStore(config, configRead);

@@ -1,4 +1,4 @@
-import { getDefaultStore } from './default.js';
+import { defaultStore } from './default.js';
 
 import type { RecordsStore } from '../store.js';
 
@@ -15,6 +15,7 @@ export class RecordsRouter implements RecordsStore {
 
     migrate: RecordsStore['migrate'] = () => this.resolve().migrate();
     close: RecordsStore['close'] = () => this.resolve().close();
+    startDaemons: RecordsStore['startDaemons'] = () => this.resolve().startDaemons();
     getRecords: RecordsStore['getRecords'] = (params) => this.resolve().getRecords(params);
     getCursor: RecordsStore['getCursor'] = (params) => this.resolve().getCursor(params);
     upsert: RecordsStore['upsert'] = (params) => this.resolve().upsert(params);
@@ -27,4 +28,4 @@ export class RecordsRouter implements RecordsStore {
     autoDeletingCandidate: RecordsStore['autoDeletingCandidate'] = (params) => this.resolve().autoDeletingCandidate(params);
 }
 
-export const records = new RecordsRouter(getDefaultStore());
+export const records = new RecordsRouter(defaultStore);

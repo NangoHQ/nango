@@ -78,7 +78,7 @@ export class PostgresStore implements RecordsStore {
         logger.info('[records] migrations completed.');
     }
 
-    startDaemon(): void {
+    startDaemons(): void {
         const tickIntervalMs = envs.RECORDS_POSTGRES_SEEN_PARTITION_INTERVAL_MS;
         const maxAgeMs = envs.RECORDS_POSTGRES_SEEN_PARTITION_MAX_AGE_MS;
         this.daemon = cancellableDaemon({
