@@ -9,7 +9,7 @@ RUN jq '. | del(.references[] | select(.path == "packages/cli"))' tsconfig.build
 # ------------------
 # New tmp image
 # ------------------
-FROM node:22.21.1-bookworm-slim AS build
+FROM node:22.22.2-bookworm-slim AS build
 
 
 # Setup the app WORKDIR
@@ -31,6 +31,7 @@ COPY packages/persist/package.json ./packages/persist/package.json
 COPY packages/records/package.json ./packages/records/package.json
 COPY packages/runner/package.json ./packages/runner/package.json
 COPY packages/scheduler/package.json ./packages/scheduler/package.json
+COPY packages/sandbox/package.json ./packages/sandbox/package.json
 COPY packages/server/package.json ./packages/server/package.json
 COPY packages/shared/package.json ./packages/shared/package.json
 COPY packages/types/package.json ./packages/types/package.json
@@ -80,7 +81,7 @@ RUN true \
 
 # ---- Web ----
 # Resulting new, minimal image
-FROM node:22.21.1-bookworm-slim AS web
+FROM node:22.22.2-bookworm-slim AS web
 
 # Install a more recent npm
 RUN npm install -g npm@11.10.1

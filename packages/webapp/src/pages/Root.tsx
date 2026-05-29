@@ -1,11 +1,15 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { PROD_ENVIRONMENT_NAME } from '../constants';
 import { useMeta } from '../hooks/useMeta';
 import { useUser } from '../hooks/useUser';
 import { useStore } from '../store';
+import { PROD_ENVIRONMENT_NAME } from '../utils/environments';
 
+/**
+ * Rendered at `/`. Redirects the user to the right starting route based on
+ * auth state and environment — no UI of its own.
+ */
 export const Root: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();

@@ -14,6 +14,32 @@ import type { JsonObject } from 'type-fest';
 const path = '/v1/immediate';
 const method = 'POST';
 
+export interface ImmediateSuccess {
+    taskId: string;
+    retryKey: string;
+}
+
+export const immediateTaskSchema = z
+    .object({
+        name: z.string().min(1),
+        ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
+        group: z.object({
+            key: z.string().min(1),
+            maxConcurrency: z.coerce.number()
+        }),
+        retry: z.object({
+            count: z.number().int(),
+            max: z.number().int()
+        }),
+        timeoutSettingsInSecs: z.object({
+            createdToStarted: z.number().int().positive(),
+            startedToCompleted: z.number().int().positive(),
+            heartbeat: z.number().int().positive()
+        }),
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema])
+    })
+    .strict();
+
 export type PostImmediate = Endpoint<{
     Method: typeof method;
     Path: typeof path;
@@ -36,54 +62,11 @@ export type PostImmediate = Endpoint<{
         args: JsonObject & { type: TaskType };
     };
     Error: ApiError<'immediate_failed' | 'duplicate_task_name'>;
-    Success: { taskId: string; retryKey: string };
+    Success: ImmediateSuccess;
 }>;
-
-function argsSchema(data: any) {
-    if ('args' in data && 'type' in data.args) {
-        const taskType = data.args.type as TaskType;
-        switch (taskType) {
-            case 'sync':
-                return syncArgsSchema;
-            case 'action':
-                return actionArgsSchema;
-            case 'webhook':
-                return webhookArgsSchema;
-            case 'on-event':
-                return onEventArgsSchema;
-            case 'abort':
-                return syncAbortArgsSchema;
-            default:
-                ((_exhaustiveCheck: never) => {
-                    z.never();
-                })(taskType);
-        }
-    }
-    return z.never();
-}
 
 const validate = validateRequest<PostImmediate>({
     parseBody: (data: any) => {
-        const schema = z
-            .object({
-                name: z.string().min(1),
-                ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
-                group: z.object({
-                    key: z.string().min(1),
-                    maxConcurrency: z.coerce.number()
-                }),
-                retry: z.object({
-                    count: z.number().int(),
-                    max: z.number().int()
-                }),
-                timeoutSettingsInSecs: z.object({
-                    createdToStarted: z.number().int().positive(),
-                    startedToCompleted: z.number().int().positive(),
-                    heartbeat: z.number().int().positive()
-                }),
-                args: argsSchema(data)
-            })
-            .strict();
         return z
             .preprocess((o) => {
                 // for backwards compatibility
@@ -92,7 +75,7 @@ const validate = validateRequest<PostImmediate>({
                     return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
                 }
                 return o;
-            }, schema)
+            }, immediateTaskSchema)
             .parse(data);
     }
 });

@@ -4,12 +4,12 @@ import tracer from 'dd-trace';
 
 import { stringifyError } from '@nangohq/utils';
 
-import * as schedules from '../../models/schedules.js';
-import { SchedulerDaemon } from '../daemon.js';
 import { dueSchedules } from './scheduling.js';
 import { envs } from '../../env.js';
+import * as schedules from '../../models/schedules.js';
 import * as tasks from '../../models/tasks.js';
 import { logger } from '../../utils/logger.js';
+import { SchedulerDaemon } from '../daemon.js';
 
 import type { Task } from '../../types.js';
 import type knex from 'knex';
@@ -76,12 +76,15 @@ export class SchedulingDaemon extends SchedulerDaemon {
                                 if (createRes.isErr()) {
                                     throw new Error(`Failed to schedule tasks: ${stringifyError(createRes.error)}`);
                                 }
-                                if (createRes.value.cappedGroupKeys.length > 0) {
-                                    logger.warning(`Capped scheduling tasks for group keys: ${createRes.value.cappedGroupKeys.join(', ')}`);
+                                const cappedGroupKeys = [
+                                    ...new Set(createRes.value.discarded.filter((d) => d.reason === 'capped').map((d) => d.props.groupKey))
+                                ];
+                                if (cappedGroupKeys.length > 0) {
+                                    logger.warning(`Capped scheduling tasks for group keys: ${cappedGroupKeys.join(', ')}`);
                                 }
                                 const scheduleUpdates = [];
                                 const scheduledTasks = [];
-                                for (const task of createRes.value.tasks) {
+                                for (const task of createRes.value.created) {
                                     if (task.scheduleId) {
                                         scheduleUpdates.push({ id: task.scheduleId, taskId: task.id, taskState: task.state });
                                     }

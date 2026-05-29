@@ -190,4 +190,73 @@ describe('Webhooks: forward notification tests', () => {
         });
         expect(spy).toHaveBeenCalledTimes(4);
     });
+
+    it('Should report non-zero bytes.sent via onBytes on successful forward', async () => {
+        const payload = { some: 'data' };
+        let reportedBytes: { sent: number; received: number } | undefined;
+        const result = await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings,
+            logContextGetter,
+            integration,
+            payload,
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
+        });
+        expect(result.isOk()).toBe(true);
+        // payload sent to both primary and secondary URLs
+        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * 2;
+        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
+    });
+
+    it('Should report zero bytes via onBytes when forwarding is skipped', async () => {
+        let reportedBytes: { sent: number; received: number } | undefined;
+        const result = await forwardWebhook({
+            connectionIds: [],
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings: null,
+            logContextGetter,
+            integration,
+            payload: { some: 'data' },
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
+        });
+        expect(result.isOk()).toBe(true);
+        expect(reportedBytes).toEqual({ sent: 0, received: 0 });
+    });
+
+    it('Should sum bytes across connections in fan-out via onBytes', async () => {
+        const connectionIds = ['conn1', 'conn2'];
+        const payload = { x: 1 };
+        let reportedBytes: { sent: number; received: number } | undefined;
+        const result = await forwardWebhook({
+            connectionIds,
+            account,
+            environment: { name: 'dev', id: 1 } as DBEnvironment,
+            secret,
+            webhookSettings: { ...webhookSettings, secondary_url: '' },
+            logContextGetter,
+            integration,
+            payload,
+            webhookOriginalHeaders: {},
+            onBytes: (b) => {
+                reportedBytes = b;
+            }
+        });
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.forwarded).toBe(2);
+        }
+        const minBytes = Buffer.byteLength(JSON.stringify(payload)) * connectionIds.length;
+        expect(reportedBytes?.sent).toBeGreaterThanOrEqual(minBytes);
+    });
 });

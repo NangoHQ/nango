@@ -1,8 +1,9 @@
-import { ChevronsUpDown, CreditCard, LogOut, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { isDevToolsEnabled, useDevPanelStore } from '../DevToolPanel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
@@ -18,6 +19,7 @@ export const ProfileDropdown: React.FC = () => {
     const signout = useSignout();
     const { user } = useUser();
     const showGettingStarted = useStore((state) => state.showGettingStarted);
+    const toggleDevPanel = useDevPanelStore((s) => s.toggle);
 
     const items = useMemo(() => {
         const list = [
@@ -85,6 +87,19 @@ export const ProfileDropdown: React.FC = () => {
                                 <span>{item.label}</span>
                             </DropdownMenuItem>
                         ))}
+                        {isDevToolsEnabled && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onSelect={toggleDevPanel}
+                                    className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
+                                >
+                                    <SlidersHorizontal className="size-4 text-text-secondary group-hover:text-text-primary" />
+                                    <span>Dev Tools</span>
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                             onSelect={() => signout()}
                             className="group cursor-pointer flex flex-row items-center gap-2 text-text-secondary text-body-medium-medium hover:bg-dropdown-bg-hover hover:text-text-primary"
