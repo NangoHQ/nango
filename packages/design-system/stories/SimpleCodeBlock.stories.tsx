@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof SimpleCodeBlock> = {
     component: SimpleCodeBlock,
-    title: 'Components v2/SimpleCodeBlock',
+    title: 'Components v2/UI/SimpleCodeBlock',
     parameters: { layout: 'padded' }
 };
 export default meta;

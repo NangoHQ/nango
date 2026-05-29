@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/DropdownMenu',
+    title: 'Components v1/UI/DropdownMenu',
     parameters: { layout: 'padded' }
 };
 export default meta;

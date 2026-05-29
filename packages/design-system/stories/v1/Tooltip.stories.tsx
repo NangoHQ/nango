@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/Tooltip',
+    title: 'Components v1/UI/Tooltip',
     parameters: { layout: 'padded' }
 };
 export default meta;

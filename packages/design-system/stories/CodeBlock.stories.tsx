@@ -11,7 +11,7 @@ console.log(connection.credentials);`;
 
 const meta: Meta<typeof CodeBlock> = {
     component: CodeBlock,
-    title: 'Components v2/CodeBlock',
+    title: 'Components v2/UI/CodeBlock',
     parameters: { layout: 'padded' }
 };
 export default meta;

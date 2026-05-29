@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/ui/Tab
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Tabs',
+    title: 'Components v2/UI/Tabs',
     parameters: { layout: 'padded' }
 };
 export default meta;

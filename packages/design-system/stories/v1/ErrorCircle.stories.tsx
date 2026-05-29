@@ -3,7 +3,7 @@ import { ErrorCircle } from '@/components/ui/ErrorCircle';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/ErrorCircle',
+    title: 'Components v1/UI/ErrorCircle',
     parameters: { layout: 'padded' }
 };
 export default meta;

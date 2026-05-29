@@ -3,7 +3,7 @@ import { Dot } from '@/components-v2/ui/Dot';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Dot',
+    title: 'Components v2/UI/Dot',
     parameters: { layout: 'padded' }
 };
 export default meta;
