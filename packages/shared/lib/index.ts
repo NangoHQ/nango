@@ -13,7 +13,6 @@ import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
-import sandboxApiKeyService from './services/sandbox-api-key.service.js';
 import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
@@ -28,7 +27,8 @@ export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
 export * as signatureClient from './auth/signature.js';
 export * from './services/connections/credentials/refresh.js';
-export * from './services/function.service.js';
+export * from './services/sandbox-api-key.js';
+export * from './services/functions/index.js';
 export * from './services/on-event-scripts.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
@@ -43,26 +43,13 @@ export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
+export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
-export {
-    buildSandboxApiKeyScopes,
-    createSandboxApiKeyToken,
-    createSandboxSigningSecret,
-    decryptSandboxSigningSecret,
-    encryptSandboxSigningSecret,
-    isSandboxApiKey,
-    parseSandboxApiKeyToken,
-    sandboxApiKeyAudience,
-    sandboxApiKeyBaseScopes,
-    sandboxApiKeyPrefix,
-    sandboxApiKeyPurposes,
-    verifySandboxApiKeyToken
-} from './services/sandbox-api-key.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * as mcpClient from './clients/mcp.client.js';
@@ -99,7 +86,6 @@ export {
     pbkdf2,
     providerClientManager,
     remoteFileService,
-    sandboxApiKeyService,
     secretService,
     seeders,
     sharedCredentialsService,

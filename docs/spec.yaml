@@ -1432,6 +1432,131 @@ paths:
                 '401':
                     $ref: '#/components/responses/Unauthorized'
 
+    /functions/compile:
+        post:
+            operationId: compileFunction
+            summary: Compile a function
+            description: Compiles TypeScript function source code and returns the bundled JavaScript.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FunctionCompileRequest'
+            responses:
+                '200':
+                    description: Successfully compiled the function.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionCompileResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
+                '504':
+                    $ref: '#/components/responses/GatewayTimeout'
+
+    /functions/dryruns:
+        post:
+            operationId: createFunctionDryrun
+            summary: Dry run a function
+            description: Starts an asynchronous dry run for TypeScript function source code against a connection without deploying it.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FunctionDryrunRequest'
+            responses:
+                '202':
+                    description: Successfully started the dry run.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionDryrunCreateResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
+                '504':
+                    $ref: '#/components/responses/GatewayTimeout'
+
+    /functions/dryruns/{id}:
+        get:
+            operationId: getFunctionDryrun
+            summary: Get dry run results
+            description: Returns the status and result of an asynchronous function dry run.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Successfully retrieved the dry run.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionDryrunResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
+    /functions/deployments:
+        post:
+            operationId: createFunctionDeployment
+            summary: Create a function deployment
+            description: Deploys TypeScript function source code to an existing integration.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FunctionDeploymentRequest'
+            responses:
+                '200':
+                    description: Successfully deployed the function.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionDeployResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+                '503':
+                    $ref: '#/components/responses/ServiceUnavailable'
+                '504':
+                    $ref: '#/components/responses/GatewayTimeout'
+
     /records:
         get:
             summary: Get synced records
@@ -2768,6 +2893,30 @@ components:
                 application/json:
                     schema:
                         $ref: '#/components/schemas/StdError'
+        Forbidden:
+            description: Forbidden
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        ServerError:
+            description: Server error
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        ServiceUnavailable:
+            description: Service unavailable
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
+        GatewayTimeout:
+            description: Gateway timeout
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StdError'
 
     schemas:
         StdError:
@@ -2788,6 +2937,220 @@ components:
                             type: array
                             items:
                                 type: object
+
+        RunnableFunctionType:
+            type: string
+            enum: [action, sync]
+
+        FunctionCompileRequest:
+            type: object
+            additionalProperties: false
+            required:
+                - code
+            properties:
+                code:
+                    type: string
+                    minLength: 1
+                    description: The TypeScript source code for the function.
+
+        FunctionCompileResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - bundle_size_bytes
+                - bundled_js
+                - compiled_at
+            properties:
+                bundle_size_bytes:
+                    type: integer
+                    minimum: 0
+                bundled_js:
+                    type: string
+                    description: The bundled JavaScript output.
+                compiled_at:
+                    type: string
+                    format: date-time
+
+        FunctionDryrunRequest:
+            type: object
+            additionalProperties: false
+            required:
+                - integration_id
+                - function_type
+                - code
+                - connection_id
+            properties:
+                integration_id:
+                    type: string
+                    description: The integration ID (unique_key) that you created in Nango.
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+                code:
+                    type: string
+                    minLength: 1
+                    description: The TypeScript source code for the function.
+                connection_id:
+                    type: string
+                    description: The connection ID to use for the dry run.
+                input:
+                    description: Optional JSON input payload passed to the function.
+                metadata:
+                    type: object
+                    additionalProperties: true
+                    description: Optional metadata available to the function during the dry run.
+                checkpoint:
+                    type: object
+                    additionalProperties: true
+                    description: Optional checkpoint payload available to sync functions during the dry run.
+                last_sync_date:
+                    type: string
+                    format: date-time
+                    description: Optional last sync date available to sync functions during the dry run.
+
+        FunctionDryrunStatus:
+            type: string
+            enum: [waiting, running, success, failed]
+
+        FunctionDryrunCreateResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - created_at
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                status:
+                    type: string
+                    enum: [waiting, running]
+                created_at:
+                    type: string
+                    format: date-time
+
+        FunctionDryrunResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - integration_id
+                - function_type
+                - created_at
+                - updated_at
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                status:
+                    $ref: '#/components/schemas/FunctionDryrunStatus'
+                integration_id:
+                    type: string
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+                started_at:
+                    type: string
+                    format: date-time
+                completed_at:
+                    type: string
+                    format: date-time
+                duration_ms:
+                    type: integer
+                    minimum: 0
+                output:
+                    type: string
+                    description: Dry run command output.
+                result:
+                    description: The function result, when the dry run emits one.
+                error:
+                    type: object
+                    additionalProperties: false
+                    required:
+                        - code
+                        - message
+                    properties:
+                        code:
+                            type: string
+                        message:
+                            type: string
+                        payload:
+                            description: Optional error payload.
+
+        FunctionDeploymentRequest:
+            type: object
+            additionalProperties: false
+            required:
+                - type
+                - integration_id
+                - function_name
+                - function_type
+                - code
+            properties:
+                type:
+                    type: string
+                    enum: [function]
+                    description: Deploy a submitted function.
+                integration_id:
+                    type: string
+                    description: The integration ID (unique_key) that you created in Nango.
+                function_name:
+                    type: string
+                    description: The sync or action function name.
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+                code:
+                    type: string
+                    minLength: 1
+                    description: The TypeScript source code for the function.
+                version:
+                    type: string
+                    description: Optional version tag for this deployment.
+                allow_destructive:
+                    type: boolean
+                    description: Allow overwriting an existing standalone function with the same name.
+
+        FunctionDeployResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - integration_id
+                - function_name
+                - function_type
+                - deployed
+                - deployed_functions
+                - output
+            properties:
+                integration_id:
+                    type: string
+                function_name:
+                    type: string
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+                deployed:
+                    type: boolean
+                deployed_functions:
+                    type: array
+                    items:
+                        type: object
+                        additionalProperties: false
+                        required:
+                            - name
+                            - version
+                        properties:
+                            name:
+                                type: string
+                            version:
+                                type: string
+                output:
+                    type: string
+                    description: Deployment command output.
 
         TokenUrlObject:
             properties:
@@ -3096,6 +3459,9 @@ components:
                     type: string
                     format: date-time
                     description: Last time it was updated
+                forward_webhooks:
+                    type: boolean
+                    description: Whether webhooks received from this integration's provider are forwarded to your backend.
         IntegrationFull:
             allOf:
                 - $ref: '#/components/schemas/Integration'

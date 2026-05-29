@@ -1,12 +1,12 @@
+import { RemoteFunctionError, invokeCompiler } from '@nangohq/sandbox';
 import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { invokeCompiler } from '../../../services/remote-function/compiler-client.js';
-import { RemoteFunctionError, sendStepError } from '../../../services/remote-function/helpers.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { remoteFunctionCompileBodySchema } from '../validation.js';
+import { sendStepError } from '../errors.js';
+import { functionCompileBodySchema, remoteFunctionCompileBodySchema } from '../validation.js';
 
-import type { PostRemoteFunctionCompile } from '@nangohq/types';
+import type { PostFunctionCompile, PostRemoteFunctionCompile } from '@nangohq/types';
 
 export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -32,9 +32,6 @@ export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>
 
     try {
         const result = await invokeCompiler({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
             code: body.code
         });
 
@@ -42,6 +39,40 @@ export const postRemoteFunctionCompile = asyncWrapper<PostRemoteFunctionCompile>
             integration_id: body.integration_id,
             function_name: body.function_name,
             function_type: body.function_type,
+            bundle_size_bytes: result.bundleSizeBytes,
+            bundled_js: result.bundledJs,
+            compiled_at: new Date().toISOString()
+        });
+    } catch (err) {
+        sendStepError({
+            res,
+            error: err,
+            ...(err instanceof RemoteFunctionError ? {} : { status: 500 })
+        });
+    }
+});
+
+export const postFunctionCompile = asyncWrapper<PostFunctionCompile>(async (req, res) => {
+    const emptyQuery = requireEmptyQuery(req);
+    if (emptyQuery) {
+        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
+        return;
+    }
+
+    const valBody = functionCompileBodySchema.safeParse(req.body);
+    if (!valBody.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
+        return;
+    }
+
+    const body = valBody.data;
+
+    try {
+        const result = await invokeCompiler({
+            code: body.code
+        });
+
+        res.status(200).send({
             bundle_size_bytes: result.bundleSizeBytes,
             bundled_js: result.bundledJs,
             compiled_at: new Date().toISOString()

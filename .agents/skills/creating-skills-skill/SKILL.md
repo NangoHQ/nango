@@ -1,6 +1,6 @@
 ---
 name: creating-skills
-description: Use when creating new Claude Code skills or improving existing ones - ensures skills are discoverable, scannable, and effective through proper structure, CSO optimization, and real examples
+description: Use when creating new agent skills or improving existing ones - ensures skills are discoverable, scannable, and effective through proper structure, discovery optimization, and real examples
 tags: meta
 ---
 
@@ -8,11 +8,11 @@ tags: meta
 
 ## Overview
 
-**Skills are reference guides for proven techniques, patterns, or tools.** Write them to help future Claude instances quickly find and apply effective approaches.
+**Skills are reference guides for proven techniques, patterns, or tools.** Write them to help future agents quickly find and apply effective approaches.
 
-Skills must be **discoverable** (Claude can find them), **scannable** (quick to evaluate), and **actionable** (clear examples).
+Skills must be **discoverable** (an agent can find them), **scannable** (quick to evaluate), and **actionable** (clear examples).
 
-**Core principle**: Default assumption is Claude is already very smart. Only add context Claude doesn't already have.
+**Core principle**: Assume the agent already handles general reasoning well. Only add context the agent would not otherwise have.
 
 ## When to Use
 
@@ -25,7 +25,7 @@ Skills must be **discoverable** (Claude can find them), **scannable** (quick to 
 **Don't create for:**
 - One-off solutions specific to single project
 - Standard practices well-documented elsewhere
-- Project conventions (put those in `.claude/CLAUDE.md`)
+- Project conventions (put those in project-level agent guidance such as `AGENTS.md`)
 
 ## Required Structure
 
@@ -78,7 +78,7 @@ Concrete results from using this technique
 
 - **High freedom**: Flexible tasks requiring judgment
   - Use broad guidance, principles, examples
-  - Let Claude adapt approach to context
+  - Let the agent adapt approach to context
   - Example: "Use when designing APIs - provides REST principles and patterns"
 
 - **Low freedom**: Fragile or critical operations
@@ -86,11 +86,11 @@ Concrete results from using this technique
   - Include validation checks
   - Example: "Use when deploying to production - follow exact deployment checklist with rollback procedures"
 
-**Red flag**: If skill tries to constrain Claude too much on creative tasks, reduce specificity. If skill is too vague on critical operations, add explicit steps.
+**Red flag**: If skill tries to constrain the agent too much on creative tasks, reduce specificity. If skill is too vague on critical operations, add explicit steps.
 
-## Claude Search Optimization (CSO)
+## Skill Discovery Optimization
 
-**Critical:** Future Claude reads the description to decide if skill is relevant. Optimize for discovery.
+**Critical:** Agents commonly use the description to decide if a skill is relevant. Optimize for discovery.
 
 ### Description Best Practices
 
@@ -98,7 +98,7 @@ Concrete results from using this technique
 # ❌ BAD - Too vague, doesn't mention when to use
 description: For async testing
 
-# ❌ BAD - First person (injected into system prompt)
+# ❌ BAD - First person in agent-facing metadata
 description: I help you with flaky tests
 
 # ✅ GOOD - Triggers + what it does
@@ -110,7 +110,7 @@ description: Use when using React Router and handling auth redirects - provides 
 
 ### Keyword Coverage
 
-Use words Claude would search for:
+Use words an agent would match:
 - **Error messages**: "ENOENT", "Cannot read property", "Timeout"
 - **Symptoms**: "flaky", "hanging", "race condition", "memory leak"
 - **Synonyms**: "cleanup/teardown/afterEach", "timeout/hang/freeze"
@@ -128,7 +128,7 @@ Use words Claude would search for:
 **Why gerunds work:**
 - Describes the action you're taking
 - Active and clear
-- Consistent with Anthropic conventions
+- Consistent and action-oriented
 
 **Avoid:**
 - ❌ Vague names like "Helper" or "Utils"
@@ -248,7 +248,7 @@ Skills load into every conversation. Keep them concise.
 - Frequently-loaded skills: <200 words total
 - Other skills: <500 words
 
-**Challenge each piece of information**: "Does Claude really need this explanation?"
+**Challenge each piece of information**: "Does the agent need this explanation?"
 
 ### Compression Techniques
 
@@ -314,7 +314,7 @@ For multi-step processes, include:
 | Deeply nested file references | Multiple @ symbols, complex paths | Keep references simple and direct |
 | Windows-style file paths | `C:\path\to\file` | Use forward slashes |
 | Offering too many options | 10 different approaches | Focus on one proven approach |
-| Punting error handling | "Claude figures it out" | Include explicit error handling in scripts |
+| Punting error handling | "The agent figures it out" | Include explicit error handling in scripts |
 | Time-sensitive information | "As of 2025..." | Keep content evergreen |
 | Inconsistent terminology | Mixing synonyms randomly | Use consistent terms throughout |
 
@@ -349,7 +349,7 @@ See skills/testing/test-driven-development
 
 ### Iterative Development
 
-**Best approach**: Develop skills iteratively with Claude
+**Best approach**: Develop skills iteratively with an agent
 1. Start with minimal viable skill
 2. Test with real use cases
 3. Refine based on what works
@@ -460,7 +460,7 @@ skills/
 ## Real-World Impact
 
 **Good skills:**
-- Future Claude finds them quickly (CSO optimization)
+- Future agents find them quickly through discovery optimization
 - Can be scanned in seconds (quick reference)
 - Provide clear actionable examples
 - Prevent repeating same research
@@ -477,6 +477,6 @@ skills/
 
 ---
 
-**Remember:** Skills are for future Claude, not current you. Optimize for discovery, scanning, and action.
+**Remember:** Skills are for future agents, not current you. Optimize for discovery, scanning, and action.
 
-**Golden rule:** Default assumption is Claude is already very smart. Only add context Claude doesn't already have.
+**Golden rule:** Assume the agent already handles general reasoning well. Only add context the agent would not otherwise have.

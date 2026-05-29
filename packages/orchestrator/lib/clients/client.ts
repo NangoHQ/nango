@@ -3,6 +3,7 @@ import { Err, Ok, getLogger, retry, routeFetch } from '@nangohq/utils';
 import { validateSchedule, validateTask } from './validate.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
+import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
@@ -177,7 +178,7 @@ export class OrchestratorClient {
         } as ImmediateProps;
         const res = await this.immediate(scheduleProps);
         if (res.isErr()) {
-            return res;
+            return Err(res.error);
         }
         const taskId = res.value.taskId;
         const retryUntil = Date.now() + (scheduleProps.timeoutSettingsInSecs.createdToStarted + scheduleProps.timeoutSettingsInSecs.startedToCompleted) * 1000;
@@ -263,9 +264,9 @@ export class OrchestratorClient {
         return this.immediate(schedulingProps);
     }
 
-    public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
+    private buildWebhookSchedulingProps(props: ExecuteWebhookProps) {
         const { args, ...rest } = props;
-        const schedulingProps: ImmediateProps = {
+        return {
             ...rest,
             retry: { count: 0, max: 0 },
             timeoutSettingsInSecs: {
@@ -278,7 +279,55 @@ export class OrchestratorClient {
                 type: 'webhook' as const
             }
         };
-        return this.immediate(schedulingProps);
+    }
+
+    public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
+        const res = await this.immediate(this.buildWebhookSchedulingProps(props));
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ taskId: res.value.taskId, retryKey: res.value.retryKey });
+    }
+
+    /**
+     * Schedule a batch of webhooks in a single orchestrator call.
+     *
+     * Returns per-entry results in input order.
+     */
+    public async executeWebhookBatch(propsList: ExecuteWebhookProps[]): Promise<Result<ExecuteWebhookBatchEntryResult[], ClientError>> {
+        if (propsList.length === 0) {
+            return Ok([]);
+        }
+        const entries = propsList.map((props) => {
+            const schedulingProps = this.buildWebhookSchedulingProps(props);
+            return {
+                ...schedulingProps,
+                ownerKey: schedulingProps.ownerKey ?? ''
+            };
+        });
+
+        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+
+        if ('error' in res) {
+            return Err({
+                name: res.error.code,
+                message: res.error.message || 'Error scheduling immediate batch',
+                payload: { response: res.error.payload as any }
+            });
+        }
+
+        return Ok(
+            res.results.map<ExecuteWebhookBatchEntryResult>((entry) => {
+                if ('error' in entry) {
+                    return Err({
+                        name: entry.error.code,
+                        message: entry.error.message,
+                        payload: {}
+                    });
+                }
+                return Ok({ taskId: entry.taskId, retryKey: entry.retryKey });
+            })
+        );
     }
 
     public async executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn> {
@@ -555,3 +604,5 @@ export function isDuplicateTaskNameClientError(err: unknown): boolean {
     const error = err as { name?: string };
     return error.name === 'duplicate_task_name';
 }
+
+export type ExecuteWebhookBatchEntryResult = Result<{ taskId: string; retryKey: string }, ClientError>;

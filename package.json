@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.70.4",
+    "version": "0.70.5",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -53,6 +53,7 @@
         "docs": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts && cd ./docs && npx mintlify dev --port 3033",
         "docs:generate": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts",
         "docs:generate:llms": "tsx scripts/docs-generate-llms.ts",
+        "storybook": "npm --prefix packages/design-system run storybook",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
         "changelog:providers": "tsx scripts/provider-changelog.ts",
