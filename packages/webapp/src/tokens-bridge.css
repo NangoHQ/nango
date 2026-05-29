@@ -120,7 +120,7 @@
     --color-btn-destructive-loading: var(--interactive-danger-active);
 
     /* Link */
-    --color-link-default: var(--text-default);
+    --color-link-default: var(--text-link);
     --color-link-hover: var(--text-link-hover);
     --color-link-press: var(--text-link-active);
     --color-link-disabled: var(--text-disabled);
