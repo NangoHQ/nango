@@ -56,7 +56,8 @@ export interface GetDailyCounterDay {
 
 export type GetDailyCounterSeries =
     | { days: GetDailyCounterDay[] }
-    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailyCounterDay[] };
+    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailyCounterDay[] }
+    | { dimension: string; isRest: true; days: GetDailyCounterDay[] };
 
 export interface GetDailyCounterResult {
     accountId: number;
@@ -121,7 +122,8 @@ export interface GetDailySumAndBatchesDay {
 
 export type GetDailySumAndBatchesSeries =
     | { days: GetDailySumAndBatchesDay[] }
-    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailySumAndBatchesDay[] };
+    | { dimension: string; dimensionValue: string | number | boolean; days: GetDailySumAndBatchesDay[] }
+    | { dimension: string; isRest: true; days: GetDailySumAndBatchesDay[] };
 
 export interface GetDailySumAndBatchesResult {
     accountId: number;

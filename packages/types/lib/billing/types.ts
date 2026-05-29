@@ -108,6 +108,15 @@ export interface BillingUsageMetric {
         key: string;
         value: string;
     };
+    /**
+     * The top-N + 'rest' breakdown collapses every dim value outside the top
+     * into a single rollup bucket. Marked with `isRest: true` so the dashboard
+     * can distinguish it from a real dim value that happens to literally be
+     * the string 'rest' (e.g. a `connection_id` or `model` named 'rest').
+     * `group.value` is set to the display string 'rest' as a default; the
+     * flag is the authoritative signal.
+     */
+    isRest?: true;
     total: number;
     usage: {
         timeframeStart: Date;

@@ -584,7 +584,12 @@ function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], se
         view_mode: 'cumulative'
     };
     if ('dimension' in series) {
-        base.group = { key: series.dimension, value: String(series.dimensionValue) };
+        if ('isRest' in series) {
+            base.group = { key: series.dimension, value: 'rest' };
+            base.isRest = true;
+        } else {
+            base.group = { key: series.dimension, value: String(series.dimensionValue) };
+        }
     }
     return base;
 }
@@ -625,7 +630,12 @@ export function toCounterBillingMetricSeries(metric: CounterUsageMetric, result:
             view_mode: 'periodic'
         };
         if ('dimension' in series) {
-            out.group = { key: series.dimension, value: String(series.dimensionValue) };
+            if ('isRest' in series) {
+                out.group = { key: series.dimension, value: 'rest' };
+                out.isRest = true;
+            } else {
+                out.group = { key: series.dimension, value: String(series.dimensionValue) };
+            }
         }
         return out;
     });

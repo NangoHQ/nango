@@ -219,7 +219,7 @@ describe('toCounterBillingMetricSeries', () => {
         ]);
     });
 
-    it('handles the rest bucket like any other series — it carries a group with value="rest"', () => {
+    it('the rest bucket carries `isRest: true` and group.value="rest" for display', () => {
         const input: GetDailyCounterResult = {
             accountId,
             metric: 'proxy',
@@ -231,16 +231,46 @@ describe('toCounterBillingMetricSeries', () => {
                 },
                 {
                     dimension: 'connection_id',
-                    dimensionValue: 'rest',
+                    isRest: true,
                     days: [{ day: day(0), value: 30 }]
                 }
             ]
         };
         const out = toCounterBillingMetricSeries('proxy', input);
-        expect(out.map((s) => s.group)).toEqual([
-            { key: 'connection_id', value: 'conn-a' },
-            { key: 'connection_id', value: 'rest' }
-        ]);
+        expect(out[0]!.group).toEqual({ key: 'connection_id', value: 'conn-a' });
+        expect(out[0]!.isRest).toBeUndefined();
+        expect(out[1]!.group).toEqual({ key: 'connection_id', value: 'rest' });
+        expect(out[1]!.isRest).toBe(true);
+    });
+
+    it('a real dim value literally named "rest" is distinguished from the rollup via `isRest`', () => {
+        // A connection named 'rest' in top-N (NOT the rollup) and a separate
+        // rollup bucket. Both have group.value='rest' on the wire, but only
+        // the rollup carries isRest=true.
+        const input: GetDailyCounterResult = {
+            accountId,
+            metric: 'proxy',
+            series: [
+                {
+                    dimension: 'connection_id',
+                    dimensionValue: 'rest',
+                    days: [{ day: day(0), value: 50 }]
+                },
+                {
+                    dimension: 'connection_id',
+                    isRest: true,
+                    days: [{ day: day(0), value: 20 }]
+                }
+            ]
+        };
+        const out = toCounterBillingMetricSeries('proxy', input);
+        expect(out).toHaveLength(2);
+        const real = out.find((m) => !m.isRest)!;
+        const rollup = out.find((m) => m.isRest)!;
+        expect(real.group).toEqual({ key: 'connection_id', value: 'rest' });
+        expect(real.total).toBe(50);
+        expect(rollup.group).toEqual({ key: 'connection_id', value: 'rest' });
+        expect(rollup.total).toBe(20);
     });
 
     it('emits an empty array when the source has no series', () => {

@@ -443,6 +443,51 @@ describe('Clickhouse', () => {
         });
     });
 
+    // SQL-layer collision check: a user with a top-N dim value literally named
+    // 'rest' plus several long-tail values to force a rollup. Pre-fix, both
+    // got `dimensionValue='rest'` and CH GROUP BY merged them silently.
+    // Post-fix, `isRest` is a separate column so the real bucket and the
+    // rollup come back as distinct series.
+    describe('rollup vs. real-value collision', () => {
+        const accountId = 99;
+        const start = dayFromNow();
+        const end = dayFromNow(7);
+
+        beforeAll(async () => {
+            await cleanup();
+            clickhouse.addRaw([
+                // Real integration literally named 'rest' — large enough to be in top-N
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 1000, attributes: { integrationId: 'rest' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 500, attributes: { integrationId: 'salesforce' } }),
+                // Long-tail integrations — each below the real 'rest' so they fall outside top=1
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 10, attributes: { integrationId: 'tiny1' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 10, attributes: { integrationId: 'tiny2' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 10, attributes: { integrationId: 'tiny3' } })
+            ]);
+            await clickhouse.flush();
+        });
+
+        it('a real integration_id of "rest" is NOT merged with the long-tail rollup', async () => {
+            const res = await clickhouse.getDailySumAndBatches({
+                accountId,
+                metric: 'records',
+                dimension: 'integration_id',
+                top: 1,
+                timeframe: { start, end }
+            });
+            const series = res.unwrap().series;
+
+            const realRest = series.find((s) => 'dimensionValue' in s && s.dimensionValue === 'rest');
+            const rollup = series.find((s) => 'isRest' in s);
+            expect(realRest).toBeDefined();
+            expect(rollup).toBeDefined();
+            // The real 'rest' bucket is the largest contributor; the rollup
+            // aggregates salesforce + the three tinies = 500 + 30 = 530.
+            expect(realRest!.days[0]!.sum).toBe(1000);
+            expect(rollup!.days[0]!.sum).toBe(530);
+        });
+    });
+
     // Verifies the CH-platform contract we depend on: an insert with a stable
     // insert_deduplication_token is rejected by the server when re-sent, so retried
     // batches don't double-write raw_events.

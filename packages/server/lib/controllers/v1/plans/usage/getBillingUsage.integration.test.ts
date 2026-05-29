@@ -363,8 +363,11 @@ describe(`GET ${route}`, () => {
             const breakdown = res.json.data.usage.records.breakdown!;
             // top=1 + 'rest' = up to 2 entries
             expect(breakdown.length).toBeLessThanOrEqual(2);
-            const groups = breakdown.map((b) => b.group!.value);
-            expect(groups).toContain('rest');
+            // The rollup bucket is identified by `isRest`, not by the string
+            // 'rest' (a real dim value can literally be 'rest').
+            const rollup = breakdown.find((b) => b.isRest);
+            expect(rollup).toBeDefined();
+            expect(rollup!.group!.value).toBe('rest');
         });
     });
 });

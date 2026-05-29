@@ -144,14 +144,15 @@ export class Clickhouse {
             )
             SELECT
                 day,
-                IF(${dimension} IN (SELECT dim FROM top_dims), toString(${dimension}), 'rest') AS dimensionValue,
+                IF(${dimension} IN (SELECT dim FROM top_dims), toString(${dimension}), '') AS dimensionValue,
+                IF(${dimension} IN (SELECT dim FROM top_dims), 0, 1) AS isRest,
                 ${quantityForMetric(metric)} AS value
             FROM ${table}
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
-            GROUP BY day, dimensionValue
-            ORDER BY day, dimensionValue
+            GROUP BY day, isRest, dimensionValue
+            ORDER BY day, isRest, dimensionValue
         `;
 
         try {
@@ -160,6 +161,7 @@ export class Clickhouse {
                 day: string;
                 value: string | number;
                 dimensionValue?: string;
+                isRest?: 0 | 1;
             }>();
 
             const seriesMap = new Map<string, GetDailyCounterSeries>();
@@ -169,14 +171,17 @@ export class Clickhouse {
                     value: Number(row.value)
                 };
                 if (dimension !== 'none') {
-                    const key = String(row.dimensionValue);
+                    // `isRest` is the authoritative rollup marker — comparing
+                    // `dimensionValue === 'rest'` is unsafe because user
+                    // strings (connection_id, model, etc.) can literally be
+                    // 'rest' and we'd merge real and rollup into one bucket.
+                    const isRest = row.isRest === 1;
+                    const key = isRest ? '__rest__' : String(row.dimensionValue);
                     let entry = seriesMap.get(key);
                     if (!entry) {
-                        entry = {
-                            dimension,
-                            dimensionValue: coerceDimensionValue(row.dimensionValue ?? '', dimension),
-                            days: []
-                        };
+                        entry = isRest
+                            ? { dimension, isRest: true, days: [] }
+                            : { dimension, dimensionValue: coerceDimensionValue(row.dimensionValue ?? '', dimension), days: [] };
                         seriesMap.set(key, entry);
                     }
                     entry.days.push(dayPoint);
@@ -291,14 +296,15 @@ export class Clickhouse {
                 t.day AS day,
                 SUM(t.value) AS sum,
                 any(g.batches) AS batches,
-                IF(t.${dimension} IN (SELECT dim FROM top_dims), toString(t.${dimension}), 'rest') AS dimensionValue
+                IF(t.${dimension} IN (SELECT dim FROM top_dims), toString(t.${dimension}), '') AS dimensionValue,
+                IF(t.${dimension} IN (SELECT dim FROM top_dims), 0, 1) AS isRest
             FROM ${table} t
             INNER JOIN global_batches g ON g.day = t.day
             WHERE t.account_id = ${accountId}
             AND t.day >= toDate('${startDate}')
             AND t.day < toDate('${endDate}')
-            GROUP BY t.day, dimensionValue
-            ORDER BY t.day, dimensionValue
+            GROUP BY t.day, isRest, dimensionValue
+            ORDER BY t.day, isRest, dimensionValue
         `;
 
         try {
@@ -308,6 +314,7 @@ export class Clickhouse {
                 sum: string | number;
                 batches: string | number;
                 dimensionValue?: string;
+                isRest?: 0 | 1;
             }>();
 
             // One series per distinct dimensionValue; preserve insertion order for stability.
@@ -319,10 +326,13 @@ export class Clickhouse {
                     batches: Number(row.batches)
                 };
                 if (dimension !== 'none') {
-                    const key = String(row.dimensionValue);
+                    // `isRest` is the authoritative rollup marker — see
+                    // getDailyCounter for the collision rationale.
+                    const isRest = row.isRest === 1;
+                    const key = isRest ? '__rest__' : String(row.dimensionValue);
                     let entry = seriesMap.get(key);
                     if (!entry) {
-                        entry = { dimension, dimensionValue: row.dimensionValue!, days: [] };
+                        entry = isRest ? { dimension, isRest: true, days: [] } : { dimension, dimensionValue: row.dimensionValue!, days: [] };
                         seriesMap.set(key, entry);
                     }
                     entry.days.push(dayPoint);
@@ -393,9 +403,9 @@ export class Clickhouse {
 }
 
 // Coerces the raw string value returned by ClickHouse (forced to String by the
-// `toString` inside the top-N IF, so the 'rest' literal and the column share a
-// type) back to the typed value expected by the breakdown series.
-// `none` stays as 'none' so the no-dim series falls out untouched.
+// `toString` inside the top-N IF) back to the typed value expected by the
+// breakdown series. The rollup row is detected via the separate `isRest`
+// column upstream and never reaches this function.
 //
 // Only `success` needs typed coercion (boolean). String dims (model,
 // function_type, function_name, integration_id, connection_id) round-trip
@@ -403,9 +413,6 @@ export class Clickhouse {
 // their string form on purpose — the dashboard renders dim values as strings,
 // so keeping "123" avoids a round-trip parse on the read side.
 function coerceDimensionValue(raw: string, dimension: string): string | number | boolean {
-    if (raw === 'rest' || dimension === 'none') {
-        return raw;
-    }
     if (dimension === 'success') {
         return raw === 'true';
     }
