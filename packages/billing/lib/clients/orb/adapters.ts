@@ -92,7 +92,11 @@ export function orbMetricToUsageMetric(name: string): UsageMetric | null {
     if (lowerName.includes('logs')) return 'function_logs';
     if (lowerName.includes('proxy')) return 'proxy';
     if (lowerName.includes('forward')) return 'webhook_forwards';
-    if (lowerName.includes('compute')) return 'function_compute_gbms';
+    // Orb's "Function compute time" billable metric is `sum(telemetry.durationMs)`,
+    // which is ms (not gb-ms). Map it to `function_compute_ms` so both paths
+    // populate the same slot consistently. `function_compute_gbms` is a CH-only
+    // observability metric (memory-weighted compute) with no Orb counterpart.
+    if (lowerName.includes('compute')) return 'function_compute_ms';
     if (lowerName.includes('function')) return 'function_executions';
     if (lowerName.includes('connections')) return 'connections';
     if (lowerName.includes('records')) return 'records';

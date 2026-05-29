@@ -273,9 +273,11 @@ describe('orbMetricToUsageMetric', () => {
     });
 
     it('"compute" takes precedence over "function", "connections", "records"', () => {
-        expect(orbMetricToUsageMetric('Function Compute')).toBe('function_compute_gbms');
-        expect(orbMetricToUsageMetric('Connections Compute')).toBe('function_compute_gbms');
-        expect(orbMetricToUsageMetric('Records Compute')).toBe('function_compute_gbms');
+        // Orb's "Function compute time" metric is sum(telemetry.durationMs) — ms,
+        // not gb-ms. Map to the ms-aligned slot so both paths populate consistently.
+        expect(orbMetricToUsageMetric('Function Compute')).toBe('function_compute_ms');
+        expect(orbMetricToUsageMetric('Connections Compute')).toBe('function_compute_ms');
+        expect(orbMetricToUsageMetric('Records Compute')).toBe('function_compute_ms');
     });
 
     it('"function" takes precedence over "connections" and "records"', () => {
