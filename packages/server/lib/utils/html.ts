@@ -27,7 +27,17 @@ function escapeHtml(s: string): string {
  * Yet it also felt wrong to add another dependency to simply parse 1 template.
  * If you have an idea on how to improve this feel free to submit a pull request.
  */
-export function authHtml({ res, error, errorType = 'connection_validation_failed' }: { res: Response; error?: string; errorType?: string }) {
+export function authHtml({
+    res,
+    error,
+    errorType = 'connection_validation_failed',
+    successPayload
+}: {
+    res: Response;
+    error?: string;
+    errorType?: string;
+    successPayload?: { providerConfigKey: string; connectionId: string; isPending: boolean };
+}) {
     const providerErrorObj = getProviderErrorObjectFromQuery(res);
     const hasProviderError = providerErrorObj !== null && Object.keys(providerErrorObj).length > 0;
     const hasServerError = error != null && error !== '';
@@ -171,11 +181,10 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
           closeWindow();
         }
       });
-      // Server renders this page without error only on success (OAuth2 code, OAuth1 token/verifier, GitHub App install_id, etc.)
       if (window.__nangoOAuthError) {
         notifyOpener('nango_oauth_callback_error', window.__nangoOAuthError);
       } else {
-        notifyOpener('nango_oauth_callback_success');
+        notifyOpener('nango_oauth_callback_success', ${successPayload ? JSON.stringify(successPayload) : 'null'});
       }
       // Fallback: on success, try to self-close after a delay.
       // After a popup navigates cross-origin, browsers may isolate it from its

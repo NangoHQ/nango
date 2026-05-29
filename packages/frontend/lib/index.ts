@@ -202,6 +202,20 @@ export default class Nango {
             };
 
             messageListener = (event: MessageEvent) => {
+                if (event.source !== modal) {
+                    return;
+                }
+
+                let trustedOrigin: string;
+                try {
+                    trustedOrigin = new URL(this.hostBaseUrl).origin;
+                } catch {
+                    return;
+                }
+                if (event.origin !== trustedOrigin) {
+                    return;
+                }
+
                 if (typeof event.data !== 'object' || !event.data || !event.data.type) {
                     return;
                 }
@@ -211,10 +225,11 @@ export default class Nango {
                         console.log(debugLogPrefix, 'Success received via postMessage. Resolving...');
                     }
 
+                    const payload = event.data.payload;
                     successHandler({
-                        providerConfigKey,
-                        connectionId: connectionId || 'unknown',
-                        isPending: false
+                        providerConfigKey: payload?.providerConfigKey || providerConfigKey,
+                        connectionId: payload?.connectionId || connectionId || 'unknown',
+                        isPending: payload?.isPending ?? false
                     });
                 } else if (event.data.type === 'nango_oauth_callback_error') {
                     if (this.debug) {
