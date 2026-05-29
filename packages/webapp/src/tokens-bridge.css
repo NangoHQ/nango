@@ -15,8 +15,8 @@
 
 :root {
     /* Surface / Background */
-    --color-bg-surface: var(--surface-panel);
-    --color-bg-elevated: var(--surface-raised);
+    --color-bg-surface: var(--surface-canvas);
+    --color-bg-elevated: var(--surface-page);
     --color-bg-muted: var(--surface-panel-muted);
     --color-bg-subtle: var(--surface-panel-inset);
     --color-bg-accent: var(--status-info-bg);
@@ -120,7 +120,7 @@
     --color-btn-destructive-loading: var(--interactive-danger-active);
 
     /* Link */
-    --color-link-default: var(--text-link);
+    --color-link-default: var(--text-default);
     --color-link-hover: var(--text-link-hover);
     --color-link-press: var(--text-link-active);
     --color-link-disabled: var(--text-disabled);
