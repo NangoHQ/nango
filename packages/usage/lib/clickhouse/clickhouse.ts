@@ -232,6 +232,12 @@ export class Clickhouse {
      * every series shares the same denominator and per-dim running averages
      * stay additive to the no-dim global — the breakdown decomposes the bill
      * total rather than being a "size when active" view.
+     *
+     * Additive-to-global requires that an inactive dim still advance its
+     * denominator on every global day, otherwise its running-avg stays
+     * inflated after it stops contributing. The SQL emits sparse rows; we
+     * zero-fill `(day, dim)` post-query so every dim series shares the same
+     * day-set with `sum=0` on inactive days and `batches=global(day)`.
      */
     async getDailySumAndBatches(query: GetDailySumAndBatchesQuery): Promise<Result<GetDailySumAndBatchesResult>> {
         if (!this.client) {
@@ -326,6 +332,30 @@ export class Clickhouse {
                         seriesMap.set('', entry);
                     }
                     entry.days.push(dayPoint);
+                }
+            }
+
+            // Zero-fill inactive (day, dim) pairs so per-dim running averages
+            // stay additive to the no-dim global — see method docstring. SQL
+            // emits sparse rows; we materialize the full grid here so every
+            // dim series shares the same day-set with `sum=0` where missing
+            // and `batches=global(day)` carried from any dim that saw it.
+            if (dimension !== 'none' && seriesMap.size > 0) {
+                const globalBatches = new Map<number, number>();
+                for (const entry of seriesMap.values()) {
+                    for (const d of entry.days) {
+                        globalBatches.set(d.day.getTime(), d.batches);
+                    }
+                }
+                const orderedDays = Array.from(globalBatches.entries()).sort(([a], [b]) => a - b);
+                for (const entry of seriesMap.values()) {
+                    const sumByDay = new Map<number, number>();
+                    for (const d of entry.days) sumByDay.set(d.day.getTime(), d.sum);
+                    entry.days = orderedDays.map(([dayMs, batches]) => ({
+                        day: new Date(dayMs),
+                        sum: sumByDay.get(dayMs) ?? 0,
+                        batches
+                    }));
                 }
             }
 

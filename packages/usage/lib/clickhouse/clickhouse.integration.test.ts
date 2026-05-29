@@ -357,6 +357,92 @@ describe('Clickhouse', () => {
         });
     });
 
+    // A dim that has events on day 0 but none on day 1 must still appear on
+    // day 1 in the breakdown response, with sum=0 and batches=global(day 1).
+    // That's what keeps per-dim running averages additive to the no-dim global:
+    // the dim's denominator must grow with the global on every day, even when
+    // its numerator stays put. Without zero-fill, an inactive dim's running-avg
+    // stays inflated past the point where it stopped contributing.
+    describe('getDailySumAndBatches, dim inactive on later days', () => {
+        const accountId = 42;
+        const start = dayFromNow();
+        const end = dayFromNow(7);
+
+        beforeAll(async () => {
+            await cleanup();
+            clickhouse.addRaw([
+                // day 0: int=a (sum=300, 2 batches), int=b (sum=100, 1 batch). 3 batches global.
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 200, attributes: { integrationId: 'a' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 100, attributes: { integrationId: 'a' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId, value: 100, attributes: { integrationId: 'b' } }),
+                // day 1: only int=a (sum=200, 1 batch). int=b absent. 1 batch global.
+                genEvent({ date: dayFromNow(1), type: 'usage.records', accountId, value: 200, attributes: { integrationId: 'a' } })
+            ]);
+            await clickhouse.flush();
+        });
+
+        it('zero-fills the inactive dim on day 1 with batches=global(day 1)', async () => {
+            const res = await clickhouse.getDailySumAndBatches({
+                accountId,
+                metric: 'records',
+                dimension: 'integration_id',
+                timeframe: { start, end }
+            });
+            expect(res.unwrap()).toStrictEqual({
+                accountId,
+                metric: 'records',
+                series: [
+                    {
+                        dimension: 'integration_id',
+                        dimensionValue: 'a',
+                        days: [
+                            { day: dayFromNow(), sum: 300, batches: 3 },
+                            { day: dayFromNow(1), sum: 200, batches: 1 }
+                        ]
+                    },
+                    {
+                        dimension: 'integration_id',
+                        dimensionValue: 'b',
+                        days: [
+                            { day: dayFromNow(), sum: 100, batches: 3 },
+                            // Zero-fill: int=b had no rows on day 1 but still
+                            // carries day-1 global batches so its running-avg
+                            // denominator grows with the global.
+                            { day: dayFromNow(1), sum: 0, batches: 1 }
+                        ]
+                    }
+                ]
+            });
+        });
+
+        it('per-dim sums and running-avg are additive to the no-dim global at every day', async () => {
+            const dimRes = await clickhouse.getDailySumAndBatches({
+                accountId,
+                metric: 'records',
+                dimension: 'integration_id',
+                timeframe: { start, end }
+            });
+            const globalRes = await clickhouse.getDailySumAndBatches({
+                accountId,
+                metric: 'records',
+                dimension: 'none',
+                timeframe: { start, end }
+            });
+            const dim = dimRes.unwrap().series;
+            const global = globalRes.unwrap().series[0]!;
+            // 'days' guaranteed to be present on every series after zero-fill.
+            const globalDays = 'days' in global ? global.days : [];
+            for (let i = 0; i < globalDays.length; i++) {
+                const dimSum = dim.reduce((acc, s) => acc + s.days[i]!.sum, 0);
+                expect(dimSum).toBe(globalDays[i]!.sum);
+                // batches is global per-day across all dim series and the no-dim global.
+                for (const s of dim) {
+                    expect(s.days[i]!.batches).toBe(globalDays[i]!.batches);
+                }
+            }
+        });
+    });
+
     // Verifies the CH-platform contract we depend on: an insert with a stable
     // insert_deduplication_token is rejected by the server when re-sent, so retried
     // batches don't double-write raw_events.
