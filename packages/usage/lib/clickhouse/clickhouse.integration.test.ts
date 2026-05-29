@@ -486,6 +486,36 @@ describe('Clickhouse', () => {
             expect(realRest!.days[0]!.sum).toBe(1000);
             expect(rollup!.days[0]!.sum).toBe(530);
         });
+
+        // The seriesMap-key collision: SQL emits a real row for `__rest__` and
+        // a rollup row separately, but the parsing layer used to key both as
+        // '__rest__' in the map. Composite key (\x00rest vs \x01<value>) keeps
+        // them apart regardless of the user's value.
+        it('a real integration_id of "__rest__" is NOT merged with the long-tail rollup', async () => {
+            const sentinelAccount = 100;
+            clickhouse.addRaw([
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId: sentinelAccount, value: 1000, attributes: { integrationId: '__rest__' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId: sentinelAccount, value: 500, attributes: { integrationId: 'salesforce' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId: sentinelAccount, value: 10, attributes: { integrationId: 'tinyA' } }),
+                genEvent({ date: dayFromNow(0), type: 'usage.records', accountId: sentinelAccount, value: 10, attributes: { integrationId: 'tinyB' } })
+            ]);
+            await clickhouse.flush();
+
+            const res = await clickhouse.getDailySumAndBatches({
+                accountId: sentinelAccount,
+                metric: 'records',
+                dimension: 'integration_id',
+                top: 1,
+                timeframe: { start, end }
+            });
+            const series = res.unwrap().series;
+            const realSentinel = series.find((s) => 'dimensionValue' in s && s.dimensionValue === '__rest__');
+            const rollup = series.find((s) => 'isRest' in s);
+            expect(realSentinel).toBeDefined();
+            expect(rollup).toBeDefined();
+            expect(realSentinel!.days[0]!.sum).toBe(1000);
+            expect(rollup!.days[0]!.sum).toBe(520);
+        });
     });
 
     // Verifies the CH-platform contract we depend on: an insert with a stable

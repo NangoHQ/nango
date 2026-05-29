@@ -1,7 +1,7 @@
 import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimension, quantityForMetric, tableForMetric } from './clickhouse.query.js';
+import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimensionFor, quantityForMetric, tableForMetric } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -111,8 +111,8 @@ export class Clickhouse {
         }
 
         const { accountId, metric, dimension, timeframe } = query;
-        if (!isAllowedDimension(dimension)) {
-            return Err(new Error(`Invalid dimension: ${JSON.stringify(dimension)}`));
+        if (!isAllowedDimensionFor(metric, dimension)) {
+            return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -179,7 +179,9 @@ export class Clickhouse {
                     // strings (connection_id, model, etc.) can literally be
                     // 'rest' and we'd merge real and rollup into one bucket.
                     const isRest = row.isRest === 1;
-                    const key = isRest ? '__rest__' : String(row.dimensionValue);
+                    // Composite key keeps the rollup bucket isolated from any
+                    // real dim value that happens to be the same string.
+                    const key = isRest ? '\x00rest' : `\x01${String(row.dimensionValue)}`;
                     let entry = seriesMap.get(key);
                     if (!entry) {
                         entry = isRest
@@ -253,8 +255,8 @@ export class Clickhouse {
             return Err(new Error('Clickhouse client not initialized'));
         }
         const { accountId, metric, dimension, timeframe } = query;
-        if (!isAllowedDimension(dimension)) {
-            return Err(new Error(`Invalid dimension: ${JSON.stringify(dimension)}`));
+        if (!isAllowedDimensionFor(metric, dimension)) {
+            return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -335,7 +337,9 @@ export class Clickhouse {
                     // `isRest` is the authoritative rollup marker — see
                     // getDailyCounter for the collision rationale.
                     const isRest = row.isRest === 1;
-                    const key = isRest ? '__rest__' : String(row.dimensionValue);
+                    // Composite key keeps the rollup bucket isolated from any
+                    // real dim value that happens to be the same string.
+                    const key = isRest ? '\x00rest' : `\x01${String(row.dimensionValue)}`;
                     let entry = seriesMap.get(key);
                     if (!entry) {
                         entry = isRest ? { dimension, isRest: true, days: [] } : { dimension, dimensionValue: row.dimensionValue!, days: [] };

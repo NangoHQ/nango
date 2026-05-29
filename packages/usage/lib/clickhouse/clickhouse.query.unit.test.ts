@@ -1,23 +1,31 @@
 import { describe, expect, it } from 'vitest';
 
-import { BREAKDOWN_DIMENSIONS, isAllowedDimension } from './clickhouse.query.js';
+import { BREAKDOWN_DIMENSIONS, isAllowedDimensionFor } from './clickhouse.query.js';
 
-describe('isAllowedDimension', () => {
-    it('accepts every dim listed in BREAKDOWN_DIMENSIONS plus "none"', () => {
-        expect(isAllowedDimension('none')).toBe(true);
-        for (const dims of Object.values(BREAKDOWN_DIMENSIONS)) {
-            for (const dim of dims) {
-                expect(isAllowedDimension(dim)).toBe(true);
+import type { UsageMetric } from '@nangohq/types';
+
+describe('isAllowedDimensionFor', () => {
+    it('accepts every per-metric dim in BREAKDOWN_DIMENSIONS plus "none" for every metric', () => {
+        for (const metric of Object.keys(BREAKDOWN_DIMENSIONS) as UsageMetric[]) {
+            expect(isAllowedDimensionFor(metric, 'none')).toBe(true);
+            for (const dim of BREAKDOWN_DIMENSIONS[metric]) {
+                expect(isAllowedDimensionFor(metric, dim)).toBe(true);
             }
         }
     });
 
-    it('rejects strings outside the allowlist (SQL injection guard)', () => {
-        expect(isAllowedDimension('')).toBe(false);
-        expect(isAllowedDimension('1; DROP TABLE users--')).toBe(false);
-        expect(isAllowedDimension('account_id')).toBe(false);
-        expect(isAllowedDimension('NoneOf-the-above')).toBe(false);
-        expect(isAllowedDimension('NONE')).toBe(false);
-        expect(isAllowedDimension(' none ')).toBe(false);
+    it('rejects dims from a different metric (e.g. proxy + model)', () => {
+        expect(isAllowedDimensionFor('proxy', 'model')).toBe(false);
+        expect(isAllowedDimensionFor('connections', 'function_name')).toBe(false);
+        expect(isAllowedDimensionFor('connections', 'connection_id')).toBe(false);
+        expect(isAllowedDimensionFor('proxy', 'function_type')).toBe(false);
+    });
+
+    it('rejects strings outside any allowlist (SQL injection guard)', () => {
+        expect(isAllowedDimensionFor('proxy', '')).toBe(false);
+        expect(isAllowedDimensionFor('proxy', '1; DROP TABLE users--')).toBe(false);
+        expect(isAllowedDimensionFor('proxy', 'account_id')).toBe(false);
+        expect(isAllowedDimensionFor('records', 'NONE')).toBe(false);
+        expect(isAllowedDimensionFor('records', ' none ')).toBe(false);
     });
 });

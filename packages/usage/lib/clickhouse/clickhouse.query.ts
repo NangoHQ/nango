@@ -33,10 +33,9 @@ export const BREAKDOWN_DIMENSIONS = {
 
 type DimensionFor<M extends UsageMetric> = 'none' | (typeof BREAKDOWN_DIMENSIONS)[M][number];
 
-const ALLOWED_DIMENSIONS: ReadonlySet<string> = new Set<string>(['none', ...Object.values(BREAKDOWN_DIMENSIONS).flatMap((v) => [...v])]);
-
-export function isAllowedDimension(dimension: string): boolean {
-    return ALLOWED_DIMENSIONS.has(dimension);
+export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): boolean {
+    if (dimension === 'none') return true;
+    return (BREAKDOWN_DIMENSIONS[metric] as readonly string[]).includes(dimension);
 }
 
 export type GetDailyCounterQuery = {
