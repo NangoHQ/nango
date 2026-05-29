@@ -1,6 +1,6 @@
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
-import { PrivateRoute } from '@/components/PrivateRoute';
+import { PrivateRoute } from '@/components/patterns/PrivateRoute';
 import { EmailVerified } from '@/pages/Account/EmailVerified';
 import ForgotPassword from '@/pages/Account/ForgotPassword';
 import { InviteSignup } from '@/pages/Account/InviteSignup';

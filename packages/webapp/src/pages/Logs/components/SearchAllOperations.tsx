@@ -8,8 +8,8 @@ import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 import { TypesSelect } from './TypesSelect';
-import { MultiSelect } from '../../../components/MultiSelect';
-import { PeriodSelector } from '../../../components/PeriodSelector';
+import { MultiSelect } from '../../../components/ui/MultiSelect';
+import { PeriodSelector } from '../../../components/ui/PeriodSelector';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import Spinner from '../../../components/ui/Spinner';
 import * as Table from '../../../components/ui/Table';

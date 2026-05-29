@@ -1,6 +1,7 @@
 import http from 'node:http';
 import zlib from 'node:zlib';
 
+import axios from 'axios';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createMeteringTransport } from './byte-metering-transport.js';
@@ -247,6 +248,73 @@ describe('createMeteringTransport (socket bytes)', () => {
         expect(hops[1]!.received).toBeGreaterThanOrEqual(smallBody.length);
         expect(hops[1]!.received).toBeLessThan(largeBody.length); // delta reset — not accumulating across hops
         agent.destroy();
+    });
+
+    describe('userBeforeRedirect (header forwarding through redirects)', () => {
+        it('restores Authorization after cross-host redirect strips it', async () => {
+            // follow-redirects strips sensitive headers (Authorization, Cookie) on cross-host
+            // redirects. userBeforeRedirect must re-add them; a same-host redirect would not
+            // trigger stripping, so we need two servers on different ports here.
+            const targetHandle = await startServer((req, res) => {
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ headers: req.headers }));
+            });
+            const targetPort = targetHandle.port;
+
+            handle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetPort}/target` });
+                res.end();
+            });
+
+            const headersToForward = { authorization: 'Bearer test-token', 'x-custom': 'value' };
+            const userBeforeRedirect = (options: Record<string, unknown>) => {
+                const hdrs = options['headers'] as Record<string, string>;
+                for (const [key, value] of Object.entries(headersToForward)) {
+                    hdrs[key] = value;
+                }
+            };
+
+            const transport = createMeteringTransport(() => {}, userBeforeRedirect);
+            try {
+                const res = await axios.request({
+                    url: `http://127.0.0.1:${handle.port}/`,
+                    method: 'GET',
+                    headers: { ...headersToForward },
+                    beforeRedirect: userBeforeRedirect as any,
+                    transport: transport as any
+                });
+                expect(res.data.headers['authorization']).toBe('Bearer test-token');
+                expect(res.data.headers['x-custom']).toBe('value');
+            } finally {
+                await closeServer(targetHandle);
+            }
+        });
+
+        it('strips Authorization on cross-host redirect when userBeforeRedirect is omitted', async () => {
+            const targetHandle = await startServer((req, res) => {
+                res.writeHead(200, { 'content-type': 'application/json' });
+                res.end(JSON.stringify({ headers: req.headers }));
+            });
+            const targetPort = targetHandle.port;
+
+            handle = await startServer((_req, res) => {
+                res.writeHead(302, { location: `http://127.0.0.1:${targetPort}/target` });
+                res.end();
+            });
+
+            const transport = createMeteringTransport(() => {});
+            try {
+                const res = await axios.request({
+                    url: `http://127.0.0.1:${handle.port}/`,
+                    method: 'GET',
+                    headers: { authorization: 'Bearer test-token' },
+                    transport: transport as any
+                });
+                expect(res.data.headers['authorization']).toBeUndefined();
+            } finally {
+                await closeServer(targetHandle);
+            }
+        });
     });
 
     it('does not double-fire when both request write and response read complete', async () => {

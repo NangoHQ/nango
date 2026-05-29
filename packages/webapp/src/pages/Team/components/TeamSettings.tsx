@@ -2,9 +2,9 @@ import { permissions } from '@nangohq/authz';
 
 import { usePutTeam, useTeam } from '../../../hooks/useTeam';
 import { useStore } from '../../../store';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 
