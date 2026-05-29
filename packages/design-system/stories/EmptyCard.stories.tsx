@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof EmptyCard> = {
     component: EmptyCard,
-    title: 'Components v2/UI/EmptyCard',
+    title: 'Components v2/EmptyCard',
     parameters: { layout: 'padded' }
 };
 export default meta;

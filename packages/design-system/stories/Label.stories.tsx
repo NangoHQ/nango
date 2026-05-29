@@ -3,7 +3,7 @@ import { Label } from '@/components-v2/ui/Label';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Label',
+    title: 'Components v2/Label',
     parameters: { layout: 'padded' }
 };
 export default meta;

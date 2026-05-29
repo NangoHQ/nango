@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof DropdownMenu> = {
     component: DropdownMenu,
-    title: 'Components v2/UI/DropdownMenu',
+    title: 'Components v2/DropdownMenu',
     parameters: { layout: 'centered' }
 };
 export default meta;

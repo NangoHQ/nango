@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof InputGroup> = {
     component: InputGroup,
-    title: 'Components v2/UI/InputGroup',
+    title: 'Components v2/InputGroup',
     parameters: { layout: 'centered' }
 };
 export default meta;

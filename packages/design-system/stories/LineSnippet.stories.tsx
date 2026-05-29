@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof LineSnippet> = {
     component: LineSnippet,
-    title: 'Components v2/UI/LineSnippet',
+    title: 'Components v2/LineSnippet',
     parameters: { layout: 'centered' }
 };
 export default meta;

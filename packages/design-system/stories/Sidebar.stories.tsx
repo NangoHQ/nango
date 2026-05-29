@@ -22,7 +22,7 @@ const navItems = [
 ];
 
 const meta: Meta = {
-    title: 'Components v2/UI/Sidebar',
+    title: 'Components v2/Sidebar',
     parameters: { layout: 'fullscreen' }
 };
 export default meta;
