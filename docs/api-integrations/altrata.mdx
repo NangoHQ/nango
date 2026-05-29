@@ -46,7 +46,7 @@ Connect to Altrata with Nango and see data flow in 2 minutes.
             endpoint: '/v1/graphql',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>',
-            body: {
+            data: {
                 query: `query {
                     events(altrataId: "1-per-11111111", filterType: ANNOUNCEMENTS, sortType: EVENT_DATE) {
                         __typename
