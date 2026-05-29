@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Navigation> = {
     component: Navigation,
-    title: 'Components v2/Navigation',
+    title: 'Components v2/UI/Navigation',
     parameters: { layout: 'padded' }
 };
 export default meta;

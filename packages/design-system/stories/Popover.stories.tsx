@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Popover> = {
     component: Popover,
-    title: 'Components v2/Popover',
+    title: 'Components v2/UI/Popover',
     parameters: { layout: 'centered' }
 };
 export default meta;

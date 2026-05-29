@@ -10,7 +10,7 @@ const rows = [
 
 const meta: Meta<typeof Table> = {
     component: Table,
-    title: 'Components v2/Table',
+    title: 'Components v2/UI/Table',
     parameters: { layout: 'padded' }
 };
 export default meta;

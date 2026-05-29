@@ -3,7 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/Alert',
+    title: 'Components v1/UI/Alert',
     parameters: { layout: 'padded' }
 };
 export default meta;

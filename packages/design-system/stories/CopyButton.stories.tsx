@@ -3,7 +3,7 @@ import { CopyButton } from '@/components-v2/ui/CopyButton';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/CopyButton',
+    title: 'Components v2/UI/CopyButton',
     parameters: { layout: 'padded' }
 };
 export default meta;

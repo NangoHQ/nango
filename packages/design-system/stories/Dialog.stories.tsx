@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Dialog> = {
     component: Dialog,
-    title: 'Components v2/Dialog',
+    title: 'Components v2/UI/Dialog',
     parameters: { layout: 'centered' }
 };
 export default meta;
