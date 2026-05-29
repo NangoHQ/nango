@@ -1,5 +1,5 @@
-import { Button } from '@/components-v2/ui/Button';
 import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 

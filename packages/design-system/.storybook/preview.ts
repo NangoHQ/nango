@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
+import { useEffect } from 'react';
 
 import type { Preview, StoryContext, StoryFn } from '@storybook/react';
 import './preview.css';

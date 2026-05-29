@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button/Button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
+import { Button } from '@/components/ui/button/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -17,7 +17,9 @@ export const Default: Story = {
                 <TooltipProvider key={side} delayDuration={0}>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="zombie" size="sm">{side}</Button>
+                            <Button variant="zombie" size="sm">
+                                {side}
+                            </Button>
                         </TooltipTrigger>
                         <TooltipContent side={side}>Syncs every 30 min</TooltipContent>
                     </Tooltip>

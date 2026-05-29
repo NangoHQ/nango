@@ -17,10 +17,18 @@ export const Default: Story = {
             {VARIANTS.map((variant) => (
                 <div key={variant} className="flex items-center gap-4 flex-wrap">
                     <span className="story-section-heading w-28 shrink-0">{variant}</span>
-                    <Button variant={variant} size="sm">Default</Button>
-                    <Button variant={variant} size="md">Medium</Button>
-                    <Button variant={variant} size="sm" disabled>Disabled</Button>
-                    <Button variant={variant} size="sm" isLoading>Loading</Button>
+                    <Button variant={variant} size="sm">
+                        Default
+                    </Button>
+                    <Button variant={variant} size="md">
+                        Medium
+                    </Button>
+                    <Button variant={variant} size="sm" disabled>
+                        Disabled
+                    </Button>
+                    <Button variant={variant} size="sm" isLoading>
+                        Loading
+                    </Button>
                 </div>
             ))}
         </div>

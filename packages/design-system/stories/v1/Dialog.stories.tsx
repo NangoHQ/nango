@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button/Button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
+import { Button } from '@/components/ui/button/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -21,8 +21,12 @@ export const Default: Story = {
                     <DialogTitle>Confirm deletion</DialogTitle>
                     <DialogDescription>This action cannot be undone.</DialogDescription>
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="zinc" size="sm">Cancel</Button>
-                        <Button variant="danger" size="sm">Delete</Button>
+                        <Button variant="zinc" size="sm">
+                            Cancel
+                        </Button>
+                        <Button variant="danger" size="sm">
+                            Delete
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>

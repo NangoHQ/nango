@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-import { Button } from '@/components-v2/ui/Button';
 import { ConfirmDialog } from '@/components-v2/patterns/ConfirmDialog';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -17,7 +17,9 @@ export const Default: Story = {
         const [open, setOpen] = useState(false);
         return (
             <>
-                <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>Open dialog</Button>
+                <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+                    Open dialog
+                </Button>
                 <ConfirmDialog
                     open={open}
                     onOpenChange={setOpen}
