@@ -8,7 +8,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
 import { Clickhouse } from './clickhouse/clickhouse.js';
-import { AVG_METRICS, COUNTER_METRICS, DEFAULT_AVG_METRICS, DEFAULT_COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
+import { AVG_METRICS, COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
 import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
@@ -209,7 +209,6 @@ export class UsageTracker implements IUsageTracker {
                 case 'proxy':
                 case 'function_executions':
                 case 'function_compute_gbms':
-                case 'function_compute_ms':
                 case 'webhook_forwards':
                 case 'function_logs': {
                     const billingUsage = await this.getBillingMetrics(accountId);
@@ -300,12 +299,8 @@ export class UsageTracker implements IUsageTracker {
         }
     ): Promise<Result<BillingUsageMetrics>> {
         const { timeframe, metrics: scopedMetrics, breakdown, top } = opts;
-        // When the caller doesn't ask for a specific metric scope, fall back
-        // to the DEFAULT_* sets — which exclude `function_compute_gbms` (memory-
-        // weighted observability metric, opt-in only). Explicit scope wins:
-        // a caller asking for `function_compute_gbms` always gets it.
-        const scope = scopedMetrics ? new Set(scopedMetrics) : new Set<UsageMetric>([...DEFAULT_COUNTER_METRICS, ...DEFAULT_AVG_METRICS]);
-        const inScope = (m: UsageMetric): boolean => scope.has(m);
+        const scope = scopedMetrics ? new Set(scopedMetrics) : null;
+        const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
         const avgMetrics: AvgUsageMetric[] = AVG_METRICS.filter(inScope);
         const counterNoDim = counterMetrics.filter((m) => !breakdown?.[m]);
@@ -345,11 +340,6 @@ export class UsageTracker implements IUsageTracker {
                 ? ch
                       .getDailyCounter({ accountId, metric: 'function_compute_gbms', dimension: breakdown.function_compute_gbms, timeframe, ...topOpt })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
-                : null,
-            inScope('function_compute_ms') && breakdown?.function_compute_ms
-                ? ch
-                      .getDailyCounter({ accountId, metric: 'function_compute_ms', dimension: breakdown.function_compute_ms, timeframe, ...topOpt })
-                      .then((r) => ['function_compute_ms' as const, r] as const)
                 : null,
             inScope('webhook_forwards') && breakdown?.webhook_forwards
                 ? ch
@@ -500,7 +490,6 @@ const sources: Record<UsageMetric, string> = {
     proxy: 'billing:subscription:usage',
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
-    function_compute_ms: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
     function_logs: 'billing:subscription:usage'
 };

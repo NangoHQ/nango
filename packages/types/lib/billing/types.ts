@@ -78,7 +78,6 @@ export interface BreakdownDimensions {
     function_executions: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     function_logs: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     function_compute_gbms: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
-    function_compute_ms: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
     records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
     connections: 'environment_id' | 'integration_id';

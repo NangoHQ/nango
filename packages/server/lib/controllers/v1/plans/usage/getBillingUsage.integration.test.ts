@@ -251,14 +251,10 @@ describe(`GET ${route}`, () => {
             expect(res.res.status).toBe(200);
             const usage = res.json.data.usage;
 
-            // Default fan-out: 5 counter + 2 AVG metrics. `function_compute_gbms`
-            // is opt-in only (omitted unless explicitly requested via `?metrics=`)
-            // and lands here as the empty placeholder.
+            // All 7 metrics in the response.
             expect(usage.proxy.total).toBe(23); // 10 + 5 + 8
             expect(usage.function_executions.total).toBe(3); // 2 + 1
-            expect(usage.function_compute_ms.total).toBeGreaterThanOrEqual(0);
-            expect(usage.function_compute_gbms.total).toBe(0); // opt-in metric, not in default scope
-            expect(usage.function_compute_gbms.usage).toEqual([]);
+            expect(usage.function_compute_gbms.total).toBeGreaterThanOrEqual(0);
             expect(usage.function_logs.total).toBe(0); // no custom_logs in fixture
             expect(usage.webhook_forwards.total).toBe(4);
             // records: AVG(per-batch sum) running across the window.
@@ -286,14 +282,7 @@ describe(`GET ${route}`, () => {
             // The 5 unrequested metrics come back as the empty placeholder shape
             // produced by `toApiBillingUsageMetric` when no source data exists —
             // total=0, usage=[]. Verifies the CH path did NOT fan out for them.
-            const counterMetrics: UsageMetric[] = [
-                'proxy',
-                'function_executions',
-                'function_logs',
-                'function_compute_gbms',
-                'function_compute_ms',
-                'webhook_forwards'
-            ];
+            const counterMetrics: UsageMetric[] = ['proxy', 'function_executions', 'function_logs', 'function_compute_gbms', 'webhook_forwards'];
             for (const m of counterMetrics) {
                 expect(usage[m].total).toBe(0);
                 expect(usage[m].usage).toEqual([]);

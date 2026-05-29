@@ -218,8 +218,8 @@ describe('Clickhouse', () => {
                     series: [
                         {
                             days: [
-                                { day: dayFromNow(), value: 30 },
-                                { day: dayFromNow(1), value: 3250 }
+                                { day: dayFromNow(), value: 10 },
+                                { day: dayFromNow(1), value: 1200 }
                             ]
                         }
                     ]

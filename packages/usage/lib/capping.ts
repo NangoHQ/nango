@@ -92,10 +92,6 @@ export class Capping {
                 return plan.function_executions_max;
             case 'function_compute_gbms':
                 return plan.function_compute_gbms_max;
-            case 'function_compute_ms':
-                // No per-plan cap on this observability-only metric — we cap on
-                // function_compute_gbms which is the existing plan limit.
-                return null;
             case 'webhook_forwards':
                 return plan.webhook_forwards_max;
             case 'function_logs':
@@ -114,8 +110,6 @@ export class Capping {
             case 'function_executions':
                 return 'You have reached the maximum number of function executions for your plan.';
             case 'function_compute_gbms':
-                return 'You have reached the maximum compute time of your functions for your plan.';
-            case 'function_compute_ms':
                 return 'You have reached the maximum compute time of your functions for your plan.';
             case 'webhook_forwards':
                 return 'You have reached the maximum number of webhook forwards for your plan.';
