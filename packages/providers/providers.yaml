@@ -903,6 +903,7 @@ altrata:
         - analytics
     auth_mode: TWO_STEP
     token_url: https://api-auth.altrata.com/oauth2/token?grant_type=client_credentials
+    body_format: form
     token_headers:
         authorization: Basic ${base64(${credentials.username}:${credentials.password})}
         x-api-key: ${credentials.apiKey}
@@ -934,19 +935,19 @@ altrata:
             secret: true
             example: mN3pQv8wLc2jXs5rKt4bGy6uFd1eAh7Z*******
             pattern: '^[A-Za-z0-9]+$'
-            doc_section: '#step-1-getting-your-credentials'
+            doc_section: '#step-1-obtain-your-credentials'
         username:
             type: string
             title: Username
             description: Your Altrata account username.
             example: john_doe
-            doc_section: '#step-1-getting-your-credentials'
+            doc_section: '#step-1-obtain-your-credentials'
         password:
             type: string
             title: Password
             description: Your Altrata account password.
             secret: true
-            doc_section: '#step-1-getting-your-credentials'
+            doc_section: '#step-1-obtain-your-credentials'
 
 amazon:
     display_name: Amazon
