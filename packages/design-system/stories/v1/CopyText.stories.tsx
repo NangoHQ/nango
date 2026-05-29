@@ -1,0 +1,19 @@
+import { CopyText } from '@/components/ui/CopyText';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta: Meta = {
+    title: 'Components v1/CopyText',
+    parameters: { layout: 'padded' }
+};
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+    render: () => (
+        <div className="bg-bg-black p-6 rounded-md flex items-center gap-4">
+            <CopyText text="nango_sk_live_abc123def456">nango_sk_live_abc123def456</CopyText>
+            <CopyText text="user-connection-id">connection-id</CopyText>
+        </div>
+    )
+};

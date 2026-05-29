@@ -1,0 +1,29 @@
+import { Input } from '@/components/ui/input/Input';
+
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+const meta: Meta = {
+    title: 'Components v1/Input',
+    parameters: { layout: 'padded' }
+};
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+    render: () => (
+        <div className="bg-bg-black p-6 rounded-md flex flex-col gap-4 w-80">
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Empty</span>
+                <Input placeholder="Enter API key…" />
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Filled</span>
+                <Input defaultValue="nango_sk_live_abc123" />
+            </div>
+            <div className="flex flex-col gap-1">
+                <span className="story-section-heading">Disabled</span>
+                <Input placeholder="Disabled" disabled />
+            </div>
+        </div>
+    )
+};
