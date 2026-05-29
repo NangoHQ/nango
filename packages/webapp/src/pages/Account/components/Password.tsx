@@ -3,8 +3,8 @@ import { useMemo, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import z from 'zod';
 
-import { FormControl, FormItem, FormMessage, useFormField } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import { FormControl, FormItem, FormMessage, useFormField } from '@/components-v2/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { cn } from '@/utils/utils';
 
 export const passwordSchema = z
