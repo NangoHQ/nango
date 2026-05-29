@@ -42,8 +42,8 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
                 metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
                 break;
             case 'uncontrolled_fetch':
-                metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES, bytesSent);
-                metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES, bytesReceived);
+                metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
+                metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
                 break;
             case 'persist_records':
                 metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES, bytesSent);
