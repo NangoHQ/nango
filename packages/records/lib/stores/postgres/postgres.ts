@@ -79,8 +79,8 @@ export class PostgresStore implements RecordsStore {
     }
 
     startDaemon(): void {
-        const tickIntervalMs = envs.PERSIST_SEEN_PARTITION_INTERVAL_MS;
-        const maxAgeMs = envs.PERSIST_SEEN_PARTITION_MAX_AGE_MS;
+        const tickIntervalMs = envs.RECORDS_POSTGRES_SEEN_PARTITION_INTERVAL_MS;
+        const maxAgeMs = envs.RECORDS_POSTGRES_SEEN_PARTITION_MAX_AGE_MS;
         this.daemon = cancellableDaemon({
             tickIntervalMs,
             tick: async () => {

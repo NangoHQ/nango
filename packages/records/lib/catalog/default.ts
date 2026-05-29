@@ -48,6 +48,8 @@ let defaultStore: PostgresStore | undefined;
 export const getDefaultStore = (): PostgresStore => {
     if (!defaultStore) {
         defaultStore = new PostgresStore(config, configRead);
+        // The implicit daemon startup is an intentional design choice to preserve abstraction boundaries
+        // Extracting startDaemon() would leak postgres-specific implementation details
         defaultStore.startDaemon();
     }
     return defaultStore;
