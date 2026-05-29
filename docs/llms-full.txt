@@ -257,7 +257,7 @@ It is public and does not require authentication.
 
 Nango's public skills live in [NangoHQ/skills](https://github.com/NangoHQ/skills).
 
-Install the skill to implement Nango integration functions:
+Install the core skill to implement Nango integration functions:
 
 ```bash
 npx skills add NangoHQ/skills -s building-nango-functions
