@@ -1,13 +1,14 @@
-import type { UsageEvent, UsageMetric } from '@nangohq/types';
+import type { AvgUsageMetric, BreakdownDimensions, CounterUsageMetric, UsageEvent, UsageMetric } from '@nangohq/types';
+
+export type { AvgUsageMetric, CounterUsageMetric, DimensionFor } from '@nangohq/types';
+
+type DimensionFor<M extends UsageMetric> = 'none' | BreakdownDimensions[M];
 
 // Top-N + 'rest' breakdown bound. Cap exists so callers can't blow up the
 // response — the long tail can be tens of thousands of values (e.g. `records`
 // by `connection_id` on a large account).
 export const TOP_N_BREAKDOWN_DEFAULT = 10;
 export const TOP_N_BREAKDOWN_CAP = 25;
-
-export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
-export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
 
 export const COUNTER_METRICS = [
     'proxy',
@@ -18,9 +19,10 @@ export const COUNTER_METRICS = [
 ] as const satisfies readonly CounterUsageMetric[];
 export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
 
-// Per-metric dimension whitelist — single source of truth. The query types
-// below derive their `dimension` union from this const, and the controller
-// imports it to validate the `breakdown[<m>]=<d>` querystring.
+// Runtime mirror of `BreakdownDimensions` from @nangohq/types — `satisfies`
+// keeps the per-key arrays in sync with the per-key dim union. Single
+// declaration site is the interface in types; this const carries the same
+// information at runtime for SQL/zod consumers.
 export const BREAKDOWN_DIMENSIONS = {
     proxy: ['environment_id', 'integration_id', 'connection_id', 'success'],
     function_executions: ['environment_id', 'integration_id', 'connection_id', 'function_name', 'function_type', 'success'],
@@ -29,9 +31,7 @@ export const BREAKDOWN_DIMENSIONS = {
     webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
     records: ['environment_id', 'integration_id', 'connection_id', 'model'],
     connections: ['environment_id', 'integration_id']
-} as const satisfies Record<UsageMetric, readonly string[]>;
-
-type DimensionFor<M extends UsageMetric> = 'none' | (typeof BREAKDOWN_DIMENSIONS)[M][number];
+} as const satisfies { [M in keyof BreakdownDimensions]: readonly BreakdownDimensions[M][] };
 
 export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): boolean {
     if (dimension === 'none') return true;

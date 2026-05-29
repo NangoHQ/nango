@@ -11,21 +11,22 @@ import { usageTracker } from '../../../../utils/usage.js';
 
 import type { GetBillingUsage, UsageMetric } from '@nangohq/types';
 
+// z.enum(BREAKDOWN_DIMENSIONS[m]) — output type is the per-metric dim union,
+// matching `BreakdownDimensions[m]` from @nangohq/types. Single source of
+// truth for the (metric, dim) whitelist; empty strings rejected structurally
+// (not in the enum), no `.refine` needed.
 const breakdownSchema = z
     .object({
-        proxy: z.string().min(1).optional(),
-        function_executions: z.string().min(1).optional(),
-        function_logs: z.string().min(1).optional(),
-        function_compute_gbms: z.string().min(1).optional(),
-        webhook_forwards: z.string().min(1).optional(),
-        records: z.string().min(1).optional(),
-        connections: z.string().min(1).optional()
+        proxy: z.enum(BREAKDOWN_DIMENSIONS.proxy).optional(),
+        function_executions: z.enum(BREAKDOWN_DIMENSIONS.function_executions).optional(),
+        function_logs: z.enum(BREAKDOWN_DIMENSIONS.function_logs).optional(),
+        function_compute_gbms: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
+        webhook_forwards: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
+        records: z.enum(BREAKDOWN_DIMENSIONS.records).optional(),
+        connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional()
     })
     .strict()
-    .optional()
-    .refine((b) => !b || Object.entries(b).every(([m, d]) => !d || (BREAKDOWN_DIMENSIONS[m as UsageMetric] as readonly string[]).includes(d)), {
-        message: 'Unsupported metric/dimension pair in breakdown'
-    });
+    .optional();
 
 const ALL_METRICS = Object.keys(BREAKDOWN_DIMENSIONS) as [UsageMetric, ...UsageMetric[]];
 
@@ -123,7 +124,7 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {}),
         ...(query.source ? { source: query.source } : {}),
         ...(query.metrics ? { metrics: query.metrics } : {}),
-        ...(query.breakdown ? { breakdown: query.breakdown as Partial<Record<UsageMetric, string>> } : {}),
+        ...(query.breakdown ? { breakdown: query.breakdown } : {}),
         ...(query.top ? { top: query.top } : {})
     });
 

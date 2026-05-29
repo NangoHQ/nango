@@ -21,7 +21,7 @@ import type {
     GetDailySumAndBatchesSeries
 } from './clickhouse/clickhouse.query.js';
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
@@ -294,19 +294,21 @@ export class UsageTracker implements IUsageTracker {
         opts: {
             timeframe: { start: Date; end: Date };
             metrics?: UsageMetric[];
-            breakdown?: Partial<Record<UsageMetric, string>>;
+            breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
             top?: number;
         }
     ): Promise<Result<BillingUsageMetrics>> {
         const { timeframe, metrics: scopedMetrics, breakdown, top } = opts;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
-        const counterMetrics: CounterUsageMetric[] = scope ? COUNTER_METRICS.filter((m) => scope.has(m)) : [...COUNTER_METRICS];
-        const avgMetrics: AvgUsageMetric[] = scope ? AVG_METRICS.filter((m) => scope.has(m)) : [...AVG_METRICS];
-        // Metrics with a breakdown skip the no-dim base call — see method docstring.
+        const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
+        const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
+        const avgMetrics: AvgUsageMetric[] = AVG_METRICS.filter(inScope);
         const counterNoDim = counterMetrics.filter((m) => !breakdown?.[m]);
         const avgNoDim = avgMetrics.filter((m) => !breakdown?.[m]);
         const ch = this.getClickhouse();
 
+        // Base calls — `dimension: 'none'` is valid for every variant, so the
+        // union-typed `metric: m` is fine here.
         const counterBaseP = Promise.all(
             counterNoDim.map((m) => ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
         );
@@ -314,49 +316,52 @@ export class UsageTracker implements IUsageTracker {
             avgNoDim.map((m) => ch.getDailySumAndBatches({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
         );
 
-        // Breakdown requests, split by family so each Promise has a single
-        // concrete Result type (counter vs AVG result shapes differ). The CH
-        // SQL already bounds each to top-N + 'rest'; `top` overrides N per
-        // request. `flatMap` lets us skip metrics with no breakdown requested.
-        //
-        // `dim as never`: the per-metric dim union can't narrow inside a
-        // flatMap over a metric union — TS sees a wide string. Controller
-        // validates `(metric, dim)` against `BREAKDOWN_DIMENSIONS` before we
-        // reach here, so the cast is safe.
-        const counterBreakdownP = Promise.all(
-            counterMetrics.flatMap((m) => {
-                const dim = breakdown?.[m];
-                if (!dim) return [];
-                return [
-                    ch
-                        .getDailyCounter({
-                            accountId,
-                            metric: m,
-                            dimension: dim as never,
-                            timeframe,
-                            ...(top !== undefined ? { top } : {})
-                        })
-                        .then((r) => [m, r] as const)
-                ];
-            })
-        );
-        const avgBreakdownP = Promise.all(
-            avgMetrics.flatMap((m) => {
-                const dim = breakdown?.[m];
-                if (!dim) return [];
-                return [
-                    ch
-                        .getDailySumAndBatches({
-                            accountId,
-                            metric: m,
-                            dimension: dim as never,
-                            timeframe,
-                            ...(top !== undefined ? { top } : {})
-                        })
-                        .then((r) => [m, r] as const)
-                ];
-            })
-        );
+        // Breakdown calls — unrolled per-metric so `metric: '<literal>'` picks
+        // the right `GetDailyCounterQuery` variant and `dimension: breakdown.<m>`
+        // is typed as `BreakdownDimensions[<m>]`. No cast needed.
+        const topOpt = top !== undefined ? { top } : {};
+        const counterBreakdownCalls = [
+            inScope('proxy') && breakdown?.proxy
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt })
+                      .then((r) => ['proxy' as const, r] as const)
+                : null,
+            inScope('function_executions') && breakdown?.function_executions
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_executions', dimension: breakdown.function_executions, timeframe, ...topOpt })
+                      .then((r) => ['function_executions' as const, r] as const)
+                : null,
+            inScope('function_logs') && breakdown?.function_logs
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_logs', dimension: breakdown.function_logs, timeframe, ...topOpt })
+                      .then((r) => ['function_logs' as const, r] as const)
+                : null,
+            inScope('function_compute_gbms') && breakdown?.function_compute_gbms
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_compute_gbms', dimension: breakdown.function_compute_gbms, timeframe, ...topOpt })
+                      .then((r) => ['function_compute_gbms' as const, r] as const)
+                : null,
+            inScope('webhook_forwards') && breakdown?.webhook_forwards
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: breakdown.webhook_forwards, timeframe, ...topOpt })
+                      .then((r) => ['webhook_forwards' as const, r] as const)
+                : null
+        ].filter((p): p is NonNullable<typeof p> => p !== null);
+        const counterBreakdownP = Promise.all(counterBreakdownCalls);
+
+        const avgBreakdownCalls = [
+            inScope('records') && breakdown?.records
+                ? ch
+                      .getDailySumAndBatches({ accountId, metric: 'records', dimension: breakdown.records, timeframe, ...topOpt })
+                      .then((r) => ['records' as const, r] as const)
+                : null,
+            inScope('connections') && breakdown?.connections
+                ? ch
+                      .getDailySumAndBatches({ accountId, metric: 'connections', dimension: breakdown.connections, timeframe, ...topOpt })
+                      .then((r) => ['connections' as const, r] as const)
+                : null
+        ].filter((p): p is NonNullable<typeof p> => p !== null);
+        const avgBreakdownP = Promise.all(avgBreakdownCalls);
 
         const [counterBaseResults, avgBaseResults, counterBreakdowns, avgBreakdowns] = await Promise.all([
             counterBaseP,

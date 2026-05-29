@@ -66,6 +66,27 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
+export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
+export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
+
+// Per-metric dimension whitelist for the breakdown API. The runtime
+// `BREAKDOWN_DIMENSIONS` const in @nangohq/usage `satisfies` this shape so the
+// two stay in sync; consumers (controller validator, frontend contracts, CH
+// query types) all derive from this single declaration.
+export interface BreakdownDimensions {
+    proxy: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
+    function_executions: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    function_logs: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    function_compute_gbms: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
+    records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
+    connections: 'environment_id' | 'integration_id';
+}
+
+// `'none'` is the in-band sentinel for "no breakdown" used by the CH query
+// types; user-facing `breakdown[<m>]=<d>` requests only carry real dim values.
+export type DimensionFor<M extends UsageMetric> = 'none' | BreakdownDimensions[M];
+
 export interface GetBillingUsageOpts {
     timeframe?: {
         start: Date;
@@ -92,7 +113,7 @@ export interface GetBillingUsageOpts {
      * long tail). Top defaults to 10 and is clamped server-side to
      * the CH cap.
      */
-    breakdown?: Partial<Record<UsageMetric, string>>;
+    breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
     top?: number;
     /**
      * Subset of metrics to populate in the response. When set, only those
