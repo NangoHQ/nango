@@ -3,7 +3,7 @@ import { Tag } from '@/components/ui/label/Tag';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/Tag',
+    title: 'Components v1/UI/Tag',
     parameters: { layout: 'padded' }
 };
 export default meta;

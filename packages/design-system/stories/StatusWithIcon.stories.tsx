@@ -5,7 +5,7 @@ import { StatusWithIcon } from '@/components-v2/ui/StatusWithIcon';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/StatusWithIcon',
+    title: 'Components v2/UI/StatusWithIcon',
     parameters: { layout: 'padded' }
 };
 export default meta;

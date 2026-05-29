@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Sheet> = {
     component: Sheet,
-    title: 'Components v2/Sheet',
+    title: 'Components v2/UI/Sheet',
     parameters: { layout: 'centered' }
 };
 export default meta;

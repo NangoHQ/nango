@@ -3,7 +3,7 @@ import { HttpLabel } from '@/components/ui/HttpLabel';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/HttpLabel',
+    title: 'Components v1/UI/HttpLabel',
     parameters: { layout: 'padded' }
 };
 export default meta;

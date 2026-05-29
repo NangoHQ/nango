@@ -3,7 +3,7 @@ import { Button } from '@/components-v2/ui/Button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Button',
+    title: 'Components v2/UI/Button',
     parameters: { layout: 'padded' }
 };
 export default meta;

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/Dialog',
+    title: 'Components v1/UI/Dialog',
     parameters: { layout: 'padded' }
 };
 export default meta;

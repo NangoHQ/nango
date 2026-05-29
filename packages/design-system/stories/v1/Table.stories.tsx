@@ -9,7 +9,7 @@ const rows = [
 ];
 
 const meta: Meta = {
-    title: 'Components v1/Table',
+    title: 'Components v1/UI/Table',
     parameters: { layout: 'padded' }
 };
 export default meta;

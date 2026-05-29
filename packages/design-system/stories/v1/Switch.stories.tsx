@@ -3,7 +3,7 @@ import { Switch } from '@/components/ui/Switch';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/Switch',
+    title: 'Components v1/UI/Switch',
     parameters: { layout: 'padded' }
 };
 export default meta;

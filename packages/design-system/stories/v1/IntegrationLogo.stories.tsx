@@ -3,7 +3,7 @@ import { IntegrationLogo } from '@/components/ui/IntegrationLogo';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v1/IntegrationLogo',
+    title: 'Components v1/UI/IntegrationLogo',
     parameters: { layout: 'padded' }
 };
 export default meta;

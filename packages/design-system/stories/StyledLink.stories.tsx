@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof StyledLink> = {
     component: StyledLink,
-    title: 'Components v2/StyledLink',
+    title: 'Components v2/UI/StyledLink',
     parameters: { layout: 'centered' },
     decorators: [
         (Story) => (

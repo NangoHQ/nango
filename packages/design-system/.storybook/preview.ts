@@ -27,6 +27,11 @@ const preview: Preview = {
         withDarkClass
     ],
     parameters: {
+        options: {
+            storySort: {
+                method: 'alphabetical'
+            }
+        },
         controls: {
             matchers: {
                 color: /(background|color)$/i,
