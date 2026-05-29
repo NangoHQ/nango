@@ -14401,6 +14401,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `timely` | Timely | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/timely.md) |  |  | productivity |
 | `timify` | Timify | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/timify.md) | [connect](https://nango.dev/docs/api-integrations/timify/connect.md) |  | productivity |
 | `tldv` | tl;dv | API_KEY | [docs](https://nango.dev/docs/integrations/all/tldv.md) | [connect](https://nango.dev/docs/integrations/all/tldv/connect.md) |  | productivity |
+| `toast` | Toast | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/toast.md) | [connect](https://nango.dev/docs/api-integrations/toast/connect.md) |  | erp |
 | `todoist` | Todoist | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/todoist.md) |  |  | productivity, ticketing |
 | `toggl` | Toggl Track | BASIC | [docs](https://nango.dev/docs/api-integrations/toggl.md) | [connect](https://nango.dev/docs/api-integrations/toggl/connect.md) |  | productivity |
 | `torii` | Torii | API_KEY | [docs](https://nango.dev/docs/api-integrations/torii.md) | [connect](https://nango.dev/docs/api-integrations/torii/connect.md) |  | productivity |
