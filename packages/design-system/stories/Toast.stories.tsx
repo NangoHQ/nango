@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Toast> = {
     component: Toast,
-    title: 'Components v2/UI/Toast',
+    title: 'Components v2/Toast',
     parameters: { layout: 'padded' }
 };
 export default meta;

@@ -18,7 +18,7 @@ const chartConfig: ChartConfig = {
 };
 
 const meta: Meta = {
-    title: 'Components v2/UI/Chart',
+    title: 'Components v2/Chart',
     parameters: { layout: 'padded' }
 };
 export default meta;

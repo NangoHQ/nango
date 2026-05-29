@@ -7,7 +7,7 @@ import { Input } from '@/components-v2/ui/Input';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Form',
+    title: 'Components v2/Form',
     parameters: { layout: 'padded' }
 };
 export default meta;

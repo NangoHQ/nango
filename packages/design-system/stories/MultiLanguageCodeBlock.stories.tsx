@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof MultiLanguageCodeBlock> = {
     component: MultiLanguageCodeBlock,
-    title: 'Components v2/UI/MultiLanguageCodeBlock',
+    title: 'Components v2/MultiLanguageCodeBlock',
     parameters: { layout: 'padded' }
 };
 export default meta;
