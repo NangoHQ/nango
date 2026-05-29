@@ -19787,7 +19787,7 @@ tripletex:
         accept: application/json
     token_response:
         token: value.token
-    token_expires_in_ms: 518400000
+    token_expires_in_ms: 432000000
     proxy:
         base_url: https://tripletex.no/v2
         headers:
@@ -19844,7 +19844,7 @@ tripletex-sandbox:
         accept: application/json
     token_response:
         token: value.token
-    token_expires_in_ms: 518400000
+    token_expires_in_ms: 432000000
     proxy:
         base_url: https://api-test.tripletex.tech/v2
         headers:
