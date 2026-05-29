@@ -45,7 +45,7 @@ jobs:
               with:
                   role-to-assume: ${{ vars.STORYBOOK_DEPLOY_ROLE }}
                   role-session-name: GitHub_to_AWS_via_FederatedOIDC
-                  aws-region: ${{ vars.AWS_REGION }}
+                  aws-region: us-west-2
 
             - name: Deploy to S3
               run: |
