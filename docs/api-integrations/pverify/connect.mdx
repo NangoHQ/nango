@@ -18,22 +18,17 @@ This guide will walk you through retrieving your credentials from the pVerify AP
 
 ### Instructions:
 
-#### Step 1: Go to the API Management portal
+#### Step 1: Getting your credentials
 
 1. Navigate to [https://apimgmt.pverify.com](https://apimgmt.pverify.com) and sign in with your pVerify account.
-
-#### Step 2: Select your environment and copy your credentials
-
-1. Click your **profile name** in the top-right corner to open the dropdown menu.
-2. Toggle between **Test** and **Production** to select the environment you want credentials for.
-    - Use **Test** to develop and validate your integration — API calls go to `testapi.pverify.com`.
-    - Use **Production** when you're ready to go live — API calls go to `api.pverify.com`.
-3. Your **Client ID** and **Client Secret** are displayed on the dashboard. Copy both values. The **API Host** is the hostname from your pVerify OAuth URL — the part between `https://` and `/Token` (e.g. `https://api.pverify.com/Token` → `api.pverify.com`).
+2. Click your **profile name** in the top-right corner and toggle between **Test** and **Production** to select your environment.
+    - Use **Test** for development — API calls go to `testapi.pverify.com`.
+    - Use **Production** when going live — API calls go to `api.pverify.com`.
+3. Your **Client ID** and **Client Secret** are displayed on the dashboard. Copy both values. The **API Host** is the hostname matching your chosen environment (e.g. `api.pverify.com`).
 
 <img src="/api-integrations/pverify/credentials.png"/>
 
-
-#### Step 3: Enter credentials in the Connect UI
+#### Step 2: Enter credentials in the Connect UI
 
 1. Open the form where you need to authenticate with pVerify.
 2. Enter your **Client ID**, **Client Secret**, and **API Host** in their designated fields.

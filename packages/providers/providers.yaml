@@ -15297,7 +15297,7 @@ pverify:
             description: Your pVerify API hostname.
             example: api.pverify.com
             pattern: '^(api|testapi)\.pverify\.com$'
-            doc_section: '#step-2-choosing-your-environment'
+            doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:
     display_name: Qualtrics
