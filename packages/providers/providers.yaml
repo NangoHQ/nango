@@ -19782,9 +19782,15 @@ tripletex:
     categories:
         - accounting
     auth_mode: TWO_STEP
-    token_url: https://tripletex.no/v2/token/session/:create?consumerToken=${credentials.consumerToken}&employeeToken=${credentials.employeeToken}&expirationDate=${nowOffset(7, day, YYYY-MM-DD)}
+    token_url: https://tripletex.no/v2/token/session/:create
+    token_success_status: 201
     token_headers:
         accept: application/json
+        content-type: application/json
+    token_params:
+        consumerToken: ${credentials.consumerToken}
+        employeeToken: ${credentials.employeeToken}
+        expirationDate: ${nowOffset(7, day, YYYY-MM-DD)}
     token_response:
         token: value.token
     token_expires_in_ms: 432000000
@@ -19839,9 +19845,15 @@ tripletex-sandbox:
     categories:
         - accounting
     auth_mode: TWO_STEP
-    token_url: https://api-test.tripletex.tech/v2/token/session/:create?consumerToken=${credentials.consumerToken}&employeeToken=${credentials.employeeToken}&expirationDate=${nowOffset(7, day, YYYY-MM-DD)}
+    token_url: https://api-test.tripletex.tech/v2/token/session/:create
+    token_success_status: 201
     token_headers:
         accept: application/json
+        content-type: application/json
+    token_params:
+        consumerToken: ${credentials.consumerToken}
+        employeeToken: ${credentials.employeeToken}
+        expirationDate: ${nowOffset(7, day, YYYY-MM-DD)}
     token_response:
         token: value.token
     token_expires_in_ms: 432000000

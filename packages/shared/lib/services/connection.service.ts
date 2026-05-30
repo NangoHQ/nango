@@ -1476,7 +1476,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status !== (provider.token_success_status ?? 200)) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 

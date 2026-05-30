@@ -207,6 +207,8 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         };
     };
     token_request_method?: 'GET';
+    // HTTP status the token endpoint returns on success. Defaults to 200 when omitted.
+    token_success_status?: number;
     token_headers?: Record<string, string>;
     refresh_url?: string;
     refresh_token_params?: Record<string, string>;
