@@ -1174,6 +1174,7 @@
               "api-integrations/front-api-key",
               "api-integrations/fullenrich",
               "integrations/all/float",
+              "integrations/all/formstack-documents",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
               "integrations/all/google-gemini",
