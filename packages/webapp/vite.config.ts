@@ -52,15 +52,15 @@ function remoteApiConfig() {
             '/api': remote,
             // Extra routes needed for connection creation and auth flows.
             // Most dashboard functionality (viewing connections, logs, settings) works with /api alone.
-            '/connect': remote,     // Connect UI session + telemetry
+            '/connect': remote, // Connect UI session + telemetry
             '/integrations': remote, // Connect UI integration list
-            '/providers': remote,   // Connect UI provider details
-            '/proxy': remote,       // Getting-started proxy call
-            '/oauth2': remote,      // OAuth2 client credentials (direct POST, no popup)
-            '/api-auth': remote,    // API key / basic auth
-            '/auth': remote,        // TBA, JWT, two-step, etc.
+            '/providers': remote, // Connect UI provider details
+            '/proxy': remote, // Getting-started proxy call
+            '/oauth2': remote, // OAuth2 client credentials
+            '/api-auth': remote, // API key / basic auth
+            '/auth': remote, // TBA, JWT, two-step, etc.
             '/app-store-auth': remote,
-            '/app-auth': remote     // GitHub App setup callback
+            '/app-auth': remote // GitHub App setup callback
         }
     };
 }
