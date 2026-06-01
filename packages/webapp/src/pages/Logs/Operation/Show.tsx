@@ -8,7 +8,7 @@ import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { Logs } from './components/Logs';
 import { Info } from '../../../components/patterns/Info';
-import { CopyButton } from '../../../components/ui/button/CopyButton';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
