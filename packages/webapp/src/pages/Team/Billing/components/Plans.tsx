@@ -197,7 +197,7 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
         }
 
         return (
-            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/support" target="_blank">
+            <ButtonLink variant="secondary" className="w-27" to="https://nango.dev/demo" target="_blank">
                 Contact us
             </ButtonLink>
         );
