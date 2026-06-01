@@ -2,7 +2,7 @@ import { Prism } from '@mantine/prism';
 import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
-import { Tag } from '../../../../components/ui/label/Tag';
+import { Tag } from '@/components-v2/ui/Tag';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
 import { LevelTag } from '../../components/LevelTag';
 

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './Select.js';
-import { Tag } from '../../components/ui/label/Tag.js';
+import { Tag } from './Tag.js';
 import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';

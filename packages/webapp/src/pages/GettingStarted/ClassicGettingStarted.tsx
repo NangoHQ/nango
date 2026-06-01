@@ -3,7 +3,7 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Tag } from '../../components/ui/label/Tag';
+import { Tag } from '@/components-v2/ui/Tag';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
