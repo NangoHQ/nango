@@ -3,10 +3,6 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
-import { FunctionSwitch } from '../../components/FunctionSwitch';
-import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
-import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 import { ConditionalTooltip } from '@/components-v2/ConditionalTooltip';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { EmptyCard } from '@/components-v2/EmptyCard';
@@ -29,6 +25,10 @@ import { useStore } from '@/store';
 import { APIError } from '@/utils/api';
 import { githubRepo } from '@/utils/cloud';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
+import { FunctionSwitch } from '../../components/FunctionSwitch';
+import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
+import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
 
 import type { JSONSchema7 } from 'json-schema';
 

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { ConnectionSideInfo } from './ConnectionSideInfo';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button } from '@/components-v2/ui/button';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -12,6 +11,7 @@ import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { ConnectionSideInfo } from './ConnectionSideInfo';
 
 import type { GetConnection } from '@nangohq/types';
 

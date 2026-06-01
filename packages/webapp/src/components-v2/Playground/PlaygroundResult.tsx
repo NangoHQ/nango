@@ -1,12 +1,12 @@
 import { Braces, CheckCircle2, ExternalLink, Info, XCircle } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { CodeBlock } from '../CodeBlock';
-import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
-import { Separator } from '../ui/separator';
 import { usePlaygroundStore } from '@/store/playground';
 import { getLogsUrl } from '@/utils/logs';
+import { CodeBlock } from '../CodeBlock';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '../ui/alert';
+import { Separator } from '../ui/separator';
+import { JSON_DISPLAY_LIMIT } from './types';
 
 // TODO: set to true once the records list page is ready
 const showRecordsButton = false;

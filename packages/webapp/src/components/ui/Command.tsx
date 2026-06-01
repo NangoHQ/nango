@@ -2,8 +2,8 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import { Command as CommandPrimitive } from 'cmdk';
 import * as React from 'react';
 
-import { Dialog, DialogContent } from './Dialog';
 import { cn } from '../../utils/utils';
+import { Dialog, DialogContent } from './Dialog';
 
 import type { DialogProps } from '@radix-ui/react-dialog';
 

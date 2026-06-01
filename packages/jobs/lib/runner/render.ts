@@ -6,10 +6,10 @@ import { createClient } from 'redis';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
+import { RenderAPI } from './render.api.js';
 import { notifyOnIdle } from './runner.js';
 
 import type { RenderPlan } from './render.api.js';

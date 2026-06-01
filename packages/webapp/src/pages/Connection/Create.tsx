@@ -7,17 +7,17 @@ import { useForm } from 'react-hook-form';
 import { useSearchParam } from 'react-use';
 import { z } from 'zod';
 
-import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
-import { CreateConnectionSelector } from './components/CreateConnectionSelector';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ButtonLink } from '../../components/ui/button/Button';
+import { useProvider } from '@/hooks/useProvider';
 import { Form } from '../../components-v2/ui/form';
+import { ButtonLink } from '../../components/ui/button/Button';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { useProvider } from '@/hooks/useProvider';
+import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
+import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 
 import type { ApiIntegrationList } from '@nangohq/types';
 

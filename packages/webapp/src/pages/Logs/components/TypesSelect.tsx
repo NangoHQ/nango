@@ -1,10 +1,10 @@
 import { CrossCircledIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import { Button } from '../../../components/ui/button/Button';
+import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { Input } from '../../../components/ui/input/Input';
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import { cn } from '../../../utils/utils';
 import { typesOptions } from '../constants';
 

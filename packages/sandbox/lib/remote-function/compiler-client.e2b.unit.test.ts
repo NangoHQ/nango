@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { invokeCompiler } from './compiler-client.js';
+import { executionEnvironmentUnavailableMessage } from './sandbox.js';
+
+import type { RemoteFunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {}
 
@@ -28,11 +33,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return { ...actual, isLocal: false };
 });
-
-import { invokeCompiler } from './compiler-client.js';
-import { executionEnvironmentUnavailableMessage } from './sandbox.js';
-
-import type { RemoteFunctionError } from './helpers.js';
 
 describe('remote function compiler client E2B errors', () => {
     beforeEach(() => {

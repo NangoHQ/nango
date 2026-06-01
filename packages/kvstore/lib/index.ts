@@ -1,10 +1,10 @@
 import { createClient } from 'redis';
 
+import { envs } from './env.js';
 import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { RedisKVStore } from './RedisStore.js';
-import { envs } from './env.js';
 
 import type { KVStore } from './KVStore.js';
 import type { RedisClientType } from 'redis';

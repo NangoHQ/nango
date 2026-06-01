@@ -2,12 +2,12 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import connectionService from './connection.service.js';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import connectionService from './connection.service.js';
+import { errorNotificationService } from './notification/error.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Metadata } from '@nangohq/types';

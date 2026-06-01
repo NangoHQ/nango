@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { envs, logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, connectionService, errorManager, getProvider, githubAppClient } from '@nangohq/shared';
+import { accountService, configService, connectionService, errorManager, getProvider, githubAppClient, NangoError } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';

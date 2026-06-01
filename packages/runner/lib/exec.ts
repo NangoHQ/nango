@@ -11,11 +11,11 @@ import * as unzipper from 'unzipper';
 import * as zod from 'zod';
 
 import { ActionError, ExecutionError, SDKError } from '@nangohq/runner-sdk';
-import { Err, Ok, errorToObject, isEnterprise, truncateJson } from '@nangohq/utils';
+import { Err, errorToObject, isEnterprise, Ok, truncateJson } from '@nangohq/utils';
 
 import { logger } from './logger.js';
 import { MapLocks } from './sdk/locks.js';
-import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js';
+import { instrumentSDK, NangoActionRunner, NangoSyncRunner } from './sdk/sdk.js';
 
 import type { Locks } from './sdk/locks.js';
 import type { CreateAnyResponse } from '@nangohq/runner-sdk';

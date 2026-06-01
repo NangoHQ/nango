@@ -1,6 +1,6 @@
 import { uuidv4, uuidv7 } from 'uuidv7';
 
-import { Err, Ok, metrics, stringToHash, stringifyError } from '@nangohq/utils';
+import { Err, metrics, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { DuplicateTaskNameError } from '../errors.js';

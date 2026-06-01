@@ -4,7 +4,8 @@ import { CommandExitError, TimeoutError } from 'e2b';
 
 import { getLogger, isLocal, stringifyError } from '@nangohq/utils';
 
-import { NangoCliExitCode, getDryrunErrorCode } from './cli-exit-codes.js';
+import { invokeLocalDryrun } from '../local/dryrun-client.js';
+import { getDryrunErrorCode, NangoCliExitCode } from './cli-exit-codes.js';
 import { buildDryrunArgs } from './command-builders.js';
 import { getCommandOutput, getDryrunCommandSuccessOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
@@ -12,7 +13,6 @@ import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createRemoteFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
-import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');

@@ -4,9 +4,9 @@ import * as z from 'zod';
 import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { createMcpServerForConnection } from './server.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { createMcpServerForConnection } from './server.js';
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetMcp, PostMcp } from '@nangohq/types';

@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { nanoid } from '@nangohq/utils';
 
-import * as tasks from './tasks.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import { isDuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
+import * as tasks from './tasks.js';
 
 import type { Task, TaskState } from '../types.js';
 import type { knex } from 'knex';

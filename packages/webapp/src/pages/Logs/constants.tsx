@@ -1,9 +1,9 @@
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
 import type { MultiSelectArgs } from '../../components/MultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';

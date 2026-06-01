@@ -1,9 +1,9 @@
 import { CopyIcon, Link2Icon } from '@radix-ui/react-icons';
 import { useEffect, useRef, useState } from 'react';
 
-import { Button } from './Button';
 import { cn } from '../../../utils/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../Tooltip';
+import { Button } from './Button';
 
 import type { ClassValue } from 'clsx';
 

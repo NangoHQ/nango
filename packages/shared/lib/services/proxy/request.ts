@@ -1,12 +1,12 @@
-import { Readable, finished } from 'node:stream';
+import { finished, Readable } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 
-import { Err, Ok, axiosInstance as axios, getLogger, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
+import { axiosInstance as axios, Err, getLogger, Ok, redactHeaders, redactURL, retryFlexible } from '@nangohq/utils';
 
 import { createMeteringTransport } from './byte-metering-transport.js';
 import { getProxyRetryFromErr } from './retry.js';
-import { ProxyError, getAxiosConfiguration } from './utils.js';
+import { getAxiosConfiguration, ProxyError } from './utils.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
 import type { RetryReason } from './utils.js';

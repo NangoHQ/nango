@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+import { connectionTagsKeySchema, connectionTagsSchema, TAG_MAX_COUNT, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
 
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
 

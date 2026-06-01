@@ -2,10 +2,6 @@ import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
 
-import { Breadcrumbs } from './Breadcrumbs';
-import { isDevToolsEnabled } from './DevToolPanel';
-import { PermissionGate } from './PermissionGate';
-import { Button, ButtonLink } from './ui/button';
 import { SlackIcon } from '@/assets/SlackIcon';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -14,6 +10,10 @@ import { useStore } from '@/store';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 import { usePlaygroundStore } from '@/store/playground';
 import { cn } from '@/utils/utils';
+import { Breadcrumbs } from './Breadcrumbs';
+import { isDevToolsEnabled } from './DevToolPanel';
+import { PermissionGate } from './PermissionGate';
+import { Button, ButtonLink } from './ui/button';
 
 export const AppHeader: React.FC = () => {
     const env = useStore((s) => s.env);

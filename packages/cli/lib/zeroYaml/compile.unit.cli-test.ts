@@ -5,9 +5,9 @@ import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
 
+import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
 import { CompileError } from './utils.js';
-import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 
 const exec = promisify(execCb);
 

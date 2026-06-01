@@ -2,9 +2,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
 
-import configService from './config.service.js';
 import { createConfigSeed } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import configService from './config.service.js';
 
 describe('Config service integration tests', () => {
     beforeAll(async () => {

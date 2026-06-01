@@ -3,10 +3,10 @@ import path from 'node:path';
 
 import chalk from 'chalk';
 
-import { GitHubNotFoundError, collectDependencies, fetchDirectoryRecursively, fetchFileContent, fetchGitHubDirectory } from '../utils/githubTemplates.js';
+import { printDebug } from '../utils.js';
+import { collectDependencies, fetchDirectoryRecursively, fetchFileContent, fetchGitHubDirectory, GitHubNotFoundError } from '../utils/githubTemplates.js';
 import { checkExistingFiles, updateIndexFile } from '../utils/integrationFiles.js';
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
 
 interface CloneOptions {
     fullPath: string;

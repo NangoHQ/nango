@@ -4,11 +4,11 @@ import { CommandExitError, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
+import { invokeLocalCompiler } from '../local/compiler-client.js';
 import { getCommandOutput } from './command-output.js';
 import { RemoteFunctionError } from './helpers.js';
-import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
+import { remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionCompileTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createRemoteFunctionSandbox } from './sandbox.js';
-import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 interface FunctionFilePathRequest {
     integration_id: string;

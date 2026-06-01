@@ -1,6 +1,12 @@
 import { SendMessageBatchCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DispatchQueuePublisher } from './publisher.js';
+
+import type { PreparedDispatchMessage } from './publisher.js';
+import type { SendMessageBatchCommandOutput, SQSClient } from '@aws-sdk/client-sqs';
+import type { WebhookDispatchMessage } from '@nangohq/types';
+
 const tracerMocks = vi.hoisted(() => {
     const span = {
         setTag: vi.fn().mockReturnThis(),
@@ -60,12 +66,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
         }
     };
 });
-
-import { DispatchQueuePublisher } from './publisher.js';
-
-import type { PreparedDispatchMessage } from './publisher.js';
-import type { SQSClient, SendMessageBatchCommandOutput } from '@aws-sdk/client-sqs';
-import type { WebhookDispatchMessage } from '@nangohq/types';
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {

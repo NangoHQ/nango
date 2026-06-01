@@ -3,15 +3,15 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import SettingsContent from './components/SettingsContent';
-import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
-import { useToast } from '../../../hooks/useToast';
-import { useStore } from '../../../store';
-import { APIError } from '../../../utils/api';
 import { KeyValueInput } from '@/components-v2/KeyValueInput';
 import { PermissionGate } from '@/components-v2/PermissionGate';
 import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
+import { useToast } from '../../../hooks/useToast';
+import { useStore } from '../../../store';
+import { APIError } from '../../../utils/api';
+import SettingsContent from './components/SettingsContent';
 
 import type { ApiEnvironmentVariable } from '@nangohq/types';
 

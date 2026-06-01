@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
 
+import { Orchestrator } from '../../clients/orchestrator.js';
 import connectionService from '../connection.service.js';
 import * as configService from './config/config.service.js';
 import syncManager from './manager.service.js';
 import { getAndReconcileDifferences } from './sync.service.js';
-import { Orchestrator } from '../../clients/orchestrator.js';
 
 import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 import type { SyncConfigWithProvider } from '../../models/Sync.js';

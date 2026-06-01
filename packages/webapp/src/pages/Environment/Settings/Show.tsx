@@ -1,6 +1,14 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
+import { Badge } from '@/components-v2/ui/badge';
+import { Skeleton } from '@/components-v2/ui/skeleton';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useTeam } from '../../../hooks/useTeam';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
 import { ApiKeys } from './ApiKeys';
 import { BackendSettings } from './Backend';
 import { ConnectUISettings } from './ConnectUISettings';
@@ -10,14 +18,6 @@ import { General } from './General';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
 import { Webhooks } from './Webhooks';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useTeam } from '../../../hooks/useTeam';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { useStore } from '../../../store';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { Badge } from '@/components-v2/ui/badge';
-import { Skeleton } from '@/components-v2/ui/skeleton';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 import type { ReactNode } from 'react';
 

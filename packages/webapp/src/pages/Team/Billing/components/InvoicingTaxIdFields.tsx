@@ -2,13 +2,13 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
-import { OptionalTag } from './InvoicingDetailsForm';
 import { Button } from '@/components-v2/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
 import { Input } from '@/components-v2/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
+import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
+import { OptionalTag } from './InvoicingDetailsForm';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 

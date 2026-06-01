@@ -2,10 +2,6 @@ import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useParams } from 'react-router-dom';
 
-import { AuthTab } from './components/AuthTab';
-import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
-import { SettingsTab } from './components/SettingsTab';
-import { SyncsTab } from './components/SyncsTab';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
 import { Skeleton } from '@/components-v2/ui/skeleton';
@@ -16,6 +12,10 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { openPlaygroundWithContext } from '@/utils/playground';
+import { AuthTab } from './components/AuthTab';
+import { IntegrationLogoWithProfile } from './components/IntegrationLogoWithProfile';
+import { SettingsTab } from './components/SettingsTab';
+import { SyncsTab } from './components/SyncsTab';
 
 export const ConnectionShow = () => {
     const env = useStore((state) => state.env);

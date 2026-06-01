@@ -1,10 +1,10 @@
 import {
-    RemoteFunctionError,
     createFunctionDryrun,
     getRemoteFunctionNangoHost,
     markFunctionDryrunFailed,
     markFunctionDryrunRunning,
     prepareAsyncDryrun,
+    RemoteFunctionError,
     toFunctionDryrunCreate
 } from '@nangohq/sandbox';
 import { configService, connectionService } from '@nangohq/shared';

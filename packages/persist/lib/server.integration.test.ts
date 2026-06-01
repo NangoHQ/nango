@@ -6,8 +6,6 @@ import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
     connectionService,
@@ -16,13 +14,15 @@ import {
     createSyncJob,
     environmentService,
     getProvider,
-    secretService
+    secretService,
+    SyncJobsType,
+    SyncStatus
 } from '@nangohq/shared';
 
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
 
 const mockSecretKey = 'secret-key';

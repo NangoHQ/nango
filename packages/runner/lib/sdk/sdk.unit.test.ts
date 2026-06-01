@@ -7,9 +7,9 @@ import { ExecutionAbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
+import { PersistClient } from '../clients/persist.js';
 import { MapLocks } from './locks.js';
 import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
-import { PersistClient } from '../clients/persist.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';

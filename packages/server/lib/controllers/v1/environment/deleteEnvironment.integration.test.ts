@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { PROD_ENVIRONMENT_NAME, customerKeyService, environmentService, getProvider, seeders } from '@nangohq/shared';
+import { customerKeyService, environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
 

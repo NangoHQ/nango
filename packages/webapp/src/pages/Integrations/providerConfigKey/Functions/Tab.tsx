@@ -2,8 +2,6 @@ import { Cloud, ExternalLink, FolderGit2, Info } from 'lucide-react';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { EmptyCard } from '../../../../components-v2/EmptyCard.js';
-import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 import { CopyButton } from '@/components-v2/CopyButton';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert.js';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
@@ -15,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/tool
 import { useHashNavigation } from '@/hooks/useHashNavigation';
 import { useGetIntegrationFlows } from '@/hooks/useIntegration';
 import { useStore } from '@/store';
+import { EmptyCard } from '../../../../components-v2/EmptyCard.js';
+import { FunctionSwitch } from '../../components/FunctionSwitch.js';
 
 import type { ApiIntegration, NangoSyncConfig } from '@nangohq/types';
 

@@ -2,6 +2,7 @@ import { CommandExitError, TimeoutError } from 'e2b';
 
 import { isLocal } from '@nangohq/utils';
 
+import { invokeLocalDeploy } from '../local/deploy-client.js';
 import { getDeployErrorCode } from './cli-exit-codes.js';
 import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
@@ -10,7 +11,6 @@ import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createRemoteFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
-import { invokeLocalDeploy } from '../local/deploy-client.js';
 
 export interface DeployRequest {
     integration_id: string;

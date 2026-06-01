@@ -2,14 +2,14 @@ import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { SignupForm } from './components/SignupForm';
+import { StyledLink } from '@/components-v2/StyledLink';
+import { Button, ButtonLink } from '@/components-v2/ui/button';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
+import { SignupForm } from './components/SignupForm';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();

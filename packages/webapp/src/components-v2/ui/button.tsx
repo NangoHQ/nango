@@ -3,8 +3,8 @@ import { cva } from 'class-variance-authority';
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 
-import { Spinner } from './spinner';
 import { cn } from '@/utils/utils';
+import { Spinner } from './spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 import type { LinkProps } from 'react-router-dom';

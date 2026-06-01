@@ -2,15 +2,15 @@ import { ChevronsUpDown, CreditCard, LogOut, SlidersHorizontal, Sparkle, UserRou
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { isDevToolsEnabled, useDevPanelStore } from '../DevToolPanel';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 import { useMeta } from '@/hooks/useMeta';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
+import { isDevToolsEnabled, useDevPanelStore } from '../DevToolPanel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuItem } from '../ui/sidebar';
 
 export const ProfileDropdown: React.FC = () => {
     const { data: metaData } = useMeta();

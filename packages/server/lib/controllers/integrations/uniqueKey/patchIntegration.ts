@@ -3,7 +3,6 @@ import * as z from 'zod';
 import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationParams } from './getIntegration.js';
 import { integrationToPublicApi } from '../../../formatters/integration.js';
 import {
     integrationCredentialsSchema,
@@ -12,6 +11,7 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { validationParams } from './getIntegration.js';
 
 import type { PatchPublicIntegration } from '@nangohq/types';
 

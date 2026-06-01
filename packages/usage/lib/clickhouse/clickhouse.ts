@@ -1,9 +1,9 @@
 import { ENVS, Err, Ok, parseEnvs, stringifyError } from '@nangohq/utils';
 
+import { logger } from '../logger.js';
 import { Batcher } from './batcher.js';
 import { granularityGroupBy, granularityOrderBy, quantityForMetric, startSelect, tableForMetric } from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
-import { logger } from '../logger.js';
 
 import type { GetUsageQuery, GetUsageResult, GetUsageResultSeries } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageMetric, UsageRecordsEvent } from '@nangohq/types';

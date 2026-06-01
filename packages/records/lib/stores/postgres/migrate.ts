@@ -1,13 +1,13 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { config, schema } from './config.js';
 import { logger } from '../../utils/logger.js';
+import { config, schema } from './config.js';
+
+import type { Knex } from 'knex';
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(path.join(filename, '../../../../'));
-
-import type { Knex } from 'knex';
 
 export async function migrate(db: Knex): Promise<void> {
     logger.info('[records] migration');

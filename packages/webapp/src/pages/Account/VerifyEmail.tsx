@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
-import DefaultLayout from '../../layout/DefaultLayout';
-import { APIError } from '../../utils/api';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertDescription } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { useToast } from '@/hooks/useToast';
+import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { APIError } from '../../utils/api';
 
 export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');

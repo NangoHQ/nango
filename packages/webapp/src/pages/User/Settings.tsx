@@ -2,14 +2,14 @@ import { Pencil1Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Skeleton } from '../../components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
+import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { Button } from '../../components/ui/button/Button';
 import { Input } from '../../components/ui/input/Input';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/Tooltip';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();

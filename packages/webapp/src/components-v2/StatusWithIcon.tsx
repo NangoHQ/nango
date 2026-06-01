@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { cn } from '@/utils/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 import type { VariantProps } from 'class-variance-authority';
 

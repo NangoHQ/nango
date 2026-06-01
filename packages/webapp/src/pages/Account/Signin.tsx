@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import GoogleButton from '@/components/ui/button/Auth/Google';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
 import { Button } from '@/components-v2/ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components-v2/ui/form';
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/input-group';
+import GoogleButton from '@/components/ui/button/Auth/Google';
 import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';

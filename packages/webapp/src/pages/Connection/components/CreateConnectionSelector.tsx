@@ -8,7 +8,10 @@ import { useSWRConfig } from 'swr';
 import { permissions } from '@nangohq/authz';
 import Nango from '@nangohq/frontend';
 
-import { IntegrationDropdown } from './IntegrationDropdown';
+import { InfoTooltip } from '@/components-v2/InfoTooltip';
+import { PermissionGate } from '@/components-v2/PermissionGate';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '../../../components-v2/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
@@ -21,10 +24,7 @@ import { useStore } from '../../../store';
 import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
-import { usePermissions } from '@/hooks/usePermissions';
+import { IntegrationDropdown } from './IntegrationDropdown';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';

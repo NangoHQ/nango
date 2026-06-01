@@ -3,7 +3,7 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, buildTagsFromEndUser, configService } from '@nangohq/shared';
+import { buildTagsFromEndUser, configService, EndUserMapper } from '@nangohq/shared';
 import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';

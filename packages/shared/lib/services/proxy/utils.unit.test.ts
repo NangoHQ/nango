@@ -3,17 +3,17 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import { describe, expect, it } from 'vitest';
 
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 import {
-    ProxyError,
     absoluteUrlFromRedirectRequestOptions,
     buildCanonicalParams,
     buildProxyHeaders,
     buildProxyURL,
     getAxiosConfiguration,
-    getProxyConfiguration
+    getProxyConfiguration,
+    ProxyError
 } from './utils.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
 

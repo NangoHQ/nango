@@ -6,14 +6,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthBadge } from './components/AuthBadge.js';
-import { useProviders } from '../../hooks/useProviders.js';
-import DashboardLayout from '../../layout/DashboardLayout.js';
 import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
 import { Badge } from '@/components-v2/ui/badge';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
 import { Skeleton } from '@/components-v2/ui/skeleton.js';
 import { useStore } from '@/store';
+import { useProviders } from '../../hooks/useProviders.js';
+import DashboardLayout from '../../layout/DashboardLayout.js';
+import { AuthBadge } from './components/AuthBadge.js';
 
 import type { ApiProviderListItem } from '@nangohq/types';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';

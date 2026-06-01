@@ -3,13 +3,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
+import { useConnections } from '@/hooks/useConnections';
+import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
+import { usePlaygroundStore } from '@/store/playground';
 import { IntegrationLogo } from '../IntegrationLogo';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ComboboxSelect } from '../ui/combobox';
-import { useConnections } from '@/hooks/useConnections';
-import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
-import { usePlaygroundStore } from '@/store/playground';
 
 import type { ComboboxOption } from '../ui/combobox';
 import type { NangoSyncConfig } from '@nangohq/types';

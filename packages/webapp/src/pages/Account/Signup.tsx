@@ -1,8 +1,8 @@
 import { Helmet } from 'react-helmet';
 
-import { SignupForm } from './components/SignupForm';
-import DefaultLayout from '../../layout/DefaultLayout';
 import { StyledLink } from '@/components-v2/StyledLink';
+import DefaultLayout from '../../layout/DefaultLayout';
+import { SignupForm } from './components/SignupForm';
 
 export const Signup: React.FC = () => {
     return (

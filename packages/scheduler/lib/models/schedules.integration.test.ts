@@ -3,8 +3,8 @@ import { setTimeout } from 'timers/promises';
 import { uuidv7 } from 'uuidv7';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import * as schedules from './schedules.js';
 
 import type { Schedule } from '../types.js';
 import type knex from 'knex';

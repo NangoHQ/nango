@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { isAxiosError } from 'axios';
 
 import { getRedis } from '@nangohq/kvstore';
-import { Err, Ok, axiosInstance as axios, networkError, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
+import { axiosInstance as axios, Err, networkError, Ok, redactHeaders, retryFlexible, stringifyStable, userAgent } from '@nangohq/utils';
 
 import { CircuitBreakerPassThrough, CircuitBreakerRedis } from './circuitBreaker.js';
 import { envs } from './envs.js';

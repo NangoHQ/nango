@@ -1,17 +1,17 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
-import { clearDb as clearRecordsDb } from '@nangohq/records/lib/stores/postgres/tests/helpers.js';
 import { format as recordsFormatter, records as recordsService } from '@nangohq/records';
+import { clearDb as clearRecordsDb } from '@nangohq/records/lib/stores/postgres/tests/helpers.js';
 import { getLatestSyncJob, isSyncJobRunning, seeders, updateSyncJobResult } from '@nangohq/shared';
 import { Ok, stringifyError } from '@nangohq/utils';
 
-import { handleSyncSuccess, startSync } from './sync.js';
 import { envs } from '../env.js';
+import { handleSyncSuccess, startSync } from './sync.js';
 
 import type { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from '@nangohq/nango-orchestrator';
 import type { ReturnedRecord, UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { ConnectionJobs, DBSyncConfig, SyncResult } from '@nangohq/types';
 
 const mockStartScript = vi.fn(() => Promise.resolve(Ok(undefined)));

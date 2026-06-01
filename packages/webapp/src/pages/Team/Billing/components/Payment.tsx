@@ -1,9 +1,6 @@
 import { CreditCard } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { InvoicingDetailsForm } from './InvoicingDetailsForm';
-import { PaymentMethodDialog } from './PaymentMethodDialog';
-import { Dot } from '../../../../components-v2/Dot';
 import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
 import { StyledLink } from '@/components-v2/StyledLink';
 import { Button } from '@/components-v2/ui/button';
@@ -12,6 +9,9 @@ import { Skeleton } from '@/components-v2/ui/skeleton';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
+import { Dot } from '../../../../components-v2/Dot';
+import { InvoicingDetailsForm } from './InvoicingDetailsForm';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
 
 export const Payment: React.FC = () => {
     const env = useStore((state) => state.env);

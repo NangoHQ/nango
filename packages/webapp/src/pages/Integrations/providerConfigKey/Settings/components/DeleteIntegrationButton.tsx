@@ -4,14 +4,14 @@ import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
 
-import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
-import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
-import { useToast } from '../../../../../hooks/useToast.js';
 import { PermissionGate } from '@/components-v2/PermissionGate.js';
 import { Button } from '@/components-v2/ui/button.js';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog.js';
 import { useEnvironment } from '@/hooks/useEnvironment.js';
 import { usePermissions } from '@/hooks/usePermissions.js';
+import { clearConnectionsCache } from '../../../../../hooks/useConnections.js';
+import { useDeleteIntegration } from '../../../../../hooks/useIntegration.js';
+import { useToast } from '../../../../../hooks/useToast.js';
 
 import type { ApiIntegration } from '@nangohq/types';
 

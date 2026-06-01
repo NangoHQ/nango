@@ -1,10 +1,10 @@
 import { Edit } from 'lucide-react';
 import { useState } from 'react';
 
+import { Button } from '@/components-v2/ui/button';
 import { SimpleTooltip } from '@/components/SimpleTooltip';
 import { CopyButton } from '@/components/ui/button/CopyButton';
 import { Input } from '@/components/ui/input/Input';
-import { Button } from '@/components-v2/ui/button';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/utils';
 

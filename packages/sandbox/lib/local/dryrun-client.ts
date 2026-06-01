@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 
-import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 import { getDryrunErrorCode } from '../remote-function/cli-exit-codes.js';
 import { buildDryrunArgs } from '../remote-function/command-builders.js';
 import { getDryrunCommandSuccessOutput } from '../remote-function/command-output.js';
@@ -13,6 +12,7 @@ import {
     remoteFunctionLocalImage,
     remoteFunctionProjectPath
 } from '../remote-function/runtime.js';
+import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
 
 import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-client.js';
 

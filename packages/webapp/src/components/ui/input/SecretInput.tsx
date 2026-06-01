@@ -1,10 +1,10 @@
 import { ArrowPathIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { forwardRef, useState } from 'react';
 
-import { Input } from './Input';
 import { cn } from '../../../utils/utils';
 import { Button } from '../button/Button';
 import { CopyButton } from '../button/CopyButton';
+import { Input } from './Input';
 
 import type { InputStyleProp, InputVariantProp } from './Input';
 
