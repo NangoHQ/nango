@@ -101,14 +101,15 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
             <PopoverContent className="p-0 text-white bg-active-gray w-80" align="end">
                 <div className="px-3 py-2">
                     <InputGroup className="bg-active-gray border-grayscale-600">
-                        <InputGroupAddon><MagnifyingGlassIcon className="w-4 h-4" /></InputGroupAddon>
-                        <InputGroupInput
-                            placeholder="Search..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            autoFocus
-                        />
-                        {loading && <InputGroupAddon align="inline-end"><Spinner /></InputGroupAddon>}
+                        <InputGroupAddon>
+                            <MagnifyingGlassIcon className="w-4 h-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
+                        {loading && (
+                            <InputGroupAddon align="inline-end">
+                                <Spinner />
+                            </InputGroupAddon>
+                        )}
                     </InputGroup>
                 </div>
                 <Command>

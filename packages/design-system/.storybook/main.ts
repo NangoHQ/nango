@@ -16,7 +16,13 @@ const config: StorybookConfig = {
         options: {}
     },
     viteFinal(config): InlineConfig {
-        const existingAlias = Array.isArray(config.resolve?.alias) ? {} : (config.resolve?.alias ?? {});
+        const existingAlias = Array.isArray(config.resolve?.alias)
+            ? Object.fromEntries(
+                  (config.resolve.alias as Array<{ find: string; replacement: string }>)
+                      .filter((a) => typeof a.find === 'string')
+                      .map((a) => [a.find, a.replacement])
+              )
+            : (config.resolve?.alias ?? {});
         return {
             ...config,
             plugins: [...(config.plugins ?? []), tailwindcss()],
