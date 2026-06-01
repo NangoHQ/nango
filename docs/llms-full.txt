@@ -14504,3 +14504,10 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `zorus` | Zorus | API_KEY | [docs](https://nango.dev/docs/api-integrations/zorus.md) | [connect](https://nango.dev/docs/api-integrations/zorus/connect.md) |  | other |
 | `zuora` | Zuora | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zuora.md) | [connect](https://nango.dev/docs/integrations/all/zuora/connect.md) |  | erp |
 
+## Resources
+
+- [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
+- [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
+- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
+
