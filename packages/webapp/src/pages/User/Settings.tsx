@@ -101,9 +101,7 @@ export const UserSettings: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button onClick={onSave}>
-                                Save
-                            </Button>
+                            <Button onClick={onSave}>Save</Button>
                         </div>
                     )}
                 </div>
