@@ -4,6 +4,80 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="May 29, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="50 new APIs in May">
+      - [1Password (Events API)](/api-integrations/1password-events)
+      - [1Password (Users API)](/api-integrations/1password-users)
+      - [Absorb LMS](/api-integrations/absorb-lms)
+      - [Altrata](/api-integrations/altrata)
+      - [Anvil](/api-integrations/anvil)
+      - [BigChange](/api-integrations/bigchange)
+      - [Buffer](/api-integrations/buffer)
+      - [Canva (MCP)](/api-integrations/canva-mcp)
+      - [Customer.io](/api-integrations/customer-io)
+      - [Digits](/api-integrations/digits)
+      - [Digits (MCP)](/api-integrations/digits-mcp)
+      - [Dynatrace](/api-integrations/dynatrace)
+      - [Dynatrace (OAuth)](/api-integrations/dynatrace-oauth)
+      - [EasyPost](/api-integrations/easypost)
+      - [Fern (Public API)](/api-integrations/fern)
+      - [Follow Up Boss](/api-integrations/followupboss)
+      - [Freshworks](/api-integrations/freshworks)
+      - [Huntress](/api-integrations/huntress)
+      - [ImmyBot](/api-integrations/immybot)
+      - [Jiminny](/api-integrations/jiminny)
+      - [Lightfield](/api-integrations/lightfield)
+      - [Microsoft Intune](/api-integrations/microsoft-intune)
+      - [Microsoft People](/api-integrations/microsoft-people)
+      - [Nexthink](/api-integrations/nexthink)
+      - [NinjaOne SaaS Backup](/api-integrations/ninjaone-saas-backup)
+      - [Paddle](/api-integrations/paddle)
+      - [Planning Center Online (OAuth)](/api-integrations/planning-center-online)
+      - [Planning Center Online (Personal Access Token)](/api-integrations/planning-center-online-pat)
+      - [Podscribe](/api-integrations/podscribe)
+      - [Pushpay ChMS (v1)](/api-integrations/pushpay-chms-v1)
+      - [pVerify](/api-integrations/pverify)
+      - [Render (MCP)](/api-integrations/render-mcp)
+      - [Revivn](/api-integrations/revivn)
+      - [Sage 200](/api-integrations/sage-200)
+      - [SAP Concur (Password Grant)](/api-integrations/sap-concur-password)
+      - [Shippo](/api-integrations/shippo)
+      - [Shopware (Admin API)](/api-integrations/shopware)
+      - [Statamic](/api-integrations/statamic)
+      - [StoreCensus](/api-integrations/store-census)
+      - [Superhuman (MCP)](/api-integrations/superhuman-mcp)
+      - [Tanium](/api-integrations/tanium)
+      - [The Swarm](/api-integrations/the-swarm)
+      - [TheirStack](/api-integrations/theirstack)
+      - [Toast](/api-integrations/toast)
+      - [Trigger.dev](/api-integrations/trigger-dev)
+      - [VideoAsk](/api-integrations/videoask)
+      - [Wappalyzer](/api-integrations/wappalyzer)
+      - [WordPress.com (MCP)](/api-integrations/wordpress-mcp)
+      - [Zendesk (API Token)](/api-integrations/zendesk-api-key)
+      - [Zigpoll](/api-integrations/zigpoll)
+    </Accordion>
+  </AccordionGroup>
+
+  ## Agent-led onboarding
+
+  You can now get started with a coding agent instead of following the setup steps by hand. Paste the quickstart prompt into Claude, Cursor, Codex, or another agent, and it walks you through signing up, setting up an API key, authorizing a connection, and your first function call. [Docs](/getting-started/quickstart).
+
+  ![Nango quickstart agent](/images/changelog/nango-quickstart-agent.jpg)
+
+  ## Agents can build and deploy integrations (just-in-time)
+
+  Claude, Cursor, Codex, or other agents can now build integrations ([actions, syncs, webhooks, events](/guides/functions/functions-guide)) without a local project. This is powered by the new Remote Function Builder skill and REST endpoints for compile, dry run, and deploy. [Docs](/guides/functions/functions-guide#build-with-the-functions-api).
+
+  With the Nango skill, your agent turns behavior described in a prompt into a complete integration: it generates TypeScript code, compiles it, tests it against a real connection, and deploys it.
+
+  You can also pair the skill with an agent inside your product to generate integrations on demand based on your customer prompts. This is also called [just-in-time integrations](https://nango.dev/blog/just-in-time-integrations).
+
+</Update>
+
+---
+
 <Update label="May 18, 2026">
   ## Sync and action runtime migration to serverless execution
 
