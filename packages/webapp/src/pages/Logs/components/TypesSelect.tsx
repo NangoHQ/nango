@@ -50,7 +50,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="secondary" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     Type
                     {isDirty && (
                         <button

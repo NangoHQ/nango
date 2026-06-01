@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from './Command';
 import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { Button } from './button/Button';
+import { Button } from '@/components-v2/ui/Button';
 import { cn } from '../../utils/utils';
 
 export interface MultiSelectArgs<T> {
@@ -51,7 +51,7 @@ export const MultiSelect: React.FC<MultiSelectArgs<any>> = ({ label, options, se
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button

@@ -80,7 +80,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="secondary" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
@@ -99,18 +99,19 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0 text-white bg-active-gray w-80" align="end">
-                <Command>
-                    <InputGroup className="border-b border-b-border-gray-400 rounded-none border-x-0 border-t-0">
-                        <InputGroupAddon>
-                            <MagnifyingGlassIcon className="w-4 h-4" />
-                        </InputGroupAddon>
-                        <InputGroupInput placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
-                        {loading && (
-                            <InputGroupAddon align="inline-end">
-                                <Spinner />
-                            </InputGroupAddon>
-                        )}
+                <div className="px-3 py-2">
+                    <InputGroup className="bg-active-gray border-grayscale-600">
+                        <InputGroupAddon><MagnifyingGlassIcon className="w-4 h-4" /></InputGroupAddon>
+                        <InputGroupInput
+                            placeholder="Search..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            autoFocus
+                        />
+                        {loading && <InputGroupAddon align="inline-end"><Spinner /></InputGroupAddon>}
                     </InputGroup>
+                </div>
+                <Command>
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
                         {maxed && <Info variant={'warning'}>Can&apos;t select more filters</Info>}
