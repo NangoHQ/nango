@@ -260,8 +260,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
-                <div className="w-full">
-                    <InputGroup className="border-grayscale-900">
+                <div className="flex-1 min-w-0">
+                    <InputGroup className="border-border-gray-400">
                         <InputGroupAddon>
                             <IconSearch stroke={1} size={16} />
                         </InputGroupAddon>

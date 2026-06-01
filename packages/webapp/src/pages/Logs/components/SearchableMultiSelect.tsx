@@ -80,7 +80,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size={'sm'} className={cn('h-9 text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
