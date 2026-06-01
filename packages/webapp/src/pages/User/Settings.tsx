@@ -6,8 +6,9 @@ import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
+import { cn } from '@/utils/utils';
 import { Button } from '@/components-v2/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
@@ -65,15 +66,15 @@ export const UserSettings: React.FC = () => {
             <div className="flex flex-col gap-12 mt-16">
                 <div className="flex flex-col gap-5">
                     <h3 className="font-semibold text-sm text-white">Display Name</h3>
-                    <InputGroup className="h-[42px]">
+                    <InputGroup className={cn('h-[42px]', !edit && 'bg-active-gray border-dark-800')}>
                         <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
                         <InputGroupAddon align="inline-end">
                             {!edit && (
                                 <Tooltip delayDuration={0}>
                                     <TooltipTrigger asChild>
-                                        <InputGroupButton
+                                        <Button
                                             variant={'ghost'}
-                                            size={'icon-sm'}
+                                            size={'icon'}
                                             onClick={() => {
                                                 setEdit(true);
                                                 setTimeout(() => {
@@ -82,7 +83,7 @@ export const UserSettings: React.FC = () => {
                                             }}
                                         >
                                             <Pencil1Icon />
-                                        </InputGroupButton>
+                                        </Button>
                                     </TooltipTrigger>
                                     <TooltipContent sideOffset={10}>Edit</TooltipContent>
                                 </Tooltip>
