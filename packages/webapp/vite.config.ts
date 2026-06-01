@@ -7,7 +7,9 @@ import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import svgr from 'vite-plugin-svgr';
 
-import type { Plugin, PluginOption } from 'vite';
+import type { Plugin } from 'vite';
+
+const DEV_PORT = 3000;
 
 const REMOTE_API_URLS: Record<string, string> = {
     dev: 'https://api-development.nango.dev',
@@ -24,7 +26,7 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
         configureServer(server) {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/env.js', async (req, res) => {
-                const origin = `http://${req.headers.host ?? 'localhost:3000'}`;
+                const origin = `http://${req.headers.host ?? `localhost:${DEV_PORT}`}`;
                 const body = await fetch(`${remoteApiUrl}/env.js`).then((r) => r.text());
                 res.setHeader('Content-Type', 'text/javascript');
                 res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
@@ -33,23 +35,24 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
     };
 }
 
-function remoteApiConfig(remoteApi: string | undefined) {
+function remoteApiConfig() {
+    const remoteApi = process.env['REMOTE_API'];
     if (!remoteApi) {
-        return { remotePlugin: null, remoteProxy: { '/env.js': { target: 'http://localhost:3003' } } };
+        return { remoteProxy: { '/env.js': { target: 'http://localhost:3003' } } };
     }
     const url = REMOTE_API_URLS[remoteApi];
     if (!url) {
-        throw new Error(`Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
+        throw new Error(`[nango] Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
     return { remotePlugin: remoteApiEnvProxy(url), remoteProxy: { '/api': { target: url, changeOrigin: true } } };
 }
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-    const { remotePlugin, remoteProxy } = remoteApiConfig(process.env['REMOTE_API']);
+    const { remotePlugin, remoteProxy } = remoteApiConfig();
 
     return {
-        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), remotePlugin] as PluginOption[],
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), remotePlugin],
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
@@ -58,7 +61,7 @@ export default defineConfig(() => {
                 '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
             }
         },
-        server: { proxy: remoteProxy },
+        server: { port: DEV_PORT, proxy: remoteProxy },
         define: {
             'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
         }
