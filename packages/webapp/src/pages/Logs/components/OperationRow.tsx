@@ -1,7 +1,5 @@
 import { flexRender } from '@tanstack/react-table';
 
-import { TableCell, TableRow } from '@/components-v2/ui/Table';
-
 import type { SearchOperationsData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
@@ -13,9 +11,9 @@ export const OperationRow: React.FC<{
     onSelectOperation: (open: boolean, operationId: string) => void;
 }> = ({ row, virtualRow, rowVirtualizer, onSelectOperation }) => {
     return (
-        <TableRow
+        <tr
             data-state={row.getIsSelected() && 'selected'}
-            className="hover:cursor-pointer flex absolute w-full"
+            className="text-s text-gray-400 transition-colors border-transparent border-b border-b-active-gray hover:bg-grayscale-900 hover:text-white hover:cursor-pointer flex absolute w-full"
             onClick={() => {
                 onSelectOperation(true, row.original.id);
             }}
@@ -26,10 +24,10 @@ export const OperationRow: React.FC<{
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <TableCell className="flex" style={{ width: cell.column.getSize() }} key={cell.id}>
+                <td className="flex items-center px-3 py-2.5 align-middle" style={{ width: cell.column.getSize() }} key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+                </td>
             ))}
-        </TableRow>
+        </tr>
     );
 };

@@ -1,7 +1,6 @@
 import { flexRender } from '@tanstack/react-table';
 
 import { cn } from '../../../../utils/utils';
-import { TableCell, TableRow } from '@/components-v2/ui/Table';
 
 import type { SearchMessagesData } from '@nangohq/types';
 import type { Row } from '@tanstack/react-table';
@@ -14,10 +13,10 @@ export const LogRow: React.FC<{
     onSelectMessage: (msg: SearchMessagesData) => void;
 }> = ({ row, virtualRow, rowVirtualizer, onSelectMessage }) => {
     return (
-        <TableRow
+        <tr
             data-state={row.getIsSelected() && 'selected'}
             className={cn(
-                'focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 border-l-2!',
+                'text-s text-gray-400 transition-colors focus:bg-grayscale-900 hover:cursor-pointer flex absolute w-full border-b-border-gray-400 border-l-2!',
                 row.original.level === 'error' && 'hover:border-l-red-500 focus:border-l-red-500',
                 row.original.level === 'warn' && 'hover:border-l-yellow-400 focus:border-l-yellow-400',
                 row.original.level === 'info' && 'hover:border-l-blue-400 focus:border-l-blue-400',
@@ -35,10 +34,10 @@ export const LogRow: React.FC<{
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id} style={{ width: cell.column.columnDef.size }}>
+                <td key={cell.id} className="flex items-center px-3 py-2.5 align-middle" style={{ width: cell.column.columnDef.size }}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
+                </td>
             ))}
-        </TableRow>
+        </tr>
     );
 };

@@ -19,7 +19,7 @@ import { columns, defaultLimit } from '../constants';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Spinner } from '@/components-v2/ui/Spinner';
-import { TableBody as Tbody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { TableBody as Tbody } from '@/components-v2/ui/Table';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -247,50 +247,50 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0">
-                    <TableHeader className="grid sticky top-0 z-10 bg-grayscale-900 ">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
+                    <thead className="grid sticky top-0 z-10 bg-grayscale-900">
                         {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="flex w-full">
+                            <tr key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
-                                        <TableHead
+                                        <th
                                             key={header.id}
-                                            className="flex"
+                                            className="flex bg-grayscale-900 px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                             style={{
                                                 width: header.getSize() ? header.getSize() : 'auto'
                                             }}
                                         >
                                             {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </TableHead>
+                                        </th>
                                     );
                                 })}
-                            </TableRow>
+                            </tr>
                         ))}
-                    </TableHeader>
+                    </thead>
 
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectMessage={setMessage} />}
 
                     {isLoading && (
                         <Tbody>
-                            <TableRow>
+                            <tr>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
-                                        <TableCell key={i}>
+                                        <td key={i} className="px-3 py-2.5">
                                             <Skeleton style={{ width: col.getSize() ? col.getSize() - 20 : 'auto' }} />
-                                        </TableCell>
+                                        </td>
                                     );
                                 })}
-                            </TableRow>
+                            </tr>
                         </Tbody>
                     )}
 
                     {!isFetching && flatData.length <= 0 && (
                         <Tbody className="h-10">
-                            <TableRow className="hover:bg-transparent flex absolute w-full">
-                                <TableCell colSpan={columns.length} className="text-center p-0 pt-4 w-full">
+                            <tr className="hover:bg-transparent flex absolute w-full">
+                                <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
                                     <div className="text-grayscale-400">No results.</div>
-                                </TableCell>
-                            </TableRow>
+                                </td>
+                            </tr>
                         </Tbody>
                     )}
                 </table>
