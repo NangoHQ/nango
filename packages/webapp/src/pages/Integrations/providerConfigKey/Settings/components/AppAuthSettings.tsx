@@ -1,9 +1,9 @@
 import { AppPrivateKeyInput } from './AppPrivateKeyInput';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Label } from '@/components-v2/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';

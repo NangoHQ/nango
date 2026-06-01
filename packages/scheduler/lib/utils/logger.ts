@@ -1,3 +1,9 @@
-import { getLogger } from '@nangohq/utils';
+import { noopLogger } from '../config.js';
 
-export const logger = getLogger('scheduler');
+import type { StrictLogger } from '@nangohq/utils';
+
+export let logger: StrictLogger = noopLogger;
+
+export function setLogger(next: StrictLogger): void {
+    logger = next;
+}

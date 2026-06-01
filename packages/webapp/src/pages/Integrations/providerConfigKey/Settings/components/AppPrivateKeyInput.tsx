@@ -1,6 +1,6 @@
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { Label } from '@/components-v2/ui/label';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
+import { Label } from '@/components-v2/ui/Label';
 
 interface AppPrivateKeyInputProps {
     initialValue: string;

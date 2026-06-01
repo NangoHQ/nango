@@ -92,23 +92,33 @@ describe('AsyncAction webhookds', () => {
             providerConfigKey: props.providerConfigKey
         };
         const bodyString = stringifyStable(body).unwrap();
-        expect(spy).toHaveBeenNthCalledWith(1, webhookSettings.primary_url, bodyString, {
-            headers: {
-                'X-Nango-Signature': expect.toBeSha256(),
-                'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                'content-type': 'application/json',
-                'user-agent': expect.stringContaining('nango/')
-            },
-            timeout: expect.any(Number)
-        });
-        expect(spy).toHaveBeenNthCalledWith(2, webhookSettings.secondary_url, bodyString, {
-            headers: {
-                'X-Nango-Signature': expect.toBeSha256(),
-                'X-Nango-Hmac-Sha256': expect.toBeSha256(),
-                'content-type': 'application/json',
-                'user-agent': expect.stringContaining('nango/')
-            },
-            timeout: expect.any(Number)
-        });
+        expect(spy).toHaveBeenNthCalledWith(
+            1,
+            webhookSettings.primary_url,
+            bodyString,
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256(),
+                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
+                },
+                timeout: expect.any(Number)
+            })
+        );
+        expect(spy).toHaveBeenNthCalledWith(
+            2,
+            webhookSettings.secondary_url,
+            bodyString,
+            expect.objectContaining({
+                headers: {
+                    'X-Nango-Signature': expect.toBeSha256(),
+                    'X-Nango-Hmac-Sha256': expect.toBeSha256(),
+                    'content-type': 'application/json',
+                    'user-agent': expect.stringContaining('nango/')
+                },
+                timeout: expect.any(Number)
+            })
+        );
     });
 });

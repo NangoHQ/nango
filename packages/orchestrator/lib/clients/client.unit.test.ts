@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OrchestratorClient } from './client.js';
 
-import type { ImmediateProps } from './types.js';
+import type { ExecuteWebhookProps, ImmediateProps } from './types.js';
 
 function buildImmediateRequest(): ImmediateProps {
     return {
@@ -95,6 +95,103 @@ describe('OrchestratorClient immediate', () => {
         const res = await client.pauseSync({ scheduleName: 'schedule-1' });
 
         expect(res.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+});
+
+function buildWebhookProps(name: string): ExecuteWebhookProps {
+    return {
+        name,
+        group: { key: 'webhook:environment:1', maxConcurrency: 0 },
+        args: {
+            webhookName: 'wh',
+            parentSyncName: 'sync',
+            connection: {
+                id: 1,
+                connection_id: 'c',
+                provider_config_key: 'p',
+                environment_id: 1
+            },
+            activityLogId: 'a',
+            input: { foo: 'bar' }
+        }
+    };
+}
+
+describe('OrchestratorClient executeWebhookBatch', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('returns an empty array without calling fetch when given no props', async () => {
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([]);
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value).toEqual([]);
+        }
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('returns per-entry success and duplicate-name failures in input order', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    results: [
+                        { taskId: 't1', retryKey: 'r1' },
+                        { error: { code: 'duplicate_task_name', message: 'already exists' } },
+                        { taskId: 't3', retryKey: 'r3' }
+                    ]
+                }),
+                { status: 200, headers: { 'content-type': 'application/json' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a'), buildWebhookProps('b'), buildWebhookProps('c')]);
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value).toHaveLength(3);
+            expect(res.value[0]!.isOk() && res.value[0].value).toEqual({ taskId: 't1', retryKey: 'r1' });
+            expect(res.value[1]!.isErr() && res.value[1].error.name).toBe('duplicate_task_name');
+            expect(res.value[2]!.isOk() && res.value[2].value).toEqual({ taskId: 't3', retryKey: 'r3' });
+        }
+    });
+
+    it('retries transient 5xx responses on the batch path', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                    status: 500,
+                    headers: { 'content-type': 'application/json' }
+                })
+            )
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                    status: 500,
+                    headers: { 'content-type': 'application/json' }
+                })
+            )
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ results: [{ taskId: 't1', retryKey: 'r1' }] }), {
+                    status: 200,
+                    headers: { 'content-type': 'application/json' }
+                })
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
+
+        expect(res.isOk()).toBe(true);
         expect(fetchMock).toHaveBeenCalledTimes(3);
     });
 });

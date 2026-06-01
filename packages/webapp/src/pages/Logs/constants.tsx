@@ -5,7 +5,7 @@ import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
 import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
-import type { MultiSelectArgs } from '../../components/MultiSelect';
+import type { MultiSelectArgs } from '../../components/ui/MultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 

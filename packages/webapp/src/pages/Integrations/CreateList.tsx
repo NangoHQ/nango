@@ -9,11 +9,11 @@ import { useNavigate } from 'react-router-dom';
 import { AuthBadge } from './components/AuthBadge.js';
 import { useProviders } from '../../hooks/useProviders.js';
 import DashboardLayout from '../../layout/DashboardLayout.js';
-import { useStore } from '../../store.js';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Badge } from '@/components-v2/ui/badge';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Skeleton } from '@/components-v2/ui/skeleton.js';
+import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
+import { Badge } from '@/components-v2/ui/Badge';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Skeleton } from '@/components-v2/ui/Skeleton.js';
+import { useStore } from '@/store';
 
 import type { ApiProviderListItem } from '@nangohq/types';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';

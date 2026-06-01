@@ -4,6 +4,20 @@ sidebarTitle: 'Migrate to checkpoints'
 description: 'Guide to migrate your sync functions from nango.lastSyncDate to the new checkpointing system.'
 ---
 
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s migrating-to-checkpoints"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install checkpoint migration skill</span>
+    <span className="agent-quickstart-action-description">
+      Copy the command to install <code>migrating-to-checkpoints</code> from <code>NangoHQ/skills</code>.
+    </span>
+  </button>
+</div>
+
 # Who is impacted
 
 If any of your sync functions read `nango.lastSyncDate` to determine where to resume syncing, you are impacted by this migration.
