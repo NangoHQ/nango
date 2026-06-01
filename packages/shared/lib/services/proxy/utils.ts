@@ -99,7 +99,7 @@ export function getAxiosConfiguration({
 
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
 
-    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+    axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
         if (proxyConfig.validateProxyRedirectUrl) {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             if (absolute) {
