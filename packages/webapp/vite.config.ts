@@ -22,6 +22,7 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
     return {
         name: 'remote-api-env-proxy',
         configureServer(server) {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/env.js', async (req, res) => {
                 const origin = `http://${req.headers.host ?? 'localhost:3000'}`;
                 const body = await fetch(`${remoteApiUrl}/env.js`).then((r) => r.text());
@@ -32,26 +33,23 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
     };
 }
 
-// https://vitejs.dev/config/
-export default defineConfig(() => {
-    const remoteApi = process.env['REMOTE_API'];
-    const remoteApiUrl = remoteApi ? REMOTE_API_URLS[remoteApi] : undefined;
-    if (remoteApi && !remoteApiUrl) {
+function remoteApiConfig(remoteApi: string | undefined) {
+    if (!remoteApi) {
+        return { remotePlugin: null, remoteProxy: { '/env.js': { target: 'http://localhost:3003' } } };
+    }
+    const url = REMOTE_API_URLS[remoteApi];
+    if (!url) {
         throw new Error(`Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
+    return { remotePlugin: remoteApiEnvProxy(url), remoteProxy: { '/api': { target: url, changeOrigin: true } } };
+}
 
-    const plugins: PluginOption[] = [react(), svgr(), checker({ typescript: true }), tailwindcss()];
-    const proxy: Record<string, ProxyOptions> = {};
-
-    if (remoteApiUrl) {
-        plugins.push(remoteApiEnvProxy(remoteApiUrl));
-        proxy['/api'] = { target: remoteApiUrl, changeOrigin: true };
-    } else {
-        proxy['/env.js'] = { target: 'http://localhost:3003' };
-    }
+// https://vitejs.dev/config/
+export default defineConfig(() => {
+    const { remotePlugin, remoteProxy } = remoteApiConfig(process.env['REMOTE_API']);
 
     return {
-        plugins,
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), remotePlugin] as PluginOption[],
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
@@ -60,7 +58,7 @@ export default defineConfig(() => {
                 '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
             }
         },
-        server: { proxy },
+        server: { proxy: remoteProxy },
         define: {
             'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
         }
