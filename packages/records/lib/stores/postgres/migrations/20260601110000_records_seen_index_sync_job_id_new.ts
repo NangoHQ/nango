@@ -22,11 +22,11 @@ export async function up(knex: Knex): Promise<void> {
     const partitions = r.rows.map((row) => row.relname);
 
     for (const p of partitions) {
-        await knex.raw(`CREATE INDEX CONCURRENTLY "${p}_connection_model_job_new" ON "${p}" (connection_id, model, sync_job_id_new)`);
+        await knex.raw('CREATE INDEX CONCURRENTLY ?? ON ?? (connection_id, model, sync_job_id_new)', [`${p}_connection_model_job_new`, p]);
     }
-    await knex.raw(`CREATE INDEX "${PARENT_INDEX}" ON ONLY "${TABLE}" (connection_id, model, sync_job_id_new)`);
+    await knex.raw('CREATE INDEX ?? ON ONLY ?? (connection_id, model, sync_job_id_new)', [PARENT_INDEX, TABLE]);
     for (const p of partitions) {
-        await knex.raw(`ALTER INDEX "${PARENT_INDEX}" ATTACH PARTITION "${p}_connection_model_job_new"`);
+        await knex.raw('ALTER INDEX ?? ATTACH PARTITION ??', [PARENT_INDEX, `${p}_connection_model_job_new`]);
     }
 }
 
