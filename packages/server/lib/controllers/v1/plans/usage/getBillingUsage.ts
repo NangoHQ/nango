@@ -41,15 +41,14 @@ const querySchema = z
         // gate). Without the gate, this is ignored and the dashboard stays
         // on Orb.
         source: z.enum(['clickhouse', 'orb']).optional(),
-        // CSV subset of UsageMetric — scopes the response to just those
-        // metrics. Empty / unset → all 7 (page-load shape). Used by the
-        // drilldown UI to fetch just the metric the user opened. Honoured
-        // only on the CH path; Orb path ignores it for now.
-        metrics: z
-            .string()
-            .optional()
-            .transform((s) => (s ? s.split(',') : undefined))
-            .pipe(z.array(z.enum(ALL_METRICS)).nonempty().optional()),
+        // Repeated-key array (`?metrics=records&metrics=connections`) —
+        // scopes the response to just those metrics. Empty / unset → all 7
+        // (page-load shape). Used by the drilldown UI to fetch just the
+        // metric the user opened. Honoured only on the CH path; Orb path
+        // ignores it for now. Preprocess wraps the single-value case
+        // (`?metrics=records` → string) into an array so the enum check
+        // applies uniformly.
+        metrics: z.preprocess((v) => (typeof v === 'string' ? [v] : v), z.array(z.enum(ALL_METRICS)).nonempty().optional()),
         // Per-metric breakdown spec, Express qs parses `breakdown[<metric>]=<dim>`
         // into `{ <metric>: <dim>, … }`. Honoured only on the CH path; the
         // Orb client ignores it silently for now.

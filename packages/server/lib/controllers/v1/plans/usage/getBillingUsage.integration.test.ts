@@ -205,11 +205,11 @@ describe(`GET ${route}`, () => {
             expect(res.json.error.code).toBe('invalid_query_params');
         });
 
-        it('rejects an unknown metric in the CSV', async () => {
+        it('rejects an unknown metric in the metrics array', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
-                query: { env: 'dev', metrics: 'records,unknown_metric' }
+                query: { env: 'dev', metrics: ['records', 'unknown_metric' as UsageMetric] }
             });
             isError(res.json);
             expect(res.res.status).toBe(400);
@@ -271,11 +271,11 @@ describe(`GET ${route}`, () => {
             }
         });
 
-        it('scopes the response via metrics=records,connections', async () => {
+        it('scopes the response via metrics=records&metrics=connections', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
-                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString(), source: 'clickhouse', metrics: 'records,connections' }
+                query: { env: 'dev', from: day0.toISOString(), to: end.toISOString(), source: 'clickhouse', metrics: ['records', 'connections'] }
             });
             isSuccess(res.json);
             const usage = res.json.data.usage;
@@ -300,7 +300,7 @@ describe(`GET ${route}`, () => {
                     from: day0.toISOString(),
                     to: end.toISOString(),
                     source: 'clickhouse',
-                    metrics: 'records',
+                    metrics: ['records'],
                     breakdown: { records: 'integration_id' }
                 } as any
             });
@@ -329,7 +329,7 @@ describe(`GET ${route}`, () => {
                     from: day0.toISOString(),
                     to: end.toISOString(),
                     source: 'clickhouse',
-                    metrics: 'proxy',
+                    metrics: ['proxy'],
                     breakdown: { proxy: 'success' }
                 } as any
             });
@@ -354,7 +354,7 @@ describe(`GET ${route}`, () => {
                     from: day0.toISOString(),
                     to: end.toISOString(),
                     source: 'clickhouse',
-                    metrics: 'records',
+                    metrics: ['records'],
                     breakdown: { records: 'integration_id' },
                     top: '1'
                 } as any

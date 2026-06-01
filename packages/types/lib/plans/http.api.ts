@@ -67,11 +67,12 @@ export type GetBillingUsage = Endpoint<{
         from?: string | undefined;
         to?: string | undefined;
         source?: 'clickhouse' | 'orb' | undefined;
-        // Comma-separated subset of UsageMetric. When set on the CH path, only
-        // those metrics are fanned out and populated in the response; omitted
-        // → all 7. Ignored on the Orb path for now (Orb call still returns
-        // everything it has).
-        metrics?: string | undefined;
+        // Subset of UsageMetric carried as repeated-key array
+        // (`?metrics=records&metrics=connections`). When set on the CH path,
+        // only those metrics are fanned out and populated in the response;
+        // omitted → all 7. Ignored on the Orb path for now (Orb call still
+        // returns everything it has).
+        metrics?: UsageMetric[] | undefined;
         // Express qs bracket notation: `breakdown[<metric>]=<dimension>` →
         // `breakdown: { records: 'connection_id', … }`. Per-metric dimension
         // spec; entries whose dimension is invalid for the metric are
