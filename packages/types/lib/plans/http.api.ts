@@ -1,6 +1,6 @@
 import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api.js';
-import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails } from '../billing/types.js';
+import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
 
@@ -75,9 +75,10 @@ export type GetBillingUsage = Endpoint<{
         metrics?: UsageMetric[] | undefined;
         // Express qs bracket notation: `breakdown[<metric>]=<dimension>` →
         // `breakdown: { records: 'connection_id', … }`. Per-metric dimension
-        // spec; entries whose dimension is invalid for the metric are
-        // rejected at validation time.
-        breakdown?: Partial<Record<string, string>> | undefined;
+        // spec, typed via `BreakdownDimensions` so the (metric, dim) pairs
+        // are constrained at compile time; the same whitelist is enforced
+        // at runtime by the controller's zod schema.
+        breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined;
         top?: string | undefined;
     };
     Success: {
