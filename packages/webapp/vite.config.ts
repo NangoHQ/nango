@@ -58,7 +58,8 @@ function remoteApiConfig() {
             '/oauth2': remote,
             '/api-auth': remote,
             '/auth': remote,
-            '/app-store-auth': remote
+            '/app-store-auth': remote,
+            '/app-auth': remote
         }
     };
 }
