@@ -1,8 +1,6 @@
-import type { AvgUsageMetric, BreakdownDimensions, CounterUsageMetric, UsageEvent, UsageMetric } from '@nangohq/types';
+import type { AvgUsageMetric, BreakdownDimensions, CounterUsageMetric, DimensionFor, UsageEvent, UsageMetric } from '@nangohq/types';
 
 export type { AvgUsageMetric, CounterUsageMetric, DimensionFor } from '@nangohq/types';
-
-type DimensionFor<M extends UsageMetric> = 'none' | BreakdownDimensions[M];
 
 // Top-N + 'rest' breakdown bound. Cap exists so callers can't blow up the
 // response — the long tail can be tens of thousands of values (e.g. `records`

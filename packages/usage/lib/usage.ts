@@ -77,7 +77,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
         return Promise.resolve(Ok(undefined));
     }
 
-    public async getBillingUsage(): Promise<Result<BillingUsageMetrics>> {
+    public async getBillingUsage(_subscriptionId: string, _accountId: number, _opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         return Promise.resolve(Ok({}));
     }
 }

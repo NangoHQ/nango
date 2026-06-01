@@ -303,6 +303,9 @@ export class Clickhouse {
             SELECT
                 t.day AS day,
                 SUM(t.value) AS sum,
+                -- g.batches is the global per-day batch count (same for every
+                -- row joined on a given day), so any()/min()/max() all return
+                -- the same value; any() is the cheapest aggregator in CH.
                 any(g.batches) AS batches,
                 IF(t.${dimension} IN (SELECT dim FROM top_dims), toString(t.${dimension}), '') AS dimensionValue,
                 IF(t.${dimension} IN (SELECT dim FROM top_dims), 0, 1) AS isRest
@@ -342,7 +345,9 @@ export class Clickhouse {
                     const key = isRest ? '\x00rest' : `\x01${String(row.dimensionValue)}`;
                     let entry = seriesMap.get(key);
                     if (!entry) {
-                        entry = isRest ? { dimension, isRest: true, days: [] } : { dimension, dimensionValue: row.dimensionValue!, days: [] };
+                        entry = isRest
+                            ? { dimension, isRest: true, days: [] }
+                            : { dimension, dimensionValue: coerceDimensionValue(row.dimensionValue ?? '', dimension), days: [] };
                         seriesMap.set(key, entry);
                     }
                     entry.days.push(dayPoint);
