@@ -21,7 +21,6 @@ import { Button } from '@/components-v2/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Spinner } from '@/components-v2/ui/Spinner';
-import { TableBody as Tbody } from '@/components-v2/ui/Table';
 
 import type { Period } from '../../../utils/dates';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';
@@ -330,7 +329,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     {flatData.length > 0 && !hasNextPage && <div className="text-xs text-grayscale-500 p-4 mt-2">Nothing more to load...</div>}
 
                     {isLoading && (
-                        <Tbody>
+                        <tbody>
                             <tr>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
@@ -340,11 +339,11 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                     );
                                 })}
                             </tr>
-                        </Tbody>
+                        </tbody>
                     )}
 
                     {!isLoading && flatData.length <= 0 && (
-                        <Tbody>
+                        <tbody>
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
                                     <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
@@ -353,7 +352,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                     </div>
                                 </td>
                             </tr>
-                        </Tbody>
+                        </tbody>
                     )}
                 </table>
             </div>
@@ -380,7 +379,7 @@ const TableBody: React.FC<{
     });
 
     return (
-        <Tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
                 return (
@@ -393,6 +392,6 @@ const TableBody: React.FC<{
                     />
                 );
             })}
-        </Tbody>
+        </tbody>
     );
 };

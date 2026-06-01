@@ -19,7 +19,6 @@ import { columns, defaultLimit } from '../constants';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Spinner } from '@/components-v2/ui/Spinner';
-import { TableBody as Tbody } from '@/components-v2/ui/Table';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
@@ -271,7 +270,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     {flatData.length > 0 && <TableBody table={table} tableContainerRef={tableContainerRef} onSelectMessage={setMessage} />}
 
                     {isLoading && (
-                        <Tbody>
+                        <tbody>
                             <tr>
                                 {table.getAllColumns().map((col, i) => {
                                     return (
@@ -281,17 +280,17 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                                     );
                                 })}
                             </tr>
-                        </Tbody>
+                        </tbody>
                     )}
 
                     {!isFetching && flatData.length <= 0 && (
-                        <Tbody className="h-10">
+                        <tbody className="h-10">
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
                                     <div className="text-grayscale-400">No results.</div>
                                 </td>
                             </tr>
-                        </Tbody>
+                        </tbody>
                     )}
                 </table>
             </div>
@@ -342,11 +341,11 @@ const TableBody: React.FC<{
     });
 
     return (
-        <Tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <tbody className="grid relative" style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                 const row = rows[virtualRow.index];
                 return <LogRow key={row.original.id} row={row} virtualRow={virtualRow} rowVirtualizer={rowVirtualizer} onSelectMessage={onSelectMessage} />;
             })}
-        </Tbody>
+        </tbody>
     );
 };
