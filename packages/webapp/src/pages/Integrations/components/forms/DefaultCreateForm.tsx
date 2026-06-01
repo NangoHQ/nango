@@ -1,5 +1,5 @@
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

@@ -7,7 +7,7 @@ import { useInterval } from 'react-use';
 import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { Logs } from './components/Logs';
-import { Info } from '../../../components/Info';
+import { Info } from '../../../components/patterns/Info';
 import { Skeleton } from '../../../components/ui/Skeleton';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
 import { useGetOperation } from '../../../hooks/useLogs';

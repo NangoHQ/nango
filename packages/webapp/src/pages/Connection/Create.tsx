@@ -11,7 +11,7 @@ import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig'
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { ButtonLink } from '../../components/ui/button/Button';
-import { Form } from '../../components-v2/ui/form';
+import { Form } from '../../components-v2/ui/Form';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';

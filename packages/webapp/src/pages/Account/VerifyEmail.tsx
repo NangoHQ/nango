@@ -6,9 +6,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { Button } from '@/components-v2/ui/button';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
+import { Button } from '@/components-v2/ui/Button';
+import { StyledLink } from '@/components-v2/ui/StyledLink';
 import { useToast } from '@/hooks/useToast';
 
 export function VerifyEmail() {

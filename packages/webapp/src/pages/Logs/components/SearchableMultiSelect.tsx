@@ -2,7 +2,7 @@ import { CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 
-import { Info } from '../../../components/Info';
+import { Info } from '../../../components/patterns/Info';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
 import Spinner from '../../../components/ui/Spinner';

@@ -2,6 +2,7 @@ import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
 
 import { OrchestratorClient } from './clients/client.js';
 import { TaskEventsHandler } from './events.js';
+import { handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 
 import type { DatabaseClient } from '@nangohq/scheduler';
@@ -26,7 +27,8 @@ export class TestOrchestratorService {
         this.scheduler = new Scheduler({
             db: this.dbClient.db,
             on: this.eventsHandler.onCallbacks,
-            onError: () => {}
+            onError: () => {},
+            onEvent: handleSchedulerEvent
         });
         const server = getServer(this.scheduler, this.eventsHandler);
         server.listen(this.port);

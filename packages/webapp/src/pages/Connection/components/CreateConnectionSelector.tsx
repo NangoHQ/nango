@@ -9,8 +9,8 @@ import { permissions } from '@nangohq/authz';
 import Nango from '@nangohq/frontend';
 
 import { IntegrationDropdown } from './IntegrationDropdown';
-import { Button } from '../../../components-v2/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/tooltip';
+import { Button } from '../../../components-v2/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components-v2/ui/Tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';
@@ -21,9 +21,9 @@ import { useStore } from '../../../store';
 import { useAnalyticsTrack } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { PermissionGate } from '@/components-v2/PermissionGate';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/card';
+import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/Card';
+import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
