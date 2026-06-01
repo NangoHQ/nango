@@ -18,7 +18,7 @@ const config: StorybookConfig = {
     viteFinal(config): InlineConfig {
         const existingAlias = Array.isArray(config.resolve?.alias)
             ? Object.fromEntries(
-                  (config.resolve.alias as Array<{ find: string; replacement: string }>)
+                  (config.resolve.alias as { find: string; replacement: string }[])
                       .filter((a) => typeof a.find === 'string')
                       .map((a) => [a.find, a.replacement])
               )
