@@ -47,6 +47,9 @@
             "path": "packages/scheduler"
         },
         {
+            "path": "packages/task-queue"
+        },
+        {
             "path": "packages/orchestrator"
         },
         {

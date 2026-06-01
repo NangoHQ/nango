@@ -1,0 +1,24 @@
+{
+    "name": "@nangohq/task-queue",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "dist/index.js",
+    "private": true,
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/task-queue"
+    },
+    "dependencies": {
+        "@nangohq/scheduler": "file:../scheduler",
+        "@nangohq/utils": "file:../utils",
+        "p-queue": "8.0.1",
+        "zod": "4.0.5"
+    },
+    "devDependencies": {
+        "type-fest": "4.41.0",
+        "vitest": "3.2.4"
+    }
+}

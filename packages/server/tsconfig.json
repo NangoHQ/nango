@@ -45,6 +45,9 @@
             "path": "../orchestrator"
         },
         {
+            "path": "../task-queue"
+        },
+        {
             "path": "../fleet"
         },
         {

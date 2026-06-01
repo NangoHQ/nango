@@ -28,6 +28,7 @@ import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
+import { taskQueue } from './tasks/index.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
@@ -84,6 +85,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrateLogs();
     await records.migrate();
     await migrateFleets();
+    await taskQueue.migrate();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
@@ -98,6 +100,7 @@ timeoutFunctionDryrunsCron();
 deleteOldData();
 trialCron();
 lambdaKeepWarmCron();
+taskQueue.start();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();
@@ -124,6 +127,7 @@ const close = once(() => {
     server.close(async () => {
         wss.close();
         await stopFleets();
+        await taskQueue.stop();
         await db.destroy();
         await records.close();
         await destroyLogs();
