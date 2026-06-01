@@ -10,6 +10,7 @@ import svgr from 'vite-plugin-svgr';
 import type { Plugin } from 'vite';
 
 const DEV_PORT = 3000;
+const LOCAL_API_PORT = 3003;
 
 const REMOTE_API_URLS: Record<string, string> = {
     dev: 'https://api-development.nango.dev',
@@ -38,7 +39,7 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
 function remoteApiConfig() {
     const remoteApi = process.env['REMOTE_API'];
     if (!remoteApi) {
-        return { remoteProxy: { '/env.js': { target: 'http://localhost:3003' } } };
+        return { remoteProxy: { '/env.js': { target: `http://localhost:${LOCAL_API_PORT}` } } };
     }
     const url = REMOTE_API_URLS[remoteApi];
     if (!url) {
