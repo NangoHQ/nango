@@ -27,7 +27,7 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
         configureServer(server) {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/env.js', async (req, res) => {
-                const origin = `http://${req.headers.host ?? `localhost:${DEV_PORT}`}`;
+                const origin = `http://localhost:${DEV_PORT}`;
                 const body = await fetch(`${remoteApiUrl}/env.js`).then((r) => r.text());
                 res.setHeader('Content-Type', 'text/javascript');
                 res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
