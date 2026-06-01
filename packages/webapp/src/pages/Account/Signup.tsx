@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet';
 
 import { SignupForm } from './components/SignupForm';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { StyledLink } from '@/components-v2/StyledLink';
+import { StyledLink } from '@/components-v2/ui/StyledLink';
 
 export const Signup: React.FC = () => {
     return (

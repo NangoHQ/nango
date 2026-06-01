@@ -13,7 +13,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 - [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): Build product integrations with AI, using code you control and infrastructure built for scale.
 - [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Authorize an API and run your first Nango function
-- [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Give coding agents the Nango docs and function-building skills.
+- [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Give coding agents the Nango docs, core skill, and MCP tools.
 - [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango action functions.
 - [Use cases: Sync external API data](https://nango.dev/docs/getting-started/use-cases/syncs.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
 - [Use cases: Run external API operations](https://nango.dev/docs/getting-started/use-cases/actions.md): Use Nango functions to read, write, and automate external APIs on demand.
@@ -30,7 +30,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Auth: Connection tags, configuration, and metadata](https://nango.dev/docs/guides/auth/connection-tags-configuration-metadata.md): Use tags, connection configuration, and metadata for the right connection-level data.
 - [Auth: Customize Connect UI](https://nango.dev/docs/guides/auth/customize-connect-ui.md): Guide to branding Nango Connect UI, overriding setup links, or building a headless auth flow with your own UI.
 - [Auth: Token refreshing & validity](https://nango.dev/docs/guides/auth/token-refreshing.md): How Nango handles OAuth token refresh and what to do when tokens are revoked.
-- [Functions: Functions guide](https://nango.dev/docs/guides/functions/functions-guide.md): Understand Nango Functions, set up your functions project, and choose the right function type.
+- [Functions: Functions guide](https://nango.dev/docs/guides/functions/functions-guide.md): Understand Nango Functions and choose the right way to start using them.
 - [Functions: Sync functions: Sync function guide](https://nango.dev/docs/guides/functions/syncs/sync-functions.md): Build sync functions that keep external API data fresh and consumable by your app.
 - [Functions: Sync functions: Sync efficiency](https://nango.dev/docs/guides/functions/syncs/sync-efficiency.md): Build sync functions that replicate external datasets without wasting API calls, memory, or compute.
 - [Functions: Sync functions: Checkpoints](https://nango.dev/docs/guides/functions/syncs/checkpoints.md): Save progress mid-run, resume after failures, and turn full syncs into incremental ones.
@@ -85,6 +85,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: Connections: Set connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/set-metadata.md)
 - [Backend: HTTP API: Connections: Edit connection metadata](https://nango.dev/docs/reference/backend/http-api/connections/update-metadata.md)
 - [Backend: HTTP API: Connections: Delete a connection](https://nango.dev/docs/reference/backend/http-api/connections/delete.md)
+- [Backend: HTTP API: Functions: Compile a function](https://nango.dev/docs/reference/backend/http-api/functions/compile.md)
+- [Backend: HTTP API: Functions: Dry run a function](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-create.md)
+- [Backend: HTTP API: Functions: Get dry run results](https://nango.dev/docs/reference/backend/http-api/functions/dryruns-get.md)
+- [Backend: HTTP API: Functions: Create a function deployment](https://nango.dev/docs/reference/backend/http-api/functions/deployments.md)
 - [Backend: HTTP API: Functions: Get integration functions config](https://nango.dev/docs/reference/backend/http-api/scripts/config.md)
 - [Backend: HTTP API: Syncs: Get records](https://nango.dev/docs/reference/backend/http-api/sync/records-list.md)
 - [Backend: HTTP API: Syncs: Prune records](https://nango.dev/docs/reference/backend/http-api/sync/prune-records.md)
@@ -130,7 +134,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 828 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 835 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Optional

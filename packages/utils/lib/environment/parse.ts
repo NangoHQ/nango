@@ -81,7 +81,11 @@ export const ENVS = z.object({
     CRON_REFRESH_CONNECTIONS_EVERY_MIN: z.coerce.number().optional().default(10),
     CRON_REFRESH_CONNECTIONS_LIMIT: z.coerce.number().optional().default(100),
     CRON_LAMBDA_KEEP_WARM_EVERY_MINUTES: z.coerce.number().optional().default(0),
-    CRON_BILLING_EVENTS_S3_EXPORT_MINUTES: z.coerce.number().optional().default(0),
+    // Billing-events S3 export cron (hourly). Value is the minute-of-the-hour the
+    // cron fires on (0–59). -1 (default) disables the cron entirely. 15 gives
+    // ClickHouse a ~15min buffer to ingest the previous UTC day's tail before we
+    // snapshot it.
+    CRON_BILLING_EVENTS_S3_HOURLY_EXPORT_MINUTE: z.coerce.number().min(-1).max(59).optional().default(-1),
 
     // Persist
     PERSIST_SERVICE_URL: z.url().optional(),
@@ -98,12 +102,12 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_INTERVAL_MS: z.coerce
         .number()
         .positive()
         .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
         .default(1 * 3600 * 1000),
-    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_MAX_AGE_MS: z.coerce
         .number()
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
@@ -285,6 +289,7 @@ export const ENVS = z.object({
     BILLING_EVENTS_S3_BUCKET: z.string().optional(),
     BILLING_EVENTS_S3_WRITER_ROLE_ARN: z.string().optional(),
     BILLING_EVENTS_S3_EVENT_NAME_SUFFIX: z.string().optional(),
+    BILLING_EVENTS_S3_REGION: z.string().optional().default('us-west-2'),
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
@@ -577,7 +582,10 @@ export const ENVS = z.object({
     NANGO_TASK_DISPATCH_MAX_MESSAGES: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS: z.coerce.number().min(0).max(20).optional().default(20),
     NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().min(0).max(43200).optional().default(30),
-    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(50),
+    // Number of parallel SQS poll loops. Each in-flight batch holds one orchestrator DB session,
+    // so peak orchestrator connections from webhook dispatch ≈ jobs_replicas × this. Keep it well
+    // under ORCHESTRATOR_DB_POOL_MAX so bulk webhook ingress can't starve the orchestrator's core work.
+    NANGO_TASK_DISPATCH_CONSUMER_CONCURRENCY: z.coerce.number().min(1).optional().default(5),
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),

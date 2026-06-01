@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { AppSidebar } from '../components-v2/AppSidebar';
-import { AppHeader } from '@/components-v2/AppHeader';
-import { Playground } from '@/components-v2/Playground';
-import { SidebarInset, SidebarProvider } from '@/components-v2/ui/sidebar';
+import { AppSidebar } from './AppSidebar';
+import { SidebarInset, SidebarProvider } from '@/components-v2/ui/Sidebar';
+import { Playground } from '@/features/Playground';
+import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';
 
 interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {

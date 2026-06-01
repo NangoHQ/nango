@@ -9,7 +9,7 @@ import { Input } from '../../components/ui/input/Input';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
+import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();

@@ -1,11 +1,15 @@
 import { uuidv7 } from 'uuidv7';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { SchedulingDaemon } from './scheduling.daemon.js';
 import { dueSchedules } from './scheduling.js';
+import { defaultSchedulerConfig } from '../../config.js';
+import { DatabaseClient, defaultDatabaseClientOptions } from '../../db/client.js';
 import { getTestDbClient } from '../../db/helpers.test.js';
 import { DbSchedule, SCHEDULES_TABLE } from '../../models/schedules.js';
 import * as schedules from '../../models/schedules.js';
 import { DbTask, TASKS_TABLE } from '../../models/tasks.js';
+import * as tasks from '../../models/tasks.js';
 
 import type { DBTask } from '../../models/tasks.js';
 import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
@@ -85,6 +89,45 @@ describe('dueSchedules', () => {
         const due = await dueSchedules(db);
         expect(due.isOk()).toBe(true);
         expect(due.unwrap().length).toBe(1);
+    });
+});
+
+describe('SchedulingDaemon', () => {
+    // Dedicated schema: running the daemon against the shared 'scheduler' schema races with the
+    // looping daemons in scheduler.integration.test.ts via SKIP LOCKED.
+    const dbClient = new DatabaseClient({
+        ...defaultDatabaseClientOptions,
+        url: `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}/${process.env['NANGO_DB_NAME']}`,
+        schema: 'scheduler_daemon'
+    });
+    const db = dbClient.db;
+
+    beforeEach(async () => {
+        await dbClient.migrate();
+    });
+
+    afterEach(async () => {
+        await dbClient.clearDatabase();
+    });
+
+    it('should stamp materialized tasks with the configured recurringGroupMaxConcurrency', async () => {
+        const schedule = await addSchedule(db);
+        const daemon = new SchedulingDaemon({
+            db,
+            abortSignal: new AbortController().signal,
+            tickIntervalMs: defaultSchedulerConfig.daemons.schedulingTickIntervalMs,
+            groupTaskCap: defaultSchedulerConfig.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: defaultSchedulerConfig.limits.recurringGroupMaxConcurrency,
+            onScheduling: () => {},
+            onEvent: () => {},
+            onError: () => {}
+        });
+
+        await daemon.run();
+
+        const created = (await tasks.search(db, { scheduleId: schedule.id })).unwrap();
+        expect(created).toHaveLength(1);
+        expect(created[0]?.groupMaxConcurrency).toBe(defaultSchedulerConfig.limits.recurringGroupMaxConcurrency);
     });
 });
 
