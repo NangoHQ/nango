@@ -47,7 +47,9 @@ function remoteApiConfig() {
     const remote = { target: url, changeOrigin: true };
     return {
         remotePlugin: remoteApiEnvProxy(url),
-        remoteProxy: { '/api': remote, '/oauth': remote, '/oauth2': remote, '/api-auth': remote, '/auth': remote }
+        // env.js rewrites apiUrl to localhost so the browser never goes cross-origin.
+        // Every path the @nangohq/frontend SDK constructs from apiUrl must be proxied here.
+        remoteProxy: { '/api': remote, '/oauth': remote, '/oauth2': remote, '/api-auth': remote, '/auth': remote, '/app-store-auth': remote }
     };
 }
 
