@@ -20,6 +20,11 @@ import type { Result } from '@nangohq/utils';
 
 const envs = parseEnvs(ENVS);
 
+// Ceiling for dashboard read queries (getDailyCounter / getDailySumAndBatches).
+// Sub-second p95 is expected; this caps any pathological query (huge timeframe
+// × high-cardinality breakdown) instead of letting it hang the request.
+const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
+
 // Exclude accountId, which is already a top-level column, and environmentName which is not needed for usage metrics
 type UsageAttrs<E extends { payload: { properties: object } }, K extends string = never> = Omit<
     E['payload']['properties'],
@@ -159,7 +164,11 @@ export class Clickhouse {
         `;
 
         try {
-            const res = await this.client.query({ query: sql, format: 'JSONEachRow' });
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+            });
             const rows = await res.json<{
                 day: string;
                 value: string | number;
@@ -319,7 +328,11 @@ export class Clickhouse {
         `;
 
         try {
-            const res = await this.client.query({ query: sql, format: 'JSONEachRow' });
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+            });
             const rows = await res.json<{
                 day: string;
                 sum: string | number;
