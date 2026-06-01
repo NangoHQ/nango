@@ -7,7 +7,7 @@ import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import svgr from 'vite-plugin-svgr';
 
-import type { Plugin, PluginOption, ProxyOptions } from 'vite';
+import type { Plugin, PluginOption } from 'vite';
 
 const REMOTE_API_URLS: Record<string, string> = {
     dev: 'https://api-development.nango.dev',
