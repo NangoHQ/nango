@@ -48,20 +48,20 @@ function remoteApiConfig() {
     const remote = { target: url, changeOrigin: true };
     return {
         remotePlugin: remoteApiEnvProxy(url),
-        // env.js rewrites apiUrl to localhost so the browser never goes cross-origin.
-        // Every path the @nangohq/frontend SDK and Connect UI construct from apiUrl must be proxied here.
         remoteProxy: {
             '/api': remote,
-            '/connect': remote,
-            '/integrations': remote,
-            '/providers': remote,
-            '/oauth': remote,
+            // Extra routes needed for connection creation and auth flows.
+            // Most dashboard functionality (viewing connections, logs, settings) works with /api alone.
+            '/connect': remote,     // Connect UI session + telemetry
+            '/integrations': remote, // Connect UI integration list
+            '/providers': remote,   // Connect UI provider details
+            '/proxy': remote,       // Getting-started proxy call
+            '/oauth': remote,       // OAuth popup flow
             '/oauth2': remote,
-            '/api-auth': remote,
-            '/auth': remote,
+            '/api-auth': remote,    // API key / basic auth
+            '/auth': remote,        // TBA, JWT, two-step, etc.
             '/app-store-auth': remote,
-            '/app-auth': remote,
-            '/proxy': remote
+            '/app-auth': remote     // GitHub App setup callback
         }
     };
 }
