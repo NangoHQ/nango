@@ -56,8 +56,7 @@ function remoteApiConfig() {
             '/integrations': remote, // Connect UI integration list
             '/providers': remote,   // Connect UI provider details
             '/proxy': remote,       // Getting-started proxy call
-            '/oauth': remote,       // OAuth popup flow
-            '/oauth2': remote,
+            '/oauth2': remote,      // OAuth2 client credentials (direct POST, no popup)
             '/api-auth': remote,    // API key / basic auth
             '/auth': remote,        // TBA, JWT, two-step, etc.
             '/app-store-auth': remote,
