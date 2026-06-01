@@ -142,4 +142,40 @@ describe('TaskQueue', () => {
         await waitFor(() => done === 3);
         expect(maxConcurrent).toBeGreaterThanOrEqual(2); // distinct buckets are not serialized
     });
+
+    it('enqueues a batch of mixed types in one call', async () => {
+        const res = await taskQueue.enqueueBatch([
+            { type: 'recording', payload: { message: 'batch-a' } },
+            { type: 'recording', payload: { message: 'batch-b' } },
+            { type: 'sync', payload: { connectionId: 'conn_batch' } }
+        ]);
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value.created).toHaveLength(3);
+            expect(res.value.discarded).toHaveLength(0);
+        }
+
+        await waitFor(() => handled.some((h) => h.message === 'batch-a') && handled.some((h) => h.message === 'batch-b') && done === 1);
+    });
+
+    it('returns ok with empty results for an empty batch', async () => {
+        const res = await taskQueue.enqueueBatch([]);
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value.created).toHaveLength(0);
+        }
+    });
+
+    it('rejects the whole batch (enqueues nothing) if any item payload is invalid', async () => {
+        const res = await taskQueue.enqueueBatch([
+            { type: 'recording', payload: { message: 'valid-in-bad-batch' } },
+            // @ts-expect-error - message must be a string
+            { type: 'recording', payload: { message: 123 } }
+        ]);
+
+        expect(res.isErr()).toBe(true);
+        await setTimeout(FAST_TICK_MS * 4);
+        expect(handled.some((h) => h.message === 'valid-in-bad-batch')).toBe(false);
+    });
 });

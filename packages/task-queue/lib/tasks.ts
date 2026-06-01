@@ -6,8 +6,8 @@ import { Err, Ok, getLogger, report, stringifyError } from '@nangohq/utils';
 import { TaskProcessor } from './processor.js';
 import { TASK_TYPE_SEPARATOR, buildTaskName, resolveTaskOptions } from './types.js';
 
-import type { AnyTaskDefinition, EnqueueOverrides, PayloadOf } from './types.js';
-import type { SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
+import type { AnyTaskDefinition, EnqueueBatchItem, EnqueueDiscardReason, EnqueueOverrides, PayloadOf } from './types.js';
+import type { ImmediateProps, SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type { JsonObject } from 'type-fest';
 
@@ -146,5 +146,58 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
             return Err(res.error);
         }
         return Ok({ taskId: res.value.id });
+    }
+
+    /**
+     * Enqueue many tasks (of any registered types) in a single transaction. Every item is validated
+     * first — if any payload is invalid, nothing is enqueued and an Err is returned. Items that would
+     * exceed a group's cap are reported in `discarded` (by input index) rather than failing the batch.
+     * Immediate only (no `startsAfter`).
+     */
+    async enqueueBatch(
+        items: EnqueueBatchItem<Defs>[]
+    ): Promise<Result<{ created: { index: number; taskId: string }[]; discarded: { index: number; reason: EnqueueDiscardReason }[] }>> {
+        if (items.length === 0) {
+            return Ok({ created: [], discarded: [] });
+        }
+
+        const propsList: ImmediateProps[] = [];
+        const nameToIndex = new Map<string, number>();
+        for (const [index, item] of items.entries()) {
+            const def = this.definitions.get(item.type);
+            if (!def) {
+                return Err(new Error(`No task definition for type '${item.type}'`));
+            }
+            const parsed = def.schema.safeParse(item.payload);
+            if (!parsed.success) {
+                return Err(new Error(`Invalid payload for task '${item.type}' at index ${index}: ${parsed.error.message}`));
+            }
+            const options = resolveTaskOptions(def);
+            const groupKey = item.groupKey ?? (typeof def.groupKey === 'function' ? def.groupKey(parsed.data) : (def.groupKey ?? item.type));
+            const name = buildTaskName(item.type, randomUUID());
+            nameToIndex.set(name, index);
+            propsList.push({
+                name,
+                payload: parsed.data as JsonObject,
+                groupKey,
+                groupMaxConcurrency: options.groupMaxConcurrency,
+                retryMax: options.retryMax,
+                retryCount: 0,
+                createdToStartedTimeoutSecs: options.createdToStartedTimeoutSecs,
+                startedToCompletedTimeoutSecs: options.startedToCompletedTimeoutSecs,
+                heartbeatTimeoutSecs: options.heartbeatTimeoutSecs,
+                ownerKey: null,
+                retryKey: null
+            });
+        }
+
+        const res = await this.scheduler.immediateBatch(propsList);
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({
+            created: res.value.created.map((t) => ({ index: nameToIndex.get(t.name) ?? -1, taskId: t.id })),
+            discarded: res.value.discarded.map((d) => ({ index: nameToIndex.get(d.props.name) ?? -1, reason: d.reason }))
+        });
     }
 }

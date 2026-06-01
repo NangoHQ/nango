@@ -104,3 +104,15 @@ export function taskTypeFromName(name: string): string {
 /** Payload type of the definition whose `type` is `T`, derived from its Zod schema. */
 export type PayloadOf<Defs extends readonly AnyTaskDefinition[], T extends string> =
     Extract<Defs[number], { type: T }> extends { schema: infer S extends z.ZodType } ? z.infer<S> : never;
+
+/** One item of an `enqueueBatch` call: a registered `type` paired with its matching payload. */
+export type EnqueueBatchItem<Defs extends readonly AnyTaskDefinition[]> = {
+    [T in Defs[number]['type']]: {
+        type: T;
+        payload: PayloadOf<Defs, T>;
+        /** Concurrency bucket for this item; overrides the definition's `groupKey`. */
+        groupKey?: string;
+    };
+}[Defs[number]['type']];
+
+export type EnqueueDiscardReason = 'capped' | 'duplicate';
