@@ -44,7 +44,11 @@ function remoteApiConfig() {
     if (!url) {
         throw new Error(`[nango] Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
-    return { remotePlugin: remoteApiEnvProxy(url), remoteProxy: { '/api': { target: url, changeOrigin: true } } };
+    const remote = { target: url, changeOrigin: true };
+    return {
+        remotePlugin: remoteApiEnvProxy(url),
+        remoteProxy: { '/api': remote, '/oauth': remote, '/oauth2': remote, '/api-auth': remote, '/auth': remote }
+    };
 }
 
 // https://vitejs.dev/config/
