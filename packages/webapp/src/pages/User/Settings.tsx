@@ -93,7 +93,6 @@ export const UserSettings: React.FC = () => {
                     {edit && (
                         <div className="flex justify-end gap-2 items-center">
                             <Button
-                                size={'sm'}
                                 variant={'tertiary'}
                                 onClick={() => {
                                     setName(user.name);
@@ -102,7 +101,7 @@ export const UserSettings: React.FC = () => {
                             >
                                 Cancel
                             </Button>
-                            <Button size={'sm'} onClick={onSave}>
+                            <Button onClick={onSave}>
                                 Save
                             </Button>
                         </div>
