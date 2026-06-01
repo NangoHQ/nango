@@ -6,6 +6,7 @@ import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
+import { cn } from '@/utils/utils';
 import { Button } from '@/components-v2/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
