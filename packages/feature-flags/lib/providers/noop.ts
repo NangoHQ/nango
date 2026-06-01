@@ -1,12 +1,4 @@
-import { ErrorCode } from '@openfeature/server-sdk';
-
 import type { EvaluationContext, JsonValue, Logger, Provider, ResolutionDetails } from '@openfeature/server-sdk';
-
-const FLAG_NOT_FOUND: ResolutionDetails<never> = {
-    value: undefined as never,
-    reason: 'ERROR',
-    errorCode: ErrorCode.FLAG_NOT_FOUND
-};
 
 export class NoopProvider implements Provider {
     readonly metadata = { name: 'noop' };
@@ -16,20 +8,20 @@ export class NoopProvider implements Provider {
         return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
     }
 
-    resolveStringEvaluation(_flagKey: string, _defaultValue: string, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+    resolveStringEvaluation(_flagKey: string, defaultValue: string, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
+        return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
     }
 
-    resolveNumberEvaluation(_flagKey: string, _defaultValue: number, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+    resolveNumberEvaluation(_flagKey: string, defaultValue: number, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
+        return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
     }
 
     resolveObjectEvaluation<T extends JsonValue>(
         _flagKey: string,
-        _defaultValue: T,
+        defaultValue: T,
         _context: EvaluationContext,
         _logger: Logger
     ): Promise<ResolutionDetails<T>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+        return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
     }
 }

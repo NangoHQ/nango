@@ -1,3 +1,5 @@
+import { getLogger } from '@nangohq/utils';
+
 import { buildFeatureFlagsClient } from './client.js';
 import { envs } from './env.js';
 import { NoopProvider } from './providers/noop.js';
@@ -13,10 +15,13 @@ export { FLAGS, type FlagKey } from './registry.js';
 let clientPromise: Promise<FeatureFlagsClient> | undefined;
 let destroyPromise: Promise<void> | undefined;
 
+const logger = getLogger('FeatureFlags');
+
 export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
     if (destroyPromise) await destroyPromise;
     if (clientPromise) return clientPromise;
     clientPromise = createClient();
+    clientPromise.catch((err: unknown) => logger.error('Error creating feature flags client', err));
     return clientPromise;
 }
 
@@ -26,6 +31,7 @@ export async function destroy(): Promise<void> {
     if (!promise) return;
     destroyPromise = (async () => {
         try {
+            logger.info('Destroying feature flags client');
             const client = await promise;
             await client.destroy();
         } finally {
@@ -44,7 +50,7 @@ async function createClient(): Promise<FeatureFlagsClient> {
 async function buildProvider(): Promise<Provider> {
     if (envs.NANGO_FLAG_PROVIDER === 'unleash') {
         if (!envs.NANGO_UNLEASH_URL) {
-            console.warn('NANGO_FLAG_PROVIDER=unleash but NANGO_UNLEASH_URL is unset; using noop provider');
+            logger.warning('NANGO_FLAG_PROVIDER=unleash but NANGO_UNLEASH_URL is unset; using noop provider');
             return new NoopProvider();
         }
         const provider = new UnleashProvider({
@@ -54,7 +60,9 @@ async function buildProvider(): Promise<Provider> {
             refreshIntervalMs: envs.NANGO_UNLEASH_REFRESH_INTERVAL_MS
         });
         await provider.initialize();
+        logger.info('Unleash provider initialized');
         return provider;
     }
+    logger.info('Using noop feature-flags provider');
     return new NoopProvider();
 }

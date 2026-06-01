@@ -4,12 +4,6 @@ import { initialize } from 'unleash-client';
 import type { EvaluationContext, JsonValue, Logger, Provider, ResolutionDetails } from '@openfeature/server-sdk';
 import type { Context as UnleashEvaluationContext, Unleash } from 'unleash-client';
 
-const FLAG_NOT_FOUND: ResolutionDetails<never> = {
-    value: undefined as never,
-    reason: 'ERROR',
-    errorCode: ErrorCode.FLAG_NOT_FOUND
-};
-
 const KNOWN_KEYS = new Set(['userId', 'sessionId', 'remoteAddress', 'environment', 'appName', 'currentTime']);
 
 export interface UnleashProviderConfig {
@@ -106,20 +100,53 @@ export class UnleashProvider implements Provider {
         }
     }
 
-    resolveStringEvaluation(_flagKey: string, _defaultValue: string, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+    // Non-boolean values are served as Unleash variant payloads (provisioned by the
+    // nango-flags repo as strategy variants). getVariant returns the payload string.
+    private payloadValue(flagKey: string, context: EvaluationContext): string | undefined {
+        const variant = this.unleash.getVariant(flagKey, toUnleashContext(context));
+        if (variant.feature_enabled && variant.payload?.value !== undefined) {
+            return variant.payload.value;
+        }
+        return undefined;
     }
 
-    resolveNumberEvaluation(_flagKey: string, _defaultValue: number, _context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+    resolveStringEvaluation(flagKey: string, defaultValue: string, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<string>> {
+        try {
+            const raw = this.payloadValue(flagKey, context);
+            if (raw === undefined) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
+            return Promise.resolve({ value: raw, reason: 'TARGETING_MATCH' });
+        } catch (err) {
+            return Promise.resolve(this.evaluationError(defaultValue, err));
+        }
     }
 
-    resolveObjectEvaluation<T extends JsonValue>(
-        _flagKey: string,
-        _defaultValue: T,
-        _context: EvaluationContext,
-        _logger: Logger
-    ): Promise<ResolutionDetails<T>> {
-        return Promise.resolve(FLAG_NOT_FOUND);
+    resolveNumberEvaluation(flagKey: string, defaultValue: number, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<number>> {
+        try {
+            const raw = this.payloadValue(flagKey, context);
+            const num = raw === undefined ? NaN : Number(raw);
+            if (Number.isNaN(num)) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
+            return Promise.resolve({ value: num, reason: 'TARGETING_MATCH' });
+        } catch (err) {
+            return Promise.resolve(this.evaluationError(defaultValue, err));
+        }
+    }
+
+    resolveObjectEvaluation<T extends JsonValue>(flagKey: string, defaultValue: T, context: EvaluationContext, _logger: Logger): Promise<ResolutionDetails<T>> {
+        try {
+            const raw = this.payloadValue(flagKey, context);
+            if (raw === undefined) return Promise.resolve({ value: defaultValue, reason: 'DEFAULT' });
+            return Promise.resolve({ value: JSON.parse(raw) as T, reason: 'TARGETING_MATCH' });
+        } catch (err) {
+            return Promise.resolve(this.evaluationError(defaultValue, err));
+        }
+    }
+
+    private evaluationError<T>(defaultValue: T, err: unknown): ResolutionDetails<T> {
+        return {
+            value: defaultValue,
+            reason: 'ERROR',
+            errorCode: ErrorCode.GENERAL,
+            errorMessage: err instanceof Error ? err.message : String(err)
+        };
     }
 }

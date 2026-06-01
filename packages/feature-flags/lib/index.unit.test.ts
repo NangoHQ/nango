@@ -35,6 +35,7 @@ vi.mock('unleash-client', () => {
                     }
                 }),
                 isEnabled: vi.fn(() => true),
+                getVariant: vi.fn(() => ({ name: 'v0', enabled: true, feature_enabled: true, payload: { type: 'string', value: 'new-ui' } })),
                 destroy: vi.fn()
             };
             unleashInstances.push(instance);
@@ -87,6 +88,23 @@ describe('getFeatureFlagsClient', () => {
         const { getFeatureFlagsClient } = await import('./index.js');
         const client = await getFeatureFlagsClient();
         await expect(client.isEnabled('any-flag', { 'account.uuid': 'abc' }, false)).resolves.toBe(true);
+    });
+
+    it('reads non-boolean variant payloads (getString), falling back to default otherwise', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { getFeatureFlagsClient } = await import('./index.js');
+        const client = await getFeatureFlagsClient();
+        await expect(client.getString('variant-flag', { 'account.id': '1239' }, 'control')).resolves.toBe('new-ui');
+        // noop provider returns the default for non-boolean reads
+        const { destroy, getFeatureFlagsClient: getNoop } = await import('./index.js');
+        await destroy();
+        mockEnvs.NANGO_FLAG_PROVIDER = 'noop';
+        vi.resetModules();
+        const noopClient = await (await import('./index.js')).getFeatureFlagsClient();
+        await expect(noopClient.getString('variant-flag', {}, 'control')).resolves.toBe('control');
+        void getNoop;
     });
 
     it('resolves initialize() when unleash emits error before synchronized', async () => {

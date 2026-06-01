@@ -3,10 +3,14 @@ import { OpenFeature } from '@openfeature/server-sdk';
 import { NoopProvider } from './providers/noop.js';
 
 import type { FlagContext } from './types.js';
-import type { Client, EvaluationContext, Provider } from '@openfeature/server-sdk';
+import type { Client, EvaluationContext, JsonValue, Provider } from '@openfeature/server-sdk';
 
 export interface FeatureFlagsClient {
     isEnabled(key: string, context: FlagContext, defaultValue: boolean): Promise<boolean>;
+    // Non-boolean flags, served as Unleash variant payloads (provisioned by nango-flags).
+    getString(key: string, context: FlagContext, defaultValue: string): Promise<string>;
+    getNumber(key: string, context: FlagContext, defaultValue: number): Promise<number>;
+    getObject<T extends JsonValue>(key: string, context: FlagContext, defaultValue: T): Promise<T>;
     destroy(): Promise<void>;
 }
 
@@ -29,6 +33,27 @@ export function buildFeatureFlagsClient(provider: Provider): FeatureFlagsClient 
         async isEnabled(key, context, defaultValue) {
             try {
                 return await ofClient.getBooleanValue(key, defaultValue, toEvaluationContext(context));
+            } catch {
+                return defaultValue;
+            }
+        },
+        async getString(key, context, defaultValue) {
+            try {
+                return await ofClient.getStringValue(key, defaultValue, toEvaluationContext(context));
+            } catch {
+                return defaultValue;
+            }
+        },
+        async getNumber(key, context, defaultValue) {
+            try {
+                return await ofClient.getNumberValue(key, defaultValue, toEvaluationContext(context));
+            } catch {
+                return defaultValue;
+            }
+        },
+        async getObject(key, context, defaultValue) {
+            try {
+                return (await ofClient.getObjectValue(key, defaultValue, toEvaluationContext(context))) as typeof defaultValue;
             } catch {
                 return defaultValue;
             }
