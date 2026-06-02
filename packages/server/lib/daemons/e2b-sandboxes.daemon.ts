@@ -1,7 +1,5 @@
-import tracer from 'dd-trace';
-
 import { getRunningSandboxCount } from '@nangohq/sandbox';
-import { cancellableDaemon, getLogger, metrics, report, stringifyError } from '@nangohq/utils';
+import { cancellableDaemon, getLogger, metrics, report } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 
@@ -37,19 +35,15 @@ export function e2bSandboxesDaemon(): ReturnType<typeof cancellableDaemon> | und
             report(new Error('e2b_sandboxes_daemon_failed', { cause: err }));
         },
         tick: async (): Promise<void> => {
-            return tracer.trace('nango.server.daemon.e2b_sandboxes', async (span) => {
-                try {
-                    const runningSandboxes = await reportE2BRunningSandboxCount({
-                        apiKey,
-                        requestTimeoutMs: envs.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS
-                    });
-                    span?.addTags({ runningSandboxes });
-                } catch (err) {
-                    span?.addTags({ error: stringifyError(err) });
-                    logger.error('Failed to poll E2B running sandboxes', err);
-                    report(new Error('failed_to_poll_e2b_running_sandboxes', { cause: err }));
-                }
-            });
+            try {
+                await reportE2BRunningSandboxCount({
+                    apiKey,
+                    requestTimeoutMs: envs.E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS
+                });
+            } catch (err) {
+                logger.error('Failed to poll E2B running sandboxes', err);
+                report(new Error('failed_to_poll_e2b_running_sandboxes', { cause: err }));
+            }
         }
     });
 }
