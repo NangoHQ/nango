@@ -34,7 +34,6 @@ export default defineConfig({
         fileParallelism: false,
         pool: 'forks',
         // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
-        maxWorkers: 1,
-        isolate: false
+        maxWorkers: 1
     }
 });
