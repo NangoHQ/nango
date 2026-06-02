@@ -1,6 +1,6 @@
 import { toast as sonnerToast } from 'sonner';
 
-import { Toast } from '@/components-v2/Toast';
+import { Toast } from '@/components-v2/ui/Toast';
 
 interface ToastProps {
     title?: string;

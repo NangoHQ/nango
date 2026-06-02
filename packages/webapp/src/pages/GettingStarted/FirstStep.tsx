@@ -12,8 +12,8 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button } from '@/components-v2/ui/button';
+import { Button } from '@/components-v2/ui/Button';
+import { StyledLink } from '@/components-v2/ui/StyledLink';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';

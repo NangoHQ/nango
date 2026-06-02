@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.70.5",
+    "version": "0.70.6",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -99,6 +99,7 @@
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.14"
+        "postcss": "8.5.14",
+        "js-cookie": "3.0.8"
     }
 }

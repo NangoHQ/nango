@@ -897,6 +897,58 @@ algolia:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-2-finding-your-admin-api-key'
 
+altrata:
+    display_name: Altrata
+    categories:
+        - analytics
+    auth_mode: TWO_STEP
+    token_url: https://api-auth.altrata.com/oauth2/token?grant_type=client_credentials
+    body_format: form
+    token_headers:
+        authorization: Basic ${base64(${credentials.username}:${credentials.password})}
+        x-api-key: ${credentials.apiKey}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            x-api-key: ${credentials.apiKey}
+    docs: https://nango.dev/docs/api-integrations/altrata
+    docs_connect: https://nango.dev/docs/api-integrations/altrata/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Service Hostname
+            description: The Altrata service hostname to connect to.
+            example: events.altrata.com
+            format: hostname
+            pattern: '^(matching|profile|events|relationships)\.altrata\.com$'
+            order: 1
+            doc_section: '#step-2-choose-a-service-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Altrata API key.
+            secret: true
+            example: mN3pQv8wLc2jXs5rKt4bGy6uFd1eAh7Z*******
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-obtain-your-credentials'
+        username:
+            type: string
+            title: Username
+            description: Your Altrata account username.
+            example: john_doe
+            doc_section: '#step-1-obtain-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Altrata account password.
+            secret: true
+            doc_section: '#step-1-obtain-your-credentials'
+
 amazon:
     display_name: Amazon
     categories:
@@ -2583,7 +2635,6 @@ bigchange:
         - productivity
     auth_mode: OAUTH2_CC
     token_url: https://api.bigchange.com/auth/tokens
-    token_request_auth_method: basic
     token_params:
         grant_type: client_credentials
     proxy:
@@ -11654,14 +11705,30 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    authorization_url: https://oauth2.mercury.com/oauth2/auth
-    token_url: https://oauth2.mercury.com/oauth2/token
+    authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
+    token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
         - offline_access
     proxy:
-        base_url: https://api.mercury.com
+        base_url: https://${connectionConfig.hostname} || https://api.mercury.com
     docs: https://nango.dev/docs/api-integrations/mercury
+    docs_connect: https://nango.dev/docs/api-integrations/mercury/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/mercury/how-to-register-your-own-mercury-oauth-app
+    connection_config:
+        oauth_hostname:
+            type: string
+            title: OAuth Hostname
+            description: Your Mercury OAuth hostname.
+            example: oauth2-sandbox.mercury.com
+            optional: true
+            pattern: '^oauth2(?:-sandbox)?\.mercury\.com$'
+        hostname:
+            type: string
+            title: API Hostname
+            description: Your Mercury API hostname.
+            example: api-sandbox.mercury.com
+            optional: true
+            pattern: '^api(?:-sandbox)?\.mercury\.com$'
 
 meta-marketing-api:
     display_name: Meta Marketing API
@@ -15181,6 +15248,55 @@ provenexpert:
             secret: true
             pattern: '^[A-Za-z0-9]{43}$'
             example: 'M3A5NwykMKW1BRy6NRrxAwW2MzI3MxOmNRXzNzByMxW'
+            doc_section: '#step-1-getting-your-credentials'
+
+pverify:
+    display_name: pVerify
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.apiHost}/Token
+    token_params:
+        Client_Id: ${credentials.clientId}
+        Client_Secret: ${credentials.clientSecret}
+        grant_type: client_credentials
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        Client-API-Id: ${credentials.clientId}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+        headers:
+            client-api-id: ${credentials.clientId}
+    docs: https://nango.dev/docs/api-integrations/pverify
+    docs_connect: https://nango.dev/docs/api-integrations/pverify/connect
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your pVerify Client ID.
+            example: f1c2d3a4-5b67-4c89-ae01-123456789abc
+            format: uuid
+            doc_section: '#step-1-getting-your-credentials'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your pVerify Client Secret.
+            secret: true
+            example: aB3mNpQr7sXwYz2t***************
+            pattern: '^[A-Za-z0-9]+$'
+            doc_section: '#step-1-getting-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: Your pVerify API hostname.
+            example: api.pverify.com
+            pattern: '^(api|testapi)\.pverify\.com$'
             doc_section: '#step-1-getting-your-credentials'
 
 qualtrics:
@@ -19367,6 +19483,30 @@ the-swarm:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-get-your-api-key'
 
+theirstack:
+    display_name: TheirStack
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.theirstack.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v0/billing/credit-balance
+    docs: https://nango.dev/docs/api-integrations/theirstack
+    docs_connect: https://nango.dev/docs/api-integrations/theirstack/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your TheirStack API key.
+            example: eyJhbGci*******.eyJ2ZX********.kWB5********
+            pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generate-your-api-key'
+
 terraform:
     display_name: Terraform
     categories:
@@ -19873,6 +20013,56 @@ timify:
             description: Your Timify app secret
             secret: true
             doc_section: '#step-3-getting-your-credentials'
+
+toast:
+    display_name: Toast
+    categories:
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.subdomain}.toasttab.com/authentication/v1/authentication/login
+    token_params:
+        clientId: ${credentials.clientId}
+        clientSecret: ${credentials.clientSecret}
+        userAccessType: TOAST_MACHINE_CLIENT
+    token_headers:
+        content-type: application/json
+    token_response:
+        token: token.accessToken
+        token_expiration: token.expiresIn
+        token_expiration_strategy: expireIn
+    token_expiration_buffer: 60
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.toasttab.com
+        headers:
+            toast-restaurant-external-id: ${connectionConfig.restaurantId}
+    docs: https://nango.dev/docs/api-integrations/toast
+    docs_connect: https://nango.dev/docs/api-integrations/toast/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Subdomain
+            description: The Toast API subdomain for your environment.
+            example: ws-api
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+        restaurantId:
+            type: string
+            title: Restaurant External ID
+            description: The Toast GUID for the restaurant to connect to.
+            example: 4721e7a9-b4ae-4fef-9230-b3dae186e0a4
+            format: uuid
+            optional: true
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your Toast API client identifier.
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: Your Toast API client secret.
+            secret: true
 
 todoist:
     display_name: Todoist

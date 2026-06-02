@@ -14,15 +14,15 @@ import {
     IconX
 } from '@tabler/icons-react';
 
-import * as Tooltip from '../../../components/ui/Tooltip';
 import { Tag } from '../../../components/ui/label/Tag';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
 export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
     return (
-        <Tooltip.Tooltip delayDuration={0}>
-            <Tooltip.TooltipTrigger>
+        <Tooltip delayDuration={0}>
+            <TooltipTrigger>
                 <div className="flex items-center gap-1">
                     <Tag>{operation.type}</Tag>
                     {operation.type === 'sync' && (
@@ -57,12 +57,10 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                         </Tag>
                     )}
                 </div>
-            </Tooltip.TooltipTrigger>
-            <Tooltip.TooltipPortal>
-                <Tooltip.TooltipContent align="start" className="text-white">
-                    <p>{message}</p>
-                </Tooltip.TooltipContent>
-            </Tooltip.TooltipPortal>
-        </Tooltip.Tooltip>
+            </TooltipTrigger>
+            <TooltipContent align="start" className="text-white">
+                <p>{message}</p>
+            </TooltipContent>
+        </Tooltip>
     );
 };

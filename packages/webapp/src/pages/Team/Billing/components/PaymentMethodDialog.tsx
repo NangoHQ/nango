@@ -2,9 +2,9 @@ import { AddressElement, Elements, PaymentElement, useElements, useStripe } from
 import { Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { Button } from '@/components-v2/ui/Button';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
 import { queryClient, useStore } from '@/store';

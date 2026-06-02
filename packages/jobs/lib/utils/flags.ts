@@ -1,9 +1,9 @@
 import { getFeatureFlagsClient } from '@nangohq/kvstore';
 
-import type { RunnerFlags } from '@nangohq/types';
+import type { DBPlan, RunnerFlags } from '@nangohq/types';
 
 export const featureFlags = await getFeatureFlagsClient();
-export async function getRunnerFlags(): Promise<RunnerFlags> {
+export async function getRunnerFlags(plan: DBPlan | null): Promise<RunnerFlags> {
     const [validateActionInput, validateActionOutput, validateSyncRecords, validateSyncMetadata] = await Promise.all([
         featureFlags.isSet('runner.validateActionInput'),
         featureFlags.isSet('runner.validateActionOutput'),
@@ -15,6 +15,7 @@ export async function getRunnerFlags(): Promise<RunnerFlags> {
         validateActionInput,
         validateActionOutput,
         validateSyncRecords,
-        validateSyncMetadata
+        validateSyncMetadata,
+        exportRunnerTelemetry: plan?.export_runner_telemetry ?? false
     };
 }

@@ -3,8 +3,8 @@ import knex from 'knex';
 import * as uuid from 'uuid';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { config } from './config.js';
 import { PostgresStore, incrCount } from './postgres.js';
+import { config } from '../../catalog/default.js';
 import { RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
@@ -12,7 +12,7 @@ import { formatRecords } from '../../helpers/format.js';
 import { decryptRecordData, encryptRecords } from '../../utils/encryption.js';
 
 const db = knex(config);
-const store = new PostgresStore();
+const store = new PostgresStore(config);
 
 import type { FormattedRecord, RecordData, UnencryptedRecordData, UpsertSummary } from '../../types.js';
 import type { MergingStrategy, Result } from '@nangohq/types';
@@ -110,7 +110,11 @@ describe('PostgresStore', () => {
         expect(stats[model]?.count).toBe(4);
         expect(stats[model]?.size_bytes).toBe(556);
 
-        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({ external_id: '1', decrypted: { id: '1', name: 'John Doe' } });
+        await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
+            external_id: '1',
+            sync_job_id: null,
+            decrypted: { id: '1', name: 'John Doe' }
+        });
         await expect(fromDb(connectionId, model, '2')).resolves.toMatchObject({
             external_id: '2',
             decrypted: { id: '2', name: 'Jane Much Longer Name Doe' }
@@ -133,6 +137,7 @@ describe('PostgresStore', () => {
         expect(stats[model]?.size_bytes).toBe(560);
         await expect(fromDb(connectionId, model, '1')).resolves.toMatchObject({
             external_id: '1',
+            sync_job_id: null,
             decrypted: { id: '1', name: 'Maurice Doe' }
         });
     });
@@ -2250,7 +2255,7 @@ async function fromDb(
     connectionId: number,
     model: string,
     externalId: string
-): Promise<{ external_id: string; sync_job_id: number; decrypted: UnencryptedRecordData }> {
+): Promise<{ external_id: string; sync_job_id: number | null; decrypted: UnencryptedRecordData }> {
     const metadata = await db.select<FormattedRecord[]>('*').from(RECORDS_TABLE).where({ connection_id: connectionId, model, external_id: externalId }).first();
     if (!metadata) {
         throw new Error(`Record with external_id ${externalId} not found`);

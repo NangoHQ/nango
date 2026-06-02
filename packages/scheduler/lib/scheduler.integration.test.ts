@@ -2,8 +2,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import { nanoid } from '@nangohq/utils';
 
+import { defaultSchedulerConfig } from './config.js';
 import { getTestDbClient } from './db/helpers.test.js';
-import { envs } from './env.js';
 import { isDuplicateTaskNameError } from './errors.js';
 import { Scheduler } from './scheduler.js';
 
@@ -123,13 +123,13 @@ describe('Scheduler', () => {
     it('should call callback when task is expired', async () => {
         const timeoutMs = 1000;
         await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + defaultSchedulerConfig.daemons.expiringTickIntervalMs));
         expect(callbacks.EXPIRED).toHaveBeenCalledOnce();
     });
     it('should monitor and expires created tasks if timeout is reached', async () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { createdToStartedTimeoutSecs: timeoutMs / 1000 } });
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + defaultSchedulerConfig.daemons.expiringTickIntervalMs));
         const [expired] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
         expect(expired?.state).toBe('EXPIRED');
     });
@@ -137,7 +137,7 @@ describe('Scheduler', () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { startedToCompletedTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + defaultSchedulerConfig.daemons.expiringTickIntervalMs));
         const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
         expect(taskAfter?.state).toBe('EXPIRED');
     });
@@ -145,7 +145,7 @@ describe('Scheduler', () => {
         const timeoutMs = 1000;
         const task = await immediate(scheduler, { taskProps: { heartbeatTimeoutSecs: timeoutMs / 1000 } });
         (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
-        await new Promise((resolve) => setTimeout(resolve, timeoutMs + envs.ORCHESTRATOR_EXPIRING_TICK_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, timeoutMs + defaultSchedulerConfig.daemons.expiringTickIntervalMs));
         const [taskAfter] = (await scheduler.searchTasks({ ids: [task.id] })).unwrap();
         expect(taskAfter?.state).toBe('EXPIRED');
     });
@@ -286,6 +286,43 @@ describe('Scheduler', () => {
             const res = (await scheduler.immediateBatch([])).unwrap();
             expect(res).toEqual({ created: [], discarded: [] });
         });
+    });
+
+    it('should not propagate errors thrown by the onEvent handler', async () => {
+        const throwingOnEvent = vi.fn(() => {
+            throw new Error('error from onEvent');
+        });
+        const localScheduler = new Scheduler({
+            db: dbClient.db,
+            on: { CREATED: () => {}, STARTED: () => {}, SUCCEEDED: () => {}, FAILED: () => {}, EXPIRED: () => {}, CANCELLED: () => {} },
+            onError: () => {},
+            onEvent: throwingOnEvent,
+            config: { ...defaultSchedulerConfig, limits: { ...defaultSchedulerConfig.limits, groupTaskCap: 1 } }
+        });
+        const groupKey = nanoid();
+        await immediate(localScheduler, { taskProps: { groupKey } });
+
+        // Second task in the same group exceeds groupTaskCap=1 -> Scheduler.immediate fires onEvent.
+        // The handler throws; the Scheduler must isolate that throw and return a normal Err.
+        const second = await localScheduler.immediate({
+            name: nanoid(),
+            payload: {},
+            groupKey,
+            groupMaxConcurrency: 0,
+            retryMax: 1,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: 3600,
+            startedToCompletedTimeoutSecs: 3600,
+            heartbeatTimeoutSecs: 600,
+            ownerKey: null,
+            retryKey: null
+        });
+        expect(throwingOnEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'task_dropped', groupKey }));
+        expect(second.isErr()).toBe(true);
+        if (second.isErr()) {
+            expect(String(second.error)).not.toContain('error from onEvent');
+        }
+        await localScheduler.stop();
     });
 });
 

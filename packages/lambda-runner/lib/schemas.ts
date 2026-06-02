@@ -26,7 +26,7 @@ export const nangoPropsSchema = z.object({
     syncId: z.string().uuid().optional(),
     syncVariant: z.string().optional(),
     nangoConnectionId: z.number(),
-    syncJobId: z.number().optional(),
+    syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     track_deletes: z.boolean().optional(),
     emptyCache: z.boolean().optional(),
     attributes: z.record(z.string(), z.any()).optional(),

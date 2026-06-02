@@ -102,12 +102,12 @@ export const ENVS = z.object({
         .number()
         .optional()
         .default(60 * 24 * 3600 * 1000), // 60 days
-    PERSIST_SEEN_PARTITION_INTERVAL_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_INTERVAL_MS: z.coerce
         .number()
         .positive()
         .max(6 * 3600 * 1000) // max 6 hours to ensure the records_seen daily partition for next day is always created ahead of time
         .default(1 * 3600 * 1000),
-    PERSIST_SEEN_PARTITION_MAX_AGE_MS: z.coerce
+    RECORDS_POSTGRES_SEEN_PARTITION_MAX_AGE_MS: z.coerce
         .number()
         .optional()
         .default(48 * 3600 * 1000), // 48 hours
@@ -222,6 +222,8 @@ export const ENVS = z.object({
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
+    RUNNER_TELEMETRY_BATCH_SIZE: z.coerce.number().int().positive().default(10),
+    RUNNER_TELEMETRY_FLUSH_INTERVAL_MS: z.coerce.number().int().nonnegative().default(2000),
 
     // FLEET
     RUNNERS_DATABASE_URL: z.url().optional(),
