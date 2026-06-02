@@ -3,7 +3,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 import { telemetryBodySchema, telemetryParamsSchema } from './validate.js';
 
 import type { AuthLocals } from '../../../middleware/auth.middleware.js';
-import type { PostRunnerTelemetry } from '@nangohq/types';
+import type { PostRunnerTelemetry, RunnerDataTransferTelemetry } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
 const path = '/environment/:environmentId/runner/telemetry';
@@ -14,15 +14,27 @@ const validate = validateRequest<PostRunnerTelemetry>({
     parseBody: (data: unknown) => telemetryBodySchema.parse(data)
 });
 
+function groupEventsByCallsite(events: RunnerDataTransferTelemetry[]): Map<string, RunnerDataTransferTelemetry[]> {
+    const eventsByCallsite = new Map<string, RunnerDataTransferTelemetry[]>();
+    for (const event of events) {
+        const { callsite } = event;
+        if (!eventsByCallsite.has(callsite)) {
+            eventsByCallsite.set(callsite, []);
+        }
+        eventsByCallsite.get(callsite)!.push(event);
+    }
+    return eventsByCallsite;
+}
+
 const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetry, AuthLocals>) => {
-    const { events } = res.locals.parsedBody;
+    const body = res.locals.parsedBody;
 
-    const dataTransferEvents = events.filter((event) => event.type === 'data_transfer');
-    const byCallsite = Map.groupBy(dataTransferEvents, (event) => event.callsite);
+    const dataTransferEvents = body.events.filter((event) => event.type === 'data_transfer');
+    const eventsByCallsite = groupEventsByCallsite(dataTransferEvents);
 
-    for (const [callsite, callsiteEvents] of byCallsite) {
-        const bytesSent = callsiteEvents.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
-        const bytesReceived = callsiteEvents.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
+    for (const [callsite, events] of eventsByCallsite) {
+        const bytesSent = events.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
+        const bytesReceived = events.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
 
         if (callsite === 'proxy') {
             metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
