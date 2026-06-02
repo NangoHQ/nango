@@ -10,6 +10,17 @@ Legend: ✅ done · ❌ issue found · — not checked yet
 
 ---
 
+## What changed
+
+| Component | v1 source | v2 target | API change |
+|---|---|---|---|
+| `Tag` | `components/ui/label/Tag` | `components-v2/ui/Tag` | New component — same variant names (`success`, `alert`, `info`, `warning`, `disabled`, `default`, `neutral`) but backed by v2 design tokens. Added `size="sm"` for inline/code-block contexts. Text is now uppercase by default. |
+| `CopyButton` | `components/ui/button/CopyButton` | `components-v2/ui/CopyButton` | v2 extended with `iconType?: 'clipboard' \| 'link'`. Tooltip removed; uses Copy→Check icon swap animation instead. |
+| `IntegrationLogo` | `components/ui/IntegrationLogo` | `components-v2/patterns/IntegrationLogo` | Props reduced to `provider` + `className`. v2 renders in a styled 32 px container; inline usages pass `className="size-4 p-0 bg-transparent border-transparent"` to strip the box. |
+| `SecretInput` | `components/ui/input/SecretInput` | `components-v2/patterns/SecretInput` | `optionalValue` / `setOptionalValue` → standard `value` / `onChange`. `canRead` permission gate added. Refresh button removed. |
+
+---
+
 ## [/dev/logs](https://app-development.nango.dev/dev/logs)
 
 ### Tag → v2 Tag
@@ -19,15 +30,13 @@ Legend: ✅ done · ❌ issue found · — not checked yet
 | StatusTag — success row | `success` | `success` (green feedback token) | — |
 | StatusTag — running row | `info` | `info` (brand-blue feedback token) | — |
 | StatusTag — failed row | `alert` | `alert` (red feedback token) | — |
-| StatusTag — cancelled / timeout / waiting rows | `gray` | `gray` (disabled text, subtle bg) | — |
+| StatusTag — cancelled / timeout / waiting rows | `gray` | `disabled` (disabled text, subtle bg) | — |
 | LevelTag — error message | `alert` | `alert` (red feedback token) | — |
 | LevelTag — info message | `info` | `info` (brand-blue feedback token) | — |
 | LevelTag — warn message | `warning` | `warning` (yellow feedback token) | — |
-| LevelTag — debug message | `gray` | `gray` (disabled text, subtle bg) | — |
+| LevelTag — debug message | `gray` | `disabled` (disabled text, subtle bg) | — |
 | OperationTag — type label | `neutral` (default) | `neutral` (default, subtle bg + border) | — |
 | OperationTag — action icon | `neutral` (default) | `neutral` (default, subtle bg + border) | — |
-
-> Note: text is no longer uppercase (v1 forced `uppercase` CSS; v2 uses normal casing)
 
 ### Tooltip
 
@@ -60,26 +69,30 @@ Legend: ✅ done · ❌ issue found · — not checked yet
 
 ---
 
-## [/dev/getting-started](https://app-development.nango.dev/dev/getting-started)
+## /dev/getting-started (self-hosted only)
+
+> `ClassicGettingStarted` only renders when `isCloud = false`. Not reachable on cloud environments (dev API, staging, prod). Test on a local self-hosted instance.
 
 ### Tag → v2 Tag
 
 | Location | v1 variant | v2 variant | Checked |
 |---|---|---|---|
-| "Guide 1" label | `neutral` | `neutral` (subtle bg + border) | — |
-| "Guide 2" label | `neutral` | `neutral` (subtle bg + border) | — |
-| "Guide 3" label | `neutral` | `neutral` (subtle bg + border) | — |
-| "Guide 4" label | `neutral` | `neutral` (subtle bg + border) | — |
+| "Guide 1" label | `neutral` | `neutral` (subtle bg + border) | ⏳ self-hosted only |
+| "Guide 2" label | `neutral` | `neutral` (subtle bg + border) | ⏳ self-hosted only |
+| "Guide 3" label | `neutral` | `neutral` (subtle bg + border) | ⏳ self-hosted only |
+| "Guide 4" label | `neutral` | `neutral` (subtle bg + border) | ⏳ self-hosted only |
 
 ---
 
-## Any page with MultiLanguageCodeBlock (e.g. Integrations › Functions › one function)
+## MultiLanguageCodeBlock — Storybook only
 
-### Tag → v2 Tag
+> The single-snippet path (tag instead of dropdown) has no live callsite — the only usage (`GettingStarted/SecondStep`) always passes 2 snippets. Verify via **[Storybook → Components v2/UI/MultiLanguageCodeBlock › SingleSnippet](http://localhost:6006/?path=/story/components-v2-ui-multilanguagecodeblock--single-snippet)**.
+
+### Tag → v2 Tag (size="sm")
 
 | Location | v1 variant | v2 variant | Checked |
 |---|---|---|---|
-| Language label (single-snippet, no dropdown shown) | `gray1` | `gray1` (default badge gray) | — |
+| Language label in code block header (single-snippet, no dropdown) | `gray1` | `default` + `size="sm"` | ⏳ Storybook only |
 
 ---
 
@@ -89,18 +102,4 @@ Legend: ✅ done · ❌ issue found · — not checked yet
 
 | Location | Notes | Checked |
 |---|---|---|
-| Client ID field (OAUTH2_CC) | toggle visibility; copy button copies value | — |
-| Client Secret field (OAUTH2_CC) | toggle visibility; copy button copies value | — |
-| Client Certificate field | toggle visibility; copy button copies value | — |
-| Private Key field | toggle visibility; copy button copies value | — |
-| Username field (BASIC / BILL / SIGNATURE) | toggle visibility; copy button copies value | — |
-| Password field (BASIC / BILL / SIGNATURE) | toggle visibility; copy button copies value | — |
-| API Key field | toggle visibility; copy button copies value | — |
-| Token ID field (TBA) | toggle visibility; copy button copies value | — |
-| Token Secret field (TBA) | toggle visibility; copy button copies value | — |
-| OAuth Client ID Override (netsuite) | toggle visibility; copy button copies value | — |
-| OAuth Client Secret Override (netsuite) | toggle visibility; copy button copies value | — |
-| Organization ID field (BILL) | toggle visibility; copy button copies value | — |
-| Dev Key field (BILL) | toggle visibility; copy button copies value | — |
-| Dynamic credential params (TWO_STEP / JWT) | toggle + copy for each rendered field | — |
-| Dynamic assertion option params (TWO_STEP) | toggle + copy for each rendered assertion field | — |
+| API Key field — select **algolia** from the dropdown | toggle visibility; copy button copies value | — |
