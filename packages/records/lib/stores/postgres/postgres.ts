@@ -126,17 +126,18 @@ export class PostgresStore implements RecordsStore {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
                 const indexName = `${partitionName}_connection_model_job_new`;
-                // Create partition + child index atomically so the partition is never visible
-                // without its index for the eventual sync_job_id_new -> sync_job_id swap. The
-                // partition is empty, so the (non-CONCURRENTLY) index build is fast and the
-                // ACCESS EXCLUSIVE window stays catalog-only.
+                // Two separate statements (not a single transaction) so the parent's
+                // ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is released before the
+                // child CREATE INDEX runs. Wrapping both in a transaction would hold the
+                // parent lock across both, briefly blocking every records_seen reader/writer.
+                // A failure between the two leaves a partition without its index — benign
+                // pre-swap (no query uses the new index yet), recoverable via IF NOT EXISTS
+                // on retry, and caught by Phase 2c's pre-deploy index-coverage gate.
                 promise = this.db
-                    .transaction(async (trx) => {
-                        await trx.raw(
-                            `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-                        );
-                        await trx.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]);
-                    })
+                    .raw(
+                        `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                    )
+                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]))
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
