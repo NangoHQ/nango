@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { billing } from '@nangohq/billing';
+import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
@@ -8,13 +9,54 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
-import type { GetBillingUsage } from '@nangohq/types';
+import type { GetBillingUsage, UsageMetric } from '@nangohq/types';
+
+// z.enum(BREAKDOWN_DIMENSIONS[m]) — output type is the per-metric dim union,
+// matching `BreakdownDimensions[m]` from @nangohq/types. Single source of
+// truth for the (metric, dim) whitelist; empty strings rejected structurally
+// (not in the enum), no `.refine` needed.
+const breakdownSchema = z
+    .object({
+        proxy: z.enum(BREAKDOWN_DIMENSIONS.proxy).optional(),
+        function_executions: z.enum(BREAKDOWN_DIMENSIONS.function_executions).optional(),
+        function_logs: z.enum(BREAKDOWN_DIMENSIONS.function_logs).optional(),
+        function_compute_gbms: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
+        webhook_forwards: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
+        records: z.enum(BREAKDOWN_DIMENSIONS.records).optional(),
+        connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional()
+    })
+    .strict()
+    .optional();
+
+const ALL_METRICS = Object.keys(BREAKDOWN_DIMENSIONS) as [UsageMetric, ...UsageMetric[]];
 
 const querySchema = z
     .object({
         env: z.string(),
         from: z.iso.datetime().optional(),
-        to: z.iso.datetime().optional()
+        to: z.iso.datetime().optional(),
+        // Per-request dashboard backend override. Webapp picks it up from
+        // localStorage('nango.billingUsageSource') and forwards. Honoured
+        // server-side only when FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev
+        // gate). Without the gate, this is ignored and the dashboard stays
+        // on Orb.
+        source: z.enum(['clickhouse', 'orb']).optional(),
+        // Repeated-key array (`?metrics=records&metrics=connections`) —
+        // scopes the response to just those metrics. Empty / unset → all 7
+        // (page-load shape). Used by the drilldown UI to fetch just the
+        // metric the user opened. Honoured only on the CH path; Orb path
+        // ignores it for now. Preprocess wraps the single-value case
+        // (`?metrics=records` → string) into an array so the enum check
+        // applies uniformly.
+        metrics: z.preprocess((v) => (typeof v === 'string' ? [v] : v), z.array(z.enum(ALL_METRICS)).nonempty().optional()),
+        // Per-metric breakdown spec, Express qs parses `breakdown[<metric>]=<dim>`
+        // into `{ <metric>: <dim>, … }`. Honoured only on the CH path; the
+        // Orb client ignores it silently for now.
+        breakdown: breakdownSchema,
+        // Top-N for breakdown. Capped at TOP_N_BREAKDOWN_CAP at the schema level
+        // so requests exceeding it 400 rather than silently clamping — the SQL
+        // also clamps defensively (see `Clickhouse.getDailyCounter`).
+        top: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional()
     })
     .refine(
         (data) => {
@@ -36,7 +78,10 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
-    const query: GetBillingUsage['Querystring'] = parsedQuery.data;
+    // Note: parsed shape diverges from the wire shape (z.coerce.number for `top`
+    // produces a number even though the wire is a string), so we type the local
+    // by the parser output rather than the endpoint's Querystring.
+    const query = parsedQuery.data;
 
     const { account, user, plan } = res.locals;
     if (!plan) {
@@ -73,9 +118,13 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         return;
     }
 
-    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, {
+    const usage = await usageTracker.getBillingUsage(plan.orb_subscription_id, account.id, {
         granularity: 'day',
-        ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {})
+        ...(query.from && query.to ? { timeframe: { start: new Date(query.from), end: new Date(query.to) } } : {}),
+        ...(query.source ? { source: query.source } : {}),
+        ...(query.metrics ? { metrics: query.metrics } : {}),
+        ...(query.breakdown ? { breakdown: query.breakdown } : {}),
+        ...(query.top ? { top: query.top } : {})
     });
 
     if (usage.isErr()) {
