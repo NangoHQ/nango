@@ -59,17 +59,10 @@ jobs:
                   payload: |
                       channel: "C0B7KSD33QE"
                       attachments:
-                        - color: "#3AA3E3"
+                        - color: "#36C5F0"
                           fallback: ":rocket: Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
-                          blocks:
-                            - type: "section"
-                              text:
-                                type: "mrkdwn"
-                                text: "*:rocket: Deploy started* — `${{ inputs.service }}` → `${{ inputs.stage }}`"
-                            - type: "context"
-                              elements:
-                                - type: "mrkdwn"
-                                  text: ":hourglass_flowing_sand: In progress  ·  ref `${{ github.ref_name }}`  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
+                          mrkdwn_in: ["text"]
+                          text: ":rocket: *Deploy started* — `${{ inputs.service }}` → `${{ inputs.stage }}`\nIn progress  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>  ·  ref `${{ github.ref_name }}`"
     deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
@@ -347,12 +340,5 @@ jobs:
                       attachments:
                         - color: "${{ steps.result.outputs.color }}"
                           fallback: "${{ steps.result.outputs.title }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
-                          blocks:
-                            - type: "section"
-                              text:
-                                type: "mrkdwn"
-                                text: "*${{ steps.result.outputs.title }}* — `${{ inputs.service }}` → `${{ inputs.stage }}`"
-                            - type: "context"
-                              elements:
-                                - type: "mrkdwn"
-                                  text: "${{ steps.result.outputs.status_text }}  ·  ref `${{ github.ref_name }}`  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
+                          mrkdwn_in: ["text"]
+                          text: "*${{ steps.result.outputs.title }}* — `${{ inputs.service }}` → `${{ inputs.stage }}`\n${{ steps.result.outputs.status_text }}  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>  ·  ref `${{ github.ref_name }}`"
