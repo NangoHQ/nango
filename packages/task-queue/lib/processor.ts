@@ -8,7 +8,7 @@ import { taskTypeFromName } from './types.js';
 
 import type { AnyTaskDefinition, TaskContext } from './types.js';
 import type { Scheduler, Task } from '@nangohq/scheduler';
-import type { StrictLogger } from '@nangohq/utils';
+import type { Result, StrictLogger } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 function toJsonError(err: unknown): JsonValue {
@@ -20,7 +20,7 @@ function toJsonError(err: unknown): JsonValue {
 
 /**
  * In-process consumer: polls the scheduler for ready tasks, dispatches each to its handler
- * (looked up by `groupKey`, which equals the task type), and reports success/failure back.
+ * (looked up by `type`, encoded in the task name), and reports success/failure back.
  */
 export class TaskProcessor {
     private readonly scheduler: Scheduler;
@@ -69,10 +69,11 @@ export class TaskProcessor {
         // Defined before the assignment below so TS doesn't narrow `this.status` to 'stopping'
         // inside the loop — the processing loop flips it to 'stopped' once it exits.
         const waitUntilStopped = async (): Promise<void> => {
-            await this.queue.onIdle();
             while (this.status !== 'stopped') {
                 await setTimeout(100);
             }
+            // Drain the tasks that were already claimed/running
+            await this.queue.onIdle();
         };
         this.status = 'stopping';
         await waitUntilStopped();
@@ -80,11 +81,13 @@ export class TaskProcessor {
 
     private async processingLoop(): Promise<void> {
         while (this.status === 'running') {
-            await this.queue.onSizeLessThan(this.queue.concurrency);
-            const available = this.queue.concurrency - this.queue.size;
-            // fetch more than the immediately-available slots to keep the queue full
-            const limit = available + this.queue.concurrency;
-            const res = await this.scheduler.dequeue({ groupKeyPattern: this.groupKeyPattern, limit });
+            // Only claim as many tasks as there are free worker slots
+            const free = this.queue.concurrency - this.queue.pending - this.queue.size;
+            if (free <= 0) {
+                await setTimeout(this.pollIntervalMs);
+                continue;
+            }
+            const res = await this.scheduler.dequeue({ groupKeyPattern: this.groupKeyPattern, limit: free });
             if (res.isErr()) {
                 this.logger.error(`[tasks] failed to dequeue: ${stringifyError(res.error)}`);
                 await setTimeout(this.pollIntervalMs);
@@ -107,14 +110,14 @@ export class TaskProcessor {
             const def = this.definitions.get(type);
             if (!def) {
                 this.logger.error(`[tasks] no handler registered for type '${type}' (task ${task.id})`);
-                await this.scheduler.fail({ taskId: task.id, error: { message: `No handler registered for task type '${type}'` } });
+                await this.markFailed(task.id, { message: `No handler registered for task type '${type}'` });
                 return;
             }
 
             const parsed = def.schema.safeParse(task.payload);
             if (!parsed.success) {
                 this.logger.error(`[tasks] invalid payload for '${type}' (task ${task.id}): ${parsed.error.message}`);
-                await this.scheduler.fail({ taskId: task.id, error: { message: `Invalid payload: ${parsed.error.message}` } });
+                await this.markFailed(task.id, { message: `Invalid payload: ${parsed.error.message}` });
                 return;
             }
 
@@ -122,14 +125,31 @@ export class TaskProcessor {
             try {
                 const result = await def.handle(parsed.data, ctx);
                 if (result.isErr()) {
-                    await this.scheduler.fail({ taskId: task.id, error: toJsonError(result.error) });
+                    await this.markFailed(task.id, toJsonError(result.error));
                 } else {
-                    await this.scheduler.succeed({ taskId: task.id, output: null });
+                    await this.markSucceeded(task.id);
                 }
             } catch (err) {
-                this.logger.error(`[tasks] handler threw for '${task.groupKey}' (task ${task.id}): ${stringifyError(err)}`);
-                await this.scheduler.fail({ taskId: task.id, error: toJsonError(err) });
+                this.logger.error(`[tasks] handler threw for '${type}' (task ${task.id}): ${stringifyError(err)}`);
+                await this.markFailed(task.id, toJsonError(err));
             }
         });
+    }
+
+    // Transitioning a task's state can itself fail (e.g. a DB error). Surface it instead of dropping
+    // it, otherwise a task can silently stay STARTED until its timeout expires.
+    private async markFailed(taskId: string, error: JsonValue): Promise<void> {
+        await this.logIfErr(this.scheduler.fail({ taskId, error }), taskId, 'failed');
+    }
+
+    private async markSucceeded(taskId: string): Promise<void> {
+        await this.logIfErr(this.scheduler.succeed({ taskId, output: null }), taskId, 'succeeded');
+    }
+
+    private async logIfErr(transition: Promise<Result<Task>>, taskId: string, target: string): Promise<void> {
+        const res = await transition;
+        if (res.isErr()) {
+            this.logger.error(`[tasks] could not mark task ${taskId} as ${target}: ${stringifyError(res.error)}`);
+        }
     }
 }
