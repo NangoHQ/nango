@@ -333,7 +333,7 @@ async function compileDeployInfo({
     }
 
     const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
-    const previousJsKey = previousSyncAndActionConfig?.file_location;
+    const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
 
     let file_location: string;
@@ -344,7 +344,7 @@ async function compileDeployInfo({
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
         if (tsChanged) {
-            void logCtx.info('Files changed (upload)', { jsDestinationPath, tsDestinationPath });
+            void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
             const [jsUpload] = await Promise.all([
                 remoteFileService.upload({
                     content: jsFile,
@@ -359,8 +359,7 @@ async function compileDeployInfo({
             ]);
             file_location = jsUpload as string;
         } else {
-            void logCtx.info('Files unchanged (skip)', { jsDestinationPath, tsDestinationPath });
-            file_location = previousJsKey && previousJsKey !== jsDestinationPath ? previousJsKey : jsDestinationPath;
+            file_location = previousJsFileLocation ?? jsDestinationPath;
         }
     } else {
         void logCtx.info('Files changed (upload)', { jsDestinationPath });
