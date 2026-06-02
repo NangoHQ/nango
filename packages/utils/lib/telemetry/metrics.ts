@@ -115,6 +115,8 @@ export enum Types {
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
     DEPLOY_SECURITY_SCAN = 'nango.server.deploy.security.scan',
 
+    EGRESS_BYTES = 'nango.server.egress.bytes',
+
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 
     ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
