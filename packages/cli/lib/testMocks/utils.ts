@@ -6,7 +6,7 @@ import parseLinksHeader from 'parse-link-header';
 import { vi } from 'vitest';
 
 import { getProvider } from '@nangohq/providers';
-import { PaginationService } from '@nangohq/runner-sdk';
+import { ActionError, PaginationService } from '@nangohq/runner-sdk';
 
 import { FILTER_HEADERS as FILTER_HEADERS_UNIFIED, isAxiosDefaultContentTypeForMockIdentity } from '../services/response-collector.service.js';
 
@@ -20,6 +20,13 @@ import type {
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
+
+type ProxyMockInput = Pick<UserProvidedProxyConfiguration, 'endpoint'> & Partial<UserProvidedProxyConfiguration>;
+type ProxyMockFn = (args: ProxyMockInput) => Promise<AxiosResponse | { data: unknown; headers: unknown; status: unknown }>;
+type PaginateMockFn = (args: UserProvidedProxyConfiguration) => AsyncGenerator<unknown, undefined, void>;
+type LogMockFn = (message: unknown, ...args: unknown[]) => Promise<void>;
+type ZodValidateInputMockFn = (args: { input: unknown }) => { data: unknown };
 
 interface FixtureProvider {
     getBatchSaveData(modelName: string): Promise<any>;
@@ -762,23 +769,23 @@ class NangoActionMock {
     providerConfigKey: string;
     private fixtureProvider: Promise<FixtureProvider>;
 
-    log: ReturnType<typeof vi.fn>;
-    ActionError = vi.fn();
-    getConnection: ReturnType<typeof vi.fn>;
-    getMetadata: ReturnType<typeof vi.fn>;
-    updateMetadata: ReturnType<typeof vi.fn>;
-    paginate: ReturnType<typeof vi.fn>;
-    get: ReturnType<typeof vi.fn>;
-    post: ReturnType<typeof vi.fn>;
-    patch: ReturnType<typeof vi.fn>;
-    put: ReturnType<typeof vi.fn>;
-    delete: ReturnType<typeof vi.fn>;
-    proxy: ReturnType<typeof vi.fn>;
-    getWebhookURL: ReturnType<typeof vi.fn>;
-    zodValidateInput: ReturnType<typeof vi.fn>;
-    deleteRecordsFromPreviousExecutions: ReturnType<typeof vi.fn>;
-    trackDeletesStart: ReturnType<typeof vi.fn>;
-    trackDeletesEnd: ReturnType<typeof vi.fn>;
+    log: Mock<LogMockFn>;
+    ActionError: typeof ActionError = ActionError;
+    getConnection: Mock<() => Promise<unknown>>;
+    getMetadata: Mock<() => Promise<unknown>>;
+    updateMetadata: Mock<() => Promise<unknown>>;
+    paginate: Mock<PaginateMockFn>;
+    get: Mock<ProxyMockFn>;
+    post: Mock<ProxyMockFn>;
+    patch: Mock<ProxyMockFn>;
+    put: Mock<ProxyMockFn>;
+    delete: Mock<ProxyMockFn>;
+    proxy: Mock<ProxyMockFn>;
+    getWebhookURL: Mock<() => string>;
+    zodValidateInput: Mock<ZodValidateInputMockFn>;
+    deleteRecordsFromPreviousExecutions: Mock<() => Promise<unknown>>;
+    trackDeletesStart: Mock<() => Promise<unknown>>;
+    trackDeletesEnd: Mock<() => Promise<unknown>>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         this.dirname = dirname;
@@ -787,23 +794,23 @@ class NangoActionMock {
         this.Model = Model;
         this.fixtureProvider = getFixtureProvider(dirname, name);
 
-        this.log = vi.fn();
-        this.getConnection = vi.fn(this.getConnectionData.bind(this));
-        this.getMetadata = vi.fn(this.getMetadataData.bind(this));
-        this.updateMetadata = vi.fn(this.getUpdateMetadata.bind(this));
-        this.deleteRecordsFromPreviousExecutions = vi.fn(this.getDeleteRecordsFromPreviousExecutions.bind(this));
-        this.trackDeletesStart = vi.fn(this.getTrackDeletesStart.bind(this));
-        this.trackDeletesEnd = vi.fn(this.getTrackDeletesEnd.bind(this));
+        this.log = vi.fn<LogMockFn>();
+        this.getConnection = vi.fn<() => Promise<unknown>>(this.getConnectionData.bind(this));
+        this.getMetadata = vi.fn<() => Promise<unknown>>(this.getMetadataData.bind(this));
+        this.updateMetadata = vi.fn<() => Promise<unknown>>(this.getUpdateMetadata.bind(this));
+        this.deleteRecordsFromPreviousExecutions = vi.fn<() => Promise<unknown>>(this.getDeleteRecordsFromPreviousExecutions.bind(this));
+        this.trackDeletesStart = vi.fn<() => Promise<unknown>>(this.getTrackDeletesStart.bind(this));
+        this.trackDeletesEnd = vi.fn<() => Promise<unknown>>(this.getTrackDeletesEnd.bind(this));
 
-        this.paginate = vi.fn(this.getProxyPaginateData.bind(this));
-        this.get = vi.fn(this.proxyGetData.bind(this));
-        this.post = vi.fn(this.proxyPostData.bind(this));
-        this.patch = vi.fn(this.proxyPatchData.bind(this));
-        this.put = vi.fn(this.proxyPutData.bind(this));
-        this.delete = vi.fn(this.proxyDeleteData.bind(this));
-        this.proxy = vi.fn(this.proxyData.bind(this));
-        this.getWebhookURL = vi.fn(() => 'https://example.com/webhook');
-        this.zodValidateInput = vi.fn(this.mockZodValidateInput.bind(this));
+        this.paginate = vi.fn<PaginateMockFn>(this.getProxyPaginateData.bind(this));
+        this.get = vi.fn<ProxyMockFn>(this.proxyGetData.bind(this) as ProxyMockFn);
+        this.post = vi.fn<ProxyMockFn>(this.proxyPostData.bind(this) as ProxyMockFn);
+        this.patch = vi.fn<ProxyMockFn>(this.proxyPatchData.bind(this) as ProxyMockFn);
+        this.put = vi.fn<ProxyMockFn>(this.proxyPutData.bind(this) as ProxyMockFn);
+        this.delete = vi.fn<ProxyMockFn>(this.proxyDeleteData.bind(this) as ProxyMockFn);
+        this.proxy = vi.fn<ProxyMockFn>(this.proxyData.bind(this) as ProxyMockFn);
+        this.getWebhookURL = vi.fn<() => string>(() => 'https://example.com/webhook');
+        this.zodValidateInput = vi.fn<ZodValidateInputMockFn>(this.mockZodValidateInput.bind(this));
     }
 
     private mockZodValidateInput({ input }: { input: any }) {
@@ -1133,21 +1140,21 @@ class NangoSyncMock extends NangoActionMock {
     lastSyncDate = null;
     private checkpoint: Checkpoint | null = null;
 
-    batchSave: ReturnType<typeof vi.fn>;
-    batchDelete: ReturnType<typeof vi.fn>;
-    getCheckpoint: ReturnType<typeof vi.fn>;
-    saveCheckpoint: ReturnType<typeof vi.fn>;
-    clearCheckpoint: ReturnType<typeof vi.fn>;
-    listRecords: ReturnType<typeof vi.fn>;
+    batchSave: Mock<(...args: unknown[]) => Promise<unknown>>;
+    batchDelete: Mock<(...args: unknown[]) => Promise<unknown>>;
+    getCheckpoint: Mock<() => Promise<Checkpoint | null>>;
+    saveCheckpoint: Mock<(checkpoint: Checkpoint) => Promise<void>>;
+    clearCheckpoint: Mock<() => Promise<void>>;
+    listRecords: Mock<() => AsyncGenerator<never, void, unknown>>;
 
     constructor({ dirname, name, Model }: { dirname: string; name: string; Model: string }) {
         super({ dirname, name, Model });
-        this.batchSave = vi.fn();
-        this.batchDelete = vi.fn();
-        this.getCheckpoint = vi.fn(this.getCheckpointData.bind(this));
-        this.saveCheckpoint = vi.fn(this.saveCheckpointData.bind(this));
-        this.clearCheckpoint = vi.fn(this.clearCheckpointData.bind(this));
-        this.listRecords = vi.fn(async function* () {});
+        this.batchSave = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+        this.batchDelete = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+        this.getCheckpoint = vi.fn<() => Promise<Checkpoint | null>>(this.getCheckpointData.bind(this));
+        this.saveCheckpoint = vi.fn<(checkpoint: Checkpoint) => Promise<void>>(this.saveCheckpointData.bind(this));
+        this.clearCheckpoint = vi.fn<() => Promise<void>>(this.clearCheckpointData.bind(this));
+        this.listRecords = vi.fn<() => AsyncGenerator<never, void, unknown>>(async function* () {});
     }
 
     // eslint-disable-next-line @typescript-eslint/require-await

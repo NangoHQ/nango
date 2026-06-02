@@ -1,13 +1,16 @@
 /// <reference types="vitest" />
 // Configure Vitest (https://vitest.dev/config/)
 
-import { defineConfig } from 'vitest/config';
+import { defaultExclude, defineConfig } from 'vitest/config';
 
 process.env.TZ = 'UTC';
 
 export default defineConfig({
     test: {
         include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
+        // Vitest 4 dropped dist/** from its defaultExclude, so compiled test files
+        // built into packages/*/dist get collected and run as duplicates. Re-add it.
+        exclude: [...defaultExclude, '**/dist/**'],
         globalSetup: './tests/setup.ts',
         setupFiles: './tests/setupFiles.ts',
         testTimeout: 20000,
@@ -30,11 +33,7 @@ export default defineConfig({
         },
         fileParallelism: false,
         pool: 'forks',
-
-        poolOptions: {
-            forks: {
-                singleFork: true
-            }
-        }
+        // Vitest 4 removed test.poolOptions; poolOptions.forks.singleFork is now maxWorkers: 1.
+        maxWorkers: 1
     }
 });

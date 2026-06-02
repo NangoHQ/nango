@@ -13,16 +13,49 @@ const { mockS3Send, mockLambdaSend, mockEnvs } = vi.hoisted(() => ({
     }
 }));
 
-vi.mock('@aws-sdk/client-s3', () => ({
-    S3Client: vi.fn().mockImplementation(() => ({ send: mockS3Send })),
-    HeadObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'HeadObjectCommand' } })),
-    PutObjectCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'PutObjectCommand' } }))
-}));
+vi.mock('@aws-sdk/client-s3', () => {
+    class MockS3Client {
+        send = mockS3Send;
+    }
 
-vi.mock('@aws-sdk/client-lambda', () => ({
-    LambdaClient: vi.fn().mockImplementation(() => ({ send: mockLambdaSend })),
-    InvokeCommand: vi.fn().mockImplementation((input: Record<string, unknown>) => ({ input, constructor: { name: 'InvokeCommand' } }))
-}));
+    class HeadObjectCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    class PutObjectCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    return {
+        S3Client: vi.fn(MockS3Client),
+        HeadObjectCommand,
+        PutObjectCommand
+    };
+});
+
+vi.mock('@aws-sdk/client-lambda', () => {
+    class MockLambdaClient {
+        send = mockLambdaSend;
+    }
+
+    class InvokeCommand {
+        input: Record<string, unknown>;
+        constructor(input: Record<string, unknown>) {
+            this.input = input;
+        }
+    }
+
+    return {
+        LambdaClient: vi.fn(MockLambdaClient),
+        InvokeCommand
+    };
+});
 
 vi.mock('../env.js', () => ({
     get envs() {

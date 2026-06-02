@@ -13,6 +13,7 @@ import { PersistClient } from '../clients/persist.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -675,16 +676,16 @@ describe('proxy 401 invalid credentials', () => {
     }
 
     let persistClient: PersistClient;
-    let getConnectionMock: ReturnType<typeof vi.fn>;
+    let getConnectionMock: Mock<Nango['getConnection']>;
 
     beforeEach(async () => {
         persistClient = new PersistClient({ secretKey: '***' });
         persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
 
         const nodeClient = (await import('@nangohq/node')).Nango;
-        getConnectionMock = vi.fn().mockResolvedValue({
+        getConnectionMock = vi.fn<Nango['getConnection']>().mockResolvedValue({
             credentials: stableCredentials
-        });
+        } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
         nodeClient.prototype.getConnection = getConnectionMock;
         nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
         nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: proxyProvider401TestKey } });
@@ -730,10 +731,10 @@ describe('proxy 401 invalid credentials', () => {
         getConnectionMock
             .mockResolvedValueOnce({
                 credentials: { ...stableCredentials, access_token: 'before-refresh' }
-            })
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>)
             .mockResolvedValueOnce({
                 credentials: { ...stableCredentials, access_token: 'after-refresh' }
-            });
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
 
         const httpSpy = vi.spyOn(ProxyRequest.prototype, 'httpCall');
         httpSpy.mockReset();

@@ -30,6 +30,6 @@
         "style-dictionary": "5.4.1",
         "tailwindcss": "4.1.13",
         "vite": "7.3.2",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }

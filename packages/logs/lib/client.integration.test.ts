@@ -1,6 +1,4 @@
-import { afterEach } from 'node:test';
-
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { deleteIndex, migrateMapping } from './es/helpers.js';
 import { indexMessages } from './es/schema.js';

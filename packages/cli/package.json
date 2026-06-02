@@ -94,7 +94,7 @@
         "json-schema": "0.4.0",
         "strip-ansi": "7.1.0",
         "type-fest": "4.41.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     },
     "engines": {
         "node": ">=22.22.2"
