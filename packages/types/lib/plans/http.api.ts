@@ -73,8 +73,8 @@ export type GetBillingUsageTopDimensionValues = Endpoint<{
             env: string;
             metric: M;
             dimension: BreakdownDimensions[M];
-            from?: string | undefined;
-            to?: string | undefined;
+            from: string;
+            to: string;
             // Number of values to return. Defaults to 10, server-capped.
             limit?: string | undefined;
         };

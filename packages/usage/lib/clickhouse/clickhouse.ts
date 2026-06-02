@@ -437,7 +437,11 @@ export class Clickhouse {
         }
 
         const { accountId, metric, dimension, timeframe, limit } = query;
-        if (!isAllowedDimensionFor(metric, dimension)) {
+        // `isAllowedDimensionFor` accepts 'none' (valid for breakdown callers,
+        // not for top-values — would emit `SELECT toString(none)`). The cast
+        // defends against runtime callers bypassing the discriminated-union
+        // param type with `as any`.
+        if ((dimension as string) === 'none' || !isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();

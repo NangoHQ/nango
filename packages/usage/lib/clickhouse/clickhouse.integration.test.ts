@@ -410,6 +410,17 @@ describe('Clickhouse', () => {
                 expect(res.isErr()).toBe(true);
             });
 
+            it("returns Err when dimension is 'none' (would emit broken SQL)", async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none' as any,
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
             it('returns an empty list when no events match the timeframe', async () => {
                 const res = await clickhouse.getTopDimensionValues({
                     accountId: 999_999,
