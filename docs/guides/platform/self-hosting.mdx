@@ -145,7 +145,7 @@ Any SMTP server can be configured to be used by Nango for these email communicat
 
 ## Encryption key
 
-You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. This encrypts credentials as well as data stored in the records cache. Without this key, this data is stored unencrypted.
 
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
@@ -174,7 +174,7 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
 | Role-based permissions | No | Yes |
-| SAML SSO | No | Yes |
+| SAML SSO | No | On the roadmap |
 | Support SLA | No | Yes |
 
 ### Server URL, callback URL, and custom domains
@@ -305,13 +305,7 @@ let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '
 
 ### Telemetry
 
-Telemetry on self-hosted instances is light by default. Nango tracks core actions at a high level and does not track sensitive information.
-
-You can disable telemetry with:
-
-```sh
-TELEMETRY=false
-```
+Self-hosted instances do not send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on described above.
 
 ### Logs
 
