@@ -40,6 +40,41 @@ concurrency:
     queue: max
 
 jobs:
+    notify_start:
+        runs-on: ubuntu-latest
+        outputs:
+            ts: ${{ steps.slack.outputs.ts }}
+        steps:
+            - name: Post deploy started message
+              id: slack
+              continue-on-error: true
+              uses: slackapi/slack-github-action@v2.0.0
+              with:
+                  method: chat.postMessage
+                  token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  payload: |
+                      channel: "C0B7KSD33QE"
+                      text: ":rocket: Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      blocks:
+                        - type: "header"
+                          text:
+                            type: "plain_text"
+                            text: ":rocket: Deploy started"
+                            emoji: true
+                        - type: "section"
+                          fields:
+                            - type: "mrkdwn"
+                              text: "*Service:*\n${{ inputs.service }}"
+                            - type: "mrkdwn"
+                              text: "*Stage:*\n${{ inputs.stage }}"
+                            - type: "mrkdwn"
+                              text: "*Triggered by:*\n${{ github.actor }}"
+                            - type: "mrkdwn"
+                              text: "*Status:*\n:hourglass_flowing_sand: In progress"
+                        - type: "context"
+                          elements:
+                            - type: "mrkdwn"
+                              text: "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View GitHub Actions run>"
     deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
@@ -255,3 +290,71 @@ jobs:
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
+    notify_result:
+        # Runs after whichever deploy job executed (the others are skipped) and reports the outcome.
+        if: always()
+        needs:
+            - notify_start
+            - deploy_app_ui
+            - deploy_connect_ui
+            - deploy
+            - deploy_runners
+            - deploy_lambda
+        runs-on: ubuntu-latest
+        steps:
+            - name: Determine deploy result
+              id: result
+              run: |
+                  # Only one deploy job runs per dispatch; the rest are skipped. Treat
+                  # failure/cancelled from any of them as an overall failure.
+                  results=(
+                    "${{ needs.deploy_app_ui.result }}"
+                    "${{ needs.deploy_connect_ui.result }}"
+                    "${{ needs.deploy.result }}"
+                    "${{ needs.deploy_runners.result }}"
+                    "${{ needs.deploy_lambda.result }}"
+                  )
+                  status="succeeded"
+                  for r in "${results[@]}"; do
+                    if [[ "$r" == "failure" || "$r" == "cancelled" ]]; then
+                      status="failed"
+                    fi
+                  done
+                  if [[ "$status" == "succeeded" ]]; then
+                    echo "header=:white_check_mark: Deploy succeeded" >> "$GITHUB_OUTPUT"
+                    echo "status_field=:white_check_mark: Succeeded" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "header=:x: Deploy failed" >> "$GITHUB_OUTPUT"
+                    echo "status_field=:x: Failed" >> "$GITHUB_OUTPUT"
+                  fi
+            - name: Update deploy message
+              if: needs.notify_start.outputs.ts != ''
+              continue-on-error: true
+              uses: slackapi/slack-github-action@v2.0.0
+              with:
+                  method: chat.update
+                  token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  payload: |
+                      channel: "C0B7KSD33QE"
+                      ts: "${{ needs.notify_start.outputs.ts }}"
+                      text: "${{ steps.result.outputs.header }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      blocks:
+                        - type: "header"
+                          text:
+                            type: "plain_text"
+                            text: "${{ steps.result.outputs.header }}"
+                            emoji: true
+                        - type: "section"
+                          fields:
+                            - type: "mrkdwn"
+                              text: "*Service:*\n${{ inputs.service }}"
+                            - type: "mrkdwn"
+                              text: "*Stage:*\n${{ inputs.stage }}"
+                            - type: "mrkdwn"
+                              text: "*Triggered by:*\n${{ github.actor }}"
+                            - type: "mrkdwn"
+                              text: "*Status:*\n${{ steps.result.outputs.status_field }}"
+                        - type: "context"
+                          elements:
+                            - type: "mrkdwn"
+                              text: "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View GitHub Actions run>"
