@@ -30,16 +30,9 @@ on:
                     - app_ui
                     - lambda
 
-# Serialize deploys to the same stage. UI deploys `aws s3 sync --delete` into a
-# shared per-service bucket, and backend deploys all edit and push the same
-# apps/<stage>/nango-values.yaml in nango-environments. Two concurrent runs to one
-# stage clobber each other — deleting freshly-uploaded S3 chunks (which left the
-# live site pointing at a missing bundle) or losing a values-file push. Grouping by
-# stage rather than service+stage also covers the shared backend deploy job, where
-# different services contend on the same file. cancel-in-progress: false never
-# aborts a half-finished sync or push, and queue: max keeps every waiting deploy
-# pending (the default `single` would cancel an older pending run when a newer one
-# is dispatched, silently dropping a deploy).
+# One deploy per stage at a time: UI deploys share an S3 bucket and backend deploys
+# share nango-values.yaml, so concurrent runs clobber each other. Queue the rest
+# (queue: max) without aborting in-flight syncs/pushes (cancel-in-progress: false).
 concurrency:
     group: deploy-${{ inputs.stage }}
     cancel-in-progress: false
