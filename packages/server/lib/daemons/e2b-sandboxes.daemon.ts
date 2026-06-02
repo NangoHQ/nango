@@ -48,8 +48,6 @@ export function e2bSandboxesDaemon(): ReturnType<typeof cancellableDaemon> | und
                     span?.addTags({ error: stringifyError(err) });
                     logger.error('Failed to poll E2B running sandboxes', err);
                     report(new Error('failed_to_poll_e2b_running_sandboxes', { cause: err }));
-                } finally {
-                    span?.finish();
                 }
             });
         }
