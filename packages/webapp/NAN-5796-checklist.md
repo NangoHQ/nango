@@ -1,4 +1,10 @@
-# NAN-5796 visual QA checklist
+# 🏃 Step 2 — API-different swaps (NAN-5796)
+
+**Live PR deployment:** TBD
+**Master branch deployment:** [https://app-development.nango.dev](https://app-development.nango.dev)
+Login: `matej+dev@nango.dev`
+
+Each section heading links directly to the relevant page on the PR deployment. Click the heading, verify the items in that section, and tick the Checked box.
 
 Legend: ✅ done · ❌ issue found · — not checked yet
 
@@ -6,70 +12,95 @@ Legend: ✅ done · ❌ issue found · — not checked yet
 
 ## [/dev/logs](https://app-development.nango.dev/dev/logs)
 
-### Tag (StatusTag, LevelTag, OperationTag)
+### Tag → v2 Tag
+
+| Location | v1 variant | v2 variant | Checked |
+|---|---|---|---|
+| StatusTag — success row | `success` | `success` (green feedback token) | — |
+| StatusTag — running row | `info` | `info` (brand-blue feedback token) | — |
+| StatusTag — failed row | `alert` | `alert` (red feedback token) | — |
+| StatusTag — cancelled / timeout / waiting rows | `gray` | `gray` (disabled text, subtle bg) | — |
+| LevelTag — error message | `alert` | `alert` (red feedback token) | — |
+| LevelTag — info message | `info` | `info` (brand-blue feedback token) | — |
+| LevelTag — warn message | `warning` | `warning` (yellow feedback token) | — |
+| LevelTag — debug message | `gray` | `gray` (disabled text, subtle bg) | — |
+| OperationTag — type label | `neutral` (default) | `neutral` (default, subtle bg + border) | — |
+| OperationTag — action icon | `neutral` (default) | `neutral` (default, subtle bg + border) | — |
+
+> Note: text is no longer uppercase (v1 forced `uppercase` CSS; v2 uses normal casing)
+
+### Tooltip
 
 | Location | Notes | Checked |
 |---|---|---|
-| StatusTag in operation rows | success=green, running=info-blue, failed=pink/red, cancelled/timeout/waiting=neutral | — |
-| LevelTag in message rows | error=pink/red, info=brand-blue, warn=yellow, debug=disabled/muted | — |
-| OperationTag type + action tag | neutral variant; tooltip on hover still works | — |
+| OperationTag | hover it — tooltip should still appear | — |
 
 ---
 
-## [/dev/logs → click any row (operation detail panel)](https://app-development.nango.dev/dev/logs)
+## [/dev/logs → click any row (operation detail)](https://app-development.nango.dev/dev/logs)
 
-### Tag
+### Tag → v2 Tag
 
-| Location | Notes | Checked |
-|---|---|---|
-| Message type tag (Message / HTTP) in message list | neutral variant | — |
-| Source tag (System / User) in message detail | neutral variant | — |
+| Location | v1 variant | v2 variant | Checked |
+|---|---|---|---|
+| Message type column (Message / HTTP) | `neutral` (default) | `neutral` (default) | — |
+| Source field (System / User) in message detail | `neutral` (default) | `neutral` (default) | — |
 
-### CopyButton
-
-| Location | Notes | Checked |
-|---|---|---|
-| Copy link button (top-right of operation detail) | link icon shown; click copies URL; icon swaps to check mark for 1 s | — |
-
-### IntegrationLogo
+### CopyButton → v2 CopyButton
 
 | Location | Notes | Checked |
 |---|---|---|
-| ProviderTag in operation detail (Integration row) | small inline logo with no white box, next to integration name | — |
+| Copy link button (top-right of Operation Details panel) | shows link icon; click copies URL; icon swaps to check mark for 1 s | — |
+
+### IntegrationLogo → v2 IntegrationLogo
+
+| Location | Notes | Checked |
+|---|---|---|
+| ProviderTag (Integration row in operation detail) | small inline logo, no white box, sits flush next to integration name | — |
 
 ---
 
-## [/dev/getting-started (classic)](https://app-development.nango.dev/dev/getting-started)
+## [/dev/getting-started](https://app-development.nango.dev/dev/getting-started)
 
-### Tag
+### Tag → v2 Tag
 
-| Location | Notes | Checked |
-|---|---|---|
-| "Guide 1–4" labels on each card | neutral variant | — |
+| Location | v1 variant | v2 variant | Checked |
+|---|---|---|---|
+| "Guide 1" label | `neutral` | `neutral` (subtle bg + border) | — |
+| "Guide 2" label | `neutral` | `neutral` (subtle bg + border) | — |
+| "Guide 3" label | `neutral` | `neutral` (subtle bg + border) | — |
+| "Guide 4" label | `neutral` | `neutral` (subtle bg + border) | — |
 
 ---
 
 ## Any page with MultiLanguageCodeBlock (e.g. Integrations › Functions › one function)
 
-### Tag
+### Tag → v2 Tag
 
-| Location | Notes | Checked |
-|---|---|---|
-| Language tag (single-snippet case, no dropdown) | gray1 variant — solid gray background, no border | — |
+| Location | v1 variant | v2 variant | Checked |
+|---|---|---|---|
+| Language label (single-snippet, no dropdown shown) | `gray1` | `gray1` (default badge gray) | — |
 
 ---
 
 ## [/dev/connections/create-legacy](https://app-development.nango.dev/dev/connections/create-legacy)
 
-### SecretInput
+### SecretInput → v2 SecretInput
 
 | Location | Notes | Checked |
 |---|---|---|
-| Client ID / Client Secret fields (OAUTH2_CC) | toggle visibility works; copy button copies current value | — |
-| Client Certificate / Private Key fields | toggle visibility works; copy button works | — |
-| Username / Password fields (BASIC / BILL / SIGNATURE) | toggle visibility works; copy button works | — |
-| API Key field | toggle visibility works; copy button works | — |
-| Token ID / Token Secret fields (TBA) | toggle visibility works; copy button works | — |
-| Organization ID / Dev Key fields (BILL) | toggle visibility works; copy button works | — |
-| Dynamic credential params (TWO_STEP / JWT) | toggle + copy for each rendered param field | — |
+| Client ID field (OAUTH2_CC) | toggle visibility; copy button copies value | — |
+| Client Secret field (OAUTH2_CC) | toggle visibility; copy button copies value | — |
+| Client Certificate field | toggle visibility; copy button copies value | — |
+| Private Key field | toggle visibility; copy button copies value | — |
+| Username field (BASIC / BILL / SIGNATURE) | toggle visibility; copy button copies value | — |
+| Password field (BASIC / BILL / SIGNATURE) | toggle visibility; copy button copies value | — |
+| API Key field | toggle visibility; copy button copies value | — |
+| Token ID field (TBA) | toggle visibility; copy button copies value | — |
+| Token Secret field (TBA) | toggle visibility; copy button copies value | — |
+| OAuth Client ID Override (netsuite) | toggle visibility; copy button copies value | — |
+| OAuth Client Secret Override (netsuite) | toggle visibility; copy button copies value | — |
+| Organization ID field (BILL) | toggle visibility; copy button copies value | — |
+| Dev Key field (BILL) | toggle visibility; copy button copies value | — |
+| Dynamic credential params (TWO_STEP / JWT) | toggle + copy for each rendered field | — |
 | Dynamic assertion option params (TWO_STEP) | toggle + copy for each rendered assertion field | — |
