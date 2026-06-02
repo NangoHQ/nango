@@ -293,7 +293,10 @@ export class UsageTracker implements IUsageTracker {
         };
 
         if (!billingUsageMetrics.value.fromCache && shouldShadow(opts)) {
-            void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: formatted }).catch((err: unknown) => {
+            // Pass raw Orb (pre-`toCumulativeUsage`) so the AVG-metric
+            // comparison isn't biased by the formatter's `Math.floor` — both
+            // sides are floats, true apples-to-apples.
+            void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: orbValue }).catch((err: unknown) => {
                 logger.error(`billing-usage shadow failed: ${stringifyError(err)}`);
             });
         }
