@@ -1,0 +1,68 @@
+packages/scheduler/lib/worker.integration.test.ts
+  s_6313b84dc86c10::t_c793ccb87dce73 100
+  s_6313b84dc86c10::t_78b1149155d66d 157,213-221,223-235,262-268,280-282,285-286,291
+  s_6313b84dc86c10::t_bcf7f5188951f0 105-119,121-130
+  s_6313b84dc86c10::t_7f36ea387f58ca 62,65,92,120,163-164,192,222
+  s_6313b84dc86c10::t_7348f1379d69dc 187-191,193-212
+  s_6313b84dc86c10::t_2cce95193be097 1-4,7-13,15-61,63-64,66-91,93-99,101-104,131-156,236-261,283-284,287-290,292
+  s_6313b84dc86c10::t_333abda8c7f05d 158-162,165-186,269-279
+  ai_agent 5-6,14
+packages/server/lib/controllers/functions/dryrun/schedulerWorker.ts
+  s_6313b84dc86c10::t_99bda3f04b4115 1-3,7-11,13-30,32-61,64-108,110,116-117,123-174
+  s_6313b84dc86c10::t_419b37439067db 109,111-115,118-122
+  ai_agent 4-6,12
+  s_6313b84dc86c10::t_06ab45dadc1f83 31,62-63
+packages/scheduler/lib/worker.ts
+  s_6313b84dc86c10::t_36694b97ad5f2b 195-202
+  s_6313b84dc86c10::t_cabae21dcb47e4 17,136
+  s_6313b84dc86c10::t_cde9da39b2ecb1 117
+  s_6313b84dc86c10::t_1aa326dfafd7a5 102-103,105-110,123-125,130-135,140-141
+  s_6313b84dc86c10::t_05342c405a7343 19,23,99,101,104,111-116,118-122,207-210
+  s_6313b84dc86c10::t_e99c19bfdb96be 1-16,18,20-22,24-98,100,126-129,137-139,142-190,192-194,203-206,211
+  s_6313b84dc86c10::t_add0189262b3e1 191
+packages/scheduler/lib/db/helpers.test.ts
+  s_6313b84dc86c10::t_4a98107141caa7 3,7
+packages/server/tsconfig.json
+  s_6313b84dc86c10::t_3175c1d93dc575 45-46
+packages/scheduler/lib/scheduler.ts
+  s_6313b84dc86c10::t_3461ab096d84e7 5,120-121,123-134
+  s_6313b84dc86c10::t_cde9da39b2ecb1 14,86
+packages/scheduler/lib/index.ts
+  s_6313b84dc86c10::t_e9f15c62f8b77a 8
+dryrun-scheduler-server-sketch.ts
+  s_6313b84dc86c10::t_b8cf16fb8e6454 3-7,9-11,32-51,53-141,169
+  s_6313b84dc86c10::t_7348f1379d69dc 14-16
+  s_6313b84dc86c10::t_7f36ea387f58ca 1-2
+  s_6313b84dc86c10::t_89a9fac70972fc 12-13,17-30,52
+  ai_agent 8
+  s_6313b84dc86c10::t_7d4f0daf92801c 31
+  s_6313b84dc86c10::t_8f982962f34095 142-168
+package-lock.json
+  ai_agent 39039
+packages/scheduler/lib/config.ts
+  s_6313b84dc86c10::t_70c08e1c942b24 29-35,52-56
+packages/server/package.json
+  s_6313b84dc86c10::t_3f053014faf6cd 38
+packages/scheduler/lib/scheduler-controls.integration.test.ts
+  ai_agent 5-6
+  s_6313b84dc86c10::t_7348f1379d69dc 59,64,75-76,81,86,97-99
+  s_6313b84dc86c10::t_922e8f21cc95cb 1-4,7-25,27-33,35-58,60-63,65-71,73-74,78-80,82-85,87-96,100-154,169
+  s_6313b84dc86c10::t_9aca388febc74f 72,77,155-168
+  s_6313b84dc86c10::t_4a3f32deb6c2e5 26,34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8d84cd3602b12cff929dff92508248a35fc4f2e4",
+  "prompts": {},
+  "sessions": {
+    "s_6313b84dc86c10": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6dce-0862-72c1-92aa-b9131755370c",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
