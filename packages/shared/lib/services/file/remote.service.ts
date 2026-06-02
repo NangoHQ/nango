@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
 import { Readable } from 'stream';
 
-import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
@@ -12,6 +13,7 @@ import errorManager from '../../utils/error.manager.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';
+import type { LogContext } from '@nangohq/logs';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -33,6 +35,17 @@ function getRegion() {
 
 function getBucketName() {
     return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || process.env['AWS_BUCKET_NAME'] || 'nangodev-customer-integrations';
+}
+
+function contentMd5(content: string): string {
+    return createHash('md5').update(content, 'utf8').digest('hex');
+}
+
+function etagMatchesContent(etag: string | undefined, content: string): boolean {
+    if (!etag) {
+        return false;
+    }
+    return etag.replace(/"/g, '') === contentMd5(content);
 }
 
 class RemoteFileService {
@@ -85,6 +98,52 @@ class RemoteFileService {
 
             return null;
         }
+    }
+
+    async uploadIfUnchanged({
+        content,
+        destinationPath,
+        destinationLocalFileName,
+        compareKey,
+        logCtx
+    }: {
+        content: string;
+        destinationPath: string;
+        destinationLocalFileName: string;
+        compareKey?: string | undefined;
+        logCtx: LogContext;
+    }): Promise<string | null> {
+        logCtx?.info('uploadIfUnchanged', { destinationPath, compareKey });
+        if (!this.useS3) {
+            return this.upload({ content, destinationPath, destinationLocalFileName });
+        }
+
+        const keyToCompare = compareKey ?? destinationPath;
+
+        try {
+            const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: keyToCompare }));
+            if (etagMatchesContent(head.ETag, content)) {
+                if (keyToCompare === destinationPath) {
+                    logCtx?.info('File unchanged (skip)', { destinationPath });
+                    return destinationPath;
+                }
+
+                await this.client.send(
+                    new CopyObjectCommand({
+                        Bucket: this.bucket,
+                        Key: destinationPath,
+                        CopySource: `${this.bucket}/${keyToCompare}`
+                    })
+                );
+                logCtx?.info('File unchanged with new path (copy)', { destinationPath, sourcePath: keyToCompare });
+                return destinationPath;
+            }
+        } catch {
+            // missing object or head failure — upload below
+        }
+
+        logCtx?.info('File changed (upload)', { destinationPath });
+        return this.upload({ content, destinationPath, destinationLocalFileName });
     }
 
     /**

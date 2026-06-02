@@ -304,7 +304,7 @@ describe('Sync config models_json_schema handling', () => {
     function setupInfrastructureMocks(capturedSyncConfigs: any[]) {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(remoteFileService, 'uploadIfUnchanged').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'from').mockReturnValue({
             where: vi.fn().mockReturnValue({
                 select: vi.fn().mockReturnValue({
@@ -528,7 +528,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(remoteFileService, 'uploadIfUnchanged').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
         await DeployConfigService.deploy({
@@ -552,7 +552,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(remoteFileService, 'uploadIfUnchanged').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
         await DeployConfigService.deploy({
@@ -577,7 +577,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue({ ...mockExistingConfig, enabled: false });
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(remoteFileService, 'uploadIfUnchanged').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
         const { success } = await DeployConfigService.deploy({
@@ -603,7 +603,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
-        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+        vi.spyOn(remoteFileService, 'uploadIfUnchanged').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
         await DeployConfigService.deploy({
