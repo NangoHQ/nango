@@ -1,5 +1,6 @@
 import { CopyText } from '@/components/ui/CopyText';
 import { TooltipProvider } from '@/components-v2/ui/Tooltip';
+
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {

@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { Logs } from './components/Logs';
@@ -13,6 +12,7 @@ import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {

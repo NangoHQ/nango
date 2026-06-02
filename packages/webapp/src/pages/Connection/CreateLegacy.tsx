@@ -12,7 +12,6 @@ import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import useSet from '../../hooks/useSet';
@@ -22,6 +21,7 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
