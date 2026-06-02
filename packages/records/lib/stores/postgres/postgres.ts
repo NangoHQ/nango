@@ -126,15 +126,17 @@ export class PostgresStore implements RecordsStore {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
                 const indexName = `${partitionName}_connection_model_job_new`;
-                // Create the child index inline so the partition is born ready for the eventual
-                // sync_job_id_new -> sync_job_id swap. The new partition is empty so a plain
-                // (non-CONCURRENTLY) CREATE INDEX is fast and holds ACCESS EXCLUSIVE only for
-                // the catalog touch.
+                // Create partition + child index atomically so the partition is never visible
+                // without its index for the eventual sync_job_id_new -> sync_job_id swap. The
+                // partition is empty, so the (non-CONCURRENTLY) index build is fast and the
+                // ACCESS EXCLUSIVE window stays catalog-only.
                 promise = this.db
-                    .raw(
-                        `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-                    )
-                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]))
+                    .transaction(async (trx) => {
+                        await trx.raw(
+                            `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                        );
+                        await trx.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]);
+                    })
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
