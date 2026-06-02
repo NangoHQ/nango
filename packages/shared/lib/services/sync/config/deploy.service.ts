@@ -332,19 +332,22 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const file_location = (await remoteFileService.upload({
+    const jsFileUpload = remoteFileService.upload({
         content: jsFile,
         destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
         destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
-    })) as string;
+    });
 
-    if (typeof fileBody === 'object' && fileBody.ts) {
-        await remoteFileService.upload({
-            content: fileBody.ts,
-            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
-        });
-    }
+    const tsFileUpload =
+        typeof fileBody === 'object' && fileBody.ts
+            ? remoteFileService.upload({
+                  content: fileBody.ts,
+                  destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
+                  destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
+              })
+            : Promise.resolve(null);
+
+    const [file_location] = await Promise.all([jsFileUpload, tsFileUpload]);
 
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
