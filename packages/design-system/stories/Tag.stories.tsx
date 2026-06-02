@@ -9,7 +9,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['success', 'alert', 'info', 'warning', 'gray', 'gray1', 'neutral'] as const;
+const VARIANTS = ['success', 'alert', 'info', 'warning', 'disabled', 'default', 'neutral'] as const;
 
 export const Default: Story = {
     render: () => (
