@@ -10,9 +10,9 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
+import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import useSet from '../../hooks/useSet';
