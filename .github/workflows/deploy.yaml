@@ -62,7 +62,7 @@ jobs:
                         - color: "#36C5F0"
                           fallback: ":rocket: Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
                           mrkdwn_in: ["text"]
-                          text: ":rocket: *Deploy started* — `${{ inputs.service }}` → `${{ inputs.stage }}`\nIn progress  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                          text: ":rocket: *Deploy started* — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
     deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
@@ -320,12 +320,10 @@ jobs:
 
                   if [[ "$status" == "succeeded" ]]; then
                     echo "color=#2EB67D" >> "$GITHUB_OUTPUT"
-                    echo "title=:white_check_mark: Deploy succeeded" >> "$GITHUB_OUTPUT"
-                    echo "status_text=Succeeded${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
+                    echo "headline=:white_check_mark: *Deploy succeeded*${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
                   else
                     echo "color=#E01E5A" >> "$GITHUB_OUTPUT"
-                    echo "title=:x: Deploy failed" >> "$GITHUB_OUTPUT"
-                    echo "status_text=Failed${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
+                    echo "headline=:x: *Deploy failed*${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
                   fi
             - name: Update deploy message
               if: needs.notify_start.outputs.ts != ''
@@ -339,6 +337,6 @@ jobs:
                       ts: "${{ needs.notify_start.outputs.ts }}"
                       attachments:
                         - color: "${{ steps.result.outputs.color }}"
-                          fallback: "${{ steps.result.outputs.title }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                          fallback: "${{ steps.result.outputs.headline }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
                           mrkdwn_in: ["text"]
-                          text: "*${{ steps.result.outputs.title }}* — `${{ inputs.service }}` → `${{ inputs.stage }}`\n${{ steps.result.outputs.status_text }}  ·  by ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                          text: "${{ steps.result.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
