@@ -4,7 +4,7 @@ import { logContextGetter } from '@nangohq/logs';
 import { NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDifferences, productTracking, startTrial } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationWithNangoYaml as validation } from './validation.js';
+// import { validationWithNangoYaml as validation } from './validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
@@ -20,13 +20,13 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
         return;
     }
 
-    const val = validation.safeParse(req.body);
-    if (!val.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
-        return;
-    }
+    // const val = validation.safeParse(req.body);
+    // if (!val.success) {
+    //     res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+    //     return;
+    // }
 
-    const body: PostDeploy['Body'] = val.data;
+    const body: PostDeploy['Body'] = req.body;
     const { environment, account, plan } = res.locals;
 
     // Prevent concurrent deploys per environment, fail immediately if another deploy is in flight.
