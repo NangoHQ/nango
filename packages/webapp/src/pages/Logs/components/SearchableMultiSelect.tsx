@@ -1,8 +1,7 @@
-import { CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
+import { CheckIcon, CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
@@ -112,28 +111,46 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                         )}
                     </InputGroup>
                 </div>
-                <Command>
-                    <CommandList>
-                        <CommandEmpty>No framework found.</CommandEmpty>
+                <div role="listbox" className="flex h-full w-full flex-col overflow-hidden">
+                    <div className="max-h-[300px] overflow-y-auto overflow-x-hidden">
+                        {options.length === 0 && <div className="py-6 text-center text-sm text-white">No framework found.</div>}
                         {maxed && (
                             <Alert variant="warning">
                                 <AlertDescription>Can&apos;t select more filters</AlertDescription>
                             </Alert>
                         )}
-                        <CommandGroup>
+                        <div className="overflow-hidden p-2.5">
                             {options.map((option) => {
                                 const checked = selected.some((sel) => option.value === sel);
+                                const isDisabled = !checked && maxed && option.value !== 'all';
                                 return (
-                                    <CommandItem
+                                    <div
                                         key={option.value}
-                                        value={option.value}
-                                        onSelect={() => {
-                                            select(option.value, !checked);
+                                        role="option"
+                                        aria-selected={checked}
+                                        aria-disabled={isDisabled}
+                                        tabIndex={isDisabled ? -1 : 0}
+                                        onClick={() => !isDisabled && select(option.value, !checked)}
+                                        onKeyDown={(e) => {
+                                            if (isDisabled) return;
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                select(option.value, !checked);
+                                            }
                                         }}
-                                        className="group"
-                                        disabled={!checked && maxed && option.value !== 'all'}
+                                        className={cn(
+                                            'group px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white',
+                                            isDisabled && 'pointer-events-none opacity-50'
+                                        )}
                                     >
-                                        <CommandCheck checked={checked} />
+                                        <span
+                                            className={cn(
+                                                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-xs',
+                                                checked && 'border-transparent'
+                                            )}
+                                        >
+                                            {checked && <CheckIcon className="h-5 w-5" />}
+                                        </span>
                                         <div className="overflow-hidden">
                                             <div className="whitespace-pre w-fit">
                                                 <div className={cn(option.name.length > 39 && 'duration-2000 group-hover:translate-x-[calc(-100%+258px)]')}>
@@ -141,12 +158,12 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                                                 </div>
                                             </div>
                                         </div>
-                                    </CommandItem>
+                                    </div>
                                 );
                             })}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
+                        </div>
+                    </div>
+                </div>
             </PopoverContent>
         </Popover>
     );
