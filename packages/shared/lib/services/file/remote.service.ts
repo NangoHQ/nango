@@ -13,7 +13,6 @@ import errorManager from '../../utils/error.manager.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { GetObjectCommandOutput, S3ClientConfig } from '@aws-sdk/client-s3';
-import type { LogContext } from '@nangohq/logs';
 import type { DBSyncConfig } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -100,50 +99,17 @@ class RemoteFileService {
         }
     }
 
-    async uploadIfUnchanged({
-        content,
-        destinationPath,
-        destinationLocalFileName,
-        compareKey,
-        logCtx
-    }: {
-        content: string;
-        destinationPath: string;
-        destinationLocalFileName: string;
-        compareKey?: string | undefined;
-        logCtx: LogContext;
-    }): Promise<string | null> {
-        logCtx?.info('uploadIfUnchanged', { destinationPath, compareKey });
+    async checkIfChanged({ content, objectKey }: { content: string; objectKey: string }): Promise<boolean> {
         if (!this.useS3) {
-            return this.upload({ content, destinationPath, destinationLocalFileName });
+            return true;
         }
-
-        const keyToCompare = compareKey ?? destinationPath;
 
         try {
-            const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: keyToCompare }));
-            if (etagMatchesContent(head.ETag, content)) {
-                if (keyToCompare === destinationPath) {
-                    logCtx?.info('File unchanged (skip)', { destinationPath });
-                    return destinationPath;
-                }
-
-                await this.client.send(
-                    new CopyObjectCommand({
-                        Bucket: this.bucket,
-                        Key: destinationPath,
-                        CopySource: `${this.bucket}/${keyToCompare}`
-                    })
-                );
-                logCtx?.info('File unchanged with new path (copy)', { destinationPath, sourcePath: keyToCompare });
-                return destinationPath;
-            }
+            const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: objectKey }));
+            return !etagMatchesContent(head.ETag, content);
         } catch {
-            // missing object or head failure — upload below
+            return true;
         }
-
-        logCtx?.info('File changed (upload)', { destinationPath });
-        return this.upload({ content, destinationPath, destinationLocalFileName });
     }
 
     /**
