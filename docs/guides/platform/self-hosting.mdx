@@ -309,13 +309,19 @@ Self-hosted instances do not send telemetry back to Nango. Operational metrics a
 
 ### Logs
 
-Nango uses Elasticsearch to store execution logs and power the logs UI. To keep free self-hosted deployments lighter, this stack is optional.
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
 
 To enable logs:
 
-- Host an Elasticsearch cluster.
+- Host an Elasticsearch or OpenSearch cluster.
 - Set `NANGO_LOGS_ENABLED=true`.
-- Configure the relevant `NANGO_LOGS_ES_*` environment variables.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables (these apply to both providers).
+
+Nango uses Elasticsearch by default. To use OpenSearch instead, set:
+
+```sh
+NANGO_LOGS_PROVIDER=opensearch
+```
 
 Elasticsearch hosting options include:
 
