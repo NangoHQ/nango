@@ -4,13 +4,13 @@ import { useDebounce } from 'react-use';
 
 import { Info } from '../../../components/patterns/Info';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
-import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/Popover';
-import Spinner from '../../../components/ui/Spinner';
-import { Button } from '../../../components/ui/button/Button';
-import { Input } from '../../../components/ui/input/Input';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { Button } from '@/components-v2/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
+import { Spinner } from '@/components-v2/ui/Spinner';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;
@@ -80,7 +80,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'sm'} className={cn('text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size={'sm'} className={cn('h-9 text-text-light-gray', isDirty && 'text-white')}>
                     {label}
                     {isDirty && (
                         <button
@@ -99,16 +99,20 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0 text-white bg-active-gray w-80" align="end">
+                <div className="px-3 py-2">
+                    <InputGroup className="bg-active-gray border-grayscale-600">
+                        <InputGroupAddon>
+                            <MagnifyingGlassIcon className="w-4 h-4" />
+                        </InputGroupAddon>
+                        <InputGroupInput placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} autoFocus />
+                        {loading && (
+                            <InputGroupAddon align="inline-end">
+                                <Spinner />
+                            </InputGroupAddon>
+                        )}
+                    </InputGroup>
+                </div>
                 <Command>
-                    <Input
-                        before={<MagnifyingGlassIcon className="w-4 h-4" />}
-                        after={loading && <Spinner size={1} />}
-                        placeholder="Search..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        autoFocus
-                        className="border-b border-b-border-gray-400 py-1"
-                    />
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
                         {maxed && <Info variant={'warning'}>Can&apos;t select more filters</Info>}

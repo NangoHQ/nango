@@ -1,8 +1,8 @@
-import { Err, Ok } from '@nangohq/utils';
+import { getLogger } from './logger.js';
+import { Err, Ok } from './result.js';
 
-import { logger } from './logger.js';
-
-import type { Result } from '@nangohq/utils';
+import type { StrictLogger } from './logger.js';
+import type { Result } from './result.js';
 
 interface Item<T> {
     item: T;
@@ -17,6 +17,7 @@ export class Batcher<T> {
     private queue: Item<T>[];
     private readonly maxQueueSize: number;
     private readonly maxProcessingRetry: number;
+    private readonly logger: StrictLogger;
     private isFlushing: boolean;
     private timer: NodeJS.Timeout | null;
 
@@ -27,6 +28,7 @@ export class Batcher<T> {
         maxBatchSize: number;
         maxQueueSize?: number;
         maxProcessingRetry?: number;
+        logger?: StrictLogger;
     }) {
         this.process = options.process;
         this.grouping = options.grouping;
@@ -36,6 +38,7 @@ export class Batcher<T> {
         this.maxProcessingRetry = options.maxProcessingRetry ?? 3;
         this.queue = [];
         this.isFlushing = false;
+        this.logger = options.logger ?? getLogger('Batcher');
 
         this.timer = this.flushInterval > 0 ? setInterval(() => this.flush(), this.flushInterval) : null;
     }
@@ -50,7 +53,7 @@ export class Batcher<T> {
         }
 
         if (discarded > 0) {
-            logger.error(`Billing batcher queue full. Discarding ${discarded} items.`);
+            this.logger.error(`Batcher queue full. Discarding ${discarded} items.`);
             // TODO: add metric + alert
         }
 
@@ -102,7 +105,7 @@ export class Batcher<T> {
         const aggregated = this.aggregateItems(batch);
 
         if (batch.length !== aggregated.length) {
-            logger.info(`Aggregated ${batch.length} items into ${aggregated.length} items`);
+            this.logger.info(`Aggregated ${batch.length} items into ${aggregated.length} items`);
         }
 
         try {
@@ -118,7 +121,7 @@ export class Batcher<T> {
             const batchToRetry = aggregated.filter((item) => item.retries < this.maxProcessingRetry).map((item) => ({ ...item, retries: item.retries + 1 }));
             const dropped = batch.length - batchToRetry.length;
             if (dropped > 0) {
-                logger.error(`Batcher: dropping ${dropped} items after exhausting retries.`);
+                this.logger.error(`Batcher: dropping ${dropped} items after exhausting retries.`);
             }
             this.queue.unshift(...batchToRetry);
 

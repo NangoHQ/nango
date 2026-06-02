@@ -1284,7 +1284,8 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails);
 
         expect(seen).toEqual(['https://redirect.example/next']);
     });
@@ -1306,7 +1307,8 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails)).toThrow(ProxyError);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails)).toThrow(ProxyError);
     });
 });
 
