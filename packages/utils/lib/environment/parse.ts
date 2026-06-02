@@ -317,6 +317,11 @@ export const ENVS = z.object({
     // → Orb. Capping is unaffected (no override mechanism there).
     FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
+    // Shadow dashboard read against ClickHouse to compare totals vs Orb. Only
+    // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
+    // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
+    FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
+
     // --- Third parties
     // AWS
     AWS_REGION: z.string().optional(),

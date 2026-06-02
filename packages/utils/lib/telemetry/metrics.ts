@@ -128,6 +128,9 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
+    BILLING_USAGE_SHADOW_DIVERGENCE = 'nango.billing.usage.shadow.divergence',
+    BILLING_USAGE_SHADOW_ONE_SIDED = 'nango.billing.usage.shadow.one_sided',
+    BILLING_USAGE_SHADOW_DURATION_MS = 'nango.billing.usage.shadow.duration_ms',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 

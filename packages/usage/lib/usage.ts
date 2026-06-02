@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
@@ -25,6 +25,18 @@ import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetB
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
+
+// CH MV typed-projections started ingesting 2026-05-12; comparing earlier
+// windows against Orb produces known-bad divergence (CH biases high until 30d
+// of depth). Anchor the shadow to a clean post-backfill date.
+const SHADOW_MIN_TIMEFRAME_START = new Date('2026-06-01T00:00:00.000Z');
+const SHADOW_TIMEOUT_MS = 5_000;
+
+export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is GetBillingUsageOpts & { timeframe: { start: Date; end: Date } } {
+    if (!envs.FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE) return false;
+    if (!opts?.timeframe?.start || !opts?.timeframe?.end) return false;
+    return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
+}
 
 export interface UsageStatus {
     accountId: number;
@@ -270,14 +282,72 @@ export class UsageTracker implements IUsageTracker {
             : undefined;
         const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, orbOpts);
         if (billingUsageMetrics.isErr()) {
-            return billingUsageMetrics;
+            return Err(billingUsageMetrics.error);
         }
 
-        return Ok({
-            ...billingUsageMetrics.value,
-            connections: billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined,
-            records: billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined
-        });
+        const orbValue = billingUsageMetrics.value.value;
+        const formatted: BillingUsageMetrics = {
+            ...orbValue,
+            connections: orbValue.connections ? toCumulativeUsage(orbValue.connections) : undefined,
+            records: orbValue.records ? toCumulativeUsage(orbValue.records) : undefined
+        };
+
+        if (!billingUsageMetrics.value.fromCache && shouldShadow(opts)) {
+            void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: formatted }).catch((err: unknown) => {
+                logger.error(`billing-usage shadow failed: ${stringifyError(err)}`);
+            });
+        }
+
+        return Ok(formatted);
+    }
+
+    /**
+     * Fire CH with the same shape as the just-completed Orb call and emit
+     * per-metric divergence telemetry. Wrapped in a 5s timeout so a slow CH
+     * query can't pile up requests. Observability-only — never throws.
+     */
+    private async shadowAgainstClickhouse({
+        accountId,
+        timeframe,
+        orbResult
+    }: {
+        accountId: number;
+        timeframe: { start: Date; end: Date };
+        orbResult: BillingUsageMetrics;
+    }): Promise<void> {
+        const start = process.hrtime.bigint();
+
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const chResult = await Promise.race<Result<BillingUsageMetrics> | 'timeout'>([
+            this.getBillingUsageFromClickhouse(accountId, { timeframe }),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => resolve('timeout'), SHADOW_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timeoutId);
+
+        const outcome = chResult === 'timeout' ? 'timeout' : chResult.isErr() ? 'ch_error' : 'ok';
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+        metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DURATION_MS, elapsedMs, { outcome });
+        if (chResult === 'timeout' || chResult.isErr()) return;
+
+        // One-sided emits a separate counter rather than divergence=1.0 so
+        // missing-data spikes don't drown out the continuous-divergence p99.
+        for (const metric of Object.keys(orbResult) as UsageMetric[]) {
+            const orbTotal = orbResult[metric]?.total;
+            const chTotal = chResult.value[metric]?.total;
+            if (orbTotal === undefined || chTotal === undefined) continue;
+            if (orbTotal === 0 && chTotal === 0) continue;
+            if (orbTotal === 0 || chTotal === 0) {
+                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
+                metrics.increment(metrics.Types.BILLING_USAGE_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
+                continue;
+            }
+            const denom = Math.max(orbTotal, chTotal);
+            const divergence = Math.abs(orbTotal - chTotal) / denom;
+            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
+            metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
+        }
     }
 
     /**
