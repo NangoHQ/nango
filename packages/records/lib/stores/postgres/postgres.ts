@@ -125,34 +125,16 @@ export class PostgresStore implements RecordsStore {
             if (!promise) {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
-                const indexName = `${partitionName}_connection_model_job_new`;
+                const indexName = `${partitionName}_connection_model_job`;
                 // Two separate statements (not a single transaction) so the parent's
                 // ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is released before the
                 // child CREATE INDEX runs. Wrapping both in a transaction would hold the
                 // parent lock across both, briefly blocking every records_seen reader/writer.
-                //
-                // The CREATE INDEX targets sync_job_id_new (the shadow column added in
-                // Phase 2a) and falls back to sync_job_id if the shadow column has already
-                // been renamed away by Phase 2c's swap. This makes ensureSeenPartition
-                // tolerant of the rename happening at any moment relative to a rolling
-                // deploy — old pods carrying this code keep functioning even after the
-                // migration commits. A follow-up PR will drop the fallback once Phase 2c
-                // has fully soaked everywhere.
                 promise = this.db
                     .raw(
                         `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
                     )
-                    .then(async () => {
-                        try {
-                            await this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]);
-                        } catch (err: any) {
-                            if (err?.code === '42703') {
-                                await this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id)', [indexName, partitionName]);
-                            } else {
-                                throw err;
-                            }
-                        }
-                    })
+                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id)', [indexName, partitionName]))
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
