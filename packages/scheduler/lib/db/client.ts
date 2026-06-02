@@ -72,17 +72,29 @@ export class DatabaseClient {
         const filename = fileURLToPath(import.meta.url);
         const dirname = path.dirname(path.join(filename, '../../'));
         const dir = path.join(dirname, 'dist/db/migrations');
-        await this.db.raw(`CREATE SCHEMA IF NOT EXISTS ${this.schema}`);
 
-        const [, pendingMigrations] = (await this.db.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
+        // Migrations can run longer than the runtime statement timeout, so run them on a dedicated
+        // connection with no statement_timeout. (This is also the no-timeout migration path.)
+        const migrationDb = knex({
+            ...this.config,
+            connection: { ...(this.config.connection as object), statement_timeout: 0 }
+        } as knex.Knex.Config);
+        try {
+            // `??` quotes the schema as an identifier — never interpolate it into raw SQL directly.
+            await migrationDb.raw('CREATE SCHEMA IF NOT EXISTS ??', [this.schema]);
 
-        if (pendingMigrations.length === 0) {
-            logger.info('[scheduler] nothing to do');
-            return;
+            const [, pendingMigrations] = (await migrationDb.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
+
+            if (pendingMigrations.length === 0) {
+                logger.info('[scheduler] nothing to do');
+                return;
+            }
+
+            await migrationDb.migrate.latest({ ...this.config.migrations, directory: dir });
+            logger.info('[scheduler] migrations completed.');
+        } finally {
+            await migrationDb.destroy();
         }
-
-        await this.db.migrate.latest({ ...this.config.migrations, directory: dir });
-        logger.info('[scheduler] migrations completed.');
     }
 
     /*********************************/
@@ -90,7 +102,7 @@ export class DatabaseClient {
     /*********************************/
     async clearDatabase(): Promise<void> {
         if (isTest) {
-            await this.db.raw(`DROP SCHEMA IF EXISTS ${this.schema} CASCADE`);
+            await this.db.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [this.schema]);
         }
     }
 }

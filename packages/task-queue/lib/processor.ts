@@ -84,7 +84,9 @@ export class TaskProcessor {
             // Only claim as many tasks as there are free worker slots
             const free = this.queue.concurrency - this.queue.pending - this.queue.size;
             if (free <= 0) {
-                await setTimeout(this.pollIntervalMs);
+                // Wait until a worker frees up rather than sleeping a fixed interval, so a saturated
+                // queue refills as soon as there's capacity instead of leaving workers idle.
+                await this.waitForCapacity();
                 continue;
             }
             const res = await this.scheduler.dequeue({ groupKeyPattern: this.groupKeyPattern, limit: free });
@@ -102,6 +104,29 @@ export class TaskProcessor {
             }
         }
         this.status = 'stopped';
+    }
+
+    // Resolve when a queued task finishes (a worker frees) or after pollIntervalMs as a safety net.
+    private waitForCapacity(): Promise<void> {
+        return new Promise<void>((resolve) => {
+            let settled = false;
+            const ac = new AbortController();
+            const finish = (): void => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                this.queue.off('completed', finish);
+                this.queue.off('next', finish);
+                ac.abort();
+                resolve();
+            };
+            this.queue.on('completed', finish);
+            this.queue.on('next', finish);
+            // On timeout -> finish; on abort (a worker freed first) the timer rejects -> finish is a
+            // no-op thanks to the `settled` guard.
+            void setTimeout(this.pollIntervalMs, undefined, { signal: ac.signal }).then(finish, finish);
+        });
     }
 
     private async processTask(task: Task): Promise<void> {

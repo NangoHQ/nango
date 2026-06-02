@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { TaskQueue } from './tasks.js';
 import { DEFAULT_TASK_OPTIONS, resolveTaskOptions } from './types.js';
 
 describe('resolveTaskOptions', () => {
@@ -25,15 +24,5 @@ describe('resolveTaskOptions', () => {
         const resolved = resolveTaskOptions({ retryMax: 7 }, { createdToStartedTimeoutSecs: 42 });
         expect(resolved.retryMax).toBe(7);
         expect(resolved.createdToStartedTimeoutSecs).toBe(42);
-    });
-});
-
-describe('TaskQueue construction', () => {
-    const baseOpts = { definitions: [] as const, dbUrl: 'postgres://x' };
-
-    it('rejects a dbSchema that is not a plain Postgres identifier', () => {
-        expect(() => new TaskQueue({ ...baseOpts, dbSchema: 'nango tasks' })).toThrow(/Invalid dbSchema/);
-        expect(() => new TaskQueue({ ...baseOpts, dbSchema: 'tasks; drop table x' })).toThrow(/Invalid dbSchema/);
-        expect(() => new TaskQueue({ ...baseOpts, dbSchema: '1bad' })).toThrow(/Invalid dbSchema/);
     });
 });

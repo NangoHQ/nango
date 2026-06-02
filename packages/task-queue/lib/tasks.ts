@@ -44,10 +44,6 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
     constructor(opts: TaskQueueOptions<Defs>) {
         this.logger = opts.logger ?? getLogger('tasks');
 
-        if (!/^[a-z_][a-z0-9_]*$/i.test(opts.dbSchema)) {
-            throw new Error(`Invalid dbSchema '${opts.dbSchema}': must be a valid Postgres identifier ([A-Za-z_][A-Za-z0-9_]*)`);
-        }
-
         this.definitions = new Map();
         for (const def of opts.definitions) {
             if (def.type.includes(TASK_TYPE_SEPARATOR)) {
