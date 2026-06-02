@@ -2166,6 +2166,29 @@ describe('PostgresStore', () => {
             expect(rows[0]?.indisvalid).toBe(true);
             expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, sync_job_id_new\)/);
         });
+
+        // Must run last in this describe — it leaves the schema in the post-Phase-2c state.
+        it('should fall back to sync_job_id after the shadow column has been renamed away (Phase 2c)', async () => {
+            await db.raw(`DROP TRIGGER IF EXISTS records_seen_mirror_sync_job_id_trigger ON nango_records.records_seen`);
+            await db.raw(`DROP FUNCTION IF EXISTS nango_records.records_seen_mirror_sync_job_id()`);
+            await db.raw(`ALTER TABLE nango_records.records_seen DROP COLUMN sync_job_id`);
+            await db.raw(`ALTER TABLE nango_records.records_seen RENAME COLUMN sync_job_id_new TO sync_job_id`);
+
+            const date = new Date('2025-01-18T00:00:00Z');
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { indexdef: string; indisvalid: boolean }[] }>(
+                `SELECT pg_get_indexdef(i.indexrelid) AS indexdef, i.indisvalid
+                 FROM pg_index i
+                 JOIN pg_class c ON c.oid = i.indexrelid
+                 WHERE c.relname = ?`,
+                ['records_seen_20250118_connection_model_job_new']
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0]?.indisvalid).toBe(true);
+            expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, sync_job_id\)/);
+        });
     });
 
     describe('dropSeenPartition', () => {
