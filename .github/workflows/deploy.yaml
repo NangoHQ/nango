@@ -38,10 +38,15 @@ concurrency:
     group: deploy-${{ inputs.service }}-${{ inputs.stage }}
     cancel-in-progress: false
     queue: max
+# Least privilege by default: the GITHUB_TOKEN gets no scopes unless a job
+# explicitly opts in below.
+permissions: {}
 
 jobs:
     notify_start:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read # checkout the repo to reach the local composite action
         outputs:
             ts: ${{ steps.notify.outputs.ts }}
             started_at: ${{ steps.notify.outputs.started_at }}
@@ -218,6 +223,8 @@ jobs:
         if: inputs.service == 'runner' && inputs.stage != 'replit'
         runs-on: ubuntu-latest
         environment: ${{ inputs.stage }}
+        permissions:
+            contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -284,12 +291,16 @@ jobs:
             - deploy_runners
             - deploy_lambda
         runs-on: ubuntu-latest
+        permissions:
+            contents: read # checkout the repo to reach the local composite action
         steps:
             - name: Determine deploy outcome
               id: outcome
               run: |
-                  # Only one deploy job runs per dispatch; the rest are skipped. Treat
-                  # failure/cancelled from any of them as an overall failure.
+                  # Only one deploy job runs per dispatch; the rest are skipped.
+                  # failure/cancelled -> failure; a single success -> success;
+                  # nothing ran (e.g. runner/lambda on replit) -> skipped, so we
+                  # don't announce a success for a deploy that never happened.
                   results=(
                     "${{ needs.deploy_app_ui.result }}"
                     "${{ needs.deploy_connect_ui.result }}"
@@ -297,10 +308,13 @@ jobs:
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
                   )
-                  outcome="success"
+                  outcome="skipped"
                   for r in "${results[@]}"; do
                     if [[ "$r" == "failure" || "$r" == "cancelled" ]]; then
                       outcome="failure"
+                      break
+                    elif [[ "$r" == "success" ]]; then
+                      outcome="success"
                     fi
                   done
                   echo "outcome=$outcome" >> "$GITHUB_OUTPUT"

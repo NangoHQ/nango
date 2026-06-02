@@ -44,7 +44,13 @@ runs:
         - name: Compute message color and headline
           id: compute
           shell: bash
+          env:
+              REF_NAME: ${{ github.ref_name }}
           run: |
+              # Read the ref via env (not direct interpolation) and strip any double
+              # quotes so an exotic branch name can't break the YAML payload below.
+              echo "safe_ref=${REF_NAME//\"/}" >> "$GITHUB_OUTPUT"
+
               if [[ "${{ inputs.phase }}" == "start" ]]; then
                 echo "started_at=$(date +%s)" >> "$GITHUB_OUTPUT"
                 echo "color=#36C5F0" >> "$GITHUB_OUTPUT"
@@ -56,13 +62,21 @@ runs:
                   elapsed=$(( $(date +%s) - ${{ inputs.started_at }} ))
                   duration="$((elapsed / 60))m $((elapsed % 60))s"
                 fi
-                if [[ "${{ inputs.outcome }}" == "success" ]]; then
-                  echo "color=#2EB67D" >> "$GITHUB_OUTPUT"
-                  echo "headline=:white_check_mark: *Deploy succeeded*${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
-                else
-                  echo "color=#E01E5A" >> "$GITHUB_OUTPUT"
-                  echo "headline=:x: *Deploy failed*${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
-                fi
+                case "${{ inputs.outcome }}" in
+                  success)
+                    echo "color=#2EB67D" >> "$GITHUB_OUTPUT"
+                    echo "headline=:white_check_mark: *Deploy succeeded*${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
+                    ;;
+                  failure)
+                    echo "color=#E01E5A" >> "$GITHUB_OUTPUT"
+                    echo "headline=:x: *Deploy failed*${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
+                    ;;
+                  *)
+                    # No deploy job matched this service/stage (e.g. runner/lambda on replit).
+                    echo "color=#ECB22E" >> "$GITHUB_OUTPUT"
+                    echo "headline=:warning: *No deploy ran*" >> "$GITHUB_OUTPUT"
+                    ;;
+                esac
               fi
 
         - name: Post deploy message
@@ -72,13 +86,14 @@ runs:
           with:
               method: chat.postMessage
               token: ${{ inputs.bot_token }}
+              errors: true # surface Slack API failures in the step (the caller keeps the deploy green via continue-on-error)
               payload: |
                   channel: "${{ inputs.channel }}"
                   attachments:
                     - color: "${{ steps.compute.outputs.color }}"
-                      fallback: "Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      fallback: "Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.triggering_actor }})"
                       mrkdwn_in: ["text"]
-                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.triggering_actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ steps.compute.outputs.safe_ref }}`"
 
         - name: Update deploy message
           if: inputs.phase == 'result' && inputs.ts != ''
@@ -86,11 +101,12 @@ runs:
           with:
               method: chat.update
               token: ${{ inputs.bot_token }}
+              errors: true # surface Slack API failures in the step (the caller keeps the deploy green via continue-on-error)
               payload: |
                   channel: "${{ inputs.channel }}"
                   ts: "${{ inputs.ts }}"
                   attachments:
                     - color: "${{ steps.compute.outputs.color }}"
-                      fallback: "${{ steps.compute.outputs.headline }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      fallback: "${{ steps.compute.outputs.headline }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.triggering_actor }})"
                       mrkdwn_in: ["text"]
-                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.triggering_actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ steps.compute.outputs.safe_ref }}`"
