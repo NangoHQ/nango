@@ -1,0 +1,96 @@
+name: 'Slack deploy notification'
+description: 'Post a deploy status message to Slack, or update one in place when the deploy finishes.'
+
+inputs:
+    bot_token:
+        description: 'Slack bot token (xoxb-...) with the chat:write scope'
+        required: true
+    channel:
+        description: 'Slack channel ID to post to'
+        required: true
+    service:
+        description: 'Service being deployed'
+        required: true
+    stage:
+        description: 'Stage being deployed to'
+        required: true
+    phase:
+        description: '"start" to post the initial message, "result" to update it'
+        required: true
+    ts:
+        description: 'Timestamp of the message to update (result phase only)'
+        required: false
+        default: ''
+    started_at:
+        description: 'Epoch seconds captured at start, used to compute duration (result phase only)'
+        required: false
+        default: ''
+    outcome:
+        description: '"success" or "failure" (result phase only)'
+        required: false
+        default: ''
+
+outputs:
+    ts:
+        description: 'Timestamp of the posted message, for a later update'
+        value: ${{ steps.post.outputs.ts }}
+    started_at:
+        description: 'Epoch seconds captured when the start message was posted'
+        value: ${{ steps.compute.outputs.started_at }}
+
+runs:
+    using: composite
+    steps:
+        - name: Compute message color and headline
+          id: compute
+          shell: bash
+          run: |
+              if [[ "${{ inputs.phase }}" == "start" ]]; then
+                echo "started_at=$(date +%s)" >> "$GITHUB_OUTPUT"
+                echo "color=#36C5F0" >> "$GITHUB_OUTPUT"
+                echo "headline=:rocket: *Deploy started*" >> "$GITHUB_OUTPUT"
+              else
+                # Human-readable elapsed time since the start notification.
+                duration=""
+                if [[ -n "${{ inputs.started_at }}" ]]; then
+                  elapsed=$(( $(date +%s) - ${{ inputs.started_at }} ))
+                  duration="$((elapsed / 60))m $((elapsed % 60))s"
+                fi
+                if [[ "${{ inputs.outcome }}" == "success" ]]; then
+                  echo "color=#2EB67D" >> "$GITHUB_OUTPUT"
+                  echo "headline=:white_check_mark: *Deploy succeeded*${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
+                else
+                  echo "color=#E01E5A" >> "$GITHUB_OUTPUT"
+                  echo "headline=:x: *Deploy failed*${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
+                fi
+              fi
+
+        - name: Post deploy message
+          id: post
+          if: inputs.phase == 'start'
+          uses: slackapi/slack-github-action@v2.0.0
+          with:
+              method: chat.postMessage
+              token: ${{ inputs.bot_token }}
+              payload: |
+                  channel: "${{ inputs.channel }}"
+                  attachments:
+                    - color: "${{ steps.compute.outputs.color }}"
+                      fallback: "Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      mrkdwn_in: ["text"]
+                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+
+        - name: Update deploy message
+          if: inputs.phase == 'result' && inputs.ts != ''
+          uses: slackapi/slack-github-action@v2.0.0
+          with:
+              method: chat.update
+              token: ${{ inputs.bot_token }}
+              payload: |
+                  channel: "${{ inputs.channel }}"
+                  ts: "${{ inputs.ts }}"
+                  attachments:
+                    - color: "${{ steps.compute.outputs.color }}"
+                      fallback: "${{ steps.compute.outputs.headline }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
+                      mrkdwn_in: ["text"]
+                      text: "${{ steps.compute.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"

@@ -43,26 +43,21 @@ jobs:
     notify_start:
         runs-on: ubuntu-latest
         outputs:
-            ts: ${{ steps.slack.outputs.ts }}
-            started_at: ${{ steps.meta.outputs.started_at }}
+            ts: ${{ steps.notify.outputs.ts }}
+            started_at: ${{ steps.notify.outputs.started_at }}
         steps:
-            - name: Capture start time
-              id: meta
-              run: echo "started_at=$(date +%s)" >> "$GITHUB_OUTPUT"
+            - name: Checkout
+              uses: actions/checkout@v4
             - name: Post deploy started message
-              id: slack
+              id: notify
               continue-on-error: true
-              uses: slackapi/slack-github-action@v2.0.0
+              uses: ./.github/actions/slack-deploy-notification
               with:
-                  method: chat.postMessage
-                  token: ${{ secrets.SLACK_BOT_TOKEN }}
-                  payload: |
-                      channel: "C0B7KSD33QE"
-                      attachments:
-                        - color: "#36C5F0"
-                          fallback: ":rocket: Deploy started — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
-                          mrkdwn_in: ["text"]
-                          text: ":rocket: *Deploy started* — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                  bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  channel: C0B7KSD33QE
+                  service: ${{ inputs.service }}
+                  stage: ${{ inputs.stage }}
+                  phase: start
     deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
@@ -290,8 +285,8 @@ jobs:
             - deploy_lambda
         runs-on: ubuntu-latest
         steps:
-            - name: Determine deploy result
-              id: result
+            - name: Determine deploy outcome
+              id: outcome
               run: |
                   # Only one deploy job runs per dispatch; the rest are skipped. Treat
                   # failure/cancelled from any of them as an overall failure.
@@ -302,41 +297,24 @@ jobs:
                     "${{ needs.deploy_runners.result }}"
                     "${{ needs.deploy_lambda.result }}"
                   )
-                  status="succeeded"
+                  outcome="success"
                   for r in "${results[@]}"; do
                     if [[ "$r" == "failure" || "$r" == "cancelled" ]]; then
-                      status="failed"
+                      outcome="failure"
                     fi
                   done
-
-                  # Human-readable elapsed time since the start notification.
-                  started_at="${{ needs.notify_start.outputs.started_at }}"
-                  if [[ -n "$started_at" ]]; then
-                    elapsed=$(( $(date +%s) - started_at ))
-                    duration="$((elapsed / 60))m $((elapsed % 60))s"
-                  else
-                    duration=""
-                  fi
-
-                  if [[ "$status" == "succeeded" ]]; then
-                    echo "color=#2EB67D" >> "$GITHUB_OUTPUT"
-                    echo "headline=:white_check_mark: *Deploy succeeded*${duration:+ in $duration}" >> "$GITHUB_OUTPUT"
-                  else
-                    echo "color=#E01E5A" >> "$GITHUB_OUTPUT"
-                    echo "headline=:x: *Deploy failed*${duration:+ after $duration}" >> "$GITHUB_OUTPUT"
-                  fi
+                  echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+            - name: Checkout
+              uses: actions/checkout@v4
             - name: Update deploy message
-              if: needs.notify_start.outputs.ts != ''
               continue-on-error: true
-              uses: slackapi/slack-github-action@v2.0.0
+              uses: ./.github/actions/slack-deploy-notification
               with:
-                  method: chat.update
-                  token: ${{ secrets.SLACK_BOT_TOKEN }}
-                  payload: |
-                      channel: "C0B7KSD33QE"
-                      ts: "${{ needs.notify_start.outputs.ts }}"
-                      attachments:
-                        - color: "${{ steps.result.outputs.color }}"
-                          fallback: "${{ steps.result.outputs.headline }} — ${{ inputs.service }} → ${{ inputs.stage }} (by ${{ github.actor }})"
-                          mrkdwn_in: ["text"]
-                          text: "${{ steps.result.outputs.headline }} — `${{ inputs.service }}` → `${{ inputs.stage }}`\nby ${{ github.actor }}  ·  <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>\nref `${{ github.ref_name }}`"
+                  bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  channel: C0B7KSD33QE
+                  service: ${{ inputs.service }}
+                  stage: ${{ inputs.stage }}
+                  phase: result
+                  ts: ${{ needs.notify_start.outputs.ts }}
+                  started_at: ${{ needs.notify_start.outputs.started_at }}
+                  outcome: ${{ steps.outcome.outputs.outcome }}
