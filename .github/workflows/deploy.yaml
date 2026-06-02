@@ -36,11 +36,14 @@ on:
 # stage clobber each other — deleting freshly-uploaded S3 chunks (which left the
 # live site pointing at a missing bundle) or losing a values-file push. Grouping by
 # stage rather than service+stage also covers the shared backend deploy job, where
-# different services contend on the same file. Queue runs instead of cancelling so a
-# half-finished sync or push is never aborted mid-flight.
+# different services contend on the same file. cancel-in-progress: false never
+# aborts a half-finished sync or push, and queue: max keeps every waiting deploy
+# pending (the default `single` would cancel an older pending run when a newer one
+# is dispatched, silently dropping a deploy).
 concurrency:
     group: deploy-${{ inputs.stage }}
     cancel-in-progress: false
+    queue: max
 
 jobs:
     deploy_app_ui:
