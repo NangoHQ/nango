@@ -42,6 +42,9 @@
             "path": "../sandbox"
         },
         {
+            "path": "../scheduler"
+        },
+        {
             "path": "../orchestrator"
         },
         {

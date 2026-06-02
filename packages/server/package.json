@@ -35,6 +35,7 @@
         "@nangohq/providers": "file:.../providers",
         "@nangohq/records": "file:../records",
         "@nangohq/sandbox": "file:../sandbox",
+        "@nangohq/scheduler": "file:../scheduler",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",

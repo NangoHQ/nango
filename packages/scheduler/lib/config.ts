@@ -26,6 +26,13 @@ export interface SchedulerConfig {
     };
 }
 
+export interface SchedulerStartOptions {
+    readonly scheduling?: boolean;
+    readonly expiring?: boolean;
+    readonly cleaning?: boolean;
+    readonly backpressure?: boolean;
+}
+
 export const defaultSchedulerConfig: SchedulerConfig = {
     daemons: {
         schedulingTickIntervalMs: 100,
@@ -40,6 +47,13 @@ export const defaultSchedulerConfig: SchedulerConfig = {
         expiringBatchSize: 1000,
         recurringGroupMaxConcurrency: 500
     }
+};
+
+export const defaultSchedulerStartOptions: Required<SchedulerStartOptions> = {
+    scheduling: true,
+    expiring: true,
+    cleaning: true,
+    backpressure: true
 };
 
 /**
