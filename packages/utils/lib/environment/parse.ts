@@ -603,6 +603,8 @@ export const ENVS = z.object({
     // E2B sandboxes
     E2B_API_KEY: z.string().optional(),
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
+    E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
+    E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
     // ----- Others
     SERVER_RUN_MODE: z.enum(['DOCKERIZED', '']).optional(),
