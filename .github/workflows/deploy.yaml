@@ -30,6 +30,15 @@ on:
                     - app_ui
                     - lambda
 
+# Serialize deploys per service+stage. UI deploys `aws s3 sync --delete` into a
+# shared bucket; two concurrent runs delete each other's freshly-uploaded chunks
+# and interleave their index.html writes, leaving the live site pointing at a
+# bundle that no longer exists. Queue runs instead of cancelling so a half-finished
+# sync is never aborted mid-flight.
+concurrency:
+    group: deploy-${{ inputs.service }}-${{ inputs.stage }}
+    cancel-in-progress: false
+
 jobs:
     deploy_app_ui:
         if: inputs.service == 'app_ui'
