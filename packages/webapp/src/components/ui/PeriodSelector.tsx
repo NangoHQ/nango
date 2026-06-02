@@ -95,7 +95,11 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="zombieGray" size={'sm'} className={cn('grow truncate text-text-light-gray', selectedPreset !== defaultPreset && 'text-white')}>
+                <Button
+                    variant="zombieGray"
+                    size={'sm'}
+                    className={cn('grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
+                >
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>

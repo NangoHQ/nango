@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { Skeleton } from '../../components/ui/Skeleton.js';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { cn } from '../../utils/utils.js';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useStore } from '@/store';
 

@@ -22,7 +22,9 @@ const buttonVariants = cva(
                     'bg-btn-secondary-bg text-btn-secondary-fg hover:bg-btn-secondary-hover active:bg-btn-secondary-press focus-visible:bg-btn-secondary-hover disabled:bg-btn-secondary-disabled data-loading:bg-btn-secondary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-secondary-bg aria-disabled:active:bg-btn-secondary-bg',
                 tertiary:
                     'bg-btn-tertiary-bg text-btn-tertiary-fg hover:bg-btn-tertiary-hover active:bg-btn-tertiary-press focus-visible:bg-btn-tertiary-hover disabled:bg-btn-tertiary-disabled data-loading:bg-btn-tertiary-loading data-loading:opacity-100 aria-disabled:hover:bg-btn-tertiary-bg aria-disabled:active:bg-btn-tertiary-bg',
-                ghost: 'bg-transparent text-text-tertiary hover:text-text-primary aria-disabled:hover:text-text-tertiary'
+                ghost: 'bg-transparent text-text-tertiary hover:text-text-primary aria-disabled:hover:text-text-tertiary',
+                outline:
+                    'bg-transparent border border-border-muted text-text-secondary hover:bg-btn-secondary-hover hover:text-text-primary hover:border-border-strong active:bg-btn-secondary-press disabled:border-border-muted aria-disabled:hover:bg-transparent aria-disabled:hover:text-text-secondary aria-disabled:hover:border-border-muted'
             },
             size: {
                 sm: 'h-8 rounded gap-1.5 px-3 py-2',

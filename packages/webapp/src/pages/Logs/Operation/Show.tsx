@@ -8,12 +8,12 @@ import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { Logs } from './components/Logs';
 import { Info } from '../../../components/patterns/Info';
-import { Skeleton } from '../../../components/ui/Skeleton';
 import { CopyButton } from '../../../components/ui/button/CopyButton';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
+import { Skeleton } from '@/components-v2/ui/Skeleton';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
