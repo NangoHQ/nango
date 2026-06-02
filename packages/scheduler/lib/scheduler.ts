@@ -51,7 +51,7 @@ export class Scheduler {
             abortSignal: this.ac.signal,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
-                this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
+                void this.db.transaction((trx) => this.scheduleAbortTask(trx, { aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` }));
                 this.onCallbacks[task.state](task);
             },
             onError
@@ -397,7 +397,7 @@ export class Scheduler {
         nextExecutionInMs?: number | undefined;
     }): Promise<Result<Task>> {
         const newState: TaskState = 'CANCELLED';
-        const result = await this.db.transaction(async (trx): Promise<Result<{ task: Task; wasStarted: boolean; transitioned: boolean }>> => {
+        const result = await this.db.transaction(async (trx): Promise<Result<{ task: Task; abortTask: Task | null; transitioned: boolean }>> => {
             const res = await tasks.transitionState(trx, {
                 taskId,
                 newState,
@@ -407,7 +407,7 @@ export class Scheduler {
                 // Task may already be in a terminal state — treat as no-op
                 const fetched = await tasks.get(trx, taskId);
                 if (fetched.isOk() && fetched.value.state !== 'CREATED' && fetched.value.state !== 'STARTED') {
-                    return Ok({ task: fetched.value, wasStarted: false, transitioned: false });
+                    return Ok({ task: fetched.value, abortTask: null, transitioned: false });
                 }
                 return Err(res.error);
             }
@@ -419,24 +419,30 @@ export class Scheduler {
             if (scheduleRes.isErr()) {
                 return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
             }
-            return Ok({ task: res.value.task, wasStarted: res.value.previousState === 'STARTED', transitioned: true });
+            let abortTask: Task | null = null;
+            if (res.value.previousState === 'STARTED') {
+                const abortReason = typeof reason === 'string' ? reason : JSON.stringify(reason);
+                const abortRes = await this.scheduleAbortTask(trx, { aborted: res.value.task, reason: abortReason });
+                if (abortRes.isErr()) {
+                    // Task is already CANCELLED in the DB.
+                    // Log but don't fail, the runner will error on its next
+                    // state transition regardless.
+                    logger.error(`Failed to schedule abort task for cancelled task '${taskId}'`, abortRes.error);
+                } else {
+                    abortTask = abortRes.value;
+                }
+            }
+            return Ok({ task: res.value.task, abortTask, transitioned: true });
         });
         if (result.isErr()) {
             return Err(result.error);
         }
-        const { task, wasStarted, transitioned } = result.value;
+        const { task, abortTask, transitioned } = result.value;
         if (!transitioned) {
             return Ok(task);
         }
-        if (wasStarted) {
-            const abortReason = typeof reason === 'string' ? reason : JSON.stringify(reason);
-            const abortRes = await this.scheduleAbortTask({ aborted: task, reason: abortReason });
-            if (abortRes.isErr()) {
-                // Task is already CANCELLED in the DB.
-                // Log but don't fail, the runner will error on its next
-                // state transition regardless.
-                logger.error(`Failed to schedule abort task for cancelled task '${taskId}'`, abortRes.error);
-            }
+        if (abortTask) {
+            this.onCallbacks[abortTask.state](abortTask);
         }
         this.onCallbacks[task.state](task);
         return Ok(task);
@@ -452,7 +458,7 @@ export class Scheduler {
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
     public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
-        const res = await this.db.transaction(async (trx): Promise<Result<{ schedule: Schedule; cancelledTasks: Task[]; startedTasks: Task[] }>> => {
+        const res = await this.db.transaction(async (trx): Promise<Result<{ schedule: Schedule; cancelledTasks: Task[]; abortTasks: Task[] }>> => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
             const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
             if (found.isErr()) {
@@ -465,11 +471,11 @@ export class Scheduler {
 
             if (schedule.state === state) {
                 // No-op if the schedule is already in the desired state
-                return Ok({ schedule, cancelledTasks: [], startedTasks: [] });
+                return Ok({ schedule, cancelledTasks: [], abortTasks: [] });
             }
 
             const cancelledTasks: Task[] = [];
-            const startedTasks: Task[] = [];
+            const abortTasks: Task[] = [];
             if (state === 'DELETED' || state === 'PAUSED') {
                 const runningTasks = await tasks.search(trx, {
                     scheduleId: schedule.id,
@@ -493,7 +499,12 @@ export class Scheduler {
                     }
                     cancelledTasks.push(cancelRes.value.task);
                     if (cancelRes.value.previousState === 'STARTED') {
-                        startedTasks.push(cancelRes.value.task);
+                        const abortRes = await this.scheduleAbortTask(trx, { aborted: cancelRes.value.task, reason: `schedule ${state}` });
+                        if (abortRes.isErr()) {
+                            logger.error(`Failed to schedule abort task for task '${task.id}' on schedule ${state}`, abortRes.error);
+                        } else {
+                            abortTasks.push(abortRes.value);
+                        }
                     }
                 }
             }
@@ -502,21 +513,18 @@ export class Scheduler {
             if (scheduleRes.isErr()) {
                 return Err(`Error transitioning schedule '${scheduleName}': ${stringifyError(scheduleRes.error)}`);
             }
-            return Ok({ schedule: scheduleRes.value, cancelledTasks, startedTasks });
+            return Ok({ schedule: scheduleRes.value, cancelledTasks, abortTasks });
         });
 
         if (res.isErr()) {
             return Err(res.error);
         }
 
-        const { schedule, cancelledTasks, startedTasks } = res.value;
-        for (const task of startedTasks) {
-            const abortRes = await this.scheduleAbortTask({ aborted: task, reason: `schedule ${state}` });
-            if (abortRes.isErr()) {
-                logger.error(`Failed to schedule abort task for task '${task.id}' on schedule ${state}`, abortRes.error);
-            }
-        }
+        const { schedule, cancelledTasks, abortTasks } = res.value;
         for (const task of cancelledTasks) {
+            this.onCallbacks[task.state](task);
+        }
+        for (const task of abortTasks) {
             this.onCallbacks[task.state](task);
         }
         return Ok(schedule);
@@ -559,14 +567,11 @@ export class Scheduler {
      * @example
      * const abortTask = await scheduler.abortTask({ aborted: task, reason: 'User requested' });
      */
-    public async scheduleAbortTask({ aborted, reason }: { aborted: Task; reason: string }): Promise<Result<Task>> {
+    private async scheduleAbortTask(trx: knex.Knex.Transaction, { aborted, reason }: { aborted: Task; reason: string }): Promise<Result<Task>> {
         const abortType = 'abort';
 
         // no need to abort an abort task
-        const isAbortPayload = (payload: JsonObject) => {
-            return 'type' in payload && payload['type'] === abortType;
-        };
-        if (isAbortPayload(aborted.payload)) {
+        if ('type' in aborted.payload && aborted.payload['type'] === abortType) {
             return Err(`Task is already an abort task`);
         }
 
@@ -579,22 +584,29 @@ export class Scheduler {
             },
             reason
         };
-        const abortTask = await this.immediate({
-            name: `abort:${aborted.name}`,
-            payload: payload,
-            groupKey: aborted.groupKey,
-            groupMaxConcurrency: aborted.groupMaxConcurrency,
-            retryMax: 0,
-            retryCount: 0,
-            createdToStartedTimeoutSecs: 60,
-            startedToCompletedTimeoutSecs: 60,
-            heartbeatTimeoutSecs: 60,
-            ownerKey: aborted.ownerKey
-        });
-        if (abortTask.isErr()) {
-            logger.error(`Failed to create abort task`, abortTask.error);
-            return Err(abortTask.error);
+        const created = await tasks.create(trx, [
+            {
+                name: `abort:${aborted.name}`,
+                payload,
+                groupKey: aborted.groupKey,
+                groupMaxConcurrency: aborted.groupMaxConcurrency,
+                retryMax: 0,
+                retryCount: 0,
+                createdToStartedTimeoutSecs: 60,
+                startedToCompletedTimeoutSecs: 60,
+                heartbeatTimeoutSecs: 60,
+                startsAfter: new Date(),
+                scheduleId: null,
+                ownerKey: aborted.ownerKey
+            }
+        ]);
+        if (created.isErr()) {
+            return Err(created.error);
         }
-        return abortTask;
+        const task = created.value.tasks[0];
+        if (!task) {
+            return Err(`Failed to create abort task for '${aborted.name}'`);
+        }
+        return Ok(task);
     }
 }
