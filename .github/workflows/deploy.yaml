@@ -30,6 +30,15 @@ on:
                     - app_ui
                     - lambda
 
+# One deploy per service+stage at a time. UI deploys `aws s3 sync --delete` into a
+# shared bucket, so two concurrent runs silently corrupt it (left the live app
+# pointing at a deleted bundle). Queue the rest (queue: max) without aborting an
+# in-flight sync (cancel-in-progress: false).
+concurrency:
+    group: deploy-${{ inputs.service }}-${{ inputs.stage }}
+    cancel-in-progress: false
+    queue: max
+
 jobs:
     deploy_app_ui:
         if: inputs.service == 'app_ui'
