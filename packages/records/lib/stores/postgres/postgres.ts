@@ -125,18 +125,19 @@ export class PostgresStore implements RecordsStore {
             if (!promise) {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
-                const indexName = `${partitionName}_connection_model_job`;
+                const indexName = `${partitionName}_connection_model_job_new`;
                 // Two separate statements (not a single transaction) so the parent's
                 // ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is released before the
                 // child CREATE INDEX runs. Wrapping both in a transaction would hold the
                 // parent lock across both, briefly blocking every records_seen reader/writer.
-                // A failure between the two leaves a partition without its index — recoverable
-                // via IF NOT EXISTS on retry.
+                // A failure between the two leaves a partition without its index — benign
+                // pre-swap (no query uses the new index yet), recoverable via IF NOT EXISTS
+                // on retry, and caught by Phase 2c's pre-deploy index-coverage gate.
                 promise = this.db
                     .raw(
                         `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
                     )
-                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id)', [indexName, partitionName]))
+                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, sync_job_id_new)', [indexName, partitionName]))
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
