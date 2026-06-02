@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { ConfirmModal } from '@/components/patterns/ConfirmModal';
-import { Button } from '@/components/ui/button/Button';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -23,7 +23,7 @@ export const Default: Story = {
                     confirmButtonText="Delete"
                     loading={loading}
                     trigger={
-                        <Button variant="danger" size="sm">
+                        <Button variant="destructive" size="sm">
                             Delete connection
                         </Button>
                     }

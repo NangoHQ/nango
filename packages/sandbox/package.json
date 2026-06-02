@@ -23,7 +23,7 @@
         "@nangohq/types": "file:../types",
         "@types/jsonwebtoken": "9.0.9",
         "knex": "3.1.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     },
     "files": [
         "dist/**/*"

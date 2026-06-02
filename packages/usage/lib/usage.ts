@@ -7,11 +7,21 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
+import { Clickhouse } from './clickhouse/clickhouse.js';
+import { AVG_METRICS, COUNTER_METRICS } from './clickhouse/clickhouse.query.js';
+import { envs } from './env.js';
 import { logger } from './logger.js';
 import { usageMetrics } from './metrics.js';
 
+import type {
+    AvgUsageMetric,
+    CounterUsageMetric,
+    GetDailyCounterResult,
+    GetDailySumAndBatchesResult,
+    GetDailySumAndBatchesSeries
+} from './clickhouse/clickhouse.query.js';
 import type { getRedis } from '@nangohq/kvstore';
-import type { BillingUsageMetric, BillingUsageMetrics, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
+import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
@@ -27,7 +37,7 @@ export interface IUsageTracker {
     getAll(accountId: number): Promise<Result<Record<UsageMetric, UsageStatus>>>;
     incr(params: { accountId: number; metric: UsageMetric; delta?: number; forceRevalidation?: boolean }): Promise<Result<UsageStatus>>;
     revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>>;
-    getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
+    getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
 }
 
 export class UsageTrackerNoOps implements IUsageTracker {
@@ -67,7 +77,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
         return Promise.resolve(Ok(undefined));
     }
 
-    public async getBillingUsage(): Promise<Result<BillingUsageMetrics>> {
+    public async getBillingUsage(_subscriptionId: string, _accountId: number, _opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         return Promise.resolve(Ok({}));
     }
 }
@@ -75,10 +85,22 @@ export class UsageTrackerNoOps implements IUsageTracker {
 export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
     public billingClient: UsageBillingClient;
+    // Read-only client for the dashboard CH path (gated by
+    // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
+    // Lazy-init keeps the dependency out of code paths that never read
+    // billing usage from CH.
+    private clickhouse: Clickhouse | null = null;
 
     constructor(redis: Awaited<ReturnType<typeof getRedis>>) {
         this.cache = new UsageCache(redis);
         this.billingClient = new UsageBillingClient(redis);
+    }
+
+    private getClickhouse(): Clickhouse {
+        if (!this.clickhouse) {
+            this.clickhouse = new Clickhouse();
+        }
+        return this.clickhouse;
     }
 
     public async get({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<UsageStatus>> {
@@ -219,9 +241,34 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
-    public async getBillingUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
-        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, opts);
+    public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
+        // CH path: dashboard shape only (granularity='day' + timeframe), and
+        // only when the env gate is on AND the request opted in via `source`.
+        // No silent Orb fallback on error — surfaces regressions in dev.
+        // Capping (`getBillingMetrics`, no granularity) stays on Orb.
+        const requestedSource = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? opts?.source : undefined;
+        const useClickhouseForDashboard = requestedSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
+        if (useClickhouseForDashboard) {
+            return this.getBillingUsageFromClickhouse(accountId, {
+                timeframe: opts.timeframe!,
+                ...(opts.metrics ? { metrics: opts.metrics } : {}),
+                ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
+                ...(opts.top !== undefined ? { top: opts.top } : {})
+            });
+        }
+
+        // Orb path: strip CH-only fields so they don't pollute the billing
+        // client's Redis cache key. Orb itself ignores them, but the cache key
+        // hashes the full opts and would miss on otherwise-identical queries.
+        const orbOpts: GetBillingUsageOpts | undefined = opts
+            ? {
+                  ...(opts.timeframe ? { timeframe: opts.timeframe } : {}),
+                  ...(opts.granularity ? { granularity: opts.granularity } : {}),
+                  ...(opts.billingMetric ? { billingMetric: opts.billingMetric } : {})
+              }
+            : undefined;
+        const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, orbOpts);
         if (billingUsageMetrics.isErr()) {
             return billingUsageMetrics;
         }
@@ -231,6 +278,135 @@ export class UsageTracker implements IUsageTracker {
             connections: billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined,
             records: billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined
         });
+    }
+
+    /**
+     * Fan-out over in-scope metrics: counters via `getDailyCounter`, AVG via
+     * `getDailySumAndBatches`. When `breakdown` is set for a metric, ONLY the
+     * breakdown call runs — the returned BillingUsageMetric for that metric
+     * carries `usage: []` / `total: 0` at the top level and only `breakdown`
+     * populated. The caller opted into the per-dim view; the global can be
+     * derived by summing across breakdown series (top-N + 'rest' partition
+     * every row) but we don't pre-compute it.
+     */
+    private async getBillingUsageFromClickhouse(
+        accountId: number,
+        opts: {
+            timeframe: { start: Date; end: Date };
+            metrics?: UsageMetric[];
+            breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
+            top?: number;
+        }
+    ): Promise<Result<BillingUsageMetrics>> {
+        const { timeframe, metrics: scopedMetrics, breakdown, top } = opts;
+        const scope = scopedMetrics ? new Set(scopedMetrics) : null;
+        const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
+        const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
+        const avgMetrics: AvgUsageMetric[] = AVG_METRICS.filter(inScope);
+        const counterNoDim = counterMetrics.filter((m) => !breakdown?.[m]);
+        const avgNoDim = avgMetrics.filter((m) => !breakdown?.[m]);
+        const ch = this.getClickhouse();
+
+        // Base calls — `dimension: 'none'` is valid for every variant, so the
+        // union-typed `metric: m` is fine here.
+        const counterBaseP = Promise.all(
+            counterNoDim.map((m) => ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
+        );
+        const avgBaseP = Promise.all(
+            avgNoDim.map((m) => ch.getDailySumAndBatches({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
+        );
+
+        // Breakdown calls — unrolled per-metric so `metric: '<literal>'` picks
+        // the right `GetDailyCounterQuery` variant and `dimension: breakdown.<m>`
+        // is typed as `BreakdownDimensions[<m>]`. No cast needed.
+        const topOpt = top !== undefined ? { top } : {};
+        const counterBreakdownCalls = [
+            inScope('proxy') && breakdown?.proxy
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt })
+                      .then((r) => ['proxy' as const, r] as const)
+                : null,
+            inScope('function_executions') && breakdown?.function_executions
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_executions', dimension: breakdown.function_executions, timeframe, ...topOpt })
+                      .then((r) => ['function_executions' as const, r] as const)
+                : null,
+            inScope('function_logs') && breakdown?.function_logs
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_logs', dimension: breakdown.function_logs, timeframe, ...topOpt })
+                      .then((r) => ['function_logs' as const, r] as const)
+                : null,
+            inScope('function_compute_gbms') && breakdown?.function_compute_gbms
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'function_compute_gbms', dimension: breakdown.function_compute_gbms, timeframe, ...topOpt })
+                      .then((r) => ['function_compute_gbms' as const, r] as const)
+                : null,
+            inScope('webhook_forwards') && breakdown?.webhook_forwards
+                ? ch
+                      .getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: breakdown.webhook_forwards, timeframe, ...topOpt })
+                      .then((r) => ['webhook_forwards' as const, r] as const)
+                : null
+        ].filter((p): p is NonNullable<typeof p> => p !== null);
+        const counterBreakdownP = Promise.all(counterBreakdownCalls);
+
+        const avgBreakdownCalls = [
+            inScope('records') && breakdown?.records
+                ? ch
+                      .getDailySumAndBatches({ accountId, metric: 'records', dimension: breakdown.records, timeframe, ...topOpt })
+                      .then((r) => ['records' as const, r] as const)
+                : null,
+            inScope('connections') && breakdown?.connections
+                ? ch
+                      .getDailySumAndBatches({ accountId, metric: 'connections', dimension: breakdown.connections, timeframe, ...topOpt })
+                      .then((r) => ['connections' as const, r] as const)
+                : null
+        ].filter((p): p is NonNullable<typeof p> => p !== null);
+        const avgBreakdownP = Promise.all(avgBreakdownCalls);
+
+        const [counterBaseResults, avgBaseResults, counterBreakdowns, avgBreakdowns] = await Promise.all([
+            counterBaseP,
+            avgBaseP,
+            counterBreakdownP,
+            avgBreakdownP
+        ]);
+
+        const result: BillingUsageMetrics = {};
+        for (const [metric, res] of counterBaseResults) {
+            if (res.isErr()) return Err(res.error);
+            result[metric] = toCounterBillingMetric(metric, res.value);
+        }
+        for (const [metric, res] of avgBaseResults) {
+            if (res.isErr()) return Err(res.error);
+            const billing = toRunningAvgUsage(res.value)[0];
+            if (billing) {
+                result[metric] = billing;
+            }
+        }
+
+        // Breakdown-requested metrics: emit a BillingUsageMetric with empty
+        // top-level `usage` / `total: 0` and only the `breakdown` populated.
+        // The caller opted into the per-dim view; we don't synthesize a global.
+        for (const [metric, br] of counterBreakdowns) {
+            if (br.isErr()) return Err(br.error);
+            result[metric] = {
+                externalId: metric,
+                total: 0,
+                usage: [],
+                view_mode: 'periodic',
+                breakdown: toCounterBillingMetricSeries(metric, br.value)
+            };
+        }
+        for (const [metric, br] of avgBreakdowns) {
+            if (br.isErr()) return Err(br.error);
+            result[metric] = {
+                externalId: metric,
+                total: 0,
+                usage: [],
+                view_mode: 'cumulative',
+                breakdown: toRunningAvgUsage(br.value)
+            };
+        }
+        return Ok(result);
     }
 
     private static getCacheEntryProps({ accountId, metric, now }: { accountId: number; metric: UsageMetric; now: Date }): { cacheKey: string; ttlMs?: number } {
@@ -255,7 +431,9 @@ export class UsageTracker implements IUsageTracker {
         if (!plan.value.orb_subscription_id) {
             return Err(new Error('orb_subscription_id_missing'));
         }
-        const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id);
+        // No timeframe / no granularity → CH path is bypassed inside
+        // getBillingUsage, capping continues to read from Orb.
+        const billingUsage: Result<BillingUsageMetrics> = await this.getBillingUsage(plan.value.orb_subscription_id, accountId);
         if (billingUsage.isErr()) {
             // Note: errors (including rate limit errors) are not being retried
             // revalidateAfter isn't being updated, so next incr will attempt to revalidate again
@@ -342,4 +520,128 @@ function toCumulativeUsage(periodicUsage: BillingUsageMetric): BillingUsageMetri
         total: Math.floor(previousQuantity),
         usage: cumulativeUsage
     };
+}
+
+/**
+ * CH-path sibling of `toCumulativeUsage`. Turns the per-day `(sum, batches)`
+ * accumulators returned by `Clickhouse.getDailySumAndBatches` into
+ * `BillingUsageMetric[]` with `view_mode='cumulative'` — the same wire shape
+ * the dashboard already consumes for `records` / `connections` from the Orb
+ * path. One `BillingUsageMetric` per series (no-dim → 1; dim → one per dim
+ * value with `group: {key, value}`).
+ *
+ * Walks each series in day order, accumulates `running_sum` and
+ * `running_batches`, and emits `Math.round(running_sum / running_batches)` per
+ * day. Bypasses `toCumulativeUsage` because the output is already
+ * cumulative-shaped (running averages, not running sums of deltas).
+ *
+ * Dim-breakdown additivity contract: per-dim series share the same global
+ * per-day batches (by design of `getDailySumAndBatches`' dim branch), so the
+ * sum of per-dim running averages equals the global running average exactly
+ * at every day — the breakdown decomposes the bill total rather than being
+ * a "size when active" view.
+ *
+ * Worked example (10×100 vs 2×1000 → 100, 250) lives in
+ * `getDailySumAndBatches`' docstring.
+ */
+export function toRunningAvgUsage(result: GetDailySumAndBatchesResult): BillingUsageMetric[] {
+    return result.series.map((series) => seriesToCumulativeAvg(result.metric, series)).filter((m): m is BillingUsageMetric => m !== null);
+}
+
+function seriesToCumulativeAvg(metric: GetDailySumAndBatchesResult['metric'], series: GetDailySumAndBatchesSeries): BillingUsageMetric | null {
+    if (series.days.length === 0) {
+        return null;
+    }
+
+    const sorted = [...series.days].sort((a, b) => a.day.getTime() - b.day.getTime());
+
+    let runningSum = 0;
+    let runningBatches = 0;
+    const usage: BillingUsageMetric['usage'] = [];
+    for (const day of sorted) {
+        runningSum += day.sum;
+        runningBatches += day.batches;
+        if (runningBatches === 0) {
+            // Defensive: a series shouldn't appear with batches=0 (the SQL filters
+            // empty-day groups out), but if it does we skip rather than divide by zero.
+            continue;
+        }
+        // Ship the float — Orb returns floats too (e.g. 583418434.4342688).
+        // Rounding here crushes low-volume breakdown series to 0 (e.g. 1
+        // record split across 3 dims renders as 0, 0, 0). Presentation
+        // layer decides how to format.
+        usage.push({
+            timeframeStart: day.day,
+            timeframeEnd: addOneDay(day.day),
+            quantity: runningSum / runningBatches
+        });
+    }
+
+    if (usage.length === 0) {
+        return null;
+    }
+
+    const lastQuantity = usage[usage.length - 1]!.quantity;
+    const base: BillingUsageMetric = {
+        externalId: metric,
+        total: lastQuantity,
+        usage,
+        view_mode: 'cumulative'
+    };
+    if ('dimension' in series) {
+        if ('isRest' in series) {
+            base.group = { key: series.dimension, value: 'rest' };
+            base.isRest = true;
+        } else {
+            base.group = { key: series.dimension, value: String(series.dimensionValue) };
+        }
+    }
+    return base;
+}
+
+function addOneDay(d: Date): Date {
+    const out = new Date(d);
+    out.setUTCDate(out.getUTCDate() + 1);
+    return out;
+}
+
+// Counter metrics are always `view_mode='periodic'` (Orb's same shape — daily
+// deltas not running totals); the dashboard adds them itself if needed.
+export function toCounterBillingMetric(metric: CounterUsageMetric, result: GetDailyCounterResult): BillingUsageMetric {
+    return toCounterBillingMetricSeries(metric, result)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'periodic' };
+}
+
+/**
+ * Multi-series counter result from `Clickhouse.getDailyCounter` with a
+ * dimension set → `BillingUsageMetric[]`. One entry per series (top-N + 'rest')
+ * carrying its own `group: {key, value}` so the dashboard can render them as
+ * separate lines.
+ */
+export function toCounterBillingMetricSeries(metric: CounterUsageMetric, result: GetDailyCounterResult): BillingUsageMetric[] {
+    return result.series.map((series) => {
+        let total = 0;
+        const usage = series.days.map((d) => {
+            total += d.value;
+            return {
+                timeframeStart: d.day,
+                timeframeEnd: addOneDay(d.day),
+                quantity: d.value
+            };
+        });
+        const out: BillingUsageMetric = {
+            externalId: metric,
+            total,
+            usage,
+            view_mode: 'periodic'
+        };
+        if ('dimension' in series) {
+            if ('isRest' in series) {
+                out.group = { key: series.dimension, value: 'rest' };
+                out.isRest = true;
+            } else {
+                out.group = { key: series.dimension, value: String(series.dimensionValue) };
+            }
+        }
+        return out;
+    });
 }

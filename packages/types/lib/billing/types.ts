@@ -66,6 +66,27 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
+export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
+export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
+
+// Per-metric dimension whitelist for the breakdown API. The runtime
+// `BREAKDOWN_DIMENSIONS` const in @nangohq/usage `satisfies` this shape so the
+// two stay in sync; consumers (controller validator, frontend contracts, CH
+// query types) all derive from this single declaration.
+export interface BreakdownDimensions {
+    proxy: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
+    function_executions: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    function_logs: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    function_compute_gbms: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
+    records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
+    connections: 'environment_id' | 'integration_id';
+}
+
+// `'none'` is the in-band sentinel for "no breakdown" used by the CH query
+// types; user-facing `breakdown[<m>]=<d>` requests only carry real dim values.
+export type DimensionFor<M extends UsageMetric> = 'none' | BreakdownDimensions[M];
+
 export interface GetBillingUsageOpts {
     timeframe?: {
         start: Date;
@@ -76,6 +97,30 @@ export interface GetBillingUsageOpts {
         id: string;
         group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
+    /**
+     * Per-request override of the dashboard backend source. Honoured only
+     * when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled (dev gate); ignored
+     * everywhere else, so the default stays Orb. Only used by
+     * `UsageTracker.getBillingUsage`; the Orb client itself ignores it.
+     */
+    source?: 'clickhouse' | 'orb';
+    /**
+     * Per-metric dimension breakdown spec. Honoured only on the CH path
+     * (records / connections via `getDailySumAndBatches`, counters via
+     * `getDailyCounter`); the Orb client ignores it. Each metric's
+     * `BillingUsageMetric` gains a `breakdown` array of up to `top + 1`
+     * series (top-N dimension values + a single 'rest' aggregating the
+     * long tail). Top defaults to 10 and is clamped server-side to
+     * the CH cap.
+     */
+    breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
+    top?: number;
+    /**
+     * Subset of metrics to populate in the response. When set, only those
+     * metrics are fanned out (CH path) and returned. Omitted → all 7.
+     * Ignored on the Orb path.
+     */
+    metrics?: UsageMetric[];
 }
 
 export interface BillingUsageMetric {
@@ -84,6 +129,15 @@ export interface BillingUsageMetric {
         key: string;
         value: string;
     };
+    /**
+     * The top-N + 'rest' breakdown collapses every dim value outside the top
+     * into a single rollup bucket. Marked with `isRest: true` so the dashboard
+     * can distinguish it from a real dim value that happens to literally be
+     * the string 'rest' (e.g. a `connection_id` or `model` named 'rest').
+     * `group.value` is set to the display string 'rest' as a default; the
+     * flag is the authoritative signal.
+     */
+    isRest?: true;
     total: number;
     usage: {
         timeframeStart: Date;
@@ -91,6 +145,19 @@ export interface BillingUsageMetric {
         quantity: number;
     }[];
     view_mode: 'cumulative' | 'periodic';
+    /**
+     * Populated only when the request included a `breakdown` spec for this
+     * metric AND the CH path served the request. Each entry is a per-
+     * dimension-value series (carrying its own `group: {key, value}`), with
+     * one 'rest' entry aggregating the long tail.
+     *
+     * Mutually exclusive with the top-level `usage`/`total`: when breakdown
+     * is requested the top-level is empty (`usage: []`, `total: 0`) and only
+     * `breakdown` carries data — callers asking for a breakdown opt into the
+     * per-dim view. When breakdown is NOT requested, the top-level is the
+     * no-dim global and this field is absent.
+     */
+    breakdown?: BillingUsageMetric[];
 }
 
 export type BillingUsageMetrics = Partial<Record<UsageMetric, BillingUsageMetric | undefined>>;
