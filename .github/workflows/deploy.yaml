@@ -62,15 +62,9 @@ jobs:
                             text: ":rocket: Deploy started"
                             emoji: true
                         - type: "section"
-                          fields:
-                            - type: "mrkdwn"
-                              text: "*Service:*\n${{ inputs.service }}"
-                            - type: "mrkdwn"
-                              text: "*Stage:*\n${{ inputs.stage }}"
-                            - type: "mrkdwn"
-                              text: "*Triggered by:*\n${{ github.actor }}"
-                            - type: "mrkdwn"
-                              text: "*Status:*\n:hourglass_flowing_sand: In progress"
+                          text:
+                            type: "mrkdwn"
+                            text: "*Service:* `${{ inputs.service }}`  •  *Stage:* `${{ inputs.stage }}`  •  *Ref:* `${{ github.ref_name }}`  •  *Triggered by:* ${{ github.actor }}  •  *Status:* :hourglass_flowing_sand: In progress"
                         - type: "context"
                           elements:
                             - type: "mrkdwn"
@@ -345,15 +339,9 @@ jobs:
                             text: "${{ steps.result.outputs.header }}"
                             emoji: true
                         - type: "section"
-                          fields:
-                            - type: "mrkdwn"
-                              text: "*Service:*\n${{ inputs.service }}"
-                            - type: "mrkdwn"
-                              text: "*Stage:*\n${{ inputs.stage }}"
-                            - type: "mrkdwn"
-                              text: "*Triggered by:*\n${{ github.actor }}"
-                            - type: "mrkdwn"
-                              text: "*Status:*\n${{ steps.result.outputs.status_field }}"
+                          text:
+                            type: "mrkdwn"
+                            text: "*Service:* `${{ inputs.service }}`  •  *Stage:* `${{ inputs.stage }}`  •  *Ref:* `${{ github.ref_name }}`  •  *Triggered by:* ${{ github.actor }}  •  *Status:* ${{ steps.result.outputs.status_field }}"
                         - type: "context"
                           elements:
                             - type: "mrkdwn"
