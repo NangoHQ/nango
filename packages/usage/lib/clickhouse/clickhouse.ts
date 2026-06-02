@@ -21,8 +21,8 @@ import type {
     GetDailySumAndBatchesQuery,
     GetDailySumAndBatchesResult,
     GetDailySumAndBatchesSeries,
-    GetTopValuesQuery,
-    GetTopValuesResult
+    GetTopDimensionValuesQuery,
+    GetTopDimensionValuesResult
 } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -431,7 +431,7 @@ export class Clickhouse {
      * ordered DESC by `rankingQuantityForMetric(metric)`. Populates the
      * filter dropdown UI. Limit is clamped to `TOP_N_BREAKDOWN_CAP`.
      */
-    async getTopValues(query: GetTopValuesQuery): Promise<Result<GetTopValuesResult>> {
+    async getTopDimensionValues(query: GetTopDimensionValuesQuery): Promise<Result<GetTopDimensionValuesResult>> {
         if (!this.client) {
             return Err(new Error('Clickhouse client not initialized'));
         }
@@ -468,18 +468,18 @@ export class Clickhouse {
                 clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{ dim: string }>();
-            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
                 ...tags,
                 success: 'true'
             });
             return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim) });
         } catch (err) {
-            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
                 ...tags,
                 success: 'false'
             });
-            logger.error(`Clickhouse getTopValues failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
-            return Err(new Error('Failed to execute Clickhouse top-values query', { cause: err }));
+            logger.error(`Clickhouse getTopDimensionValues failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
+            return Err(new Error('Failed to execute Clickhouse top-dimension-values query', { cause: err }));
         }
     }
 

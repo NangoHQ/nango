@@ -19,8 +19,8 @@ import type {
     GetDailyCounterResult,
     GetDailySumAndBatchesResult,
     GetDailySumAndBatchesSeries,
-    GetTopValuesQuery,
-    GetTopValuesResult
+    GetTopDimensionValuesQuery,
+    GetTopDimensionValuesResult
 } from './clickhouse/clickhouse.query.js';
 import type { getRedis } from '@nangohq/kvstore';
 import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
@@ -40,10 +40,10 @@ export interface IUsageTracker {
     incr(params: { accountId: number; metric: UsageMetric; delta?: number; forceRevalidation?: boolean }): Promise<Result<UsageStatus>>;
     revalidate({ accountId, metric }: { accountId: number; metric: UsageMetric }): Promise<Result<void>>;
     getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>>;
-    getTopValues(params: GetTopValuesParams): Promise<Result<GetTopValuesResult>>;
+    getTopDimensionValues(params: GetTopDimensionValuesParams): Promise<Result<GetTopDimensionValuesResult>>;
 }
 
-export interface GetTopValuesParams {
+export interface GetTopDimensionValuesParams {
     accountId: number;
     metric: UsageMetric;
     dimension: string;
@@ -92,7 +92,7 @@ export class UsageTrackerNoOps implements IUsageTracker {
         return Promise.resolve(Ok({}));
     }
 
-    public async getTopValues(params: GetTopValuesParams): Promise<Result<GetTopValuesResult>> {
+    public async getTopDimensionValues(params: GetTopDimensionValuesParams): Promise<Result<GetTopDimensionValuesResult>> {
         return Promise.resolve(Ok({ accountId: params.accountId, metric: params.metric, dimension: params.dimension, values: [] }));
     }
 }
@@ -256,11 +256,11 @@ export class UsageTracker implements IUsageTracker {
         }
     }
 
-    public async getTopValues(params: GetTopValuesParams): Promise<Result<GetTopValuesResult>> {
+    public async getTopDimensionValues(params: GetTopDimensionValuesParams): Promise<Result<GetTopDimensionValuesResult>> {
         // The (metric, dimension) pair is validated upstream by the controller's
         // zod schema. The CH discriminated union enforces it at compile time,
         // but the narrowing is lost at this public boundary — cast safely.
-        return this.getClickhouse().getTopValues(params as GetTopValuesQuery);
+        return this.getClickhouse().getTopDimensionValues(params as GetTopDimensionValuesQuery);
     }
 
     public async getBillingUsage(subscriptionId: string, accountId: number, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {

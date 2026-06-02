@@ -11,7 +11,7 @@ import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../ut
 import type { UsageMetric } from '@nangohq/types';
 import type { ClickhouseRawUsageEvent } from '@nangohq/usage';
 
-const route = '/api/v1/plans/billing-usage/top-values';
+const route = '/api/v1/plans/billing-usage/top-dimension-values';
 let api: Awaited<ReturnType<typeof runServer>>;
 let clickhouse: Clickhouse;
 
@@ -19,7 +19,7 @@ const day0 = new Date('2026-05-01T00:00:00.000Z');
 const day1 = new Date('2026-05-02T00:00:00.000Z');
 const end = new Date('2026-05-03T00:00:00.000Z');
 
-// records on three integrations: a >> b >> c, so the top-values ordering is deterministic.
+// records on three integrations: a >> b >> c, so the top-dimension-values ordering is deterministic.
 function seedFixture(accountId: number): ClickhouseRawUsageEvent[] {
     const batch = randomUUID();
     const attrs = (integrationId: string) => ({ environmentId: 1, integrationId, batchId: batch });
@@ -85,10 +85,10 @@ describe(`GET ${route}`, () => {
                 query: {
                     env: 'dev',
                     metric: 'connections',
-                    dimension: 'model', // not exposed for connections
+                    dimension: 'model', // not exposed for connections — invalid on purpose
                     from: day0.toISOString(),
                     to: end.toISOString()
-                }
+                } as any
             });
             isError(res.json);
             expect(res.res.status).toBe(400);
@@ -118,10 +118,10 @@ describe(`GET ${route}`, () => {
                 query: {
                     env: 'dev',
                     metric: 'records',
-                    dimension: '',
+                    dimension: '', // empty dimension is invalid on purpose
                     from: day0.toISOString(),
                     to: end.toISOString()
-                }
+                } as any
             });
             isError(res.json);
             expect(res.res.status).toBe(400);

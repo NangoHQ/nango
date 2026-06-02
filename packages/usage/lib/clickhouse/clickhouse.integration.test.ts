@@ -356,10 +356,10 @@ describe('Clickhouse', () => {
             });
         });
 
-        describe('getTopValues', () => {
+        describe('getTopDimensionValues', () => {
             it('returns top dimension values ordered by SUM(value) DESC', async () => {
                 // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
-                const res = await clickhouse.getTopValues({
+                const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
@@ -375,7 +375,7 @@ describe('Clickhouse', () => {
             });
 
             it('honours limit (clamped to TOP_N_BREAKDOWN_CAP upstream)', async () => {
-                const res = await clickhouse.getTopValues({
+                const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'records',
                     dimension: 'integration_id',
@@ -387,7 +387,7 @@ describe('Clickhouse', () => {
 
             it('coerces booleans to strings (success dim)', async () => {
                 // proxy fixture: success=true 22 events, success=false 12 events.
-                const res = await clickhouse.getTopValues({
+                const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     metric: 'proxy',
                     dimension: 'success',
@@ -399,7 +399,7 @@ describe('Clickhouse', () => {
             });
 
             it('returns Err on (metric, dimension) pair not in the whitelist', async () => {
-                const res = await clickhouse.getTopValues({
+                const res = await clickhouse.getTopDimensionValues({
                     accountId,
                     // `connections` does not expose `model` as a breakdown dim.
                     metric: 'connections',
@@ -411,7 +411,7 @@ describe('Clickhouse', () => {
             });
 
             it('returns an empty list when no events match the timeframe', async () => {
-                const res = await clickhouse.getTopValues({
+                const res = await clickhouse.getTopDimensionValues({
                     accountId: 999_999,
                     metric: 'records',
                     dimension: 'integration_id',

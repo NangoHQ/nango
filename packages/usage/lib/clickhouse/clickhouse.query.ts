@@ -87,8 +87,12 @@ export function tableForMetric(metric: UsageMetric): string {
 
 // Quantity expression used to rank dimension values across ALL metrics.
 // Counter metrics delegate to `quantityForMetric`; AVG metrics rank by raw
-// `SUM(value)` so dim values are ordered by volume of contributed events
-// (not the cumulative running average, which only makes sense as a series).
+// `SUM(value)` — total event volume contributed by a dim value over the
+// timeframe. This is NOT the running average (`sum/batches`) — that's a
+// per-day series quantity, not a per-period scalar suitable for ordering.
+// For the filter dropdown, "which values contributed the most data" is the
+// right signal, so unweighted `SUM(value)` is fine even though days with
+// more batches contribute proportionally more.
 export function rankingQuantityForMetric(metric: UsageMetric): string {
     if (metric === 'records' || metric === 'connections') {
         return `SUM(value)`;
@@ -98,7 +102,7 @@ export function rankingQuantityForMetric(metric: UsageMetric): string {
 
 // Top-N seen dimension values for (metric, dimension) over a timeframe.
 // Returns a flat string list; the filter UI uses this to populate dropdowns.
-export type GetTopValuesQuery = {
+export type GetTopDimensionValuesQuery = {
     [M in UsageMetric]: {
         accountId: number;
         metric: M;
@@ -109,7 +113,7 @@ export type GetTopValuesQuery = {
     };
 }[UsageMetric];
 
-export interface GetTopValuesResult {
+export interface GetTopDimensionValuesResult {
     accountId: number;
     metric: UsageMetric;
     dimension: string;

@@ -61,20 +61,24 @@ export type GetUsage = Endpoint<{
 
 // Top-N seen dimension values for (metric, dimension) over a timeframe.
 // Populates the filter dropdown UI on the billing-usage dashboard.
-export type GetBillingUsageTopValues = Endpoint<{
+//
+// Querystring is a per-metric discriminated union so the `dimension` field is
+// constrained to the metric's whitelist at compile time; the controller's zod
+// schema enforces the same shape at runtime.
+export type GetBillingUsageTopDimensionValues = Endpoint<{
     Method: 'GET';
-    Path: '/api/v1/plans/billing-usage/top-values';
+    Path: '/api/v1/plans/billing-usage/top-dimension-values';
     Querystring: {
-        env: string;
-        metric: UsageMetric;
-        // Dimension to enumerate values for. Must be a member of
-        // `BreakdownDimensions[metric]`; validated server-side.
-        dimension: string;
-        from?: string | undefined;
-        to?: string | undefined;
-        // Number of values to return. Defaults to 10, server-capped.
-        limit?: string | undefined;
-    };
+        [M in UsageMetric]: {
+            env: string;
+            metric: M;
+            dimension: BreakdownDimensions[M];
+            from?: string | undefined;
+            to?: string | undefined;
+            // Number of values to return. Defaults to 10, server-capped.
+            limit?: string | undefined;
+        };
+    }[UsageMetric];
     Success: {
         data: {
             values: string[];
