@@ -26,7 +26,7 @@ export default defineConfig({
             // getBillingUsage.integration.test.ts can exercise the CH path.
             // No effect on default behavior — every other request without the
             // explicit override still resolves to Orb.
-            ALLOW_OVERRIDE_GETUSAGE_SERVICE: 'true'
+            FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: 'true'
         },
         fileParallelism: false,
         pool: 'forks',

@@ -313,7 +313,7 @@ export const ENVS = z.object({
     // flip via localStorage('nango.billingUsageSource') without a redeploy.
     // The flag does NOT change the default — even when on, missing override
     // → Orb. Capping is unaffected (no override mechanism there).
-    ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
+    FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE: z.stringbool().optional().default(false),
 
     // --- Third parties
     // AWS

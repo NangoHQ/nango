@@ -37,7 +37,7 @@ const querySchema = z
         to: z.iso.datetime().optional(),
         // Per-request dashboard backend override. Webapp picks it up from
         // localStorage('nango.billingUsageSource') and forwards. Honoured
-        // server-side only when ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev
+        // server-side only when FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE is on (dev
         // gate). Without the gate, this is ignored and the dashboard stays
         // on Orb.
         source: z.enum(['clickhouse', 'orb']).optional(),

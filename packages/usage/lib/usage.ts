@@ -86,7 +86,7 @@ export class UsageTracker implements IUsageTracker {
     private cache: UsageCache;
     public billingClient: UsageBillingClient;
     // Read-only client for the dashboard CH path (gated by
-    // ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
+    // FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE + per-request `source` override).
     // Lazy-init keeps the dependency out of code paths that never read
     // billing usage from CH.
     private clickhouse: Clickhouse | null = null;
@@ -246,7 +246,7 @@ export class UsageTracker implements IUsageTracker {
         // only when the env gate is on AND the request opted in via `source`.
         // No silent Orb fallback on error — surfaces regressions in dev.
         // Capping (`getBillingMetrics`, no granularity) stays on Orb.
-        const requestedSource = envs.ALLOW_OVERRIDE_GETUSAGE_SERVICE ? opts?.source : undefined;
+        const requestedSource = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE ? opts?.source : undefined;
         const useClickhouseForDashboard = requestedSource === 'clickhouse' && opts?.granularity === 'day' && opts.timeframe?.start && opts.timeframe?.end;
 
         if (useClickhouseForDashboard) {

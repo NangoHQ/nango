@@ -99,7 +99,7 @@ export interface GetBillingUsageOpts {
     };
     /**
      * Per-request override of the dashboard backend source. Honoured only
-     * when `ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled (dev gate); ignored
+     * when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled (dev gate); ignored
      * everywhere else, so the default stays Orb. Only used by
      * `UsageTracker.getBillingUsage`; the Orb client itself ignores it.
      */
