@@ -1,4 +1,5 @@
 import { getBaseUrlOverrideDenylistFromEnv, isBaseUrlOverrideDenied } from './baseUrlOverrideDenylist.js';
+import { ActionError } from './errors.js';
 
 import type { HTTP_METHOD } from '@nangohq/types';
 
@@ -6,10 +7,9 @@ const UNCONTROLLED_FETCH_MAX_REDIRECTS = 5;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
 
-export interface UncontrolledFetchDeps {
-    throwError: (code: string, message: string) => never;
-    recordTransfer: (params: { bytesSent: number; bytesReceived: number }) => void;
-}
+const makeActionError = (code: string, message: string) => {
+    return new ActionError({ code, message });
+};
 
 export async function executeUncontrolledFetch(
     options: {
@@ -18,17 +18,17 @@ export async function executeUncontrolledFetch(
         headers?: Record<string, string> | undefined;
         body?: string | null;
     },
-    deps: UncontrolledFetchDeps
+    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void
 ): Promise<Response> {
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
-        if (params.bytesSent > 0 || params.bytesReceived > 0) deps.recordTransfer(params);
+        if (params.bytesSent > 0 || params.bytesReceived > 0) onBytes(params);
     };
 
     const baseUrlOverrideDenylist = getBaseUrlOverrideDenylistFromEnv();
 
     const throwIfDenied = (absoluteUrl: string): void => {
         if (baseUrlOverrideDenylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
-            deps.throwError('url_not_allowed', 'This URL is not allowed by server configuration.');
+            throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
         }
     };
 
@@ -89,19 +89,19 @@ export async function executeUncontrolledFetch(
         void response.body?.cancel();
 
         if (redirectsFollowed >= UNCONTROLLED_FETCH_MAX_REDIRECTS) {
-            deps.throwError('too_many_redirects', `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`);
+            throw makeActionError('too_many_redirects', `Exceeded maximum of ${UNCONTROLLED_FETCH_MAX_REDIRECTS} redirects.`);
         }
 
         let nextUrl: URL;
         try {
             nextUrl = new URL(location, currentUrl);
         } catch {
-            deps.throwError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
+            throw makeActionError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
         }
 
         // Native fetch rejects redirects to non-HTTP(S) schemes.
         if (!ALLOWED_REDIRECT_PROTOCOLS.has(nextUrl.protocol)) {
-            deps.throwError('invalid_redirect', 'Redirect Location must use http: or https:.');
+            throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
         }
 
         throwIfDenied(nextUrl.toString());

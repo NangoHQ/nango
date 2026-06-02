@@ -478,12 +478,7 @@ export abstract class NangoActionBase<
         headers?: Record<string, string> | undefined;
         body?: string | null;
     }): Promise<Response> {
-        return executeUncontrolledFetchFn(options, {
-            throwError: (code, message) => {
-                throw new this.ActionError({ code, message });
-            },
-            recordTransfer: (p) => this.recordUncontrolledFetchTransfer(p)
-        });
+        return executeUncontrolledFetchFn(options, (p) => this.recordUncontrolledFetchTransfer(p));
     }
 
     /**
