@@ -2149,6 +2149,23 @@ describe('PostgresStore', () => {
             expect(res1.isOk()).toBe(true);
             expect(res2.isOk()).toBe(true);
         });
+
+        it('should create the sync_job_id_new child index on the new partition', async () => {
+            const date = new Date('2025-01-17T00:00:00Z');
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { indexdef: string; indisvalid: boolean }[] }>(
+                `SELECT pg_get_indexdef(i.indexrelid) AS indexdef, i.indisvalid
+                 FROM pg_index i
+                 JOIN pg_class c ON c.oid = i.indexrelid
+                 WHERE c.relname = ?`,
+                ['records_seen_20250117_connection_model_job_new']
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0]?.indisvalid).toBe(true);
+            expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, sync_job_id_new\)/);
+        });
     });
 
     describe('dropSeenPartition', () => {
