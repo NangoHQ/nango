@@ -59,6 +59,29 @@ export type GetUsage = Endpoint<{
     };
 }>;
 
+// Top-N seen dimension values for (metric, dimension) over a timeframe.
+// Populates the filter dropdown UI on the billing-usage dashboard.
+export type GetBillingUsageTopValues = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/billing-usage/top-values';
+    Querystring: {
+        env: string;
+        metric: UsageMetric;
+        // Dimension to enumerate values for. Must be a member of
+        // `BreakdownDimensions[metric]`; validated server-side.
+        dimension: string;
+        from?: string | undefined;
+        to?: string | undefined;
+        // Number of values to return. Defaults to 10, server-capped.
+        limit?: string | undefined;
+    };
+    Success: {
+        data: {
+            values: string[];
+        };
+    };
+}>;
+
 export type GetBillingUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';

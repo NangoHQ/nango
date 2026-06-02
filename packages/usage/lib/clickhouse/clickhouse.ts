@@ -1,7 +1,14 @@
 import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimensionFor, quantityForMetric, tableForMetric } from './clickhouse.query.js';
+import {
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT,
+    isAllowedDimensionFor,
+    quantityForMetric,
+    rankingQuantityForMetric,
+    tableForMetric
+} from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -13,7 +20,9 @@ import type {
     GetDailySumAndBatchesDay,
     GetDailySumAndBatchesQuery,
     GetDailySumAndBatchesResult,
-    GetDailySumAndBatchesSeries
+    GetDailySumAndBatchesSeries,
+    GetTopValuesQuery,
+    GetTopValuesResult
 } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -414,6 +423,63 @@ export class Clickhouse {
             });
             logger.error(`Clickhouse getDailySumAndBatches failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
             return Err(new Error('Failed to execute Clickhouse daily sum+batches query', { cause: err }));
+        }
+    }
+
+    /**
+     * Top-N seen dimension values for (metric, dimension) over a timeframe,
+     * ordered DESC by `rankingQuantityForMetric(metric)`. Populates the
+     * filter dropdown UI. Limit is clamped to `TOP_N_BREAKDOWN_CAP`.
+     */
+    async getTopValues(query: GetTopValuesQuery): Promise<Result<GetTopValuesResult>> {
+        if (!this.client) {
+            return Err(new Error('Clickhouse client not initialized'));
+        }
+
+        const { accountId, metric, dimension, timeframe, limit } = query;
+        if (!isAllowedDimensionFor(metric, dimension)) {
+            return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        const queryStart = process.hrtime.bigint();
+        const tags = { metric };
+        const startDate = timeframe.start.toISOString().split('T')[0];
+        const endDate = timeframe.end.toISOString().split('T')[0];
+        const table = `${this.database}.${tableForMetric(metric)}`;
+        const cappedLimit = Math.min(Math.max(limit, 1), TOP_N_BREAKDOWN_CAP);
+
+        // The output alias is `dim` (not `value`) so the `ORDER BY` reference
+        // to the table column `value` (used by `rankingQuantityForMetric`) is
+        // not shadowed by the projection.
+        const sql = `
+            SELECT toString(${dimension}) AS dim
+            FROM ${table}
+            WHERE account_id = ${accountId}
+              AND day >= toDate('${startDate}')
+              AND day < toDate('${endDate}')
+            GROUP BY ${dimension}
+            ORDER BY ${rankingQuantityForMetric(metric)} DESC
+            LIMIT ${cappedLimit}
+        `;
+
+        try {
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+            });
+            const rows = await res.json<{ dim: string }>();
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+                ...tags,
+                success: 'true'
+            });
+            return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim) });
+        } catch (err) {
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+                ...tags,
+                success: 'false'
+            });
+            logger.error(`Clickhouse getTopValues failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
+            return Err(new Error('Failed to execute Clickhouse top-values query', { cause: err }));
         }
     }
 

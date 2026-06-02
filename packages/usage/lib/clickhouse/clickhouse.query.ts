@@ -85,6 +85,37 @@ export function tableForMetric(metric: UsageMetric): string {
     }
 }
 
+// Quantity expression used to rank dimension values across ALL metrics.
+// Counter metrics delegate to `quantityForMetric`; AVG metrics rank by raw
+// `SUM(value)` so dim values are ordered by volume of contributed events
+// (not the cumulative running average, which only makes sense as a series).
+export function rankingQuantityForMetric(metric: UsageMetric): string {
+    if (metric === 'records' || metric === 'connections') {
+        return `SUM(value)`;
+    }
+    return quantityForMetric(metric);
+}
+
+// Top-N seen dimension values for (metric, dimension) over a timeframe.
+// Returns a flat string list; the filter UI uses this to populate dropdowns.
+export type GetTopValuesQuery = {
+    [M in UsageMetric]: {
+        accountId: number;
+        metric: M;
+        dimension: BreakdownDimensions[M];
+        timeframe: { start: Date; end: Date };
+        // Number of values to return. Clamped server-side to TOP_N_BREAKDOWN_CAP.
+        limit: number;
+    };
+}[UsageMetric];
+
+export interface GetTopValuesResult {
+    accountId: number;
+    metric: UsageMetric;
+    dimension: string;
+    values: string[];
+}
+
 export function quantityForMetric(metric: CounterUsageMetric): string {
     switch (metric) {
         case 'function_executions':
