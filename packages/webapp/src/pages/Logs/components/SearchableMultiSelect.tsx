@@ -2,11 +2,11 @@ import { CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useDebounce } from 'react-use';
 
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { cn } from '../../../utils/utils';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { Button } from '@/components-v2/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
@@ -115,7 +115,11 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectArgs<any>> = (
                 <Command>
                     <CommandList>
                         <CommandEmpty>No framework found.</CommandEmpty>
-                        {maxed && <Alert variant="warning"><AlertDescription>Can&apos;t select more filters</AlertDescription></Alert>}
+                        {maxed && (
+                            <Alert variant="warning">
+                                <AlertDescription>Can&apos;t select more filters</AlertDescription>
+                            </Alert>
+                        )}
                         <CommandGroup>
                             {options.map((option) => {
                                 const checked = selected.some((sel) => option.value === sel);
