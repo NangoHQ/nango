@@ -8,12 +8,15 @@ import { deleteSyncRecords } from '../../crons/delete/deleteSyncRecords.js';
 import type { Result } from '@nangohq/utils';
 
 const TIMEOUT_SECONDS = 600;
+// Not latency-sensitive; allow a long queue wait so a backlog doesn't expire it before it starts.
+const CREATED_TO_STARTED_TIMEOUT_SECONDS = 86400;
 
 /** Deletes a sync's records and emits the `usage.records` decrement. Thin wrapper around `deleteSyncRecords`. */
 export const deleteRecordsTask = defineTask({
     type: 'deleteRecords',
     heartbeatTimeoutSecs: TIMEOUT_SECONDS,
     startedToCompletedTimeoutSecs: TIMEOUT_SECONDS,
+    createdToStartedTimeoutSecs: CREATED_TO_STARTED_TIMEOUT_SECONDS,
     groupKey: (payload) => `deleteRecords:${payload.nangoConnectionId}`,
     schema: z.object({
         syncId: z.string().uuid(),
@@ -21,14 +24,14 @@ export const deleteRecordsTask = defineTask({
         environmentId: z.number(),
         models: z.array(z.string()),
         /** Latest job id + 1; scopes the deletion to this sync's records. */
-        generation: z.number()
+        generation: z.number().int().positive()
     }),
     handle: async (payload, taskCtx): Promise<Result<void>> => {
         try {
             await deleteSyncRecords(payload, { logger: taskCtx.logger });
             return Ok(undefined);
         } catch (err) {
-            return Err(err instanceof Error ? err : new Error(`deleteRecords failed for sync ${payload.syncId}`));
+            return Err(new Error(`deleteRecords failed for sync ${payload.syncId}`, { cause: err }));
         }
     }
 });

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
-import { createSync, seeders } from '@nangohq/shared';
+import { createSync, getFunctionFileLocations, seeders } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
@@ -22,7 +22,15 @@ const countConfig = (id: number) => db.knex.from('_nango_sync_configs').where({ 
 const configExists = async (id: number) => Number((await countConfig(id))!.count) === 1;
 
 // The seeder always creates an active version; insert sibling versions (history / redeploy) directly.
-async function insertVersion(opts: { environment_id: number; nango_config_id: number; sync_name: string; version: string; active: boolean; deleted: boolean }) {
+async function insertVersion(opts: {
+    environment_id: number;
+    nango_config_id: number;
+    sync_name: string;
+    version: string;
+    active: boolean;
+    deleted: boolean;
+    fileLocation?: string;
+}) {
     const now = new Date();
     const [row] = await db.knex
         .from('_nango_sync_configs')
@@ -30,7 +38,7 @@ async function insertVersion(opts: { environment_id: number; nango_config_id: nu
             environment_id: opts.environment_id,
             sync_name: opts.sync_name,
             type: 'sync',
-            file_location: 'file_location',
+            file_location: opts.fileLocation ?? 'file_location',
             nango_config_id: opts.nango_config_id,
             version: opts.version,
             source: 'standalone',
@@ -152,6 +160,35 @@ describe('deleteSyncConfigData (deletion tree)', () => {
         // The redeployed live version (active, same name) and its sync are untouched.
         expect(await configExists(liveId)).toBe(true);
         expect(Number((await countSyncs(liveId))!.count)).toBe(1);
+    });
+
+    it('gathers artifact keys only for the deleted versions, never an active redeploy of the same name', async () => {
+        const env = await createEnvironmentSeed();
+        const integration = await createConfigSeed(env, 'github', 'github');
+
+        const historyId = await insertVersion({
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'scoped-fn',
+            version: '1.0.0',
+            active: false,
+            deleted: false,
+            fileLocation: 'config/hist/scoped-fn.js'
+        });
+        await insertVersion({
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'scoped-fn',
+            version: '2.0.0',
+            active: true,
+            deleted: false,
+            fileLocation: 'config/live/scoped-fn.js'
+        });
+
+        const files = await getFunctionFileLocations(historyId);
+
+        expect(files).toContain('config/hist/scoped-fn.js');
+        expect(files).not.toContain('config/live/scoped-fn.js');
     });
 
     it('throws DeletionBudgetExceeded on a passed deadline and leaves the config row in place (resumable)', async () => {

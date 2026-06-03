@@ -16,10 +16,16 @@ export interface FunctionDeletionParams {
 }
 
 /**
- * Soft deletes the sync config and all of the syncs associated with it.
- * Then enqueues the `teardownFunction` task to handle the full cleanup and hard deletion.
+ * Enqueues the durable `teardownFunction` task, then soft-deletes the config and its syncs to stop
+ * execution immediately.
  **/
 export async function deleteFunction({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
+    const res = await taskQueue.enqueue('teardownFunction', { syncConfigId, environmentId, models });
+    // Only continue if enqueueing the task was successful.
+    if (res.isErr()) {
+        return Err(res.error);
+    }
+
     // Fetch the live syncs before soft-deleting the config (the query requires an active config).
     const syncs = await getSyncsBySyncConfigId(environmentId, syncConfigId);
     for (const sync of syncs) {
@@ -27,11 +33,6 @@ export async function deleteFunction({ syncConfigId, environmentId, models }: Fu
     }
 
     await deleteSyncConfig(syncConfigId);
-
-    const res = await taskQueue.enqueue('teardownFunction', { syncConfigId, environmentId, models });
-    if (res.isErr()) {
-        return Err(res.error);
-    }
 
     return Ok(undefined);
 }

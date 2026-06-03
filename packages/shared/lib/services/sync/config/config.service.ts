@@ -639,17 +639,20 @@ export async function getSyncConfigById(environmentId: number, id: number): Prom
 export async function getFunctionFileLocations(syncConfigId: number): Promise<string[]> {
     const config = await schema()
         .from<DBSyncConfig>(TABLE)
-        .select<Pick<DBSyncConfig, 'nango_config_id' | 'sync_name'>>('nango_config_id', 'sync_name')
+        .select<Pick<DBSyncConfig, 'nango_config_id' | 'sync_name' | 'type'>>('nango_config_id', 'sync_name', 'type')
         .where({ id: syncConfigId })
         .first();
     if (!config) {
         return [];
     }
 
+    // Same version set deleteSyncConfigData removes: this function's rows (matching type), excluding any
+    // other *active* version — so a redeploy of the same name (or a same-named action) keeps its files.
     const jsFiles = (
         await schema()
             .from<DBSyncConfig>(TABLE)
-            .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name })
+            .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name, type: config.type })
+            .andWhere((qb) => qb.where({ active: false }).orWhere({ id: syncConfigId }))
             .select('file_location')
             .pluck('file_location')
     ).filter((location): location is string => Boolean(location) && location !== '_LOCAL_FILE_');

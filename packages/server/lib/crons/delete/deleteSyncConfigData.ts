@@ -21,20 +21,21 @@ export interface DeleteSyncConfigInput {
  *
  * Works up to the provided time deadline.
  */
-export async function deleteSyncConfigData({ syncConfigId, environmentId, models }: DeleteSyncConfigInput, opts: BatchDeleteSharedOptions) {
+export async function deleteSyncConfigData({ syncConfigId, environmentId }: DeleteSyncConfigInput, opts: BatchDeleteSharedOptions) {
     const { logger, deadline, limit, sleepMs } = opts;
     logger.info('Deleting sync config...', syncConfigId);
 
-    const target = await db.knex.from<DBSyncConfig>('_nango_sync_configs').select('nango_config_id', 'sync_name').where({ id: syncConfigId }).first();
+    const target = await db.knex.from<DBSyncConfig>('_nango_sync_configs').select('nango_config_id', 'sync_name', 'type').where({ id: syncConfigId }).first();
+    if (!target) {
+        return; // already gone (e.g. a sibling version handled by an earlier call)
+    }
 
-    // The handed-in row + inactive history
-    const versions: Pick<DBSyncConfig, 'id' | 'models'>[] = target
-        ? await db.knex
-              .from<DBSyncConfig>('_nango_sync_configs')
-              .select('id', 'models')
-              .where({ nango_config_id: target.nango_config_id, sync_name: target.sync_name })
-              .andWhere((qb) => qb.where({ active: false }).orWhere({ id: syncConfigId }))
-        : [{ id: syncConfigId, models }];
+    // The handed-in row + this function's inactive history
+    const versions: Pick<DBSyncConfig, 'id' | 'models'>[] = await db.knex
+        .from<DBSyncConfig>('_nango_sync_configs')
+        .select('id', 'models')
+        .where({ nango_config_id: target.nango_config_id, sync_name: target.sync_name, type: target.type })
+        .andWhere((qb) => qb.where({ active: false }).orWhere({ id: syncConfigId }));
 
     for (const version of versions) {
         await batchDelete({
