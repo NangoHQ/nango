@@ -45,6 +45,7 @@ function SheetContent({
     insetLeft,
     insetRight,
     scrollable = true,
+    hideCloseButton = false,
     ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
     side?: 'top' | 'right' | 'bottom' | 'left';
@@ -56,6 +57,8 @@ function SheetContent({
     insetRight?: number;
     /** When true (default when insets are used), wrap content in a scrollable area so the whole sheet scrolls. */
     scrollable?: boolean;
+    /** When true, suppress the built-in close button so a custom close affordance can be rendered. */
+    hideCloseButton?: boolean;
 }) {
     const hasInset = side === 'right' || side === 'left' ? insetTop != null || insetBottom != null : insetLeft != null || insetRight != null;
     const useScrollable = hasInset ? scrollable : false;
@@ -101,10 +104,12 @@ function SheetContent({
                 {...props}
             >
                 {useScrollable ? <div className="scrollbar-app flex min-h-0 w-full flex-1 flex-col overflow-auto pr-1">{children}</div> : children}
-                <SheetPrimitive.Close className="ring-offset-white focus:ring-neutral-950 data-[state=open]:bg-neutral-100 absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800">
-                    <XIcon />
-                    <span className="sr-only">Close</span>
-                </SheetPrimitive.Close>
+                {!hideCloseButton && (
+                    <SheetPrimitive.Close className="ring-offset-white focus:ring-neutral-950 data-[state=open]:bg-neutral-100 absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800">
+                        <XIcon />
+                        <span className="sr-only">Close</span>
+                    </SheetPrimitive.Close>
+                )}
             </SheetPrimitive.Content>
         </SheetPortal>
     );
