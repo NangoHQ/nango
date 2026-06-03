@@ -1,4 +1,4 @@
-import { Tag } from '../../../components/ui/label/Tag';
+import { Tag } from '@/components-v2/ui/Tag';
 
 import type { SearchMessagesData } from '@nangohq/types';
 
@@ -10,7 +10,7 @@ export const LevelTag: React.FC<{ level: SearchMessagesData['level'] }> = ({ lev
     } else if (level === 'warn') {
         return <Tag variant={'warning'}>Warn</Tag>;
     } else if (level === 'debug') {
-        return <Tag variant={'gray'}>Debug</Tag>;
+        return <Tag variant={'disabled'}>Debug</Tag>;
     }
 
     return null;
