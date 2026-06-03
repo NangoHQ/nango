@@ -23,7 +23,10 @@ export async function deleteConnectionData(connection: DBConnection, opts: Batch
         .where({ nango_connection_id: connection.id });
 
     for (const res of resSyncs) {
-        await deleteSyncData(res.sync, res.syncConfig, opts);
+        await deleteSyncData(
+            { syncId: res.sync.id, nangoConnectionId: connection.id, environmentId: connection.environment_id, models: res.syncConfig.models },
+            opts
+        );
     }
 
     // Connect session and oauth sessions are deleted on expiration

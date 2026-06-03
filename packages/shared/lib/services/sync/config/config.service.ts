@@ -628,6 +628,46 @@ export async function getSyncConfigById(environmentId: number, id: number): Prom
     return result || null;
 }
 
+/**
+ * Gathers every S3 artifact key belonging to a function: the compiled `.js` of each version
+ * (`file_location`) plus its sibling source `.ts`. Keyed by `nango_config_id` + `sync_name` so all
+ * versions are included, even already soft-deleted rows.
+ *
+ * Called at deletion-request time (while the config rows still exist) so the keys can be carried in
+ * the background task payload — the task itself must not re-derive them from a row that may be gone.
+ */
+export async function getFunctionFileLocations(syncConfigId: number): Promise<string[]> {
+    const config = await schema()
+        .from<DBSyncConfig>(TABLE)
+        .select<Pick<DBSyncConfig, 'nango_config_id' | 'sync_name'>>('nango_config_id', 'sync_name')
+        .where({ id: syncConfigId })
+        .first();
+    if (!config) {
+        return [];
+    }
+
+    const jsFiles = (
+        await schema()
+            .from<DBSyncConfig>(TABLE)
+            .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name })
+            .select('file_location')
+            .pluck('file_location')
+    ).filter((location): location is string => Boolean(location) && location !== '_LOCAL_FILE_');
+
+    // The `.ts` source sits next to the compiled file under the same `config/<id>/` directory and is
+    // never stored in the DB — derive it the same way the download path does (remote.service.ts).
+    const tsFiles = jsFiles.map((location) => `${location.split('/').slice(0, -1).join('/')}/${config.sync_name}.ts`);
+
+    return [...new Set([...jsFiles, ...tsFiles])];
+}
+
+/** Deletes the given remote artifact keys */
+export async function deleteFunctionFiles(fileLocations: string[]): Promise<void> {
+    if (fileLocations.length > 0) {
+        await remoteFileService.deleteFiles(fileLocations);
+    }
+}
+
 export async function updateFrequency(sync_config_id: number, runs: string): Promise<number> {
     return await db.knex
         .from<DBSyncConfig>(TABLE)

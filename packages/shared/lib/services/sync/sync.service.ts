@@ -28,6 +28,7 @@ import type {
     SyncAndActionDifferences,
     SyncTypeLiteral
 } from '@nangohq/types';
+import type { Knex } from 'knex';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -334,9 +335,9 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
     return true;
 };
 
-export const softDeleteSync = async (syncId: string): Promise<Result<string>> => {
+export const softDeleteSync = async (syncId: string, trx: Knex | Knex.Transaction = db.knex): Promise<Result<string>> => {
     try {
-        await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+        await trx.from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
         return Ok(syncId);
     } catch (err) {
         return Err(new Error(`Failed to soft delete sync with id ${syncId}: ${stringifyError(err)}`));
@@ -430,7 +431,8 @@ export const getAndReconcileDifferences = async ({
     deployMode = 'all',
     logCtx,
     logContextGetter,
-    orchestrator
+    orchestrator,
+    onFunctionDeleted
 }: {
     environmentId: number;
     flows: CLIDeployFlowConfig[];
@@ -440,6 +442,12 @@ export const getAndReconcileDifferences = async ({
     logCtx?: LogContext;
     logContextGetter: LogContextGetter;
     orchestrator: Orchestrator;
+    /**
+     * Called for each function detected as deleted during reconciliation (when `performAction`).
+     * The deploy controllers pass a callback that soft-deletes the config and enqueues the
+     * `deleteFunction` teardown pipeline. When omitted, falls back to the legacy inline teardown.
+     */
+    onFunctionDeleted?: (params: { syncConfigId: number; models: string[] }) => Promise<Result<void>>;
 }): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const updatedSyncs: SlimSync[] = [];
@@ -589,13 +597,22 @@ export const getAndReconcileDifferences = async ({
                     if (debug) {
                         void logCtx?.debug(`Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`);
                     }
-                    await syncManager.deleteConfig(existingSync.id, environmentId);
-
-                    if (existingSync.type === 'sync') {
-                        for (const connection of connections) {
-                            const syncId = await getSync({ connectionId: connection.id, name: existingSync.sync_name, variant: 'base' });
-                            if (syncId) {
-                                await syncManager.softDeleteSync(syncId.id, environmentId, orchestrator);
+                    // The teardown (soft-delete config + unschedule syncs + delete records/artifacts)
+                    // runs through the shared deleteFunction pipeline, enqueued by the caller. Falls
+                    // back to the legacy inline teardown when no callback is provided.
+                    if (onFunctionDeleted) {
+                        const deleted = await onFunctionDeleted({ syncConfigId: existingSync.id, models: existingSync.models });
+                        if (deleted.isErr()) {
+                            void logCtx?.error(`Failed to enqueue deletion for ${existingSync.type} ${existingSync.sync_name}`, { error: deleted.error });
+                        }
+                    } else {
+                        await syncManager.deleteConfig(existingSync.id, environmentId);
+                        if (existingSync.type === 'sync') {
+                            for (const connection of connections) {
+                                const syncId = await getSync({ connectionId: connection.id, name: existingSync.sync_name, variant: 'base' });
+                                if (syncId) {
+                                    await syncManager.softDeleteSync(syncId.id, environmentId, orchestrator);
+                                }
                             }
                         }
                     }
