@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet';
 
-import { Info } from './Info';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import DashboardLayout from '../../layout/DashboardLayout';
 import PageNotFound from '../../pages/PageNotFound';
 
@@ -17,14 +17,16 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
                 <title>Error - Nango</title>
             </Helmet>
             <h2 className="text-3xl font-semibold text-white mb-16">{title}</h2>
-            <Info variant={'destructive'}>
-                An error occurred, refresh your page or reach out to the support.{' '}
-                {error?.error.code === 'generic_error_support' && (
-                    <>
-                        (id: <span className="select-all">{error.error.payload as string}</span>)
-                    </>
-                )}
-            </Info>
+            <Alert variant="error">
+                <AlertDescription>
+                    An error occurred, refresh your page or reach out to the support.{' '}
+                    {error?.error.code === 'generic_error_support' && (
+                        <>
+                            (id: <span className="select-all">{error.error.payload as string}</span>)
+                        </>
+                    )}
+                </AlertDescription>
+            </Alert>
         </DashboardLayout>
     );
 };
