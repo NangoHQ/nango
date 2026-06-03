@@ -1,0 +1,25 @@
+packages/metering/tsconfig.json
+  s_1944b7ea83dd24::t_b5776b17d7846c 30-31
+packages/metering/lib/app.ts
+  s_1944b7ea83dd24::t_b5776b17d7846c 11,60,64
+package-lock.json
+  ai_agent 38816
+packages/metering/package.json
+  s_1944b7ea83dd24::t_b5776b17d7846c 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a7e4dbe7024a08330d6ee2cc614e8ad4659ca319",
+  "prompts": {},
+  "sessions": {
+    "s_1944b7ea83dd24": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8802-d152-7063-ba2b-b0a6b9217b89",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
