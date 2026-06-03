@@ -84,7 +84,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                                                 select(parent.value, !checked);
                                             }
                                         }}
-                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white"
+                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white focus-visible:bg-pure-black focus-visible:text-white"
                                     >
                                         <span
                                             className={cn(
@@ -113,7 +113,7 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                                                                 select(option.value, !childChecked);
                                                             }
                                                         }}
-                                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white"
+                                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white focus-visible:bg-pure-black focus-visible:text-white"
                                                     >
                                                         <span
                                                             className={cn(
