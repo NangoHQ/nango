@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { billing } from '@nangohq/billing';
-import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
+import { BREAKDOWN_DIMENSIONS, FILTER_PARAM_TYPE_FOR_DIM, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
@@ -9,7 +9,7 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
-import type { GetBillingUsage, UsageMetric } from '@nangohq/types';
+import type { GetBillingUsage, GetBillingUsageOpts, UsageMetric } from '@nangohq/types';
 
 // z.enum(BREAKDOWN_DIMENSIONS[m]) — output type is the per-metric dim union,
 // matching `BreakdownDimensions[m]` from @nangohq/types. Single source of
@@ -28,6 +28,55 @@ const breakdownFields = {
 } satisfies Record<UsageMetric, z.ZodTypeAny>;
 
 const breakdownSchema = z.object(breakdownFields).strict().optional();
+
+// Filter values arrive as `<dim>:<value>` strings (Express qs bracket
+// notation). Split on the FIRST ':' so values containing ':' (e.g. URLs)
+// survive intact. Returns `{ dimension, value }` on success.
+//
+// Typed dimensions (`environment_id: Int64`, `success: Bool`) get their
+// value validated here so unparseable inputs surface as 400 instead of
+// bubbling to a 500 when CH rejects the parameter binding downstream.
+const parseFilter = (allowedDims: readonly string[]) =>
+    z
+        .string()
+        .min(1)
+        .transform((s, ctx) => {
+            const colon = s.indexOf(':');
+            if (colon < 1 || colon === s.length - 1) {
+                ctx.addIssue({ code: 'custom', message: 'expected "<dim>:<value>"' });
+                return z.NEVER;
+            }
+            const dimension = s.slice(0, colon);
+            const value = s.slice(colon + 1);
+            if (!allowedDims.includes(dimension)) {
+                ctx.addIssue({ code: 'custom', message: `invalid dimension "${dimension}" for this metric` });
+                return z.NEVER;
+            }
+            const paramType = FILTER_PARAM_TYPE_FOR_DIM[dimension] ?? 'String';
+            if (paramType === 'Int64' && !/^-?\d+$/.test(value)) {
+                ctx.addIssue({ code: 'custom', message: `value "${value}" is not a valid integer for dimension "${dimension}"` });
+                return z.NEVER;
+            }
+            if (paramType === 'Bool' && value !== 'true' && value !== 'false') {
+                ctx.addIssue({ code: 'custom', message: `value "${value}" is not a valid boolean for dimension "${dimension}" (expected "true" or "false")` });
+                return z.NEVER;
+            }
+            return { dimension, value };
+        });
+
+// `satisfies Record<UsageMetric, …>` forces an entry per metric — adding a
+// new `UsageMetric` without updating this object fails to typecheck.
+const filterFields = {
+    proxy: parseFilter(BREAKDOWN_DIMENSIONS.proxy).optional(),
+    function_executions: parseFilter(BREAKDOWN_DIMENSIONS.function_executions).optional(),
+    function_logs: parseFilter(BREAKDOWN_DIMENSIONS.function_logs).optional(),
+    function_compute_gbms: parseFilter(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
+    webhook_forwards: parseFilter(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
+    records: parseFilter(BREAKDOWN_DIMENSIONS.records).optional(),
+    connections: parseFilter(BREAKDOWN_DIMENSIONS.connections).optional()
+} satisfies Record<UsageMetric, z.ZodTypeAny>;
+
+const filterSchema = z.object(filterFields).strict().optional();
 
 const ALL_METRICS = Object.keys(BREAKDOWN_DIMENSIONS) as [UsageMetric, ...UsageMetric[]];
 
@@ -57,7 +106,11 @@ const querySchema = z
         // Top-N for breakdown. Capped at TOP_N_BREAKDOWN_CAP at the schema level
         // so requests exceeding it 400 rather than silently clamping — the SQL
         // also clamps defensively (see `Clickhouse.getDailyCounter`).
-        top: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional()
+        top: z.coerce.number().int().positive().max(TOP_N_BREAKDOWN_CAP).optional(),
+        // Per-metric row-level filter, `filter[<metric>]=<dim>:<value>`.
+        // Mutually exclusive with `breakdown[<metric>]` on the same metric
+        // (rejected by the refine below). CH path only.
+        filter: filterSchema
     })
     .refine(
         (data) => {
@@ -69,6 +122,19 @@ const querySchema = z
         {
             message: 'From date must be before to date',
             path: ['from']
+        }
+    )
+    .refine(
+        (data) => {
+            if (!data.filter || !data.breakdown) return true;
+            for (const m of Object.keys(data.filter) as UsageMetric[]) {
+                if (data.filter[m] && data.breakdown[m]) return false;
+            }
+            return true;
+        },
+        {
+            message: 'filter and breakdown are mutually exclusive on the same metric',
+            path: ['filter']
         }
     );
 
@@ -125,7 +191,10 @@ export const getBillingUsage = asyncWrapper<GetBillingUsage>(async (req, res) =>
         ...(query.source ? { source: query.source } : {}),
         ...(query.metrics ? { metrics: query.metrics } : {}),
         ...(query.breakdown ? { breakdown: query.breakdown } : {}),
-        ...(query.top ? { top: query.top } : {})
+        ...(query.top ? { top: query.top } : {}),
+        // zod's transform widens `dimension` to `string`; per-metric whitelist
+        // is enforced at parse time, so the cast is safe.
+        ...(query.filter ? { filter: query.filter as NonNullable<GetBillingUsageOpts['filter']> } : {})
     });
 
     if (usage.isErr()) {

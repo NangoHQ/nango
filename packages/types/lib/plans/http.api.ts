@@ -107,6 +107,11 @@ export type GetBillingUsage = Endpoint<{
         // at runtime by the controller's zod schema.
         breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined;
         top?: string | undefined;
+        // Express qs bracket notation: `filter[<metric>]=<dim>:<value>` →
+        // `filter: { records: 'integration_id:hubspot', … }`. Server splits
+        // the string on the first ':' so values containing ':' stay intact.
+        // Mutually exclusive with `breakdown[<metric>]` on the same metric.
+        filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
     };
     Success: {
         data: {

@@ -45,6 +45,17 @@ export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): b
     return (BREAKDOWN_DIMENSIONS[metric] as readonly string[]).includes(dimension);
 }
 
+// CH parameter type used when binding a filter value to a dimension column.
+// Strings by default; non-string MV columns get their native type so CH
+// parses the user-supplied value once at binding time, the comparison stays
+// native, and any column-level data-skipping index applies. Default for
+// unmapped dims is `String` — keep this map exhaustive vs the actual MV
+// column types or filtered queries on unmapped non-string columns will fail.
+export const FILTER_PARAM_TYPE_FOR_DIM: Record<string, 'Int64' | 'Bool' | 'String'> = {
+    environment_id: 'Int64',
+    success: 'Bool'
+};
+
 export type GetDailyCounterQuery = {
     [M in CounterUsageMetric]: {
         accountId: UsageEvent['payload']['properties']['accountId'];
@@ -53,6 +64,13 @@ export type GetDailyCounterQuery = {
         // Optional top-N breakdown size when `dimension !== 'none'`. Defaults
         // to TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
         top?: number;
+        // Optional row-level filter: scopes the SQL to rows where the given
+        // dimension equals the given value. Used by the dashboard's per-metric
+        // filter UX. The value is passed through CH's parameterized
+        // `query_params` (no string interpolation of user input). Caller is
+        // expected to ensure mutual exclusion with `dimension !== 'none'`
+        // (breakdown) for the same metric; the primitive does not enforce it.
+        filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` for this query. Defaults to the
         // dashboard ceiling; callers that race against a shorter wall-clock
         // (e.g. shadow path) set this to align server-side cancellation.
@@ -165,6 +183,10 @@ export type GetDailySumAndBatchesQuery = {
         metric: M;
         dimension: DimensionFor<M>;
         top?: number;
+        // Row-level filter (see GetDailyCounterQuery). For AVG metrics it
+        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the dim
+        // value, producing a standalone running-avg for that one value.
+        filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` (see GetDailyCounterQuery).
         maxExecutionSeconds?: number;
         timeframe: { start: Date; end: Date };

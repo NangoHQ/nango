@@ -2,6 +2,7 @@ import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/util
 
 import { Batcher } from './batcher.js';
 import {
+    FILTER_PARAM_TYPE_FOR_DIM,
     TOP_N_BREAKDOWN_CAP,
     TOP_N_BREAKDOWN_DEFAULT,
     isAllowedDimensionFor,
@@ -124,9 +125,12 @@ export class Clickhouse {
             return Err(new Error('Clickhouse client not initialized'));
         }
 
-        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds, filter } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        if (filter && !isAllowedDimensionFor(metric, filter.dimension)) {
+            return Err(new Error(`Invalid filter dimension ${JSON.stringify(filter.dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -134,6 +138,13 @@ export class Clickhouse {
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
         const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
+        // `query_params` keeps the user-supplied filter value out of the SQL
+        // string — CH parses, validates, and binds it server-side. Native
+        // column type per dim (Int64/Bool/String) so comparison stays native
+        // and any column-level data-skipping index applies.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         const sql =
             dimension === 'none'
@@ -145,6 +156,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
+              ${filterClause}
             GROUP BY day
             ORDER BY day
         `
@@ -155,6 +167,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                   AND day >= toDate('${startDate}')
                   AND day < toDate('${endDate}')
+                  ${filterClause}
                 GROUP BY ${dimension}
                 ORDER BY total DESC
                 LIMIT ${top}
@@ -168,6 +181,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
+              ${filterClause}
             GROUP BY day, isRest, dimensionValue
             ORDER BY day, isRest, dimensionValue
         `;
@@ -176,6 +190,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
+                ...(queryParams ? { query_params: queryParams } : {}),
                 clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{
@@ -272,9 +287,12 @@ export class Clickhouse {
         if (!this.client) {
             return Err(new Error('Clickhouse client not initialized'));
         }
-        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds, filter } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        if (filter && !isAllowedDimensionFor(metric, filter.dimension)) {
+            return Err(new Error(`Invalid filter dimension ${JSON.stringify(filter.dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -282,6 +300,14 @@ export class Clickhouse {
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
         const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
+        // `query_params` keeps the user-supplied filter value out of the SQL
+        // string. Filter narrows both `SUM(value)` and `uniqExact(batch_id)`
+        // so the running average reflects only the filtered subset.
+        // See `getDailyCounter` for the typed-binding rationale.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClauseAliased = filter ? `AND t.${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         // dim branch JOINs per-dim sums against `global_batches` so every series
         // shares the same denominator — see method docstring.
@@ -296,6 +322,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
             AND day >= toDate('${startDate}')
             AND day < toDate('${endDate}')
+            ${filterClause}
             GROUP BY day
             ORDER BY day
         `
@@ -306,6 +333,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                 AND day >= toDate('${startDate}')
                 AND day < toDate('${endDate}')
+                ${filterClause}
                 GROUP BY day
             ),
             top_dims AS (
@@ -314,6 +342,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                 AND day >= toDate('${startDate}')
                 AND day < toDate('${endDate}')
+                ${filterClause}
                 GROUP BY ${dimension}
                 ORDER BY total DESC
                 LIMIT ${top}
@@ -332,6 +361,7 @@ export class Clickhouse {
             WHERE t.account_id = ${accountId}
             AND t.day >= toDate('${startDate}')
             AND t.day < toDate('${endDate}')
+            ${filterClauseAliased}
             GROUP BY t.day, isRest, dimensionValue
             ORDER BY t.day, isRest, dimensionValue
         `;
@@ -340,6 +370,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
+                ...(queryParams ? { query_params: queryParams } : {}),
                 clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{

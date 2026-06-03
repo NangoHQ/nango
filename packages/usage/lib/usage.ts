@@ -16,7 +16,9 @@ import { usageMetrics } from './metrics.js';
 import type {
     AvgUsageMetric,
     CounterUsageMetric,
+    GetDailyCounterQuery,
     GetDailyCounterResult,
+    GetDailySumAndBatchesQuery,
     GetDailySumAndBatchesResult,
     GetDailySumAndBatchesSeries,
     GetTopDimensionValuesQuery,
@@ -295,7 +297,8 @@ export class UsageTracker implements IUsageTracker {
                 timeframe: opts.timeframe!,
                 ...(opts.metrics ? { metrics: opts.metrics } : {}),
                 ...(opts.breakdown ? { breakdown: opts.breakdown } : {}),
-                ...(opts.top !== undefined ? { top: opts.top } : {})
+                ...(opts.top !== undefined ? { top: opts.top } : {}),
+                ...(opts.filter ? { filter: opts.filter } : {})
             });
         }
 
@@ -408,9 +411,13 @@ export class UsageTracker implements IUsageTracker {
             // Override CH `max_execution_time` for every fan-out query. The
             // shadow path uses this so an abandoned race doesn't keep CH busy.
             maxExecutionSeconds?: number;
+            // Per-metric row-level filter. Mutually exclusive with `breakdown`
+            // on the same metric — the controller rejects the combination
+            // before reaching this method.
+            filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top, maxExecutionSeconds } = opts;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, maxExecutionSeconds, filter } = opts;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
@@ -420,14 +427,40 @@ export class UsageTracker implements IUsageTracker {
         const ch = this.getClickhouse();
 
         const maxExecOpt = maxExecutionSeconds !== undefined ? { maxExecutionSeconds } : {};
+        // `filter[m]` is the per-metric filter typed as
+        // `{ dimension: BreakdownDimensions[m]; value: string } | undefined`.
+        // TypeScript can't narrow the union when `m` is a generic counter
+        // metric, so we cast at the call site — the value is validated by
+        // the controller's discriminated zod schema before we get here.
+        const filterFor = <M extends UsageMetric>(m: M): { dimension: BreakdownDimensions[M]; value: string } | undefined =>
+            filter?.[m] as { dimension: BreakdownDimensions[M]; value: string } | undefined;
 
-        // Base calls — `dimension: 'none'` is valid for every variant, so the
-        // union-typed `metric: m` is fine here.
+        // Base calls — `dimension: 'none'` is valid for every variant.
+        // Filter forces a cast to the discriminated union because TS can't
+        // narrow `BreakdownDimensions[M]` while iterating a union-typed `m`;
+        // safe because controller-side zod validates the (metric, dim) pair.
         const counterBaseP = Promise.all(
-            counterNoDim.map((m) => ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...maxExecOpt }).then((r) => [m, r] as const))
+            counterNoDim.map((m) => {
+                const f = filterFor(m);
+                return ch
+                    .getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...(f ? { filter: f } : {}), ...maxExecOpt } as GetDailyCounterQuery)
+                    .then((r) => [m, r] as const);
+            })
         );
         const avgBaseP = Promise.all(
-            avgNoDim.map((m) => ch.getDailySumAndBatches({ accountId, metric: m, dimension: 'none', timeframe, ...maxExecOpt }).then((r) => [m, r] as const))
+            avgNoDim.map((m) => {
+                const f = filterFor(m);
+                return ch
+                    .getDailySumAndBatches({
+                        accountId,
+                        metric: m,
+                        dimension: 'none',
+                        timeframe,
+                        ...(f ? { filter: f } : {}),
+                        ...maxExecOpt
+                    } as GetDailySumAndBatchesQuery)
+                    .then((r) => [m, r] as const);
+            })
         );
 
         // Breakdown calls — unrolled per-metric so `metric: '<literal>'` picks
@@ -505,10 +538,11 @@ export class UsageTracker implements IUsageTracker {
         }
         for (const [metric, res] of avgBaseResults) {
             if (res.isErr()) return Err(res.error);
-            const billing = toRunningAvgUsage(res.value)[0];
-            if (billing) {
-                result[metric] = billing;
-            }
+            // Empty series (filter matched no rows, or no events in window):
+            // emit a zero-valued cumulative metric so the downstream API
+            // formatter doesn't fall back to its generic `view_mode: 'periodic'`
+            // shape, which is wrong for AVG metrics.
+            result[metric] = toRunningAvgUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
         }
 
         // Breakdown-requested metrics: emit a BillingUsageMetric with empty
