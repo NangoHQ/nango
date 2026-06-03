@@ -126,17 +126,33 @@ export class PostgresStore implements RecordsStore {
                 const next = day.add(1, 'day');
                 const partitionName = `records_seen_${suffix}`;
                 const indexName = `${partitionName}_connection_model_generation`;
-                // Create the (connection_id, model, generation) child index inline so every new
-                // partition is born ready for the read-path switch in a later phase. Two separate
-                // statements so the parent's ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is
-                // released before the child index build runs — the partition is empty, so the
-                // (non-CONCURRENTLY) index build is fast and the child's ACCESS EXCLUSIVE stays
-                // catalog-only.
+                // Atomic check-then-create. This code is called from the write path on every
+                // insertSeenEntry; the SELECT EXISTS short-circuits the hot path (existing
+                // partition → bail, no locks on records_seen). Only when the partition is
+                // actually new do we run CREATE TABLE PARTITION OF + CREATE INDEX inside the
+                // same transaction: the partition is empty at that point so the (non-
+                // CONCURRENTLY) index build is microseconds and the parent's brief
+                // ACCESS EXCLUSIVE window only affects concurrent new-partition attempts.
+                // Crucially this skips CREATE INDEX on pre-existing partitions (e.g. today's
+                // partition at deploy time) that have data and would block writes during a
+                // multi-second build.
+                //
+                // IF NOT EXISTS on both DDL statements is the defensive belt for the narrow
+                // race where two concurrent transactions both see "not exists" from their
+                // SELECT and queue up on the parent's ACCESS EXCLUSIVE — the second one's
+                // CREATE TABLE / CREATE INDEX no-ops silently once the first commits.
                 promise = this.db
-                    .raw(
-                        `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
-                    )
-                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]))
+                    .transaction(async (trx) => {
+                        const { rows } = await trx.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [
+                            partitionName
+                        ]);
+                        if (rows[0]?.exists) return;
+
+                        await trx.raw(
+                            `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                        );
+                        await trx.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]);
+                    })
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
