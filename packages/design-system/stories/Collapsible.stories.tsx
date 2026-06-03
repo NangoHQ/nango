@@ -17,10 +17,7 @@ export const Default: Story = {
     render: () => (
         <Collapsible className="w-64 border border-border-base rounded p-4">
             <CollapsibleTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex w-full items-center justify-between [&[data-state=open]_svg]:rotate-90"
-                >
+                <Button variant="ghost" className="flex w-full items-center justify-between [&[data-state=open]_svg]:rotate-90">
                     Advanced settings
                     <ChevronRight className="size-4 transition-transform duration-200" />
                 </Button>

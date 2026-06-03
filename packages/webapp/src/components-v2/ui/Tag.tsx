@@ -9,7 +9,7 @@ const tagVariants = cva('inline-flex items-center justify-center rounded px-2 py
     variants: {
         variant: {
             success: 'bg-feedback-success-bg text-feedback-success-fg',
-            alert: 'bg-feedback-error-bg text-feedback-error-fg',
+            alert: 'bg-[#5a0f0fc4] text-feedback-error-fg',
             info: 'bg-feedback-info-bg text-feedback-info-fg',
             warning: 'bg-feedback-warning-bg text-feedback-warning-fg',
             disabled: 'bg-bg-subtle text-text-disabled',
