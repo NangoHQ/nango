@@ -12622,6 +12622,48 @@ mural:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
 
+nable-ncentral:
+    display_name: N-able N-central
+    categories:
+        - support
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.serverUrl}/api/auth/authenticate
+    token_headers:
+        authorization: Bearer ${credentials.userApiToken}
+        accept: application/json
+    token_response:
+        token: tokens.access.token
+        token_expiration: tokens.access.expirySeconds
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}/api
+        headers:
+            authorization: Bearer ${accessToken}
+        verification:
+            method: GET
+            endpoints:
+                - /auth/validate
+    docs: https://nango.dev/docs/api-integrations/nable-ncentral
+    docs_connect: https://nango.dev/docs/api-integrations/nable-ncentral/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: N-central server URL
+            description: Your N-central server hostname
+            example: ncentral.example.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-find-your-n-central-server-url'
+    credentials:
+        userApiToken:
+            type: string
+            title: User-API token
+            description: Your N-central User-API token (JWT)
+            secret: true
+            doc_section: '#step-2-generate-a-user-api-token'
+
 nationbuilder:
     display_name: NationBuilder
     categories:

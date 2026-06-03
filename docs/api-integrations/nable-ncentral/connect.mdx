@@ -1,0 +1,45 @@
+---
+title: N-able N-central - How do I link my account?
+sidebarTitle: N-able N-central
+---
+
+# Overview
+
+To authenticate with N-able N-central, you need:
+1. **N-central server URL** - Your N-central server hostname, for example `ncentral.example.com`.
+2. **User-API token** - A JWT generated from the N-central UI for the user that should access the API.
+
+Nango exchanges the User-API token for an N-central access token, then repeats that exchange when the access token expires.
+
+### Prerequisites
+
+- An N-central instance running version 2023.9 or later.
+- A user account with access to generate a User-API token.
+- The permissions required for the N-central API endpoints your integration calls.
+
+### Instructions
+
+#### Step 1: Find your N-central server URL
+
+Use the hostname of your N-central instance without `https://` and without a path.
+
+For example, if your N-central URL is `https://ncentral.example.com/dashboard`, enter `ncentral.example.com`.
+
+#### Step 2: Generate a User-API token
+
+1. In N-central, go to **Administration** -> **User Management** -> **Users**.
+2. Open the user that should access the API.
+3. Go to **API Access**.
+4. Generate a JSON Web Token.
+5. Copy the generated token. Nango stores this token so it can request fresh N-central access tokens when needed.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **N-central server URL** and **User-API token**:
+1. Open the form where you need to authenticate with N-able N-central.
+2. Enter your server hostname and User-API token.
+3. Submit the form.
+
+You are now connected to N-able N-central.
+
+For more details, see [N-able's N-central authentication guide](https://developer.n-able.com/n-central/docs/managing-authentication).
