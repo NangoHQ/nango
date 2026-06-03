@@ -7316,9 +7316,10 @@ formstack-documents:
         - productivity
     auth_mode: BASIC
     proxy:
-        base_url: https://www.webmerge.me/api
+        base_url: https://www.webmerge.me
         verification:
             method: GET
+            base_url_override: https://www.webmerge.me/api
             endpoints:
                 - /documents
     docs: https://nango.dev/docs/integrations/all/formstack-documents
