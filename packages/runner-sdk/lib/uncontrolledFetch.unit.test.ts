@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { HTTP_METHOD, NangoProps } from '@nangohq/types';
 
 function makeProps(): NangoProps {
@@ -23,7 +24,9 @@ interface TransferRecord {
 
 async function makeActionInstance() {
     const mod = await import('./action.js');
+    const uncontrolledFetchMod = await import('./uncontrolledFetch.js');
     const { NangoActionBase } = mod;
+    const { executeUncontrolledFetch } = uncontrolledFetchMod;
 
     const transfers: TransferRecord[] = [];
 
@@ -31,8 +34,8 @@ async function makeActionInstance() {
         // minimal shape for places that may touch user agent
         nango = { userAgent: 'runner-sdk-test' } as any;
 
-        protected override recordUncontrolledFetchTransfer(params: TransferRecord): void {
-            transfers.push(params);
+        async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+            return executeUncontrolledFetch(options, (p) => transfers.push(p));
         }
 
         proxy(): Promise<any> {
@@ -507,12 +510,17 @@ describe('uncontrolledFetch transfer metering', () => {
         expect(transfers[0]!.bytesReceived).toBeLessThan(1000000);
     });
 
-    it('base class no-op hook does not throw and emits no transfers when not overridden', async () => {
+    it('implementation with no-op telemetry callback does not throw and emits no transfers', async () => {
         const mod = await import('./action.js');
+        const uncontrolledFetchMod = await import('./uncontrolledFetch.js');
         const { NangoActionBase } = mod;
+        const { executeUncontrolledFetch } = uncontrolledFetchMod;
 
         class NoOpTestAction extends NangoActionBase {
             nango = { userAgent: 'test' } as any;
+            async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+                return executeUncontrolledFetch(options, () => {});
+            }
             proxy(): Promise<any> {
                 throw new Error('not implemented');
             }

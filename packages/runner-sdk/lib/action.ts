@@ -2,13 +2,9 @@ import { getProvider } from '@nangohq/providers';
 
 import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
-// Aliased import creates a local const binding. In CJS transpilation, TypeScript
-// accesses named imports via property lookup on the module object each render, which
-// makes them vulnerable to monkey-patching. The alias forces a captured snapshot that
-// cannot be replaced from outside this module.
-import { executeUncontrolledFetch as executeUncontrolledFetchFn } from './uncontrolledFetch.js';
 
 import type { ZodCheckpoint, ZodMetadata } from './types.js';
+import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
@@ -21,7 +17,6 @@ import type {
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
-    HTTP_METHOD,
     InstallPluginCredentials,
     JwtCredentials,
     MaybePromise,
@@ -466,20 +461,11 @@ export abstract class NangoActionBase<
 
     public abstract startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void>;
 
-    protected recordUncontrolledFetchTransfer(_params: { bytesSent: number; bytesReceived: number }): void {}
-
     /**
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.
      */
-    public async uncontrolledFetch(options: {
-        url: URL;
-        method?: HTTP_METHOD;
-        headers?: Record<string, string> | undefined;
-        body?: string | null;
-    }): Promise<Response> {
-        return executeUncontrolledFetchFn(options, (p) => this.recordUncontrolledFetchTransfer(p));
-    }
+    public abstract uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response>;
 
     /**
      * Try to acquire a lock for a given key.

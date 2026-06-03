@@ -11,13 +11,15 @@ const makeActionError = (code: string, message: string) => {
     return new ActionError({ code, message });
 };
 
+export interface UncontrolledFetchOptions {
+    url: URL;
+    method?: HTTP_METHOD;
+    headers?: Record<string, string> | undefined;
+    body?: string | null;
+}
+
 export async function executeUncontrolledFetch(
-    options: {
-        url: URL;
-        method?: HTTP_METHOD;
-        headers?: Record<string, string> | undefined;
-        body?: string | null;
-    },
+    options: UncontrolledFetchOptions,
     onBytes: (params: { bytesSent: number; bytesReceived: number }) => void
 ): Promise<Response> {
     const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {

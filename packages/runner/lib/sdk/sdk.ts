@@ -1,5 +1,5 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
     MAX_LOG_PAYLOAD,
@@ -20,7 +20,7 @@ import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
 import type { TelemetryRecorder } from '../telemetry.js';
-import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type {
     ApiPublicConnectionFull,
     Checkpoint,
@@ -101,14 +101,17 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         });
     }
 
-    protected override recordUncontrolledFetchTransfer({ bytesSent, bytesReceived }: { bytesSent: number; bytesReceived: number }): void {
-        this.telemetryRecorder?.record({
-            type: 'data_transfer',
-            callsite: 'uncontrolled_fetch',
-            connectionId: this.connectionId,
-            integrationId: this.providerConfigKey,
-            bytesSent,
-            bytesReceived
+    public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        return executeUncontrolledFetch(options, ({ bytesSent, bytesReceived }) => {
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'uncontrolled_fetch',
+                connectionId: this.connectionId,
+                integrationId: this.providerConfigKey,
+                syncId: this.syncId,
+                bytesSent,
+                bytesReceived
+            });
         });
     }
 
@@ -440,17 +443,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     startSync = NangoActionRunner['prototype']['startSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
-
-    protected override recordUncontrolledFetchTransfer({ bytesSent, bytesReceived }: { bytesSent: number; bytesReceived: number }): void {
-        this.telemetryRecorder?.record({
-            type: 'data_transfer',
-            callsite: 'uncontrolled_fetch',
-            connectionId: this.connectionId,
-            integrationId: this.providerConfigKey,
-            bytesSent,
-            bytesReceived
-        });
-    }
+    uncontrolledFetch = NangoActionRunner['prototype']['uncontrolledFetch'];
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         this.throwIfAbortedOrKilled();
