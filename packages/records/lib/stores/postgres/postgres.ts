@@ -1392,7 +1392,7 @@ export class PostgresStore implements RecordsStore {
                                     FROM ${RECORDS_SEEN_TABLE}
                                     WHERE connection_id = :connectionId
                                       AND model = :model
-                                      AND sync_job_id >= :generation
+                                      AND generation >= :generation
                                 ),
                                 to_delete AS (
                                     SELECT p.ctid, p.id
