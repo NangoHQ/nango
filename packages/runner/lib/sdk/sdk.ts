@@ -102,6 +102,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        this.throwIfAbortedOrKilled();
         return executeUncontrolledFetch(options, ({ bytesSent, bytesReceived }) => {
             this.telemetryRecorder?.record({
                 type: 'data_transfer',
