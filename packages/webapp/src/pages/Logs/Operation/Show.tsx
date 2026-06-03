@@ -105,7 +105,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 </div>
                 <div className="flex gap-3 items-center">
                     <div className="flex">
-                        <StatusTag state={operation.state} />
+                        <StatusTag state={operation.state} size="sm" />
                     </div>
                     <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
@@ -124,7 +124,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                 <div className="flex gap-2 items-center w-[30%]">
                     <div className="font-semibold text-sm">Type</div>
                     <div className="text-gray-400 text-xs pt-px">
-                        <OperationTag message={operation.message} operation={operation.operation} />
+                        <OperationTag message={operation.message} operation={operation.operation} size="sm" />
                     </div>
                 </div>
             </div>

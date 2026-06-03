@@ -31,4 +31,6 @@ function Tag({ className, variant, size, ...props }: React.ComponentProps<'span'
     return <span data-slot="tag" className={cn(tagVariants({ variant, size }), className)} {...props} />;
 }
 
+export type TagSize = NonNullable<VariantProps<typeof tagVariants>['size']>;
+
 export { Tag, tagVariants };
