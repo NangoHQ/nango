@@ -70,7 +70,7 @@ try {
             logger.error(`BackpressureMonitor error: ${stringifyError(err)}`);
         }
     });
-    void backpressureMonitor.start();
+    backpressureMonitor.start();
 
     // default max listener is 10
     // but we need more listeners

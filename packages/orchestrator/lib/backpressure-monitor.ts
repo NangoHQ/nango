@@ -1,6 +1,4 @@
-import { setTimeout } from 'node:timers/promises';
-
-import { metrics, stringifyError } from '@nangohq/utils';
+import { cancellableDaemon, metrics, stringifyError } from '@nangohq/utils';
 
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
@@ -19,8 +17,7 @@ export class BackpressureMonitor {
     private readonly tickIntervalMs: number;
     private readonly topN: number;
     private readonly onError: (err: Error) => void;
-    private readonly ac = new AbortController();
-    private status: 'running' | 'stopped' = 'stopped';
+    private daemon: ReturnType<typeof cancellableDaemon> | null = null;
 
     constructor({ scheduler, tickIntervalMs, topN, onError }: BackpressureMonitorOptions) {
         if (!Number.isInteger(tickIntervalMs) || tickIntervalMs < 0) {
@@ -32,32 +29,20 @@ export class BackpressureMonitor {
         this.onError = onError;
     }
 
-    async start(): Promise<void> {
-        if (this.status !== 'stopped') {
+    start(): void {
+        if (this.daemon) {
             return;
         }
-        this.status = 'running';
-        try {
-            while (!this.ac.signal.aborted) {
-                await this.run();
-                await setTimeout(this.tickIntervalMs, undefined, { signal: this.ac.signal }).catch((err: unknown) => {
-                    if ((err as { name?: string }).name !== 'AbortError') {
-                        throw err;
-                    }
-                });
-            }
-        } catch (err) {
-            this.onError(new Error('BackpressureMonitor error', { cause: err }));
-        } finally {
-            this.status = 'stopped';
-        }
+        this.daemon = cancellableDaemon({
+            tickIntervalMs: this.tickIntervalMs,
+            tick: () => this.run(),
+            onError: (err) => this.onError(new Error('BackpressureMonitor error', { cause: err }))
+        });
     }
 
     async stop(): Promise<void> {
-        this.ac.abort();
-        while (this.status !== 'stopped') {
-            await setTimeout(100);
-        }
+        await this.daemon?.abort();
+        this.daemon = null;
     }
 
     async run(): Promise<void> {
