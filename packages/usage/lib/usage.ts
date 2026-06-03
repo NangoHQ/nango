@@ -344,12 +344,16 @@ export class UsageTracker implements IUsageTracker {
         metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DURATION_MS, elapsedMs, { outcome });
         if (chResult.isErr()) return;
 
+        // Iterate the complete metric set (not just one side's keys) and
+        // coerce `undefined` to 0 — a metric absent from either response is
+        // what the customer sees as 0 on the dashboard, so it must count
+        // toward the one-sided signal when only one side has data.
         // One-sided emits a separate counter rather than divergence=1.0 so
         // missing-data spikes don't drown out the continuous-divergence p99.
-        for (const metric of Object.keys(orbResult) as UsageMetric[]) {
-            const orbTotal = orbResult[metric]?.total;
-            const chTotal = chResult.value[metric]?.total;
-            if (orbTotal === undefined || chTotal === undefined) continue;
+        const allMetrics: UsageMetric[] = [...COUNTER_METRICS, ...AVG_METRICS];
+        for (const metric of allMetrics) {
+            const orbTotal = orbResult[metric]?.total ?? 0;
+            const chTotal = chResult.value[metric]?.total ?? 0;
             if (orbTotal === 0 && chTotal === 0) continue;
             if (orbTotal === 0 || chTotal === 0) {
                 const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
