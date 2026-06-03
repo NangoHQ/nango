@@ -1,7 +1,7 @@
 import { IconHelpCircle } from '@tabler/icons-react';
 
-import { cn } from '../../utils/utils';
 import { ConditionalTooltip } from '../../components-v2/patterns/ConditionalTooltip';
+import { cn } from '../../utils/utils';
 import { Button } from '../ui/button/Button';
 
 export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; children: React.ReactNode; className?: string; horizontal?: boolean }> = ({
