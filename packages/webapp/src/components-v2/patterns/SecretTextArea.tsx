@@ -15,11 +15,20 @@ interface SecretTextAreaProps extends Omit<React.ComponentProps<'textarea'>, 'on
 
 export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = true, value, defaultValue, onChange, ...props }) => {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
+    // Track edits in uncontrolled mode so copy always reflects the current value.
+    const [uncontrolledValue, setUncontrolledValue] = useState(() => defaultValue?.toString() ?? '');
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible((prev) => !prev), []);
 
-    const textToCopy = (value || defaultValue)?.toString() || '';
-    const displayValue = !canRead ? '•'.repeat(32) : (value ?? defaultValue ?? '');
+    const handleChange = useCallback(
+        (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            if (value === undefined) setUncontrolledValue(e.target.value);
+            onChange?.(e);
+        },
+        [value, onChange]
+    );
+
+    const textToCopy = value !== undefined ? value.toString() : uncontrolledValue;
 
     return (
         <InputGroup>
@@ -28,15 +37,15 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
                     {...props}
                     value={canRead ? value : '•'.repeat(32)}
                     defaultValue={canRead ? defaultValue : undefined}
-                    onChange={canRead ? onChange : undefined}
+                    onChange={canRead ? handleChange : undefined}
                 />
             ) : (
                 <InputGroupInput
                     {...(props as React.ComponentProps<'input'>)}
-                    value={displayValue as string}
+                    value={canRead ? (value as string) : '•'.repeat(32)}
                     defaultValue={canRead ? (defaultValue as string) : undefined}
                     type="password"
-                    onChange={canRead ? (onChange as unknown as React.ChangeEventHandler<HTMLInputElement>) : undefined}
+                    onChange={canRead ? (handleChange as unknown as React.ChangeEventHandler<HTMLInputElement>) : undefined}
                 />
             )}
             <InputGroupAddon align="inline-end" className={isSecretVisible ? 'self-start' : ''}>
