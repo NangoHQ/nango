@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { records } from '@nangohq/records';
 import { connectionService, environmentService, getPlan } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, metrics, stringifyError } from '@nangohq/utils';
 
 import { UsageBillingClient } from './billing.js';
 import { UsageCache } from './cache.js';
@@ -25,6 +25,25 @@ import type { BillingUsageMetric, BillingUsageMetrics, BreakdownDimensions, GetB
 import type { Result } from '@nangohq/utils';
 
 const cacheKeyPrefix = 'usageV2';
+
+// CH MV typed-projections started ingesting 2026-05-12; comparing earlier
+// windows against Orb produces known-bad divergence (CH biases high until 30d
+// of depth). Anchor the shadow to a clean post-backfill date.
+const SHADOW_MIN_TIMEFRAME_START = new Date('2026-06-01T00:00:00.000Z');
+// CH server-side ceiling on shadow reads. Bounded much tighter than the
+// dashboard default (30s) so an abandoned shadow doesn't keep burning CH
+// compute after the wall-clock race resolves.
+const SHADOW_CH_MAX_EXECUTION_SECONDS = 5;
+// Wall-clock fallback set ~0.5s above the CH ceiling so CH's own timeout
+// reliably fires first → `outcome:ch_error` is the deterministic signal and
+// the local race only catches network-level wedges.
+const SHADOW_TIMEOUT_MS = SHADOW_CH_MAX_EXECUTION_SECONDS * 1000 + 500;
+
+export function shouldShadow(opts: GetBillingUsageOpts | undefined): opts is GetBillingUsageOpts & { timeframe: { start: Date; end: Date } } {
+    if (!envs.FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE) return false;
+    if (!opts?.timeframe?.start || !opts?.timeframe?.end) return false;
+    return opts.timeframe.start >= SHADOW_MIN_TIMEFRAME_START;
+}
 
 export interface UsageStatus {
     accountId: number;
@@ -270,14 +289,82 @@ export class UsageTracker implements IUsageTracker {
             : undefined;
         const billingUsageMetrics = await this.billingClient.getUsage(subscriptionId, orbOpts);
         if (billingUsageMetrics.isErr()) {
-            return billingUsageMetrics;
+            return Err(billingUsageMetrics.error);
         }
 
-        return Ok({
-            ...billingUsageMetrics.value,
-            connections: billingUsageMetrics.value.connections ? toCumulativeUsage(billingUsageMetrics.value.connections) : undefined,
-            records: billingUsageMetrics.value.records ? toCumulativeUsage(billingUsageMetrics.value.records) : undefined
-        });
+        const orbValue = billingUsageMetrics.value.value;
+        const formatted: BillingUsageMetrics = {
+            ...orbValue,
+            connections: orbValue.connections ? toCumulativeUsage(orbValue.connections) : undefined,
+            records: orbValue.records ? toCumulativeUsage(orbValue.records) : undefined
+        };
+
+        if (!billingUsageMetrics.value.fromCache && shouldShadow(opts)) {
+            // Pass raw Orb (pre-`toCumulativeUsage`) so the AVG-metric
+            // comparison isn't biased by the formatter's `Math.floor` — both
+            // sides are floats, true apples-to-apples.
+            void this.shadowAgainstClickhouse({ accountId, timeframe: opts.timeframe, orbResult: orbValue }).catch((err: unknown) => {
+                logger.error(`billing-usage shadow failed: ${stringifyError(err)}`);
+            });
+        }
+
+        return Ok(formatted);
+    }
+
+    /**
+     * Fire CH with the same shape as the just-completed Orb call and emit
+     * per-metric divergence telemetry. Wrapped in a 5s timeout so a slow CH
+     * query can't pile up requests. Observability-only — never throws.
+     */
+    private async shadowAgainstClickhouse({
+        accountId,
+        timeframe,
+        orbResult
+    }: {
+        accountId: number;
+        timeframe: { start: Date; end: Date };
+        orbResult: BillingUsageMetrics;
+    }): Promise<void> {
+        const start = process.hrtime.bigint();
+
+        // Shared error reference so we can identify the timeout branch in the
+        // outcome tag without string-matching the message.
+        const timeoutErr = new Error('shadow_timeout');
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        const chResult = await Promise.race<Result<BillingUsageMetrics>>([
+            this.getBillingUsageFromClickhouse(accountId, { timeframe, maxExecutionSeconds: SHADOW_CH_MAX_EXECUTION_SECONDS }),
+            new Promise((resolve) => {
+                timeoutId = setTimeout(() => resolve(Err(timeoutErr)), SHADOW_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timeoutId);
+
+        const outcome = chResult.isOk() ? 'ok' : chResult.error === timeoutErr ? 'timeout' : 'ch_error';
+        const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+        metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DURATION_MS, elapsedMs, { outcome });
+        if (chResult.isErr()) return;
+
+        // Iterate the complete metric set (not just one side's keys) and
+        // coerce `undefined` to 0 — a metric absent from either response is
+        // what the customer sees as 0 on the dashboard, so it must count
+        // toward the one-sided signal when only one side has data.
+        // One-sided emits a separate counter rather than divergence=1.0 so
+        // missing-data spikes don't drown out the continuous-divergence p99.
+        const allMetrics: UsageMetric[] = [...COUNTER_METRICS, ...AVG_METRICS];
+        for (const metric of allMetrics) {
+            const orbTotal = orbResult[metric]?.total ?? 0;
+            const chTotal = chResult.value[metric]?.total ?? 0;
+            if (orbTotal === 0 && chTotal === 0) continue;
+            if (orbTotal === 0 || chTotal === 0) {
+                const zeroSide = orbTotal === 0 ? 'orb' : 'ch';
+                metrics.increment(metrics.Types.BILLING_USAGE_SHADOW_ONE_SIDED, 1, { accountId, metric, zeroSide });
+                continue;
+            }
+            const denom = Math.max(orbTotal, chTotal);
+            const divergence = Math.abs(orbTotal - chTotal) / denom;
+            const higher = orbTotal === chTotal ? 'equal' : orbTotal > chTotal ? 'orb' : 'ch';
+            metrics.distribution(metrics.Types.BILLING_USAGE_SHADOW_DIVERGENCE, divergence, { accountId, metric, higher });
+        }
     }
 
     /**
@@ -296,9 +383,12 @@ export class UsageTracker implements IUsageTracker {
             metrics?: UsageMetric[];
             breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
             top?: number;
+            // Override CH `max_execution_time` for every fan-out query. The
+            // shadow path uses this so an abandoned race doesn't keep CH busy.
+            maxExecutionSeconds?: number;
         }
     ): Promise<Result<BillingUsageMetrics>> {
-        const { timeframe, metrics: scopedMetrics, breakdown, top } = opts;
+        const { timeframe, metrics: scopedMetrics, breakdown, top, maxExecutionSeconds } = opts;
         const scope = scopedMetrics ? new Set(scopedMetrics) : null;
         const inScope = (m: UsageMetric): boolean => !scope || scope.has(m);
         const counterMetrics: CounterUsageMetric[] = COUNTER_METRICS.filter(inScope);
@@ -307,13 +397,15 @@ export class UsageTracker implements IUsageTracker {
         const avgNoDim = avgMetrics.filter((m) => !breakdown?.[m]);
         const ch = this.getClickhouse();
 
+        const maxExecOpt = maxExecutionSeconds !== undefined ? { maxExecutionSeconds } : {};
+
         // Base calls — `dimension: 'none'` is valid for every variant, so the
         // union-typed `metric: m` is fine here.
         const counterBaseP = Promise.all(
-            counterNoDim.map((m) => ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
+            counterNoDim.map((m) => ch.getDailyCounter({ accountId, metric: m, dimension: 'none', timeframe, ...maxExecOpt }).then((r) => [m, r] as const))
         );
         const avgBaseP = Promise.all(
-            avgNoDim.map((m) => ch.getDailySumAndBatches({ accountId, metric: m, dimension: 'none', timeframe }).then((r) => [m, r] as const))
+            avgNoDim.map((m) => ch.getDailySumAndBatches({ accountId, metric: m, dimension: 'none', timeframe, ...maxExecOpt }).then((r) => [m, r] as const))
         );
 
         // Breakdown calls — unrolled per-metric so `metric: '<literal>'` picks
@@ -323,27 +415,41 @@ export class UsageTracker implements IUsageTracker {
         const counterBreakdownCalls = [
             inScope('proxy') && breakdown?.proxy
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt })
+                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...maxExecOpt })
                       .then((r) => ['proxy' as const, r] as const)
                 : null,
             inScope('function_executions') && breakdown?.function_executions
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'function_executions', dimension: breakdown.function_executions, timeframe, ...topOpt })
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'function_executions',
+                          dimension: breakdown.function_executions,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt
+                      })
                       .then((r) => ['function_executions' as const, r] as const)
                 : null,
             inScope('function_logs') && breakdown?.function_logs
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'function_logs', dimension: breakdown.function_logs, timeframe, ...topOpt })
+                      .getDailyCounter({ accountId, metric: 'function_logs', dimension: breakdown.function_logs, timeframe, ...topOpt, ...maxExecOpt })
                       .then((r) => ['function_logs' as const, r] as const)
                 : null,
             inScope('function_compute_gbms') && breakdown?.function_compute_gbms
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'function_compute_gbms', dimension: breakdown.function_compute_gbms, timeframe, ...topOpt })
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'function_compute_gbms',
+                          dimension: breakdown.function_compute_gbms,
+                          timeframe,
+                          ...topOpt,
+                          ...maxExecOpt
+                      })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
                 : null,
             inScope('webhook_forwards') && breakdown?.webhook_forwards
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: breakdown.webhook_forwards, timeframe, ...topOpt })
+                      .getDailyCounter({ accountId, metric: 'webhook_forwards', dimension: breakdown.webhook_forwards, timeframe, ...topOpt, ...maxExecOpt })
                       .then((r) => ['webhook_forwards' as const, r] as const)
                 : null
         ].filter((p): p is NonNullable<typeof p> => p !== null);
@@ -352,12 +458,12 @@ export class UsageTracker implements IUsageTracker {
         const avgBreakdownCalls = [
             inScope('records') && breakdown?.records
                 ? ch
-                      .getDailySumAndBatches({ accountId, metric: 'records', dimension: breakdown.records, timeframe, ...topOpt })
+                      .getDailySumAndBatches({ accountId, metric: 'records', dimension: breakdown.records, timeframe, ...topOpt, ...maxExecOpt })
                       .then((r) => ['records' as const, r] as const)
                 : null,
             inScope('connections') && breakdown?.connections
                 ? ch
-                      .getDailySumAndBatches({ accountId, metric: 'connections', dimension: breakdown.connections, timeframe, ...topOpt })
+                      .getDailySumAndBatches({ accountId, metric: 'connections', dimension: breakdown.connections, timeframe, ...topOpt, ...maxExecOpt })
                       .then((r) => ['connections' as const, r] as const)
                 : null
         ].filter((p): p is NonNullable<typeof p> => p !== null);

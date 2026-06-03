@@ -115,7 +115,7 @@ export class Clickhouse {
             return Err(new Error('Clickhouse client not initialized'));
         }
 
-        const { accountId, metric, dimension, timeframe } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
@@ -167,7 +167,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
-                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+                clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{
                 day: string;
@@ -263,7 +263,7 @@ export class Clickhouse {
         if (!this.client) {
             return Err(new Error('Clickhouse client not initialized'));
         }
-        const { accountId, metric, dimension, timeframe } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
         }
@@ -331,7 +331,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
-                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+                clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{
                 day: string;
