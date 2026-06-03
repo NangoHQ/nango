@@ -58,6 +58,7 @@ interface RefreshProps {
           }) => Promise<Result<{ tested: boolean }, NangoError>>)
         | undefined;
     refreshGithubAppJwtToken?: boolean;
+    skipIntrospection?: boolean;
 }
 
 const logger = getLogger('connectionRefresh');
@@ -179,6 +180,7 @@ async function refreshCredentials(
         account,
         connection: oldConnection,
         instantRefresh,
+        skipIntrospection,
         logContextGetter,
         onRefreshFailed,
         onRefreshSuccess,
@@ -194,6 +196,7 @@ async function refreshCredentials(
         provider: provider,
         environment_id: environment.id,
         instantRefresh,
+        ...(skipIntrospection !== undefined ? { skipIntrospection } : {}),
         logCtx: logsBuffer,
         refreshGithubAppJwtToken
     });
@@ -341,6 +344,7 @@ export async function refreshCredentialsIfNeeded({
     provider,
     environment_id,
     instantRefresh = false,
+    skipIntrospection = false,
     logCtx,
     refreshGithubAppJwtToken
 }: {
@@ -350,12 +354,15 @@ export async function refreshCredentialsIfNeeded({
     provider: RefreshableProvider;
     environment_id: number;
     instantRefresh?: boolean;
+    skipIntrospection?: boolean;
     logCtx: LogContextStateless;
     refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
-    const cacheKey = `${environment_id}:${providerConfigKey}:${connectionId}`;
+    // skipIntrospection=true forces a direct refresh without checking token validity first,
+    // so it must not collapse onto an in-flight refresh that may decide "no refresh needed"
+    const cacheKey = `${environment_id}:${providerConfigKey}:${connectionId}:${skipIntrospection ? 'skip' : 'full'}`;
 
     // if a refresh is already in-flight for this connection, return the existing promise
     const existingPromise = inFlightRefreshes.get(cacheKey);
@@ -400,6 +407,7 @@ export async function refreshCredentialsIfNeeded({
                 providerConfig,
                 provider,
                 instantRefresh,
+                skipIntrospection,
                 refreshGithubAppJwtToken
             });
 
@@ -539,6 +547,7 @@ export async function shouldRefreshCredentials({
     providerConfig,
     provider,
     instantRefresh,
+    skipIntrospection = false,
     refreshGithubAppJwtToken
 }: {
     connection: DBConnectionDecrypted;
@@ -546,6 +555,7 @@ export async function shouldRefreshCredentials({
     providerConfig: ProviderConfig;
     provider: RefreshableProvider;
     instantRefresh: boolean;
+    skipIntrospection?: boolean;
     refreshGithubAppJwtToken?: boolean | undefined;
 }): Promise<{ should: boolean; reason: string }> {
     const expirationBufferInSeconds = provider.token_expiration_buffer || REFRESH_MARGIN_MS / 1000;
@@ -589,7 +599,7 @@ export async function shouldRefreshCredentials({
     }
 
     if (!instantRefresh) {
-        if (providerClient.shouldIntrospectToken(providerConfig.provider)) {
+        if (!skipIntrospection && providerClient.shouldIntrospectToken(providerConfig.provider)) {
             if (await providerClient.introspectedTokenExpired(providerConfig, connection)) {
                 return { should: true, reason: 'expired_introspected_token' };
             }

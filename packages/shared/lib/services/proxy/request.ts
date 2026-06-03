@@ -16,11 +16,18 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 const logger = getLogger('proxy:metering');
 
+const MAX_REFRESH_TOKEN_ATTEMPTS = 1;
+
 interface Props {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     logger: (msg: MessageRowInsert) => MaybePromise<void>;
     onError?: (args: { err: unknown; max: number; attempt: number; retry: RetryReason }) => RetryReason;
     onBytes?: (bytes: MeteredBytes) => MaybePromise<void>;
+    /**
+     * Called when retry reason is refresh_token; use to introspect and refresh credentials before the next attempt.
+     * Return true if a refresh actually happened (retry is worthwhile), false if token is still active (stop retrying).
+     */
+    onRefreshToken?: () => Promise<boolean>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
 }
@@ -56,6 +63,10 @@ export class ProxyRequest {
      */
     onBytes?: Props['onBytes'];
 
+    onRefreshToken?: Props['onRefreshToken'];
+
+    private refreshTokenAttempts = 0;
+
     /**
      * Build at each iteration
      */
@@ -76,6 +87,7 @@ export class ProxyRequest {
         this.logger = props.logger;
         this.onError = props.onError;
         this.onBytes = props.onBytes;
+        this.onRefreshToken = props.onRefreshToken;
         this.getConnection = props.getConnection;
         this.getIntegrationConfig = props.getIntegrationConfig;
     }
@@ -146,9 +158,25 @@ export class ProxyRequest {
                     }
                 },
                 {
-                    max: this.config.retries || 0,
+                    max: Math.max(this.config.retries || 0, this.config.refreshTokenOn?.length && this.onRefreshToken ? MAX_REFRESH_TOKEN_ATTEMPTS + 1 : 0),
                     onError: async ({ err, nextWait, max, attempt }) => {
                         let retry = getProxyRetryFromErr({ err, proxyConfig: this.config });
+
+                        if (retry.retry && retry.reason === 'refresh_token') {
+                            if (this.refreshTokenAttempts >= MAX_REFRESH_TOKEN_ATTEMPTS) {
+                                retry = { retry: false, reason: 'refresh_token_max_attempts' };
+                            } else {
+                                this.refreshTokenAttempts++;
+                                if (this.onRefreshToken) {
+                                    const refreshed = await this.onRefreshToken();
+                                    if (!refreshed) {
+                                        retry = { retry: false, reason: 'token_still_active' };
+                                    }
+                                }
+                            }
+                        } else if (retry.retry && attempt > (this.config.retries || 0)) {
+                            retry = { retry: false, reason: retry.reason };
+                        }
 
                         // Only call onError if it's an actionable error
                         if (retry.reason !== 'unknown_error' && this.onError) {

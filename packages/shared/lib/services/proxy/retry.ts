@@ -55,6 +55,13 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
+    // Mark for token refresh but don't return yet — Retry-After headers take priority
+    // so a rate-limited response with a backoff header is respected before refreshing
+    const isRefreshToken = proxyConfig.refreshTokenOn?.some((code) => matchesStatusCode(status, String(code))) ?? false;
+    if (isRefreshToken) {
+        isRetryable = true;
+    }
+
     if (!isRetryable && customHeaderConf?.remaining && err.response?.headers[customHeaderConf.remaining] === '0') {
         // Custom header in providers.yaml
         isRetryable = true;
@@ -127,7 +134,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
     }
 
-    return { retry: true, reason: reason || `status_code_${status}` };
+    return { retry: true, reason: isRefreshToken ? 'refresh_token' : reason || `status_code_${status}` };
 }
 
 /**
