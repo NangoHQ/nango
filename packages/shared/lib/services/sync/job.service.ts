@@ -9,6 +9,13 @@ import type { ConnectionJobs, SyncResultByModel } from '@nangohq/types';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
+// sync_jobs.id is widening int4 → bigint; node-pg returns bigint columns as strings, but
+// consumers (Job.id, nangoProps.syncJobId) expect a JS number. Coerce on read. id is a NOT NULL
+// PK and the sequence is capped at Number.MAX_SAFE_INTEGER, so the value always fits exactly.
+function normalizeSyncJobId<T extends { id: number }>(job: T): T {
+    return { ...job, id: Number(job.id) };
+}
+
 export async function createSyncJob({
     sync_id,
     type,
@@ -44,7 +51,7 @@ export async function createSyncJob({
         const syncJob = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('*');
 
         if (syncJob && syncJob.length > 0 && syncJob[0]) {
-            return syncJob[0];
+            return normalizeSyncJobId(syncJob[0]);
         }
     } catch (err) {
         if (nangoConnection) {
@@ -70,21 +77,13 @@ export async function createSyncJob({
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
     const result = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).select('*').where({ sync_id }).orderBy('created_at', 'desc').first();
 
-    if (result) {
-        return result;
-    }
-
-    return null;
+    return result ? normalizeSyncJobId(result) : null;
 };
 
 export const getSyncJobByRunId = async (run_id: string): Promise<SyncJob | null> => {
     const result = await db.knex.from<SyncJob>(SYNC_JOB_TABLE).select('*').where({ run_id }).first();
 
-    if (result) {
-        return result;
-    }
-
-    return null;
+    return result ? normalizeSyncJobId(result) : null;
 };
 
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<SyncJob | null> => {
@@ -96,7 +95,7 @@ export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promi
             updated_at: new Date()
         })
         .returning('*');
-    return job || null;
+    return job ? normalizeSyncJobId(job) : null;
 };
 
 /**
@@ -120,7 +119,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
                 })
                 .returning('*');
 
-            return updatedRow as SyncJob;
+            return normalizeSyncJobId(updatedRow as SyncJob);
         } else {
             const { added, updated, deleted } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
 
@@ -144,7 +143,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
                 })
                 .returning('*');
 
-            return updatedRow as SyncJob;
+            return normalizeSyncJobId(updatedRow as SyncJob);
         }
     });
 };
@@ -160,7 +159,7 @@ export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, '
         .orderBy('created_at', 'desc')
         .first();
 
-    return result || null;
+    return result ? normalizeSyncJobId(result) : null;
 };
 
 export async function hardDeleteJobs({ syncId, limit }: { syncId: string; limit: number }): Promise<number> {

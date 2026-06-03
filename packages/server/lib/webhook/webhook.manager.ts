@@ -2,7 +2,7 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { NangoError, customerKeyService, externalWebhookService, getProvider, pubsub } from '@nangohq/shared';
-import { Err, getLogger } from '@nangohq/utils';
+import { Err, getLogger, metrics } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
 import * as webhookHandlers from './index.js';
@@ -130,7 +130,11 @@ export async function routeWebhook({
             connectionIds,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
-            logContextGetter
+            logContextGetter,
+            onBytes: (bytes) => {
+                metrics.increment(metrics.Types.WEBHOOK_REQUEST_SIZE_IN_BYTES, bytes.sent, { callsite: 'forward' });
+                metrics.increment(metrics.Types.WEBHOOK_RESPONSE_SIZE_IN_BYTES, bytes.received, { callsite: 'forward' });
+            }
         })
             .then((res) => {
                 if (res.isOk()) {

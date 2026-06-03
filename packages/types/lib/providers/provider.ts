@@ -37,6 +37,7 @@ export interface SimplifiedJSONSchema {
     doc_section?: string;
     secret?: string;
     automated: boolean;
+    enum?: string[];
 }
 
 export interface BaseProvider {

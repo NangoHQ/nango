@@ -11,6 +11,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
+    if (schema.enum && schema.enum.length > 0) {
+        const enumSchema = z.enum(schema.enum as [string, ...string[]]);
+        if ('optional' in schema && schema.optional === true) {
+            return z.union([enumSchema, z.literal('')]);
+        }
+        return enumSchema;
+    }
+
     let fieldString = z.string();
     if (schema.format === 'hostname') {
         fieldString = fieldString.regex(/^[a-zA-Z0-9.-]+$/, 'Invalid hostname');

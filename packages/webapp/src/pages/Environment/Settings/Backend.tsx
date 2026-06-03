@@ -10,9 +10,9 @@ import SettingsGroup from './components/SettingsGroup';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
+import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
+import { StyledLink } from '@/components-v2/ui/StyledLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 
@@ -36,7 +36,7 @@ export const BackendSettings: React.FC = () => {
     }
 
     return (
-        <SettingsContent title="Backend">
+        <SettingsContent title="Auth callback">
             <SettingsGroup
                 label={
                     <>

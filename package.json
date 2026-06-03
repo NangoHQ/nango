@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.70.4",
+    "version": "0.70.6",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -53,6 +53,7 @@
         "docs": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts && cd ./docs && npx mintlify dev --port 3033",
         "docs:generate": "tsx scripts/docs-gen-snippets.ts && tsx scripts/docs-generate-llms.ts",
         "docs:generate:llms": "tsx scripts/docs-generate-llms.ts",
+        "storybook": "npm --prefix packages/design-system run storybook",
         "nango": "cd ./packages/server && npm run nango",
         "dev:docker": "docker compose --file dev/docker-compose.dev.yaml up -d",
         "changelog:providers": "tsx scripts/provider-changelog.ts",
@@ -83,7 +84,7 @@
         "tsx": "4.20.3",
         "typescript": "5.8.3",
         "typescript-eslint": "8.38.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,cjs}": [
@@ -98,6 +99,7 @@
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.14"
+        "postcss": "8.5.14",
+        "js-cookie": "3.0.8"
     }
 }

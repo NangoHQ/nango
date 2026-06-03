@@ -26,10 +26,12 @@ const mockedParseSecretKey = vi.spyOn(utils, 'parseSecretKey').mockResolvedValue
 
 vi.mock('@nangohq/node', () => {
     const listConnectionsMock = vi.fn();
-    const Nango = vi.fn(() => ({
-        listConnections: listConnectionsMock
-    }));
-    return { Nango, _listConnectionsMock: listConnectionsMock };
+
+    class MockNango {
+        listConnections = listConnectionsMock;
+    }
+
+    return { Nango: vi.fn(MockNango), _listConnectionsMock: listConnectionsMock };
 });
 
 describe('Interactive Service', () => {

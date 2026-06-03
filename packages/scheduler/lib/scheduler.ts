@@ -2,16 +2,18 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
+import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
-import { logger } from './utils/logger.js';
+import { logger, setLogger } from './utils/logger.js';
 
+import type { SchedulerConfig, SchedulerEvent } from './config.js';
 import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
-import type { Result } from '@nangohq/utils';
+import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
 
@@ -41,14 +43,44 @@ export class Scheduler {
      *    }
      * });
      */
-    constructor({ db, on, onError }: { db: knex.Knex; on: Record<TaskState, (task: Task) => void>; onError: (err: Error) => void }) {
+    private readonly config: SchedulerConfig;
+    private readonly onEvent: (event: SchedulerEvent) => void;
+
+    constructor({
+        db,
+        on,
+        onError,
+        config = defaultSchedulerConfig,
+        onEvent = () => {},
+        logger: injectedLogger
+    }: {
+        db: knex.Knex;
+        on: Record<TaskState, (task: Task) => void>;
+        onError: (err: Error) => void;
+        config?: SchedulerConfig;
+        onEvent?: (event: SchedulerEvent) => void;
+        logger?: StrictLogger;
+    }) {
         this.ac = new AbortController();
         this.onCallbacks = on;
         this.db = db;
+        this.config = config;
+        setLogger(injectedLogger ?? noopLogger);
+
+        const safeOnEvent = (event: SchedulerEvent): void => {
+            try {
+                onEvent(event);
+            } catch (err) {
+                logger.error(`Scheduler onEvent handler threw for ${event.type}`, err);
+            }
+        };
+        this.onEvent = safeOnEvent;
 
         this.expiring = new ExpiringDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.expiringTickIntervalMs,
+            batchSize: config.limits.expiringBatchSize,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
                 this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
@@ -59,13 +91,30 @@ export class Scheduler {
         this.scheduling = new SchedulingDaemon({
             db,
             abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.schedulingTickIntervalMs,
+            groupTaskCap: config.limits.groupTaskCap,
+            recurringGroupMaxConcurrency: config.limits.recurringGroupMaxConcurrency,
             onScheduling: (task: Task) => {
                 this.onCallbacks[task.state](task);
             },
+            onEvent: safeOnEvent,
             onError
         });
-        this.cleaning = new CleaningDaemon({ db, abortSignal: this.ac.signal, onError });
-        this.backpressureMonitor = new BackpressureMonitoringDaemon({ db, abortSignal: this.ac.signal, onError });
+        this.cleaning = new CleaningDaemon({
+            db,
+            abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.cleaningTickIntervalMs,
+            olderThanDays: config.daemons.cleaningOlderThanDays,
+            onError
+        });
+        this.backpressureMonitor = new BackpressureMonitoringDaemon({
+            db,
+            abortSignal: this.ac.signal,
+            tickIntervalMs: config.daemons.monitoringTickIntervalMs,
+            topN: config.daemons.monitoringTopN,
+            onEvent: safeOnEvent,
+            onError
+        });
     }
 
     start(): void {
@@ -155,7 +204,8 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | FromScheduleProps): Promise<Result<Task>> {
-        return this.db.transaction(async (trx) => {
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
             const now = new Date();
             let taskProps: tasks.TaskProps;
             if ('scheduleName' in props) {
@@ -202,11 +252,16 @@ export class Scheduler {
                 };
             }
 
-            const created = await tasks.create(trx, [taskProps]);
-            if (created.isErr()) {
-                return Err(created.error);
+            const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
             }
-            const task = created.value.tasks[0];
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                }
+            }
+            const task = createResult.value.created[0];
             if (!task) {
                 return Err(`Failed to create task '${taskProps.name}'`);
             }
@@ -219,6 +274,56 @@ export class Scheduler {
             this.onCallbacks[task.state](task);
             return Ok(task);
         });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
+    }
+
+    /**
+     * Schedule a batch of tasks immediately in a single transaction.
+     *
+     * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
+     * with the originating props. Mapping discards back to specific requests (and deciding what to
+     * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
+     */
+    public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+        if (propsList.length === 0) {
+            return Ok({ created: [], discarded: [] });
+        }
+        const cappedCounts = new Map<string, number>();
+        const result = await this.db.transaction<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>>(async (trx) => {
+            const now = new Date();
+            const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
+                ...props,
+                startsAfter: now,
+                scheduleId: null
+            }));
+
+            const createResult = await tasks.create(trx, taskPropsList, {
+                groupTaskCap: this.config.limits.groupTaskCap,
+                onConflict: 'skip'
+            });
+            if (createResult.isErr()) {
+                return Err(createResult.error);
+            }
+
+            for (const d of createResult.value.discarded) {
+                if (d.reason === 'capped') {
+                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
+                }
+            }
+
+            for (const task of createResult.value.created) {
+                this.onCallbacks[task.state](task);
+            }
+
+            return Ok(createResult.value);
+        });
+        for (const [groupKey, count] of cappedCounts) {
+            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        }
+        return result;
     }
 
     /**

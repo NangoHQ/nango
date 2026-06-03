@@ -95,6 +95,13 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
     };
 }
 
+function wireBeforeRedirect(options: TransportOptions, fn: (options: Record<string, unknown>, responseDetails?: unknown) => void): void {
+    const beforeRedirects = (options as unknown as Record<string, unknown>)['beforeRedirects'] as Record<string, unknown> | undefined;
+    if (beforeRedirects && !beforeRedirects['config']) {
+        beforeRedirects['config'] = fn;
+    }
+}
+
 /**
  * Axios-compatible `transport` that meters transferred bytes.
  *
@@ -105,7 +112,12 @@ function withSocketMetering(nativeModule: NativeProtocolModule, onHopBytes: (byt
  * Each redirect hop runs through the bytes-metering wrapper independently and
  * invokes `onBytes` once per hop.
  */
-export function createMeteringTransport(onBytes: (bytes: MeteredBytes) => void): {
+export function createMeteringTransport(
+    onBytes: (bytes: MeteredBytes) => void,
+    // Axios skips wiring options.beforeRedirects.config for custom transports.
+    // Accept it here and wire it manually so header-forwarding still fires on redirects.
+    userBeforeRedirect?: (options: Record<string, unknown>, responseDetails?: unknown) => void
+): {
     request: (options: TransportOptions, callback?: TransportCallback) => ClientRequest;
 } {
     const meteredHttp = withSocketMetering(http, onBytes);
@@ -118,6 +130,9 @@ export function createMeteringTransport(onBytes: (bytes: MeteredBytes) => void):
 
     return {
         request(options, callback) {
+            if (userBeforeRedirect) {
+                wireBeforeRedirect(options, userBeforeRedirect);
+            }
             const target = options.protocol === 'https:' ? wrapped.https : wrapped.http;
             return target.request(options, callback);
         }

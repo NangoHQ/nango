@@ -14,12 +14,14 @@
         "directory": "packages/metering"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "3.993.0",
         "@nangohq/usage": "file:../usage",
         "@nangohq/database": "file:../database",
         "@nangohq/billing": "file:../billing",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
+        "@nangohq/sandbox": "file:../sandbox",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.52.0",
@@ -29,6 +31,6 @@
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }

@@ -250,7 +250,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
             case 'can_customize_connect_ui_theme':
-            case 'remote_functions': {
+            case 'remote_functions':
+            case 'export_runner_telemetry': {
                 overrides[key] = currentPlan[key] ? true : newPlanDefinition.flags[key];
                 break;
             }

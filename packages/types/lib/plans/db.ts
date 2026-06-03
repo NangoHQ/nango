@@ -103,6 +103,12 @@ export interface DBPlan extends Timestamps {
     has_otel: boolean;
 
     /**
+     * Enable runner telemetry export to persist
+     * @default false
+     */
+    export_runner_telemetry: boolean;
+
+    /**
      * Change the applied rate limit for the public API
      * @default "m"
      */

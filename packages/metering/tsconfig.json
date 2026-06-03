@@ -27,6 +27,9 @@
             "path": "../records"
         },
         {
+            "path": "../sandbox"
+        },
+        {
             "path": "../shared"
         },
         {

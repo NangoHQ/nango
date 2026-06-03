@@ -1,0 +1,48 @@
+---
+title: Altrata - How do I link my account?
+sidebarTitle: Altrata
+---
+
+# Overview
+
+To authenticate with Altrata, you will need:
+1. **Service Hostname** — The Altrata service hostname to connect to.
+2. **API Key** — Your Altrata API key.
+3. **Username** — Your Altrata Service User username.
+4. **Password** — Your Altrata Service User password.
+
+Nango uses the API Key, Username, and Password to exchange for a JWT (8-hour TTL) via the Altrata auth endpoint and handles token refresh automatically.
+
+### Prerequisites
+
+- An active Altrata subscription with API access.
+
+### Step 1: Obtain your credentials
+
+Your Service User credentials and API key are sent to you by email during subscription setup. You will receive:
+
+- **API Key** — provided as part of your Altrata Salesforce app access.
+- **Username** and **Password** — your Service User account details.
+
+If you have not received these, contact your Client Success representative or email [client-success@altrata.com](mailto:client-success@altrata.com).
+
+### Step 2: Choose a service hostname
+
+Altrata exposes four GraphQL services. Choose the hostname that matches your use case and enter it in the **Service Hostname** field:
+
+| Service | Hostname |
+|---|---|
+| Matching | `matching.altrata.com` |
+| Profile | `profile.altrata.com` |
+| Events | `events.altrata.com` |
+| Relationships | `relationships.altrata.com` |
+
+### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Altrata.
+2. Enter your **Service Hostname**, **API Key**, **Username**, and **Password** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/altrata/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Altrata.
