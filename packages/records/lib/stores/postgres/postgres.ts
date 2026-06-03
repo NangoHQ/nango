@@ -124,10 +124,19 @@ export class PostgresStore implements RecordsStore {
         try {
             if (!promise) {
                 const next = day.add(1, 'day');
+                const partitionName = `records_seen_${suffix}`;
+                const indexName = `${partitionName}_connection_model_generation`;
+                // Create the (connection_id, model, generation) child index inline so every new
+                // partition is born ready for the read-path switch in a later phase. Two separate
+                // statements so the parent's ACCESS EXCLUSIVE from CREATE TABLE PARTITION OF is
+                // released before the child index build runs — the partition is empty, so the
+                // (non-CONCURRENTLY) index build is fast and the child's ACCESS EXCLUSIVE stays
+                // catalog-only.
                 promise = this.db
                     .raw(
-                        `CREATE TABLE IF NOT EXISTS "records_seen_${suffix}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
+                        `CREATE TABLE IF NOT EXISTS "${partitionName}" PARTITION OF "${RECORDS_SEEN_TABLE}" FOR VALUES FROM ('${day.toISOString()}') TO ('${next.toISOString()}')`
                     )
+                    .then(() => this.db.raw('CREATE INDEX IF NOT EXISTS ?? ON ?? (connection_id, model, generation)', [indexName, partitionName]))
                     .then(() => undefined);
                 this.seenPartitionPromises.set(suffix, promise);
             }
@@ -1685,6 +1694,9 @@ export class PostgresStore implements RecordsStore {
             connection_id: connectionId,
             model,
             sync_job_id: syncJobId,
+            // Dual-write the bigint replacement alongside the int4 column. Reads switch to
+            // generation in Phase 2d; sync_job_id stops being written in Phase 2f.
+            generation: syncJobId,
             record_ids: trx.raw(`ARRAY[${recordIds.map(() => '?::uuid').join(',')}]`, recordIds)
         });
     }

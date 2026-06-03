@@ -2149,6 +2149,23 @@ describe('PostgresStore', () => {
             expect(res1.isOk()).toBe(true);
             expect(res2.isOk()).toBe(true);
         });
+
+        it('should create the (connection_id, model, generation) child index on the new partition', async () => {
+            const date = new Date('2025-01-17T00:00:00Z');
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const { rows } = await db.raw<{ rows: { indexdef: string; indisvalid: boolean }[] }>(
+                `SELECT pg_get_indexdef(i.indexrelid) AS indexdef, i.indisvalid
+                 FROM pg_index i
+                 JOIN pg_class c ON c.oid = i.indexrelid
+                 WHERE c.relname = ?`,
+                ['records_seen_20250117_connection_model_generation']
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0]?.indisvalid).toBe(true);
+            expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, generation\)/);
+        });
     });
 
     describe('dropSeenPartition', () => {
@@ -2169,6 +2186,26 @@ describe('PostgresStore', () => {
             const date = new Date('2025-02-11T00:00:00Z');
             const res = await store.dropSeenPartition({ date });
             expect(res.isOk()).toBe(true);
+        });
+    });
+
+    describe('records_seen dual-write (Phase 2b)', () => {
+        it('should write the same value to sync_job_id and generation', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = 'model-' + rnd.string();
+            const syncId = uuid.v4();
+            const syncJobId = rnd.number();
+            await upsertRecords({ records: [{ id: '1', name: 'a' }], connectionId, environmentId, model, syncId, syncJobId });
+
+            const { rows } = await db.raw<{ rows: { sync_job_id: number; generation: string }[] }>(
+                `SELECT sync_job_id, generation FROM nango_records.records_seen WHERE connection_id = ? AND model = ?`,
+                [connectionId, model]
+            );
+            expect(rows).toHaveLength(1);
+            expect(rows[0]?.sync_job_id).toBe(syncJobId);
+            // node-pg returns bigint as string; coerce both sides for the compare.
+            expect(Number(rows[0]?.generation)).toBe(syncJobId);
         });
     });
 });
