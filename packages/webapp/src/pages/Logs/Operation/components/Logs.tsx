@@ -294,7 +294,11 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
             </div>
 
             <Sheet open={Boolean(message)} onOpenChange={() => setMessage(undefined)}>
-                <SheetContent side="right" hideCloseButton className="w-[834px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
+                <SheetContent
+                    side="right"
+                    hideCloseButton
+                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400"
+                >
                     <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
                             <SheetClose
