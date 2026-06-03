@@ -34,10 +34,10 @@ export class RecordsRouter<K extends string> implements RecordsStore {
 
     // Lifecycle: runs against all stores
     migrate: RecordsStore['migrate'] = async () => {
-        await Promise.all([...this.stores.values()].map((s) => s.migrate()));
+        await Promise.allSettled([...this.stores.values()].map((s) => s.migrate()));
     };
     close: RecordsStore['close'] = async () => {
-        await Promise.all([...this.stores.values()].map((s) => s.close()));
+        await Promise.allSettled([...this.stores.values()].map((s) => s.close()));
     };
     startDaemons: RecordsStore['startDaemons'] = () => {
         for (const store of this.stores.values()) store.startDaemons();
