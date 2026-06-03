@@ -68,7 +68,11 @@ description: 'Access the Formstack Documents API in 2 minutes'
   </Tab>
 
   <Tab title="API gotchas">
-    The API is branded as Formstack Documents, but the public developer docs and API base URL still use the legacy `Webmerge` naming. In the native product, merge requests can sometimes run without API credentials when the account does not require them or when the user is already logged in. For this Nango provider, however, the connection itself is authenticated with an API Key and API Secret against `https://www.webmerge.me/api`.
+    The API is branded as Formstack Documents, but the public developer docs and API base URL still use the legacy `Webmerge` naming. In the native product, merge requests can sometimes run without API credentials when the account does not require them or when the user is already logged in. For this Nango provider, standard API requests use the REST API base URL `https://www.webmerge.me/api`.
+
+    <Note>
+      Legacy merge URLs such as `/merge/{documentId}/{documentKey}` and `/route/{routeId}/{routeKey}` live on the root `https://www.webmerge.me` host rather than under `/api`. If you proxy those endpoints through Nango, set `Base-Url-Override: https://www.webmerge.me` on the request.
+    </Note>
 
     <Tip>
       Recommended for security: enable **Advanced Settings -> Require API Key for all merge requests (custom integrations only)** in Formstack Documents. This helps ensure custom integration merge requests require API credentials unless the request is executed by a logged-in user in the app.
