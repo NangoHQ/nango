@@ -59,7 +59,7 @@ jobs:
               uses: ./.github/actions/slack-deploy-notification
               with:
                   bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
-                  channel: C0B7KSD33QE
+                  channel: ${{ vars.SLACK_DEPLOYS_CHANNEL_ID }}
                   service: ${{ inputs.service }}
                   stage: ${{ inputs.stage }}
                   phase: start
@@ -325,7 +325,7 @@ jobs:
               uses: ./.github/actions/slack-deploy-notification
               with:
                   bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
-                  channel: C0B7KSD33QE
+                  channel: ${{ vars.SLACK_DEPLOYS_CHANNEL_ID }}
                   service: ${{ inputs.service }}
                   stage: ${{ inputs.stage }}
                   phase: result
