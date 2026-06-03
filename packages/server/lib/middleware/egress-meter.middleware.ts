@@ -15,9 +15,7 @@ export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLo
     const meterEgressedBytes = () => {
         if (recorded) return;
         const bytes = (req.socket?.bytesWritten ?? 0) - baseline;
-        if (bytes > 0) {
-            metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { traffic_origin: origin });
-        }
+        metrics.increment(metrics.Types.EGRESS_BYTES, bytes, { traffic_origin: origin });
         recorded = true;
     };
 
