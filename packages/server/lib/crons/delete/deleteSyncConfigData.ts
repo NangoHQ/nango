@@ -16,20 +16,10 @@ export interface DeleteSyncConfigInput {
 }
 
 /**
- * Deletes a function and its dependencies. A function spans multiple `_nango_sync_config` **versions**
- * (same `nango_config_id` + `sync_name`); deleting it removes the whole history, not just the version
- * we were handed — otherwise the inactive history rows linger forever (the retention cron only reaps
- * `deleted` rows) while their S3 files are already gone (artifacts are deleted for all versions).
+ * Hard deletes any sync_config dependency, then hard deletes the sync_config itself.
+ * Does the same other historical inactive `sync_config` rows.
  *
- * The version set is this row plus every **inactive** (`active = false`) sibling. We deliberately
- * exclude any *other* `active` version: redeploying a function with the same name after a delete
- * creates a fresh active row, and the still-soft-deleted old row must not drag the live one down with
- * it when the cron eventually reaps it.
- *
- * Per version, same-datastore children — syncs (paged → `deleteSyncData`) and endpoints — are deleted
- * inline; the S3 artifacts are dispatched as one `deleteArtifacts` task (their keys span all versions
- * and are captured here, while the rows still exist). The handed-in row is hard-deleted **last**, so an
- * interrupted run leaves it present and resumable.
+ * Works up to the provided time deadline.
  */
 export async function deleteSyncConfigData({ syncConfigId, environmentId, models }: DeleteSyncConfigInput, opts: BatchDeleteSharedOptions) {
     const { logger, deadline, limit, sleepMs } = opts;
@@ -37,7 +27,7 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId, models
 
     const target = await db.knex.from<DBSyncConfig>('_nango_sync_configs').select('nango_config_id', 'sync_name').where({ id: syncConfigId }).first();
 
-    // The handed-in row + inactive history; never another live active version (a redeploy of the name).
+    // The handed-in row + inactive history
     const versions: Pick<DBSyncConfig, 'id' | 'models'>[] = target
         ? await db.knex
               .from<DBSyncConfig>('_nango_sync_configs')

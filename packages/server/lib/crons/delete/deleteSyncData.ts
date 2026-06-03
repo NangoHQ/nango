@@ -13,34 +13,27 @@ const orchestrator = getOrchestrator();
 export interface DeleteSyncInput {
     syncId: string;
     nangoConnectionId: number;
-    /** May be 0 for orphan soft-deleted syncs whose config is already gone (unschedule is skipped then). */
-    environmentId: number;
+    /** null when the config is already gone; unschedule and records deletion are skipped. */
+    environmentId: number | null;
     models: string[];
 }
 
 /**
- * Deletes a sync and all its dependencies, in FK order. Same-datastore children (jobs, active_logs,
- * the sync row) are deleted inline; the records (separate datastore) are dispatched as a `deleteRecords`
- * task. The orchestrator schedule is stopped up-front (best-effort: idempotent, a no-op when already
- * unscheduled — `orchestrator.deleteSync` self-reports, so we don't fail teardown on it).
- *
- * The records task carries `generation` = the sync's latest job id + 1, so it can use the optimized
- * `deleteOutdatedRecords` path. The job id is read **before** `hardDeleteJobs` removes the jobs, and the
- * task is enqueued **before** any destructive delete — so a failed enqueue retries while both the jobs
- * (the generation source) and the sync row (the FK anchor) still exist.
+ * Deletes a sync and its dependencies: unschedules it, deletes jobs and active_logs inline, and
+ * dispatches a `deleteRecords` task carrying `generation` (the sync's latest job id + 1).
  */
 export async function deleteSyncData({ syncId, nangoConnectionId, environmentId, models }: DeleteSyncInput, opts: BatchDeleteSharedOptions) {
     const { logger, limit } = opts;
     logger.info('Deleting sync...', syncId);
 
-    // Read before deleting jobs (the source of `generation`). No job → the sync never ran → no records.
+    // Read before deleting jobs — the generation source. No job → the sync never ran → no records.
     const lastJob = await getLatestSyncJob(syncId);
 
-    if (environmentId) {
+    if (environmentId !== null) {
         await orchestrator.deleteSync({ syncId, environmentId });
     }
 
-    if (models.length > 0 && lastJob) {
+    if (environmentId !== null && models.length > 0 && lastJob) {
         const res = await taskQueue.enqueue('deleteRecords', { syncId, nangoConnectionId, environmentId, models, generation: lastJob.id + 1 });
         if (res.isErr()) {
             throw res.error;

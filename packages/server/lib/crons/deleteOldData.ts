@@ -146,13 +146,12 @@ export async function exec(): Promise<void> {
                     throw syncs.error;
                 }
                 for (const { sync, syncConfig } of syncs.value) {
-                    // environmentId is only used to unschedule (skipped when 0) and records (skipped
-                    // when there are no models), so 0 is harmless when the config is already gone.
+                    // null environmentId when the config is already gone → unschedule and records are skipped.
                     await deleteSyncData(
                         {
                             syncId: sync.id,
                             nangoConnectionId: sync.nango_connection_id,
-                            environmentId: syncConfig?.environment_id ?? 0,
+                            environmentId: syncConfig?.environment_id ?? null,
                             models: syncConfig?.models ?? []
                         },
                         opts

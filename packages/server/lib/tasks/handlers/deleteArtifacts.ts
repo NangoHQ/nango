@@ -4,10 +4,7 @@ import { deleteFunctionFiles } from '@nangohq/shared';
 import { defineTask } from '@nangohq/task-queue';
 import { Err, Ok } from '@nangohq/utils';
 
-/**
- * Deletes a deleted function's compiled `.js` and source `.ts` artifacts from S3. The keys are
- * captured at enqueue time (the config rows may be gone by now) and carried in the payload.
- */
+/** Deletes a function's compiled `.js` and source `.ts` artifacts from S3. */
 export const deleteArtifactsTask = defineTask({
     type: 'deleteArtifacts',
     schema: z.object({

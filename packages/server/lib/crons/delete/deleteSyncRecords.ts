@@ -4,14 +4,8 @@ import { connectionService, environmentService, pubsub } from '@nangohq/shared';
 import type { StrictLogger } from '@nangohq/utils';
 
 /**
- * Deletes a sync's records (separate datastore, a hot path) for each of its models via the optimized
- * `deleteOutdatedRecords` query, and publishes the negative `usage.records` billing event per model.
- *
- * `generation` is the sync's latest `_nango_sync_jobs.id` + 1: records are kept only when seen at
- * `sync_job_id >= generation`, so generation = lastJobId + 1 deletes all of the sync's records as of
- * the deletion. Billing context is resolved here (best-effort: if the connection/environment is already
- * gone — e.g. at retention — records are still deleted, emission is skipped). Idempotent: a re-run
- * deletes nothing more, so it emits nothing more.
+ * Deletes a sync's records per model via `deleteOutdatedRecords` and publishes a negative `usage.records`
+ * event per model. `generation` (the sync's latest job id + 1) scopes the deletion to this sync.
  */
 export async function deleteSyncRecords(
     {

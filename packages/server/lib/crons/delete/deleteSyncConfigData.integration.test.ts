@@ -10,11 +10,6 @@ import { taskQueue } from '../../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 
-// This suite exercises the main-DB hard-deletes of the tree. The nodes dispatch records/artifacts as
-// real tasks (migrated here; they just queue rows — no processor drains them) and best-effort
-// unschedule via the orchestrator (unreachable in tests → reported + ignored). Records deletion +
-// billing themselves are covered by the deleteRecords / deleteSyncRecords unit tests. We avoid module
-// mocks because the integration runner shares a single fork across files (they would leak).
 const { createConfigSeed, createConnectionSeed, createEnvironmentSeed, createSyncJobSeeds, createSyncSeeds } = seeders;
 
 const logger = getLogger('test.deletion');
@@ -133,7 +128,7 @@ describe('deleteSyncConfigData (deletion tree)', () => {
             deleted: false
         });
 
-        // A redeploy of the SAME name after the delete → a fresh live version that must survive.
+        // A redeploy of the SAME name after the delete → a fresh active version that must survive.
         const liveId = await insertVersion({
             environment_id: env.id,
             nango_config_id: integration.id!,

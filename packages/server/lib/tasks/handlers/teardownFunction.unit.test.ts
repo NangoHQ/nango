@@ -4,8 +4,7 @@ import { Ok } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
 
-// Mock the task-queue singleton (assert enqueues) and the shared tree node (the node's own behavior
-// — unschedule + dispatch records/artifacts — is covered by the deletion-tree tests).
+// Mock the task-queue singleton (assert enqueues) and the tree node (covered by the deletion-tree tests).
 const enqueue = vi.fn().mockResolvedValue(Ok({ taskId: 'task-id' }));
 vi.mock('../index.js', () => ({ taskQueue: { enqueue } }));
 

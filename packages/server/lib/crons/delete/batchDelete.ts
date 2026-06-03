@@ -2,9 +2,7 @@ import { setTimeout } from 'node:timers/promises';
 
 import type { StrictLogger } from '@nangohq/utils';
 
-/**
- * Thrown by {@link batchDelete} (and the records loop) when the wall-clock `deadline` is reached mid-drain.
- */
+/** Thrown by {@link batchDelete} when the time `deadline` is reached mid-drain. */
 export class DeletionBudgetExceeded extends Error {
     constructor(message = 'deletion_budget_exceeded') {
         super(message);
@@ -35,7 +33,6 @@ export async function batchDelete({ name, deleteFn, deadline, limit, logger, sle
         }
         if (Date.now() > deadline.getTime()) {
             logger.info(`Time limit reached, stopping`);
-            // Propagates up nested batchDeletes and blocks any subsequent hardDeletes.
             throw new DeletionBudgetExceeded();
         }
         if (sleepMs > 0) {

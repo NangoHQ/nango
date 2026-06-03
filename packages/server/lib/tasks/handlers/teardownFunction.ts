@@ -14,9 +14,8 @@ const BUDGET_SECONDS = 300;
 const TIMEOUT_SECONDS = 600;
 
 /**
- * Function teardown task: the async, durable hard-delete that completes a function deletion started by
- * `deleteFunction`. Calls `deleteSyncConfigData` on a time budget; if the budget is reached, self-chains
- * on a new task.
+ * Async hard-delete that completes a function deletion. Drives `deleteSyncConfigData` on a time budget,
+ * self-chaining a new task when the budget is reached.
  */
 export const teardownFunctionTask = defineTask({
     type: 'teardownFunction',

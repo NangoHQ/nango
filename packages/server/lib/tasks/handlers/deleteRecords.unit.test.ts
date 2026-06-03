@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// deleteSyncRecords does the deletion + billing emission; the task is just a wrapper, so we mock it.
-// The failure path (rejection -> Err) is a trivial try/catch and is covered where it matters:
-// deleteSyncRecords.unit.test.ts (the real throwing logic) and deleteFunction.unit.test.ts (the same wrapper shape).
+// The task is a thin wrapper around deleteSyncRecords (mocked here).
 const deleteSyncRecords = vi.fn();
 vi.mock('../../crons/delete/deleteSyncRecords.js', () => ({
     deleteSyncRecords: (...args: unknown[]) => deleteSyncRecords(...args)

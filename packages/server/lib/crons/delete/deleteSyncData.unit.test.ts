@@ -4,8 +4,7 @@ import { Ok } from '@nangohq/utils';
 
 const order: string[] = [];
 
-// batchDelete is mocked to a no-op so the jobs/active_logs deleteFns (which touch the DB) don't run;
-// we only assert the ordering of unschedule / records-enqueue / hardDeleteSync around them.
+// batchDelete is a no-op; we assert the ordering of unschedule / enqueue / hardDeleteSync.
 vi.mock('./batchDelete.js', () => ({ batchDelete: vi.fn().mockResolvedValue(undefined) }));
 
 const enqueue = vi.fn(() => {
@@ -64,8 +63,8 @@ describe('deleteSyncData', () => {
         expect(hardDeleteSync).toHaveBeenCalledWith('s1');
     });
 
-    it('skips unschedule when environmentId is 0 and skips records when there are no models', async () => {
-        await deleteSyncData({ syncId: 's1', nangoConnectionId: 5, environmentId: 0, models: [] }, opts);
+    it('skips unschedule when environmentId is null and skips records when there are no models', async () => {
+        await deleteSyncData({ syncId: 's1', nangoConnectionId: 5, environmentId: null, models: [] }, opts);
 
         expect(deleteSync).not.toHaveBeenCalled();
         expect(enqueue).not.toHaveBeenCalled();
