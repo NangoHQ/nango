@@ -16,7 +16,7 @@ import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
 import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Sheet, SheetClose, SheetContent } from '@/components-v2/ui/Sheet';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components-v2/ui/Sheet';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Spinner } from '@/components-v2/ui/Spinner';
 
@@ -299,6 +299,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                     hideCloseButton
                     className="w-[834px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400"
                 >
+                    <SheetTitle className="sr-only">Message Details</SheetTitle>
                     <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
                             <SheetClose
