@@ -519,6 +519,12 @@
                         }
                     }
                 },
+                "token_response_headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "token_expires_in_ms": {
                     "type": "number"
                 },
