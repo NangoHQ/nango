@@ -254,6 +254,10 @@ export interface ProviderSignature extends BaseProvider {
     };
 }
 
+export interface ProviderAwsSigV4 extends BaseProvider {
+    auth_mode: 'AWS_SIGV4';
+}
+
 export interface ProviderApiKey extends BaseProvider {
     auth_mode: 'API_KEY';
 }
@@ -270,6 +274,7 @@ export type Provider =
     | ProviderJwt
     | ProviderTwoStep
     | ProviderSignature
+    | ProviderAwsSigV4
     | ProviderApiKey
     | ProviderBill
     | ProviderGithubApp
@@ -279,5 +284,5 @@ export type Provider =
     | ProviderMcpOAuth2Generic
     | ProviderInstallPlugin;
 
-export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic; // TODO: fix this type
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic | ProviderAwsSigV4; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type
