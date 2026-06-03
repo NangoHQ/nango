@@ -12638,8 +12638,6 @@ nable-ncentral:
         token_expiration_strategy: expireIn
     proxy:
         base_url: https://${connectionConfig.serverUrl}/api
-        headers:
-            authorization: Bearer ${accessToken}
         verification:
             method: GET
             endpoints:
@@ -12661,6 +12659,8 @@ nable-ncentral:
             type: string
             title: User-API token
             description: Your N-central User-API token (JWT)
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJOX2NlbnRyYWwifQ.c2lnbmF0dXJl
             secret: true
             doc_section: '#step-2-generate-a-user-api-token'
 
