@@ -274,7 +274,7 @@ async function compileDeployInfo({
             void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
-        if (runs) {
+        if (runs && runs !== previousSyncAndActionConfig.runs) {
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment_id, providerConfigKey, filter: [{ syncName, syncVariant: 'base' }] });
 
             for (const sync of syncs) {
