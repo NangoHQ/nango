@@ -7,11 +7,11 @@ import { useInterval } from 'react-use';
 import { OperationTag } from '../components/OperationTag';
 import { ProviderTag } from '../components/ProviderTag';
 import { Logs } from './components/Logs';
-import { Info } from '../../../components/patterns/Info';
 import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { CopyButton } from '@/components-v2/ui/CopyButton';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 
@@ -89,7 +89,9 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     if (error || !operation) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
-                <Info variant={'destructive'}>An error occurred</Info>
+                <Alert variant="error">
+                    <AlertDescription>An error occurred</AlertDescription>
+                </Alert>
             </div>
         );
     }
