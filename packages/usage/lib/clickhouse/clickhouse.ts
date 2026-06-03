@@ -302,7 +302,7 @@ export class Clickhouse {
         // so the running average reflects only the filtered subset.
         // See `getDailyCounter` for the typed-binding rationale.
         const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
-        const filterClauseT = filter ? `AND t.${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const filterClauseAliased = filter ? `AND t.${filter.dimension} = {filter_value:${filterParamType}}` : '';
         const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
         const queryParams = filter ? { filter_value: filter.value } : undefined;
 
@@ -358,7 +358,7 @@ export class Clickhouse {
             WHERE t.account_id = ${accountId}
             AND t.day >= toDate('${startDate}')
             AND t.day < toDate('${endDate}')
-            ${filterClauseT}
+            ${filterClauseAliased}
             GROUP BY t.day, isRest, dimensionValue
             ORDER BY t.day, isRest, dimensionValue
         `;
