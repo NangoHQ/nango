@@ -143,9 +143,17 @@ export class PostgresStore implements RecordsStore {
                 // CREATE TABLE / CREATE INDEX no-ops silently once the first commits.
                 promise = this.db
                     .transaction(async (trx) => {
-                        const { rows } = await trx.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [
-                            partitionName
-                        ]);
+                        const { rows } = await trx.raw<{ rows: { exists: boolean }[] }>(
+                            `SELECT EXISTS (
+                                SELECT 1
+                                FROM pg_class c
+                                JOIN pg_namespace n ON n.oid = c.relnamespace
+                                WHERE n.nspname = current_schema()
+                                  AND c.relname = ?
+                                  AND c.relkind = 'r'
+                            ) AS exists`,
+                            [partitionName]
+                        );
                         if (rows[0]?.exists) return;
 
                         await trx.raw(
