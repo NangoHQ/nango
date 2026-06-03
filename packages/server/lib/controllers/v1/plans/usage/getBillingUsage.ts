@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { billing } from '@nangohq/billing';
-import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
+import { BREAKDOWN_DIMENSIONS, FILTER_PARAM_TYPE_FOR_DIM, TOP_N_BREAKDOWN_CAP } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { toApiBillingUsageMetrics } from '../../../../formatters/billingUsage.js';
@@ -31,6 +31,10 @@ const breakdownSchema = z
 // Filter values arrive as `<dim>:<value>` strings (Express qs bracket
 // notation). Split on the FIRST ':' so values containing ':' (e.g. URLs)
 // survive intact. Returns `{ dimension, value }` on success.
+//
+// Typed dimensions (`environment_id: Int64`, `success: Bool`) get their
+// value validated here so unparseable inputs surface as 400 instead of
+// bubbling to a 500 when CH rejects the parameter binding downstream.
 const parseFilter = (allowedDims: readonly string[]) =>
     z
         .string()
@@ -45,6 +49,15 @@ const parseFilter = (allowedDims: readonly string[]) =>
             const value = s.slice(colon + 1);
             if (!allowedDims.includes(dimension)) {
                 ctx.addIssue({ code: 'custom', message: `invalid dimension "${dimension}" for this metric` });
+                return z.NEVER;
+            }
+            const paramType = FILTER_PARAM_TYPE_FOR_DIM[dimension] ?? 'String';
+            if (paramType === 'Int64' && !/^-?\d+$/.test(value)) {
+                ctx.addIssue({ code: 'custom', message: `value "${value}" is not a valid integer for dimension "${dimension}"` });
+                return z.NEVER;
+            }
+            if (paramType === 'Bool' && value !== 'true' && value !== 'false') {
+                ctx.addIssue({ code: 'custom', message: `value "${value}" is not a valid boolean for dimension "${dimension}" (expected "true" or "false")` });
                 return z.NEVER;
             }
             return { dimension, value };

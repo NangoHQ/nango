@@ -449,6 +449,40 @@ describe(`GET ${route}`, () => {
             expect(res.json.error.code).toBe('invalid_query_params');
         });
 
+        it('rejects a non-integer value for an Int64 dim (environment_id)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'environment_id:not-a-number' }
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('rejects a non-boolean value for a Bool dim (success)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'success:maybe' }
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
         it('rejects a filter value with no dimension prefix', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
