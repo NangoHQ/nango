@@ -3,7 +3,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
-import { taskQueue } from '../../../../../tasks/index.js';
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
 import type { DBSyncConfig } from '@nangohq/types';
@@ -18,9 +17,6 @@ async function getSyncConfig(id: number): Promise<Pick<DBSyncConfig, 'id' | 'del
 describe(`DELETE ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        // The endpoint enqueues into the task queue; runServer doesn't boot it, so migrate (but don't
-        // start the processor) so the enqueue succeeds without the teardown actually running.
-        await taskQueue.migrate();
     });
     afterAll(() => {
         api.server.close();

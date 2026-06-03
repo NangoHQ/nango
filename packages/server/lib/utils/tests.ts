@@ -10,6 +10,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { migrateLogsMapping } from '@nangohq/logs';
 
 import { router } from '../routes.js';
+import { taskQueue } from '../tasks/index.js';
 
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, DBUser } from '@nangohq/types';
 import type { Server } from 'node:http';
@@ -156,6 +157,7 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
     await multipleMigrations();
     await migrateLogsMapping();
     await migrateKeystore(db.knex);
+    await taskQueue.migrate();
 
     const app = express();
     app.set('query parser', 'extended');

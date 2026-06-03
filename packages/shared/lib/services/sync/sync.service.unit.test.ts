@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
+import { Err, Ok } from '@nangohq/utils';
 
 import connectionService from '../connection.service.js';
 import * as configService from './config/config.service.js';
@@ -157,6 +158,44 @@ describe('getAndReconcileDifferences', () => {
             expect(result).not.toBeNull();
             expect(result!.deletedSyncs).toHaveLength(1);
             expect(result!.deletedSyncs[0]?.name).toBe('removed-sync');
+        });
+
+        it('fails reconciliation (returns null) when a function-deletion teardown fails to enqueue', async () => {
+            const existingSync = makeSyncConfig({ sync_name: 'removed-sync', unique_key: 'github' });
+            vi.spyOn(configService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
+            const onFunctionDeleted = vi.fn().mockResolvedValue(Err(new Error('queue down')));
+
+            const result = await getAndReconcileDifferences({
+                environmentId: 1,
+                flows: [makeFlow({ syncName: 'new-sync', providerConfigKey: 'github' })],
+                performAction: true,
+                deployMode: 'all',
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                onFunctionDeleted
+            });
+
+            expect(onFunctionDeleted).toHaveBeenCalledWith({ syncConfigId: existingSync.id, models: existingSync.models });
+            expect(result).toBeNull();
+        });
+
+        it('continues when the teardown enqueues successfully', async () => {
+            const existingSync = makeSyncConfig({ sync_name: 'removed-sync', unique_key: 'github' });
+            vi.spyOn(configService, 'getActiveCustomSyncConfigsByEnvironmentId').mockResolvedValue([existingSync]);
+            const onFunctionDeleted = vi.fn().mockResolvedValue(Ok(undefined));
+
+            const result = await getAndReconcileDifferences({
+                environmentId: 1,
+                flows: [makeFlow({ syncName: 'new-sync', providerConfigKey: 'github' })],
+                performAction: true,
+                deployMode: 'all',
+                logContextGetter,
+                orchestrator: mockOrchestrator,
+                onFunctionDeleted
+            });
+
+            expect(onFunctionDeleted).toHaveBeenCalled();
+            expect(result).not.toBeNull();
         });
     });
 

@@ -603,7 +603,9 @@ export const getAndReconcileDifferences = async ({
                     if (onFunctionDeleted) {
                         const deleted = await onFunctionDeleted({ syncConfigId: existingSync.id, models: existingSync.models });
                         if (deleted.isErr()) {
-                            void logCtx?.error(`Failed to enqueue deletion for ${existingSync.type} ${existingSync.sync_name}`, { error: deleted.error });
+                            void logCtx?.error(`Failed to delete ${existingSync.type} ${existingSync.sync_name}`, { error: deleted.error });
+                            await logCtx?.failed();
+                            return null;
                         }
                     } else {
                         await syncManager.deleteConfig(existingSync.id, environmentId);
