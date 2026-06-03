@@ -10,10 +10,10 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
+import { ScopesInput } from '../../components-v2/patterns/ScopesInput';
 import { SecretTextArea } from '../../components-v2/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
-import { ScopesInput } from '../../components-v2/patterns/ScopesInput';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
@@ -715,8 +715,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     <div className="mt-1">
                                         <ScopesInput
                                             scopesString={selectedScopes.join(',')}
-                                            onChange={async (newScopesString) => {
+                                            onChange={(newScopesString) => {
                                                 setSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                return Promise.resolve();
                                             }}
                                         />
                                     </div>
@@ -766,8 +767,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <div className="mt-1">
                                             <ScopesInput
                                                 scopesString={oauthccSelectedScopes.join(',')}
-                                                onChange={async (newScopesString) => {
+                                                onChange={(newScopesString) => {
                                                     setOauthccSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                    return Promise.resolve();
                                                 }}
                                             />
                                         </div>
@@ -849,8 +851,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             <div className="mt-1">
                                                 <ScopesInput
                                                     scopesString={oauthSelectedScopes.join(',')}
-                                                    onChange={async (newScopesString) => {
+                                                    onChange={(newScopesString) => {
                                                         setOauthSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                        return Promise.resolve();
                                                     }}
                                                 />
                                             </div>
