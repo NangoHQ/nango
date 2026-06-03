@@ -28,6 +28,13 @@ const breakdownSchema = z
     .strict()
     .optional();
 
+// Compile-time drift guard: if a new value is added to `UsageMetric` without
+// a matching key above, `_MissingBreakdownMetric` resolves to that value
+// (not `never`) and the assignment fails.
+type _MissingBreakdownMetric = Exclude<UsageMetric, keyof NonNullable<z.infer<typeof breakdownSchema>>>;
+const _exhaustiveBreakdownCheck: _MissingBreakdownMetric extends never ? true : never = true;
+void _exhaustiveBreakdownCheck;
+
 const ALL_METRICS = Object.keys(BREAKDOWN_DIMENSIONS) as [UsageMetric, ...UsageMetric[]];
 
 const querySchema = z

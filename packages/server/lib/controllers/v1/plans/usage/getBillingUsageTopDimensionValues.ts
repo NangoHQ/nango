@@ -6,7 +6,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { usageTracker } from '../../../../utils/usage.js';
 
-import type { GetBillingUsageTopDimensionValues } from '@nangohq/types';
+import type { GetBillingUsageTopDimensionValues, UsageMetric } from '@nangohq/types';
 
 // One zod object per metric, each pinning `metric` to a literal and
 // `dimension` to that metric's allowed enum. `z.discriminatedUnion` rejects
@@ -20,6 +20,14 @@ const metricAndDimensionSchema = z.discriminatedUnion('metric', [
     z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
     z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) })
 ]);
+
+// Compile-time drift guard: if a new value is added to `UsageMetric` without
+// a matching entry above, `_MissingMetric` resolves to that value (not
+// `never`) and the assignment fails. Forces the schema to stay in sync.
+type _MissingMetric = Exclude<UsageMetric, z.infer<typeof metricAndDimensionSchema>['metric']>;
+const _exhaustiveMetricCheck: _MissingMetric extends never ? true : never = true;
+// eslint guards against unused: silence by referencing the symbol.
+void _exhaustiveMetricCheck;
 
 const querySchema = z
     .object({

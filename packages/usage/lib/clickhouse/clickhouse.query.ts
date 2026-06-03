@@ -17,6 +17,17 @@ export const COUNTER_METRICS = [
 ] as const satisfies readonly CounterUsageMetric[];
 export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
 
+// Compile-time drift guards: `satisfies` proves the array items are valid
+// metric values, but NOT that every value is present. If `UsageMetric`
+// grows without adding the new value here, `_MissingCounter`/`_MissingAvg`
+// resolves to that value (not `never`) and the assignment fails.
+type _MissingCounter = Exclude<CounterUsageMetric, (typeof COUNTER_METRICS)[number]>;
+type _MissingAvg = Exclude<AvgUsageMetric, (typeof AVG_METRICS)[number]>;
+const _exhaustiveCounterCheck: _MissingCounter extends never ? true : never = true;
+const _exhaustiveAvgCheck: _MissingAvg extends never ? true : never = true;
+void _exhaustiveCounterCheck;
+void _exhaustiveAvgCheck;
+
 // Runtime mirror of `BreakdownDimensions` from @nangohq/types — `satisfies`
 // keeps the per-key arrays in sync with the per-key dim union. Single
 // declaration site is the interface in types; this const carries the same
