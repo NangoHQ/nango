@@ -20,7 +20,7 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
             <SheetContent side="right" hideCloseButton className="w-[1034px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
                 <div className="relative h-full select-text">
                     <div className="absolute right-6 top-[35px]">
-                        <SheetClose title="Close" className="w-8 h-6 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white">
+                        <SheetClose title="Close" className="bg-transparent text-text-light-gray hover:text-white focus:text-white transition-colors w-8 h-6 flex items-center justify-center">
                             <Cross1Icon />
                         </SheetClose>
                     </div>
