@@ -53,6 +53,10 @@ export type GetDailyCounterQuery = {
         // Optional top-N breakdown size when `dimension !== 'none'`. Defaults
         // to TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
         top?: number;
+        // Override CH `max_execution_time` for this query. Defaults to the
+        // dashboard ceiling; callers that race against a shorter wall-clock
+        // (e.g. shadow path) set this to align server-side cancellation.
+        maxExecutionSeconds?: number;
         timeframe: {
             // exclusive end (timeframe includes events with timestamp >= start and < end)
             start: Date;
@@ -161,6 +165,8 @@ export type GetDailySumAndBatchesQuery = {
         metric: M;
         dimension: DimensionFor<M>;
         top?: number;
+        // Override CH `max_execution_time` (see GetDailyCounterQuery).
+        maxExecutionSeconds?: number;
         timeframe: { start: Date; end: Date };
     };
 }[AvgUsageMetric];
