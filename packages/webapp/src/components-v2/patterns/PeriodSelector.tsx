@@ -2,8 +2,8 @@ import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
 import { Button } from '@/components-v2/ui/Button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
 import { matchPresetFromPeriod, parsePeriod } from '@/utils/dates';
 import { cn } from '@/utils/utils';
 
