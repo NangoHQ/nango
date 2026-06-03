@@ -620,6 +620,43 @@ describe('buildProxyHeaders', () => {
             foo: 'Bar'
         });
     });
+
+    it('should include caller-supplied headers in the AWS SigV4 SignedHeaders list', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            headers: {
+                'x-amz-target': 'DynamoDB_20120810.GetItem',
+                'content-type': 'application/x-amz-json-1.0'
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://dynamodb.us-east-1.amazonaws.com/',
+            connection: getTestConnection({
+                credentials: {
+                    type: 'AWS_SIGV4',
+                    raw: {},
+                    role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                    region: 'us-east-1',
+                    service: 'dynamodb',
+                    access_key_id: 'AKIDEXAMPLE',
+                    secret_access_key: 'wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY',
+                    session_token: 'session-token'
+                }
+            })
+        });
+
+        // SignedHeaders must mention x-amz-target so AWS verifies the signature over it;
+        // omitting it produces SignatureDoesNotMatch for DynamoDB-style APIs.
+        expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bx-amz-target\b/);
+        expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bcontent-type\b/);
+        expect(result['x-amz-target']).toBe('DynamoDB_20120810.GetItem');
+        expect(result['content-type']).toBe('application/x-amz-json-1.0');
+    });
 });
 
 describe('buildProxyURL', () => {
