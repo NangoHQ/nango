@@ -8,25 +8,23 @@ export type { AvgUsageMetric, CounterUsageMetric, DimensionFor } from '@nangohq/
 export const TOP_N_BREAKDOWN_DEFAULT = 10;
 export const TOP_N_BREAKDOWN_CAP = 25;
 
-export const COUNTER_METRICS = [
-    'proxy',
-    'function_executions',
-    'function_logs',
-    'function_compute_gbms',
-    'webhook_forwards'
-] as const satisfies readonly CounterUsageMetric[];
-export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
-
-// Compile-time drift guards: `satisfies` proves the array items are valid
-// metric values, but NOT that every value is present. If `UsageMetric`
-// grows without adding the new value here, `_MissingCounter`/`_MissingAvg`
-// resolves to that value (not `never`) and the assignment fails.
-type _MissingCounter = Exclude<CounterUsageMetric, (typeof COUNTER_METRICS)[number]>;
-type _MissingAvg = Exclude<AvgUsageMetric, (typeof AVG_METRICS)[number]>;
-const _exhaustiveCounterCheck: _MissingCounter extends never ? true : never = true;
-const _exhaustiveAvgCheck: _MissingAvg extends never ? true : never = true;
-void _exhaustiveCounterCheck;
-void _exhaustiveAvgCheck;
+// `satisfies Record<…, true>` on the set object forces an entry per metric;
+// projecting via `Object.keys` gives the runtime array. Adding a new metric
+// to `CounterUsageMetric` / `AvgUsageMetric` without updating the set fails
+// to typecheck.
+const COUNTER_METRICS_SET = {
+    proxy: true,
+    function_executions: true,
+    function_logs: true,
+    function_compute_gbms: true,
+    webhook_forwards: true
+} satisfies Record<CounterUsageMetric, true>;
+const AVG_METRICS_SET = {
+    records: true,
+    connections: true
+} satisfies Record<AvgUsageMetric, true>;
+export const COUNTER_METRICS = Object.keys(COUNTER_METRICS_SET) as CounterUsageMetric[];
+export const AVG_METRICS = Object.keys(AVG_METRICS_SET) as AvgUsageMetric[];
 
 // Runtime mirror of `BreakdownDimensions` from @nangohq/types — `satisfies`
 // keeps the per-key arrays in sync with the per-key dim union. Single

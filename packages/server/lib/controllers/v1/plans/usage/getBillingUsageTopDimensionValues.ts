@@ -11,23 +11,22 @@ import type { GetBillingUsageTopDimensionValues, UsageMetric } from '@nangohq/ty
 // One zod object per metric, each pinning `metric` to a literal and
 // `dimension` to that metric's allowed enum. `z.discriminatedUnion` rejects
 // invalid (metric, dim) pairs at parse time — no refine needed.
-const metricAndDimensionSchema = z.discriminatedUnion('metric', [
-    z.object({ metric: z.literal('proxy'), dimension: z.enum(BREAKDOWN_DIMENSIONS.proxy) }),
-    z.object({ metric: z.literal('function_executions'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_executions) }),
-    z.object({ metric: z.literal('function_logs'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_logs) }),
-    z.object({ metric: z.literal('function_compute_gbms'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms) }),
-    z.object({ metric: z.literal('webhook_forwards'), dimension: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards) }),
-    z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
-    z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) })
-]);
+// `satisfies Record<UsageMetric, …>` forces an entry per metric — adding a
+// new `UsageMetric` without updating this object fails to typecheck.
+const metricBranches = {
+    proxy: z.object({ metric: z.literal('proxy'), dimension: z.enum(BREAKDOWN_DIMENSIONS.proxy) }),
+    function_executions: z.object({ metric: z.literal('function_executions'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_executions) }),
+    function_logs: z.object({ metric: z.literal('function_logs'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_logs) }),
+    function_compute_gbms: z.object({ metric: z.literal('function_compute_gbms'), dimension: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms) }),
+    webhook_forwards: z.object({ metric: z.literal('webhook_forwards'), dimension: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards) }),
+    records: z.object({ metric: z.literal('records'), dimension: z.enum(BREAKDOWN_DIMENSIONS.records) }),
+    connections: z.object({ metric: z.literal('connections'), dimension: z.enum(BREAKDOWN_DIMENSIONS.connections) })
+} satisfies Record<UsageMetric, z.ZodObject>;
 
-// Compile-time drift guard: if a new value is added to `UsageMetric` without
-// a matching entry above, `_MissingMetric` resolves to that value (not
-// `never`) and the assignment fails. Forces the schema to stay in sync.
-type _MissingMetric = Exclude<UsageMetric, z.infer<typeof metricAndDimensionSchema>['metric']>;
-const _exhaustiveMetricCheck: _MissingMetric extends never ? true : never = true;
-// eslint guards against unused: silence by referencing the symbol.
-void _exhaustiveMetricCheck;
+// `Object.values` widens to a plain array; the cast restores the non-empty
+// tuple shape `z.discriminatedUnion` requires.
+type _Branches = (typeof metricBranches)[UsageMetric];
+const metricAndDimensionSchema = z.discriminatedUnion('metric', Object.values(metricBranches) as [_Branches, ..._Branches[]]);
 
 const querySchema = z
     .object({
