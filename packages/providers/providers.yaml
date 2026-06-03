@@ -16788,10 +16788,15 @@ sap-business-one:
         Password: ${credentials.password}
     token_headers:
         content-type: application/json
+    token_expires_in_ms: 1700000
     proxy:
         base_url: https://${connectionConfig.domain}
+        headers:
+            cookie: ${credentials._cookies}
     token_response:
-        token: AccessToken
+        token: SessionId
+    token_response_headers:
+        - set-cookie
     docs: https://nango.dev/docs/integrations/all/sap-business-one
     docs_connect: https://nango.dev/docs/integrations/all/sap-business-one/connect
     connection_config:
