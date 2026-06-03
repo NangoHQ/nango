@@ -10,7 +10,7 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
+import { SecretTextArea } from '../../components-v2/patterns/SecretTextArea';
 import TagsInput from '../../components/ui/input/TagsInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
@@ -1179,7 +1179,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="private_key"
                                             name="private_key"
                                             value={privateKey}
-                                            onUpdate={(value) => setPrivateKey(value)}
+                                            onChange={(e) => setPrivateKey(e.target.value)}
                                             required
                                         />
                                     </div>
