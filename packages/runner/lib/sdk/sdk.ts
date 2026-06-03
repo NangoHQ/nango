@@ -446,17 +446,6 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
     uncontrolledFetch = NangoActionRunner['prototype']['uncontrolledFetch'];
 
-    protected override recordUncontrolledFetchTransfer({ bytesSent, bytesReceived }: { bytesSent: number; bytesReceived: number }): void {
-        this.telemetryRecorder?.record({
-            type: 'data_transfer',
-            callsite: 'uncontrolled_fetch',
-            connectionId: this.connectionId,
-            integrationId: this.providerConfigKey,
-            bytesSent,
-            bytesReceived
-        });
-    }
-
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         this.throwIfAbortedOrKilled();
         const now = new Date();
