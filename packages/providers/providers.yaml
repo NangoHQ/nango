@@ -12650,7 +12650,7 @@ nable-ncentral:
         serverUrl:
             type: string
             title: N-central server URL
-            description: Your N-central server hostname
+            description: Your N-central server hostname.
             example: ncentral.example.com
             format: hostname
             prefix: https://
