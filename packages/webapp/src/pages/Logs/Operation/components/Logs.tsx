@@ -8,7 +8,7 @@ import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
 import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
-import { PeriodSelector } from '../../../../components/ui/PeriodSelector';
+import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
 import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';

@@ -9,7 +9,7 @@ import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 import { SearchableMultiSelect } from './SearchableMultiSelect';
 import { TypesSelect } from './TypesSelect';
 import { MultiSelect } from '../../../components/ui/MultiSelect';
-import { PeriodSelector } from '../../../components/ui/PeriodSelector';
+import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
 import { queryClient, useStore } from '../../../store';
 import { columns, defaultLimit, refreshInterval, statusOptions, typesList } from '../constants';
 import { OperationRow } from './OperationRow';
