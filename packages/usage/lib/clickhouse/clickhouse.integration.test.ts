@@ -424,6 +424,35 @@ describe('Clickhouse', () => {
                 });
                 expect(res.isErr()).toBe(true);
             });
+
+            it('binds non-string dim columns with the right CH type (environment_id: Int64)', async () => {
+                // Pre-fix: `WHERE environment_id = {p:String}` errors at CH
+                // because String doesn't auto-coerce to Int64. After: the
+                // parameter is bound as `{p:Int64}` so CH parses the value
+                // once, the comparison stays native, and any column index
+                // applies.
+                const ok = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'environment_id', value: '999' } // valid Int64, no rows
+                });
+                expect(ok.isOk()).toBe(true);
+                expect(ok.unwrap().series).toEqual([]);
+
+                // Non-numeric value for an Int64 dim fails at CH parameter
+                // binding — surfaces an explicit error instead of silently
+                // returning nothing.
+                const bad = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'environment_id', value: 'not-a-number' }
+                });
+                expect(bad.isErr()).toBe(true);
+            });
         });
     });
 

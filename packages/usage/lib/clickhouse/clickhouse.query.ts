@@ -36,6 +36,17 @@ export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): b
     return (BREAKDOWN_DIMENSIONS[metric] as readonly string[]).includes(dimension);
 }
 
+// CH parameter type used when binding a filter value to a dimension column.
+// Strings by default; non-string MV columns get their native type so CH
+// parses the user-supplied value once at binding time, the comparison stays
+// native, and any column-level data-skipping index applies. Default for
+// unmapped dims is `String` — keep this map exhaustive vs the actual MV
+// column types or filtered queries on unmapped non-string columns will fail.
+export const FILTER_PARAM_TYPE_FOR_DIM: Record<string, 'Int64' | 'Bool' | 'String'> = {
+    environment_id: 'Int64',
+    success: 'Bool'
+};
+
 export type GetDailyCounterQuery = {
     [M in CounterUsageMetric]: {
         accountId: UsageEvent['payload']['properties']['accountId'];

@@ -1,7 +1,14 @@
 import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimensionFor, quantityForMetric, tableForMetric } from './clickhouse.query.js';
+import {
+    FILTER_PARAM_TYPE_FOR_DIM,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT,
+    isAllowedDimensionFor,
+    quantityForMetric,
+    tableForMetric
+} from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -129,8 +136,11 @@ export class Clickhouse {
         const table = `${this.database}.${tableForMetric(metric)}`;
         const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
         // `query_params` keeps the user-supplied filter value out of the SQL
-        // string — CH validates and quotes it server-side.
-        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:String}` : '';
+        // string — CH parses, validates, and binds it server-side. Native
+        // column type per dim (Int64/Bool/String) so comparison stays native
+        // and any column-level data-skipping index applies.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
         const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         const sql =
@@ -290,8 +300,10 @@ export class Clickhouse {
         // `query_params` keeps the user-supplied filter value out of the SQL
         // string. Filter narrows both `SUM(value)` and `uniqExact(batch_id)`
         // so the running average reflects only the filtered subset.
-        const filterClauseT = filter ? `AND t.${filter.dimension} = {filter_value:String}` : '';
-        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:String}` : '';
+        // See `getDailyCounter` for the typed-binding rationale.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClauseT = filter ? `AND t.${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
         const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         // dim branch JOINs per-dim sums against `global_batches` so every series
