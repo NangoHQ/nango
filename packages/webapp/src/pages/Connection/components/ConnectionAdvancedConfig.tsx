@@ -5,13 +5,13 @@ import { useFormContext } from 'react-hook-form';
 import { KeyValueInput } from '../../../components-v2/patterns/KeyValueInput';
 import { ScopesInput } from '../../../components-v2/patterns/ScopesInput';
 import { BinaryToggle } from '../../../components-v2/ui/BinaryToggle';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/Card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components-v2/ui/Collapsible';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components-v2/ui/Form';
 import { InfoTooltip } from '../../../components-v2/ui/InfoTooltip';
 import { Input } from '../../../components-v2/ui/Input';
 import { Separator } from '../../../components-v2/ui/Separator';
 import { StyledLink } from '../../../components-v2/ui/StyledLink';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/Card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components-v2/ui/Collapsible';
 
 import type { ConnectionFormData } from '../Create';
 
