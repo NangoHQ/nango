@@ -516,10 +516,11 @@ export class UsageTracker implements IUsageTracker {
         }
         for (const [metric, res] of avgBaseResults) {
             if (res.isErr()) return Err(res.error);
-            const billing = toRunningAvgUsage(res.value)[0];
-            if (billing) {
-                result[metric] = billing;
-            }
+            // Empty series (filter matched no rows, or no events in window):
+            // emit a zero-valued cumulative metric so the downstream API
+            // formatter doesn't fall back to its generic `view_mode: 'periodic'`
+            // shape, which is wrong for AVG metrics.
+            result[metric] = toRunningAvgUsage(res.value)[0] ?? { externalId: metric, total: 0, usage: [], view_mode: 'cumulative' };
         }
 
         // Breakdown-requested metrics: emit a BillingUsageMetric with empty

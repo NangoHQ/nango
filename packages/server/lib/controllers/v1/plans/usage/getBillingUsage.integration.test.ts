@@ -413,6 +413,30 @@ describe(`GET ${route}`, () => {
             expect(records.breakdown).toBeUndefined();
         });
 
+        it('empty AVG filter returns a zero-valued cumulative metric (not the periodic fallback)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    filter: { records: 'integration_id:does-not-exist' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            expect(records.total).toBe(0);
+            expect(records.usage).toEqual([]);
+            // AVG metric → cumulative view_mode even when empty; the
+            // downstream formatter's generic fallback is 'periodic' which
+            // would be wrong here.
+            expect(records.view_mode).toBe('cumulative');
+            expect(records.externalId).toBe('records');
+        });
+
         it('rejects filter + breakdown on the same metric (mutually exclusive)', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
