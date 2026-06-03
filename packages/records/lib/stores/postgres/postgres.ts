@@ -8,7 +8,7 @@ import knex from 'knex';
 
 import { Err, Ok, cancellableDaemon, retry, stringToHash } from '@nangohq/utils';
 
-import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
+import { DEFAULT_RECORDS_LIMIT, RECORDS_DATA_TABLE, RECORDS_ROUTING_TABLE, RECORDS_SEEN_TABLE, RECORDS_TABLE, RECORD_COUNTS_TABLE } from '../../constants.js';
 import { Cursor } from '../../cursor.js';
 import { envs } from '../../env.js';
 import { deepMergeRecordData } from '../../helpers/merge.js';
@@ -1669,6 +1669,39 @@ export class PostgresStore implements RecordsStore {
             return Ok(null);
         } catch (err) {
             return Err(new Error(`Failed to find auto-delete candidate`, { cause: err }));
+        }
+    }
+
+    async getOrCreateRouting<K extends string>({
+        connectionId,
+        model,
+        storeKey,
+        ifExists
+    }: {
+        connectionId: number;
+        model: string;
+        storeKey: K;
+        ifExists: K;
+    }): Promise<Result<K>> {
+        try {
+            const result = await this.db.raw<{ rows: { store_key: string }[] }>(
+                `INSERT INTO "${RECORDS_ROUTING_TABLE}" (connection_id, model, store_key)
+                 VALUES (
+                     :connectionId,
+                     :model,
+                     CASE WHEN EXISTS (SELECT 1 FROM "${RECORDS_TABLE}" WHERE connection_id = :connectionId AND model = :model)
+                          THEN :ifExists
+                          ELSE :storeKey
+                     END
+                 )
+                 ON CONFLICT (connection_id, model) DO UPDATE SET store_key = "${RECORDS_ROUTING_TABLE}".store_key
+                 RETURNING store_key`,
+                { connectionId, model, storeKey, ifExists }
+            );
+            const [row] = result.rows;
+            return Ok(row!.store_key as K);
+        } catch (err) {
+            return Err(new Error('Failed to get or create routing', { cause: err }));
         }
     }
 

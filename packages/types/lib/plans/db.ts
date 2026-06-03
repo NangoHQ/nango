@@ -200,6 +200,12 @@ export interface DBPlan extends Timestamps {
     has_records_autopruning: boolean;
 
     /**
+     * Records store key for this account
+     * @default 'default'
+     */
+    records_store: 'default' | 'secondary';
+
+    /**
      * Limit the number of variants per sync
      * @default 100
      */
