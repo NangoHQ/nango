@@ -259,21 +259,21 @@ describe('Scheduler', () => {
         expect(found[0]?.id).toBe(schedule.id);
     });
 
-    describe('delayed', () => {
+    describe('at', () => {
         it('should create a task in CREATED state with the given startsAfter', async () => {
             const startsAfter = new Date(Date.now() + 60_000);
-            const task = await delayed(scheduler, { startsAfter });
+            const task = await at(scheduler, { startsAfter });
             expect(task.state).toBe('CREATED');
             expect(task.startsAfter).toBeWithinMs(startsAfter, 1_000);
         });
         it('should not be dequeue-able before startsAfter', async () => {
-            const task = await delayed(scheduler, { startsAfter: new Date(Date.now() + 60_000) });
+            const task = await at(scheduler, { startsAfter: new Date(Date.now() + 60_000) });
             const dequeued = (await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap();
             expect(dequeued.length).toBe(0);
         });
         it('should become dequeue-able once startsAfter has passed', async () => {
             const delayMs = 1_000;
-            const task = await delayed(scheduler, { startsAfter: new Date(Date.now() + delayMs) });
+            const task = await at(scheduler, { startsAfter: new Date(Date.now() + delayMs) });
             expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(0);
             await new Promise((resolve) => setTimeout(resolve, delayMs + 300));
             expect((await scheduler.dequeue({ groupKeyPattern: task.groupKey, limit: 1 })).unwrap().length).toBe(1);
@@ -363,12 +363,12 @@ function batchProps(overrides: Partial<TaskProps> = {}): Parameters<Scheduler['i
     };
 }
 
-async function delayed(
+async function at(
     scheduler: Scheduler,
     { startsAfter, taskProps }: { startsAfter: Date; taskProps?: Partial<Omit<TaskProps, 'startsAfter' | 'scheduleId'>> }
 ): Promise<Task> {
     return (
-        await scheduler.delayed({
+        await scheduler.at({
             name: taskProps?.name || nanoid(),
             payload: taskProps?.payload || {},
             groupKey: taskProps?.groupKey || nanoid(),
