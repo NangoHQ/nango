@@ -50,6 +50,7 @@ export class Scheduler {
         onError,
         config = defaultSchedulerConfig,
         onEvent = () => {},
+        continueOnError = false,
         logger: injectedLogger
     }: {
         db: knex.Knex;
@@ -57,6 +58,11 @@ export class Scheduler {
         onError: (err: Error) => void;
         config?: SchedulerConfig;
         onEvent?: (event: SchedulerEvent) => void;
+        /**
+         * When true, a daemon that throws on a tick reports via `onError` and keeps ticking (self-healing)
+         * instead of stopping. Use when `onError` only logs; leave false when `onError` is fatal (e.g. exits the process).
+         */
+        continueOnError?: boolean;
         logger?: StrictLogger;
     }) {
         this.ac = new AbortController();
@@ -84,7 +90,8 @@ export class Scheduler {
                 this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
                 this.onCallbacks[task.state](task);
             },
-            onError
+            onError,
+            continueOnError
         });
         this.scheduling = new SchedulingDaemon({
             db,
@@ -96,14 +103,16 @@ export class Scheduler {
                 this.onCallbacks[task.state](task);
             },
             onEvent: safeOnEvent,
-            onError
+            onError,
+            continueOnError
         });
         this.cleaning = new CleaningDaemon({
             db,
             abortSignal: this.ac.signal,
             tickIntervalMs: config.daemons.cleaningTickIntervalMs,
             olderThanDays: config.daemons.cleaningOlderThanDays,
-            onError
+            onError,
+            continueOnError
         });
     }
 

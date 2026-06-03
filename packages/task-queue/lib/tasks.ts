@@ -83,6 +83,9 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
                 report(err);
                 this.logger.error(`[tasks] scheduler error: ${stringifyError(err)}`);
             },
+            // A daemon error is reported above but must not take the whole queue (and its host process)
+            // down: keep ticking so a transient failure self-heals on the next tick.
+            continueOnError: true,
             config: opts.schedulerConfig ?? defaultSchedulerConfig,
             logger: this.logger
         });

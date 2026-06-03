@@ -131,7 +131,11 @@ export const ENVS = z.object({
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
     // Tasks (generic server-side task queue, see @nangohq/task-queue). Runs in an isolated schema on the main Nango DB.
-    TASKS_DATABASE_SCHEMA: z.string().optional().default('nango_tasks'),
+    TASKS_DATABASE_SCHEMA: z
+        .string()
+        .regex(/^[a-z_][a-z0-9_]*$/i, 'TASKS_DATABASE_SCHEMA must be a valid Postgres identifier ([A-Za-z_][A-Za-z0-9_]*)')
+        .optional()
+        .default('nango_tasks'),
     TASKS_DB_POOL_MAX: z.coerce.number().optional().default(10),
 
     // Jobs
