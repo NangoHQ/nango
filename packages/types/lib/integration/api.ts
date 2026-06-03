@@ -119,7 +119,7 @@ export type GetPublicFunctionCode = Endpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
-export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag'>;
+export type ApiIntegration = Omit<Merge<IntegrationConfig, ApiTimestamps>, 'oauth_client_secret_iv' | 'oauth_client_secret_tag' | 'integration_secrets'>;
 export type ApiIntegrationList = ApiIntegration & {
     meta: {
         authMode: AuthModeType;
@@ -246,7 +246,14 @@ export type PatchIntegration = Endpoint<{
     Params: { providerConfigKey: string };
     Body:
         | { integrationId?: string | undefined; webhookSecret?: string | undefined; displayName?: string | undefined; forward_webhooks?: boolean | undefined }
+        | { custom: Record<string, string | null> }
         | IntegrationAuthBody;
+    Error:
+        | ApiError<'missing_aws_sigv4_config'>
+        | ApiError<'invalid_aws_sigv4_config'>
+        | ApiError<'missing_aws_sigv4_service'>
+        | ApiError<'missing_aws_sigv4_sts_endpoint'>
+        | ApiError<'missing_aws_sigv4_builtin_credentials'>;
     Success: {
         data: {
             success: boolean;
