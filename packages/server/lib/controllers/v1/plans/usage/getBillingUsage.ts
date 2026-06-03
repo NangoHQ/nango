@@ -50,24 +50,19 @@ const parseFilter = (allowedDims: readonly string[]) =>
             return { dimension, value };
         });
 
-const filterSchema = z
-    .object({
-        proxy: parseFilter(BREAKDOWN_DIMENSIONS.proxy).optional(),
-        function_executions: parseFilter(BREAKDOWN_DIMENSIONS.function_executions).optional(),
-        function_logs: parseFilter(BREAKDOWN_DIMENSIONS.function_logs).optional(),
-        function_compute_gbms: parseFilter(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
-        webhook_forwards: parseFilter(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
-        records: parseFilter(BREAKDOWN_DIMENSIONS.records).optional(),
-        connections: parseFilter(BREAKDOWN_DIMENSIONS.connections).optional()
-    })
-    .strict()
-    .optional();
+// `satisfies Record<UsageMetric, …>` forces an entry per metric — adding a
+// new `UsageMetric` without updating this object fails to typecheck.
+const filterFields = {
+    proxy: parseFilter(BREAKDOWN_DIMENSIONS.proxy).optional(),
+    function_executions: parseFilter(BREAKDOWN_DIMENSIONS.function_executions).optional(),
+    function_logs: parseFilter(BREAKDOWN_DIMENSIONS.function_logs).optional(),
+    function_compute_gbms: parseFilter(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
+    webhook_forwards: parseFilter(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
+    records: parseFilter(BREAKDOWN_DIMENSIONS.records).optional(),
+    connections: parseFilter(BREAKDOWN_DIMENSIONS.connections).optional()
+} satisfies Record<UsageMetric, z.ZodTypeAny>;
 
-// Compile-time drift guard for the filter schema (same shape as the
-// breakdown guard added in PR #6326).
-type _MissingFilterMetric = Exclude<UsageMetric, keyof NonNullable<z.infer<typeof filterSchema>>>;
-const _exhaustiveFilterCheck: _MissingFilterMetric extends never ? true : never = true;
-void _exhaustiveFilterCheck;
+const filterSchema = z.object(filterFields).strict().optional();
 
 const ALL_METRICS = Object.keys(BREAKDOWN_DIMENSIONS) as [UsageMetric, ...UsageMetric[]];
 
