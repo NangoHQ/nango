@@ -489,7 +489,7 @@
             --color-feedback-info-bg: var(--color-brand-1000);
             --color-feedback-info-alt: var(--color-brand-700);
             --color-feedback-error-fg: var(--color-red-500);
-            --color-feedback-error-bg: var(--color-red-900);
+            --color-feedback-error-bg: #5a0f0fc4;
             --color-feedback-error-alt: var(--color-red-700);
             --color-feedback-error-border: var(--color-red-500);
             --color-feedback-neutral-fg: var(--color-gray-600);
