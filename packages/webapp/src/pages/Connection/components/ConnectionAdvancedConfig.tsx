@@ -2,7 +2,7 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components-v2/ui/Collapsible';
 import { KeyValueInput } from '../../../components-v2/patterns/KeyValueInput';
 import { ScopesInput } from '../../../components-v2/patterns/ScopesInput';
 import { BinaryToggle } from '../../../components-v2/ui/BinaryToggle';
