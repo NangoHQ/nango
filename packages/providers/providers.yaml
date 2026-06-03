@@ -19,9 +19,11 @@
             type: string
             title: Events API Domain
             description: The regional Events API domain for your 1Password account.
-            example: events.1password.com
             order: 1
-            pattern: '^events\.1password\.(com|ca|eu)$'
+            enum:
+                - events.1password.com
+                - events.1password.ca
+                - events.1password.eu
     credentials:
         apiKey:
             type: string
@@ -83,8 +85,10 @@
             type: string
             title: API Domain
             description: The regional API domain for your 1Password account.
-            example: api.1password.com
-            pattern: '^api\.1password\.(com|ca|eu)$'
+            enum:
+                - api.1password.com
+                - api.1password.ca
+                - api.1password.eu
             order: 1
         accountId:
             type: string
@@ -575,9 +579,10 @@ adyen:
         environment:
             type: string
             title: Environment
-            description: The environment to use
-            pattern: '^(live|test)$'
-            example: live|test
+            description: The environment to use.
+            enum:
+                - live
+                - test
         resource:
             type: string
             title: Resource
@@ -1023,18 +1028,19 @@ amazon-selling-partner:
             type: string
             title: Proxy BaseUrl Subdomain
             description: The subdomain prefix for the Amazon Selling Partner API endpoint.
-            example: sellingpartnerapi
-            pattern: '^(sandbox\.)?sellingpartnerapi$'
-            prefix: https://
             doc_section: '#step-3-finding-your-proxy-baseurl-subdomain'
             order: 3
+            enum:
+                - sellingpartnerapi
+                - sandbox.sellingpartnerapi
         region:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
-            example: eu
-            pattern: '^[a-z]+$'
-            suffix: .amazon.com
+            enum:
+                - na
+                - eu
+                - fe
             doc_section: '#step-4-finding-your-proxy-baseurl-region'
             order: 4
 
@@ -1087,10 +1093,10 @@ amazon-selling-partner-beta:
             type: string
             title: Proxy BaseUrl Region
             description: The geographical region associated with the Amazon marketplace.
-            example: eu
-            pattern: '^[a-z]+$'
-            prefix: https://sandbox.sellingpartnerapi-
-            suffix: .amazon.com
+            enum:
+                - na
+                - eu
+                - fe
             doc_section: '#step-3-finding-your-proxy-baseurl-region'
             order: 3
 
@@ -1146,10 +1152,11 @@ amplitude:
         hostname:
             type: string
             title: Hostname
-            description: The hostname associated with your server residency
-            example: analytics.eu.amplitude.com
+            description: The hostname associated with your server residency.
             optional: true
-            pattern: '^(?:analytics\.eu\.)?amplitude\.com$'
+            enum:
+                - amplitude.com
+                - analytics.eu.amplitude.com
 
 amplitude-mcp:
     display_name: Amplitude (MCP US)
@@ -1917,10 +1924,12 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI)
-            example: us2
-            pattern: '^[a-z]{2,4}\d{1,3}$'
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
             doc_section: '#step-2-determine-your-region'
+            enum:
+                - us1
+                - us2
+                - eu1
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
@@ -1954,12 +1963,16 @@ avanan:
             type: string
             title: Subdomain
             description: The Avanan API subdomain for your region.
-            example: smart-api-production-1-us
-            suffix: .avanan.net
-            prefix: https://
-            pattern: '^smart-api-production-[0-9]+-[a-z0-9]+$'
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
+            enum:
+                - smart-api-production-1-us
+                - smart-api-production-1-eu
+                - smart-api-production-1-ca
+                - smart-api-production-5-ap
+                - smart-api-production-1-euw2
+                - smart-api-production-1-mec1
+                - smart-api-production-1-aps1
     credentials:
         appId:
             type: string
@@ -2123,10 +2136,10 @@ axiom:
             type: string
             title: Edge / region subdomain
             description: The subdomain of the API you would wish to connect to.
-            example: us-east-1.aws.edge
-            pattern: '^(api|us-east-1\.aws\.edge|eu-central-1\.aws\.edge)$'
-            suffix: .axiom.co
-            prefix: https://
+            enum:
+                - api
+                - us-east-1.aws.edge
+                - eu-central-1.aws.edge
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
     credentials:
@@ -2534,17 +2547,22 @@ battlenet:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Battle.net account
-            example: com
-            pattern: '^[a-z.]+$'
+            description: The domain extension of your Battle.net account.
+            enum:
+                - com
+                - cn
+                - net
             order: 1
         apiDomain:
             type: string
             title: API Domain
-            description: The domain to where you will access your API
-            example: us.api.blizzard.com
-            pattern: '^[a-z.]+$'
-            prefix: https://
+            description: The domain to where you will access your API.
+            enum:
+                - us.api.blizzard.com
+                - eu.api.blizzard.com
+                - kr.api.blizzard.com
+                - tw.api.blizzard.com
+                - gateway.battlenet.com.cn
 
 beehiiv:
     display_name: Beehiiv
@@ -2948,11 +2966,10 @@ booking-com:
         environmentType:
             type: string
             title: Environment Type
-            description: The environment type for your various requests
-            pattern: '^(secure-supply|supply)$'
-            example: secure-supply|supply
-            suffix: -xml.booking.com
-            prefix: https://
+            description: The environment type for your various requests.
+            enum:
+                - secure-supply
+                - supply
     credentials:
         username:
             type: string
@@ -3782,11 +3799,11 @@ chattermill:
         subdomain:
             type: string
             title: Chattermill subdomain
-            description: The subdomain for your api requests
-            pattern: '^(app|api|backend)$'
-            example: 'app|api|backend'
-            suffix: .chattermill.com
-            prefix: https://
+            description: The subdomain for your api requests.
+            enum:
+                - app
+                - api
+                - backend
 
 checkhq:
     display_name: Check
@@ -4165,12 +4182,14 @@ clio:
         hostname:
             type: string
             title: Hostname
-            description: The hostname for your Clio region (e.g. app.clio.com for US, eu.app.clio.com for EU, ca.app.clio.com for CA, au.app.clio.com for AU)
-            example: app.clio.com
+            description: The hostname for your Clio region (e.g. app.clio.com for US, eu.app.clio.com for EU, ca.app.clio.com for CA, au.app.clio.com for AU).
             default_value: app.clio.com
             format: hostname
-            pattern: '^(app\.clio\.com|eu\.app\.clio\.com|ca\.app\.clio\.com|au\.app\.clio\.com)$'
-            prefix: https://
+            enum:
+                - app.clio.com
+                - eu.app.clio.com
+                - ca.app.clio.com
+                - au.app.clio.com
             order: 1
             doc_section: '#step-1-finding-your-hostname'
 
@@ -4335,14 +4354,20 @@ clover:
             type: string
             title: Authorization Host
             description: The Clover authorization hostname for your region.
-            example: www.clover.com
-            pattern: '^(www\.clover\.com|www\.eu\.clover\.com|www\.la\.clover\.com|sandbox\.dev\.clover\.com)$'
+            enum:
+                - www.clover.com
+                - www.eu.clover.com
+                - www.la.clover.com
+                - sandbox.dev.clover.com
         apiHost:
             type: string
             title: API Host
             description: The Clover API hostname for your region.
-            example: api.clover.com
-            pattern: '^(api\.clover\.com|api\.eu\.clover\.com|api\.la\.clover\.com|apisandbox\.dev\.clover\.com)$'
+            enum:
+                - api.clover.com
+                - api.eu.clover.com
+                - api.la.clover.com
+                - apisandbox.dev.clover.com
 
 close:
     display_name: Close
@@ -4477,9 +4502,10 @@ commercetools:
         cloudProvider:
             type: string
             title: Cloud Provider
-            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws')
-            example: gcp
-            pattern: '^(gcp|aws)$'
+            description: Cloud provider used to host your Commercetools project (e.g., 'gcp' or 'aws').
+            enum:
+                - gcp
+                - aws
             doc_section: '#step-3-identify-your-region-and-cloud-provider'
 
 crowdstrike:
@@ -4722,10 +4748,11 @@ connectwise-rmm:
         subdomain:
             type: string
             title: API Subdomain
-            description: The ConnectWise RMM OpenAPI subdomain for your region
-            pattern: '^(itsupport247\.net|euplatform\.connectwise\.com|auplatform\.connectwise\.com)$'
-            example: itsupport247.net
-            prefix: https://openapi.service.
+            description: The ConnectWise RMM OpenAPI subdomain for your region.
+            enum:
+                - itsupport247.net
+                - euplatform.connectwise.com
+                - auplatform.connectwise.com
             doc_section: '#step-1-find-your-api-subdomain'
     credentials:
         client_id:
@@ -5005,9 +5032,10 @@ customer-io:
         subdomain:
             type: string
             title: Subdomain
-            description: The region to where your instance is hosted.
-            pattern: '^cdp(-eu)?$'
-            example: cdp
+            description: The region where your Customer.io instance is hosted.
+            enum:
+                - cdp
+                - cdp-eu
             order: 1
             doc_section: '#step-2-choose-your-subdomain'
     credentials:
@@ -5209,9 +5237,14 @@ datadog:
         siteParameter:
             type: string
             title: Site Parameter
-            description: The site parameter to datadog.
-            pattern: '^(us[35]\.)?(ap1\.)?(datadoghq\.(com|eu)|ddog-gov\.com)$'
-            example: 'us5.datadoghq.com'
+            description: The Datadog site for your account.
+            enum:
+                - datadoghq.com
+                - us3.datadoghq.com
+                - us5.datadoghq.com
+                - datadoghq.eu
+                - ddog-gov.com
+                - ap1.datadoghq.com
             order: 1
             doc_section: '#step-1-finding-your-datadog-domain'
         applicationKey:
@@ -5313,11 +5346,14 @@ datto-rmm:
         platform:
             type: string
             title: Platform
-            description: The Datto RMM platform (region) for your account
-            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
-            example: merlot
-            prefix: https://
-            suffix: -api.centrastage.net
+            description: The Datto RMM platform (region) for your account.
+            enum:
+                - pinotage
+                - merlot
+                - concord
+                - vidal
+                - zinfandel
+                - syrah
             order: 1
             doc_section: '#step-2-select-your-platform'
 
@@ -5346,11 +5382,14 @@ datto-rmm-password-grant:
         platform:
             type: string
             title: Platform
-            description: The Datto RMM platform (region) for your account
-            pattern: '^(pinotage|merlot|concord|vidal|zinfandel|syrah)$'
-            example: merlot
-            prefix: https://
-            suffix: -api.centrastage.net
+            description: The Datto RMM platform (region) for your account.
+            enum:
+                - pinotage
+                - merlot
+                - concord
+                - vidal
+                - zinfandel
+                - syrah
             order: 1
             doc_section: '#step-2-select-your-platform'
     credentials:
@@ -5702,10 +5741,11 @@ dixa:
     connection_config:
         apiType:
             type: string
-            title: Api Type
-            description: The Api type for your requests
-            pattern: '^dev\|exports$'
-            example: 'dev|exports'
+            title: API Type
+            description: The Dixa API type to use for requests.
+            enum:
+                - dev
+                - exports
 
 document360:
     display_name: Document360
@@ -6475,9 +6515,11 @@ evaluagent:
         region:
             type: string
             title: Region
-            description: The region of your EvaluAgent account
-            example: eu
-            pattern: '^[a-z]+$'
+            description: The region of your EvaluAgent account.
+            enum:
+                - api
+                - api.us-east
+                - api.aus
     credentials:
         username:
             type: string
@@ -6576,9 +6618,15 @@ exact-online:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Exact Online account
-            example: nl
-            pattern: '^[a-z.]+$'
+            description: The domain extension of your Exact Online account.
+            enum:
+                - nl
+                - be
+                - de
+                - fr
+                - es
+                - co.uk
+                - com
 
 exist:
     display_name: Exist
@@ -6961,11 +7009,11 @@ figma-scim:
         host:
             type: string
             title: Host
-            description: The host to your Figma account
-            example: www.figma.com
+            description: The Figma host for your account.
             format: hostname
-            prefix: https://
-            pattern: ^(www\.figma\.com|figma-gov\.com)+$
+            enum:
+                - www.figma.com
+                - figma-gov.com
             order: 1
             doc_section: '#step-1-finding-your-host'
         tenantId:
@@ -9069,9 +9117,10 @@ grist:
         environment:
             type: string
             title: Environment
-            description: The environment you want to connect to
-            pattern: '^(team|docs)$'
-            example: docs
+            description: The environment you want to connect to.
+            enum:
+                - team
+                - docs
             order: 1
             doc_section: '#step-1-selecting-your-environment'
 
@@ -9745,9 +9794,11 @@ itglue:
         subdomain:
             type: string
             title: Subdomain
-            description: Your IT Glue subdomain (api, api.eu, or api.au)
-            pattern: '^api(\.(eu|au))?$'
-            example: api
+            description: Your IT Glue subdomain.
+            enum:
+                - api
+                - api.eu
+                - api.au
             doc_section: '#step-1-finding-your-subdomain'
             order: 1
 
@@ -9827,8 +9878,9 @@ intercom:
             type: string
             title: Region
             description: The API region for your Intercom workspace.
-            pattern: '^(eu|au)$'
-            example: eu
+            enum:
+                - eu
+                - au
             optional: true
             doc_section: '#step-1-finding-your-region'
 
@@ -9865,11 +9917,11 @@ ironclad:
         subdomain:
             type: string
             title: Subdomain
-            description: Your Ironclad Environment Subdomain
-            example: na1
-            prefix: https://
-            suffix: .ironcladapp.com
-            pattern: '^(na1|demo|eu1)$'
+            description: Your Ironclad Environment Subdomain.
+            enum:
+                - na1
+                - demo
+                - eu1
             doc_section: '#step-1-finding-your-subdomain'
 
 jamf:
@@ -9977,8 +10029,9 @@ jiminny:
             type: string
             title: Region
             description: The region your Jiminny account is hosted in.
-            pattern: '^(eu|com)$'
-            example: eu
+            enum:
+                - eu
+                - com
             doc_section: '#step-1-find-your-region'
     credentials:
         apiKey:
@@ -10549,10 +10602,14 @@ knowbe4:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain to your API base URL
+            description: The subdomain to your API base URL.
             doc_section: '#step-1-finding-your-subdomain'
-            example: eu.api
-            pattern: '^(us\.api|eu\.api|ca\.api|uk\.api|de\.api)$'
+            enum:
+                - us.api
+                - eu.api
+                - ca.api
+                - uk.api
+                - de.api
             order: 1
 
 klipfolio:
@@ -11439,9 +11496,10 @@ mailgun:
         region:
             type: string
             title: Region
-            description: The region of your Mailgun account
-            pattern: '^[a-z]+$'
-            example: us
+            description: The region of your Mailgun account.
+            enum:
+                - api
+                - api.eu
             doc_section: '#step-1-finding-your-mailgun-region'
 
 mailchimp:
@@ -12038,8 +12096,9 @@ maximizer:
             type: string
             title: Region
             description: Region-specific subdomain.
-            pattern: '^(caw|ukw)$'
-            example: caw
+            enum:
+                - caw
+                - ukw
         company_alias:
             type: string
             title: Company Alias
@@ -12507,9 +12566,14 @@ modmed:
         environment:
             type: string
             title: Environment
-            description: The ModMed API environment
-            example: stage.ema-api.com/ema-dev
-            pattern: '^(stage|mmapi)\.ema-api\.com\/(ema-dev|ema-training|ema-prod)$'
+            description: The ModMed API environment.
+            enum:
+                - stage.ema-api.com/ema-dev
+                - stage.ema-api.com/ema-training
+                - stage.ema-api.com/ema-prod
+                - mmapi.ema-api.com/ema-dev
+                - mmapi.ema-api.com/ema-training
+                - mmapi.ema-api.com/ema-prod
             doc_section: '#step-3-selecting-your-environment'
             order: 1
         firmUrlPrefix:
@@ -12939,9 +13003,10 @@ northbeam:
         subdomain:
             type: string
             title: API Subdomain
-            description: Use 'api' for production or 'api-uat' for testing/development.
-            pattern: '^api(-uat)?$'
-            example: api
+            description: Use api for production or api-uat for testing/development.
+            enum:
+                - api
+                - api-uat
             order: 1
             doc_section: '#step-1-getting-authentication-credentials'
         dataClientId:
@@ -13815,10 +13880,9 @@ paddle:
             type: string
             title: Environment
             description: Use 'api' for live or 'sandbox-api' for sandbox.
-            pattern: '^(api|sandbox-api)$'
-            example: api
-            prefix: https://
-            suffix: .paddle.com
+            enum:
+                - api
+                - sandbox-api
             doc_section: '#step-2-choose-your-environment'
             order: 1
 
@@ -14035,11 +14099,10 @@ paylocity-nextgen:
         environment:
             type: string
             title: Environment
-            description: Your Paylocity NextGen environment
-            pattern: '^(dc1prodgwext|dc1demogwext)$'
-            example: dc1prodgwext
-            prefix: https://
-            suffix: .paylocity.com
+            description: Your Paylocity NextGen environment.
+            enum:
+                - dc1prodgwext
+                - dc1demogwext
             order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
         companyId:
@@ -14069,11 +14132,10 @@ paylocity:
         environment:
             type: string
             title: Paylocity Environment
-            pattern: '^(dc1demogw|api)$'
-            example: dc1demogw
-            description: Your Paylocity Weblink environment
-            prefix: https://
-            suffix: .paylocity.com
+            enum:
+                - dc1demogw
+                - api
+            description: Your Paylocity Weblink environment.
             order: 1
             doc_section: '#step-1-select-the-correct-paylocity-environment'
         companyId:
@@ -14336,12 +14398,11 @@ perimeter81:
         domain:
             type: string
             title: Domain
-            description: The domain for Perimeter81
-            pattern: '^(perimeter81|eu\.sase\.checkpoint)$'
-            example: '(perimeter81,eu.sase.checkpoint)'
+            description: The domain for Perimeter81.
+            enum:
+                - perimeter81
+                - eu.sase.checkpoint
             doc_section: '#step-1-finding-your-perimeter81-domain-and-perimeter81-api-key'
-            suffix: .com
-            prefix: https://api.
             order: 1
     credentials:
         apiKey:
@@ -14475,9 +14536,14 @@ pingone:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingOne account
-            example: com
-            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            description: The top level domain for your PingOne account.
+            enum:
+                - com
+                - ca
+                - eu
+                - com.au
+                - sg
+                - asia
             doc_section: '#step-2-finding-your-top-level-domain'
         environmentId:
             type: string
@@ -14509,10 +14575,15 @@ pingone-cc:
         tld:
             type: string
             title: Top Level Domain
-            description: The top level domain for your PingOne account
-            example: com
+            description: The top level domain for your PingOne account.
             order: 2
-            pattern: '^(com|ca|eu|com\.au|sg|asia)$'
+            enum:
+                - com
+                - ca
+                - eu
+                - com.au
+                - sg
+                - asia
             doc_section: '#step-3-finding-your-top-level-domain'
         environmentId:
             type: string
@@ -14843,19 +14914,17 @@ pleo:
         subdomain:
             type: string
             title: OAuth Subdomain
-            description: The auth subdomain of your Pleo environment.
-            example: auth
-            pattern: '^auth(\.staging)?$'
-            suffix: .pleo.io
-            prefix: https://
+            description: The OAuth subdomain for your Pleo environment.
+            enum:
+                - auth
+                - auth.staging
         apiSubdomain:
             type: string
             title: API Subdomain
-            description: The API subdomain of your Pleo environment.
-            example: external
-            pattern: '^external(\.staging)?$'
-            suffix: .pleo.io
-            prefix: https://
+            description: The API subdomain for your Pleo environment.
+            enum:
+                - external
+                - external.staging
 
 podium:
     display_name: Podium
@@ -14924,11 +14993,12 @@ posthog:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain of your PostHog cloud account
-            pattern: '^(us(\.i)?|eu(\.i)?)$'
-            example: us.i
-            suffix: .posthog.com
-            prefix: https://
+            description: The subdomain of your PostHog cloud account.
+            enum:
+                - us
+                - us.i
+                - eu
+                - eu.i
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
     credentials:
@@ -14961,10 +15031,11 @@ posthog-oauth:
             type: string
             title: Subdomain
             description: The subdomain of your PostHog cloud account.
-            pattern: '^(us(\.i)?|eu(\.i)?)$'
-            example: us
-            suffix: .posthog.com
-            prefix: https://
+            enum:
+                - us
+                - us.i
+                - eu
+                - eu.i
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
 
@@ -15706,12 +15777,13 @@ recall-ai:
         region:
             type: string
             title: Region
-            description: The region where your Recall.ai account is hosted
-            example: us-east-1
-            pattern: '^(us-east-1|us-west-2|eu-central-1|ap-northeast-1)$'
+            description: The region where your Recall.ai account is hosted.
+            enum:
+                - us-east-1
+                - us-west-2
+                - eu-central-1
+                - ap-northeast-1
             order: 1
-            prefix: https://
-            suffix: .recall.ai
             doc_section: '#step-1-determine-your-region'
     credentials:
         apiKey:
@@ -15984,11 +16056,10 @@ researchdesk:
         subdomain:
             type: string
             title: Subdomain
-            description: The subdomain of the environment to which you want to connect to
-            pattern: '^(demand|stage-demand)$'
-            example: demand
-            suffix: .researchdesk.com
-            prefix: https://
+            description: The subdomain of the environment to which you want to connect to.
+            enum:
+                - demand
+                - stage-demand
             order: 1
             doc_section: '#step-1-choosing-your-subdomain'
     credentials:
@@ -17341,11 +17412,13 @@ sentry:
         hostname:
             type: string
             title: Hostname
-            description: The Hostname of your Sentry account
-            example: us.sentry.io
+            description: The Hostname of your Sentry account.
             format: hostname
-            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
-            prefix: https://
+            enum:
+                - sentry.io
+                - us.sentry.io
+                - eu.sentry.io
+                - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
     credentials:
@@ -17380,11 +17453,13 @@ sentry-oauth:
         hostname:
             type: string
             title: Hostname
-            description: The Hostname of your Sentry account
-            example: us.sentry.io
+            description: The Hostname of your Sentry account.
             format: hostname
-            pattern: '^[a-z0-9_-]+\.sentry\.io|^sentry\.io$'
-            prefix: https://
+            enum:
+                - sentry.io
+                - us.sentry.io
+                - eu.sentry.io
+                - de.sentry.io
             order: 1
             doc_section: '#step-1-finding-your-hostname'
         actor:
@@ -17805,10 +17880,9 @@ shipbob-pat:
             type: string
             title: API Subdomain
             description: The ShipBob API subdomain of the environment you want to connect to.
-            example: api
-            pattern: '^(api|sandbox-api)$'
-            prefix: https://
-            suffix: .shipbob.com
+            enum:
+                - api
+                - sandbox-api
             doc_section: '#step-2-identify-your-api-subdomain'
     credentials:
         apiKey:
@@ -18393,10 +18467,14 @@ smartsheet:
             type: string
             title: Domain
             description: The domain where your account is hosted.
-            example: smartsheet.com
             prefix: https://api.
             order: 1
-            pattern: '^(smartsheet\.com|smartsheet\.eu|smartsheet\.au|smartsheetgov\.com|test\.smartsheet\.com)$'
+            enum:
+                - smartsheet.com
+                - smartsheet.eu
+                - smartsheet.au
+                - smartsheetgov.com
+                - test.smartsheet.com
 
 smugmug:
     display_name: Smugmug
@@ -22116,12 +22194,15 @@ zoho:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho account
-            pattern: '^[a-z.]+$'
-            prefix: https://accounts.zoho.
-            example: com
+            description: The domain extension of your Zoho account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
         accounts-server:
             type: string
             title: ''
@@ -22139,12 +22220,15 @@ zoho-books:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Books account
-            pattern: '^[a-z.]+$'
-            prefix: https://books.zoho.
-            example: com
+            description: The domain extension of your Zoho Books account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-crm:
     display_name: Zoho CRM
@@ -22158,12 +22242,15 @@ zoho-crm:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho CRM account
-            pattern: '^[a-z.]+$'
-            prefix: https://crm.zoho.
-            example: com
+            description: The domain extension of your Zoho CRM account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-calendar:
     display_name: Zoho Calendar
@@ -22178,12 +22265,15 @@ zoho-calendar:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Calendar account
-            pattern: '^[a-z.]+$'
-            prefix: https://calendar.zoho.
-            example: com
+            description: The domain extension of your Zoho Calendar account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-desk:
     display_name: Zoho Desk
@@ -22199,12 +22289,15 @@ zoho-desk:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Desk account
-            pattern: '^[a-z.]+$'
-            prefix: https://desk.zoho.
-            example: com
+            description: The domain extension of your Zoho Desk account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-inventory:
     display_name: Zoho Inventory
@@ -22217,12 +22310,15 @@ zoho-inventory:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Inventory account
-            pattern: '^[a-z.]+$'
-            prefix: https://inventory.zoho.
-            example: com
+            description: The domain extension of your Zoho Inventory account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-invoice:
     display_name: Zoho Invoice
@@ -22235,12 +22331,15 @@ zoho-invoice:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Invoice account
-            pattern: '^[a-z.]+$'
-            prefix: https://invoice.zoho.
-            example: com
+            description: The domain extension of your Zoho Invoice account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-mail:
     display_name: Zoho Mail
@@ -22256,12 +22355,15 @@ zoho-mail:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Mail account
-            pattern: '^[a-z.]+$'
-            prefix: https://mail.zoho.
-            example: com
+            description: The domain extension of your Zoho Mail account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-bigin:
     display_name: Zoho Bigin
@@ -22274,12 +22376,15 @@ zoho-bigin:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Bigin account
-            pattern: '^[a-z.]+$'
-            prefix: https://bigin.zoho.
-            example: com
+            description: The domain extension of your Zoho Bigin account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-people:
     display_name: Zoho People
@@ -22294,12 +22399,15 @@ zoho-people:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho People account
-            pattern: '^[a-z.]+$'
-            prefix: https://people.zoho.
-            example: com
+            description: The domain extension of your Zoho People account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
             optional: true
-            suffix: /
 
 zoho-recruit:
     display_name: Zoho Recruit
@@ -22314,11 +22422,14 @@ zoho-recruit:
         extension:
             type: string
             title: Domain Extension
-            description: The domain extension of your Zoho Recruit account
-            pattern: '^[a-z.]+$'
-            prefix: https://recruit.zoho.
-            example: com
-            suffix: /
+            description: The domain extension of your Zoho Recruit account.
+            enum:
+                - com
+                - eu
+                - in
+                - com.au
+                - com.cn
+                - jp
 
 zoom:
     display_name: Zoom
