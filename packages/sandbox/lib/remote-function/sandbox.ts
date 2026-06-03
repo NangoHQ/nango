@@ -7,6 +7,8 @@ import { getLogger, stringifyError } from '@nangohq/utils';
 import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate } from './runtime.js';
 
+import type { SandboxListOpts } from 'e2b';
+
 const logger = getLogger('RemoteFunctionSandbox');
 
 export const executionEnvironmentUnavailableMessage = 'The function execution environment is temporarily unavailable. Please try again shortly.';
@@ -14,6 +16,23 @@ export const executionEnvironmentUnavailableMessage = 'The function execution en
 export type RemoteFunctionSandbox = Awaited<ReturnType<typeof Sandbox.create>>;
 
 export type RemoteFunctionSandboxPurpose = 'nango-compiler' | 'nango-deploy' | 'nango-dryrun' | 'nango-function-dryrun';
+
+export async function getRunningSandboxCount({ apiKey, requestTimeoutMs }: { apiKey: string; requestTimeoutMs?: number | undefined }): Promise<number> {
+    const listOptions = {
+        apiKey,
+        ...(requestTimeoutMs !== undefined ? { requestTimeoutMs } : {}),
+        query: { state: ['running'] }
+    } satisfies SandboxListOpts;
+
+    const paginator = Sandbox.list(listOptions);
+
+    let count = 0;
+    while (paginator.hasNext) {
+        count += (await paginator.nextItems()).length;
+    }
+
+    return count;
+}
 
 export async function createRemoteFunctionSandbox({
     apiKey,

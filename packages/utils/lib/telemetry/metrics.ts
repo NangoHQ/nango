@@ -117,6 +117,8 @@ export enum Types {
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 
+    E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
+
     ORB_BILLING_EVENTS_INGESTED = 'nango.billing.orb.ingested',
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
@@ -125,6 +127,7 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
     BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',
     BILLING_USAGE_CLICKHOUSE_QUERY_DURATION_MS = 'nango.billing.usage.clickhouse.query.duration_ms',
+    BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS = 'nango.billing.usage.clickhouse.top_dimension_values.duration_ms',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',

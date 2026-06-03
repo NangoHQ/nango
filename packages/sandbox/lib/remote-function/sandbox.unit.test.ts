@@ -1,7 +1,12 @@
 import { RateLimitError, Sandbox } from 'e2b';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createRemoteFunctionSandbox, executionEnvironmentUnavailableMessage, toExecutionEnvironmentUnavailableError } from './sandbox.js';
+import {
+    createRemoteFunctionSandbox,
+    executionEnvironmentUnavailableMessage,
+    getRunningSandboxCount,
+    toExecutionEnvironmentUnavailableError
+} from './sandbox.js';
 
 import type { RemoteFunctionError } from './helpers.js';
 
@@ -40,6 +45,28 @@ describe('remote function sandbox helpers', () => {
                 network: { allowPublicTraffic: true }
             })
         );
+    });
+
+    it('counts all running sandboxes from the E2B paginator', async () => {
+        const pages = [[{ sandboxId: 'sandbox-1' }, { sandboxId: 'sandbox-2' }], [{ sandboxId: 'sandbox-3' }]];
+        let pageIndex = 0;
+        const paginator = {
+            get hasNext() {
+                return pageIndex < pages.length;
+            },
+            nextItems: vi.fn(() => Promise.resolve(pages[pageIndex++] ?? []))
+        };
+        const list = vi.spyOn(Sandbox, 'list').mockReturnValue(paginator as unknown as ReturnType<typeof Sandbox.list>);
+
+        const count = await getRunningSandboxCount({ apiKey: 'e2b-key', requestTimeoutMs: 5_000 });
+
+        expect(count).toBe(3);
+        expect(list).toHaveBeenCalledWith({
+            apiKey: 'e2b-key',
+            requestTimeoutMs: 5_000,
+            query: { state: ['running'] }
+        });
+        expect(paginator.nextItems).toHaveBeenCalledTimes(2);
     });
 
     it('maps sandbox capacity-shaped errors without exposing provider details', () => {

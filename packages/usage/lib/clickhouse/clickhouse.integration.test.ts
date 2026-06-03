@@ -454,6 +454,83 @@ describe('Clickhouse', () => {
                 expect(bad.isErr()).toBe(true);
             });
         });
+
+        describe('getTopDimensionValues', () => {
+            it('returns top dimension values ordered by SUM(value) DESC', async () => {
+                // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    values: ['a', 'b']
+                });
+            });
+
+            it('honours limit (clamped to TOP_N_BREAKDOWN_CAP upstream)', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 1
+                });
+                expect(res.unwrap().values).toEqual(['a']);
+            });
+
+            it('coerces booleans to strings (success dim)', async () => {
+                // proxy fixture: success=true 22 events, success=false 12 events.
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'success',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                const values = res.unwrap().values;
+                expect(values).toEqual(['true', 'false']);
+            });
+
+            it('returns Err on (metric, dimension) pair not in the whitelist', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    // `connections` does not expose `model` as a breakdown dim.
+                    metric: 'connections',
+                    dimension: 'model' as any,
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
+            it("returns Err when dimension is 'none' (would emit broken SQL)", async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none' as any,
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
+            it('returns an empty list when no events match the timeframe', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId: 999_999,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.unwrap().values).toEqual([]);
+            });
+        });
     });
 
     // A dim that has events on day 0 but none on day 1 must still appear on

@@ -15,18 +15,19 @@ import type { GetBillingUsage, GetBillingUsageOpts, UsageMetric } from '@nangohq
 // matching `BreakdownDimensions[m]` from @nangohq/types. Single source of
 // truth for the (metric, dim) whitelist; empty strings rejected structurally
 // (not in the enum), no `.refine` needed.
-const breakdownSchema = z
-    .object({
-        proxy: z.enum(BREAKDOWN_DIMENSIONS.proxy).optional(),
-        function_executions: z.enum(BREAKDOWN_DIMENSIONS.function_executions).optional(),
-        function_logs: z.enum(BREAKDOWN_DIMENSIONS.function_logs).optional(),
-        function_compute_gbms: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
-        webhook_forwards: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
-        records: z.enum(BREAKDOWN_DIMENSIONS.records).optional(),
-        connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional()
-    })
-    .strict()
-    .optional();
+// `satisfies Record<UsageMetric, …>` forces an entry per metric — adding a
+// new `UsageMetric` without updating this object fails to typecheck.
+const breakdownFields = {
+    proxy: z.enum(BREAKDOWN_DIMENSIONS.proxy).optional(),
+    function_executions: z.enum(BREAKDOWN_DIMENSIONS.function_executions).optional(),
+    function_logs: z.enum(BREAKDOWN_DIMENSIONS.function_logs).optional(),
+    function_compute_gbms: z.enum(BREAKDOWN_DIMENSIONS.function_compute_gbms).optional(),
+    webhook_forwards: z.enum(BREAKDOWN_DIMENSIONS.webhook_forwards).optional(),
+    records: z.enum(BREAKDOWN_DIMENSIONS.records).optional(),
+    connections: z.enum(BREAKDOWN_DIMENSIONS.connections).optional()
+} satisfies Record<UsageMetric, z.ZodTypeAny>;
+
+const breakdownSchema = z.object(breakdownFields).strict().optional();
 
 // Filter values arrive as `<dim>:<value>` strings (Express qs bracket
 // notation). Split on the FIRST ':' so values containing ':' (e.g. URLs)
