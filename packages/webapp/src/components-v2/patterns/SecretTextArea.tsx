@@ -26,7 +26,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({ copy, canRead = 
             {isSecretVisible ? (
                 <InputGroupTextarea
                     {...props}
-                    value={canRead ? (value ?? '') : '•'.repeat(32)}
+                    value={canRead ? value : '•'.repeat(32)}
                     defaultValue={canRead ? defaultValue : undefined}
                     onChange={canRead ? onChange : undefined}
                 />
