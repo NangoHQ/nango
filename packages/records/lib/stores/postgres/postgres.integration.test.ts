@@ -2166,6 +2166,28 @@ describe('PostgresStore', () => {
             expect(rows[0]?.indisvalid).toBe(true);
             expect(rows[0]?.indexdef).toMatch(/\(connection_id, model, generation\)/);
         });
+
+        it('should not build the generation index on a pre-existing partition', async () => {
+            // Simulate the deploy-time scenario: a partition that was created by a previous
+            // version of the code and so does not have the generation index yet. We must NOT
+            // build the index on it from the write path — that would take ACCESS EXCLUSIVE
+            // on the child for the duration of the build and block every concurrent
+            // records_seen write into that partition.
+            const date = new Date('2025-01-18T00:00:00Z');
+            const next = new Date('2025-01-19T00:00:00Z');
+            await db.raw(
+                `CREATE TABLE IF NOT EXISTS nango_records.records_seen_20250118 PARTITION OF nango_records.records_seen FOR VALUES FROM ('${date.toISOString()}') TO ('${next.toISOString()}')`
+            );
+            const indexName = 'records_seen_20250118_connection_model_generation';
+            const before = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [indexName]);
+            expect(before.rows[0]?.exists).toBe(false);
+
+            const res = await store.ensureSeenPartition({ date });
+            expect(res.isOk()).toBe(true);
+
+            const after = await db.raw<{ rows: { exists: boolean }[] }>(`SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?) AS exists`, [indexName]);
+            expect(after.rows[0]?.exists).toBe(false);
+        });
     });
 
     describe('dropSeenPartition', () => {
