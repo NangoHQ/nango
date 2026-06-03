@@ -16,7 +16,7 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
                 }
             }}
         >
-            <SheetContent side="right" className="w-[1034px] max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
+            <SheetContent side="right" className="w-[1034px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
                 <div className="relative h-full select-text">
                     <ShowOperation operationId={operationId} />
                 </div>
