@@ -21,6 +21,7 @@
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
+        "@nangohq/sandbox": "file:../sandbox",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
         "dd-trace": "5.52.0",

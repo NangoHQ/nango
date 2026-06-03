@@ -8,6 +8,7 @@ import { initSentry, once, report } from '@nangohq/utils';
 
 import { billingEventsS3ExportCron } from './crons/billingEventsS3Export.js';
 import { exportUsageCron } from './crons/usage.js';
+import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
 import { envs } from './env.js';
 import { TeamProcessor } from './processors/team.js';
 import { UsageProcessor } from './processors/usage.js';
@@ -56,9 +57,11 @@ try {
     // Crons
     exportUsageCron();
     billingEventsS3ExportCron();
+    const e2bSandboxesDaemonHandle = e2bSandboxesDaemon();
 
     // Graceful shutdown
     const close = once(async () => {
+        await e2bSandboxesDaemonHandle?.abort();
         const disconnect = await pubsubTransport.disconnect();
         if (disconnect.isErr()) {
             logger.error('Error disconnecting from ActiveMQ', disconnect.error);

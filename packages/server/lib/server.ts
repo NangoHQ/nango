@@ -24,7 +24,6 @@ import { refreshConnectionsCron } from './crons/refreshConnections.js';
 import { timeoutFunctionDryrunsCron } from './crons/timeoutFunctionDryruns.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
-import { e2bSandboxesDaemon } from './daemons/e2b-sandboxes.daemon.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
 import { beginShutdown } from './ready.js';
@@ -99,7 +98,6 @@ timeoutFunctionDryrunsCron();
 deleteOldData();
 trialCron();
 lambdaKeepWarmCron();
-const e2bSandboxesDaemonHandle = e2bSandboxesDaemon();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();
@@ -125,7 +123,6 @@ const close = once(() => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     server.close(async () => {
         wss.close();
-        await e2bSandboxesDaemonHandle?.abort();
         await stopFleets();
         await db.destroy();
         await records.close();
