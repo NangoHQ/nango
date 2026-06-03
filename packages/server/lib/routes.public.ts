@@ -84,7 +84,11 @@ import type { Request, RequestHandler } from 'express';
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const connectSessionOrApiAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
 
 const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const remoteFunctionAuth: RequestHandler[] = [
