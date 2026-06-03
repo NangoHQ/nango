@@ -98,7 +98,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                 <Button
                     variant="outline"
                     size={'sm'}
-                    className={cn('grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
+                    className={cn('h-9 grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
                 >
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
