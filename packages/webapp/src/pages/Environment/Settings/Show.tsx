@@ -46,7 +46,7 @@ export const EnvironmentSettings: React.FC = () => {
                     <title>Environment Settings - Nango</title>
                 </Helmet>
                 <div className="flex justify-between mb-8 items-center">
-                    <div className="flex text-left text-3xl tracking-tight text-white">
+                    <div className="flex text-left text-3xl tracking-tight text-text-primary">
                         <h2 className="font-semibold">Environment Settings &mdash;</h2>&nbsp;{env}
                     </div>
                 </div>
