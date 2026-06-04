@@ -1,13 +1,26 @@
 import { Info } from 'lucide-react';
-import { useMemo } from 'react';
+import { parseAsString, useQueryStates } from 'nuqs';
+import { useCallback, useMemo } from 'react';
 
-import { ChartCard } from '@/components/patterns/ChartCard';
+import { UsageChartCard } from './UsageChartCard';
+import { isBreakdownAvailableForMonth, metricsSupportingDimension } from '../usageBreakdown';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { useFeatureFlagsStore } from '@/store/feature-flags';
+
+import type { AnyBreakdownDimension } from '../usageBreakdown';
+import type { UsageMetric } from '@nangohq/types';
+
+// Render order for the usage panels.
+const METRICS: UsageMetric[] = ['connections', 'proxy', 'function_compute_gbms', 'function_executions', 'function_logs', 'records', 'webhook_forwards'];
+
+// nuqs keyMap for every panel's `<metric>.breakdown` param, so "Apply to all" can
+// set them in one go. Built once.
+const breakdownKeyMap = Object.fromEntries(METRICS.map((m) => [`${m}.breakdown`, parseAsString.withDefault('none').withOptions({ history: 'replace' })]));
 
 interface UsageProps {
     selectedMonth: Date;
@@ -28,7 +41,29 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe);
+    // When the breakdown feature is active for an eligible month, pin the whole
+    // dashboard (including headline totals) to ClickHouse so totals match the
+    // per-panel breakdowns; otherwise keep the env / localStorage default source.
+    const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
+    const sourceOverride = breakdownFlag && isBreakdownAvailableForMonth(selectedMonth) ? 'clickhouse' : undefined;
+
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
+
+    // "Apply to all": copy one panel's breakdown to every metric that supports it,
+    // or clear every panel when the dimension is null ("No breakdown").
+    const [, setBreakdowns] = useQueryStates(breakdownKeyMap);
+    const applyToAll = useCallback(
+        (dimension: AnyBreakdownDimension | null) => {
+            const updates: Record<string, string | null> = {};
+            if (dimension === null) {
+                for (const m of METRICS) updates[`${m}.breakdown`] = null;
+            } else {
+                for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
+            }
+            void setBreakdowns(updates);
+        },
+        [setBreakdowns]
+    );
 
     if (usageError) {
         return <CriticalErrorAlert message="Error loading usage" />;
@@ -56,13 +91,18 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                 </Alert>
             )}
 
-            <ChartCard data={usage?.data.usage.connections} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.proxy} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_compute_gbms} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_executions} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_logs} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.records} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.webhook_forwards} isLoading={isLoading} timeframe={timeframe} />
+            {METRICS.map((metric) => (
+                <UsageChartCard
+                    key={metric}
+                    metric={metric}
+                    data={usage?.data.usage[metric]}
+                    isLoading={isLoading}
+                    env={env}
+                    timeframe={timeframe}
+                    selectedMonth={selectedMonth}
+                    onApplyToAll={applyToAll}
+                />
+            ))}
 
             {usage?.data.customer.portalUrl && (
                 <StyledLink icon to={usage.data.customer.portalUrl} type="external">

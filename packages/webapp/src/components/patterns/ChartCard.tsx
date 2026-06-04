@@ -1,11 +1,14 @@
-import { Loader2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { Info, Loader2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
+import { InfoTooltip } from '../ui/InfoTooltip';
 import { Skeleton } from '../ui/Skeleton';
+import { cn } from '@/utils/utils';
 
 import type { ApiBillingUsageMetric } from '@nangohq/types';
+import type { TooltipProps } from 'recharts';
 
 export function formatQuantity(quantity: number): string {
     return quantity.toLocaleString('en-US', {
@@ -13,61 +16,107 @@ export function formatQuantity(quantity: number): string {
     });
 }
 
+/**
+ * One series in a breakdown chart. `key` must be a CSS-safe identifier (the
+ * shadcn chart wrapper derives `--color-<key>` from it), so callers pass
+ * synthetic keys (`s0`, `s1`, …, `rest`) and carry the real dimension value in
+ * `label`. Colors are applied directly to the chart elements, not via the
+ * `--color-<key>` indirection.
+ */
+export interface ChartSeries {
+    key: string;
+    label: string;
+    color: string;
+    usage: { timeframeStart: string | Date; quantity: number }[];
+}
+
 interface ChartCardProps {
     isLoading: boolean;
     data?: ApiBillingUsageMetric;
     timeframe: { start: string; end: string };
+    /** Right-aligned controls in the header (e.g. the breakdown dropdown). */
+    headerActions?: React.ReactNode;
+    /** Optional inline notice under the header (e.g. "breakdowns available from …"). */
+    notice?: React.ReactNode;
+    /** When provided, the chart renders these stacked series instead of the single total. */
+    breakdownSeries?: ChartSeries[];
+    breakdownLoading?: boolean;
+    breakdownError?: boolean;
 }
 
-export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe }) => {
-    const chartConfig = {
-        total: {
-            label: 'Total',
-            color: 'var(--color-brand-500)'
-        }
-    };
+function usageToDateMap(usage: { timeframeStart: string | Date; quantity: number }[]): Map<string, number> {
+    const map = new Map<string, number>();
+    usage.forEach((u) => {
+        const dateStr = typeof u.timeframeStart === 'string' ? u.timeframeStart : u.timeframeStart.toISOString();
+        map.set(dateStr.split('T')[0], u.quantity);
+    });
+    return map;
+}
 
-    const chartData = useMemo(() => {
-        if (!data) return [];
-        // Create a map of existing usage data by date
-        // Note: timeframeStart is serialized as a string in the API response
-        const usageMap = new Map<string, number>();
-        data.usage.forEach((usage) => {
-            const dateStr = typeof usage.timeframeStart === 'string' ? usage.timeframeStart : usage.timeframeStart.toISOString();
-            const dateKey = dateStr.split('T')[0]; // YYYY-MM-DD format
-            usageMap.set(dateKey, usage.quantity);
+/** Days (YYYY-MM-DD, UTC) spanning the timeframe, end-exclusive. */
+function daysInTimeframe(timeframe: { start: string; end: string }): string[] {
+    const days: string[] = [];
+    const currentDate = new Date(timeframe.start);
+    currentDate.setUTCHours(0, 0, 0, 0);
+    const endDate = new Date(timeframe.end);
+    endDate.setUTCHours(0, 0, 0, 0);
+    while (currentDate < endDate) {
+        days.push(currentDate.toISOString().split('T')[0]);
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+    }
+    return days;
+}
+
+export const ChartCard: React.FC<ChartCardProps> = ({
+    isLoading,
+    data,
+    timeframe,
+    headerActions,
+    notice,
+    breakdownSeries,
+    breakdownLoading,
+    breakdownError
+}) => {
+    const isBreakdown = breakdownSeries !== undefined;
+
+    // Legend toggle state (breakdown mode only), keyed by safe series key.
+    const [hidden, setHidden] = useState<Set<string>>(new Set());
+    const toggleSeries = (key: string) =>
+        setHidden((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
         });
 
-        // Generate all days in the timeframe. Fill in missing days with undefined total
-        const start = new Date(timeframe.start);
-        const end = new Date(timeframe.end);
-        const chartDataArr: { date: string; total: number | undefined }[] = [];
-
-        const currentDate = new Date(start);
-        currentDate.setUTCHours(0, 0, 0, 0);
-        const endDate = new Date(end);
-        endDate.setUTCHours(0, 0, 0, 0);
-
-        while (currentDate < endDate) {
-            const dateKey = currentDate.toISOString().split('T')[0];
-            chartDataArr.push({
-                date: dateKey,
-                total: usageMap.get(dateKey) ?? undefined
-            });
-            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
-        }
-
-        return chartDataArr;
+    // Headline total + single-series chart are always derived from the base metric.
+    const baseChartData = useMemo(() => {
+        if (!data) return [];
+        const usageMap = usageToDateMap(data.usage);
+        return daysInTimeframe(timeframe).map((date) => ({ date, total: usageMap.get(date) ?? undefined }));
     }, [data?.usage, timeframe.start, timeframe.end]);
 
-    // Calculate today's date in the same format as chart data (YYYY-MM-DD)
+    const breakdownChartData = useMemo(() => {
+        if (!breakdownSeries) return [];
+        const maps = breakdownSeries.map((s) => usageToDateMap(s.usage));
+        return daysInTimeframe(timeframe).map((date) => {
+            const row: Record<string, string | number> = { date };
+            breakdownSeries.forEach((s, i) => {
+                row[s.key] = maps[i].get(date) ?? 0;
+            });
+            return row;
+        });
+    }, [breakdownSeries, timeframe.start, timeframe.end]);
+
     const todayDateKey = useMemo(() => {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
         return today.toISOString().split('T')[0];
     }, []);
 
-    // Check if today is within the timeframe
     const showTodayLine = useMemo(() => {
         const start = new Date(timeframe.start);
         start.setUTCHours(0, 0, 0, 0);
@@ -77,74 +126,169 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         return today >= start && today <= end;
     }, [timeframe.start, timeframe.end, todayDateKey]);
 
-    const isEmpty = chartData.every((usage) => !usage.total || usage.total === 0);
+    // "No data for this month" is a property of the base metric, independent of breakdown.
+    const isEmpty = baseChartData.every((usage) => !usage.total || usage.total === 0);
+    const isCumulative = data?.view_mode === 'cumulative';
 
-    const ChartComponent = data?.view_mode === 'cumulative' ? AreaChart : BarChart;
-    const ChartElement =
-        data?.view_mode === 'cumulative' ? (
-            <Area dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} />
-        ) : (
-            <Bar dataKey="total" fill="var(--color-total)" />
-        );
+    const chartConfig = useMemo(() => {
+        if (isBreakdown) {
+            return Object.fromEntries((breakdownSeries ?? []).map((s) => [s.key, { label: s.label, color: s.color }]));
+        }
+        return { total: { label: 'Total', color: 'var(--color-brand-500)' } };
+    }, [isBreakdown, breakdownSeries]);
+
+    const ChartComponent = isCumulative ? AreaChart : BarChart;
+    const activeChartData = isBreakdown ? breakdownChartData : baseChartData;
+
+    // Animations are disabled so swapping breakdown/dimension/top swaps the data
+    // instantly rather than playing a slow morph between unrelated datasets.
+    const chartElements = isBreakdown
+        ? (breakdownSeries ?? []).map((s) =>
+              isCumulative ? (
+                  <Area
+                      key={s.key}
+                      dataKey={s.key}
+                      stackId="usage"
+                      fill={s.color}
+                      stroke={s.color}
+                      fillOpacity={0.85}
+                      strokeWidth={1}
+                      type="basis"
+                      dot={false}
+                      hide={hidden.has(s.key)}
+                      isAnimationActive={false}
+                  />
+              ) : (
+                  <Bar key={s.key} dataKey={s.key} stackId="usage" fill={s.color} hide={hidden.has(s.key)} isAnimationActive={false} />
+              )
+          )
+        : isCumulative
+          ? [<Area key="total" dataKey="total" fill="var(--color-total)" type="basis" strokeWidth={2} dot={false} isAnimationActive={false} />]
+          : [<Bar key="total" dataKey="total" fill="var(--color-total)" isAnimationActive={false} />];
+
+    // What occupies the chart body: a per-panel breakdown spinner/error, the empty state, or the chart.
+    const showBreakdownSpinner = isBreakdown && breakdownLoading;
+    const showBreakdownError = isBreakdown && !breakdownLoading && breakdownError;
+    const showChart = !isEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || (breakdownSeries?.length ?? 0) > 0);
 
     return (
         <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
-            <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0">
+            <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0 gap-4">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (
                         <Skeleton className="bg-bg-subtle h-4 w-32" />
                     ) : (
                         <>
-                            <span className="text-text-primary text-body-large-semi">{data.label}</span>
-                            {!isEmpty && data && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>}
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-text-primary text-body-large-semi">{data.label}</span>
+                                {isCumulative && (
+                                    <InfoTooltip>
+                                        This metric is billed as a running monthly average, so the value shown is the average over the selected month rather
+                                        than a cumulative total.
+                                    </InfoTooltip>
+                                )}
+                            </div>
+                            {!isEmpty && (
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>
+                                    {isCumulative && <span className="text-text-tertiary text-body-small-regular">monthly average</span>}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
+                {headerActions && <div className="flex items-center gap-2 flex-shrink-0">{headerActions}</div>}
             </header>
-            <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden">
-                {!isEmpty && (
-                    <ChartContainer config={chartConfig} className="h-full w-full">
-                        <ChartComponent accessibilityLayer data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={4}>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
-                            <XAxis
-                                dataKey="date"
-                                tickLine={false}
-                                tickMargin={10}
-                                stroke="var(--color-bg-muted)"
-                                tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
-                            />
-                            <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
-                            {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
-                            <ChartTooltip
-                                content={
-                                    <ChartTooltipContent
-                                        labelFormatter={(value) =>
-                                            new Date(value).toLocaleDateString('en-US', {
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric',
-                                                timeZone: 'UTC'
-                                            })
-                                        }
-                                    />
-                                }
-                                animationDuration={200}
-                            />
-                            {ChartElement}
-                        </ChartComponent>
-                    </ChartContainer>
+
+            {notice && (
+                <div className="px-6 pt-3 flex items-center gap-1.5 text-text-secondary text-body-small-regular flex-shrink-0">
+                    <Info className="size-3.5 shrink-0" />
+                    <span>{notice}</span>
+                </div>
+            )}
+
+            <main className="px-6 py-4 flex-1 min-h-0 overflow-hidden flex flex-col">
+                {showChart && (
+                    <>
+                        <ChartContainer config={chartConfig} className="flex-1 min-h-0 w-full">
+                            <ChartComponent accessibilityLayer data={activeChartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={4}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    stroke="var(--color-bg-muted)"
+                                    tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
+                                />
+                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
+                                {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
+                                <ChartTooltip
+                                    // Drop series that contribute 0 on the hovered day so the tooltip lists only what's present.
+                                    content={(props: TooltipProps<number, string>) => (
+                                        <ChartTooltipContent
+                                            active={props.active}
+                                            label={props.label}
+                                            payload={props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0)}
+                                            labelFormatter={(value) =>
+                                                new Date(value).toLocaleDateString('en-US', {
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    timeZone: 'UTC'
+                                                })
+                                            }
+                                        />
+                                    )}
+                                    animationDuration={200}
+                                />
+                                {chartElements}
+                            </ChartComponent>
+                        </ChartContainer>
+
+                        {breakdownSeries && breakdownSeries.length > 0 && (
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-3 max-h-16 overflow-y-auto flex-shrink-0">
+                                {breakdownSeries.map((s) => {
+                                    const isHidden = hidden.has(s.key);
+                                    return (
+                                        <button
+                                            key={s.key}
+                                            type="button"
+                                            onClick={() => toggleSeries(s.key)}
+                                            className={cn(
+                                                'flex items-center gap-1.5 text-body-small-regular',
+                                                isHidden ? 'text-text-tertiary' : 'text-text-secondary'
+                                            )}
+                                            title={s.label}
+                                        >
+                                            <span
+                                                className="h-2 w-2 shrink-0 rounded-[2px]"
+                                                style={{ backgroundColor: s.color, opacity: isHidden ? 0.3 : 1 }}
+                                            />
+                                            <span className={cn('max-w-[140px] truncate', isHidden && 'line-through')}>{s.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </>
                 )}
 
-                {isLoading && (
-                    <div className="flex flex-col items-center justify-center h-full">
+                {(isLoading || showBreakdownSpinner) && (
+                    <div className="flex flex-col items-center justify-center flex-1">
                         <span className="text-text-secondary text-body-medium-regular">
                             <Loader2 className="animate-spin" />
                         </span>
                     </div>
                 )}
 
-                {isEmpty && (
-                    <div className="flex flex-col items-center justify-center h-full">
+                {showBreakdownError && (
+                    <div className="flex flex-col items-center justify-center flex-1">
+                        <span className="text-text-secondary text-body-medium-regular">Failed to load breakdown</span>
+                    </div>
+                )}
+
+                {isEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError && (
+                    <div className="flex flex-col items-center justify-center flex-1">
                         <span className="text-text-secondary text-body-medium-regular">No data</span>
                     </div>
                 )}
