@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     render: () => (
         <SecretTextArea
-            defaultValue="-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtEsHAFOPfgXm2oGJBNMFBBPT\n-----END RSA PRIVATE KEY-----"
+            defaultValue="-----BEGIN EXAMPLE PRIVATE KEY-----\nMIIEowIBAAKCAQEA0Z3VS5JJcds3xHn/ygWep4PAtEsHAFOPfgXm2oGJBNMFBBPT\n-----END EXAMPLE PRIVATE KEY-----"
             copy
             className="w-96"
         />
