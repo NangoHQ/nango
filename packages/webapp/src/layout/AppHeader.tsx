@@ -45,21 +45,20 @@ export const AppHeader: React.FC = () => {
                             </Button>
                     )}
                 </PermissionGate>
-                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="secondary" size="sm">
+                <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="sm">
                     <BookOpen />
                     Docs
                 </ButtonLink>
-                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="secondary" size="sm">
+                <ButtonLink to="https://nango.dev/slack" target="_blank" variant="outline" size="sm">
                     <SlackIcon />
                     Help
                 </ButtonLink>
                 {isDevToolsEnabled && themeSwitcher && (
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="outline"
+                        size="icon"
                         onClick={toggleDarkMode}
                         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                        className="size-8 p-0"
                     >
                         {darkMode ? <Sun className="size-4" /> : <Moon className="size-4" />}
                     </Button>
