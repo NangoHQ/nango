@@ -2405,6 +2405,6 @@ async function fromDbLegacy(
 }
 
 const rnd = {
-    number: () => Math.floor(Math.random() * 1000),
+    number: () => Math.floor(Math.random() * 1_000_000_000),
     string: () => Math.random().toString(36).substring(6)
 };
