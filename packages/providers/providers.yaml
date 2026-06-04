@@ -15243,7 +15243,57 @@ private-api-basic:
             type: string
             title: Password
             description: Your password
-
+private-api-generic:
+    display_name: Private API (Generic)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.nango.dev/
+    integration_config:
+        keyPlacement:
+            type: string
+            title: Key placement
+            description: Where the API key is sent on proxied requests.
+            enum:
+                - header
+                - query
+            default_value: header
+            order: 1
+        keyName:
+            type: string
+            title: Key name
+            description: Header name or query-param name (e.g. Authorization, x-api-key, api_key).
+            example: Authorization
+            order: 2
+        valueTemplate:
+            type: string
+            title: Value template
+            description: How the key is presented to the upstream API. Use ${apiKey} as the placeholder for the stored key.
+            example: Api-Key ${apiKey}
+            default_value: ${apiKey}
+            order: 3
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Base URL of the upstream API the proxy will call.
+            format: uri
+            example: https://api.example.com
+            order: 4
+        keyLabel:
+            type: string
+            title: API key label (shown in Connect UI)
+            description: The label end users see for the API key field in the Connect UI.
+            default_value: API Key
+            optional: true
+            order: 5
+    docs: https://nango.dev/docs/integrations/all/private-api-generic
+    docs_connect: https://nango.dev/docs/integrations/all/private-api-generic/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your API Key
 precisefp:
     display_name: PreciseFP
     categories:

@@ -265,7 +265,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             },
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
-                oauth_client_secret: integration.oauth_client_secret
+                oauth_client_secret: integration.oauth_client_secret,
+                custom: integration.custom
             }),
             onBytes: ({ sent, received }) => {
                 metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });

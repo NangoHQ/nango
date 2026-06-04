@@ -9,6 +9,7 @@ import {
     buildCanonicalParams,
     buildProxyHeaders,
     buildProxyURL,
+    deriveIntegrationConfigProxy,
     getAxiosConfiguration,
     getProxyConfiguration
 } from './utils.js';
@@ -1629,5 +1630,78 @@ describe('buildProxyHeaders TWO_STEP', () => {
         const headers = buildProxyHeaders({ config, url: 'https://example.com', connection });
         expect(headers['authorization']).toBeUndefined();
         expect(headers['cookie']).toBe('B1SESSION=sess-token-123');
+    });
+});
+
+describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
+    const genericProvider = {
+        auth_mode: 'API_KEY' as const,
+        display_name: 'Private API (Generic)',
+        docs: '',
+        // presence of integration_config opts the provider into per-integration proxy injection
+        integration_config: { keyPlacement: { type: 'string' as const, title: 'Key placement', description: '', order: 1, automated: false } },
+        proxy: { base_url: 'https://my-private-api' }
+    };
+
+    it('injects the API key into a custom header using the value template', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: 'Api-Key ${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect((axiosConfig.headers as Record<string, string>)['authorization']).toBe('Api-Key secret-key');
+        expect(axiosConfig.url).toBe('https://api.example.com/api/test');
+    });
+
+    it('injects the API key into a custom non-Authorization header', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'abc' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'x-ai-calls-api-key', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect((axiosConfig.headers as Record<string, string>)['x-ai-calls-api-key']).toBe('abc');
+    });
+
+    it('injects the API key into a query param', () => {
+        const config = getDefaultProxy({ provider: genericProvider });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'qkey' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'query', keyName: 'api_key', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect(axiosConfig.url).toBe('https://api.example.com/api/test?api_key=qkey');
+    });
+
+    it('is a no-op when the provider does not declare integration_config', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                display_name: 'x',
+                docs: '',
+                proxy: { base_url: 'https://static.example.com', headers: { authorization: 'Bearer ${apiKey}' } }
+            }
+        });
+        const derived = deriveIntegrationConfigProxy({
+            proxyConfig: config,
+            integrationConfig: { oauth_client_id: null, oauth_client_secret: null, custom: { keyName: 'Authorization', valueTemplate: '${apiKey}' } }
+        });
+        expect(derived).toBe(config);
     });
 });

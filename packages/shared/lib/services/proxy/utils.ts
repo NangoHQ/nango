@@ -88,6 +88,10 @@ export function getAxiosConfiguration({
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
 }): AxiosRequestConfig {
+    if (proxyConfig.provider.integration_config) {
+        proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
+    }
+
     const url = buildProxyURL({ config: proxyConfig, connection });
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
@@ -256,6 +260,56 @@ export function getProxyConfiguration({
 }
 
 /**
+ * For providers that expose a customer-configurable `integration_config` schema (e.g. `private-api-generic`),
+ * the API-key injection is configured per-integration and stored in the integration's `custom` field rather than
+ * statically in providers.yaml. This derives an effective proxy config (base_url + a single header/query entry)
+ * from that per-integration config so the existing header/query interpolation can inject the key.
+ *
+ * The `valueTemplate` (e.g. `Api-Key ${apiKey}`) is interpolated downstream against the connection credentials,
+ * where `${apiKey}` resolves to the stored API key.
+ */
+export function deriveIntegrationConfigProxy({
+    proxyConfig,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): ApplicationConstructedProxyConfiguration {
+    const provider = proxyConfig.provider;
+    const custom = integrationConfig?.custom;
+
+    // Only providers that declare `integration_config` opt into per-integration proxy injection.
+    if (!provider.integration_config || !custom || !custom['keyName']) {
+        return proxyConfig;
+    }
+
+    const placement = custom['keyPlacement'] || 'header';
+    const keyName = custom['keyName'];
+    const valueTemplate = custom['valueTemplate'] || '${apiKey}';
+    const baseUrl = custom['baseUrl'];
+
+    const baseProxy = provider.proxy ?? { base_url: '' };
+    const proxy = {
+        ...baseProxy,
+        base_url: baseUrl || baseProxy.base_url,
+        headers: { ...(baseProxy.headers ?? {}) },
+        query: { ...(baseProxy.query ?? {}) }
+    };
+
+    if (placement === 'query') {
+        proxy.query[keyName] = valueTemplate;
+    } else {
+        // HTTP header names are case-insensitive; lowercase to match the providers.yaml convention.
+        proxy.headers[keyName.toLowerCase()] = valueTemplate;
+    }
+
+    return {
+        ...proxyConfig,
+        provider: { ...provider, proxy }
+    };
+}
+
+/**
  * Construct URL
  */
 export function buildProxyURL({ config, connection }: { config: ApplicationConstructedProxyConfiguration; connection: ConnectionForProxy }) {
@@ -303,8 +357,8 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
             if (typeof value !== 'string') {
                 continue;
             }
-            if (connection.credentials.type === 'API_KEY' && value === '${apiKey}') {
-                url.searchParams.set(key, connection.credentials.apiKey);
+            if (connection.credentials.type === 'API_KEY' && value.includes('${apiKey}')) {
+                url.searchParams.set(key, interpolateIfNeeded(value, { ...(connection.credentials as unknown as Record<string, string>) }));
             } else if (value.includes('connectionConfig.')) {
                 const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
 
