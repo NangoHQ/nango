@@ -57,6 +57,7 @@ class ProviderClient {
             case 'clover':
             case 'absorb-lms':
             case 'posthog-oauth':
+            case 'slack':
                 return true;
             default:
                 return false;
@@ -78,6 +79,7 @@ class ProviderClient {
 
     public async getToken(
         config: ProviderConfig,
+        provider: ProviderOAuth2,
         tokenUrl: string,
         code: string,
         callBackUrl: string,
@@ -142,6 +144,15 @@ class ProviderClient {
                 );
             case 'posthog-oauth':
                 return this.createPosthogOauthToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'slack':
+                return this.createSlackToken(
+                    tokenUrl,
+                    code,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    callBackUrl,
+                    provider.alternate_access_token_response_path
+                );
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -256,6 +267,14 @@ class ProviderClient {
                 );
             case 'posthog-oauth':
                 return this.refreshPosthogOauthToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'slack':
+                return this.refreshSlackToken(
+                    interpolatedTokenUrl.href,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    connection,
+                    provider.alternate_access_token_response_path
+                );
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -1539,6 +1558,122 @@ class ProviderClient {
             throw new NangoError('sharepoint_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('sharepoint_refresh_token_request_error', err.message);
+        }
+    }
+
+    private pickMinExpiresIn(primary: Record<string, any>, secondary?: Record<string, any>): number | undefined {
+        const primaryExpiresIn = Number(primary['expires_in']) || undefined;
+        const secondaryExpiresIn = secondary ? Number(secondary['expires_in']) || undefined : undefined;
+        return primaryExpiresIn !== undefined && secondaryExpiresIn !== undefined
+            ? Math.min(primaryExpiresIn, secondaryExpiresIn)
+            : (primaryExpiresIn ?? secondaryExpiresIn);
+    }
+
+    private async createSlackToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string,
+        alternateTokenPath?: string
+    ): Promise<object> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                code,
+                redirect_uri: redirectUri,
+                grant_type: 'authorization_code'
+            });
+            const response = await axios.post(tokenUrl, body.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+            if (response.status === 200 && response.data) {
+                const data = response.data as Record<string, any>;
+                if (data['ok'] === false) {
+                    throw new NangoError('slack_token_request_error', data['error'] ?? 'token_request_failed');
+                }
+                const secondary = alternateTokenPath ? (data[alternateTokenPath] as Record<string, any> | undefined) : undefined;
+                const minExpiresIn = this.pickMinExpiresIn(data, secondary);
+                return { ...data, ...(minExpiresIn !== undefined && { expires_in: minExpiresIn }) };
+            }
+            throw new NangoError('slack_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('slack_token_request_error', err.message);
+        }
+    }
+
+    private async refreshSlackToken(
+        tokenUrl: string,
+        clientId: string,
+        clientSecret: string,
+        connection: DBConnectionDecrypted,
+        alternateTokenPath?: string
+    ): Promise<object> {
+        try {
+            const credentials = connection.credentials as OAuth2Credentials;
+            const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+            const botBody = new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'refresh_token',
+                refresh_token: credentials.refresh_token!
+            });
+            const botResponse = await axios.post(tokenUrl, botBody.toString(), { headers });
+            if (botResponse.status !== 200 || !botResponse.data) {
+                throw new NangoError('slack_refresh_token_request_error', botResponse.data);
+            }
+            if (botResponse.data?.ok === false) {
+                throw new NangoError('slack_refresh_token_request_error', botResponse.data?.error ?? 'token_refresh_failed');
+            }
+
+            const raw = credentials.raw as Record<string, any> | undefined;
+            const userRefreshToken = alternateTokenPath ? (raw?.[alternateTokenPath]?.['refresh_token'] as string | undefined) : undefined;
+            // Skip dual refresh when the user refresh token is absent or identical to the bot refresh token.
+            // Identical means the connection is user-only (credentials.refresh_token was derived from
+            // raw[alternateTokenPath]) — consuming the same refresh token twice would invalidate it.
+            if (!userRefreshToken || userRefreshToken === credentials.refresh_token) {
+                return botResponse.data;
+            }
+
+            const userBody = new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'refresh_token',
+                refresh_token: userRefreshToken
+            });
+
+            // User token refresh is non-fatal, if it fails, preserve existing user token data so
+            // the next refresh cycle can retry rather than losing it entirely.
+            const userResponse = await (async () => {
+                try {
+                    const res = await axios.post(tokenUrl, userBody.toString(), { headers });
+                    // Slack returns 200 with ok: false on error
+                    return res.data?.ok === false ? null : res;
+                } catch {
+                    return null;
+                }
+            })();
+
+            if (!userResponse) {
+                return {
+                    ...botResponse.data,
+                    ...(alternateTokenPath && raw?.[alternateTokenPath]?.['refresh_token'] && { [alternateTokenPath]: raw[alternateTokenPath] })
+                };
+            }
+
+            const userTokenData = (alternateTokenPath ? (userResponse.data[alternateTokenPath] ?? userResponse.data) : userResponse.data) as Record<
+                string,
+                unknown
+            >;
+            const minExpiresIn = this.pickMinExpiresIn(botResponse.data, userTokenData as Record<string, any>);
+
+            return {
+                ...botResponse.data,
+                ...(alternateTokenPath && { [alternateTokenPath]: userTokenData }),
+                ...(minExpiresIn !== undefined && { expires_in: minExpiresIn })
+            };
+        } catch (err: any) {
+            throw new NangoError('slack_refresh_token_request_error', err.message);
         }
     }
 
