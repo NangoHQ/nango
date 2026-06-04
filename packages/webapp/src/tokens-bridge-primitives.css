@@ -60,4 +60,25 @@
     --color-grayscale-800: var(--surface-raised);
     --color-grayscale-900: var(--surface-panel);
     --color-grayscale-1000: var(--surface-canvas);
+
+    /* ── Tailwind core colors ── */
+    /* white/black: legacy pages use text-white as body text on dark backgrounds */
+    --color-white: var(--text-strong);
+    --color-black: var(--text-strong);
+
+    /* Blues */
+    --color-blue-400: var(--status-info-text);
+    --color-blue-500: var(--text-link);
+
+    /* Reds */
+    --color-red-300: var(--status-danger-border);
+    --color-red-500: var(--status-danger-text);
+    --color-red-700: var(--interactive-danger-hover);
+
+    /* Yellows */
+    --color-yellow-400: var(--status-warning-icon);
+    --color-yellow-500: var(--status-warning-text);
+
+    /* Greens */
+    --color-green-500: var(--status-success-text);
 }
