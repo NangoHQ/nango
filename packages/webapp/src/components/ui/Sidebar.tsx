@@ -285,7 +285,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
 }
 
 function SidebarInput({ className, ...props }: React.ComponentProps<typeof Input>) {
-    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-white h-8 w-full shadow-none dark:bg-neutral-950', className)} {...props} />;
+    return <Input data-slot="sidebar-input" data-sidebar="input" className={cn('bg-surface-input h-8 w-full shadow-none', className)} {...props} />;
 }
 
 function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
@@ -370,7 +370,7 @@ const sidebarMenuButtonVariants = cva(
             variant: {
                 default: 'transition-colors hover:bg-nav-bg-hover hover:text-text-primary',
                 outline:
-                    'bg-white shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-nav-bg-hover hover:text-text-primary hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))] dark:bg-neutral-950'
+                    'bg-surface-panel border border-border-muted hover:bg-nav-bg-hover hover:text-text-primary'
             },
             size: {
                 default: 'h-8 text-sm',
