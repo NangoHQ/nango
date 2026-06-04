@@ -121,6 +121,13 @@ export interface GetBillingUsageOpts {
      * Ignored on the Orb path.
      */
     metrics?: UsageMetric[];
+    /**
+     * Per-metric row-level filter: scopes that metric's response to rows
+     * where the given dimension equals the given value. Mutually exclusive
+     * with `breakdown[<metric>]` on the same metric — controllers reject
+     * the combination. CH path only; the Orb client ignores it.
+     */
+    filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
 }
 
 export interface BillingUsageMetric {

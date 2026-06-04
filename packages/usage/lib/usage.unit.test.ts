@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
+import { envs } from './env.js';
+import { shouldShadow, toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
 
 import type { GetDailyCounterResult, GetDailySumAndBatchesResult } from './clickhouse/clickhouse.query.js';
 
@@ -276,5 +277,40 @@ describe('toCounterBillingMetricSeries', () => {
     it('emits an empty array when the source has no series', () => {
         const empty: GetDailyCounterResult = { accountId, metric: 'proxy', series: [] };
         expect(toCounterBillingMetricSeries('proxy', empty)).toEqual([]);
+    });
+});
+
+describe('shouldShadow', () => {
+    const junePlus = { start: new Date('2026-06-15T00:00:00.000Z'), end: new Date('2026-06-20T00:00:00.000Z') };
+    const preJune = { start: new Date('2026-05-15T00:00:00.000Z'), end: new Date('2026-05-20T00:00:00.000Z') };
+
+    let originalFlag: boolean;
+    beforeEach(() => {
+        originalFlag = envs.FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE;
+    });
+    afterEach(() => {
+        (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = originalFlag;
+    });
+
+    it('returns false when the flag is off', () => {
+        (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = false;
+        expect(shouldShadow({ timeframe: junePlus })).toBe(false);
+    });
+
+    it('returns false when timeframe is missing', () => {
+        (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = true;
+        expect(shouldShadow(undefined)).toBe(false);
+        expect(shouldShadow({})).toBe(false);
+    });
+
+    it('returns false when the timeframe starts before 2026-06-01', () => {
+        (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = true;
+        expect(shouldShadow({ timeframe: preJune })).toBe(false);
+    });
+
+    it('returns true when flag is on and timeframe starts on/after 2026-06-01', () => {
+        (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = true;
+        expect(shouldShadow({ timeframe: junePlus })).toBe(true);
+        expect(shouldShadow({ timeframe: { start: new Date('2026-06-01T00:00:00.000Z'), end: new Date('2026-06-02T00:00:00.000Z') } })).toBe(true);
     });
 });

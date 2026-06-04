@@ -519,6 +519,12 @@
                         }
                     }
                 },
+                "token_response_headers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "token_expires_in_ms": {
                     "type": "number"
                 },
@@ -647,6 +653,13 @@
                                     "type": "string",
                                     "enum": ["hostname", "uri", "uuid", "email"]
                                 },
+                                "enum": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "minItems": 1
+                                },
                                 "order": {
                                     "type": "number"
                                 },
@@ -711,6 +724,13 @@
                                     "type": "string",
                                     "enum": ["hostname", "uri", "uuid", "email"]
                                 },
+                                "enum": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "minItems": 1
+                                },
                                 "default_value": {
                                     "type": "string"
                                 },
@@ -762,6 +782,13 @@
                                 "format": {
                                     "type": "string",
                                     "enum": ["hostname", "uri", "uuid", "email"]
+                                },
+                                "enum": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "minItems": 1
                                 },
                                 "default_value": {
                                     "type": "string"

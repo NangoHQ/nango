@@ -373,6 +373,8 @@ async function compileDeployInfo({
         }
     }
 
+    const [file_location] = await Promise.all(uploads);
+
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
 

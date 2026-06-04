@@ -14,19 +14,20 @@ import {
     IconX
 } from '@tabler/icons-react';
 
-import { Tag } from '../../../components/ui/label/Tag';
+import { Tag } from '@/components-v2/ui/Tag';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
 
+import type { TagSize } from '@/components-v2/ui/Tag';
 import type { SearchOperationsData } from '@nangohq/types';
 
-export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation'] }> = ({ message, operation }) => {
+export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation']; size?: TagSize }> = ({ message, operation, size }) => {
     return (
         <Tooltip delayDuration={0}>
             <TooltipTrigger>
                 <div className="flex items-center gap-1">
-                    <Tag>{operation.type}</Tag>
+                    <Tag size={size}>{operation.type}</Tag>
                     {operation.type === 'sync' && (
-                        <Tag>
+                        <Tag size={size}>
                             {operation.action === 'cancel' && <IconX className="w-3.5 h-3.5" />}
                             {operation.action === 'init' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'pause' && <IconClockPause className="w-3.5 h-3.5" />}
@@ -40,7 +41,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
 
                     {operation.type === 'auth' && (
-                        <Tag>
+                        <Tag size={size}>
                             {operation.action === 'create_connection' && <IconPlus className="w-3.5 h-3.5" />}
                             {operation.action === 'post_connection' && <IconSettingsAutomation className="w-3.5 h-3.5" />}
                             {operation.action === 'refresh_token' && <IconRefresh className="w-3.5 h-3.5" />}
@@ -48,7 +49,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
 
                     {operation.type === 'webhook' && (
-                        <Tag>
+                        <Tag size={size}>
                             {operation.action === 'forward' && <IconArrowForward className="w-3.5 h-3.5" />}
                             {operation.action === 'incoming' && <IconSettings className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_create' && <IconLink className="w-3.5 h-3.5" />}
