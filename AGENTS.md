@@ -20,7 +20,7 @@ Run `npm run dev -w packages/webapp` from each worktree. Vite picks the next fre
 Pass `REMOTE_API=<env>` to proxy all API traffic to a live backend instead. No local backend needed.
 
 ```bash
-REMOTE_API=staging npm run dev -w packages/webapp   # https://api-staging.nango.dev
 REMOTE_API=dev npm run dev -w packages/webapp       # https://api-development.nango.dev
+REMOTE_API=staging npm run dev -w packages/webapp   # https://api-staging.nango.dev
 REMOTE_API=prod npm run dev -w packages/webapp      # https://api.nango.dev
 ```
