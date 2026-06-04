@@ -23,10 +23,10 @@ export const LogsShow: React.FC = () => {
                 <Helmet>
                     <title>Logs - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-white mb-4">Logs</h2>
-                <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                <h2 className="text-3xl font-semibold text-text-primary mb-4">Logs</h2>
+                <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-primary text-center p-10 py-20">
                     <h2 className="text-xl text-center">Logs not configured</h2>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-text-tertiary">
                         Follow{' '}
                         <Link to="https://nango.dev/docs/guides/platform/self-hosting#logs" className="text-blue-400">
                             these instructions

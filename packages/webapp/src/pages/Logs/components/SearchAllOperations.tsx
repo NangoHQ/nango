@@ -253,14 +253,14 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
     return (
         <>
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner />}</h2>
-                <div className="text-white text-xs">
+                <h2 className="text-3xl font-semibold text-text-primary mb-2 flex gap-4 items-center">Logs {(isLoading || isFetching) && <Spinner />}</h2>
+                <div className="text-text-primary text-xs">
                     {totalHumanReadable} {totalOperations > 1 ? 'logs' : 'log'} found
                 </div>
             </div>
             <div className="flex gap-2 justify-between mb-4">
                 <div className="flex-1 min-w-0">
-                    <InputGroup className="border-border-gray-400">
+                    <InputGroup className="border-border-muted">
                         <InputGroupAddon>
                             <IconSearch stroke={1} size={16} />
                         </InputGroupAddon>
@@ -296,7 +296,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
                 <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
-                    <thead className="grid sticky top-0 z-10 bg-grayscale-900">
+                    <thead className="grid sticky top-0 z-10 bg-bg-elevated">
                         {table.getHeaderGroups().map((headerGroup) => {
                             return (
                                 <tr key={headerGroup.id} className="flex w-full">
@@ -304,7 +304,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                                         return (
                                             <th
                                                 key={header.id}
-                                                className="flex bg-grayscale-900 px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
+                                                className="flex bg-bg-elevated px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                                 style={{
                                                     width: header.getSize() ? header.getSize() : 'auto'
                                                 }}
@@ -345,9 +345,9 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                         <tbody>
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="h-24 text-center p-0 pt-4 w-full">
-                                    <div className="flex gap-2 flex-col border border-border-gray rounded-md items-center text-white text-center p-10 py-20">
+                                    <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-primary text-center p-10 py-20">
                                         <div className="text-center">No logs found</div>
-                                        <div className="text-gray-400">Note that logs older than 15 days are automatically cleared.</div>
+                                        <div className="text-text-tertiary">Note that logs older than 15 days are automatically cleared.</div>
                                     </div>
                                 </td>
                             </tr>
