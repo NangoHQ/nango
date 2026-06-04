@@ -363,7 +363,6 @@ async function compileDeployInfo({
     else {
         const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
         if (jsChanged) {
-            void logCtx.info('Uploading new file for changed function', { fileName: `${syncName}-v${version}.js` });
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
