@@ -18,6 +18,7 @@ import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, 
 import { NANGO_VERSION, flags, getLogger, initSentry, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
+import { aggregateHealthMetrics } from './crons/aggregateHealthMetrics.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
@@ -94,6 +95,7 @@ getProviders();
 
 refreshConnectionsCron();
 timeoutLogsOperations();
+aggregateHealthMetrics();
 timeoutFunctionDryrunsCron();
 deleteOldData();
 trialCron();

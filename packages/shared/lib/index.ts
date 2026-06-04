@@ -38,6 +38,7 @@ export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
+export * from './services/health/health.service.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';

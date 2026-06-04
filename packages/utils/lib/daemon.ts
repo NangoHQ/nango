@@ -40,7 +40,7 @@ export function cancellableDaemon({
     return {
         abort: async () => {
             ac.abort();
-            return await done;
+            return void await done;
         }
     };
 }

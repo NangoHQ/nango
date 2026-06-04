@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
