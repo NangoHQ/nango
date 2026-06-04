@@ -94,7 +94,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <div id="player" style={{ aspectRatio: '16 / 9' }} className="rounded-lg relative">
                     <img src="/images/demo_thumbnail.png" alt="" className="rounded-lg" />
                     <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center z-10 text-black">
-                        <div className="transition-transform bg-white p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
+                        <div className="transition-transform bg-surface-panel p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
                             <IconPlayerPlay size={50} fill="#000" />
                         </div>
                     </div>
