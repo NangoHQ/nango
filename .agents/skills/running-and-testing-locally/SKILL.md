@@ -23,7 +23,7 @@ Nango runs as a set of microservices (server, webapp, jobs, persist, orchestrato
 
 | Service | URL | Port |
 |---------|-----|------|
-| Webapp (dashboard) | http://localhost:3000 | 3000 |
+| Webapp (dashboard) | http://localhost:3000 | 3000 (auto-increments if in use) |
 | API Server | http://localhost:3003 | 3003 |
 | Connect UI | http://localhost:3009 | 3009 |
 | PostgreSQL | localhost:5432 | 5432 (user: `nango`, pass: `nango`) |
@@ -73,13 +73,29 @@ Run individual services when you only need to restart one:
 
 ```bash
 npm run server:dev:watch       # API server only (port 3003)
-npm run webapp:dev:watch       # Webapp only (port 3000)
+npm run webapp:dev:watch                          # Webapp only (port 3000, or next free port)
+npm run dev -w packages/webapp                    # Same as above, from any worktree
+REMOTE_API=staging npm run dev -w packages/webapp # Webapp against remote API (no local backend needed)
 npm run connect-ui:dev:watch   # Connect UI only (port 3009)
 npm run jobs:dev:watch         # Jobs worker (port 3005)
 npm run persist:dev:watch      # Persist service (port 3007)
 npm run orchestrator:dev:watch # Orchestrator (port 3008)
 npm run metering:dev:watch     # Metering service (cron-based, no HTTP port)
 ```
+
+## Multi-Worktree Webapp Dev
+
+Run the backend stack once (from the main project or one worktree), then start a webapp Vite server per worktree. Vite auto-increments the port when 3000 is taken, and rewrites `apiUrl` in `env.js` to match — all API traffic is proxied through Vite so there are no CORS issues.
+
+```bash
+# Worktree 1 (gets port 3000)
+npm run dev -w packages/webapp
+
+# Worktree 2 (auto-selects 3001, 3002, …)
+npm run dev -w packages/webapp
+```
+
+To avoid a local backend entirely, use `REMOTE_API=dev|staging|prod` — each worktree proxies independently to the remote.
 
 ## Environment Configuration
 
