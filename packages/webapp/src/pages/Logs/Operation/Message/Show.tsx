@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
 import { LevelTag } from '../../components/LevelTag';
 import { Tag } from '@/components/ui/Tag';
+import { useThemeStore } from '@/lib/theme';
 
 import type { MessageRow } from '@nangohq/types';
 
@@ -51,6 +52,8 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         return millisecondsToRuntime(message.durationMs);
     }, [message]);
 
+    const darkMode = useThemeStore((s) => s.darkMode);
+
     return (
         <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
@@ -92,7 +95,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     <Prism
                         language="json"
                         className="transparent-code"
-                        colorScheme="dark"
+                        colorScheme={darkMode ? 'dark' : 'light'}
                         styles={() => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } };
                         }}
@@ -110,7 +113,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         <Prism
                             language="json"
                             className="transparent-code"
-                            colorScheme="dark"
+                            colorScheme={darkMode ? 'dark' : 'light'}
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}

@@ -14,6 +14,7 @@ import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { useThemeStore } from '@/lib/theme';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);
@@ -67,6 +68,8 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
         },
         isLive ? 5000 : null
     );
+
+    const darkMode = useThemeStore((s) => s.darkMode);
 
     if (loading) {
         return (
@@ -187,7 +190,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                         <Prism
                             language="json"
                             className="transparent-code"
-                            colorScheme="dark"
+                            colorScheme={darkMode ? 'dark' : 'light'}
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
