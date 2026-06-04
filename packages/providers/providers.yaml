@@ -18415,6 +18415,8 @@ slack-mcp:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://mcp.slack.com
         headers:
