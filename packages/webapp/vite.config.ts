@@ -49,7 +49,7 @@ function apiProxyConfig() {
     const apiUrl = remoteUrl ?? `http://localhost:${LOCAL_API_PORT}`;
     const proxyOpts = remoteUrl ? { target: apiUrl, changeOrigin: true } : { target: apiUrl };
     return {
-        envPlugin: apiEnvProxyPlugin(apiUrl),
+        envProxyPlugin: apiEnvProxyPlugin(apiUrl),
         proxy: {
             '/api': proxyOpts,
             // Extra routes needed for connection creation and auth flows.
@@ -69,10 +69,10 @@ function apiProxyConfig() {
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-    const { envPlugin, proxy } = apiProxyConfig();
+    const { envProxyPlugin, proxy } = apiProxyConfig();
 
     return {
-        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envPlugin],
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin],
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
