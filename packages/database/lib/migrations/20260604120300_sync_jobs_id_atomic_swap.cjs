@@ -6,6 +6,7 @@ exports.up = async function (knex) {
     await knex.raw(`ALTER TABLE nango._nango_sync_jobs DROP CONSTRAINT _nango_sync_jobs_pkey`);
     await knex.raw(`ALTER TABLE nango._nango_sync_jobs RENAME COLUMN id TO id_old`);
     await knex.raw(`ALTER TABLE nango._nango_sync_jobs RENAME COLUMN id_big TO id`);
+    await knex.raw(`ALTER TABLE nango._nango_sync_jobs ALTER COLUMN id_old DROP NOT NULL`);
     await knex.raw(`ALTER TABLE nango._nango_sync_jobs ADD CONSTRAINT _nango_sync_jobs_pkey PRIMARY KEY USING INDEX sync_jobs_id_big_uidx`);
     await knex.raw(`ALTER TABLE nango._nango_sync_jobs ALTER COLUMN id SET DEFAULT nextval('nango._nango_sync_jobs_id_seq')`);
     await knex.raw(`ALTER SEQUENCE nango._nango_sync_jobs_id_seq OWNED BY nango._nango_sync_jobs.id`);
