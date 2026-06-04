@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { EditableInput } from '@/components-v2/patterns/EditableInput';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { Label } from '@/components-v2/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
 import { usePatchIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 
@@ -43,11 +46,15 @@ function buildValidator(definition: SimplifiedJSONSchema): (value: string) => st
  * independently (text fields via the inline edit/save pattern, enum fields on selection change).
  */
 export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({
-    data: { integration, template }
+    data: { integration, template },
+    environment
 }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
+    const { can } = usePermissions();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
+
+    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
 
     const fields = useMemo<FieldEntry[]>(
         () => Object.entries(template.integration_config ?? {}).sort((a, b) => (a[1].order ?? 0) - (b[1].order ?? 0)),
@@ -74,7 +81,7 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
                         {definition.description && <InfoTooltip>{definition.description}</InfoTooltip>}
                     </div>
                     {definition.enum && definition.enum.length > 0 ? (
-                        <EnumField name={name} definition={definition} initialValue={integration.custom?.[name]} onSave={saveField} />
+                        <EnumField name={name} definition={definition} initialValue={integration.custom?.[name]} onSave={saveField} canEdit={canEdit} />
                     ) : (
                         <EditableInput
                             id={name}
@@ -83,6 +90,8 @@ export const CustomIntegrationSettings: React.FC<{ data: GetIntegration['Success
                             placeholder={definition.example}
                             validate={buildValidator(definition)}
                             onSave={(value) => saveField(name, value)}
+                            canEdit={canEdit}
+                            canRead={canEdit}
                         />
                     )}
                 </div>
@@ -96,21 +105,27 @@ const EnumField: React.FC<{
     definition: SimplifiedJSONSchema;
     initialValue: string | undefined;
     onSave: (name: string, value: string) => Promise<void>;
-}> = ({ name, definition, initialValue, onSave }) => {
+    canEdit: boolean;
+}> = ({ name, definition, initialValue, onSave, canEdit }) => {
     const [value, setValue] = useState(initialValue ?? definition.default_value ?? definition.enum?.[0] ?? '');
+    const [saving, setSaving] = useState(false);
 
     const onChange = async (next: string) => {
         const previous = value;
         setValue(next);
+        setSaving(true);
         try {
             await onSave(name, next);
         } catch {
             setValue(previous);
+        } finally {
+            setSaving(false);
         }
     };
 
     return (
-        <Select value={value} onValueChange={onChange}>
+        // Disable while a save is in flight so a rapid second change can't be clobbered by a failed revert.
+        <Select value={value} onValueChange={onChange} disabled={!canEdit || saving}>
             <SelectTrigger id={name} className="w-full">
                 <SelectValue placeholder={definition.title} />
             </SelectTrigger>

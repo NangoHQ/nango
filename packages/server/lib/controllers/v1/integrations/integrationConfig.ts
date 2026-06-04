@@ -80,10 +80,16 @@ export function validateIntegrationConfig(
         }
 
         if (definition.format === 'uri') {
+            let protocol: string | undefined;
             try {
-                new URL(value);
+                protocol = new URL(value).protocol;
             } catch {
                 errors.push({ field, message: `${definition.title} must be a valid URL` });
+                continue;
+            }
+
+            if (protocol !== 'http:' && protocol !== 'https:') {
+                errors.push({ field, message: `${definition.title} must be an http(s) URL` });
                 continue;
             }
         }

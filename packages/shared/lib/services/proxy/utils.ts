@@ -327,7 +327,12 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+    let normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+
+    // If the endpoint is absolute and already starts with the effective base, strip it to avoid duplicating the base.
+    if (normalizedBase && !normalizedBase.includes('${') && normalizedEndpoint.startsWith(normalizedBase)) {
+        normalizedEndpoint = normalizedEndpoint.slice(normalizedBase.length).replace(/^\/+/, '');
+    }
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';

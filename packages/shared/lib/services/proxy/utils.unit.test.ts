@@ -1704,4 +1704,19 @@ describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
         });
         expect(derived).toBe(config);
     });
+
+    it('does not duplicate the base when the endpoint is absolute and equals the custom base', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com/users' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        expect(axiosConfig.url).toBe('https://api.example.com/users');
+    });
 });

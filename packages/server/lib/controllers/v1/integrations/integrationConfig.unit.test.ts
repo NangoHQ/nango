@@ -68,6 +68,28 @@ describe('validateIntegrationConfig', () => {
         }
     });
 
+    it('rejects non-http(s) URI schemes', () => {
+        for (const baseUrl of ['mailto:foo@example.com', 'file:///etc/passwd', 'ftp://example.com']) {
+            const result = validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl });
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.fields.map((e) => e.field)).toContain('baseUrl');
+            }
+        }
+    });
+
+    it('accepts http and https URIs', () => {
+        for (const baseUrl of ['http://internal.example.com', 'https://api.example.com']) {
+            expect(validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl }).isOk()).toBe(true);
+        }
+    });
+
+    it('rejects integrationConfig for a provider that does not declare integration_config', () => {
+        const plainProvider = { auth_mode: 'API_KEY', display_name: 'Plain', docs: '' } as unknown as Provider;
+        const result = validateIntegrationConfig(plainProvider, { anything: 'x' });
+        expect(result.isErr()).toBe(true);
+    });
+
     describe('patch mode', () => {
         it('validates only the submitted field and ignores missing required fields', () => {
             const result = validateIntegrationConfig(provider, { keyName: 'X-Api-Key' }, { patch: true });

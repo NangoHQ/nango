@@ -48,7 +48,11 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
-    if (provider.integration_config) {
+    if (provider.integration_config || body.integrationConfig) {
+        if (body.useSharedCredentials) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
+            return;
+        }
         const result = validateIntegrationConfig(provider, body.integrationConfig ?? {});
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });

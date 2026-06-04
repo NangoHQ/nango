@@ -15272,12 +15272,14 @@ private-api-generic:
             description: How the key is presented to the upstream API. Use ${apiKey} as the placeholder for the stored key.
             example: Api-Key ${apiKey}
             default_value: ${apiKey}
+            pattern: '\$\{apiKey\}'
             order: 3
         baseUrl:
             type: string
             title: Base URL
             description: Base URL of the upstream API the proxy will call.
             format: uri
+            pattern: '^https?://'
             example: https://api.example.com
             order: 4
         keyLabel:

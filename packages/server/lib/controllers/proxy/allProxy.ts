@@ -12,6 +12,7 @@ import {
     configService,
     connectionService,
     errorManager,
+    getProvider,
     getProxyConfiguration,
     pubsub,
     refreshOrTestCredentials
@@ -144,6 +145,18 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                     code: 'unknown_provider_config',
                     message: 'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
                 }
+            });
+            return;
+        }
+
+        const provider = getProvider(integration.provider);
+        const customBaseUrl = provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
+            void logCtx.error('Integration base URL is not allowed by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: { code: 'base_url_override_not_allowed', message: 'This base URL is not allowed by server configuration.' }
             });
             return;
         }
