@@ -3,13 +3,13 @@ import { useScript } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Button } from '../../components/ui/button/Button';
-import { Tag } from '../../components/ui/label/Tag';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
+import { Button } from '@/components-v2/ui/Button';
+import { Tag } from '@/components-v2/ui/Tag';
 
 let ytLoaded = false;
 export const ClassicGettingStarted: React.FC = () => {
@@ -122,7 +122,7 @@ export const ClassicGettingStarted: React.FC = () => {
                         <p className="text-sm text-grayscale-400">Let users authorize an API from your app.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'link'} size={'auto'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
@@ -148,7 +148,7 @@ export const ClassicGettingStarted: React.FC = () => {
                         <p className="text-sm text-grayscale-400">Continuously sync data from an API.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'link'} size={'auto'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
@@ -174,7 +174,7 @@ export const ClassicGettingStarted: React.FC = () => {
                         <p className="text-sm text-grayscale-400">Write data back to APIs.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'link'} size={'auto'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>
@@ -200,7 +200,7 @@ export const ClassicGettingStarted: React.FC = () => {
                         <p className="text-sm text-grayscale-400">Go beyond pre-built integrations.</p>
                     </main>
                     <footer className="mt-4">
-                        <Button variant={'link'} size={'auto'} className="group-hover:text-white group-focus:text-white">
+                        <Button variant={'ghost'} className="group-hover:text-white group-focus:text-white">
                             Learn more <IconChevronRight stroke={1} size={20} />
                         </Button>
                     </footer>

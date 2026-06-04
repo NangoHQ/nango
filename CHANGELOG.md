@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.70.6] - 2026-06-01
+
+### Added
+
+- *(design-system)* Extend token pipeline with @theme utilities (#6258) by @macko911
+- *(metering)* Emit per-run S3 export metric for monitoring (#6272) by @pfreixes
+- *(functions)* Production versions of JIT function endpoints (#6214) by @marcindobry
+- *(records)* Add RecordsStore interface (#6263) by @TBonnin
+- *(orchestrator)* NAN-5727 add batched immediate route (#6249) by @agusayerza
+- *(server)* Meter bytes transferred on forward deliveries (#6240) by @ErickRDev
+- *(integrations)* Allow mercury to also connect to sandbox environments (#6270) by @hassan254-prog
+- *(integrations)* Add support for theirstack (#6269) by @hassan254-prog
+- *(webapp)* Restructure component directories by taxonomy (#6274) by @macko911
+- *(integrations)* Add support for altrata (#6266) by @hassan254-prog
+- *(integrations)* Add support for pverify (#6265) by @hassan254-prog
+- *(integrations)* Add support for toast (#6237) by @hassan254-prog
+- *(ci)* Deploy design system Storybook to storybook.nango.dev (#6284) by @macko911
+- *(records)* Add records router (#6285) by @TBonnin
+- *(storybook)* Catalog v1 and v2 components (#6292) by @macko911
+- *(sync_jobs)* Prep sync_job_id for int4 → bigint widening (NAN-5491 Phase 0) (#6260) by @pfreixes
+- Add Cursor Cloud specific instructions to AGENTS.md (#6245) by @rossmcewan
+- *(records)* Stop populating records.sync_job_id (NAN-5491 Phase 1) (#6262) by @pfreixes
+- *(runner)* Send runner telemetry to persist (#6209) by @ErickRDev
+- Add non-technical links to llms.txt (#6310) by @sapnesh-nango
+- *(webapp)* Allow local dashboard dev server to connect to remote API (#6303) by @macko911
+
+### Changed
+
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/545e9efc7e737663aea76f6868c3c34084ab7e94 by Victor Lang'at by @github-actions[bot]
+- Improve AI related docs (#6220) by @marcindobry
+- *(scheduler)* Decouple from orchestrator (#6276) by @kaposke
+
+### Fixed
+
+- *(shared)* Honor NANGO_SECRET_KEY_<ENV> for default API secret on self-hosted (#5979) by @kishenpateldotwork
+- *(docker)* Deduplicate dd-trace in package-lock.json (#6273) by @macko911
+- *(records)* Stop re-exporting test helper from package barrel by @agusayerza
+- *(scheduler)* Test(scheduler): close integration coverage gaps (#6275) by @kaposke
+- *(bigchange)* Remove token_request_auth_method — endpoint rejects Basic, requires body (#6267) by @ettanbazil1
+- *(proxy)* Restore header forwarding through redirects when byte-metering transport is active (#6282) by @hassan254-prog
+- *(webapp)* Resolve CASA DAST findings (#6294) by @rossmcewan
+- *(vulns)* Fix vulnerabilities (#6302) by @rossmcewan
+- *(webapp)* Update enterprise contact link to /demo (#6308) by @macko911
+
 ## [v0.70.5] - 2026-05-27
 
 ### Added
@@ -6839,6 +6884,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.70.6]: https://github.com/NangoHQ/nango/compare/v0.70.5..v0.70.6
 [v0.70.5]: https://github.com/NangoHQ/nango/compare/v0.70.4..v0.70.5
 [v0.70.4]: https://github.com/NangoHQ/nango/compare/v0.70.3..v0.70.4
 [v0.70.3]: https://github.com/NangoHQ/nango/compare/v0.70.2..v0.70.3

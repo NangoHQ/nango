@@ -10,6 +10,20 @@ const meta: Meta<typeof MultiLanguageCodeBlock> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+export const SingleSnippet: Story = {
+    args: {
+        title: 'Install',
+        snippets: [
+            {
+                language: 'typescript',
+                displayLanguage: 'TypeScript',
+                icon: null,
+                code: `import Nango from '@nangohq/frontend';`
+            }
+        ]
+    }
+};
+
 export const Default: Story = {
     args: {
         title: 'Get connection',

@@ -30,7 +30,39 @@ on:
                     - app_ui
                     - lambda
 
+# One deploy per service+stage at a time. UI deploys `aws s3 sync --delete` into a
+# shared bucket, so two concurrent runs silently corrupt it (left the live app
+# pointing at a deleted bundle). Queue the rest (queue: max) without aborting an
+# in-flight sync (cancel-in-progress: false).
+concurrency:
+    group: deploy-${{ inputs.service }}-${{ inputs.stage }}
+    cancel-in-progress: false
+    queue: max
+# Least privilege by default: the GITHUB_TOKEN gets no scopes unless a job
+# explicitly opts in below.
+permissions: {}
+
 jobs:
+    notify_start:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read # checkout the repo to reach the local composite action
+        outputs:
+            ts: ${{ steps.notify.outputs.ts }}
+            started_at: ${{ steps.notify.outputs.started_at }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Post deploy started message
+              id: notify
+              continue-on-error: true
+              uses: ./.github/actions/slack-deploy-notification
+              with:
+                  bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  channel: ${{ vars.SLACK_DEPLOYS_CHANNEL_ID }}
+                  service: ${{ inputs.service }}
+                  stage: ${{ inputs.stage }}
+                  phase: start
     deploy_app_ui:
         if: inputs.service == 'app_ui'
         runs-on: ubuntu-latest
@@ -191,6 +223,8 @@ jobs:
         if: inputs.service == 'runner' && inputs.stage != 'replit'
         runs-on: ubuntu-latest
         environment: ${{ inputs.stage }}
+        permissions:
+            contents: read
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -246,3 +280,55 @@ jobs:
                     --header "authorization: Bearer $INTERNAL_API_KEY"\
                     --header "content-type: application/json"\
                     --data "{ \"image\": \"${{ vars.LAMBDA_REPOSITORY_NAME }}:${{ github.sha }}\", \"imageType\":\"ecr\" }"
+    notify_result:
+        # Runs after whichever deploy job executed (the others are skipped) and reports the outcome.
+        if: always()
+        needs:
+            - notify_start
+            - deploy_app_ui
+            - deploy_connect_ui
+            - deploy
+            - deploy_runners
+            - deploy_lambda
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read # checkout the repo to reach the local composite action
+        steps:
+            - name: Determine deploy outcome
+              id: outcome
+              run: |
+                  # Only one deploy job runs per dispatch; the rest are skipped.
+                  # failure/cancelled -> failure; a single success -> success;
+                  # nothing ran (e.g. runner/lambda on replit) -> skipped, so we
+                  # don't announce a success for a deploy that never happened.
+                  results=(
+                    "${{ needs.deploy_app_ui.result }}"
+                    "${{ needs.deploy_connect_ui.result }}"
+                    "${{ needs.deploy.result }}"
+                    "${{ needs.deploy_runners.result }}"
+                    "${{ needs.deploy_lambda.result }}"
+                  )
+                  outcome="skipped"
+                  for r in "${results[@]}"; do
+                    if [[ "$r" == "failure" || "$r" == "cancelled" ]]; then
+                      outcome="failure"
+                      break
+                    elif [[ "$r" == "success" ]]; then
+                      outcome="success"
+                    fi
+                  done
+                  echo "outcome=$outcome" >> "$GITHUB_OUTPUT"
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Update deploy message
+              continue-on-error: true
+              uses: ./.github/actions/slack-deploy-notification
+              with:
+                  bot_token: ${{ secrets.SLACK_BOT_TOKEN }}
+                  channel: ${{ vars.SLACK_DEPLOYS_CHANNEL_ID }}
+                  service: ${{ inputs.service }}
+                  stage: ${{ inputs.stage }}
+                  phase: result
+                  ts: ${{ needs.notify_start.outputs.ts }}
+                  started_at: ${{ needs.notify_start.outputs.started_at }}
+                  outcome: ${{ steps.outcome.outputs.outcome }}

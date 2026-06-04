@@ -1,8 +1,8 @@
-import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails } from '../billing/types.js';
-import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
-import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
 import type { Endpoint } from '../api.js';
+import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
+import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
+import type { ReplaceInObject } from '../utils.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
@@ -59,10 +59,60 @@ export type GetUsage = Endpoint<{
     };
 }>;
 
+// Top-N seen dimension values for (metric, dimension) over a timeframe.
+// Populates the filter dropdown UI on the billing-usage dashboard.
+//
+// Querystring is a per-metric discriminated union so the `dimension` field is
+// constrained to the metric's whitelist at compile time; the controller's zod
+// schema enforces the same shape at runtime.
+export type GetBillingUsageTopDimensionValues = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/billing-usage/top-dimension-values';
+    Querystring: {
+        [M in UsageMetric]: {
+            env: string;
+            metric: M;
+            dimension: BreakdownDimensions[M];
+            from: string;
+            to: string;
+            // Number of values to return. Defaults to 10, server-capped.
+            limit?: string | undefined;
+        };
+    }[UsageMetric];
+    Success: {
+        data: {
+            values: string[];
+        };
+    };
+}>;
+
 export type GetBillingUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
-    Querystring: { env: string; from?: string | undefined; to?: string | undefined };
+    Querystring: {
+        env: string;
+        from?: string | undefined;
+        to?: string | undefined;
+        source?: 'clickhouse' | 'orb' | undefined;
+        // Subset of UsageMetric carried as repeated-key array
+        // (`?metrics=records&metrics=connections`). When set on the CH path,
+        // only those metrics are fanned out and populated in the response;
+        // omitted → all 7. Ignored on the Orb path for now (Orb call still
+        // returns everything it has).
+        metrics?: UsageMetric[] | undefined;
+        // Express qs bracket notation: `breakdown[<metric>]=<dimension>` →
+        // `breakdown: { records: 'connection_id', … }`. Per-metric dimension
+        // spec, typed via `BreakdownDimensions` so the (metric, dim) pairs
+        // are constrained at compile time; the same whitelist is enforced
+        // at runtime by the controller's zod schema.
+        breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined;
+        top?: string | undefined;
+        // Express qs bracket notation: `filter[<metric>]=<dim>:<value>` →
+        // `filter: { records: 'integration_id:hubspot', … }`. Server splits
+        // the string on the first ':' so values containing ':' stay intact.
+        // Mutually exclusive with `breakdown[<metric>]` on the same metric.
+        filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
+    };
     Success: {
         data: {
             customer: BillingCustomer;

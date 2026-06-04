@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Input } from './Input';
 import useSet from '../../../hooks/useSet';
-import { CopyButton } from '../button/CopyButton';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
 
 import type { KeyboardEvent } from 'react';
 
@@ -153,7 +153,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                             onKeyDown={handleEnter}
                             placeholder={scopes.length ? '' : 'Find the list of scopes in the documentation of the external API provider.'}
                             variant={'flat'}
-                            after={clipboard ? <CopyButton text={scopes.join(',')} textPrompt="Copy scopes" /> : undefined}
+                            after={clipboard ? <CopyButton text={scopes.join(',')} /> : undefined}
                         />
                     </div>
                     {error && <p className="text-red-600 text-sm mt-3">{error}</p>}

@@ -5,7 +5,6 @@ import { permissions } from '@nangohq/authz';
 
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
-import Spinner from '../../../components/ui/Spinner';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
@@ -14,6 +13,7 @@ import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
 import { SecretInput } from '@/components-v2/patterns/SecretInput';
 import { ButtonLink } from '@/components-v2/ui/Button';
 import { Label } from '@/components-v2/ui/Label';
+import { Spinner } from '@/components-v2/ui/Spinner';
 import { Switch } from '@/components-v2/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -79,7 +79,7 @@ export const DeprecatedSettings: React.FC = () => {
                             Enabled
                         </label>
                         <div className="flex gap-2 items-center">
-                            {loading && <Spinner size={1} />}
+                            {loading && <Spinner />}
                             <PermissionGate condition={canEditEnvironment}>
                                 {(allowed) => (
                                     <Switch

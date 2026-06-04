@@ -99,7 +99,7 @@ export function getAxiosConfiguration({
 
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
 
-    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+    axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
         if (proxyConfig.validateProxyRedirectUrl) {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             if (absolute) {
@@ -411,7 +411,12 @@ export function buildProxyHeaders({
             const hasCustomAuthHeader =
                 'proxy' in config.provider &&
                 'headers' in config.provider.proxy &&
-                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('${accessToken}'));
+                // ${credentials._cookies} = session-cookie auth (e.g. SAP B1); ${accessToken} = explicit bearer override
+                Object.entries(config.provider.proxy.headers).some(
+                    ([key, header]) =>
+                        (key.toLowerCase() === 'cookie' && typeof header === 'string' && header.includes('${credentials._cookies}')) ||
+                        (typeof header === 'string' && header.includes('${accessToken}'))
+                );
 
             if (!hasCustomAuthHeader) {
                 headers['authorization'] = `Bearer ${connection.credentials.token}`;

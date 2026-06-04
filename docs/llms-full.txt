@@ -6407,7 +6407,14 @@ By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nan
 
 Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
 
-You can also subscribe to release notifications in GitHub by watching **Releases** on the private [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository (your GitHub user or team must have read access). Each release includes the Docker tag, version metadata, and a generated changelog between managed releases.
+You can also subscribe to release notifications on the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+
+- **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
+- **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
+
+Each release includes the managed image tag, application version, source commit hash, release date, Docker pull reference, a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
+
+### Image tags
 
 Managed image tags follow this format:
 
@@ -6415,12 +6422,23 @@ Managed image tags follow this format:
 nangohq/nango:managed-{managed-release-version}-{application-version}-{commit-sha}
 ```
 
-* `managed-release-version`: Semantic versioning for the image lifecycle (major = breaking, minor/patch = features/fixes)
+* `managed-release-version`: Semantic version for the managed image lifecycle (major = breaking, minor/patch = features/fixes)
 * `application-version`: Semantic version of the Nango application baked into the image
+* `commit-sha`: Full Git commit hash of the released source
+
+For example, pull a release from Docker Hub with:
+
+```bash
+docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f555718d
+```
 
 Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
 
-You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/master/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release).
+### Versions and policy
+
+You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/main/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release). The in-repo [`CHANGELOG.md`](https://github.com/NangoHQ/managed-image-releases/blob/main/CHANGELOG.md) tracks release history.
+
+Each managed release maps to a specific source commit, and published image tags are never changed after release. Customers are encouraged to stay reasonably current with managed image releases.
 
 See the full [changelog](/updates/changelog) for details on each release.
 
@@ -6478,7 +6496,9 @@ Any SMTP server can be configured to be used by Nango for these email communicat
 
 ## Encryption key
 
-You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
+
+The records cache always requires this key. If you run sync functions that persist records, the persist and records services fail to store or retrieve records when `NANGO_ENCRYPTION_KEY` is not set—they do not fall back to plaintext.
 
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
@@ -6507,7 +6527,7 @@ For more details, see the [pricing page](https://nango.dev/pricing) or [schedule
 | MCP server | No | Yes |
 | Customize auth branding | No | Yes |
 | Role-based permissions | No | Yes |
-| SAML SSO | No | Yes |
+| SAML SSO | No | On the roadmap |
 | Support SLA | No | Yes |
 
 ### Server URL, callback URL, and custom domains
@@ -6638,23 +6658,23 @@ let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '
 
 ### Telemetry
 
-Telemetry on self-hosted instances is light by default. Nango tracks core actions at a high level and does not track sensitive information.
-
-You can disable telemetry with:
-
-```sh
-TELEMETRY=false
-```
+Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on described above.
 
 ### Logs
 
-Nango uses Elasticsearch to store execution logs and power the logs UI. To keep free self-hosted deployments lighter, this stack is optional.
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
 
 To enable logs:
 
-- Host an Elasticsearch cluster.
+- Host an Elasticsearch or OpenSearch cluster.
 - Set `NANGO_LOGS_ENABLED=true`.
-- Configure the relevant `NANGO_LOGS_ES_*` environment variables.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables (these apply to both providers).
+
+Nango uses Elasticsearch by default. To use OpenSearch instead, set:
+
+```sh
+NANGO_LOGS_PROVIDER=opensearch
+```
 
 Elasticsearch hosting options include:
 
@@ -14141,6 +14161,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `momentum-io` | Momentum.io | API_KEY | [docs](https://nango.dev/docs/integrations/all/momentum-io.md) | [connect](https://nango.dev/docs/integrations/all/momentum-io/connect.md) |  | productivity |
 | `monday` | Monday | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/monday.md) |  | [setup](https://nango.dev/docs/api-integrations/monday/how-to-register-your-own-monday-oauth-app.md) | productivity, ticketing |
 | `mural` | Mural | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/mural.md) |  |  | design |
+| `nable-ncentral` | N-able N-central | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/nable-ncentral.md) | [connect](https://nango.dev/docs/api-integrations/nable-ncentral/connect.md) |  | support |
 | `namely` | Namely | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/namely.md) | [connect](https://nango.dev/docs/integrations/all/namely/connect.md) |  | hr |
 | `namely-pat` | Namely (PAT) | API_KEY | [docs](https://nango.dev/docs/integrations/all/namely-pat.md) | [connect](https://nango.dev/docs/integrations/all/namely-pat/connect.md) |  | hr |
 | `nationbuilder` | NationBuilder | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/nationbuilder.md) |  |  | crm |
@@ -14503,4 +14524,11 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `zoominfo` | ZoomInfo | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zoominfo.md) | [connect](https://nango.dev/docs/integrations/all/zoominfo/connect.md) |  | crm, marketing |
 | `zorus` | Zorus | API_KEY | [docs](https://nango.dev/docs/api-integrations/zorus.md) | [connect](https://nango.dev/docs/api-integrations/zorus/connect.md) |  | other |
 | `zuora` | Zuora | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/zuora.md) | [connect](https://nango.dev/docs/integrations/all/zuora/connect.md) |  | erp |
+
+## Resources
+
+- [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
+- [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
+- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 

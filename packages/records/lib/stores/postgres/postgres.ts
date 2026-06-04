@@ -556,7 +556,7 @@ export class PostgresStore implements RecordsStore {
                                 r.external_id,
                                 r.data_hash,
                                 r.sync_id,
-                                r.sync_job_id,
+                                null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                 r.deleted_at ?? null,
                                 ...(hasUpdatedAt ? [r.updated_at ?? null] : [])
                             ]);
@@ -951,7 +951,7 @@ export class PostgresStore implements RecordsStore {
                                             json: trx.raw('NULL'),
                                             data_hash: r.data_hash,
                                             sync_id: r.sync_id,
-                                            sync_job_id: r.sync_job_id,
+                                            sync_job_id: null, // records.sync_job_id is no longer used and will be removed; records_seen owns the generation
                                             pruned_at: null, // clear pruned_at when record is updated
                                             updated_at: r.updated_at
                                         }))

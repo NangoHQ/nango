@@ -1,5 +1,5 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { Button } from '@/components/ui/button/Button';
+import { Button } from '@/components-v2/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -15,7 +15,7 @@ export const Default: Story = {
         <div className="bg-bg-black p-6 rounded-md">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="zombie" size="sm">
+                    <Button variant="ghost" size="sm">
                         Actions
                     </Button>
                 </DropdownMenuTrigger>

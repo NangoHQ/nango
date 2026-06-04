@@ -42,7 +42,7 @@ const paramsSchema = z
         environmentId: z.coerce.number().int().positive(),
         nangoConnectionId: z.coerce.number().int().positive(),
         syncId: z.string(),
-        syncJobId: z.coerce.number().int().positive()
+        syncJobId: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER)
     })
     .strict();
 
