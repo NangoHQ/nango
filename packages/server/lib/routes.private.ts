@@ -59,6 +59,8 @@ import { postPreBuiltDeploy } from './controllers/v1/flows/preBuilt/postDeploy.j
 import { putUpgradePreBuilt } from './controllers/v1/flows/preBuilt/putUpgrade.js';
 import { getGettingStarted } from './controllers/v1/gettingStarted/getGettingStarted.js';
 import { patchGettingStarted } from './controllers/v1/gettingStarted/patchGettingStarted.js';
+import { getIntegrationHealth } from './controllers/v1/health/getIntegrationHealth.js';
+import { getIntegrationTimeline } from './controllers/v1/health/getIntegrationTimeline.js';
 import { getIntegrations } from './controllers/v1/integrations/getIntegrations.js';
 import { postIntegration } from './controllers/v1/integrations/postIntegration.js';
 import { deleteIntegration } from './controllers/v1/integrations/providerConfigKey/deleteIntegration.js';
@@ -228,6 +230,12 @@ web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
 web.route('/connect-ui-settings').put(webAuth, can(p.canManageConnectUI), putConnectUISettings);
 
 // Integrations
+web.route('/health/integrations').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegrationHealth);
+web.route('/health/integrations/:integrationId/timeline').get(
+    webAuth,
+    can({ action: 'read', resource: 'integration', scopedBy: envScope }),
+    getIntegrationTimeline
+);
 web.route('/integrations').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegrations);
 web.route('/integrations').post(webAuth, can({ action: 'update', resource: 'integration', scopedBy: envScope }), postIntegration);
 web.route('/integrations/:providerConfigKey').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegration);

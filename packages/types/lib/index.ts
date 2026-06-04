@@ -105,3 +105,4 @@ export type * from './lambda/index.js';
 export type * from './authz/types.js';
 
 export type * from './pubsub/events.js';
+export type * from './health/db.js';

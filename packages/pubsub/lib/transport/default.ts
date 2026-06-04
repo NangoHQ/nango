@@ -63,6 +63,6 @@ export class DefaultTransport implements Transport {
     }
 
     subscribe<TSubject extends Event['subject']>(params: SubscribeProps<TSubject>): void {
-        return this.transport.subscribe(params);
+        return void this.transport.subscribe(params);
     }
 }

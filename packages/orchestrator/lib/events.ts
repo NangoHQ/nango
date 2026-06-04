@@ -225,6 +225,7 @@ export class TaskEventsHandler extends PgEventEmitter {
 
     constructor(db: knex.Knex) {
         super(db, { channel: 'nango_task_events' });
+        this.db = db;
 
         this.onCallbacks = {
             CREATED: (task: Task) => {
@@ -239,11 +240,13 @@ export class TaskEventsHandler extends PgEventEmitter {
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+                this.recordExecutionEvent(task, 'STARTED');
                 // STARTED events are not listen to, so we don't emit them
             },
             SUCCEEDED: (task: Task) => {
                 logger.info(`Task succeeded: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_SUCCEEDED);
+                this.recordExecutionEvent(task, 'SUCCESS');
                 const event = taskEvents.taskCompleted(task);
                 if (event) {
                     this.emit(event);
@@ -252,6 +255,7 @@ export class TaskEventsHandler extends PgEventEmitter {
             FAILED: (task: Task) => {
                 logger.error(`Task failed: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_FAILED);
+                this.recordExecutionEvent(task, 'FAILURE');
                 const event = taskEvents.taskCompleted(task);
                 if (event) {
                     this.emit(event);
@@ -274,5 +278,55 @@ export class TaskEventsHandler extends PgEventEmitter {
                 }
             }
         };
+    }
+
+    private db: knex.Knex;
+
+    private recordExecutionEvent(task: Task, status: 'STARTED' | 'SUCCESS' | 'FAILURE'): void {
+        const validated = validateTask(task);
+        if (validated.isErr()) return;
+
+        const val = validated.value;
+        const type = val.isSync() ? 'SYNC' : val.isAction() ? 'ACTION' : null;
+        if (!type || !('connection' in val)) return;
+
+        const connection = val.connection;
+        if (!connection) return;
+
+        // Calculate duration for terminal states
+        let duration_ms: number | undefined = undefined;
+        if (status === 'SUCCESS' || status === 'FAILURE') {
+            const start = task.lastStateTransitionAt;
+            const end = new Date();
+            duration_ms = Math.max(0, end.getTime() - start.getTime());
+        }
+
+        let integration_id = connection.provider_config_key;
+        if (val.isSync()) {
+            integration_id = val.syncName;
+        } else if (val.isAction()) {
+            integration_id = val.actionName;
+        }
+
+        const event = {
+            environment_id: connection.environment_id,
+            integration_id: integration_id,
+            connection_id: connection.connection_id,
+            provider: connection.provider_config_key,
+            type,
+            status,
+            retries: task.retryCount,
+            duration_ms,
+            // error info not fully available from task payload, wait we can extract it if it's failed from task.output?
+            error_type: status === 'FAILURE' ? 'UNKNOWN' : null,
+            error_message: status === 'FAILURE' ? (task.output ? JSON.stringify(task.output).slice(0, 1000) : null) : null
+        };
+
+        this.db
+            .from('execution_events')
+            .insert(event)
+            .catch((err: unknown) => {
+                logger.error('Failed to insert execution event:', err);
+            });
     }
 }
