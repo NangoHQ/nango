@@ -56,7 +56,8 @@ export const AppHeader: React.FC = () => {
                 {isDevToolsEnabled && themeSwitcher && (
                     <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
+                        className="size-8 px-0"
                         onClick={toggleDarkMode}
                         title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
                     >
