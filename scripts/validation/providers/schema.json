@@ -1,5 +1,69 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "providerFieldSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "title", "description"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["string"]
+                },
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "example": {
+                    "type": "string"
+                },
+                "pattern": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string",
+                    "enum": ["hostname", "uri", "uuid", "email"]
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "order": {
+                    "type": "number"
+                },
+                "secret": {
+                    "type": "boolean"
+                },
+                "prefix": {
+                    "type": "string"
+                },
+                "suffix": {
+                    "type": "string"
+                },
+                "optional": {
+                    "type": "boolean"
+                },
+                "doc_section": {
+                    "type": "string",
+                    "pattern": "^#[a-z0-9-]+$"
+                },
+                "automated": {
+                    "type": "boolean"
+                },
+                "default_value": {
+                    "type": "string"
+                },
+                "hidden": {
+                    "type": "boolean"
+                }
+            }
+        }
+    },
     "type": "object",
     "additionalProperties": false,
     "patternProperties": {
@@ -629,66 +693,7 @@
                     "additionalProperties": false,
                     "patternProperties": {
                         "^[a-zA-Z_.-]+$": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": ["type", "title", "description"],
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "enum": ["string"]
-                                },
-                                "title": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "example": {
-                                    "type": "string"
-                                },
-                                "pattern": {
-                                    "type": "string"
-                                },
-                                "format": {
-                                    "type": "string",
-                                    "enum": ["hostname", "uri", "uuid", "email"]
-                                },
-                                "enum": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "minItems": 1
-                                },
-                                "order": {
-                                    "type": "number"
-                                },
-                                "secret": {
-                                    "type": "boolean"
-                                },
-                                "prefix": {
-                                    "type": "string"
-                                },
-                                "suffix": {
-                                    "type": "string"
-                                },
-                                "optional": {
-                                    "type": "boolean"
-                                },
-                                "doc_section": {
-                                    "type": "string",
-                                    "pattern": "^#[a-z0-9-]+$"
-                                },
-                                "automated": {
-                                    "type": "boolean"
-                                },
-                                "default_value": {
-                                    "type": "string"
-                                },
-                                "hidden": {
-                                    "type": "boolean"
-                                }
-                            }
+                            "$ref": "#/definitions/providerFieldSchema"
                         }
                     }
                 },
@@ -697,66 +702,7 @@
                     "additionalProperties": false,
                     "patternProperties": {
                         "^[a-zA-Z_.-]+$": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": ["type", "title", "description"],
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "enum": ["string"]
-                                },
-                                "title": {
-                                    "type": "string"
-                                },
-                                "description": {
-                                    "type": "string"
-                                },
-                                "example": {
-                                    "type": "string"
-                                },
-                                "pattern": {
-                                    "type": "string"
-                                },
-                                "format": {
-                                    "type": "string",
-                                    "enum": ["hostname", "uri", "uuid", "email"]
-                                },
-                                "enum": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "minItems": 1
-                                },
-                                "order": {
-                                    "type": "number"
-                                },
-                                "secret": {
-                                    "type": "boolean"
-                                },
-                                "prefix": {
-                                    "type": "string"
-                                },
-                                "suffix": {
-                                    "type": "string"
-                                },
-                                "optional": {
-                                    "type": "boolean"
-                                },
-                                "doc_section": {
-                                    "type": "string",
-                                    "pattern": "^#[a-z0-9-]+$"
-                                },
-                                "automated": {
-                                    "type": "boolean"
-                                },
-                                "default_value": {
-                                    "type": "string"
-                                },
-                                "hidden": {
-                                    "type": "boolean"
-                                }
-                            }
+                            "$ref": "#/definitions/providerFieldSchema"
                         }
                     }
                 },
