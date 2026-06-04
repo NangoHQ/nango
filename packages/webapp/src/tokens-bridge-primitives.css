@@ -1,0 +1,63 @@
+/*
+ * Phase 2C — tokens-bridge-primitives.css (PoC, revertable)
+ *
+ * Bridges v2 primitive gray tokens and v1 legacy tokens to DS semantic variables.
+ * This is intentionally lossy — the same gray-N was used for text, backgrounds,
+ * and borders. The mapping picks the most common semantic use per shade.
+ * Per-component precision comes in Phase 3 (page-by-page migration).
+ *
+ * To revert: remove the @import in index.css.
+ * Does NOT cover Tailwind core colors (text-white, text-blue-400, etc.) —
+ * those require direct component edits (Phase 3).
+ */
+
+:root {
+    /* ── v2 Primitive grays ── */
+    --color-gray-50: var(--surface-panel);
+    --color-gray-75: var(--surface-panel-muted);
+    --color-gray-100: var(--surface-panel-inset);
+    --color-gray-150: var(--surface-panel-inset);
+    --color-gray-200: var(--surface-panel-inset);
+    --color-gray-250: var(--border-strong);
+    --color-gray-300: var(--border-strong);
+    --color-gray-400: var(--text-muted);
+    --color-gray-500: var(--text-disabled);
+    --color-gray-550: var(--text-muted);
+    --color-gray-600: var(--text-secondary);
+    --color-gray-650: var(--text-secondary);
+    --color-gray-700: var(--text-default);
+    --color-gray-750: var(--text-default);
+    --color-gray-800: var(--surface-raised);
+    --color-gray-825: var(--surface-raised);
+    --color-gray-850: var(--surface-raised);
+    --color-gray-875: var(--surface-panel-inset);
+    --color-gray-900: var(--text-strong);
+    --color-gray-950: var(--surface-panel);
+    --color-gray-1000: var(--surface-page);
+
+    /* ── v1 legacy tokens ── */
+    --color-active-gray: var(--surface-raised);
+    --color-hover-gray: var(--state-hover);
+    --color-row-hover: var(--state-hover);
+    --color-text-light-gray: var(--text-muted);
+    --color-pure-black: var(--surface-canvas);
+    --color-off-black: var(--surface-canvas);
+    --color-bg-black: var(--surface-canvas);
+    --color-border-gray: var(--border-default);
+    --color-bg-dark-blue: var(--status-info-bg);
+    --color-text-blue: var(--text-link);
+    --color-text-light-blue: var(--text-link);
+    --color-border-blue: var(--border-selected);
+
+    /* v1 grayscale scale */
+    --color-grayscale-100: var(--surface-panel-muted);
+    --color-grayscale-200: var(--surface-panel-inset);
+    --color-grayscale-300: var(--border-strong);
+    --color-grayscale-400: var(--text-muted);
+    --color-grayscale-500: var(--text-secondary);
+    --color-grayscale-600: var(--text-default);
+    --color-grayscale-700: var(--border-default);
+    --color-grayscale-800: var(--surface-raised);
+    --color-grayscale-900: var(--surface-panel);
+    --color-grayscale-1000: var(--surface-canvas);
+}
