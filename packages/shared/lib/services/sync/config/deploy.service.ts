@@ -336,6 +336,7 @@ async function compileDeployInfo({
     const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
     let file_location: string | null | undefined = previousJsFileLocation;
+    const uploads = [];
 
     if (typeof fileBody === 'object' && fileBody.ts) {
         const tsFile = fileBody.ts;
@@ -344,8 +345,7 @@ async function compileDeployInfo({
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
         if (tsChanged) {
-            void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
-            const [jsUpload] = await Promise.all([
+            uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
                     destinationPath: jsDestinationPath,
@@ -356,24 +356,30 @@ async function compileDeployInfo({
                     destinationPath: tsDestinationPath,
                     destinationLocalFileName: tsLocalFileName
                 })
-            ]);
-            file_location = jsUpload;
+            );
         }
     }
     // Legacy Path - Only JS is provided
     else {
         const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
         if (jsChanged) {
-            const jsUpload = await remoteFileService.upload({
-                content: jsFile,
-                destinationPath: jsDestinationPath,
-                destinationLocalFileName: jsLocalFileName
-            });
-            file_location = jsUpload;
+            void logCtx.info('Uploading new file for changed function', { fileName: `${syncName}-v${version}.js` });
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                })
+            );
         }
     }
 
-    const [file_location] = await Promise.all(uploads);
+    if (uploads.length > 0) {
+        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
+        [file_location] = await Promise.all(uploads);
+    } else {
+        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${version}.js` });
+    }
 
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
