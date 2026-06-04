@@ -1720,6 +1720,23 @@ describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
         expect(axiosConfig.url).toBe('https://api.example.com/users');
     });
 
+    it('does not duplicate the base when the absolute endpoint continues with a query string', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com?foo=1' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        const parsed = new URL(axiosConfig.url as string);
+        expect(parsed.host).toBe('api.example.com');
+        expect(parsed.searchParams.get('foo')).toBe('1');
+    });
+
     it('does not rewrite a different host that merely shares the base string prefix', () => {
         const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com.evil.com/x' });
         const axiosConfig = getAxiosConfiguration({
