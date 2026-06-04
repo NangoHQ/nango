@@ -22,7 +22,7 @@ const REMOTE_API_URLS: Record<string, string> = {
 // so all API calls are routed through Vite's proxy instead of going cross-origin.
 // The actual listening port is resolved at request time (after the server binds)
 // so Vite's automatic port increment is reflected correctly.
-function apiEnvProxy(apiUrl: string): Plugin {
+function apiEnvProxyPlugin(apiUrl: string): Plugin {
     return {
         name: 'api-env-proxy',
         configureServer(server) {
@@ -49,7 +49,7 @@ function apiProxyConfig() {
     const apiUrl = remoteUrl ?? `http://localhost:${LOCAL_API_PORT}`;
     const proxyOpts = remoteUrl ? { target: apiUrl, changeOrigin: true } : { target: apiUrl };
     return {
-        envPlugin: apiEnvProxy(apiUrl),
+        envPlugin: apiEnvProxyPlugin(apiUrl),
         proxy: {
             '/api': proxyOpts,
             // Extra routes needed for connection creation and auth flows.
