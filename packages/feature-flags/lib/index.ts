@@ -21,6 +21,7 @@ export async function getFeatureFlagsClient(): Promise<FeatureFlagsClient> {
     if (destroyPromise) await destroyPromise;
     if (clientPromise) return clientPromise;
     clientPromise = createClient();
+    clientPromise.catch((err: unknown) => logger.error('Error creating feature flags client', err));
     return clientPromise;
 }
 
@@ -30,6 +31,7 @@ export async function destroy(): Promise<void> {
     if (!promise) return;
     destroyPromise = (async () => {
         try {
+            logger.info('Destroying feature flags client');
             const client = await promise;
             await client.destroy();
         } finally {
@@ -61,5 +63,6 @@ async function buildProvider(): Promise<Provider> {
         logger.info('Unleash provider initialized');
         return provider;
     }
+    logger.info('Using noop feature-flags provider');
     return new NoopProvider();
 }

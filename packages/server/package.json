@@ -26,6 +26,7 @@
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",
         "@nangohq/email": "file:../email",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/fleet": "file:../fleet",
         "@nangohq/keystore": "file:../keystore",
         "@nangohq/kvstore": "file:../kvstore",
