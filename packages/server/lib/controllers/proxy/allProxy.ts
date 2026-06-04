@@ -149,8 +149,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             return;
         }
 
+        // A base-url-override (already checked above) takes precedence over the integration's custom.baseUrl, so only
+        // denylist-check custom.baseUrl when no override is supplied — otherwise a safe override would be wrongly rejected.
         const provider = getProvider(integration.provider);
-        const customBaseUrl = provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        const customBaseUrl = !baseUrlOverride && provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
         if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
             void logCtx.error('Integration base URL is not allowed by server configuration');
             await logCtx.failed();

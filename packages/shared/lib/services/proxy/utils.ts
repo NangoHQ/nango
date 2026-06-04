@@ -329,8 +329,10 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
     let normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
 
-    // If the endpoint is absolute and already starts with the effective base, strip it to avoid duplicating the base.
-    if (normalizedBase && !normalizedBase.includes('${') && normalizedEndpoint.startsWith(normalizedBase)) {
+    // If the endpoint is absolute and is the effective base (optionally followed by a path), strip the base to avoid
+    // duplicating it. Match only at a path boundary (exact, or base + '/') so a different host that merely shares the
+    // prefix (e.g. https://api.example.com.evil.com) isn't wrongly rewritten.
+    if (normalizedBase && !normalizedBase.includes('${') && (normalizedEndpoint === normalizedBase || normalizedEndpoint.startsWith(`${normalizedBase}/`))) {
         normalizedEndpoint = normalizedEndpoint.slice(normalizedBase.length).replace(/^\/+/, '');
     }
 

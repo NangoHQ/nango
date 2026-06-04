@@ -1719,4 +1719,20 @@ describe('deriveIntegrationConfigProxy (private-api-generic style)', () => {
 
         expect(axiosConfig.url).toBe('https://api.example.com/users');
     });
+
+    it('does not rewrite a different host that merely shares the base string prefix', () => {
+        const config = getDefaultProxy({ provider: genericProvider, endpoint: 'https://api.example.com.evil.com/x' });
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'k' } }),
+            integrationConfig: {
+                oauth_client_id: null,
+                oauth_client_secret: null,
+                custom: { keyPlacement: 'header', keyName: 'Authorization', valueTemplate: '${apiKey}', baseUrl: 'https://api.example.com' }
+            }
+        });
+
+        // The base is not stripped (no path boundary), so the request stays under the configured host, not evil.com.
+        expect(new URL(axiosConfig.url as string).host).toBe('api.example.com');
+    });
 });
