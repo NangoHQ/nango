@@ -9,6 +9,20 @@
         <link rel="manifest" href="/manifest.json" />
         <title>Nango</title>
 
+        <!-- Apply saved theme before first paint to avoid flash of wrong mode -->
+        <script>
+            (function () {
+                try {
+                    var s = localStorage.getItem('theme');
+                    var dark = s ? JSON.parse(s)?.state?.darkMode : true;
+                    if (dark === false) {
+                        document.documentElement.classList.remove('dark');
+                        document.documentElement.setAttribute('data-theme', 'light');
+                    }
+                } catch (e) {}
+            })();
+        </script>
+
         <meta name="nango-api-origin" content="" />
         <meta name="nango-env-hash" content="%VITE_HASH%" />
     </head>
