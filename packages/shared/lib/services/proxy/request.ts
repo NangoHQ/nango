@@ -108,10 +108,13 @@ export class ProxyRequest {
                     const byteTotals = { sent: 0, received: 0 };
 
                     if (this.onBytes) {
-                        this.axiosConfig.transport = createMeteringTransport((bytes) => {
-                            byteTotals.sent += bytes.sent;
-                            byteTotals.received += bytes.received;
-                        });
+                        this.axiosConfig.transport = createMeteringTransport(
+                            (bytes) => {
+                                byteTotals.sent += bytes.sent;
+                                byteTotals.received += bytes.received;
+                            },
+                            this.axiosConfig.beforeRedirect as (opts: Record<string, unknown>) => void
+                        );
                     }
 
                     const start = new Date();

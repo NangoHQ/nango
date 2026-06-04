@@ -15,7 +15,7 @@ import {
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 
-import type { InternalProxyConfiguration, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
@@ -1228,7 +1228,7 @@ describe('getAxiosConfiguration', () => {
         expect(axiosConfig.beforeRedirect).toBeDefined();
     });
 
-    it('should set beforeRedirect when forwardHeadersOnRedirect is false (to track metric)', () => {
+    it('should not forward headers when forwardHeadersOnRedirect is false', () => {
         const config = getDefaultProxy({
             provider: {
                 auth_mode: 'API_KEY',
@@ -1242,7 +1242,28 @@ describe('getAxiosConfiguration', () => {
             connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret' } })
         });
 
-        expect(axiosConfig.beforeRedirect).toBeDefined();
+        const redirectOptions: Record<string, any> = { headers: {} };
+        (axiosConfig.beforeRedirect as (opts: Record<string, any>) => void)(redirectOptions);
+        expect(redirectOptions['headers']['authorization']).toBeUndefined();
+    });
+
+    it('should forward headers when forwardHeadersOnRedirect is true', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'OAUTH2',
+                proxy: { base_url: 'https://api.example.com' }
+            },
+            forwardHeadersOnRedirect: true
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'OAUTH2', access_token: 'tok123', raw: {} } })
+        });
+
+        const redirectOptions: Record<string, any> = { headers: {} };
+        (axiosConfig.beforeRedirect as (opts: Record<string, any>) => void)(redirectOptions);
+        expect(redirectOptions['headers']['authorization']).toBe('Bearer tok123');
     });
 
     it('invokes validateProxyRedirectUrl with redirect href before other beforeRedirect work', () => {
@@ -1263,7 +1284,8 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails);
 
         expect(seen).toEqual(['https://redirect.example/next']);
     });
@@ -1285,7 +1307,8 @@ describe('getAxiosConfiguration', () => {
         });
 
         const redirectDetails = { headers: {} as Record<string, string>, statusCode: 302 };
-        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails)).toThrow(ProxyError);
+        const requestDetails = { headers: {} as Record<string, string>, url: 'https://api.example.com', method: 'GET' };
+        expect(() => axiosConfig.beforeRedirect!({ href: 'https://redirect.example/next', headers: {} }, redirectDetails, requestDetails)).toThrow(ProxyError);
     });
 });
 
@@ -1532,5 +1555,79 @@ describe('buildCanonicalParams', () => {
             const result = buildCanonicalParams('GET', undefined, 'q=a!b(c)d*e');
             expect(result).toBe('q=a%21b%28c%29d%2Ae');
         });
+    });
+});
+
+describe('buildProxyHeaders TWO_STEP', () => {
+    const twoStepBase = {
+        auth_mode: 'TWO_STEP' as const,
+        display_name: 'Test',
+        docs: '',
+        token_response: { token: 'token' }
+    };
+
+    const twoStepConnection = getTestConnection({
+        credentials: { type: 'TWO_STEP', token: 'sess-token-123' } as unknown as TwoStepCredentials
+    });
+
+    it('adds Bearer by default when no proxy headers are configured', () => {
+        const config = getDefaultProxy({ provider: { ...twoStepBase, proxy: { base_url: '' } } });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('adds Bearer when proxy headers do not contain ${accessToken} or cookie', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-custom': 'value' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('still adds Bearer when cookie header does not reference ${credentials._cookies}', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { cookie: 'static=value' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBe('Bearer sess-token-123');
+    });
+
+    it('suppresses Bearer when a proxy header contains ${accessToken}', () => {
+        const config = getDefaultProxy({
+            provider: { ...twoStepBase, proxy: { base_url: '', headers: { 'x-token': '${accessToken}' } } }
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection: twoStepConnection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['x-token']).toBe('sess-token-123');
+    });
+
+    it('suppresses Bearer when a cookie proxy header is present (session-cookie auth)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                ...twoStepBase,
+                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'TWO_STEP', token: 'sess-token-123', _cookies: 'B1SESSION=sess-token-123; ROUTEID=node1' } as unknown as TwoStepCredentials
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['cookie']).toBe('B1SESSION=sess-token-123; ROUTEID=node1');
+    });
+
+    it('cookie header resolves to only B1SESSION when ROUTEID is absent (single-node)', () => {
+        const config = getDefaultProxy({
+            provider: {
+                ...twoStepBase,
+                proxy: { base_url: '', headers: { cookie: '${credentials._cookies}' } }
+            }
+        });
+        const connection = getTestConnection({
+            credentials: { type: 'TWO_STEP', token: 'sess-token-123', _cookies: 'B1SESSION=sess-token-123' } as unknown as TwoStepCredentials
+        });
+        const headers = buildProxyHeaders({ config, url: 'https://example.com', connection });
+        expect(headers['authorization']).toBeUndefined();
+        expect(headers['cookie']).toBe('B1SESSION=sess-token-123');
     });
 });

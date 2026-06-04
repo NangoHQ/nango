@@ -1,8 +1,23 @@
+import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test.js';
 import { getTestConnection } from '../../seeders/connection.seeder.js';
+
+import type { InternalAxiosRequestConfig } from 'axios';
+
+function makeAxiosError(status: number): AxiosError {
+    const err = new AxiosError(`Request failed with status code ${status}`);
+    err.response = {
+        status,
+        data: {},
+        headers: {},
+        statusText: String(status),
+        config: {} as InternalAxiosRequestConfig
+    };
+    return err;
+}
 
 describe('call', () => {
     it('should make a single successful http call', async () => {
@@ -12,6 +27,13 @@ describe('call', () => {
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        vi.spyOn(proxy, 'httpCall').mockResolvedValue({
+            status: 200,
+            data: {},
+            headers: {},
+            config: {} as InternalAxiosRequestConfig,
+            statusText: 'OK'
         });
         const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
@@ -36,6 +58,7 @@ describe('call', () => {
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
+        vi.spyOn(proxy, 'httpCall').mockRejectedValue(makeAxiosError(400));
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,
@@ -69,6 +92,7 @@ describe('call', () => {
             getConnection,
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
+        vi.spyOn(proxy, 'httpCall').mockRejectedValue(makeAxiosError(500));
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,

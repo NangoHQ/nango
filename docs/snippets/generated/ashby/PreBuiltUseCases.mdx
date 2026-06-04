@@ -2,33 +2,74 @@
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `application-change-source` | Action to change source of application. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/application-change-source.ts) |
-| `application-change-stage` | Action to change stage of an application. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/application-change-stage.ts) |
-| `application-update` | Action to update an application. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/application-update.ts) |
-| `application-update-history` | Action to update history an application stage. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/application-update-history.ts) |
-| `create-application` | Action to consider a candidate for a job | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-application.ts) |
+| `change-application-source` | Update an application source. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/change-application-source.ts) |
+| `change-application-stage` | Move an application to another interview stage. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/change-application-stage.ts) |
+| `create-application` | Create an application in Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-application.ts) |
+| `get-application` | Retrieve a single application from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-application.ts) |
+| `list-applications` | List applications from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-applications.ts) |
+| `update-application` | Update an application in Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/update-application.ts) |
 
 ### Candidates
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-candidate` | Action to create a candidate. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-candidate.ts) |
-| `candidates` | Fetches a list of all candidates from your ashby account | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/candidates.ts) |
+| `create-candidate` | Create a candidate in Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-candidate.ts) |
+| `create-note` | Create a candidate note in Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-note.ts) |
+| `get-candidate` | Retrieve a single candidate from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-candidate.ts) |
+| `list-candidates` | List candidates from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-candidates.ts) |
+| `update-candidate` | Update a candidate in Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/update-candidate.ts) |
+
+### Departments
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-department` | Retrieve a single department from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-department.ts) |
+| `list-departments` | List departments from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-departments.ts) |
 
 ### Interviews
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `interview-stage` | List all interview stages for an interview plan in order. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/interview-stage.ts) |
+| `get-interview` | Retrieve a single interview from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-interview.ts) |
+| `list-interviews` | List interviews from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-interviews.ts) |
+
+### Job Postings
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-job-posting` | Retrieve a single job posting from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-job-posting.ts) |
+| `list-job-postings` | List job postings from Ashby | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-job-postings.ts) |
 
 ### Jobs
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `jobs` | Fetches a list of all jobs from your ashby account | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/jobs.ts) |
+| `get-job` | Retrieve a single job from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-job.ts) |
+| `list-jobs` | List jobs from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-jobs.ts) |
 
-### Notes
+### Sources
 
 | Function name | Description | Type | Source code |
 | - | - | - | - |
-| `create-note` | Action to create a note on a candidate. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/create-note.ts) |
+| `get-source` | Retrieve a single source from Ashby | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-source.ts) |
+| `list-sources` | List sources from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-sources.ts) |
+
+### Users
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `get-user` | Retrieve a single user from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/get-user.ts) |
+| `list-users` | List users from Ashby. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/actions/list-users.ts) |
+
+### Others
+
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `applications` | Sync applications from Ashby. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/applications.ts) |
+| `candidates` | Sync candidates from Ashby | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/candidates.ts) |
+| `departments` | Sync departments from Ashby | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/departments.ts) |
+| `interviews` | Sync interviews from Ashby. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/interviews.ts) |
+| `job-postings` | Sync job postings from Ashby. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/job-postings.ts) |
+| `jobs` | Sync jobs from Ashby | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/jobs.ts) |
+| `sources` | Sync sources from Ashby. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/sources.ts) |
+| `users` | Sync users from Ashby | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/ashby/syncs/users.ts) |

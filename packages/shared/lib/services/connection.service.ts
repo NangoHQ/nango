@@ -1492,6 +1492,11 @@ class ConnectionService {
                 responseData = parser.parse(response.data);
             }
 
+            const extractedHeaderValues: Record<string, string> = {};
+            if (provider.token_response_headers) {
+                Object.assign(extractedHeaderValues, extractResponseHeaderValues(response.headers, provider.token_response_headers));
+            }
+
             const stepResponses: any[] = [responseData];
             if (provider.additional_steps) {
                 for (let stepIndex = 1; stepIndex <= provider.additional_steps.length; stepIndex++) {
@@ -1561,6 +1566,16 @@ class ConnectionService {
                     }
 
                     stepResponses.push(stepResponse.data);
+                    if (provider.token_response_headers) {
+                        const stepValues = extractResponseHeaderValues(stepResponse.headers, provider.token_response_headers);
+                        for (const [key, value] of Object.entries(stepValues)) {
+                            if (key === '_cookies' && extractedHeaderValues['_cookies']) {
+                                extractedHeaderValues['_cookies'] = `${extractedHeaderValues['_cookies']}; ${value}`;
+                            } else {
+                                extractedHeaderValues[key] = value;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1577,8 +1592,16 @@ class ConnectionService {
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
+            const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
+
             for (const [key, value] of Object.entries(dynamicCredentials)) {
                 if (value !== undefined) {
+                    parsedCreds[key] = value;
+                }
+            }
+
+            for (const [key, value] of Object.entries(extractedHeaderValues)) {
+                if (!RESERVED_CRED_KEYS.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1959,6 +1982,42 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    const cookiePairs: string[] = [];
+
+    for (const headerName of entries) {
+        const normalized = headerName.toLowerCase();
+        const value = headers[normalized];
+        if (!value) {
+            continue;
+        }
+
+        if (normalized === 'set-cookie') {
+            const cookies = Array.isArray(value) ? value : [value];
+            for (const cookie of cookies) {
+                const [pair] = (cookie as string).split(';');
+                if (pair) {
+                    const eqIdx = pair.indexOf('=');
+                    if (eqIdx > 0) {
+                        const cookieName = pair.slice(0, eqIdx).trim();
+                        const cookieValue = pair.slice(eqIdx + 1).trim();
+                        result[cookieName] = cookieValue;
+                        cookiePairs.push(`${cookieName}=${cookieValue}`);
+                    }
+                }
+            }
+        } else {
+            result[headerName] = Array.isArray(value) ? (value[0] as string) : String(value);
+        }
+    }
+
+    if (cookiePairs.length > 0) {
+        result['_cookies'] = cookiePairs.join('; ');
+    }
+    return result;
 }
 
 export default new ConnectionService();

@@ -1,8 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { CopyButton } from '@/components-v2/CopyButton';
-import { SideInfo, SideInfoRow } from '@/components-v2/SideInfo';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { SideInfo, SideInfoRow } from '@/components-v2/ui/SideInfo';
 import { getDisplayName } from '@/pages/Integrations/utils';
 
 import type { ApiIntegration, Provider } from '@nangohq/types';

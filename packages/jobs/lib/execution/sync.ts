@@ -169,7 +169,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             sdkLogger = await environmentService.getSdkLogger(environment.id);
         }
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
         if (defaultSecret.isErr()) {
             throw defaultSecret.error;
         }
@@ -198,7 +198,7 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             syncConfig,
             debug: task.debug || false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(plan),
             startedAt,
             ...(lastSyncDate ? { lastSyncDate } : {}),
             endUser,

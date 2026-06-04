@@ -4,7 +4,7 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD, metrics } from '@nangohq/utils';
+import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
 import {
     connectionCopyWithParsedConnectionConfig,
@@ -97,18 +97,16 @@ export function getAxiosConfiguration({
         headers
     };
 
-    // TODO: change default to false after removing the metric below
-    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? true;
-    axiosConfig.beforeRedirect = (options: Record<string, any>) => {
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
+
+    axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
         if (proxyConfig.validateProxyRedirectUrl) {
             const absolute = absoluteUrlFromRedirectRequestOptions(options);
             if (absolute) {
                 proxyConfig.validateProxyRedirectUrl(absolute);
             }
         }
-        metrics.increment(metrics.Types.PROXY_REDIRECT, 1, { provider: proxyConfig.providerName });
         if (shouldForward) {
-            // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
                     options['headers'][key] = headers[key];
@@ -413,7 +411,12 @@ export function buildProxyHeaders({
             const hasCustomAuthHeader =
                 'proxy' in config.provider &&
                 'headers' in config.provider.proxy &&
-                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('${accessToken}'));
+                // ${credentials._cookies} = session-cookie auth (e.g. SAP B1); ${accessToken} = explicit bearer override
+                Object.entries(config.provider.proxy.headers).some(
+                    ([key, header]) =>
+                        (key.toLowerCase() === 'cookie' && typeof header === 'string' && header.includes('${credentials._cookies}')) ||
+                        (typeof header === 'string' && header.includes('${accessToken}'))
+                );
 
             if (!hasCustomAuthHeader) {
                 headers['authorization'] = `Bearer ${connection.credentials.token}`;

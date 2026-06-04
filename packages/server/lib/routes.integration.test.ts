@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { sandboxApiKeyService, seeders } from '@nangohq/shared';
+import { sandboxApiKeyService } from '@nangohq/sandbox';
+import { seeders } from '@nangohq/shared';
 
 import { isError, runServer } from './utils/tests.js';
 

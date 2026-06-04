@@ -4,12 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockListen = vi.fn();
 const mockStop = vi.fn().mockResolvedValue(undefined);
-vi.mock('../events/sqs.listener.js', () => ({
-    SqsEventListener: vi.fn().mockImplementation(() => ({
-        listen: mockListen,
-        stop: mockStop
-    }))
-}));
+vi.mock('../events/sqs.listener.js', () => {
+    class MockSqsEventListener {
+        listen = mockListen;
+        stop = mockStop;
+    }
+
+    return {
+        SqsEventListener: vi.fn(MockSqsEventListener)
+    };
+});
 
 vi.mock('../execution/operations/handler.js', () => ({
     handle: vi.fn().mockResolvedValue(undefined)

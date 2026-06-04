@@ -3,11 +3,11 @@ import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes } from '../invoicingConstants';
 import { OptionalTag } from './InvoicingDetailsForm';
-import { Button } from '@/components-v2/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/card';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
-import { Input } from '@/components-v2/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/select';
+import { Button } from '@/components-v2/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/Card';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
+import { Input } from '@/components-v2/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
