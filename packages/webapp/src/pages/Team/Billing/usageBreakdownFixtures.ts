@@ -138,12 +138,60 @@ function dayUsage(day: Date, quantity: number): { timeframeStart: Date; timefram
     return { timeframeStart: day, timeframeEnd: next, quantity };
 }
 
+// Dimensions whose real cardinality can be large in production. We pad them with
+// synthetic extras so fixtures always show a long tail (and a dominant 'rest')
+// even on a sparse env like dev — real names stay in the visible top-N.
+const LONG_TAIL_DIMENSIONS: readonly AnyBreakdownDimension[] = ['integration_id', 'connection_id', 'model', 'function_name'];
+const FIXTURE_MIN_VALUES = 48;
+
+function pseudoUuid(i: number): string {
+    const seg = (k: string, n: number) =>
+        Math.floor(seeded(`${k}:${i}`) * 0xffffffff)
+            .toString(16)
+            .padStart(8, '0')
+            .slice(0, n);
+    return `${seg('a', 8)}-${seg('b', 4)}-${seg('c', 4)}-${seg('d', 4)}-${seg('e', 8)}${seg('f', 4)}`;
+}
+
+function syntheticPadValue(dimension: AnyBreakdownDimension, i: number): string {
+    switch (dimension) {
+        case 'connection_id':
+            return pseudoUuid(i);
+        case 'integration_id':
+            return `vendor-${i + 1}`;
+        case 'model':
+            return `Model${i + 1}`;
+        case 'function_name':
+            return `function${i + 1}`;
+        default:
+            return `value-${i + 1}`;
+    }
+}
+
+// Keep the real values (shown in the visible top-N) and pad the tail so there's
+// always a meaningful 'rest'. Low-cardinality dimensions are left untouched.
+function padValues(dimension: AnyBreakdownDimension, values: string[]): string[] {
+    if (!LONG_TAIL_DIMENSIONS.includes(dimension) || values.length >= FIXTURE_MIN_VALUES) {
+        return values;
+    }
+    const padded = [...values];
+    let i = 0;
+    while (padded.length < FIXTURE_MIN_VALUES) {
+        const v = syntheticPadValue(dimension, i);
+        if (!padded.includes(v)) {
+            padded.push(v);
+        }
+        i++;
+    }
+    return padded;
+}
+
 /**
- * Synthesize a breakdown for one metric: a Zipf-ish split of the (real or
- * default) total across the candidate values, top-N kept and the long tail
- * collapsed into a 'rest' bucket, each with a daily series. Periodic metrics get
- * a bursty per-day series that sums to the share; cumulative metrics get a
- * ramp-then-plateau series so the stacked areas build up to the total.
+ * Synthesize a breakdown for one metric using a large made-up magnitude (so the
+ * preview shows "much more data" regardless of the real, often-tiny total): the
+ * top-N get a gentle decay so each is clearly non-zero, and the long tail is
+ * reserved as a single 'rest' bucket. Periodic metrics get a bursty per-day
+ * series; cumulative metrics ramp-then-plateau so stacked areas build to the total.
  */
 export function buildFixtureBreakdownEntries(opts: {
     metric: UsageMetric;
@@ -152,20 +200,26 @@ export function buildFixtureBreakdownEntries(opts: {
     timeframe: { start: string; end: string };
     top: number;
     viewMode: 'cumulative' | 'periodic';
-    total?: number | undefined;
 }): BillingUsageMetric[] {
-    const { metric, dimension, values, timeframe, top, viewMode } = opts;
-    if (values.length === 0) {
+    const { metric, dimension, timeframe, top, viewMode } = opts;
+    const padded = padValues(dimension, opts.values);
+    if (padded.length === 0) {
         return [];
     }
 
-    const total = opts.total && opts.total > 0 ? opts.total : DEFAULT_TOTALS[metric];
+    // Fixtures use a large made-up magnitude (not the real, often-tiny base total)
+    // so the preview shows "much more data". A gentle decay across the top-N keeps
+    // every visible series clearly non-zero; the long tail is reserved as 'rest'.
+    const total = DEFAULT_TOTALS[metric];
     const days = daysInTimeframe(timeframe);
 
-    const ranked = values.map((v, i) => ({ v, w: 1 / Math.pow(1 + i + seeded(`${dimension}:${v}`), 1.1) })).sort((a, b) => b.w - a.w);
-    const totalWeight = ranked.reduce((s, r) => s + r.w, 0) || 1;
-    const topItems = ranked.slice(0, top);
-    const restItems = ranked.slice(top);
+    const topVals = padded.slice(0, top);
+    const restCount = padded.length - topVals.length;
+
+    const REST_FRACTION = restCount > 0 ? 0.35 : 0;
+    const topBudget = total * (1 - REST_FRACTION);
+    const topWeights = topVals.map((_, i) => 1 / Math.pow(i + 1, 0.6)); // gentle so the smallest top-N is still visible
+    const topWeightSum = topWeights.reduce((s, w) => s + w, 0) || 1;
 
     const makeUsage = (value: string, share: number) => {
         if (viewMode === 'cumulative') {
@@ -181,8 +235,8 @@ export function buildFixtureBreakdownEntries(opts: {
         return days.map((d, i) => dayUsage(d, Math.round((share * weights[i]) / wsum)));
     };
 
-    const entries: BillingUsageMetric[] = topItems.map(({ v, w }) => {
-        const share = (total * w) / totalWeight;
+    const entries: BillingUsageMetric[] = topVals.map((v, i) => {
+        const share = (topBudget * topWeights[i]) / topWeightSum;
         return {
             externalId: `fixture:${dimension}:${v}`,
             group: { key: dimension, value: v },
@@ -192,9 +246,8 @@ export function buildFixtureBreakdownEntries(opts: {
         };
     });
 
-    if (restItems.length > 0) {
-        const restWeight = restItems.reduce((s, r) => s + r.w, 0);
-        const restShare = (total * restWeight) / totalWeight;
+    if (restCount > 0) {
+        const restShare = total * REST_FRACTION;
         entries.push({
             externalId: `fixture:${dimension}:rest`,
             group: { key: dimension, value: 'rest' },

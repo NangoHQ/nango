@@ -1,4 +1,4 @@
-import { Info, Loader2 } from 'lucide-react';
+import { Check, Info, Loader2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
@@ -42,6 +42,8 @@ interface ChartCardProps {
     breakdownSeries?: ChartSeries[];
     breakdownLoading?: boolean;
     breakdownError?: boolean;
+    /** Overrides the headline number (e.g. fixtures show their invented total, not the real base total). */
+    totalOverride?: number;
 }
 
 function usageToDateMap(usage: { timeframeStart: string | Date; quantity: number }[]): Map<string, number> {
@@ -75,13 +77,24 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     notice,
     breakdownSeries,
     breakdownLoading,
-    breakdownError
+    breakdownError,
+    totalOverride
 }) => {
     const isBreakdown = breakdownSeries !== undefined;
 
-    // Legend toggle state (breakdown mode only), keyed by safe series key.
+    // Legend interaction (breakdown mode), keyed by safe series key:
+    // - `isolated`: clicking a label isolates that series (only it shown); clicking it again shows all.
+    // - `hidden`: individually hidden series (via the ✕ revealed when hovering the swatch).
     const [hidden, setHidden] = useState<Set<string>>(new Set());
-    const toggleSeries = (key: string) =>
+    const [isolated, setIsolated] = useState<string | null>(null);
+
+    // A series is hidden in the chart when another series is isolated, or it's individually hidden.
+    const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
+
+    const toggleIsolate = (key: string) => setIsolated((prev) => (prev === key ? null : key));
+    // Swatch ✕ toggles a series off/on. Clears any isolation so the toggle takes visible effect.
+    const toggleHidden = (key: string) => {
+        setIsolated(null);
         setHidden((prev) => {
             const next = new Set(prev);
             if (next.has(key)) {
@@ -91,6 +104,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
             }
             return next;
         });
+    };
 
     // Headline total + single-series chart are always derived from the base metric.
     const baseChartData = useMemo(() => {
@@ -155,11 +169,11 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                       strokeWidth={1}
                       type="basis"
                       dot={false}
-                      hide={hidden.has(s.key)}
+                      hide={isSeriesHidden(s.key)}
                       isAnimationActive={false}
                   />
               ) : (
-                  <Bar key={s.key} dataKey={s.key} stackId="usage" fill={s.color} hide={hidden.has(s.key)} isAnimationActive={false} />
+                  <Bar key={s.key} dataKey={s.key} stackId="usage" fill={s.color} hide={isSeriesHidden(s.key)} isAnimationActive={false} />
               )
           )
         : isCumulative
@@ -169,7 +183,12 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // What occupies the chart body: a per-panel breakdown spinner/error, the empty state, or the chart.
     const showBreakdownSpinner = isBreakdown && breakdownLoading;
     const showBreakdownError = isBreakdown && !breakdownLoading && breakdownError;
-    const showChart = !isEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || (breakdownSeries?.length ?? 0) > 0);
+    const hasBreakdownSeries = isBreakdown && (breakdownSeries?.length ?? 0) > 0;
+    // A breakdown with series renders even when the base metric is empty (e.g. fixtures on a zero-usage metric).
+    const effectiveEmpty = isEmpty && !hasBreakdownSeries;
+    // Headline number: an explicit override (fixtures) wins, otherwise the real base total when present.
+    const headlineTotal = totalOverride ?? (isEmpty ? undefined : data?.total);
+    const showChart = !effectiveEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || hasBreakdownSeries);
 
     return (
         <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
@@ -188,9 +207,9 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     </InfoTooltip>
                                 )}
                             </div>
-                            {!isEmpty && (
+                            {headlineTotal !== undefined && (
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>
+                                    <span className="text-text-secondary text-body-medium-regular">{formatQuantity(headlineTotal)}</span>
                                     {isCumulative && <span className="text-text-tertiary text-body-small-regular">monthly average</span>}
                                 </div>
                             )}
@@ -246,26 +265,47 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                         </ChartContainer>
 
                         {breakdownSeries && breakdownSeries.length > 0 && (
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 pt-3 max-h-16 overflow-y-auto flex-shrink-0">
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-x-3 gap-y-1.5 pt-3 max-h-[88px] overflow-y-auto flex-shrink-0 text-xs">
                                 {breakdownSeries.map((s) => {
-                                    const isHidden = hidden.has(s.key);
+                                    const dimmed = isSeriesHidden(s.key);
                                     return (
-                                        <button
-                                            key={s.key}
-                                            type="button"
-                                            onClick={() => toggleSeries(s.key)}
-                                            className={cn(
-                                                'flex items-center gap-1.5 text-body-small-regular',
-                                                isHidden ? 'text-text-tertiary' : 'text-text-secondary'
-                                            )}
-                                            title={s.label}
-                                        >
-                                            <span
-                                                className="h-2 w-2 shrink-0 rounded-[2px]"
-                                                style={{ backgroundColor: s.color, opacity: isHidden ? 0.3 : 1 }}
-                                            />
-                                            <span className={cn('max-w-[140px] truncate', isHidden && 'line-through')}>{s.label}</span>
-                                        </button>
+                                        <div key={s.key} className="flex min-w-0 items-center gap-1.5">
+                                            {/* Hover the swatch to reveal an ✕; click it to toggle this series off/on. */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleHidden(s.key)}
+                                                className="group/swatch relative flex size-4 shrink-0 items-center justify-center"
+                                                aria-label={`Toggle ${s.label}`}
+                                                title={`Toggle ${s.label}`}
+                                            >
+                                                <span
+                                                    className={cn(
+                                                        'block h-2.5 w-2.5 rounded-[2px] transition-opacity group-hover/swatch:opacity-0',
+                                                        dimmed ? 'opacity-30' : 'opacity-100'
+                                                    )}
+                                                    style={{ backgroundColor: s.color }}
+                                                />
+                                                {hidden.has(s.key) ? (
+                                                    <Check className="absolute size-3.5 text-text-secondary opacity-0 transition-opacity group-hover/swatch:opacity-100" />
+                                                ) : (
+                                                    <X className="absolute size-3.5 text-text-secondary opacity-0 transition-opacity group-hover/swatch:opacity-100" />
+                                                )}
+                                            </button>
+                                            {/* Clicking the label isolates this series; clicking again shows all. */}
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleIsolate(s.key)}
+                                                className={cn(
+                                                    'min-w-0 truncate transition-colors',
+                                                    dimmed
+                                                        ? 'text-text-tertiary line-through hover:text-text-secondary'
+                                                        : 'text-text-secondary hover:text-text-primary'
+                                                )}
+                                                title={s.label}
+                                            >
+                                                {s.label}
+                                            </button>
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -287,7 +327,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                     </div>
                 )}
 
-                {isEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError && (
+                {effectiveEmpty && !isLoading && !showBreakdownSpinner && !showBreakdownError && (
                     <div className="flex flex-col items-center justify-center flex-1">
                         <span className="text-text-secondary text-body-medium-regular">No data</span>
                     </div>
