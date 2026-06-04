@@ -5,6 +5,10 @@ After running the initial `npm install` or `npm ci`, run `npm run prepare` to in
 
 Run `npm run ts-build` before autofixing lint errors using npm run lint:fix. Fresh worktrees don't have `dist/` (gitignored), so workspace packages like `@nangohq/types` can't resolve, causing false ESLint errors and broken type-checking.
 
+## Running Nango locally
+
+For full local dev setup (Docker, service URLs, auth flows, troubleshooting), use the `running-and-testing-locally` skill.
+
 ## Running the webapp dev server
 
 ### Multiple worktrees (local backend)
