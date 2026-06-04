@@ -159,7 +159,7 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
             <div className="mt-7">
                 <ChartContainer config={chartConfig} className="h-[190px] w-full">
                     <BarChart data={histogram} syncId={'anyId'}>
-                        <CartesianGrid vertical={false} stroke="#323439" />
+                        <CartesianGrid vertical={false} stroke="var(--border-default)" />
                         <XAxis
                             dataKey="date"
                             type="category"
