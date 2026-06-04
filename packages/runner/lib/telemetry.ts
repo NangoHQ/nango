@@ -13,9 +13,9 @@ export interface TelemetryRecorder {
 }
 
 const telemetryGrouping: Grouping<RunnerTelemetry> = {
-    groupingKey: (event) => `${event.type}:${event.integrationId}:${event.connectionId}:${event.syncId ?? ''}`,
+    groupingKey: (event) => `${event.type}:${event.callsite}:${event.integrationId}:${event.connectionId}:${event.syncId ?? ''}`,
     aggregate: (accumulated, event) => {
-        if (accumulated.type !== event.type) {
+        if (accumulated.type !== event.type || accumulated.callsite !== event.callsite) {
             return event; // defensive check (shouldn't happen): not the same type, cannot aggregate
         }
         const _acc = accumulated; // To satisfy ts compiler that b has the same type as a
@@ -24,6 +24,7 @@ const telemetryGrouping: Grouping<RunnerTelemetry> = {
             case 'data_transfer':
                 return {
                     type: event.type,
+                    callsite: event.callsite,
                     connectionId: event.connectionId,
                     integrationId: event.integrationId,
                     syncId: event.syncId,

@@ -1,0 +1,22 @@
+name: Cache Warmup
+
+on:
+    push:
+        branches:
+            - master
+
+concurrency:
+    group: cache-warmup
+    cancel-in-progress: true
+
+jobs:
+    warm-npm-cache:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: ./.github/actions/setup-node
+
+            - run: npm ci

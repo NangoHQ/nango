@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useState } from 'react';
 import { Input } from './Input';
 import { cn } from '../../../utils/utils';
 import { Button } from '../button/Button';
-import { CopyButton } from '../button/CopyButton';
+import { CopyButton } from '@/components-v2/ui/CopyButton';
 
 import type { TextareaHTMLAttributes } from 'react';
 

@@ -34,7 +34,7 @@
         "@nangohq/types": "file:../types",
         "express": "5.1.0",
         "ms": "3.0.0-canary.1",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     },
     "files": [
         "dist/**/*"

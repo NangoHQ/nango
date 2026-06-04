@@ -60,6 +60,12 @@ export class CircuitBreaker {
         return this.state === 'unhealthy';
     }
 
+    guard(): void {
+        if (this.isUnhealthy()) {
+            throw new Error('Logs storage circuit breaker is unhealthy - failing fast');
+        }
+    }
+
     destroy() {
         if (this.timer) {
             clearTimeout(this.timer);

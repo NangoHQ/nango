@@ -369,5 +369,179 @@ describe(`GET ${route}`, () => {
             expect(rollup).toBeDefined();
             expect(rollup!.group!.value).toBe('rest');
         });
+
+        it('filter[proxy]=success:true — top-level series narrows to the filtered subset', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['proxy'],
+                    filter: { proxy: 'success:true' }
+                } as any
+            });
+            isSuccess(res.json);
+            const proxy = res.json.data.usage.proxy;
+            // Fixture: proxy success=true (10 day0 + 8 day1) = 18; success=false (5 day0) = 5.
+            // Filtered to success=true → total 18.
+            expect(proxy.total).toBe(18);
+            expect(proxy.breakdown).toBeUndefined();
+        });
+
+        it('filter[records]=integration_id:hubspot — AVG running-avg narrows to one integration', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    filter: { records: 'integration_id:hubspot' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            // Filtered series should have a defined total greater than zero
+            // (hubspot is the dominant integration in the fixture) and no
+            // breakdown array (filter alone, no breakdown).
+            expect(records.total).toBeGreaterThan(0);
+            expect(records.breakdown).toBeUndefined();
+        });
+
+        it('empty AVG filter returns a zero-valued cumulative metric (not the periodic fallback)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    filter: { records: 'integration_id:does-not-exist' }
+                } as any
+            });
+            isSuccess(res.json);
+            const records = res.json.data.usage.records;
+            expect(records.total).toBe(0);
+            expect(records.usage).toEqual([]);
+            // AVG metric → cumulative view_mode even when empty; the
+            // downstream formatter's generic fallback is 'periodic' which
+            // would be wrong here.
+            expect(records.view_mode).toBe('cumulative');
+            expect(records.externalId).toBe('records');
+        });
+
+        it('rejects filter + breakdown on the same metric (mutually exclusive)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['records'],
+                    breakdown: { records: 'integration_id' },
+                    filter: { records: 'integration_id:hubspot' }
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('rejects an unknown filter dimension', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'model:abc' } // `model` is not a proxy dim
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('rejects a non-integer value for an Int64 dim (environment_id)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'environment_id:not-a-number' }
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('rejects a non-boolean value for a Bool dim (success)', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'success:maybe' }
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('rejects a filter value with no dimension prefix', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    filter: { proxy: 'just-a-value' } // no colon
+                } as any
+            });
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error.code).toBe('invalid_query_params');
+        });
+
+        it('preserves values containing ":" — splits on the FIRST colon only', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    source: 'clickhouse',
+                    metrics: ['proxy'],
+                    // No row matches 'http://foo:bar' but the validator must accept it.
+                    filter: { proxy: 'connection_id:http://foo:bar' }
+                } as any
+            });
+            isSuccess(res.json);
+            const proxy = res.json.data.usage.proxy;
+            expect(proxy.total).toBe(0);
+            expect(proxy.usage).toEqual([]);
+        });
     });
 });

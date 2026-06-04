@@ -355,6 +355,182 @@ describe('Clickhouse', () => {
                 });
             });
         });
+
+        describe('filter', () => {
+            it('getDailyCounter narrows totals to the filtered dim value', async () => {
+                // proxy fixture: success=true → 22 (10+11+1), success=false → 12.
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'success', value: 'true' }
+                });
+                const series = res.unwrap().series;
+                expect(series).toHaveLength(1);
+                const total = (series[0] as { days: { value: number }[] }).days.reduce((s, d) => s + d.value, 0);
+                expect(total).toBe(22);
+            });
+
+            it('getDailySumAndBatches narrows BOTH sum and batches to the filtered dim value', async () => {
+                // records fixture by integration_id:
+                //   a: day0 sum=1000+1100=2100, day1 sum=1100; b: day0=500, day1=500.
+                // Filtering to a should expose only a's daily sums.
+                const res = await clickhouse.getDailySumAndBatches({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'integration_id', value: 'a' }
+                });
+                const series = res.unwrap().series;
+                expect(series).toHaveLength(1);
+                const days = (series[0] as { days: { sum: number; batches: number }[] }).days;
+                const sums = days.map((d) => d.sum).sort((x, y) => x - y);
+                expect(sums).toEqual([1100, 2100]);
+            });
+
+            it('returns an empty series for a filter value with no matching rows', async () => {
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'connection_id', value: 'never-existed' }
+                });
+                expect(res.unwrap().series).toEqual([]);
+            });
+
+            it("user-supplied filter values can't break SQL — value with `'` is passed via query_params", async () => {
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    // Single quote would break an interpolated literal; parameterized binding keeps us safe.
+                    filter: { dimension: 'connection_id', value: "robert'); drop table users;--" }
+                });
+                expect(res.isOk()).toBe(true);
+                expect(res.unwrap().series).toEqual([]);
+            });
+
+            it('rejects a filter dimension not in the (metric, dim) whitelist', async () => {
+                const res = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'model' as any, value: 'anything' }
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
+            it('binds non-string dim columns with the right CH type (environment_id: Int64)', async () => {
+                // Pre-fix: `WHERE environment_id = {p:String}` errors at CH
+                // because String doesn't auto-coerce to Int64. After: the
+                // parameter is bound as `{p:Int64}` so CH parses the value
+                // once, the comparison stays native, and any column index
+                // applies.
+                const ok = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'environment_id', value: '999' } // valid Int64, no rows
+                });
+                expect(ok.isOk()).toBe(true);
+                expect(ok.unwrap().series).toEqual([]);
+
+                // Non-numeric value for an Int64 dim fails at CH parameter
+                // binding — surfaces an explicit error instead of silently
+                // returning nothing.
+                const bad = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'none',
+                    timeframe: { start, end },
+                    filter: { dimension: 'environment_id', value: 'not-a-number' }
+                });
+                expect(bad.isErr()).toBe(true);
+            });
+        });
+
+        describe('getTopDimensionValues', () => {
+            it('returns top dimension values ordered by SUM(value) DESC', async () => {
+                // records fixture: integrationId=a → 1000+1100+1100=3200; b → 500+500=1000.
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    values: ['a', 'b']
+                });
+            });
+
+            it('honours limit (clamped to TOP_N_BREAKDOWN_CAP upstream)', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 1
+                });
+                expect(res.unwrap().values).toEqual(['a']);
+            });
+
+            it('coerces booleans to strings (success dim)', async () => {
+                // proxy fixture: success=true 22 events, success=false 12 events.
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'proxy',
+                    dimension: 'success',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                const values = res.unwrap().values;
+                expect(values).toEqual(['true', 'false']);
+            });
+
+            it('returns Err on (metric, dimension) pair not in the whitelist', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    // `connections` does not expose `model` as a breakdown dim.
+                    metric: 'connections',
+                    dimension: 'model' as any,
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
+            it("returns Err when dimension is 'none' (would emit broken SQL)", async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId,
+                    metric: 'records',
+                    dimension: 'none' as any,
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.isErr()).toBe(true);
+            });
+
+            it('returns an empty list when no events match the timeframe', async () => {
+                const res = await clickhouse.getTopDimensionValues({
+                    accountId: 999_999,
+                    metric: 'records',
+                    dimension: 'integration_id',
+                    timeframe: { start, end },
+                    limit: 10
+                });
+                expect(res.unwrap().values).toEqual([]);
+            });
+        });
     });
 
     // A dim that has events on day 0 but none on day 1 must still appear on

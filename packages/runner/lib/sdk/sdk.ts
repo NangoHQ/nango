@@ -1,5 +1,5 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
     MAX_LOG_PAYLOAD,
@@ -20,7 +20,7 @@ import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
 import type { TelemetryRecorder } from '../telemetry.js';
-import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type {
     ApiPublicConnectionFull,
     Checkpoint,
@@ -101,6 +101,21 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         });
     }
 
+    public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        this.throwIfAbortedOrKilled();
+        return executeUncontrolledFetch(options, ({ bytesSent, bytesReceived }) => {
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'uncontrolled_fetch',
+                connectionId: this.connectionId,
+                integrationId: this.providerConfigKey,
+                syncId: this.syncId,
+                bytesSent,
+                bytesReceived
+            });
+        });
+    }
+
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         this.throwIfAbortedOrKilled();
 
@@ -158,6 +173,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
             onBytes: ({ sent, received }) => {
                 this.telemetryRecorder?.record({
                     type: 'data_transfer',
+                    callsite: 'proxy',
                     bytesSent: sent,
                     bytesReceived: received,
                     integrationId: providerConfigKey ?? this.providerConfigKey,
@@ -428,6 +444,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     startSync = NangoActionRunner['prototype']['startSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
+    uncontrolledFetch = NangoActionRunner['prototype']['uncontrolledFetch'];
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         this.throwIfAbortedOrKilled();

@@ -59,6 +59,33 @@ export type GetUsage = Endpoint<{
     };
 }>;
 
+// Top-N seen dimension values for (metric, dimension) over a timeframe.
+// Populates the filter dropdown UI on the billing-usage dashboard.
+//
+// Querystring is a per-metric discriminated union so the `dimension` field is
+// constrained to the metric's whitelist at compile time; the controller's zod
+// schema enforces the same shape at runtime.
+export type GetBillingUsageTopDimensionValues = Endpoint<{
+    Method: 'GET';
+    Path: '/api/v1/plans/billing-usage/top-dimension-values';
+    Querystring: {
+        [M in UsageMetric]: {
+            env: string;
+            metric: M;
+            dimension: BreakdownDimensions[M];
+            from: string;
+            to: string;
+            // Number of values to return. Defaults to 10, server-capped.
+            limit?: string | undefined;
+        };
+    }[UsageMetric];
+    Success: {
+        data: {
+            values: string[];
+        };
+    };
+}>;
+
 export type GetBillingUsage = Endpoint<{
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
@@ -80,6 +107,11 @@ export type GetBillingUsage = Endpoint<{
         // at runtime by the controller's zod schema.
         breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined;
         top?: string | undefined;
+        // Express qs bracket notation: `filter[<metric>]=<dim>:<value>` →
+        // `filter: { records: 'integration_id:hubspot', … }`. Server splits
+        // the string on the first ':' so values containing ':' stay intact.
+        // Mutually exclusive with `breakdown[<metric>]` on the same metric.
+        filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
     };
     Success: {
         data: {
