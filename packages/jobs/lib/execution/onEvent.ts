@@ -100,7 +100,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             updated_at: new Date()
         };
 
-        const defaultSecret = await secretService.getInternalSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -123,7 +123,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: await getRunnerFlags(plan),
             startedAt: new Date(),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs

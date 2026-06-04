@@ -28,10 +28,12 @@ export const API_KEY_SCOPES = [
     'environment:syncs:variant:create',
     'environment:syncs:variant:delete',
     'environment:syncs:*',
+    // Functions
+    'environment:functions:compile',
+    'environment:functions:dryrun',
+    'environment:functions:*',
     // Deploy
     'environment:deploy',
-    // Dryrun
-    'environment:dryrun',
     // Records
     'environment:records:read',
     'environment:records:write',

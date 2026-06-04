@@ -4,9 +4,92 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
-<Update label="May 18, 2026">
-  ## Sync and action runtime migration to serverless execution
+<Update label="May 2026 roundup" description="June 1, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="50 new APIs in May">
+      - [1Password (Events API)](/api-integrations/1password-events)
+      - [1Password (Users API)](/api-integrations/1password-users)
+      - [Absorb LMS](/api-integrations/absorb-lms)
+      - [Altrata](/api-integrations/altrata)
+      - [Anvil](/api-integrations/anvil)
+      - [BigChange](/api-integrations/bigchange)
+      - [Buffer](/api-integrations/buffer)
+      - [Canva (MCP)](/api-integrations/canva-mcp)
+      - [Customer.io](/api-integrations/customer-io)
+      - [Digits](/api-integrations/digits)
+      - [Digits (MCP)](/api-integrations/digits-mcp)
+      - [Dynatrace](/api-integrations/dynatrace)
+      - [Dynatrace (OAuth)](/api-integrations/dynatrace-oauth)
+      - [EasyPost](/api-integrations/easypost)
+      - [Fern (Public API)](/api-integrations/fern)
+      - [Follow Up Boss](/api-integrations/followupboss)
+      - [Freshworks](/api-integrations/freshworks)
+      - [Huntress](/api-integrations/huntress)
+      - [ImmyBot](/api-integrations/immybot)
+      - [Jiminny](/api-integrations/jiminny)
+      - [Lightfield](/api-integrations/lightfield)
+      - [Microsoft Intune](/api-integrations/microsoft-intune)
+      - [Microsoft People](/api-integrations/microsoft-people)
+      - [Nexthink](/api-integrations/nexthink)
+      - [NinjaOne SaaS Backup](/api-integrations/ninjaone-saas-backup)
+      - [Paddle](/api-integrations/paddle)
+      - [Planning Center Online (OAuth)](/api-integrations/planning-center-online)
+      - [Planning Center Online (Personal Access Token)](/api-integrations/planning-center-online-pat)
+      - [Podscribe](/api-integrations/podscribe)
+      - [Pushpay ChMS (v1)](/api-integrations/pushpay-chms-v1)
+      - [pVerify](/api-integrations/pverify)
+      - [Render (MCP)](/api-integrations/render-mcp)
+      - [Revivn](/api-integrations/revivn)
+      - [Sage 200](/api-integrations/sage-200)
+      - [SAP Concur (Password Grant)](/api-integrations/sap-concur-password)
+      - [Shippo](/api-integrations/shippo)
+      - [Shopware (Admin API)](/api-integrations/shopware)
+      - [Statamic](/api-integrations/statamic)
+      - [StoreCensus](/api-integrations/store-census)
+      - [Superhuman (MCP)](/api-integrations/superhuman-mcp)
+      - [Tanium](/api-integrations/tanium)
+      - [The Swarm](/api-integrations/the-swarm)
+      - [TheirStack](/api-integrations/theirstack)
+      - [Toast](/api-integrations/toast)
+      - [Trigger.dev](/api-integrations/trigger-dev)
+      - [VideoAsk](/api-integrations/videoask)
+      - [Wappalyzer](/api-integrations/wappalyzer)
+      - [WordPress.com (MCP)](/api-integrations/wordpress-mcp)
+      - [Zendesk (API Token)](/api-integrations/zendesk-api-key)
+      - [Zigpoll](/api-integrations/zigpoll)
+    </Accordion>
+  </AccordionGroup>
 
+  ## New blog posts
+
+  New posts from the Nango team in May:
+
+  - [How to build a Gmail API integration with Nango and Claude](https://nango.dev/blog/how-to-build-a-gmail-api-integration-with-nango-and-claude)
+  - [How to sync large amounts of contacts from the HubSpot API](https://nango.dev/blog/how-to-sync-large-amounts-of-contacts-from-hubspot-api)
+  - [How to fix the Salesforce INVALID_SESSION_ID error](https://nango.dev/blog/fix-salesforce-invalid-session-id-error)
+  - [How to migrate from Composio to Nango](https://nango.dev/blog/how-to-migrate-from-composio-to-nango)
+  - [Composio vs Nango: a developer's comparison for production AI agent integrations (2026)](https://nango.dev/blog/composio-vs-nango)
+  - [Merge.dev vs Nango: Which API integration platform should you choose in 2026?](https://nango.dev/blog/merge-dev-vs-nango)
+</Update>
+---
+
+<Update label="Agent-led onboarding" description="June 1, 2026">
+  You can now get started with a coding agent instead of following the setup steps by hand. Paste the quickstart prompt into Claude, Cursor, Codex, or another agent, and it walks you through signing up, setting up an API key, authorizing a connection, and your first function call. [Docs](/getting-started/quickstart).
+
+  ![Nango quickstart agent](/images/changelog/nango-quickstart-agent.jpg)
+</Update>
+---
+
+<Update label="Remote function builder" description="June 1, 2026">
+  Claude, Cursor, Codex, or other agents can now build integrations ([actions, syncs, webhooks, events](/guides/functions/functions-guide)) without a local project. This is powered by the new [Function Builder skill](/getting-started/coding-agent-setup#skills) and [REST endpoints for compile, dry run, and deploy functions](/guides/functions/functions-guide#build-with-the-functions-api).
+
+  With the Nango skill, your agent turns behavior described in a prompt into a complete integration: it generates TypeScript code, compiles it, tests it against a real connection, and deploys it.
+
+  You can also pair the skill with an agent inside your product to generate integrations on demand when your customer prompts it. This is also called [just-in-time integrations](https://nango.dev/blog/just-in-time-integrations).
+</Update>
+---
+
+<Update label="Serverless runtime migration" description="May 18, 2026">
   We are migrating all sync executions to our serverless AWS Lambda runtime, and introducing a **10-minute execution limit** per run.
   This gives us better autoscaling, more predictable execution isolation, and a simpler runtime model across Nango Cloud environments.
   Lambda has a hard timeout, so long-running syncs must checkpoint work and continue across runs instead of relying on a single long execution.
@@ -26,12 +109,10 @@ description: "Important developer & product updates, including deprecations & br
   - Migrate all syncs to use checkpoints using the [migration guide and associated skill](/guides/platform/migrations/migrate-to-checkpoints#migrate-with-skill)
   
   If you do not want to migrate yet or cannot migrate within the timeline, please reach out and we will find a workable path with you.
-
 </Update>
-
 ---
 
-<Update label="May 5, 2026">
+<Update label="April 2026 roundup" description="May 5, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="50 new APIs in April">
       - [Apple Business Manager](/api-integrations/apple-business-manager)
@@ -99,9 +180,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="April 22, 2026">
-  ## API keys
-
+<Update label="API keys" description="April 22, 2026">
   We replaced environment secret keys with API keys. Previously, every environment had a single secret key with full access to all endpoints. You can now issue multiple keys and grant only the scopes each use case requires.
 
   ![API keys page](/images/changelog/api-keys.jpg)
@@ -117,9 +196,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="April 14, 2026">
-  ## Playground
-
+<Update label="Playground" description="April 14, 2026">
   We added a Playground to the Nango dashboard. You can now trigger [actions](/getting-started/use-cases/actions) and [syncs](/getting-started/use-cases/syncs) directly from the Nango dashboard. Pick an integration, connection, and function, fill in the inputs, and hit Run!
 
   ![Playground](/images/changelog/playground.gif)
@@ -132,7 +209,7 @@ description: "Important developer & product updates, including deprecations & br
 </Update>
 ---
 
-<Update label="March 27, 2026">
+<Update label="March 2026 roundup" description="March 27, 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="34 new APIs in March">
       - [Amplitude (MCP US)](/api-integrations/amplitude-mcp)
@@ -172,8 +249,17 @@ description: "Important developer & product updates, including deprecations & br
     </Accordion>
   </AccordionGroup>
 
-  ## Role-based access control (RBAC)
+  ## New blog posts
 
+  New posts from the Nango team in March:
+
+  - [Launching RBAC and our commitment to the enterprise](https://www.nango.dev/blog/launching-rbac-and-our-commitment-to-the-enterprise)
+  - [What we learned building 200+ API integrations with OpenCode](https://www.nango.dev/blog/learned-building-200-api-integrations-with-opencode)
+  - [How to build reliable tool calls for AI agents integrating with external APIs](https://www.nango.dev/blog/build-reliable-tool-calls-for-ai-agents-integrating-with-external-apis)
+</Update>
+---
+
+<Update label="RBAC" description="March 27, 2026">
   We added role-based access control to the Nango dashboard. You can now assign one of three roles when inviting team members:
 
   | **Full Access** | **Support** | **Contributor** |
@@ -188,21 +274,10 @@ description: "Important developer & product updates, including deprecations & br
   - **API access is unaffected:** Roles apply to dashboard access only. Any caller with a valid secret key retains full API access.
 
   Available on the Growth and Enterprise plans. See the [Team & roles documentation](/guides/platform/security#team-and-roles).
-
-  ## New blog posts
-
-  New posts from the Nango team in March:
-
-  - [Launching RBAC and our commitment to the enterprise](https://www.nango.dev/blog/launching-rbac-and-our-commitment-to-the-enterprise)
-  - [What we learned building 200+ API integrations with OpenCode](https://www.nango.dev/blog/learned-building-200-api-integrations-with-opencode)
-  - [How to build reliable tool calls for AI agents integrating with external APIs](https://www.nango.dev/blog/build-reliable-tool-calls-for-ai-agents-integrating-with-external-apis)
 </Update>
-
 ---
 
-<Update label="March 16, 2026">
-  ## Deprecation of `schema.ts` and `schema.json` generation
-
+<Update label="Schema generation deprecation" description="March 16, 2026">
   Running `nango compile` or `nango deploy` currently generates three files under `.nango/`: `schema.ts`, `schema.json`, and `nango.json`. We will stop generating `schema.ts` and `schema.json`. The `nango.json` file remains unchanged.
 
   Effective **April 16, 2026**.
@@ -259,10 +334,9 @@ description: "Important developer & product updates, including deprecations & br
 
   See the [data validation guide](/guides/functions/data-validation) for more details on working with Zod schemas in Nango.
 </Update>
-
 ---
 
-<Update label="February 2026">
+<Update label="February 2026 roundup" description="February 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in February">
       - [Attention](/api-integrations/attention)
@@ -304,9 +378,22 @@ description: "Important developer & product updates, including deprecations & br
       - [Upsales](/api-integrations/upsales)
     </Accordion>
   </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in February:
+
+  - [Best AI integration platforms in 2026](https://www.nango.dev/blog/best-ai-integration-platforms)
+  - [Preserve user permissions & roles in API integrations for AI agents & RAG](https://www.nango.dev/blog/preserve-user-permissions-roles-api-integrations-ai-agents-rag)
+  - [How to get Slack user access token (OAuth)](https://www.nango.dev/blog/how-to-get-slack-user-access-token-oauth)
+  - [Fix Slack OAuth error: invalid_team for non-distributed app](https://www.nango.dev/blog/fix-slack-oauth-error-invalid-team-for-non-distributed-app)
+  - [Fix Salesforce OAuth error: oauth_approval_error_generic](https://www.nango.dev/blog/fix-salesforce-oauth-approval-error-generic)
+</Update>
+---
+
+<Update label="Sync checkpoints" description="February 2026">
   <a id="february-5,-2026"></a>
   <a id="february-5-2026"></a>
-  ## Sync checkpoints
 
   We introduced customizable Sync checkpoints to make syncs interruptible and resumable.
 
@@ -335,17 +422,19 @@ description: "Important developer & product updates, including deprecations & br
   **No breaking changes:** Existing syncs without a `checkpoint` declaration continue to run as full syncs. For any sync with a large or growing dataset, define a `checkpoint` schema and call `saveCheckpoint()` after each batch.
 
   **Migration Note:** Checkpoints are a more flexible replacement for `nango.lastSyncDate`. We also removed the concepts of incremental vs. full syncs from the function signature. If you use `nango.lastSyncDate` for incremental syncing, we recommend migrating — checkpoints are more resilient, more flexible, and will be the primary supported path going forward. There is no deprecation timeline for `nango.lastSyncDate`, but new improvements will only land on checkpoints. Follow the [Migration guide](/guides/platform/migrations/migrate-to-checkpoints).
+</Update>
+---
 
-  ## Serverless runtime for execution
-
+<Update label="Serverless runtime" description="February 2026">
   We overhauled the underlying execution infrastructure to be fully serverless.
 
   [Function](/guides/functions/functions-guide) executions now run in isolated AWS Lambda environments rather than using a single VM per customer. This provides dedicated resources and an isolated runtime for every Function execution, significantly improving tenant isolation, execution fairness, reliability, and performance scaling.
 
   This change is at the infrastructure level; your function code and APIs are unaffected.
+</Update>
+---
 
-  ## AI skill for building integrations
-
+<Update label="Integration builder skill" description="February 2026">
   We released a new AI skill for writing and testing Nango [Actions](/getting-started/use-cases/actions) & [Syncs ](/getting-started/use-cases/syncs)using your favorite AI coding agent.
 
   The skill is compatible with over 18 different AI frameworks, including Claude Code, Cursor, GitHub Copilot, Gemini CLI, Codex, OpenCode, and more.
@@ -353,28 +442,18 @@ description: "Important developer & product updates, including deprecations & br
   ![Building Nango integrations with Cursor](/images/changelog/nango-ai-integration-builder-cursor.png)
 
   See the [Functions guide](/guides/functions/functions-guide#guide) for instructions on building integrations with AI.
+</Update>
+---
 
-  ## Support for MCP Auth
-
+<Update label="MCP Auth support" description="February 2026">
   We added full platform support for Model Context Protocol (MCP) Auth integrations, starting with [HubSpot MCP](/api-integrations/hubspot-mcp) and [Granola MCP](/api-integrations/granola-mcp).\
   You can now authenticate and connect your AI Agents with providers that support MCP Auth.
 
   ![Hubspot Mcp Connect Ui](/images/changelog/hubspot-mcp-connect-ui.png)
-
-  ## New blog posts
-
-  New posts from the Nango team in February:
-
-  - [Best AI integration platforms in 2026](https://www.nango.dev/blog/best-ai-integration-platforms)
-  - [Preserve user permissions & roles in API integrations for AI agents & RAG](https://www.nango.dev/blog/preserve-user-permissions-roles-api-integrations-ai-agents-rag)
-  - [How to get Slack user access token (OAuth)](https://www.nango.dev/blog/how-to-get-slack-user-access-token-oauth)
-  - [Fix Slack OAuth error: invalid_team for non-distributed app](https://www.nango.dev/blog/fix-slack-oauth-error-invalid-team-for-non-distributed-app)
-  - [Fix Salesforce OAuth error: oauth_approval_error_generic](https://www.nango.dev/blog/fix-salesforce-oauth-approval-error-generic)
 </Update>
-
 ---
 
-<Update label="January 2026">
+<Update label="January 2026 roundup" description="January 2026">
   <AccordionGroup>
     <Accordion icon="webhook" title="37 new APIs in January">
       - [3CX](/api-integrations/3cx)
@@ -416,9 +495,33 @@ description: "Important developer & product updates, including deprecations & br
       - [Wise (API Key)](/api-integrations/wise-api-key)
     </Accordion>
   </AccordionGroup>
+
+  ## New blog posts
+
+  We published a series of debugging guides detailing what causes OAuth refresh token `invalid_grant` or `BAD_REFRESH_TOKEN` errors and how to fix them across various providers:
+
+  - [QuickBooks OAuth refresh token invalid_grant](https://www.nango.dev/blog/quickbooks-oauth-refresh-token-invalid-grant)
+  - [Airtable OAuth refresh token invalid_grant](https://www.nango.dev/blog/airtable-oauth-refresh-token-invalid-grant)
+  - [GitHub App OAuth BAD_REFRESH_TOKEN](https://www.nango.dev/blog/github-app-oauth-refresh-token-bad-refresh-token)
+  - [Microsoft OAuth refresh token invalid_grant](https://www.nango.dev/blog/microsoft-oauth-refresh-token-invalid-grant)
+  - [LinkedIn OAuth refresh token invalid_grant](https://www.nango.dev/blog/linkedin-oauth-refresh-token-invalid-grant)
+  - [Slack OAuth refresh token invalid_grant](https://www.nango.dev/blog/slack-oauth-refresh-token-invalid-grant)
+  - [Stripe OAuth refresh token invalid_grant](https://www.nango.dev/blog/stripe-oauth-refresh-token-invalid-grant)
+  - [Shopify OAuth refresh token invalid_grant](https://www.nango.dev/blog/shopify-oauth-refresh-token-invalid-grant)
+  - [Xero OAuth refresh token invalid_grant](https://www.nango.dev/blog/xero-oauth-refresh-token-invalid-grant)
+  - [Linear OAuth refresh token invalid_grant](https://www.nango.dev/blog/linear-oauth-refresh-token-invalid-grant)
+  - [PostHog OAuth refresh token invalid_grant](https://www.nango.dev/blog/posthog-oauth-refresh-token-invalid-grant)
+  - [Notion OAuth refresh token invalid_grant](https://www.nango.dev/blog/notion-oauth-refresh-token-invalid-grant)
+  - [Zendesk OAuth refresh token invalid_grant](https://www.nango.dev/blog/zendesk-oauth-refresh-token-invalid-grant)
+  - [Jira OAuth refresh token invalid_grant](https://www.nango.dev/blog/jira-oauth-refresh-token-invalid-grant)
+  - [Gong OAuth refresh token invalid_grant](https://www.nango.dev/blog/gong-oauth-refresh-token-invalid-grant)
+  - [Confluence OAuth refresh token invalid_grant](https://www.nango.dev/blog/confluence-oauth-refresh-token-invalid-grant)
+</Update>
+---
+
+<Update label="Sync cache retention" description="January 2026">
   <a id="january-6,-2026"></a>
   <a id="january-6-2026"></a>
-  ## Sync cache data retention and pruning
 
   We added automatic data retention policies for records stored in the Nango sync cache. These policies apply to synced records produced by syncs (our replication-oriented functions) and ensure that record payloads are not retained indefinitely.
 
@@ -442,9 +545,10 @@ description: "Important developer & product updates, including deprecations & br
   We also introduced a new endpoint to manually prune records.
 
   You can use `PATCH /records/prune` to empty record payloads on demand while preserving the metadata. See the [Prune records API reference](/reference/backend/http-api/sync/prune-records).
+</Update>
+---
 
-  ## Support for Salesforce JWT Bearer auth
-
+<Update label="Salesforce JWT auth" description="January 2026">
   You can now authenticate with Salesforce using the JWT Bearer flow. This enables server-to-server authentication using a dedicated "API user" inside the customer's Salesforce org.
 
   ![Salesforce JWT](/images/changelog/salesforce-jwt.png)
@@ -452,17 +556,19 @@ description: "Important developer & product updates, including deprecations & br
   This auth mode bypasses the interactive OAuth consent screen, which enterprise customers often prefer for easier onboarding and stronger governance.
 
   See the [Salesforce JWT documentation](/api-integrations/salesforce-jwt) for the setup guide and implementation snippets.
+</Update>
+---
 
-  ## Shareable Connect UI links
-
+<Update label="Shareable Connect links" description="January 2026">
   You can now generate and copy a shareable Connect UI link directly from the Nango dashboard. This enables you to create a link in Nango and share it with another person to complete the auth flow.
 
   ![Share Connect Link R Jan2026](/images/changelog/share-connect-link.gif)
 
   The UI displays an expiry notification when you copy the link to your clipboard. Links expire after 30 minutes.
+</Update>
+---
 
-  ## Mobile-friendly Connect UI
-
+<Update label="Mobile Connect UI" description="January 2026">
   We updated the Authorization flow UI to optimize the layout for mobile/tablet devices.
 
   <img
@@ -472,32 +578,10 @@ description: "Important developer & product updates, including deprecations & br
     className="mr-auto"
     style={{ width:"40%" }}
   />
-
-  ## New blog posts
-
-  We published a series of debugging guides detailing what causes OAuth refresh token `invalid_grant` or `BAD_REFRESH_TOKEN` errors and how to fix them across various providers:
-
-  - [QuickBooks OAuth refresh token invalid_grant](https://www.nango.dev/blog/quickbooks-oauth-refresh-token-invalid-grant)
-  - [Airtable OAuth refresh token invalid_grant](https://www.nango.dev/blog/airtable-oauth-refresh-token-invalid-grant)
-  - [GitHub App OAuth BAD_REFRESH_TOKEN](https://www.nango.dev/blog/github-app-oauth-refresh-token-bad-refresh-token)
-  - [Microsoft OAuth refresh token invalid_grant](https://www.nango.dev/blog/microsoft-oauth-refresh-token-invalid-grant)
-  - [LinkedIn OAuth refresh token invalid_grant](https://www.nango.dev/blog/linkedin-oauth-refresh-token-invalid-grant)
-  - [Slack OAuth refresh token invalid_grant](https://www.nango.dev/blog/slack-oauth-refresh-token-invalid-grant)
-  - [Stripe OAuth refresh token invalid_grant](https://www.nango.dev/blog/stripe-oauth-refresh-token-invalid-grant)
-  - [Shopify OAuth refresh token invalid_grant](https://www.nango.dev/blog/shopify-oauth-refresh-token-invalid-grant)
-  - [Xero OAuth refresh token invalid_grant](https://www.nango.dev/blog/xero-oauth-refresh-token-invalid-grant)
-  - [Linear OAuth refresh token invalid_grant](https://www.nango.dev/blog/linear-oauth-refresh-token-invalid-grant)
-  - [PostHog OAuth refresh token invalid_grant](https://www.nango.dev/blog/posthog-oauth-refresh-token-invalid-grant)
-  - [Notion OAuth refresh token invalid_grant](https://www.nango.dev/blog/notion-oauth-refresh-token-invalid-grant)
-  - [Zendesk OAuth refresh token invalid_grant](https://www.nango.dev/blog/zendesk-oauth-refresh-token-invalid-grant)
-  - [Jira OAuth refresh token invalid_grant](https://www.nango.dev/blog/jira-oauth-refresh-token-invalid-grant)
-  - [Gong OAuth refresh token invalid_grant](https://www.nango.dev/blog/gong-oauth-refresh-token-invalid-grant)
-  - [Confluence OAuth refresh token invalid_grant](https://www.nango.dev/blog/confluence-oauth-refresh-token-invalid-grant)
 </Update>
+---
 
-<Update label="December 5, 2025">
-  ## New HMAC-based webhook signature header
-
+<Update label="HMAC webhook signatures" description="December 5, 2025">
   Nango webhooks now include a new `X-Nango-Hmac-Sha256` header that uses HMAC-SHA256 for improved security. The legacy `X-Nango-Signature` header (plain SHA-256 with key concatenation) is still sent for backwards compatibility but should no longer be used.
 
   HMAC-SHA256 is cryptographically more secure than plain SHA-256 with concatenation. HMAC provides better protection against length extension attacks and is the industry standard for webhook signature verification.
@@ -516,10 +600,9 @@ description: "Important developer & product updates, including deprecations & br
 
   **For existing integrations:** migrate to `X-Nango-Hmac-Sha256` when convenient. The old `X-Nango-Signature` header will continue to work, but we recommend migrating for better security.
 </Update>
-
 ---
 
-<Update label="December 2025">
+<Update label="December 2025 roundup" description="December 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="22 new APIs in December">
       - [Availity](/api-integrations/availity)
@@ -546,8 +629,17 @@ description: "Important developer & product updates, including deprecations & br
       - [Veeva Vault](/api-integrations/veeva-vault)
     </Accordion>
   </AccordionGroup>
-  ## Connection tags
 
+  ## New blog posts
+
+  New posts from the Nango team in December:
+
+  - [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
+  - [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
+</Update>
+---
+
+<Update label="Connection tags" description="December 2025">
   Connections now support tags. Tags are key/value strings you attach when creating a Connect session to tie a Nango connection to a specific user, organization, or entity in your system.
 
   When a user completes an auth flow, Nango copies these tags to the resulting connection and includes them in the success webhook. This replaces the need for the legacy `end_user` and `organization` objects.
@@ -562,9 +654,10 @@ description: "Important developer & product updates, including deprecations & br
   You can also filter connections by tags via the API. See the [Connection tags documentation](/guides/auth/connection-tags-configuration-metadata).
 
   **Migration Note:** If you currently use `end_user` or `organization` in Connect sessions or webhooks, follow the [migration guide](/guides/platform/migrations/migrate-from-end-user) to move to tags.
+</Update>
+---
 
-  ## Enhanced OAuth error messaging
-
+<Update label="OAuth error messages" description="December 2025">
   We rebuilt the callback experience to provide better visibility into OAuth errors. Provider error messages are now rendered directly inside the Connect UI form and the pop-up window.
 
   ![Enhanced OAuth error messaging](/images/changelog/improved-oauth-error-messaging.png)
@@ -572,9 +665,10 @@ description: "Important developer & product updates, including deprecations & br
   The new UI for the callback renders structured success and error states. It also surfaces provider query parameters in an expandable debug panel.
 
   Additionally, provider errors are now delivered via WebSocket for improved logging on your end.
+</Update>
+---
 
-  ## Redesigned Integrations Experience
-
+<Update label="Integrations redesign" description="December 2025">
   We have overhauled the Integrations tab to streamline how you manage and scale your catalog. This update focuses on faster discovery and a more intuitive setup flow.
 
   - **Improved Search:** The search on the Integrations page now considers display names, auth modes, and categories to bring you the most relevant results.
@@ -584,20 +678,10 @@ description: "Important developer & product updates, including deprecations & br
   - **Improved Navigation:** Added breadcrumbs to the header for better context in nested routes and a new search bar for your active integrations list.
 
     ![Improved Navigation](/images/changelog/breadcrumbs.png)
-
-  ## New blog posts
-
-  New posts from the Nango team in December:
-
-  - [Finding traction without a product: Our process](https://www.nango.dev/blog/our-process-for-finding-initial-traction-pre-product)
-  - [How to find the best integrations partner](https://www.nango.dev/blog/how-to-find-the-best-integrations-partner)
 </Update>
-
 ---
 
-<Update label="November 27, 2025">
-  ## Behavior change of webhooks from Nango to your app
-
+<Update label="Webhook delivery changes" description="November 27, 2025">
   New behavior:
 
   - **Timeout:** 20s (instead of 60s)
@@ -611,10 +695,9 @@ description: "Important developer & product updates, including deprecations & br
 
   **Why:** The previous long timeout and many retries created incidents when webhook endpoints were unavailable. The new behavior is in line with other popular APIs (e.g., Stripe, Hubspot).
 </Update>
-
 ---
 
-<Update label="November 2025">
+<Update label="November 2025 roundup" description="November 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="27 new APIs in November">
       - [Apify](/integrations/all/apify)
@@ -646,8 +729,18 @@ description: "Important developer & product updates, including deprecations & br
       - [Zoho Recruit](/integrations/all/zoho-recruit)
     </Accordion>
   </AccordionGroup>
-  ## Advanced connection settings
 
+  ## New blog posts
+
+  New posts from the Nango team in November:
+
+  - [How to build integrations you and your customers love](https://www.notion.so/blog/how-to-build-integrations-you-and-your-customers-love)
+  - [The hidden costs of building product integrations in-house](https://www.notion.so/blog/the-hidden-costs-of-building-product-integrations-in-house)
+  - [Product integrations: Build or buy?](https://www.notion.so/blog/product-integrations-build-or-buy)
+</Update>
+---
+
+<Update label="Advanced connection settings" description="November 2025">
   You can now set advanced configurations directly in the Nango UI when creating a connection. This form is split into two distinct sections.
 
   Firstly, you can specify end-user data. This includes setting a custom ID, email, and display name for the connection.
@@ -655,9 +748,10 @@ description: "Important developer & product updates, including deprecations & br
   ![Advanced connection settings](/images/changelog/advanced-connection-settings.gif)
 
   Secondly, you can also override the integration's default configuration, like authorization parameters, customize OAuth scopes, and override developer app credentials. This allows you to test connections and initiate the authorization flow even if default credentials are not fully configured in your environment.
+</Update>
+---
 
-  ## Template cloning via CLI
-
+<Update label="Template cloning" description="November 2025">
   The [Nango CLI](/reference/functions/functions-cli) now includes a `nango clone` command. This automates the process of pulling function templates and their dependencies from the Nango integration templates repository.
 
   This replaces the manual process of copying and pasting configuration and TypeScript code. You can clone an entire integration directory, a specific category of functions, or an individual template.
@@ -669,29 +763,19 @@ description: "Important developer & product updates, including deprecations & br
   ```
 
   See the guide on [customizing a function template](/guides/functions/functions-guide#guide).
+</Update>
+---
 
-  ## Better support for Monorepos & Package Managers
-
+<Update label="Monorepo support" description="November 2025">
   We’ve improved how the Nango CLI detects and interacts with your environment, specifically for non-NPM setups:
 
   - **Monorepo detection**: The CLI now traverses parent directories to find your lockfile or `package.json`. If you run `nango init` in a subdirectory, it will correctly identify and use your root `pnpm`, `yarn`, or `bun` configuration.
   - **Opt-out of auto-installs**: To prevent the CLI from modifying `package.json` in sensitive environments (like CI or projects using pnpm catalogs), use the new `--no-dependency-update` flag or set the `NANGO_CLI_DEPENDENCY_UPDATE=false` environment variable.
   - **Yarn compatibility**: `nango init` now works out of the box for Yarn users, correctly flagging projects as standalone and using the `node-modules` linker.
-
-  ## New blog posts
-
-  New posts from the Nango team in November:
-
-  - [How to build integrations you and your customers love](https://www.notion.so/blog/how-to-build-integrations-you-and-your-customers-love)
-  - [The hidden costs of building product integrations in-house](https://www.notion.so/blog/the-hidden-costs-of-building-product-integrations-in-house)
-  - [Product integrations: Build or buy?](https://www.notion.so/blog/product-integrations-build-or-buy)
 </Update>
-
 ---
 
-<Update label="October 29, 2025">
-  ## Function custom logs won't be ingested by default for remote environments
-
+<Update label="Remote log ingestion" description="October 29, 2025">
   Function custom logs are calls to `nango.log(...)` in your functions (action functions, sync functions, webhook functions, and event functions).
 
   Starting in November, only `warn` and `error` level logs will be ingested by default for remote environments. Debug and info level logs will no longer be ingested automatically. When you call `nango.log(...)` without an explicit level (which defaults to `info`), these logs will not appear in the Nango UI logs tab for remote environments.
@@ -742,10 +826,9 @@ description: "Important developer & product updates, including deprecations & br
 
   **Why:** Many customers generate a large number of custom logs for local development purposes without using them in remote environments. With the new pricing model starting in November (which includes generous included usage for function custom logs), this change ensures that customers don't get billed for logs they're not actively using.
 </Update>
-
 ---
 
-<Update label="October 2025">
+<Update label="October 2025 roundup" description="October 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in October">
       - [Adobe Workfront](/integrations/all/adobe-workfront)
@@ -773,27 +856,6 @@ description: "Important developer & product updates, including deprecations & br
       - [Snipe-IT](/integrations/all/snipe-it)
     </Accordion>
   </AccordionGroup>
-  ## CLI interactive mode
-
-  The Nango CLI now supports an [interactive mode](/reference/functions/functions-cli#interactive-mode) that prompts for missing arguments. For example, run `nango create` without specifying the function type, integration, or name, and the CLI will ask for them. Interactive mode is on by default in interactive terminal sessions.
-
-  ![Nango_CLI_interactive_mode](/images/changelog/nango-cli-interactive-mode.png)
-
-  You can still provide all arguments upfront to skip prompts (e.g., for scripting): test `nango create --sync --integration my-api --name get-contacts`
-
-  To turn off interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments.
-
-  ## Change in mock file structure for Nango integration tests
-
-  We have moved from a multi-file mock format to a single `.test.json`.
-
-  When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. See [mock file structure](/guides/functions/testing#mock-file-structure).
-
-  **Migration Note:** See [migrating from the old format](/guides/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
-
-  ## Integrating Nango into your CI/CD processes
-
-  - [CI/CD for Nango integrations](/guides/functions/ci-cd): A complete guide on integrating Nango into your CI/CD processes.
 
   ## New blog posts
 
@@ -807,12 +869,34 @@ description: "Important developer & product updates, including deprecations & br
   - [The 4 most popular Paragon alternatives](https://www.nango.dev/blog/4-most-popular-paragon-alternatives)
   - [The 4 most popular Merge.dev alternatives](https://www.nango.dev/blog/4-most-popular-merge-dev-alternatives)
 </Update>
-
 ---
 
-<Update label="September 1, 2025">
-  ## End-user info is no longer shared between connections
+<Update label="CLI interactive mode" description="October 2025">
+  The Nango CLI now supports an [interactive mode](/reference/functions/functions-cli#interactive-mode) that prompts for missing arguments. For example, run `nango create` without specifying the function type, integration, or name, and the CLI will ask for them. Interactive mode is on by default in interactive terminal sessions.
 
+  ![Nango_CLI_interactive_mode](/images/changelog/nango-cli-interactive-mode.png)
+
+  You can still provide all arguments upfront to skip prompts (e.g., for scripting): test `nango create --sync --integration my-api --name get-contacts`
+
+  To turn off interactive mode, use the `--no-interactive` flag, or set the `CI` environment variable for CI/CD environments.
+</Update>
+---
+
+<Update label="Test mock format" description="October 2025">
+  We have moved from a multi-file mock format to a single `.test.json`.
+
+  When you generate mocks for your Nango syncs or actions, a single `.test.json` file is generated next to your test file. The file contains input, output, Nango stubs, and API response mocks, organized by method and path. This keeps test data in one place, making tests easier to run and maintain. See [mock file structure](/guides/functions/testing#mock-file-structure).
+
+  **Migration Note:** See [migrating from the old format](/guides/functions/testing#migrating-from-the-old-format) if you have tests still using the old multi-file mocks.
+</Update>
+---
+
+<Update label="CI/CD guide" description="October 2025">
+  - [CI/CD for Nango integrations](/guides/functions/ci-cd): A complete guide on integrating Nango into your CI/CD processes.
+</Update>
+---
+
+<Update label="End-user info isolation" description="September 1, 2025">
   Currently, if multiple connections share the same `end_user_id`, they also share the same end-user object in Nango. After the change, each connection will always get its own independent copy of the end-user object, even if they use the same `end_user_id`. We are changing the old behavior because it was confusing for some developers, and because it was impossible to declare multiple organizations for a given user.
 
   Effective **September 8, 2025** — end-user updates will stop being replicated across connections.
@@ -845,10 +929,9 @@ description: "Important developer & product updates, including deprecations & br
 
   There is no batch endpoint for this operation. If you need one, please reach out on Slack.
 </Update>
-
 ---
 
-<Update label="September 2025">
+<Update label="September 2025 roundup" description="September 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="28 new APIs in September">
       - [Addepar (OAuth)](/integrations/all/addepar)
@@ -878,10 +961,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Webex](/integrations/all/webex)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Connect UI settings
-
+<Update label="Connect UI settings" description="September 2025">
   <Frame>
     ![Connect UI settings](/images/changelog/connect-ui-settings.png)
   </Frame>
@@ -890,31 +973,26 @@ description: "Important developer & product updates, including deprecations & br
   We've added a dark mode and the ability to change the primary color to fit your brand. You can also toggle the light/dark mode based on the user's system preference.
 
   Access the Connect UI settings in your [Environment settings](https://app.nango.dev/dev/environment-settings). We will continue adding customization options over time.
+</Update>
+---
 
-  ---
-
-  ## Improved deletion detection when syncing data
-
+<Update label="Deletion detection" description="September 2025">
   For APIs that don't support deletion detection, we've added a new interface to detect deletions on Nango's side when syncing data ([docs](/guides/functions/syncs/deletion-detection)).
 
   Inside your sync function, you can now call `nango.deleteRecordsFromPreviousExecutions('ModelName')` to detect deletions.
 
   Please note that you should only use this function if you are performing a full sync. If you are syncing data incrementally, you can periodicaly resync the whole dataset to benefit from deletion detection.
+</Update>
+---
 
-  ---
-
-  ## Custom credentials verification
-
+<Update label="Credential verification" description="September 2025">
   We added the ability to customize the credentials verification script, which is called when a new connection is created. For this, use the new `validate-connection` hook ([docs](/guides/functions/event-functions)).
 
   This lets you verify your customers’ API credentials by testing them against specific endpoints that correspond to particular API scopes.
-
-  ---
 </Update>
+---
 
-<Update label="August 22, 2025">
-  ## Action payload output limit
-
+<Update label="Action output limit" description="August 22, 2025">
   Nango actions currently have a documented output limit of 10MB. We are further restricting that limit to 2MB. Instead of using an action for large payloads, use the Nango [proxy](/guides/platform/proxy-requests).
 
   We will also soon restrict action inputs, so please take note of your inputs.
@@ -938,12 +1016,9 @@ description: "Important developer & product updates, including deprecations & br
 
   Reach out with any questions or concerns in our Slack community.
 </Update>
-
 ---
 
-<Update label="August 20, 2025">
-  ## Deprecation of `/connection` endpoints
-
+<Update label="Connection endpoint deprecation" description="August 20, 2025">
   In this release, we've made some changes to the API that are breaking for some users.
 
   - All endpoints under `/connection` are now deprecated. Use the new `/connections` endpoint instead. All endpoints except one take and return the same data — only the base path has changed.
@@ -999,10 +1074,9 @@ description: "Important developer & product updates, including deprecations & br
 
   Please report any inconsistencies or issues with the new endpoints in our Slack community.
 </Update>
-
 ---
 
-<Update label="August 2025">
+<Update label="August 2025 roundup" description="August 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="23 new APIs in August">
       - [RUN Powered by ADP](/integrations/all/adp-run)
@@ -1030,10 +1104,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Zoho Calendar](/integrations/all/zoho-calendar)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## TypeScript-based script configs
-
+<Update label="TypeScript script configs" description="August 2025">
   <Frame>
     ![TypeScript-based script configs illustration](/images/changelog/typescript-based-script-configs.png)
   </Frame>
@@ -1044,36 +1118,30 @@ description: "Important developer & product updates, including deprecations & br
   - No custom syntax to learn
 
   This makes writing and maintaining custom integrations simpler, whether you code them manually or generate them with an LLM. [Migration guide](/guides/platform/migrations/migrate-to-zero-yaml).
+</Update>
+---
 
-  ---
-
-  ## Developer updates distribution
-
+<Update label="Developer updates" description="August 2025">
   You’ll now receive important developer updates about deprecations, breaking changes, and other integration-impacting news in a more structured way:
 
   - **Email**: Sent to everyone who signs up (with the option to unsubscribe).
   - **Private Slack channels**: Delivered directly if your team has a dedicated channel with us.
   - **Community Slack**: Shared in the `#dev-updates` channel.
   - **Docs**: This [changelog](/updates/changelog).
-
-  ---
-
-  ## Separate rate limits for Script API vs. Public API
-
-  Script API calls and Public API calls are now rate-limited separately. This prevents heavy script usage from affecting your ability to use the Public API (and vice versa). Both limits are soft and can be increased per customer. Limits are now properly reported in the Nango logs.
-
-  ---
-
-  ## New getting started flow
-
-  A redesigned onboarding screen helps you set up your first integration and call an API right after signup. This makes it easier to experience Nango’s value in just a few minutes.
-
-  ---
 </Update>
+---
 
-<Update label="July 21, 2025">
-  ## Deprecation of `nango.yaml` configuration file
+<Update label="Separate API rate limits" description="August 2025">
+  Script API calls and Public API calls are now rate-limited separately. This prevents heavy script usage from affecting your ability to use the Public API (and vice versa). Both limits are soft and can be increased per customer. Limits are now properly reported in the Nango logs.
+</Update>
+---
 
+<Update label="Getting started flow" description="August 2025">
+  A redesigned onboarding screen helps you set up your first integration and call an API right after signup. This makes it easier to experience Nango’s value in just a few minutes.
+</Update>
+---
+
+<Update label="nango.yaml deprecation" description="July 21, 2025">
   The new script format is now officially released under CLI `>=0.64.0`. If you are already using it or have tried before, the only big change between beta and now is that we now use Zod v4. By upgrading to `>=0.64.0` and running `nango compile`, the CLI will update the dependency automatically; otherwise, you need to install Zod `4.0.5` manually.
 
   Effective **December 1, 2025** — `nango.yaml` support will be removed.
@@ -1082,10 +1150,9 @@ description: "Important developer & product updates, including deprecations & br
 
   **What to do:** Follow the [migration guide](/guides/platform/migrations/migrate-to-zero-yaml).
 </Update>
-
 ---
 
-<Update label="July 2025">
+<Update label="July 2025 roundup" description="July 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="9 new APIs in July">
       - [Atlassian Cloud Admin](/integrations/all/atlassian-admin)
@@ -1099,8 +1166,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Setmore](/integrations/all/setmore)
     </Accordion>
   </AccordionGroup>
-  ## Nango-provided OAuth apps for testing
+</Update>
+---
 
+<Update label="Test OAuth apps" description="July 2025">
   <Frame>
     ![Nango-provided OAuth apps for testing illustration](/images/changelog/nango-provided-oauth-apps.png)
   </Frame>
@@ -1109,35 +1178,31 @@ description: "Important developer & product updates, including deprecations & br
   - Available for top APIs (more being added over time).
   - Select this option when creating a new integration.
   - For **testing only**—production apps should still use your own credentials to keep Nango fully white-labeled.
+</Update>
+---
 
-  ---
-
-  ## Edit user & org info
-
+<Update label="User and org editing" description="July 2025">
   You can now edit the user and organization information attached to a connection. This info is visible in the Nango dashboard, helping you manage connections more easily.\
   [API reference](/reference/backend/http-api/connections/patch).
+</Update>
+---
 
-  ---
-
-  ## Faster action execution
-
+<Update label="Faster actions" description="July 2025">
   Action execution latency has been reduced from **more than 200ms+** to **less than 50ms**. This makes actions feel much more responsive, especially when a human is waiting for the result.
+</Update>
+---
 
-  ---
-
-  ## API-specific docs with getting started
-
+<Update label="API getting started" description="July 2025">
   Each API-specific doc now includes a “Getting Started” section so you can:
 
   1. Run the auth flow
   2. Make a first successful API request
 
   All in **under 5 minutes**. Example: [Google Calendar docs](/api-integrations/google-calendar).
-
-  ---
 </Update>
+---
 
-<Update label="June 2025">
+<Update label="June 2025 roundup" description="June 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="7 new APIs in June">
       - [Jobvite](/integrations/all/jobvite)
@@ -1149,44 +1214,42 @@ description: "Important developer & product updates, including deprecations & br
       - [UKG Ready](/integrations/all/ukg-ready)
     </Accordion>
   </AccordionGroup>
-  ## Generate integrations with AI
+</Update>
+---
 
+<Update label="AI integration guide" description="June 2025">
   <Frame>
     ![Generate integrations with AI illustration](/images/changelog/generate-integrations-with-ai.png)
   </Frame>
   We published a new guide on using AI to generate integrations faster than coding them manually. You can still edit the generated code as needed.\
   [Guide](/guides/functions/functions-guide#guide).
+</Update>
+---
 
-  ---
-
-  ## Self-serve subscription upgrades
-
+<Update label="Self-serve upgrades" description="June 2025">
   You can now upgrade or downgrade your plan directly in the Nango UI, under **Usage & Billing**.\
   _Note: Legacy plans still require contacting us._
+</Update>
+---
 
-  ---
-
-  ## Usage reporting
-
+<Update label="Usage reporting" description="June 2025">
   The **Usage & Billing** tab now includes detailed usage reports:
 
   - Track all metrics that affect billing.
   - See past invoices with a full breakdown.
+</Update>
+---
 
-  ---
-
-  ## Improved self-hosted release process
-
+<Update label="Self-hosted releases" description="June 2025">
   We’ve formalized the release process for self-hosted Enterprise customers:
 
   - Two-month release cadence
   - Semantic versioning adopted
   - Clearer update process in the [self-hosting docs](/guides/platform/self-hosting#updates).
-
-  ---
 </Update>
+---
 
-<Update label="May 2025">
+<Update label="May 2025 roundup" description="May 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="18 new APIs in May">
       - [Canva](/integrations/all/canva)
@@ -1209,8 +1272,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Terraform](/integrations/all/terraform)
     </Accordion>
   </AccordionGroup>
-  ## Nango as an MCP server
+</Update>
+---
 
+<Update label="Nango MCP server" description="May 2025">
   <Frame>
     ![Nango as an MCP server illustration](/images/changelog/nango-as-an-mcp-server.png)
   </Frame>
@@ -1219,21 +1284,19 @@ description: "Important developer & product updates, including deprecations & br
   - Build and enable/disable tools with Nango actions.
   - Use them via the MCP protocol.\
     [Guide](/getting-started/use-cases/tool-calling).
+</Update>
+---
 
-  ---
-
-  ## Localized Connect UI
-
+<Update label="Localized Connect UI" description="May 2025">
   You can now localize the Connect UI:
 
   - Choose a language.
   - Override links to end-user guides with your own versions.\
     [Docs](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui).
+</Update>
+---
 
-  ---
-
-  ## Asynchronous actions
-
+<Update label="Async actions" description="May 2025">
   You can now run actions asynchronously—triggering them without waiting for an immediate result. This is useful when:
 
   - Tasks take a long time to complete.
@@ -1241,17 +1304,15 @@ description: "Important developer & product updates, including deprecations & br
   - Actions should be retried for reliability.
   - You’re sending many actions at once.\
     [Docs](/guides/functions/action-functions#trigger-asynchronously).
-
-  ---
-
-  ## Granular time windows in logs
-
-  You can now filter logs by precise time windows, making it easier to drill down into specific events for debugging.
-
-  ---
 </Update>
+---
 
-<Update label="April 2025">
+<Update label="Log time windows" description="May 2025">
+  You can now filter logs by precise time windows, making it easier to drill down into specific events for debugging.
+</Update>
+---
+
+<Update label="April 2025 roundup" description="April 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="27 new APIs in April">
       - [ADP](/integrations/all/adp)
@@ -1283,10 +1344,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Workday (OAuth)](/api-integrations/workday-oauth)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Usage-based pricing
-
+<Update label="Usage-based pricing" description="April 2025">
   <Frame>
     ![Usage-based pricing illustration](/images/changelog/usage-based-pricing.png)
   </Frame>
@@ -1296,11 +1357,10 @@ description: "Important developer & product updates, including deprecations & br
   - Volume discounts up to 100x included
   - 1,000 free connections still available on the Free plan (unlimited on Free Self-Hosted)
   - Add-ons are priced individually on a monthly basis—no large annual commitments
+</Update>
+---
 
-  ---
-
-  ## Logs search
-
+<Update label="Logs search" description="April 2025">
   <Frame>
     ![Logs search  illustration](/images/changelog/search-logs.png)
   </Frame>
@@ -1309,11 +1369,10 @@ description: "Important developer & product updates, including deprecations & br
   - Search across log and sub-log contents via the top-level search bar
   - Filter logs using record IDs to investigate when records were synced
   - Improved navigation and load times across the tab
+</Update>
+---
 
-  ---
-
-  ## Enterprise self-hosting with ECS + Terraform
-
+<Update label="ECS self-hosting" description="April 2025">
   <Frame>
     ![Enterprise self-hosting with ECS + Terraform illustration](/images/changelog/ecs-terraform.png)
   </Frame>
@@ -1324,11 +1383,10 @@ description: "Important developer & product updates, including deprecations & br
   - Ongoing work to further simplify self-hosting
 
   The Terraform configuration is available upon request.
+</Update>
+---
 
-  ---
-
-  ## Create, edit & delete environments
-
+<Update label="Environment management" description="April 2025">
   <Frame>
     ![Create, edit & delete environments illustration](/images/changelog/manage-environments.png)
   </Frame>
@@ -1336,11 +1394,10 @@ description: "Important developer & product updates, including deprecations & br
 
   - Growth plan includes 3 environments by default
   - Additional environments available via paid add-on
-
-  ---
 </Update>
+---
 
-<Update label="March 2025">
+<Update label="March 2025 roundup" description="March 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="17 new APIs in March">
       - [ActiveCampaign](/integrations/all/active-campaign)
@@ -1362,10 +1419,10 @@ description: "Important developer & product updates, including deprecations & br
       - [Xero (Client Credentials)](/integrations/all/xero-oauth2-cc)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Authorization logs
-
+<Update label="Authorization logs" description="March 2025">
   <Frame>
     ![Authorization logs illustration](/images/changelog/authorization-logs.png)
   </Frame>
@@ -1392,11 +1449,10 @@ description: "Important developer & product updates, including deprecations & br
   <div style={{ position: 'relative', overflow: 'hidden', paddingTop: '56.25%' }}>
   <iframe src="https://www.loom.com/embed/ba30523220f94bf3a8def8bf5f2b92c2" frameBorder="0" allowFullScreen style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} title="Loom video" />
 </div>
+</Update>
+---
 
-  ---
-
-  ## AI agent support
-
+<Update label="AI agent support" description="March 2025">
   <Frame>
     ![AI agent support illustration](/images/changelog/ai-agent-support.png)
   </Frame>
@@ -1413,11 +1469,10 @@ description: "Important developer & product updates, including deprecations & br
   This makes it easier to build AI agents that can reliably interact with 800+ APIs.
 
   Get inspired by [AI companies using Nango](https://www.nango.dev/blog/nango-for-ai).
+</Update>
+---
 
-  ---
-
-  ## AI agent demo video
-
+<Update label="AI agent demo" description="March 2025">
   <Frame>
     ![AI agent demo video illustration](/images/changelog/ai-agent-demo-video.png)
   </Frame>
@@ -1437,8 +1492,9 @@ description: "Important developer & product updates, including deprecations & br
 
   If you want to run the demo yourself or check the code, here is the demo's [GitHub repo](https://github.com/NangoHQ/ai-agent-demo).
 </Update>
+---
 
-<Update label="February 2025">
+<Update label="February 2025 roundup" description="February 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="26 new APIs in February">
       - [1Password (SCIM)](/integrations/all/1password-scim)
@@ -1469,10 +1525,10 @@ description: "Important developer & product updates, including deprecations & br
       - [xAI](/integrations/all/xai)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Sync partitioning
-
+<Update label="Sync partitioning" description="February 2025">
   <Frame>
     ![Sync partitioning illustration](/images/changelog/sync-partitioning.png)
   </Frame>
@@ -1483,11 +1539,10 @@ description: "Important developer & product updates, including deprecations & br
   The API and UI give you full control over these syncs, letting you create, manage, and monitor them with ease.
 
   [Learn more in the docs](/guides/functions/syncs/sync-partitioning).
+</Update>
+---
 
-  ---
-
-  ## Revamped environment settings
-
+<Update label="Environment settings" description="February 2025">
   <Frame>
     ![Revamped environment settings illustration](/images/changelog/revamped-environment-settings.png)
   </Frame>
@@ -1498,11 +1553,10 @@ description: "Important developer & product updates, including deprecations & br
   Each setting now includes links to relevant documentation for easier navigation.
 
   Check it out in the _Environment Settings_ tab in the [Nango UI](https://app.nango.dev/).
+</Update>
+---
 
-  ---
-
-  ## Detailed webhook logs
-
+<Update label="Webhook logs" description="February 2025">
   <Frame>
     ![Detailed webhook logs illustration](/images/changelog/detailed-webhook-logs.png)
   </Frame>
@@ -1511,11 +1565,10 @@ description: "Important developer & product updates, including deprecations & br
   We've added **granular logs** for all webhook types, allowing you to inspect individual webhook deliveries. You can now view the request/response payloads, filter by log type/status/timestamp and quickly debug failed webhook deliveries.
 
   Check it out in the _Logs_ tab in the [Nango UI](https://app.nango.dev/).
+</Update>
+---
 
-  ---
-
-  ## Real-time syncing strategies
-
+<Update label="Realtime syncing" description="February 2025">
   <Frame>
     ![Real-time syncing strategies illustration](/images/changelog/real-time-syncing-strategies.png)
   </Frame>
@@ -1532,11 +1585,10 @@ description: "Important developer & product updates, including deprecations & br
   - **Ignore older updates**: When polling, Nango checks if a newer webhook update exists. If so, it preserves the more recent webhook data instead of overwriting it.
 
   [Learn more in the docs](/guides/functions/syncs/realtime-syncs#sync-concurrency-considerations).
-
-  ---
 </Update>
+---
 
-<Update label="January 2025">
+<Update label="January 2025 roundup" description="January 2025">
   <AccordionGroup>
     <Accordion icon="webhook" title="12 new APIs in January">
       - [Basecamp](/integrations/all/basecamp)
@@ -1553,46 +1605,42 @@ description: "Important developer & product updates, including deprecations & br
       - [Shopify (SCIM API)](/api-integrations/shopify)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Trigger syncs
-
+<Update label="Trigger syncs" description="January 2025">
   <Frame>
     ![Trigger syncs illustration](/images/changelog/trigger-syncs.png)
   </Frame>
   You can now trigger syncs directly from the Nango UI with customizable options. The new modal allows you to trigger syncs incrementally, retrieving only the data modified since the last sync, or fully, fetching all historical data. Additionally, you can choose to clear the cached data if needed. To trigger a sync, navigate to the Connections tab, select a connection, go to the Syncs sub-tab, and click the “…” menu.
+</Update>
+---
 
-  ---
-
-  ## Lighter CLI
-
+<Update label="Lighter CLI" description="January 2025">
   <Frame>
     ![Lighter CLI illustration](/images/changelog/lighter-cli.png)
   </Frame>
   The CLI is now drastically lighter, going from more than 30 seconds to less than 2 seconds to install.
+</Update>
+---
 
-  ---
-
-  ## Create environments
-
+<Update label="Create environments" description="January 2025">
   <Frame>
     ![Create environments illustration](/images/changelog/create-environments.png)
   </Frame>
   You can now create new environments in Nango, beyond the default _Production_ and _Dev_ environemnts. Simply use the dropdown at the top of the left nav bar in the [Nango UI](https://app.nango.dev). This feature is available for paid plans only.
+</Update>
+---
 
-  ---
-
-  ## Event-based scripts
-
+<Update label="Event scripts" description="January 2025">
   <Frame>
     ![Event-based scripts illustration](/images/changelog/event-based-scripts.png)
   </Frame>
   Nango now supports event-based scripts, which are executed automatically after specific events, such as connection creation or deletion. These scripts enable you to automate tasks like registering or deregistering webhooks. For more details, check out the [guide](/guides/functions/event-functions).
-
-  ---
 </Update>
+---
 
-<Update label="December 2024">
+<Update label="December 2024 roundup" description="December 2024">
   <AccordionGroup>
     <Accordion icon="webhook" title="15 new APIs in December">
       - [Atlas.so](/integrations/all/atlas-so)
@@ -1612,46 +1660,42 @@ description: "Important developer & product updates, including deprecations & br
       - [Zapier](/api-integrations/zapier)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Resilient integrations
-
+<Update label="Resilient integrations" description="December 2024">
   <Frame>
     ![Resilient integrations illustration](/images/changelog/resilient-integrations.png)
   </Frame>
   Integration executions are no longer disrupted during runner VM upgrades. The VMs now wait for ongoing executions to complete before proceeding with the upgrade. This enhancement minimizes interruptions, especially for long-running syncs that can take up to 24 hours.
+</Update>
+---
 
-  ---
-
-  ## Surface misconfigured integrations
-
+<Update label="Integration warnings" description="December 2024">
   <Frame>
     ![Surface misconfigured integrations illustration](/images/changelog/surface-misconfigured-integrations.png)
   </Frame>
   The Nango UI now highlights misconfigured integrations, such as those missing OAuth app credentials. An error icon will appear next to the misconfigured integration in the _Integrations_ tab of the [Nango UI](https://app.nango.dev).
+</Update>
+---
 
-  ---
-
-  ## Getting started tab
-
+<Update label="Getting started tab" description="December 2024">
   <Frame>
     ![Getting started illustration](/images/changelog/getting-started.png)
   </Frame>
   The Nango UI now includes a _Getting Started_ tab featuring a 2-minute demo video and essential guides to help you get started. You can dismiss this tab when it's no longer needed, but it will remain accessible from the bottom-left menu.
+</Update>
+---
 
-  ---
-
-  ## API catalog
-
+<Update label="API catalog" description="December 2024">
   <Frame>
     ![API catalog illustration](/images/changelog/api-catalog.png)
   </Frame>
   You can now search through [all the APIs supported by Nango](https://www.nango.dev/api-integrations). This list is automatically updated whenever new APIs are added.
-
-  ---
 </Update>
+---
 
-<Update label="November 2024">
+<Update label="November 2024 roundup" description="November 2024">
   <AccordionGroup>
     <Accordion icon="webhook" title="16 new APIs in November">
       - [Asana (SCIM API)](/api-integrations/asana)
@@ -1672,46 +1716,42 @@ description: "Important developer & product updates, including deprecations & br
       - [Unipile](/integrations/all/unipile)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Guides
-
+<Update label="Guides" description="November 2024">
   <Frame>
     ![Guides illustration](/images/changelog/guides.png)
   </Frame>
   The [Guides](/getting-started/intro-to-nango) section of the documentation has been improved with a feature-based classification and more comprehensive, detailed guides.
+</Update>
+---
 
-  ---
-
-  ## API-specific docs
-
+<Update label="API-specific docs" description="November 2024">
   <Frame>
     ![API-specific docs illustration](/images/changelog/api-specific-docs.png)
   </Frame>
   API-specific documentation has been enhanced to include more details about tooling, template functions, and configurations for each API. For example, see the [Hubspot](/api-integrations/hubspot) documentation. These API-specific docs are automatically generated and kept up-to-date.
+</Update>
+---
 
-  ---
-
-  ## Integration docs
-
+<Update label="Integration docs" description="November 2024">
   <Frame>
     ![Integration docs illustration](/images/changelog/integration-docs.png)
   </Frame>
   Each template function now includes a ReadMe file with detailed information about the function, how to use it, the API reference, and its changelog. For example, see the [Hubspot Create Company template function](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubspot/actions/create-company.md). These ReadMe files are automatically generated and kept up-to-date.
+</Update>
+---
 
-  ---
-
-  ## User & org information
-
+<Update label="User and org info" description="November 2024">
   <Frame>
     ![User and org information screenshot](/images/changelog/user-and-org-information.png)
   </Frame>
   Attach information about your users and organizations to integrations for better visibility in the Nango UI, laying the ground for lays the groundwork for user-specific and customer-specific insights. Learn how to set this up in the [authorization guide](/guides/auth/auth-guide).
-
-  ---
 </Update>
+---
 
-<Update label="October 2024">
+<Update label="October 2024 roundup" description="October 2024">
   <AccordionGroup>
     <Accordion icon="webhook" title="45 new APIs in October">
       - [Acuity Scheduling](/integrations/all/acuity-scheduling)
@@ -1761,55 +1801,50 @@ description: "Important developer & product updates, including deprecations & br
       - [Workable (OAuth)](/integrations/all/workable)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Authorization input validation
-
+<Update label="Auth input validation" description="October 2024">
   <Frame>
     ![Authorization input validation screenshot](/images/changelog/authorization-input-validation.png)
   </Frame>
   When your users authorize integrations, Nango now validates input fields through formatting checks and live API requests, minimizing misconfigurations. This is available in the [default authorization UI](/guides/auth/auth-guide).
+</Update>
+---
 
-  ---
-
-  ## OpenTelemetry exporter
-
+<Update label="OpenTelemetry exporter" description="October 2024">
   <Frame>
     ![OpenTelemetry exporter screenshot](/images/changelog/opentelemetry-exporter.png)
   </Frame>
   Improve integration observability by exporting Nango logs in real-time to tools like Datadog, New Relic and others. This feature is a paid add-on, reach out on Slack to activate it in your _Environment Settings_, configure the destination URL and headers.
+</Update>
+---
 
-  ---
-
-  ## End-user authorization guides
-
+<Update label="End-user auth guides" description="October 2024">
   <Frame>
     ![End-user authorization guides screenshot](/images/changelog/end-user-authorization-guides.png)
   </Frame>
   Step-by-step guides are now provided to your users to explain how to find and input credentials when they authorize integrations. Each input field ties directly to a relevant section in the guide. This is available in the [default authorization UI](/guides/auth/auth-guide).
+</Update>
+---
 
-  ---
-
-  ## Invalid credentials detection
-
+<Update label="Invalid credential detection" description="October 2024">
   <Frame>
     ![Invalid credentials detection screenshot](/images/changelog/invalid-credentials-detection.png)
   </Frame>
   Nango now periodically detects invalid API keys and basic credentials in addition to expired OAuth tokens. Slack notifications & dashboard callouts are created when credentials fail validation. This feature is live for all users.
+</Update>
+---
 
-  ---
-
-  ## Pre-built authorization UI
-
+<Update label="Pre-built auth UI" description="October 2024">
   <Frame>
     ![Pre-built authorization UI screenshot](/images/changelog/pre-built-authorization-ui.png)
   </Frame>
   The Connect UI is a pre-built interface to streamline how your users authorize integrations. It handles API keys, basic credentials, OAuth and additional API-specific required fields. Check out the [guide](/guides/auth/auth-guide) to use it, or continue using your [custom UI](/guides/auth/customize-connect-ui) without interruption.
-
-  ---
 </Update>
+---
 
-<Update label="September 2024">
+<Update label="September 2024 roundup" description="September 2024">
   <AccordionGroup>
     <Accordion icon="webhook" title="12 new APIs in September">
       - [Replicate](/integrations/all/replicate)
@@ -1826,37 +1861,34 @@ description: "Important developer & product updates, including deprecations & br
       - [Zoho People](/integrations/all/zoho-people)
     </Accordion>
   </AccordionGroup>
-  ---
+</Update>
+---
 
-  ## Improved logging
-
+<Update label="Improved logging" description="September 2024">
   <Frame>
     ![Improved logging screenshot](/images/changelog/improved-logging.png)
   </Frame>
   All HTTP requests made through your integrations are now logged. Logs have been streamlined for easier navigation, with searchable payloads to pinpoint specific issues. Check out the _Logs_ tab in the [Nango UI](https://app.nango.dev).
+</Update>
+---
 
-  ---
-
-  ## Higher sync frequency
-
+<Update label="Higher sync frequency" description="September 2024">
   <Frame>
     ![Higher sync frequency screenshot](/images/changelog/higher-sync-frequency.png)
   </Frame>
   Nango now offers support for more frequent syncs, down to 30-second intervals. It's available on Growth plans as a paid add-on, and on Enterprise plans.
+</Update>
+---
 
-  ---
-
-  ## SOC 2 Type 2
-
+<Update label="SOC 2 Type 2" description="September 2024">
   <Frame>
     ![SOC 2 Type 2 screenshot](/images/changelog/soc-2-type-2.png)
   </Frame>
   Nango has achieved SOC 2 Type 2 certification, in addition to GDPR compliance & DPF, allowing us to operate in Europe. Visit our [trust center](https://app.vanta.com/nango.dev/trust/6ldi6a2401gxg3e25and9m) for details.
+</Update>
+---
 
-  ---
-
-  ## JSONSchema types
-
+<Update label="JSONSchema types" description="September 2024">
   <Frame>
     ![JSONSchema types screenshot](/images/changelog/jsonschema-types.png)
   </Frame>

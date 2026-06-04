@@ -32,7 +32,8 @@ function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; e
             validateActionInput: false,
             validateActionOutput: false,
             validateSyncMetadata: false,
-            validateSyncRecords: false
+            validateSyncRecords: false,
+            exportRunnerTelemetry: false
         },
         endUser: null,
         heartbeatTimeoutSecs: 30

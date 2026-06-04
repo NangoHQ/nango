@@ -26,12 +26,14 @@ import { routeHandler as postRecordsHandler } from './routes/environment/environ
 import { routeHandler as putRecordsHandler } from './routes/environment/environmentId/connection/connectionId/sync/syncId/job/jobId/putRecords.js';
 import { routeHandler as postLogHandler } from './routes/environment/environmentId/postLog.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
+import { route as postRunnerTelemetryRoute, routeHandler as postRunnerTelemetryHandler } from './routes/runner/telemetry/postTelemetry.js';
 
 import type { ApiError } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 const maxSizeJsonLog = '100kb';
 const maxSizeJsonRecords = '100mb';
+const maxSizeJsonRunnerTelemetry = '256kb';
 
 export const server = express();
 
@@ -47,6 +49,7 @@ server.use(getRecordsRoute.path, express.json());
 server.use(deleteOutdatedRecordsRoute.path, express.json());
 server.use(deleteHardRecordsRoute.path, express.json());
 server.use(getCheckpointRoute.path, express.json());
+server.use(postRunnerTelemetryRoute.path, express.json({ limit: maxSizeJsonRunnerTelemetry }));
 
 createRoute(server, getHealthHandler);
 createRoute(server, postLogHandler);
@@ -60,6 +63,7 @@ createRoute(server, getRecordsHandler);
 createRoute(server, getCheckpointHandler);
 createRoute(server, putCheckpointHandler);
 createRoute(server, deleteCheckpointHandler);
+createRoute(server, postRunnerTelemetryHandler);
 
 server.use((_req: Request, res: Response, next: NextFunction) => {
     res.status(404);

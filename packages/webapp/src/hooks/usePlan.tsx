@@ -88,15 +88,40 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
+// Dev-tools toggle for flipping the billing-usage source per-request.
+// Set in the browser console with:
+//   localStorage.setItem('nango.billingUsageSource', 'clickhouse')   // or 'orb'
+//   localStorage.removeItem('nango.billingUsageSource')              // back to env default
+// Then reload the page (or wait for the next refetch). The server treats
+// missing as "use the env-level default" — no flipping in prod unless you
+// explicitly set the localStorage value.
+const BILLING_USAGE_SOURCE_KEY = 'nango.billingUsageSource';
+
+function readBillingUsageSourceOverride(): 'clickhouse' | 'orb' | null {
+    try {
+        const v = localStorage.getItem(BILLING_USAGE_SOURCE_KEY);
+        return v === 'clickhouse' || v === 'orb' ? v : null;
+    } catch {
+        return null;
+    }
+}
+
 export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
+    // Read source override at hook-call time so it's part of the query key —
+    // otherwise React Query keeps showing data from the previous backend until
+    // the natural refetch when the developer flips the localStorage value.
+    const source = readBillingUsageSourceOverride();
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
-        queryKey: [...GetBillingUsageQueryKey, timeframe],
+        queryKey: [...GetBillingUsageQueryKey, timeframe, source],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
+            }
+            if (source) {
+                params.append('source', source);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
