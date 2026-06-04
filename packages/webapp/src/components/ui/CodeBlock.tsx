@@ -5,8 +5,8 @@ import { useCallback, useState } from 'react';
 import { Badge } from './Badge.js';
 import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
-import { cn } from '../../utils/utils.js';
 import { useThemeStore } from '../../lib/theme.js';
+import { cn } from '../../utils/utils.js';
 
 import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';

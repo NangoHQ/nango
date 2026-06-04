@@ -18,7 +18,11 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
                 }
             }}
         >
-            <SheetContent side="right" hideCloseButton className="w-[1034px] max-w-none sm:max-w-none p-0 bg-bg-elevated text-text-primary border-l-border-muted">
+            <SheetContent
+                side="right"
+                hideCloseButton
+                className="w-[1034px] max-w-none sm:max-w-none p-0 bg-bg-elevated text-text-primary border-l-border-muted"
+            >
                 <SheetTitle className="sr-only">Operation Details</SheetTitle>
                 <div className="relative h-full select-text">
                     <div className="absolute right-6 top-[35px] flex items-center gap-1">
