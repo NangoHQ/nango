@@ -1,15 +1,20 @@
 import { healthService } from '@nangohq/shared';
 
+import type { RequestLocals } from '../../../utils/express.js';
 import type { Request, Response } from 'express';
 
-export const getIntegrationHealth = async (req: Request, res: Response) => {
+export const getIntegrationHealth = async (_req: Request, res: Response) => {
     try {
-        const environmentId = (req as any).environment_id; // Added by auth middleware
+        const { environment } = res.locals as RequestLocals;
+        if (!environment) {
+            res.status(500).send({ error: { code: 'server_error', message: 'Environment not found' } });
+            return;
+        }
 
-        const metrics = await healthService.getIntegrationHealthMetrics(environmentId);
+        const metrics = await healthService.getIntegrationHealthMetrics(environment.id);
 
-        res.status(200).json(metrics);
+        res.status(200).send(metrics);
     } catch (_err) {
-        res.status(500).json({ error: 'Failed to retrieve integration health metrics' });
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to retrieve integration health metrics' } });
     }
 };

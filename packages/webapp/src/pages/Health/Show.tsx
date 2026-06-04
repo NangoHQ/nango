@@ -15,7 +15,7 @@ export const IntegrationHealth = () => {
     const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
 
     if (error) {
-        return <ErrorPageComponent title="Integration Health" error={error?.message || 'Failed to load health metrics'} />;
+        return <ErrorPageComponent title="Integration Health" error={error.json} />;
     }
 
     return (

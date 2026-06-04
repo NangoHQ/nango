@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {

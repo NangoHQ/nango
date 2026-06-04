@@ -17,6 +17,7 @@ import { ConnectionShow } from '@/pages/Connection/Show';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from '@/pages/GettingStarted/Show';
+import { IntegrationHealth } from '@/pages/Health/Show';
 import { Homepage } from '@/pages/Homepage/Show';
 import { CreateIntegration } from '@/pages/Integrations/Create';
 import { CreateIntegrationList } from '@/pages/Integrations/CreateList';
@@ -240,6 +241,11 @@ export const router = sentryCreateBrowserRouter([
                         path: 'logs',
                         element: <LogsShow />,
                         handle: { breadcrumb: 'Logs' } as BreadcrumbHandle
+                    },
+                    {
+                        path: 'health',
+                        element: <IntegrationHealth />,
+                        handle: { breadcrumb: 'Health' } as BreadcrumbHandle
                     },
                     {
                         path: 'activity',
