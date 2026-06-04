@@ -26,7 +26,6 @@ The key is vaulted by Nango and injected by the proxy, so raw credentials never 
 ## Important limitations
 
 - **Limited functionality**: Private API (Generic) is limited to storing and injecting a single API key. Because it's generic, many advanced Nango features are not available for it.
-- **HTTP proxy only**: The configured key injection (placement, name, value template, base URL) is applied only by the Nango HTTP proxy (`https://api.nango.dev/proxy/...`). Calls made with `nango.proxy()` from sync/action scripts or the backend SDK do **not** apply this injection yet, so the request would be sent without the key. Use the HTTP proxy for Private API (Generic) connections.
 - **Base URL required**: You must set the base URL on the integration; there is no predefined base URL like other integrations.
 - **Recommended use cases only**: The only recommended use case for private API integrations is to store credentials for internal/customer-specific APIs that cannot be added to the Nango catalog.
 - **For all other use cases**: We recommend [contributing the API to Nango](/integrations/contribute-or-request-api) or requesting it be added by us.
