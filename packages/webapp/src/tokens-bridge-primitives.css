@@ -62,9 +62,12 @@
     --color-grayscale-1000: var(--surface-canvas);
 
     /* ── Tailwind core colors ── */
-    /* white/black: legacy pages use text-white as body text on dark backgrounds */
-    --color-white: var(--text-strong);
-    --color-black: var(--text-strong);
+    /* NOTE: --color-white and --color-black are NOT bridged — bg-white and text-white
+       have conflicting semantic needs (logo containers vs body text) that can't share
+       one variable. Replace text-white usages with text-text-primary in Phase 3. */
+
+    /* Fix: border-border-gray-400 falls back to currentColor when undefined */
+    --color-border-gray-400: var(--border-input);
 
     /* Blues */
     --color-blue-400: var(--status-info-text);
