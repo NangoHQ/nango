@@ -1,7 +1,15 @@
 import { ENVS, Err, Ok, metrics, parseEnvs, stringifyError } from '@nangohq/utils';
 
 import { Batcher } from './batcher.js';
-import { TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT, isAllowedDimensionFor, quantityForMetric, tableForMetric } from './clickhouse.query.js';
+import {
+    FILTER_PARAM_TYPE_FOR_DIM,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT,
+    isAllowedDimensionFor,
+    quantityForMetric,
+    rankingQuantityForMetric,
+    tableForMetric
+} from './clickhouse.query.js';
 import { clickhouseClient, database as usageDatabase } from './config.js';
 import { logger } from '../logger.js';
 
@@ -13,7 +21,9 @@ import type {
     GetDailySumAndBatchesDay,
     GetDailySumAndBatchesQuery,
     GetDailySumAndBatchesResult,
-    GetDailySumAndBatchesSeries
+    GetDailySumAndBatchesSeries,
+    GetTopDimensionValuesQuery,
+    GetTopDimensionValuesResult
 } from './clickhouse.query.js';
 import type { UsageActionsEvent, UsageConnectionsEvent, UsageEvent, UsageFunctionExecutionsEvent, UsageRecordsEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -115,9 +125,12 @@ export class Clickhouse {
             return Err(new Error('Clickhouse client not initialized'));
         }
 
-        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds, filter } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        if (filter && !isAllowedDimensionFor(metric, filter.dimension)) {
+            return Err(new Error(`Invalid filter dimension ${JSON.stringify(filter.dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -125,6 +138,13 @@ export class Clickhouse {
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
         const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
+        // `query_params` keeps the user-supplied filter value out of the SQL
+        // string — CH parses, validates, and binds it server-side. Native
+        // column type per dim (Int64/Bool/String) so comparison stays native
+        // and any column-level data-skipping index applies.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         const sql =
             dimension === 'none'
@@ -136,6 +156,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
+              ${filterClause}
             GROUP BY day
             ORDER BY day
         `
@@ -146,6 +167,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                   AND day >= toDate('${startDate}')
                   AND day < toDate('${endDate}')
+                  ${filterClause}
                 GROUP BY ${dimension}
                 ORDER BY total DESC
                 LIMIT ${top}
@@ -159,6 +181,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
               AND day >= toDate('${startDate}')
               AND day < toDate('${endDate}')
+              ${filterClause}
             GROUP BY day, isRest, dimensionValue
             ORDER BY day, isRest, dimensionValue
         `;
@@ -167,6 +190,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
+                ...(queryParams ? { query_params: queryParams } : {}),
                 clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{
@@ -263,9 +287,12 @@ export class Clickhouse {
         if (!this.client) {
             return Err(new Error('Clickhouse client not initialized'));
         }
-        const { accountId, metric, dimension, timeframe, maxExecutionSeconds } = query;
+        const { accountId, metric, dimension, timeframe, maxExecutionSeconds, filter } = query;
         if (!isAllowedDimensionFor(metric, dimension)) {
             return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        if (filter && !isAllowedDimensionFor(metric, filter.dimension)) {
+            return Err(new Error(`Invalid filter dimension ${JSON.stringify(filter.dimension)} for metric ${JSON.stringify(metric)}`));
         }
         const queryStart = process.hrtime.bigint();
         const tags = { metric, breakdown: dimension !== 'none' ? 'true' : 'false' };
@@ -273,6 +300,14 @@ export class Clickhouse {
         const endDate = timeframe.end.toISOString().split('T')[0];
         const table = `${this.database}.${tableForMetric(metric)}`;
         const top = Math.min(query.top ?? TOP_N_BREAKDOWN_DEFAULT, TOP_N_BREAKDOWN_CAP);
+        // `query_params` keeps the user-supplied filter value out of the SQL
+        // string. Filter narrows both `SUM(value)` and `uniqExact(batch_id)`
+        // so the running average reflects only the filtered subset.
+        // See `getDailyCounter` for the typed-binding rationale.
+        const filterParamType = filter ? (FILTER_PARAM_TYPE_FOR_DIM[filter.dimension] ?? 'String') : null;
+        const filterClauseAliased = filter ? `AND t.${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const filterClause = filter ? `AND ${filter.dimension} = {filter_value:${filterParamType}}` : '';
+        const queryParams = filter ? { filter_value: filter.value } : undefined;
 
         // dim branch JOINs per-dim sums against `global_batches` so every series
         // shares the same denominator — see method docstring.
@@ -287,6 +322,7 @@ export class Clickhouse {
             WHERE account_id = ${accountId}
             AND day >= toDate('${startDate}')
             AND day < toDate('${endDate}')
+            ${filterClause}
             GROUP BY day
             ORDER BY day
         `
@@ -297,6 +333,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                 AND day >= toDate('${startDate}')
                 AND day < toDate('${endDate}')
+                ${filterClause}
                 GROUP BY day
             ),
             top_dims AS (
@@ -305,6 +342,7 @@ export class Clickhouse {
                 WHERE account_id = ${accountId}
                 AND day >= toDate('${startDate}')
                 AND day < toDate('${endDate}')
+                ${filterClause}
                 GROUP BY ${dimension}
                 ORDER BY total DESC
                 LIMIT ${top}
@@ -323,6 +361,7 @@ export class Clickhouse {
             WHERE t.account_id = ${accountId}
             AND t.day >= toDate('${startDate}')
             AND t.day < toDate('${endDate}')
+            ${filterClauseAliased}
             GROUP BY t.day, isRest, dimensionValue
             ORDER BY t.day, isRest, dimensionValue
         `;
@@ -331,6 +370,7 @@ export class Clickhouse {
             const res = await this.client.query({
                 query: sql,
                 format: 'JSONEachRow',
+                ...(queryParams ? { query_params: queryParams } : {}),
                 clickhouse_settings: { max_execution_time: maxExecutionSeconds ?? READ_QUERY_MAX_EXECUTION_SECONDS }
             });
             const rows = await res.json<{
@@ -414,6 +454,67 @@ export class Clickhouse {
             });
             logger.error(`Clickhouse getDailySumAndBatches failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
             return Err(new Error('Failed to execute Clickhouse daily sum+batches query', { cause: err }));
+        }
+    }
+
+    /**
+     * Top-N seen dimension values for (metric, dimension) over a timeframe,
+     * ordered DESC by `rankingQuantityForMetric(metric)`. Populates the
+     * filter dropdown UI. Limit is clamped to `TOP_N_BREAKDOWN_CAP`.
+     */
+    async getTopDimensionValues(query: GetTopDimensionValuesQuery): Promise<Result<GetTopDimensionValuesResult>> {
+        if (!this.client) {
+            return Err(new Error('Clickhouse client not initialized'));
+        }
+
+        const { accountId, metric, dimension, timeframe, limit } = query;
+        // `isAllowedDimensionFor` accepts 'none' (valid for breakdown callers,
+        // not for top-values — would emit `SELECT toString(none)`). The cast
+        // defends against runtime callers bypassing the discriminated-union
+        // param type with `as any`.
+        if ((dimension as string) === 'none' || !isAllowedDimensionFor(metric, dimension)) {
+            return Err(new Error(`Invalid dimension ${JSON.stringify(dimension)} for metric ${JSON.stringify(metric)}`));
+        }
+        const queryStart = process.hrtime.bigint();
+        const tags = { metric };
+        const startDate = timeframe.start.toISOString().split('T')[0];
+        const endDate = timeframe.end.toISOString().split('T')[0];
+        const table = `${this.database}.${tableForMetric(metric)}`;
+        const cappedLimit = Math.min(Math.max(limit, 1), TOP_N_BREAKDOWN_CAP);
+
+        // The output alias is `dim` (not `value`) so the `ORDER BY` reference
+        // to the table column `value` (used by `rankingQuantityForMetric`) is
+        // not shadowed by the projection.
+        const sql = `
+            SELECT toString(${dimension}) AS dim
+            FROM ${table}
+            WHERE account_id = ${accountId}
+              AND day >= toDate('${startDate}')
+              AND day < toDate('${endDate}')
+            GROUP BY ${dimension}
+            ORDER BY ${rankingQuantityForMetric(metric)} DESC
+            LIMIT ${cappedLimit}
+        `;
+
+        try {
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+            });
+            const rows = await res.json<{ dim: string }>();
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+                ...tags,
+                success: 'true'
+            });
+            return Ok({ accountId, metric, dimension, values: rows.map((r) => r.dim) });
+        } catch (err) {
+            metrics.distribution(metrics.Types.BILLING_USAGE_CLICKHOUSE_TOP_DIMENSION_VALUES_DURATION_MS, Number(process.hrtime.bigint() - queryStart) / 1e6, {
+                ...tags,
+                success: 'false'
+            });
+            logger.error(`Clickhouse getTopDimensionValues failed for account=${accountId} metric=${metric} dimension=${dimension}: ${stringifyError(err)}`);
+            return Err(new Error('Failed to execute Clickhouse top-dimension-values query', { cause: err }));
         }
     }
 

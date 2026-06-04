@@ -8,14 +8,23 @@ export type { AvgUsageMetric, CounterUsageMetric, DimensionFor } from '@nangohq/
 export const TOP_N_BREAKDOWN_DEFAULT = 10;
 export const TOP_N_BREAKDOWN_CAP = 25;
 
-export const COUNTER_METRICS = [
-    'proxy',
-    'function_executions',
-    'function_logs',
-    'function_compute_gbms',
-    'webhook_forwards'
-] as const satisfies readonly CounterUsageMetric[];
-export const AVG_METRICS = ['records', 'connections'] as const satisfies readonly AvgUsageMetric[];
+// `satisfies Record<…, true>` on the set object forces an entry per metric;
+// projecting via `Object.keys` gives the runtime array. Adding a new metric
+// to `CounterUsageMetric` / `AvgUsageMetric` without updating the set fails
+// to typecheck.
+const COUNTER_METRICS_SET = {
+    proxy: true,
+    function_executions: true,
+    function_logs: true,
+    function_compute_gbms: true,
+    webhook_forwards: true
+} satisfies Record<CounterUsageMetric, true>;
+const AVG_METRICS_SET = {
+    records: true,
+    connections: true
+} satisfies Record<AvgUsageMetric, true>;
+export const COUNTER_METRICS = Object.keys(COUNTER_METRICS_SET) as CounterUsageMetric[];
+export const AVG_METRICS = Object.keys(AVG_METRICS_SET) as AvgUsageMetric[];
 
 // Runtime mirror of `BreakdownDimensions` from @nangohq/types — `satisfies`
 // keeps the per-key arrays in sync with the per-key dim union. Single
@@ -36,6 +45,17 @@ export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): b
     return (BREAKDOWN_DIMENSIONS[metric] as readonly string[]).includes(dimension);
 }
 
+// CH parameter type used when binding a filter value to a dimension column.
+// Strings by default; non-string MV columns get their native type so CH
+// parses the user-supplied value once at binding time, the comparison stays
+// native, and any column-level data-skipping index applies. Default for
+// unmapped dims is `String` — keep this map exhaustive vs the actual MV
+// column types or filtered queries on unmapped non-string columns will fail.
+export const FILTER_PARAM_TYPE_FOR_DIM: Record<string, 'Int64' | 'Bool' | 'String'> = {
+    environment_id: 'Int64',
+    success: 'Bool'
+};
+
 export type GetDailyCounterQuery = {
     [M in CounterUsageMetric]: {
         accountId: UsageEvent['payload']['properties']['accountId'];
@@ -44,6 +64,13 @@ export type GetDailyCounterQuery = {
         // Optional top-N breakdown size when `dimension !== 'none'`. Defaults
         // to TOP_N_BREAKDOWN_DEFAULT, clamped server-side to TOP_N_BREAKDOWN_CAP.
         top?: number;
+        // Optional row-level filter: scopes the SQL to rows where the given
+        // dimension equals the given value. Used by the dashboard's per-metric
+        // filter UX. The value is passed through CH's parameterized
+        // `query_params` (no string interpolation of user input). Caller is
+        // expected to ensure mutual exclusion with `dimension !== 'none'`
+        // (breakdown) for the same metric; the primitive does not enforce it.
+        filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` for this query. Defaults to the
         // dashboard ceiling; callers that race against a shorter wall-clock
         // (e.g. shadow path) set this to align server-side cancellation.
@@ -89,6 +116,41 @@ export function tableForMetric(metric: UsageMetric): string {
     }
 }
 
+// Quantity expression used to rank dimension values across ALL metrics.
+// Counter metrics delegate to `quantityForMetric`; AVG metrics rank by raw
+// `SUM(value)` — total event volume contributed by a dim value over the
+// timeframe. This is NOT the running average (`sum/batches`) — that's a
+// per-day series quantity, not a per-period scalar suitable for ordering.
+// For the filter dropdown, "which values contributed the most data" is the
+// right signal, so unweighted `SUM(value)` is fine even though days with
+// more batches contribute proportionally more.
+export function rankingQuantityForMetric(metric: UsageMetric): string {
+    if (metric === 'records' || metric === 'connections') {
+        return `SUM(value)`;
+    }
+    return quantityForMetric(metric);
+}
+
+// Top-N seen dimension values for (metric, dimension) over a timeframe.
+// Returns a flat string list; the filter UI uses this to populate dropdowns.
+export type GetTopDimensionValuesQuery = {
+    [M in UsageMetric]: {
+        accountId: number;
+        metric: M;
+        dimension: BreakdownDimensions[M];
+        timeframe: { start: Date; end: Date };
+        // Number of values to return. Clamped server-side to TOP_N_BREAKDOWN_CAP.
+        limit: number;
+    };
+}[UsageMetric];
+
+export interface GetTopDimensionValuesResult {
+    accountId: number;
+    metric: UsageMetric;
+    dimension: string;
+    values: string[];
+}
+
 export function quantityForMetric(metric: CounterUsageMetric): string {
     switch (metric) {
         case 'function_executions':
@@ -121,6 +183,10 @@ export type GetDailySumAndBatchesQuery = {
         metric: M;
         dimension: DimensionFor<M>;
         top?: number;
+        // Row-level filter (see GetDailyCounterQuery). For AVG metrics it
+        // narrows BOTH `SUM(value)` and `uniqExact(batch_id)` to the dim
+        // value, producing a standalone running-avg for that one value.
+        filter?: { dimension: BreakdownDimensions[M]; value: string };
         // Override CH `max_execution_time` (see GetDailyCounterQuery).
         maxExecutionSeconds?: number;
         timeframe: { start: Date; end: Date };
