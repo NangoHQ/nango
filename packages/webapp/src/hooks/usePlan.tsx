@@ -4,7 +4,18 @@ import { useMemo } from 'react';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 
-import type { ApiPlan, GetBillingUsage, GetPlan, GetPlans, GetUsage, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from '@nangohq/types';
+import type {
+    ApiPlan,
+    BreakdownDimensions,
+    GetBillingUsage,
+    GetPlan,
+    GetPlans,
+    GetUsage,
+    PostPlanChange,
+    PostPlanExtendTrial,
+    PutBillingInvoicingDetails,
+    UsageMetric
+} from '@nangohq/types';
 
 export async function fetchCurrentPlan(env: string): Promise<GetPlan['Success']> {
     const res = await apiFetch(`/api/v1/plans/current?env=${env}`, { method: 'GET' });
@@ -106,11 +117,15 @@ function readBillingUsageSourceOverride(): 'clickhouse' | 'orb' | null {
     }
 }
 
-export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }) {
-    // Read source override at hook-call time so it's part of the query key —
-    // otherwise React Query keeps showing data from the previous backend until
-    // the natural refetch when the developer flips the localStorage value.
-    const source = readBillingUsageSourceOverride();
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, sourceOverride?: 'clickhouse' | 'orb') {
+    // An explicit `sourceOverride` (e.g. the breakdown dashboard pinning the page
+    // to ClickHouse so the headline totals match the breakdowns) takes precedence;
+    // otherwise fall back to the dev-tools localStorage override.
+    //
+    // Read source at hook-call time so it's part of the query key — otherwise
+    // React Query keeps showing data from the previous backend until the natural
+    // refetch when the source changes.
+    const source = sourceOverride ?? readBillingUsageSourceOverride();
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env),
         queryKey: [...GetBillingUsageQueryKey, timeframe, source],
@@ -123,6 +138,54 @@ export function useApiGetBillingUsage(env: string, timeframe?: { start: string; 
             if (source) {
                 params.append('source', source);
             }
+
+            const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetBillingUsage['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+/**
+ * Per-panel usage breakdown. Fires one request scoped to a single metric
+ * (`metrics=<metric>`) with a `breakdown[<metric>]=<dimension>` spec, returning
+ * the top-N dimension-value series plus a single 'rest' rollup under
+ * `usage[metric].breakdown`. Breakdown is a ClickHouse-only feature, so the
+ * request forces `source=clickhouse` (honoured under the dev gate). The caller
+ * keeps using `useApiGetBillingUsage` for the panel's headline total.
+ */
+export function useApiGetBillingUsageBreakdown<M extends UsageMetric>(
+    env: string,
+    timeframe: { start: string; end: string } | undefined,
+    metric: M,
+    dimension: BreakdownDimensions[M] | null,
+    top: number,
+    options?: { enabled?: boolean }
+) {
+    return useQuery<GetBillingUsage['Success'], APIError>({
+        enabled: Boolean(env) && Boolean(timeframe) && Boolean(dimension) && (options?.enabled ?? true),
+        queryKey: [...GetBillingUsageQueryKey, 'breakdown', timeframe, metric, dimension, top],
+        queryFn: async (): Promise<GetBillingUsage['Success']> => {
+            const params = new URLSearchParams({ env });
+            if (timeframe) {
+                params.append('from', timeframe.start);
+                params.append('to', timeframe.end);
+            }
+            // Breakdowns only exist on the ClickHouse path; force the source so it
+            // resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
+            params.append('source', 'clickhouse');
+            params.append('metrics', metric);
+            if (dimension) {
+                params.append(`breakdown[${metric}]`, dimension);
+            }
+            params.append('top', String(top));
 
             const res = await apiFetch(`/api/v1/plans/billing-usage?${params.toString()}`, {
                 method: 'GET'
