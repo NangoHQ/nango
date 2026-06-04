@@ -98,31 +98,31 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                 <Button
                     variant="outline"
                     size={'sm'}
-                    className={cn('h-9 grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
+                    className={cn('h-9 grow truncate text-text-secondary tabular-nums', selectedPreset !== defaultPreset && 'text-text-primary')}
                 >
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-fit p-4 pt-0 rounded-md text-sm text-grayscale-11 bg-grayscale-1" align="end">
+            <PopoverContent className="w-fit p-4 pt-0 rounded-md text-sm text-text-secondary bg-bg-surface" align="end">
                 <div className="flex flex-col gap-4 w-80">
                     <div className="flex flex-col gap-1">
-                        <span className="text-xs text-grayscale-8 self-end">UTC{format(new Date(), 'XXX')}</span>
+                        <span className="text-xs text-text-tertiary self-end">UTC{format(new Date(), 'XXX')}</span>
                         <div
                             className={cn(
-                                'h-10 flex items-center bg-grayscale-3 rounded-md',
-                                !selectedPreset && 'border border-grayscale-8',
+                                'h-10 flex items-center bg-bg-subtle rounded-md',
+                                !selectedPreset && 'border border-border-default',
                                 rangeInputErrorMessage && 'border border-alert-red'
                             )}
                         >
-                            <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-grayscale-5 rounded-md font-medium">
+                            <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-bg-muted rounded-md font-medium">
                                 <IconCalendar size={18} />
                             </div>
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
                                     type="text"
                                     placeholder={customPeriodInputExample}
-                                    className="w-full bg-transparent text-sm text-grayscale-13 placeholder:text-grayscale-10 focus:outline-hidden focus:ring-0 border-none"
+                                    className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-disabled focus:outline-hidden focus:ring-0 border-none"
                                     value={customPeriodInputValue}
                                     onChange={(e) => setCustomPeriodInputValue(e.target.value)}
                                 />
@@ -136,13 +136,13 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                 <div
                                     key={preset.name}
                                     className={cn(
-                                        'flex items-center gap-2 cursor-pointer hover:bg-grayscale-3 rounded-md',
-                                        selectedPreset?.name === preset.name && 'bg-grayscale-3 text-grayscale-13'
+                                        'flex items-center gap-2 cursor-pointer hover:bg-bg-subtle rounded-md',
+                                        selectedPreset?.name === preset.name && 'bg-bg-subtle text-text-primary'
                                     )}
                                     onClick={() => onPresetSelected(preset)}
                                 >
                                     <div className="grow flex items-center gap-2">
-                                        <div className="w-12 shrink-0 flex justify-center items-center p-1 bg-grayscale-5 rounded-md font-medium">
+                                        <div className="w-12 shrink-0 flex justify-center items-center p-1 bg-bg-muted rounded-md font-medium">
                                             {preset.shortLabel}
                                         </div>
                                         <span>{preset.label}</span>

@@ -123,8 +123,8 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
 
     if (loading) {
         return (
-            <div className="border border-border-gray rounded-xl p-6">
-                <h3 className="text-md text-white">{title}</h3>
+            <div className="border border-border-muted rounded-xl p-6">
+                <h3 className="text-md text-text-primary">{title}</h3>
                 <div className="h-[190px] w-full  flex items-center justify-center">
                     <Skeleton style={{ width: '50%' }} />
                 </div>
@@ -134,26 +134,26 @@ export const InsightChart: React.FC<{ title: string; desc: string; type: PostIns
 
     if (total === '0') {
         return (
-            <div className="border border-border-gray rounded-xl p-6">
-                <h3 className="text-md text-white">{title}</h3>
-                <div className="h-[190px] w-full text-text-light-gray text-sm flex items-center justify-center">{help}</div>
+            <div className="border border-border-muted rounded-xl p-6">
+                <h3 className="text-md text-text-primary">{title}</h3>
+                <div className="h-[190px] w-full text-text-tertiary text-sm flex items-center justify-center">{help}</div>
             </div>
         );
     }
 
     return (
         <div
-            className="border border-border-gray rounded-xl p-6 transition-colors hover:bg-active-gray"
+            className="border border-border-muted rounded-xl p-6 transition-colors hover:bg-bg-elevated"
             onClick={() => {
                 navigate(getLogsUrl({ env, types: type }));
             }}
         >
             <div className="flex justify-between items-start">
-                <h3 className="text-md text-white">{title}</h3>
+                <h3 className="text-md text-text-primary">{title}</h3>
                 <div className="flex flex-col items-end">
-                    <div className="text-white text-md">{total}</div>
+                    <div className="text-text-primary text-md">{total}</div>
 
-                    <p className="text-text-light-gray text-sm">{desc}</p>
+                    <p className="text-text-tertiary text-sm">{desc}</p>
                 </div>
             </div>
             <div className="mt-7">
