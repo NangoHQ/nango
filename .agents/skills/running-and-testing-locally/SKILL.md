@@ -73,9 +73,9 @@ Run individual services when you only need to restart one:
 
 ```bash
 npm run server:dev:watch       # API server only (port 3003)
-npm run webapp:dev:watch                          # Webapp only (port 3000, or next free port)
-npm run dev -w packages/webapp                    # Same as above, from any worktree
-REMOTE_API=dev npm run dev -w packages/webapp     # Webapp against remote API (no local backend needed)
+npm run webapp:dev:watch       # Webapp only (port 3000, or next free port)
+npm run dev -w packages/webapp # Same as above, from any worktree
+REMOTE_API=dev npm run dev -w packages/webapp # Webapp against remote API (no local backend needed)
 npm run connect-ui:dev:watch   # Connect UI only (port 3009)
 npm run jobs:dev:watch         # Jobs worker (port 3005)
 npm run persist:dev:watch      # Persist service (port 3007)
