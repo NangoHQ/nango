@@ -18973,21 +18973,21 @@ swoogo:
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://api.swoogo.com/api/v1
+        base_url: https://api.swoogo.com
     docs: https://nango.dev/docs/api-integrations/swoogo
     docs_connect: https://nango.dev/docs/api-integrations/swoogo/connect
     credentials:
         client_id:
             type: string
-            title: Consumer Key
-            description: Your Swoogo consumer key, found under My Profile > API Credentials.
-            doc_section: '#step-1-find-your-consumer-key-and-secret'
+            title: API Key
+            description: Your Swoogo API key.
+            doc_section: '#step-1-generate-your-api-credentials'
         client_secret:
             type: string
-            title: Consumer Secret
-            description: Your Swoogo consumer secret, found under My Profile > API Credentials.
+            title: API Secret
+            description: Your Swoogo API secret.
             secret: true
-            doc_section: '#step-1-find-your-consumer-key-and-secret'
+            doc_section: '#step-1-generate-your-api-credentials'
 
 tailscale:
     display_name: Tailscale (OAuth)

@@ -1,27 +1,27 @@
 ---
 title: 'Swoogo'
 sidebarTitle: 'Swoogo'
-description: 'Integrate your application with the Swoogo API using the Client Credentials grant'
+description: 'Integrate your application with the Swoogo API'
 ---
 
 ## 🚀 Quickstart
 
-Connect to Swoogo with Nango using the Client Credentials grant and see data flow in 2 minutes.
+Connect to Swoogo with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create an integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Swoogo_.
     </Step>
-    <Step title="Connect Swoogo">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ and enter your consumer key and consumer secret. Later, you'll let your app do the same programmatically.
+    <Step id="authorize-swoogo" title="Authorize Swoogo">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key and API secret. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the Swoogo API">
+    <Step id="call-api" title="Call the Swoogo API">
     Let's make your first request to the Swoogo API (fetch a list of events). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/events" \
+            curl "https://api.nango.dev/proxy/api/v1/events" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,41 +39,40 @@ Connect to Swoogo with Nango using the Client Credentials grant and see data flo
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/events',
+            endpoint: '/api/v1/events',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
 
-        console.log(JSON.stringify(res.data, null, 2));
+        console.log(res.data);
         ```
         </Tab>
 
     </Tabs>
-
-    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
-        To obtain your own production credentials, follow the setup guide linked below.
+        To connect with your own credentials, follow the connect guide linked below.
     </Step>
 </Steps>
 
 ## 📚 Swoogo Integration Guides
 
-Nango maintained guides for common use cases.
+Nango-maintained guides for common use cases.
 
-- [How do I connect my Swoogo account?](/api-integrations/swoogo/connect)  
-Find your consumer key and consumer secret to connect your Swoogo account to Nango
+- [How do I connect my account?](/api-integrations/swoogo/connect)  
+Generate your API key and API secret to connect your Swoogo account to Nango
 
 Official docs: [Swoogo API documentation](https://swoogo.readme.io/reference)
 
 ## 🧩 Pre-built syncs & actions for Swoogo
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. Extend and customize to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/swoogo/PreBuiltUseCases.mdx"
 
