@@ -20,7 +20,7 @@ export interface PeriodSelectorProps {
     customPeriodExample?: Period;
 }
 
-export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
+export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPreset: _defaultPreset, customPeriodExample }: PeriodSelectorProps) => {
     const [open, setOpen] = useState(false);
 
     const [selectedPreset, setSelectedPreset] = useState<PeriodPreset | null>(null);
