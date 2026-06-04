@@ -59,7 +59,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent align="start" className="text-white">
+            <TooltipContent align="start" className="text-text-primary">
                 <p>{message}</p>
             </TooltipContent>
         </Tooltip>

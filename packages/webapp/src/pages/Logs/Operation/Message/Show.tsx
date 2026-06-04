@@ -55,7 +55,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
         <div className="py-8 px-6 flex flex-col gap-5 h-full">
             <header className="flex gap-2 flex-col border-b border-b-gray-400 pb-5">
                 <div className="flex items-center ml-10">
-                    <h3 className="text-xl font-semibold text-white">{message.type === 'log' ? 'Message' : 'HTTP'} Details</h3>
+                    <h3 className="text-xl font-semibold text-text-primary">{message.type === 'log' ? 'Message' : 'HTTP'} Details</h3>
                 </div>
                 <div className="flex gap-3 items-center">
                     <div className="flex">
@@ -63,17 +63,17 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                     </div>
                     {message.durationMs ? (
                         <div className="flex gap-2 items-center">
-                            <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
+                            <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                             <div className="flex gap-2 items-center">
                                 <IconClockHour4 stroke={1} size={18} />
-                                <div className="text-gray-400 text-s pt-px font-code">{duration}</div>
+                                <div className="text-text-tertiary text-s pt-px font-code">{duration}</div>
                             </div>
                         </div>
                     ) : null}
-                    <div className="flex bg-border-gray-400 w-px h-[16px]">&nbsp;</div>
+                    <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
                         <IconCalendar stroke={1} size={18} />
-                        <div className="text-gray-400 text-s pt-px font-code">{createdAt}</div>
+                        <div className="text-text-tertiary text-s pt-px font-code">{createdAt}</div>
                     </div>
                 </div>
             </header>
@@ -81,14 +81,14 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             <div className="flex gap-5 flex-wrap mt-4">
                 <div className="flex gap-2 items-center w-[48%]">
                     <div className="font-semibold text-sm">Source</div>
-                    <div className="text-gray-400 text-xs pt-px">
+                    <div className="text-text-tertiary text-xs pt-px">
                         <Tag>{message.source === 'internal' ? 'System' : 'User'}</Tag>
                     </div>
                 </div>
             </div>
             <div>
                 <h4 className="font-semibold text-sm mb-2">Message</h4>
-                <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
+                <div className="text-text-tertiary text-sm bg-bg-subtle py-2 max-h-36 overflow-y-scroll">
                     <Prism
                         language="json"
                         className="transparent-code"
@@ -106,7 +106,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                 <h4 className="font-semibold text-sm mb-2">Payload</h4>
 
                 {payload ? (
-                    <div className="text-gray-400 text-sm bg-pure-black py-2 h-full overflow-y-scroll">
+                    <div className="text-text-tertiary text-sm bg-bg-subtle py-2 h-full overflow-y-scroll">
                         <Prism
                             language="json"
                             className="transparent-code"
@@ -119,7 +119,7 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         </Prism>
                     </div>
                 ) : (
-                    <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
+                    <div className="text-text-tertiary text-xs bg-bg-subtle py-4 px-4">No payload.</div>
                 )}
             </div>
         </div>

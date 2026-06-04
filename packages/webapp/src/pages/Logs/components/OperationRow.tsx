@@ -13,7 +13,7 @@ export const OperationRow: React.FC<{
     return (
         <tr
             data-state={row.getIsSelected() && 'selected'}
-            className="text-s text-gray-400 transition-colors border-transparent border-b border-b-active-gray hover:bg-grayscale-900 hover:text-white hover:cursor-pointer flex absolute w-full"
+            className="text-s text-text-tertiary transition-colors border-transparent border-b border-b-border-muted hover:bg-bg-elevated hover:text-text-primary hover:cursor-pointer flex absolute w-full"
             onClick={() => {
                 onSelectOperation(true, row.original.id);
             }}
