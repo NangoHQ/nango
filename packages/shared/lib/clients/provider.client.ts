@@ -264,6 +264,14 @@ class ProviderClient {
     public async introspectedTokenExpired(config: ProviderConfig, connection: DBConnectionDecrypted): Promise<boolean> {
         const { credentials } = connection;
 
+        if (credentials.type === 'OAUTH2' && (credentials.config_override?.client_id || credentials.config_override?.client_secret)) {
+            config = {
+                ...config,
+                ...(credentials.config_override.client_id && { oauth_client_id: credentials.config_override.client_id }),
+                ...(credentials.config_override.client_secret && { oauth_client_secret: credentials.config_override.client_secret })
+            };
+        }
+
         function resolveByType(): { accessToken: string; clientId: string; clientSecret: string } {
             switch (credentials.type) {
                 case 'OAUTH2':
