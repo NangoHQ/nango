@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark bg-bg-elevated" data-theme="dark">
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <link rel="icon" href="/favicon.ico" />
@@ -9,17 +9,20 @@
         <link rel="manifest" href="/manifest.json" />
         <title>Nango</title>
 
-        <!-- Apply saved theme before first paint to avoid flash of wrong mode -->
+        <!-- Apply saved theme before first paint to avoid flash -->
         <script>
             (function () {
                 try {
                     var s = localStorage.getItem('theme');
                     var dark = s ? JSON.parse(s)?.state?.darkMode : true;
-                    if (dark === false) {
-                        document.documentElement.classList.remove('dark');
-                        document.documentElement.setAttribute('data-theme', 'light');
+                    if (dark !== false) {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.setAttribute('data-theme', 'dark');
                     }
-                } catch (e) {}
+                } catch (e) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
             })();
         </script>
 
