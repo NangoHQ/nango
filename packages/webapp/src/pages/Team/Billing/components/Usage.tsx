@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react';
-import { parseAsString, useQueryStates } from 'nuqs';
+import { parseAsString, useQueryState, useQueryStates } from 'nuqs';
 import { useCallback, useMemo } from 'react';
 
 import { UsageChartCard } from './UsageChartCard';
@@ -49,20 +49,21 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
 
-    // "Apply to all": copy one panel's breakdown to every metric that supports it,
-    // or clear every panel when the dimension is null ("No breakdown").
+    // The global breakdown: the dimension "Apply to all" last propagated. A panel
+    // shows its "Apply to all" button when its own selection diverges from this.
+    const [globalBreakdown, setGlobalBreakdown] = useQueryState('breakdown', parseAsString.withDefault('none').withOptions({ history: 'replace' }));
     const [, setBreakdowns] = useQueryStates(breakdownKeyMap);
+
+    // "Apply to all": make a panel's dimension the global one and copy it to every
+    // metric that supports it.
     const applyToAll = useCallback(
-        (dimension: AnyBreakdownDimension | null) => {
-            const updates: Record<string, string | null> = {};
-            if (dimension === null) {
-                for (const m of METRICS) updates[`${m}.breakdown`] = null;
-            } else {
-                for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
-            }
+        (dimension: AnyBreakdownDimension) => {
+            void setGlobalBreakdown(dimension);
+            const updates: Record<string, string> = {};
+            for (const m of metricsSupportingDimension(dimension)) updates[`${m}.breakdown`] = dimension;
             void setBreakdowns(updates);
         },
-        [setBreakdowns]
+        [setGlobalBreakdown, setBreakdowns]
     );
 
     if (usageError) {
@@ -100,6 +101,7 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                     env={env}
                     timeframe={timeframe}
                     selectedMonth={selectedMonth}
+                    globalBreakdown={globalBreakdown}
                     onApplyToAll={applyToAll}
                 />
             ))}

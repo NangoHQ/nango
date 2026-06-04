@@ -1,6 +1,6 @@
 import { Layers } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
     BREAKDOWN_DIMENSIONS,
@@ -32,8 +32,10 @@ interface UsageChartCardProps {
     env: string;
     timeframe: { start: string; end: string };
     selectedMonth: Date;
-    /** Apply a dimension to every metric that supports it from a dropdown option's inline "All" action (null clears every panel). */
-    onApplyToAll: (dimension: AnyBreakdownDimension | null) => void;
+    /** The current global breakdown dimension ('none' or a dim). Used to decide when this panel's "Apply to all" shows. */
+    globalBreakdown: string;
+    /** Make this panel's dimension the global one and apply it to every metric that supports it. */
+    onApplyToAll: (dimension: AnyBreakdownDimension) => void;
 }
 
 /**
@@ -42,7 +44,7 @@ interface UsageChartCardProps {
  * eligible — adds a per-panel Breakdown control that fetches and stacks a
  * dimensional breakdown. The headline total always comes from the base metric.
  */
-export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, onApplyToAll }) => {
+export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, globalBreakdown, onApplyToAll }) => {
     const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
     const fixturesFlag = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
     const monthAvailable = isBreakdownAvailableForMonth(selectedMonth);
@@ -57,10 +59,11 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const [dimParam, setDimParam] = useQueryState(`${metric}.breakdown`, parseAsString.withDefault(NONE).withOptions({ history: 'replace' }));
     const dimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
 
-    // Controlled so the "Apply to all" inline action can close the menu (it doesn't select an item).
-    const [open, setOpen] = useState(false);
-
     const inBreakdownMode = showControls && dimension !== null;
+
+    // "Apply to all" shows when this panel's selection diverges from the global one
+    // and is worth propagating (a dimension more than one metric supports).
+    const canApplyToAll = dimension !== null && dimension !== globalBreakdown && metricsSupportingDimension(dimension).length > 1;
     const fixturesOn = inBreakdownMode && fixturesFlag;
 
     // Real breakdown — disabled when fixtures drive the panel.
@@ -77,12 +80,14 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             values: fixtureValues,
             timeframe,
             top: DEFAULT_TOP_N,
-            viewMode: data?.view_mode === 'cumulative' ? 'cumulative' : 'periodic',
-            total: data?.total
+            viewMode: data?.view_mode === 'cumulative' ? 'cumulative' : 'periodic'
         });
-    }, [fixturesOn, dimension, metric, fixtureValues, timeframe, data?.view_mode, data?.total]);
+    }, [fixturesOn, dimension, metric, fixtureValues, timeframe, data?.view_mode]);
 
     const breakdownEntries = fixtureEntries ?? breakdownQuery.data?.data.usage[metric]?.breakdown;
+
+    // Fixtures invent a large total; show that (not the real base total) in the header.
+    const totalOverride = fixtureEntries ? fixtureEntries.reduce((sum, e) => sum + e.total, 0) : undefined;
 
     const breakdownSeries = useMemo<ChartSeries[] | undefined>(() => {
         if (!showControls || dimension === null) return undefined;
@@ -109,40 +114,33 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         return series;
     }, [showControls, dimension, breakdownEntries]);
 
-    // Clicking an option sets just this panel; clicking its inline "All" action fans
-    // the dimension out to every metric that supports it (or clears every panel on
-    // "No breakdown"). Shown only where it does something — dimensions more than one
-    // metric supports, plus "No breakdown".
-    const applyAllAction = (dim: AnyBreakdownDimension | null) => (
-        <button
-            type="button"
-            className="flex cursor-default items-center gap-1 text-text-tertiary text-body-small-regular hover:text-text-primary"
-            onClick={() => {
-                onApplyToAll(dim);
-                setOpen(false);
-            }}
-        >
-            <Layers className="size-3 text-current" />
-            All
-        </button>
-    );
-
     const headerActions = showControls ? (
-        <Select open={open} onOpenChange={setOpen} value={dimension ?? NONE} onValueChange={(v) => void setDimParam(v === NONE ? null : v)}>
-            <SelectTrigger size="sm">
-                <SelectValue />
-            </SelectTrigger>
-            <SelectContent align="end">
-                <SelectItem value={NONE} action={applyAllAction(null)}>
-                    No breakdown
-                </SelectItem>
-                {dimensions.map((d) => (
-                    <SelectItem key={d} value={d} action={metricsSupportingDimension(d).length > 1 ? applyAllAction(d) : undefined}>
-                        {DIMENSION_LABELS[d]}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+            {canApplyToAll && (
+                <button
+                    type="button"
+                    onClick={() => dimension && onApplyToAll(dimension)}
+                    className="flex items-center gap-1 text-text-tertiary text-body-small-regular hover:text-text-primary"
+                    title="Apply this breakdown to every metric that supports it"
+                >
+                    <Layers className="size-3.5" />
+                    Apply to all
+                </button>
+            )}
+            <Select value={dimension ?? NONE} onValueChange={(v) => void setDimParam(v === NONE ? null : v)}>
+                <SelectTrigger size="sm">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                    <SelectItem value={NONE}>No breakdown</SelectItem>
+                    {dimensions.map((d) => (
+                        <SelectItem key={d} value={d}>
+                            {DIMENSION_LABELS[d]}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
     ) : undefined;
 
     // Flag on but the selected month predates the breakdown cutover: explain the absence of controls.
@@ -158,6 +156,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             breakdownSeries={breakdownSeries}
             breakdownLoading={fixturesOn ? fixtureValuesLoading : breakdownQuery.isLoading}
             breakdownError={fixturesOn ? false : breakdownQuery.isError}
+            totalOverride={totalOverride}
         />
     );
 };
