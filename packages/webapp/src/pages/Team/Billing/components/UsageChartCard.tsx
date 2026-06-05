@@ -54,7 +54,8 @@ interface UsageChartCardProps {
 export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, isLoading, env, timeframe, selectedMonth, globalBreakdown, onApplyToAll }) => {
     const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
     const fixturesFlag = useFeatureFlagsStore((s) => s.usageBreakdownFixtures);
-    const monthAvailable = isBreakdownAvailableForMonth(selectedMonth);
+    const allowMay = useFeatureFlagsStore((s) => s.usageBreakdownAllowMay);
+    const monthAvailable = isBreakdownAvailableForMonth(selectedMonth, allowMay);
     const showControls = breakdownFlag && monthAvailable;
 
     const dimensions: readonly AnyBreakdownDimension[] = (BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[]).filter(

@@ -27,6 +27,13 @@ export interface FeatureFlagsState {
      */
     usageBreakdownFixtures: boolean;
 
+    /**
+     * Dev-only: lowers the breakdown availability bound from June 2026 to May 2026
+     * so breakdowns can be exercised on May (ClickHouse data is only partial then,
+     * so this is for development, not customers). Requires `usageBreakdown` to be on.
+     */
+    usageBreakdownAllowMay: boolean;
+
     setFlag: <K extends keyof Omit<FeatureFlagsState, 'setFlag'>>(key: K, value: boolean) => void;
 }
 
@@ -37,6 +44,7 @@ export const useFeatureFlagsStore = create<FeatureFlagsState>()(
             themeSwitcher: false,
             usageBreakdown: false,
             usageBreakdownFixtures: false,
+            usageBreakdownAllowMay: false,
 
             setFlag: (key, value) => set({ [key]: value })
         }),
