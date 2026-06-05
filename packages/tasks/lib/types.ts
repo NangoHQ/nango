@@ -29,28 +29,23 @@ export interface TaskContext {
 export type TaskHandler<Payload> = (payload: Payload, ctx: TaskContext) => Promise<Result<void>>;
 
 /**
- * The concurrency bucket for a task: a static key, or one derived from the payload. This is
- * independent from `type` (which selects the handler) — e.g. group syncs per connection while the
- * handler stays the same. Defaults to the `type` when omitted.
+ * The concurrency bucket for a task: a static key, or one derived from the payload.
  */
 export type GroupKey<Payload> = string | ((payload: Payload) => string);
 
-/**
- * A task type: its unique `type` (selects the handler), the Zod schema for its payload (the payload
- * type is derived from it), and the handler. Optional `groupKey`/`TaskOptions` override the package
- * defaults for this type.
- */
 export interface TaskDefinition<Name extends string, Schema extends z.ZodType> extends Partial<TaskOptions> {
+    /** The task type identifier */
     type: Name;
+    /** The schema for the task payload */
     schema: Schema;
+    /** The task handler */
     handle: TaskHandler<z.infer<Schema>>;
+    /** The concurrency bucket for the task */
     groupKey?: GroupKey<z.infer<Schema>>;
 }
 
 /**
- * Loose shape used only as a generic constraint for collections of definitions. `payload: any`
- * keeps `handle` assignable regardless of the concrete schema (function params are contravariant,
- * so a precise `(p: Foo) => ...` is not assignable to `(p: unknown) => ...`).
+ * Loose shape used only as a generic constraint for collections of definitions
  */
 export interface AnyTaskDefinition extends Partial<TaskOptions> {
     type: string;
@@ -85,11 +80,6 @@ export type EnqueueOverrides = Omit<Partial<TaskOptions>, 'groupMaxConcurrency'>
     groupKey?: string;
 };
 
-/**
- * A task's `type` is encoded as the prefix of its scheduler `name` (the rest is a unique id), so the
- * processor can route by type while `groupKey` is free to be a payload-derived concurrency bucket.
- * Types therefore cannot contain the separator.
- */
 export const TASK_TYPE_SEPARATOR = ':';
 
 export function buildTaskName(type: string, uniqueId: string): string {
@@ -105,14 +95,13 @@ export function taskTypeFromName(name: string): string {
 export type PayloadOf<Defs extends readonly AnyTaskDefinition[], T extends string> =
     Extract<Defs[number], { type: T }> extends { schema: infer S extends z.ZodType } ? z.infer<S> : never;
 
-/** One item of an `enqueueBatch` call: a registered `type` paired with its matching payload. */
 export type EnqueueBatchItem<Defs extends readonly AnyTaskDefinition[]> = {
     [T in Defs[number]['type']]: {
         type: T;
         payload: PayloadOf<Defs, T>;
-        /** Concurrency bucket for this item; overrides the definition's `groupKey`. */
+        /** Overrides the definition's `groupKey`. */
         groupKey?: string;
-        /** Defer this item: only runnable at/after this time. Omit to run as soon as possible. */
+        /** Defer the task: only runnable at/after this time. Omit to run as soon as possible. */
         startsAfter?: Date;
     };
 }[Defs[number]['type']];
