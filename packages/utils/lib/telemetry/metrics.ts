@@ -146,7 +146,7 @@ export enum Types {
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE_MISSING = 'nango.server.auth.callback.state_cookie.missing'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
