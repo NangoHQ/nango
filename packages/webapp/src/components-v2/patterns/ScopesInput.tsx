@@ -97,9 +97,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
             const value = (e.target as HTMLInputElement).value.replace(/,$/, '').trim();
             if (!value) return;
-            e.preventDefault();
             await addScopesFromText(value);
         }
     };

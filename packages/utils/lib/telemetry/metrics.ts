@@ -58,6 +58,9 @@ export enum Types {
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
     RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
     RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
+    RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.records.sent.sizeInBytes',
+    RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES = 'nango.runner.persist.records.received.sizeInBytes',
+    RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.logs.sent.sizeInBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
@@ -116,6 +119,8 @@ export enum Types {
 
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
     DEPLOY_SECURITY_SCAN = 'nango.server.deploy.security.scan',
+
+    EGRESS_BYTES = 'nango.server.egress.bytes',
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 

@@ -10,11 +10,10 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
-import TagsInput from '../../components/ui/input/TagsInput';
+import { ScopesInput } from '../../components-v2/patterns/ScopesInput';
+import { SecretTextArea } from '../../components-v2/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
-import useSet from '../../hooks/useSet';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
@@ -41,9 +40,9 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
-    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
-    const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
-    const [oauthccSelectedScopes, oauthccAddToScopesSet, oauthccRemoveFromSelectedSet] = useSet<string>();
+    const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
+    const [oauthSelectedScopes, setOauthSelectedScopes] = useState<string[]>([]);
+    const [oauthccSelectedScopes, setOauthccSelectedScopes] = useState<string[]>([]);
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState<string>('');
@@ -714,16 +713,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                     </div>
                                     <div className="mt-1">
-                                        <TagsInput
-                                            id="scopes"
-                                            name="user_scopes"
-                                            type="text"
-                                            defaultValue={''}
-                                            onChange={() => null}
-                                            selectedScopes={selectedScopes}
-                                            addToScopesSet={addToScopesSet}
-                                            removeFromSelectedSet={removeFromSelectedSet}
-                                            minLength={1}
+                                        <ScopesInput
+                                            scopesString={selectedScopes.join(',')}
+                                            onChange={(newScopesString) => {
+                                                setSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                return Promise.resolve();
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -770,16 +765,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             <span className="text-gray-400 text-xs">Scopes</span>
                                         </div>
                                         <div className="mt-1">
-                                            <TagsInput
-                                                id="oauth_scopes"
-                                                name="oauth_scopes"
-                                                type="text"
-                                                defaultValue={''}
-                                                selectedScopes={oauthccSelectedScopes}
-                                                addToScopesSet={oauthccAddToScopesSet}
-                                                removeFromSelectedSet={oauthccRemoveFromSelectedSet}
-                                                minLength={1}
-                                                onChange={() => null}
+                                            <ScopesInput
+                                                scopesString={oauthccSelectedScopes.join(',')}
+                                                onChange={(newScopesString) => {
+                                                    setOauthccSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                    return Promise.resolve();
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -858,16 +849,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 </label>
                                             </div>
                                             <div className="mt-1">
-                                                <TagsInput
-                                                    id="scopes"
-                                                    name="oauth_scopes"
-                                                    type="text"
-                                                    defaultValue={''}
-                                                    onChange={() => null}
-                                                    selectedScopes={oauthSelectedScopes}
-                                                    addToScopesSet={oauthAddToScopesSet}
-                                                    removeFromSelectedSet={oauthRemoveFromSelectedSet}
-                                                    minLength={1}
+                                                <ScopesInput
+                                                    scopesString={oauthSelectedScopes.join(',')}
+                                                    onChange={(newScopesString) => {
+                                                        setOauthSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                        return Promise.resolve();
+                                                    }}
                                                 />
                                             </div>
                                         </>
@@ -1179,7 +1166,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="private_key"
                                             name="private_key"
                                             value={privateKey}
-                                            onUpdate={(value) => setPrivateKey(value)}
+                                            onChange={(e) => setPrivateKey(e.target.value)}
                                             required
                                         />
                                     </div>

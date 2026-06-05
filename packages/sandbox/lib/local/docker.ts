@@ -2,7 +2,7 @@ import { execFile, spawn } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { getCommandOutput } from '../remote-function/command-output.js';
+import { getCommandOutput } from '../functions/command-output.js';
 
 import type { ExecFileOptions } from 'node:child_process';
 

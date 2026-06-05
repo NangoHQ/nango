@@ -279,6 +279,22 @@ export class NangoError extends NangoInternalError {
                 }
                 break;
 
+            case 'slack_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to request for an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'slack_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
             case 'refresh_token_external_error':
                 this.status = 400;
                 this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;

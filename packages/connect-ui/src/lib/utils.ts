@@ -11,6 +11,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function jsonSchemaToZod(schema: SimplifiedJSONSchema): ZodTypeAny {
+    if (schema.hidden) {
+        return z.string().optional();
+    }
+
     if (schema.enum && schema.enum.length > 0) {
         const enumSchema = z.enum(schema.enum as [string, ...string[]]);
         if ('optional' in schema && schema.optional === true) {

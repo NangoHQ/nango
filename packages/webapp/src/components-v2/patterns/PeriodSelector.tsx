@@ -2,12 +2,12 @@ import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Popover, PopoverContent, PopoverTrigger } from './Popover';
-import { Button } from './button/Button';
-import { matchPresetFromPeriod, parsePeriod } from '../../utils/dates';
-import { cn } from '../../utils/utils';
+import { Button } from '@/components-v2/ui/Button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
+import { matchPresetFromPeriod, parsePeriod } from '@/utils/dates';
+import { cn } from '@/utils/utils';
 
-import type { Period, PeriodPreset } from '../../utils/dates';
+import type { Period, PeriodPreset } from '@/utils/dates';
 
 const dateTimeFormat = 'LLL dd, yyyy, HH:mm:ss';
 
@@ -96,9 +96,9 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
         >
             <PopoverTrigger asChild>
                 <Button
-                    variant="zombieGray"
+                    variant="outline"
                     size={'sm'}
-                    className={cn('grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
+                    className={cn('h-9 grow truncate text-text-light-gray tabular-nums', selectedPreset !== defaultPreset && 'text-white')}
                 >
                     <IconCalendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}

@@ -12,6 +12,7 @@ import {
     configService,
     connectionService,
     errorManager,
+    getProvider,
     getProxyConfiguration,
     pubsub,
     refreshOrTestCredentials
@@ -148,6 +149,20 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             return;
         }
 
+        // A base-url-override (already checked above) takes precedence over the integration's custom.baseUrl, so only
+        // denylist-check custom.baseUrl when no override is supplied — otherwise a safe override would be wrongly rejected.
+        const provider = getProvider(integration.provider);
+        const customBaseUrl = !baseUrlOverride && provider?.integration_config ? integration.custom?.['baseUrl'] : undefined;
+        if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
+            void logCtx.error('Integration base URL is not allowed by server configuration');
+            await logCtx.failed();
+            metrics.increment(metrics.Types.PROXY_FAILURE);
+            res.status(400).send({
+                error: { code: 'base_url_override_not_allowed', message: 'This base URL is not allowed by server configuration.' }
+            });
+            return;
+        }
+
         const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
         if (connectionRes.error || !connectionRes.response) {
             void logCtx.error('Failed to get connection', { error: connectionRes.error });
@@ -265,7 +280,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             },
             getIntegrationConfig: () => ({
                 oauth_client_id: integration.oauth_client_id,
-                oauth_client_secret: integration.oauth_client_secret
+                oauth_client_secret: integration.oauth_client_secret,
+                custom: integration.custom
             }),
             onBytes: ({ sent, received }) => {
                 metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server' });
