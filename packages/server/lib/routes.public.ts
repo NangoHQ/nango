@@ -71,6 +71,7 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
+import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withAnyScope, withScope } from './middleware/scope.middleware.js';
@@ -80,12 +81,20 @@ import { isBinaryContentType } from './utils/utils.js';
 import type { DBPlan } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionOrApiAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
+const connectSessionOrPublicAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
 
-const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
 const remoteFunctionAuth: RequestHandler[] = [
     ...apiAuth,
     (_req, res, next) => {
