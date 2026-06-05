@@ -1,4 +1,4 @@
-import { Cross1Icon } from '@radix-ui/react-icons';
+import { X } from 'lucide-react';
 import { useState } from 'react';
 
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '../../../components/ui/Sheet';
@@ -25,7 +25,7 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
                             title="Close"
                             className="bg-transparent text-text-light-gray hover:text-white focus:text-white transition-colors w-8 h-6 flex items-center justify-center"
                         >
-                            <Cross1Icon />
+                            <X size={16} />
                         </SheetClose>
                     </div>
                     <ShowOperation operationId={operationId} />

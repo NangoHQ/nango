@@ -1,10 +1,10 @@
-import { Loading } from '@geist-ui/core';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 
 import DefaultLayout from '../../layout/DefaultLayout';
+import { useToast } from '../../hooks/useToast';
 import { apiFetch } from '../../utils/api';
+import { Spinner } from '@/components/ui/Spinner';
 
 import type { GetEmailByExpiredToken, ResendVerificationEmailByUuid } from '@nangohq/types';
 
@@ -14,6 +14,7 @@ export function VerifyEmailByExpiredToken() {
     const [uuid, setUuid] = useState('');
     const [loaded, setLoaded] = useState(false);
     const navigate = useNavigate();
+    const { toast } = useToast();
 
     const { token } = useParams();
 
@@ -34,7 +35,7 @@ export function VerifyEmailByExpiredToken() {
                 setUuid(uuid);
 
                 if (verified) {
-                    toast.success('Email already verified. Routing to the login page', { position: toast.POSITION.BOTTOM_CENTER });
+                    toast({ variant: 'success', title: 'Email already verified. Routing to the login page' });
                     navigate('/signin');
                 }
                 setEmail(email);
@@ -62,7 +63,7 @@ export function VerifyEmailByExpiredToken() {
         });
 
         if (res?.status === 200) {
-            toast.success('Verification email sent again!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({ variant: 'success', title: 'Verification email sent again!' });
         } else {
             const response: ResendVerificationEmailByUuid['Errors'] = await res.json();
             setServerErrorMessage(response.error.message || 'Unkown error...');
@@ -70,7 +71,11 @@ export function VerifyEmailByExpiredToken() {
     };
 
     if (!loaded) {
-        return <Loading spaceRatio={2.5} className="-top-36" />;
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Spinner />
+            </div>
+        );
     }
     return (
         <>
