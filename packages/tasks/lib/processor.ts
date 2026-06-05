@@ -84,7 +84,9 @@ export class TaskProcessor {
         const timedOut = Symbol('timedOut');
         const outcome = await Promise.race([waitUntilStopped().then(() => undefined), setTimeout(timeoutMs, timedOut, { signal: ac.signal })]);
         if (outcome === timedOut) {
-            this.logger.warning(`[tasks] processor did not drain within ${timeoutMs}ms; abandoning in-flight tasks (they will be retried)`);
+            this.logger.warning(
+                `[tasks] processor did not drain within ${timeoutMs}ms; abandoning ${this.queue.pending} running + ${this.queue.size} queued task(s) (they will be retried)`
+            );
         } else {
             ac.abort();
         }
