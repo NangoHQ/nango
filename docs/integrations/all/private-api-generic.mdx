@@ -15,7 +15,7 @@ import PreBuiltUseCases from "/snippets/generated/private-api-generic/PreBuiltUs
 
 Use Private API (Generic) for APIs that authenticate with an API key but do not use `Authorization: Bearer <key>`. Unlike Private API (Bearer Auth), you configure per integration how the proxy presents the key:
 
-- **Key placement**: `header` or `query` param.
+- **Key placement**: `header` or `query` param. Prefer `header` — keys sent as a query param can be exposed in upstream, proxy, and CDN logs.
 - **Key name**: the header or query-param name, e.g. `Authorization`, `x-api-key`, `api_key`.
 - **Value template**: how the key is wrapped, using `${apiKey}` as the placeholder, e.g. `${apiKey}`, `Bearer ${apiKey}`, `Api-Key ${apiKey}`.
 - **Base URL**: the upstream API the proxy calls.

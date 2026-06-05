@@ -22,12 +22,13 @@ function hasValue(value: string | undefined): value is string {
 }
 
 /**
- * Validates the values submitted for a provider's `integration_config` schema and returns the
- * cleaned set of values (with defaults applied) ready to be merged into the integration's `custom` field.
+ * Resolves the values submitted for a provider's `integration_config` schema: validates them, applies
+ * defaults, and returns the cleaned set ready to be merged into the integration's `custom` field.
  *
- * Used for custom integration configuration (e.g. `private-api-generic`). Unknown keys are dropped.
+ * Used for custom integration configuration (e.g. `private-api-generic`). Keys not declared in the
+ * schema are rejected (rather than silently dropped) so typos surface as errors.
  */
-export function validateIntegrationConfig(
+export function resolveIntegrationConfig(
     provider: Provider,
     submitted: Record<string, string>,
     options?: { patch?: boolean }
@@ -40,6 +41,13 @@ export function validateIntegrationConfig(
 
     const errors: IntegrationConfigFieldError[] = [];
     const values: Record<string, string> = {};
+
+    // Reject keys that are not part of the provider's schema so a typo'd field surfaces instead of being dropped.
+    for (const key of Object.keys(submitted)) {
+        if (!Object.prototype.hasOwnProperty.call(schema, key)) {
+            errors.push({ field: key, message: `Unknown field ${key}` });
+        }
+    }
 
     for (const [field, definition] of Object.entries(schema)) {
         const provided = field in submitted;

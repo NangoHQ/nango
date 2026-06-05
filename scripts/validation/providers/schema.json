@@ -60,6 +60,12 @@
                 },
                 "hidden": {
                     "type": "boolean"
+                },
+                "warnings": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         }

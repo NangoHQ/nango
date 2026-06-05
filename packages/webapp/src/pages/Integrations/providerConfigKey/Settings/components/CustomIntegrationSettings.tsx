@@ -1,8 +1,10 @@
+import { AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
 import { EditableInput } from '@/components-v2/patterns/EditableInput';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
 import { Label } from '@/components-v2/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
@@ -123,19 +125,29 @@ const EnumField: React.FC<{
         }
     };
 
+    const warning = definition.warnings?.[value];
+
     return (
-        // Disable while a save is in flight so a rapid second change can't be clobbered by a failed revert.
-        <Select value={value} onValueChange={onChange} disabled={!canEdit || saving}>
-            <SelectTrigger id={name} className="w-full">
-                <SelectValue placeholder={definition.title} />
-            </SelectTrigger>
-            <SelectContent>
-                {definition.enum?.map((option) => (
-                    <SelectItem key={option} value={option}>
-                        {option}
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+        <div className="flex flex-col gap-2">
+            {/* Disable while a save is in flight so a rapid second change can't be clobbered by a failed revert. */}
+            <Select value={value} onValueChange={onChange} disabled={!canEdit || saving}>
+                <SelectTrigger id={name} className="w-full">
+                    <SelectValue placeholder={definition.title} />
+                </SelectTrigger>
+                <SelectContent>
+                    {definition.enum?.map((option) => (
+                        <SelectItem key={option} value={option}>
+                            {option}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {warning && (
+                <Alert variant="warning">
+                    <AlertTriangle />
+                    <AlertDescription>{warning}</AlertDescription>
+                </Alert>
+            )}
+        </div>
     );
 };

@@ -2,7 +2,7 @@ import { configService, getProvider, mcpClient, sharedCredentialsService } from 
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
-import { validateIntegrationConfig } from './integrationConfig.js';
+import { resolveIntegrationConfig } from './integrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
 import { integrationToApi } from '../../../formatters/integration.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -53,7 +53,7 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
             res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
             return;
         }
-        const result = validateIntegrationConfig(provider, body.integrationConfig ?? {});
+        const result = resolveIntegrationConfig(provider, body.integrationConfig ?? {});
         if (result.isErr()) {
             res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
             return;

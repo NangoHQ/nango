@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateIntegrationConfig } from './integrationConfig.js';
+import { resolveIntegrationConfig } from './integrationConfig.js';
 
 import type { Provider, SimplifiedJSONSchema } from '@nangohq/types';
 
@@ -21,9 +21,9 @@ const provider = {
     }
 } as unknown as Provider;
 
-describe('validateIntegrationConfig', () => {
+describe('resolveIntegrationConfig', () => {
     it('applies defaults and accepts a valid config', () => {
-        const result = validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'https://api.example.com' });
+        const result = resolveIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'https://api.example.com' });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value).toEqual({
@@ -37,7 +37,7 @@ describe('validateIntegrationConfig', () => {
     });
 
     it('reports required fields that are missing', () => {
-        const result = validateIntegrationConfig(provider, { baseUrl: 'https://api.example.com' });
+        const result = resolveIntegrationConfig(provider, { baseUrl: 'https://api.example.com' });
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.fields.map((e) => e.field)).toContain('keyName');
@@ -45,7 +45,7 @@ describe('validateIntegrationConfig', () => {
     });
 
     it('rejects an enum value outside the allowed set', () => {
-        const result = validateIntegrationConfig(provider, { keyName: 'Authorization', keyPlacement: 'body', baseUrl: 'https://api.example.com' });
+        const result = resolveIntegrationConfig(provider, { keyName: 'Authorization', keyPlacement: 'body', baseUrl: 'https://api.example.com' });
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.fields.map((e) => e.field)).toContain('keyPlacement');
@@ -53,24 +53,24 @@ describe('validateIntegrationConfig', () => {
     });
 
     it('rejects an invalid URL for uri-format fields', () => {
-        const result = validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'not-a-url' });
+        const result = resolveIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'not-a-url' });
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error.fields.map((e) => e.field)).toContain('baseUrl');
         }
     });
 
-    it('drops unknown keys not present in the schema', () => {
-        const result = validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'https://api.example.com', somethingElse: 'x' });
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value).not.toHaveProperty('somethingElse');
+    it('rejects unknown keys not present in the schema', () => {
+        const result = resolveIntegrationConfig(provider, { keyName: 'Authorization', baseUrl: 'https://api.example.com', somethingElse: 'x' });
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.fields.map((e) => e.field)).toContain('somethingElse');
         }
     });
 
     it('rejects non-http(s) URI schemes', () => {
         for (const baseUrl of ['mailto:foo@example.com', 'file:///etc/passwd', 'ftp://example.com']) {
-            const result = validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl });
+            const result = resolveIntegrationConfig(provider, { keyName: 'Authorization', baseUrl });
             expect(result.isErr()).toBe(true);
             if (result.isErr()) {
                 expect(result.error.fields.map((e) => e.field)).toContain('baseUrl');
@@ -80,19 +80,19 @@ describe('validateIntegrationConfig', () => {
 
     it('accepts http and https URIs', () => {
         for (const baseUrl of ['http://internal.example.com', 'https://api.example.com']) {
-            expect(validateIntegrationConfig(provider, { keyName: 'Authorization', baseUrl }).isOk()).toBe(true);
+            expect(resolveIntegrationConfig(provider, { keyName: 'Authorization', baseUrl }).isOk()).toBe(true);
         }
     });
 
     it('rejects integrationConfig for a provider that does not declare integration_config', () => {
         const plainProvider = { auth_mode: 'API_KEY', display_name: 'Plain', docs: '' } as unknown as Provider;
-        const result = validateIntegrationConfig(plainProvider, { anything: 'x' });
+        const result = resolveIntegrationConfig(plainProvider, { anything: 'x' });
         expect(result.isErr()).toBe(true);
     });
 
     describe('patch mode', () => {
         it('validates only the submitted field and ignores missing required fields', () => {
-            const result = validateIntegrationConfig(provider, { keyName: 'X-Api-Key' }, { patch: true });
+            const result = resolveIntegrationConfig(provider, { keyName: 'X-Api-Key' }, { patch: true });
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value).toEqual({ keyName: 'X-Api-Key' });
@@ -100,17 +100,17 @@ describe('validateIntegrationConfig', () => {
         });
 
         it('still validates a submitted enum field', () => {
-            const result = validateIntegrationConfig(provider, { keyPlacement: 'body' }, { patch: true });
+            const result = resolveIntegrationConfig(provider, { keyPlacement: 'body' }, { patch: true });
             expect(result.isErr()).toBe(true);
         });
 
         it('rejects clearing a required field', () => {
-            const result = validateIntegrationConfig(provider, { keyName: '' }, { patch: true });
+            const result = resolveIntegrationConfig(provider, { keyName: '' }, { patch: true });
             expect(result.isErr()).toBe(true);
         });
 
         it('allows clearing an optional field', () => {
-            const result = validateIntegrationConfig(provider, { keyLabel: '' }, { patch: true });
+            const result = resolveIntegrationConfig(provider, { keyLabel: '' }, { patch: true });
             expect(result.isOk()).toBe(true);
             if (result.isOk()) {
                 expect(result.value).toEqual({ keyLabel: '' });

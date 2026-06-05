@@ -1,9 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertTriangle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { SecretInput } from '@/components-v2/patterns/SecretInput';
+import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
 import { Button } from '@/components-v2/ui/Button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
 import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
@@ -85,37 +87,46 @@ export const CustomIntegrationCreateForm: React.FC<{
                                 key={name}
                                 control={form.control}
                                 name={name}
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel>{definition.title}</FormLabel>
-                                        {definition.description && <FormDescription>{definition.description}</FormDescription>}
-                                        <FormControl>
-                                            {definition.enum && definition.enum.length > 0 ? (
-                                                <Select value={field.value as string} onValueChange={field.onChange}>
-                                                    <SelectTrigger className="w-full" aria-invalid={!!fieldState.error}>
-                                                        <SelectValue placeholder={definition.title} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {definition.enum.map((option) => (
-                                                            <SelectItem key={option} value={option}>
-                                                                {option}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            ) : definition.secret ? (
-                                                <InputGroup>
-                                                    <SecretInput {...field} aria-invalid={!!fieldState.error} />
-                                                </InputGroup>
-                                            ) : (
-                                                <InputGroup>
-                                                    <InputGroupInput {...field} placeholder={definition.example} aria-invalid={!!fieldState.error} />
-                                                </InputGroup>
+                                render={({ field, fieldState }) => {
+                                    const warning = definition.warnings?.[field.value as string];
+                                    return (
+                                        <FormItem>
+                                            <FormLabel>{definition.title}</FormLabel>
+                                            {definition.description && <FormDescription>{definition.description}</FormDescription>}
+                                            <FormControl>
+                                                {definition.enum && definition.enum.length > 0 ? (
+                                                    <Select value={field.value as string} onValueChange={field.onChange}>
+                                                        <SelectTrigger className="w-full" aria-invalid={!!fieldState.error}>
+                                                            <SelectValue placeholder={definition.title} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {definition.enum.map((option) => (
+                                                                <SelectItem key={option} value={option}>
+                                                                    {option}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : definition.secret ? (
+                                                    <InputGroup>
+                                                        <SecretInput {...field} aria-invalid={!!fieldState.error} />
+                                                    </InputGroup>
+                                                ) : (
+                                                    <InputGroup>
+                                                        <InputGroupInput {...field} placeholder={definition.example} aria-invalid={!!fieldState.error} />
+                                                    </InputGroup>
+                                                )}
+                                            </FormControl>
+                                            {warning && (
+                                                <Alert variant="warning">
+                                                    <AlertTriangle />
+                                                    <AlertDescription>{warning}</AlertDescription>
+                                                </Alert>
                                             )}
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                                            <FormMessage />
+                                        </FormItem>
+                                    );
+                                }}
                             />
                         ))}
                     </div>

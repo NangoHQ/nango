@@ -15259,6 +15259,8 @@ private-api-generic:
                 - header
                 - query
             default_value: header
+            warnings:
+                query: Sending the key as a query param can expose it in upstream, proxy, and CDN logs. Prefer a header when the API supports it.
             order: 1
         keyName:
             type: string

@@ -38,6 +38,8 @@ export interface SimplifiedJSONSchema {
     secret?: string;
     automated: boolean;
     enum?: string[];
+    // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
+    warnings?: Record<string, string>;
 }
 
 export interface BaseProvider {

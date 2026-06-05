@@ -12,6 +12,7 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { resolveIntegrationConfig } from '../../v1/integrations/integrationConfig.js';
 
 import type { PatchPublicIntegration } from '@nangohq/types';
 
@@ -93,10 +94,24 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
 
     if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
         const custom: Record<string, string> = body.custom as Record<string, string>;
-        integration.custom = {
-            ...integration.custom,
-            ...custom
-        };
+        if (provider.integration_config) {
+            // For providers with a custom integration configuration schema, validate the custom payload against it
+            // (instead of merging arbitrary keys) so this path can't write an invalid config the form/v1 API would reject.
+            const result = resolveIntegrationConfig(provider, custom, { patch: true });
+            if (result.isErr()) {
+                res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
+                return;
+            }
+            integration.custom = {
+                ...integration.custom,
+                ...result.value
+            };
+        } else {
+            integration.custom = {
+                ...integration.custom,
+                ...custom
+            };
+        }
     }
 
     // Credentials
