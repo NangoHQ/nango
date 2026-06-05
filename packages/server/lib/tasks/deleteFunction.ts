@@ -1,7 +1,7 @@
 import { deleteSyncConfig, getSyncsBySyncConfigId, syncManager } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { taskQueue } from './index.js';
+import { tasks } from './index.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { Result } from '@nangohq/utils';
@@ -20,7 +20,7 @@ export interface FunctionDeletionParams {
  * execution immediately.
  **/
 export async function deleteFunction({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
-    const res = await taskQueue.enqueue('teardownFunction', { syncConfigId, environmentId, models });
+    const res = await tasks.enqueue('teardownFunction', { syncConfigId, environmentId, models });
     // Only continue if enqueueing the task was successful.
     if (res.isErr()) {
         return Err(res.error);

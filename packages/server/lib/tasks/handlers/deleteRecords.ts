@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { defineTask } from '@nangohq/task-queue';
+import { defineTask } from '@nangohq/tasks';
 import { Err, Ok } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
 import { deleteSyncRecords } from '../../crons/delete/deleteSyncRecords.js';
-import { taskQueue } from '../index.js';
+import { tasks } from '../index.js';
 
 import type { Result } from '@nangohq/utils';
 
@@ -42,7 +42,7 @@ export const deleteRecordsTask = defineTask({
             // Budget hit before draining every model — resume the rest on a fresh task.
             if (err instanceof DeletionBudgetExceeded) {
                 taskCtx.logger.info(`[tasks:deleteRecords] budget reached for sync ${payload.syncId}, chaining continuation`);
-                const next = await taskQueue.enqueue('deleteRecords', payload);
+                const next = await tasks.enqueue('deleteRecords', payload);
                 if (next.isErr()) {
                     return Err(next.error);
                 }

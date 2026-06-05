@@ -11,7 +11,7 @@ const enqueue = vi.fn(() => {
     order.push('enqueue:deleteRecords');
     return Promise.resolve(Ok({ taskId: 't' }));
 });
-vi.mock('../../tasks/index.js', () => ({ taskQueue: { enqueue } }));
+vi.mock('../../tasks/index.js', () => ({ tasks: { enqueue } }));
 
 const deleteSync = vi.fn(() => {
     order.push('unschedule');

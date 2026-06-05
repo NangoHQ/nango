@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { defineTask } from '@nangohq/task-queue';
+import { defineTask } from '@nangohq/tasks';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
 import { deleteSyncConfigData } from '../../crons/delete/deleteSyncConfigData.js';
-import { taskQueue } from '../index.js';
+import { tasks } from '../index.js';
 
 import type { Result } from '@nangohq/utils';
 
@@ -44,7 +44,7 @@ export const teardownFunctionTask = defineTask({
             if (err instanceof DeletionBudgetExceeded) {
                 taskCtx.logger.info(`[tasks:teardownFunction] budget reached for sync_config ${syncConfigId}, chaining continuation`);
 
-                const next = await taskQueue.enqueue('teardownFunction', payload);
+                const next = await tasks.enqueue('teardownFunction', payload);
                 if (next.isErr()) {
                     return Err(next.error);
                 }

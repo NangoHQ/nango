@@ -23,7 +23,7 @@ const enqueue = vi.fn(() => {
     order.push('enqueue');
     return Promise.resolve(Ok({ taskId: 't' }));
 });
-vi.mock('./index.js', () => ({ taskQueue: { enqueue } }));
+vi.mock('./index.js', () => ({ tasks: { enqueue } }));
 
 vi.mock('../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
 

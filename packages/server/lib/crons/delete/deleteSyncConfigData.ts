@@ -3,7 +3,7 @@ import { getFunctionFileLocations, hardDeleteEndpoints, hardDeleteSyncConfig } f
 
 import { batchDelete } from './batchDelete.js';
 import { deleteSyncData } from './deleteSyncData.js';
-import { taskQueue } from '../../tasks/index.js';
+import { tasks } from '../../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 import type { Sync } from '@nangohq/shared';
@@ -63,7 +63,7 @@ export async function deleteSyncConfigData({ syncConfigId, environmentId }: Dele
 
     // Capture artifact keys while the rows still exist (covers every version), then dispatch their (S3) deletion.
     const fileLocations = await getFunctionFileLocations(syncConfigId);
-    const res = await taskQueue.enqueue('deleteArtifacts', { environmentId, fileLocations });
+    const res = await tasks.enqueue('deleteArtifacts', { environmentId, fileLocations });
     if (res.isErr()) {
         throw res.error;
     }

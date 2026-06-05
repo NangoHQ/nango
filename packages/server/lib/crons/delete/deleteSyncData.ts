@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { getLatestSyncJob, hardDeleteJobs, hardDeleteSync } from '@nangohq/shared';
 
 import { batchDelete } from './batchDelete.js';
-import { taskQueue } from '../../tasks/index.js';
+import { tasks } from '../../tasks/index.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
@@ -34,7 +34,7 @@ export async function deleteSyncData({ syncId, nangoConnectionId, environmentId,
     }
 
     if (environmentId !== null && models.length > 0 && lastJob) {
-        const res = await taskQueue.enqueue('deleteRecords', { syncId, nangoConnectionId, environmentId, models, generation: lastJob.id + 1 });
+        const res = await tasks.enqueue('deleteRecords', { syncId, nangoConnectionId, environmentId, models, generation: lastJob.id + 1 });
         if (res.isErr()) {
             throw res.error;
         }

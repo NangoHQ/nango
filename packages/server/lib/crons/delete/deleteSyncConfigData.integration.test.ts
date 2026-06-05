@@ -6,7 +6,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
 import { deleteSyncConfigData } from './deleteSyncConfigData.js';
-import { taskQueue } from '../../tasks/index.js';
+import { tasks } from '../../tasks/index.js';
 
 import type { BatchDeleteSharedOptions } from './batchDelete.js';
 
@@ -61,7 +61,7 @@ async function insertVersion(opts: {
 describe('deleteSyncConfigData (deletion tree)', () => {
     beforeAll(async () => {
         await multipleMigrations();
-        await taskQueue.migrate();
+        await tasks.migrate();
     });
 
     it('hard-deletes every sync (across connections + variants), their jobs, endpoints, and the config last', async () => {

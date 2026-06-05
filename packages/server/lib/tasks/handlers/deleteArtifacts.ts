@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { deleteFunctionFiles } from '@nangohq/shared';
-import { defineTask } from '@nangohq/task-queue';
+import { defineTask } from '@nangohq/tasks';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 // Not latency-sensitive; allow a long queue wait so a backlog doesn't expire it before it starts.

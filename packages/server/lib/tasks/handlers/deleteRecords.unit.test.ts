@@ -11,7 +11,7 @@ vi.mock('../../crons/delete/deleteSyncRecords.js', () => ({
 }));
 
 const enqueue = vi.fn().mockResolvedValue(Ok({ taskId: 't' }));
-vi.mock('../index.js', () => ({ taskQueue: { enqueue } }));
+vi.mock('../index.js', () => ({ tasks: { enqueue } }));
 
 const { deleteRecordsTask } = await import('./deleteRecords.js');
 
