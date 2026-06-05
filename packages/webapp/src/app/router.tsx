@@ -14,6 +14,11 @@ import { ConnectionCreate } from '@/pages/Connection/Create';
 import { ConnectionCreateLegacy } from '@/pages/Connection/CreateLegacy';
 import { ConnectionList } from '@/pages/Connection/List';
 import { ConnectionShow } from '@/pages/Connection/Show';
+import { ShowRecordModel as ConnectionShowRecordModel } from '@/pages/Connection/ShowRecordModel';
+import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
+import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
+import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
+import { SyncsTab as ConnectionSyncsTab } from '@/pages/Connection/components/SyncsTab';
 import { EnvironmentSettings } from '@/pages/Environment/Settings/Show';
 import { ClassicGettingStarted } from '@/pages/GettingStarted/ClassicGettingStarted';
 import { GettingStarted } from '@/pages/GettingStarted/Show';
@@ -60,6 +65,20 @@ const RedirectWithEnv = ({ path }: { path: string }) => {
         .reduce((acc, [key, value]) => acc.replace(`:${key}`, value!), path);
 
     return <Navigate to={`/${env}/${pathWithParams}`} replace />;
+};
+
+const legacyConnectionTabByHash = {
+    '#auth': 'auth',
+    '#syncs': 'syncs',
+    '#records': 'records',
+    '#settings': 'settings'
+} as const;
+
+const ConnectionIndexRedirect = () => {
+    const location = useLocation();
+    const targetTab = legacyConnectionTabByHash[location.hash.toLowerCase() as keyof typeof legacyConnectionTabByHash] ?? 'auth';
+
+    return <Navigate to={{ pathname: targetTab, search: location.search }} replace />;
 };
 
 const publicAuthRoutes = (() => {
@@ -231,8 +250,46 @@ export const router = sentryCreateBrowserRouter([
                             },
                             {
                                 path: ':providerConfigKey/:connectionId',
+                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle,
                                 element: <ConnectionShow />,
-                                handle: { breadcrumb: (params) => params.connectionId || 'Connection' } as BreadcrumbHandle
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <ConnectionIndexRedirect />
+                                    },
+                                    {
+                                        path: 'auth',
+                                        element: <ConnectionAuthTab />,
+                                        handle: { breadcrumb: 'Auth' } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'syncs',
+                                        element: <ConnectionSyncsTab />,
+                                        handle: { breadcrumb: 'Syncs' } as BreadcrumbHandle
+                                    },
+                                    {
+                                        path: 'records',
+                                        handle: { breadcrumb: 'Records' } as BreadcrumbHandle,
+                                        children: [
+                                            {
+                                                index: true,
+                                                element: <ConnectionRecordsTab />
+                                            },
+                                            {
+                                                path: ':model',
+                                                element: <ConnectionShowRecordModel />,
+                                                handle: {
+                                                    breadcrumb: (params) => params.model || 'Model'
+                                                } as BreadcrumbHandle
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        path: 'settings',
+                                        element: <ConnectionSettingsTab />,
+                                        handle: { breadcrumb: 'Settings' } as BreadcrumbHandle
+                                    }
+                                ]
                             }
                         ]
                     },
