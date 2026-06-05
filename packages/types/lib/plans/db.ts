@@ -203,7 +203,7 @@ export interface DBPlan extends Timestamps {
      * Records store key for this account
      * @default 'default'
      */
-    records_store: 'default' | 'secondary';
+    records_store: 'default' | 'records2';
 
     /**
      * Limit the number of variants per sync

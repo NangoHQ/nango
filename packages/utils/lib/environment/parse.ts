@@ -406,10 +406,10 @@ export const ENVS = z.object({
     RECORDS_DATABASE_SCHEMA: z.string().optional().default('nango_records'),
     RECORDS_DATABASE_SSL: z.stringbool().optional().default(false),
 
-    RECORDS_SECONDARY_DATABASE_URL: z.url().optional(),
-    RECORDS_SECONDARY_DATABASE_READ_URL: z.url().optional(),
-    RECORDS_SECONDARY_DATABASE_SCHEMA: z.string().optional().default('nango_records_secondary'),
-    RECORDS_SECONDARY_DATABASE_SSL: z.stringbool().optional().default(false),
+    RECORDS_2_DATABASE_URL: z.url().optional(),
+    RECORDS_2_DATABASE_READ_URL: z.url().optional(),
+    RECORDS_2_DATABASE_SCHEMA: z.string().optional().default('nango_records_2'),
+    RECORDS_2_DATABASE_SSL: z.stringbool().optional().default(false),
 
     RECORDS_DATABASE_POOL_MIN: z.coerce.number().optional().default(2),
     RECORDS_DATABASE_POOL_MAX: z.coerce.number().optional().default(50),

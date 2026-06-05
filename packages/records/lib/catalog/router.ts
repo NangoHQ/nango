@@ -1,7 +1,8 @@
 import { Ok, flagHasPlan } from '@nangohq/utils';
 
 import { defaultStore } from './default.js';
-import { secondaryStore } from './secondary.js';
+import { records2Store } from './records2.js';
+import { logger } from '../utils/logger.js';
 
 import type { RecordsStore } from '../store.js';
 import type { RecordCount } from '../types.js';
@@ -45,7 +46,7 @@ export class RecordsRouter<K extends string> implements RoutedRecordsStore {
 
     // Lifecycle: runs against all stores
     migrate: RecordsStore['migrate'] = async () => {
-        await Promise.allSettled([...this.stores.values()].map((s) => s.migrate()));
+        await Promise.all([...this.stores.values()].map((s) => s.migrate()));
     };
     close: RecordsStore['close'] = async () => {
         await Promise.allSettled([...this.stores.values()].map((s) => s.close()));
@@ -110,7 +111,7 @@ export class Routing<K extends string> {
 
 const stores = {
     default: defaultStore,
-    secondary: secondaryStore
+    records2: records2Store
 };
 // The routing store is the one responsible for persisting the routing decisions for each connection/model.
 // For simplicity, we use the default store, but it could be a separate store or an external service.
@@ -120,8 +121,8 @@ const routingStore = defaultStore;
 // It must not change across calls for a given context. (ie: Rebalancing and moving data between stores is not supported)
 const routingCache = new Map<string, keyof typeof stores>();
 const routing = new Routing(async (ctx: RoutingContext) => {
-    // Skip routing entirely when secondary store is not configured or feature flag is off
-    if (!flagHasPlan || !stores.secondary) return 'default';
+    // Skip routing entirely when records2 store is not configured or feature flag is off
+    if (!flagHasPlan || !stores.records2) return 'default';
 
     const cacheKey = `${ctx.connectionId}:${ctx.model}`;
     const cached = routingCache.get(cacheKey);
@@ -129,13 +130,16 @@ const routing = new Routing(async (ctx: RoutingContext) => {
 
     const storeKey = ctx.plan?.records_store || 'default';
 
-    // Persist the assignment on first access; existing records are returned unchanged
+    // Persist the assignment on first access
+    // Existing records are pinned to the assigned store at dataset creation.
     const res = await routingStore.getOrCreateRouting({ connectionId: ctx.connectionId, model: ctx.model, storeKey, ifExists: 'default' });
 
-    // Ensure the assigned store exists, otherwise fallback to default
-    const resolved = res.isOk() && stores[res.value] ? res.value : 'default';
-    routingCache.set(cacheKey, resolved);
-    return resolved;
+    if (res.isOk() && stores[res.value]) {
+        routingCache.set(cacheKey, res.value);
+        return res.value;
+    }
+    logger.error('Routing error for connection', ctx.connectionId, 'model', ctx.model, ':', res.isErr() ? res.error : `invalid store ${res.value}`);
+    return 'default';
 });
 
 export const records = new RecordsRouter({ stores, routing });
