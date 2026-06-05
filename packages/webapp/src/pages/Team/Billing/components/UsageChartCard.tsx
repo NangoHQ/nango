@@ -12,7 +12,14 @@ import {
     isBreakdownAvailableForMonth,
     metricsSupportingDimension
 } from '../usageBreakdown';
-import { buildFixtureBreakdownEntries, getCapturedFixtureEntries, useFixtureDimensionValues } from '../usageBreakdownFixtures';
+import {
+    DEFAULT_FIXTURE_ACCOUNT_ID,
+    FIXTURE_ACCOUNT_PARAM,
+    buildFixtureBreakdownEntries,
+    getCapturedBaseMetric,
+    getCapturedFixtureEntries,
+    useFixtureDimensionValues
+} from '../usageBreakdownFixtures';
 import { ChartCard } from '@/components-v2/patterns/ChartCard';
 import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components-v2/patterns/usageChartColors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
@@ -59,6 +66,18 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     const [dimParam, setDimParam] = useQueryState(`${metric}.breakdown`, parseAsString.withDefault(NONE).withOptions({ history: 'replace' }));
     const dimension: AnyBreakdownDimension | null = dimensions.includes(dimParam as AnyBreakdownDimension) ? (dimParam as AnyBreakdownDimension) : null;
 
+    // Which captured prod account's fixtures to load (chosen via the dropdown by the month picker).
+    const [fixtureAccount] = useQueryState(FIXTURE_ACCOUNT_PARAM, parseAsString.withDefault(DEFAULT_FIXTURE_ACCOUNT_ID).withOptions({ history: 'replace' }));
+
+    // When fixtures are active (flag on + eligible month), the whole dashboard reflects
+    // the chosen fixture account — including the non-breakdown panels' base totals.
+    const fixturesActive = showControls && fixturesFlag;
+    const mockBase = useMemo(
+        () => (fixturesActive ? getCapturedBaseMetric(fixtureAccount, selectedMonth, metric) : undefined),
+        [fixturesActive, fixtureAccount, selectedMonth, metric]
+    );
+    const baseData = mockBase ?? data;
+
     const inBreakdownMode = showControls && dimension !== null;
 
     // "Apply to all" shows when this panel's selection diverges from the global one
@@ -73,8 +92,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // Fixtures: prefer real prod data captured for this month; fall back to a
     // synthesized distribution (real env names) for months we didn't capture.
     const capturedEntries = useMemo(
-        () => (fixturesOn && dimension !== null ? getCapturedFixtureEntries(selectedMonth, metric, dimension) : undefined),
-        [fixturesOn, dimension, metric, selectedMonth]
+        () => (fixturesOn && dimension !== null ? getCapturedFixtureEntries(fixtureAccount, selectedMonth, metric, dimension) : undefined),
+        [fixturesOn, dimension, metric, selectedMonth, fixtureAccount]
     );
     const needSynth = fixturesOn && dimension !== null && !capturedEntries;
     const { values: fixtureValues, isLoading: fixtureValuesLoading } = useFixtureDimensionValues(env, dimension, needSynth);
@@ -86,9 +105,9 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             values: fixtureValues,
             timeframe,
             top: DEFAULT_TOP_N,
-            viewMode: data?.view_mode === 'cumulative' ? 'cumulative' : 'periodic'
+            viewMode: baseData?.view_mode === 'cumulative' ? 'cumulative' : 'periodic'
         });
-    }, [needSynth, dimension, metric, fixtureValues, timeframe, data?.view_mode]);
+    }, [needSynth, dimension, metric, fixtureValues, timeframe, baseData?.view_mode]);
 
     const fixtureEntries = capturedEntries ?? synthEntries;
     const breakdownEntries = fixtureEntries ?? breakdownQuery.data?.data.usage[metric]?.breakdown;
@@ -155,8 +174,8 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
 
     return (
         <ChartCard
-            data={data}
-            isLoading={isLoading}
+            data={baseData}
+            isLoading={mockBase ? false : isLoading}
             timeframe={timeframe}
             headerActions={headerActions}
             notice={notice}

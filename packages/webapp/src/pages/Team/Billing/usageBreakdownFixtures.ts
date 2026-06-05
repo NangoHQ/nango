@@ -1,24 +1,48 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { FIXTURE_BREAKDOWNS } from './usageBreakdownFixtureData';
+import { FIXTURE_ACCOUNTS } from './usageBreakdownFixtureData';
 import { apiFetch } from '@/utils/api';
 
 import type { AnyBreakdownDimension } from './usageBreakdown';
-import type { BillingUsageMetric, GetConnections, GetIntegrations, UsageMetric } from '@nangohq/types';
+import type { ApiBillingUsageMetric, BillingUsageMetric, GetConnections, GetIntegrations, UsageMetric } from '@nangohq/types';
 
 const CUMULATIVE_METRICS: readonly UsageMetric[] = ['connections', 'records'];
+
+// Metric display labels (mirror of the server-side formatter), used by the mock
+// base metric so panels show a label even when the current account omits the metric.
+const METRIC_LABELS: Record<UsageMetric, string> = {
+    proxy: 'Proxy requests',
+    connections: 'Connections',
+    function_executions: 'Function runs',
+    function_compute_gbms: 'Function time (ms)',
+    function_logs: 'Function logs',
+    records: 'Sync records',
+    webhook_forwards: 'Webhook forwarding'
+};
+
+/** Accounts available in the fixtures dropdown (id + label). */
+export const FIXTURE_ACCOUNT_OPTIONS = FIXTURE_ACCOUNTS.map((a) => ({ id: a.id, label: a.label }));
+export const DEFAULT_FIXTURE_ACCOUNT_ID = FIXTURE_ACCOUNTS[0]?.id ?? '';
+/** URL query param holding the selected fixture account (shared by the selector and the panels). */
+export const FIXTURE_ACCOUNT_PARAM = 'fixtureAccount';
 
 function monthKey(month: Date): string {
     return `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
 /**
- * Real prod breakdown captured for this (month, metric, dimension), or undefined
- * if we didn't capture it. Reconstructs the `BillingUsageMetric[]` the UI expects
- * from the compact `[day, quantity]` pairs.
+ * Real prod breakdown captured for this (account, month, metric, dimension), or
+ * undefined if we didn't capture it. Reconstructs the `BillingUsageMetric[]` the
+ * UI expects from the compact `[day, quantity]` pairs.
  */
-export function getCapturedFixtureEntries(month: Date, metric: UsageMetric, dimension: AnyBreakdownDimension): BillingUsageMetric[] | undefined {
-    const series = FIXTURE_BREAKDOWNS[monthKey(month)]?.[metric]?.[dimension];
+export function getCapturedFixtureEntries(
+    accountId: string,
+    month: Date,
+    metric: UsageMetric,
+    dimension: AnyBreakdownDimension
+): BillingUsageMetric[] | undefined {
+    const account = FIXTURE_ACCOUNTS.find((a) => a.id === accountId) ?? FIXTURE_ACCOUNTS[0];
+    const series = account?.breakdowns[monthKey(month)]?.[metric]?.[dimension];
     if (!series || series.length === 0) {
         return undefined;
     }
@@ -36,6 +60,48 @@ export function getCapturedFixtureEntries(month: Date, metric: UsageMetric, dime
         }),
         view_mode
     }));
+}
+
+/**
+ * Mock no-breakdown base metric for a fixture account/month, so the non-breakdown
+ * panels show the selected account's data too. Derived by summing the captured
+ * `integration_id` breakdown per day (it includes the 'rest' bucket, so the sum is
+ * the true daily total / running average). Returns undefined if not captured.
+ */
+export function getCapturedBaseMetric(accountId: string, month: Date, metric: UsageMetric): ApiBillingUsageMetric | undefined {
+    const account = FIXTURE_ACCOUNTS.find((a) => a.id === accountId) ?? FIXTURE_ACCOUNTS[0];
+    if (!account) {
+        return undefined;
+    }
+    const view_mode = CUMULATIVE_METRICS.includes(metric) ? 'cumulative' : 'periodic';
+    const byDim = account.breakdowns[monthKey(month)]?.[metric];
+    const series = byDim?.integration_id ?? byDim?.environment_id;
+    if (!series || series.length === 0) {
+        // The fixture account exists but doesn't use this metric → render an empty
+        // panel ("No data") rather than leaking the current account's real totals.
+        return { externalId: `fixture:${metric}`, label: METRIC_LABELS[metric], total: 0, usage: [], view_mode };
+    }
+    const byDay = new Map<string, number>();
+    for (const s of series) {
+        for (const [day, quantity] of s.usage) {
+            byDay.set(day, (byDay.get(day) ?? 0) + quantity);
+        }
+    }
+    const usage = [...byDay.entries()]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([day, quantity]) => {
+            const start = new Date(`${day}T00:00:00.000Z`);
+            const end = new Date(start);
+            end.setUTCDate(start.getUTCDate() + 1);
+            return { timeframeStart: start, timeframeEnd: end, quantity };
+        });
+    return {
+        externalId: `fixture:${metric}`,
+        label: METRIC_LABELS[metric],
+        total: series.reduce((sum, s) => sum + s.total, 0),
+        usage,
+        view_mode
+    };
 }
 
 /**

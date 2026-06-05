@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
 
+import { FixtureAccountSelector } from './components/FixtureAccountSelector';
 import { MonthSelector } from './components/MonthSelector';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
@@ -38,7 +39,8 @@ export const TeamBilling: React.FC = () => {
             <header className="flex justify-between items-center">
                 <h2 className="text-text-primary text-2xl font-semibold">Billing & usage</h2>
                 {isUsageTab && (
-                    <div>
+                    <div className="flex items-center gap-4">
+                        <FixtureAccountSelector />
                         <MonthSelector onMonthChange={setSelectedMonth} />
                     </div>
                 )}
