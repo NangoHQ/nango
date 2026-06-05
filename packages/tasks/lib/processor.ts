@@ -62,7 +62,7 @@ export class TaskProcessor {
         void this.processingLoop();
     }
 
-    public async stop(): Promise<void> {
+    public async stop({ timeoutMs }: { timeoutMs?: number } = {}): Promise<void> {
         if (this.status === 'stopped') {
             return;
         }
@@ -76,7 +76,18 @@ export class TaskProcessor {
             await this.queue.onIdle();
         };
         this.status = 'stopping';
-        await waitUntilStopped();
+        if (timeoutMs === undefined) {
+            await waitUntilStopped();
+            return;
+        }
+        const ac = new AbortController();
+        const timedOut = Symbol('timedOut');
+        const outcome = await Promise.race([waitUntilStopped().then(() => undefined), setTimeout(timeoutMs, timedOut, { signal: ac.signal })]);
+        if (outcome === timedOut) {
+            this.logger.warning(`[tasks] processor did not drain within ${timeoutMs}ms; abandoning in-flight tasks (they will be retried)`);
+        } else {
+            ac.abort();
+        }
     }
 
     private async processingLoop(): Promise<void> {

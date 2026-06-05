@@ -9,6 +9,8 @@ import { Ok, nanoid } from '@nangohq/utils';
 import { Tasks } from './tasks.js';
 import { defineTask } from './types.js';
 
+import type { Result } from '@nangohq/utils';
+
 const dbUrl = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}/${process.env['NANGO_DB_NAME']}`;
 
 // Short tick intervals so the processor picks tasks up quickly and the daemons shut down promptly.
@@ -30,6 +32,23 @@ async function waitFor(predicate: () => boolean, timeoutMs = 5_000): Promise<voi
             throw new Error('timed out waiting for condition');
         }
         await setTimeout(25);
+    }
+}
+
+async function dropSchema(name: string): Promise<void> {
+    const client = new DatabaseClient({
+        url: dbUrl,
+        schema: name,
+        poolMin: 1,
+        poolMax: 1,
+        ssl: false,
+        applicationName: 'tasks-test',
+        statementTimeoutMs: 60_000
+    });
+    try {
+        await client.db.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [name]);
+    } finally {
+        await client.destroy();
     }
 }
 
@@ -82,17 +101,7 @@ describe('Tasks', () => {
 
     afterAll(async () => {
         await tasks.stop();
-        const cleanup = new DatabaseClient({
-            url: dbUrl,
-            schema,
-            poolMin: 1,
-            poolMax: 1,
-            ssl: false,
-            applicationName: 'tasks-test',
-            statementTimeoutMs: 60_000
-        });
-        await cleanup.db.raw(`DROP SCHEMA IF EXISTS ?? CASCADE`, [schema]);
-        await cleanup.destroy();
+        await dropSchema(schema);
     });
 
     beforeEach(() => {
@@ -187,5 +196,32 @@ describe('Tasks', () => {
         expect(res.isErr()).toBe(true);
         await setTimeout(FAST_TICK_MS * 4);
         expect(handled.some((h) => h.message === 'valid-in-bad-batch')).toBe(false);
+    });
+
+    it('stop() returns within the timeout even when a handler never finishes', async () => {
+        const hangingTask = defineTask({
+            type: 'hang',
+            schema: z.object({}),
+            handle: (): Promise<Result<void>> => new Promise(() => undefined)
+        });
+        const hangSchema = `${schema}_hang`;
+        const hangQueue = new Tasks({
+            definitions: [hangingTask] as const,
+            db: { url: dbUrl, schema: hangSchema },
+            processor: { pollIntervalMs: FAST_TICK_MS, maxConcurrency: 1 },
+            schedulerConfig: fastConfig
+        });
+        try {
+            await hangQueue.migrate();
+            hangQueue.start();
+            await hangQueue.enqueue('hang', {});
+            await setTimeout(FAST_TICK_MS * 4); // let the processor pick it up and hang
+
+            const start = Date.now();
+            await hangQueue.stop({ timeoutMs: 500 });
+            expect(Date.now() - start).toBeLessThan(3000);
+        } finally {
+            await dropSchema(hangSchema);
+        }
     });
 });

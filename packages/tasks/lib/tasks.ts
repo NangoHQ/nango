@@ -33,6 +33,8 @@ export interface TasksOptions<Defs extends readonly AnyTaskDefinition[]> {
     logger?: StrictLogger;
 }
 
+const DEFAULT_STOP_TIMEOUT_MS = 10_000;
+
 /**
  * A durable, retryable task queue (backed by `@nangohq/scheduler`) wired to a set of task
  * definitions. Fully typed: `enqueue(type, payload)` is checked against the definitions, and the
@@ -114,9 +116,12 @@ export class Tasks<const Defs extends readonly AnyTaskDefinition[]> {
         this.processor.start();
     }
 
-    /** Stop the processor, scheduler, and close the DB connection. */
-    async stop(): Promise<void> {
-        await this.processor.stop();
+    /**
+     * Stop the processor, scheduler, and close the DB connection. Waits up to `timeoutMs` for in-flight
+     * tasks to finish, then abandons them (abandoned tasks stay STARTED and are retried after timeout).
+     */
+    async stop({ timeoutMs = DEFAULT_STOP_TIMEOUT_MS }: { timeoutMs?: number } = {}): Promise<void> {
+        await this.processor.stop({ timeoutMs });
         await this.scheduler.stop();
         await this.dbClient.destroy();
     }
