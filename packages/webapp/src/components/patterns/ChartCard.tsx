@@ -1,7 +1,8 @@
 import { Check, Info, Loader2, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
 
+import { REST_SERIES_KEY } from './usageChartColors';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
 import { InfoTooltip } from '../ui/InfoTooltip';
 import { Skeleton } from '../ui/Skeleton';
@@ -120,7 +121,13 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // A series is hidden in the chart when another series is isolated, or it's individually hidden.
     const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
 
-    const toggleIsolate = (key: string) => setIsolated((prev) => (prev === key ? null : key));
+    const toggleIsolate = (key: string) => {
+        // Isolating a series also clears any individually-hidden ones, so toggling the
+        // isolation back off reveals every series again rather than restoring the prior
+        // hidden set. (Keep the same Set when already empty to avoid a needless render.)
+        setHidden((prev) => (prev.size === 0 ? prev : new Set()));
+        setIsolated((prev) => (prev === key ? null : key));
+    };
     // Swatch ✕ toggles a series off/on. Clears any isolation so the toggle takes visible effect.
     const toggleHidden = (key: string) => {
         setIsolated(null);
@@ -135,39 +142,68 @@ export const ChartCard: React.FC<ChartCardProps> = ({
         });
     };
 
-    // Headline total + single-series chart are always derived from the base metric.
-    const baseChartData = useMemo(() => {
-        if (!data) return [];
-        const usageMap = usageToDateMap(data.usage);
-        return daysInTimeframe(timeframe).map((date) => ({ date, total: usageMap.get(date) ?? undefined }));
-    }, [data?.usage, timeframe.start, timeframe.end]);
-
-    const breakdownChartData = useMemo(() => {
-        if (!breakdownSeries) return [];
-        const maps = breakdownSeries.map((s) => usageToDateMap(s.usage));
-        return daysInTimeframe(timeframe).map((date) => {
-            const row: Record<string, string | number> = { date };
-            breakdownSeries.forEach((s, i) => {
-                row[s.key] = maps[i].get(date) ?? 0;
-            });
-            return row;
-        });
-    }, [breakdownSeries, timeframe.start, timeframe.end]);
-
     const todayDateKey = useMemo(() => {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
         return today.toISOString().split('T')[0];
     }, []);
 
-    const showTodayLine = useMemo(() => {
-        const start = new Date(timeframe.start);
-        start.setUTCHours(0, 0, 0, 0);
-        const end = new Date(timeframe.end);
-        end.setUTCHours(0, 0, 0, 0);
-        const today = new Date(todayDateKey);
-        return today >= start && today <= end;
-    }, [timeframe.start, timeframe.end, todayDateKey]);
+    // Days after today have no data yet, so we leave them blank (null) instead of
+    // plotting 0. That makes the chart end with a vertical edge at the present
+    // rather than sloping down to zero across the rest of the month. A genuine 0
+    // in the past keeps its value (and the smooth curve down), since only future
+    // days are blanked. (String compare is safe — both are YYYY-MM-DD, UTC.)
+
+    // Headline total + single-series chart are always derived from the base metric.
+    const baseChartData = useMemo(() => {
+        if (!data) return [];
+        const usageMap = usageToDateMap(data.usage);
+        return daysInTimeframe(timeframe).map((date) => ({ date, total: date > todayDateKey ? null : (usageMap.get(date) ?? undefined) }));
+    }, [data?.usage, timeframe.start, timeframe.end, todayDateKey]);
+
+    const breakdownChartData = useMemo(() => {
+        if (!breakdownSeries) return [];
+        const maps = breakdownSeries.map((s) => usageToDateMap(s.usage));
+        return daysInTimeframe(timeframe).map((date) => {
+            const row: Record<string, string | number | null> = { date };
+            breakdownSeries.forEach((s, i) => {
+                row[s.key] = date > todayDateKey ? null : (maps[i].get(date) ?? 0);
+            });
+            return row;
+        });
+    }, [breakdownSeries, timeframe.start, timeframe.end, todayDateKey]);
+
+    // X-axis tick that renders today's day number brighter than the rest, so the
+    // current date stands out on the axis itself — no extra gridline or marker.
+    // Reuses recharts' <Text> so it sits exactly where the default ticks do; the
+    // inline style is the only thing that beats the ChartContainer's
+    // `.recharts-cartesian-axis-tick text` fill rule. Past months never match
+    // todayDateKey, so nothing is highlighted there.
+    const renderDayTick = (tickProps: {
+        x?: number;
+        y?: number;
+        className?: string;
+        fill?: string;
+        textAnchor?: 'start' | 'middle' | 'end' | 'inherit';
+        verticalAnchor?: 'start' | 'middle' | 'end';
+        payload?: { value: string };
+    }) => {
+        const { payload, x, y, className, fill, textAnchor, verticalAnchor } = tickProps;
+        const isToday = payload?.value === todayDateKey;
+        return (
+            <Text
+                x={x}
+                y={y}
+                className={className}
+                fill={fill}
+                textAnchor={textAnchor}
+                verticalAnchor={verticalAnchor}
+                style={isToday ? { fill: 'var(--color-text-primary)' } : undefined}
+            >
+                {payload ? new Date(payload.value).getUTCDate() : ''}
+            </Text>
+        );
+    };
 
     // "No data for this month" is a property of the base metric, independent of breakdown.
     const isEmpty = baseChartData.every((usage) => !usage.total || usage.total === 0);
@@ -203,6 +239,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                       strokeWidth={1}
                       type="basis"
                       dot={false}
+                      // The active dot sits on top of the band, so without its own handlers
+                      // hovering it drops `hoveredKey` and the tooltip reverts to the full-day
+                      // list. Mirror the band's handlers so a dot behaves like its band.
+                      activeDot={{
+                          onMouseEnter: () => hoverSeries(s.key),
+                          onMouseLeave: () => unhoverSeries(),
+                          onClick: () => toggleIsolate(s.key)
+                      }}
                       hide={isSeriesHidden(s.key)}
                       isAnimationActive={false}
                       onMouseEnter={() => hoverSeries(s.key)}
@@ -287,16 +331,26 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     tickLine={false}
                                     tickMargin={10}
                                     stroke="var(--color-bg-muted)"
+                                    // tickFormatter still drives recharts' label-width / tick-spacing math even
+                                    // though the custom tick re-derives the day number itself.
                                     tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
+                                    tick={renderDayTick}
                                 />
                                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatCompact(value)} padding={{ top: 20 }} />
-                                {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
                                 <ChartTooltip
                                     // Over a band → just that series; above the stack → the full per-day list.
                                     // (Hover clearing is debounced, so seams between bands don't flash the full list.)
                                     content={(props: TooltipProps<number, string>) => {
                                         const present = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0);
-                                        const shown = hoveredKey ? present?.filter((p) => p.dataKey === hoveredKey) : present;
+                                        // Order rows by this day's value (highest first); 'Rest' always sinks to
+                                        // the bottom. The payload arrives in stack order (sorted by month total),
+                                        // which doesn't always match a single day's ranking.
+                                        const sorted = present?.slice().sort((a, b) => {
+                                            if (a.dataKey === REST_SERIES_KEY) return 1;
+                                            if (b.dataKey === REST_SERIES_KEY) return -1;
+                                            return (b.value ?? 0) - (a.value ?? 0);
+                                        });
+                                        const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
                                         return (
                                             <ChartTooltipContent
                                                 active={props.active}
