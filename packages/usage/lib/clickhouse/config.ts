@@ -9,7 +9,7 @@ const envs = parseEnvs(ENVS);
 export const database = 'usage';
 
 export function clickhouseClient(opts?: { database: string }): ClickHouseClient | null {
-    const url = envs.CLICKHOUSE_PRIVATE_URL ?? envs.CLICKHOUSE_URL;
+    const url = envs.CLICKHOUSE_PRIVATE_URL || envs.CLICKHOUSE_URL;
     if (!url) {
         return null;
     }
