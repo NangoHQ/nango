@@ -553,7 +553,8 @@ export const Go: React.FC = () => {
                                             defaultValue={
                                                 isPreconfigured
                                                     ? preconfigured[key]
-                                                    : (definition?.default_value ?? (definition?.enum && !isOptional ? definition.enum[0] : ''))
+                                                    : (definition?.default_value ??
+                                                      (definition?.hidden ? undefined : definition?.enum && !isOptional ? definition.enum[0] : ''))
                                             }
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
