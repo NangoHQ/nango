@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { RemoteFunctionError, remoteFunctionDryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { FunctionError, remoteFunctionDryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
@@ -39,7 +39,7 @@ export function verifyDryrunResultSandboxToken<T>(res: Response<T, Required<Requ
 }
 
 export function toFunctionDryrunError(err: unknown): FunctionDryrunError {
-    if (err instanceof RemoteFunctionError) {
+    if (err instanceof FunctionError) {
         return {
             code: err.code,
             message: err.message,

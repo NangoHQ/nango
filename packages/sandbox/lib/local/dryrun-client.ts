@@ -5,7 +5,7 @@ import { getDryrunErrorCode } from '../functions/cli-exit-codes.js';
 import { buildDryrunArgs } from '../functions/command-builders.js';
 import { getDryrunCommandSuccessOutput } from '../functions/command-output.js';
 import { buildIndexTs, getFilePaths } from '../functions/compiler-client.js';
-import { RemoteFunctionError } from '../functions/helpers.js';
+import { FunctionError } from '../functions/helpers.js';
 import {
     remoteFunctionCompileTimeoutMs,
     remoteFunctionDryrunSandboxTimeoutMs,
@@ -52,7 +52,7 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
                 timeout: remoteFunctionCompileTimeoutMs
             });
         } catch (err) {
-            throw new RemoteFunctionError({
+            throw new FunctionError({
                 code: isExecTimeoutError(err) ? 'timeout' : 'compilation_error',
                 message: isExecTimeoutError(err) ? 'Compilation timed out' : getExecErrorOutput(err),
                 status: isExecTimeoutError(err) ? 504 : 400
@@ -77,11 +77,11 @@ export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunR
 
             return { output: getDryrunCommandSuccessOutput({ stdout, stderr }) };
         } catch (err) {
-            if (err instanceof RemoteFunctionError) {
+            if (err instanceof FunctionError) {
                 throw err;
             }
 
-            throw new RemoteFunctionError({
+            throw new FunctionError({
                 code: isExecTimeoutError(err) ? 'timeout' : getDryrunErrorCode(err),
                 message: isExecTimeoutError(err) ? 'Dry run timed out' : getExecErrorOutput(err),
                 status: isExecTimeoutError(err) ? 504 : 400

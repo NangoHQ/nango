@@ -5,14 +5,14 @@ import { getLogger, isLocal, stringifyError } from '@nangohq/utils';
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildDryrunArgs } from './command-builders.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
-import { RemoteFunctionError } from './helpers.js';
+import { FunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
-import { createRemoteFunctionSandbox } from './sandbox.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
 const asyncDryrunScript = readFileSync(asyncDryrunScriptUrl, 'utf8');
-const logger = getLogger('RemoteFunctionDryrun');
+const logger = getLogger('FunctionDryrun');
 
 export interface DryrunRequest {
     integration_id: string;
@@ -56,8 +56,8 @@ export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<P
         throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
     }
 
-    const sandbox = await createRemoteFunctionSandbox({
-        purpose: 'nango-function-dryrun',
+    const sandbox = await createFunctionSandbox({
+        purpose: 'dryrun',
         timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
         metadata: { dryrunId: request.dryrun_id },
         apiKey
@@ -143,7 +143,7 @@ async function runLocalAsyncDryrun(request: AsyncDryrunRequest, startedAt: Date)
         });
     } catch (err) {
         const error =
-            err instanceof RemoteFunctionError
+            err instanceof FunctionError
                 ? { code: err.code, message: err.message, ...(err.payload !== undefined ? { payload: err.payload } : {}) }
                 : { code: 'dryrun_error' as const, message: stringifyError(err) };
 

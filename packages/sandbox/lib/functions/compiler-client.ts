@@ -5,9 +5,9 @@ import { CommandExitError, TimeoutError } from 'e2b';
 import { isLocal } from '@nangohq/utils';
 
 import { getCommandOutput } from './command-output.js';
-import { RemoteFunctionError } from './helpers.js';
+import { FunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionCompilerSandboxTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
-import { createRemoteFunctionSandbox } from './sandbox.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { invokeLocalCompiler } from '../local/compiler-client.js';
 
 interface FunctionFilePathRequest {
@@ -25,7 +25,7 @@ export interface CompileResult {
     bundleSizeBytes: number;
 }
 
-export class CompilerError extends RemoteFunctionError {
+export class CompilerError extends FunctionError {
     public readonly step: 'validation' | 'compilation';
 
     constructor(message: string, step: 'validation' | 'compilation', remoteStack?: string) {
@@ -48,8 +48,8 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
         throw new Error('E2B_API_KEY is required for the E2B compiler runtime');
     }
 
-    const sandbox = await createRemoteFunctionSandbox({
-        purpose: 'nango-compiler',
+    const sandbox = await createFunctionSandbox({
+        purpose: 'compile',
         timeoutMs: remoteFunctionCompilerSandboxTimeoutMs,
         apiKey
     });
@@ -71,7 +71,7 @@ export async function invokeCompiler(request: CompileRequest): Promise<CompileRe
                 throw new CompilerError(getCommandOutput(err, 'Compilation failed'), 'compilation');
             }
             if (err instanceof TimeoutError) {
-                throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
+                throw new FunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
             }
             throw err;
         }

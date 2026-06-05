@@ -4,7 +4,7 @@ import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDoc
 import { getDeployErrorCode } from '../functions/cli-exit-codes.js';
 import { buildDeployArgs } from '../functions/command-builders.js';
 import { buildIndexTs, getFilePaths } from '../functions/compiler-client.js';
-import { RemoteFunctionError } from '../functions/helpers.js';
+import { FunctionError } from '../functions/helpers.js';
 import {
     remoteFunctionDeploySandboxTimeoutMs,
     remoteFunctionDeployTimeoutMs,
@@ -57,7 +57,7 @@ export async function invokeLocalDeploy(request: DeployRequest): Promise<DeployR
             return { output: stdout || stderr };
         } catch (err) {
             const output = getExecErrorOutput(err);
-            throw new RemoteFunctionError({
+            throw new FunctionError({
                 code: isExecTimeoutError(err) ? 'timeout' : getDeployErrorCode(err),
                 message: isExecTimeoutError(err) ? 'Deployment timed out' : output,
                 status: isExecTimeoutError(err) ? 504 : 400

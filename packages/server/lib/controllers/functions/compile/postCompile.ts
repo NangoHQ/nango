@@ -1,4 +1,4 @@
-import { RemoteFunctionError, invokeCompiler } from '@nangohq/sandbox';
+import { FunctionError, invokeCompiler } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -36,7 +36,7 @@ export const postFunctionCompile = asyncWrapper<PostFunctionCompile>(async (req,
         sendStepError({
             res,
             error: err,
-            ...(err instanceof RemoteFunctionError ? {} : { status: 500 })
+            ...(err instanceof FunctionError ? {} : { status: 500 })
         });
     }
 });

@@ -32,7 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 import { invokeCompiler } from './compiler-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
-import type { RemoteFunctionError } from './helpers.js';
+import type { FunctionError } from './helpers.js';
 
 describe('remote function compiler client E2B errors', () => {
     beforeEach(() => {
@@ -51,6 +51,6 @@ describe('remote function compiler client E2B errors', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
     });
 });

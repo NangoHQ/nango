@@ -35,7 +35,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
-import type { RemoteFunctionError } from './helpers.js';
+import type { FunctionError } from './helpers.js';
 
 const request = {
     integration_id: 'github',
@@ -121,7 +121,7 @@ describe('remote function dryrun client', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(mocks.write).not.toHaveBeenCalled();
         expect(mocks.kill).not.toHaveBeenCalled();

@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import {
-    RemoteFunctionError,
+    FunctionError,
     getRemoteFunctionNangoHost,
     invokeDeploy,
     parseDeploySuccessOutput,
@@ -116,6 +116,6 @@ export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async
             output: output.output
         });
     } catch (err) {
-        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        sendStepError({ res, error: err, ...(err instanceof FunctionError ? {} : { status: 500 }) });
     }
 });
