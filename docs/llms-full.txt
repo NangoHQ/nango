@@ -14436,6 +14436,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `trigger-dev` | Trigger.dev | API_KEY | [docs](https://nango.dev/docs/api-integrations/trigger-dev.md) | [connect](https://nango.dev/docs/api-integrations/trigger-dev/connect.md) |  | dev-tools |
 | `trigify-io-mcp` | Trigify IO (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/trigify-io-mcp.md) |  |  | dev-tools, mcp |
 | `triple-whale` | Triple Whale | API_KEY | [docs](https://nango.dev/docs/api-integrations/triple-whale.md) | [connect](https://nango.dev/docs/api-integrations/triple-whale/connect.md) |  | analytics, marketing |
+| `tripletex` | Tripletex | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/tripletex.md) | [connect](https://nango.dev/docs/api-integrations/tripletex/connect.md) |  | accounting |
+| `tripletex-sandbox` | Tripletex (Sandbox) | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/tripletex-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/tripletex-sandbox/connect.md) |  | accounting |
 | `tsheetsteam` | TSheets | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tsheetsteam.md) |  |  | hr, productivity |
 | `tumblr` | Tumblr | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tumblr.md) |  |  | social, communication |
 | `twenty-crm` | Twenty CRM | API_KEY | [docs](https://nango.dev/docs/integrations/all/twenty-crm.md) |  |  | crm |

@@ -273,6 +273,26 @@ function replaceAwsSigV4Expression(str: string, resolveInner: (inner: string) =>
     });
 }
 
+// Resolves `${nowOffset(amount, unit, format)}` to now (+/-) the offset, formatted.
+// e.g. ${nowOffset(7, day, YYYY-MM-DD)} for an API that requires a future expiry date.
+function replaceNowOffsetExpression(str: string, resolveInner: (inner: string) => string, replacers: Record<string, any>): string {
+    return str.replace(/\${nowOffset\(([\s\S]*?)\)}/g, (match, inner) => {
+        const args = splitTopLevelArgs(inner).map(resolveInner);
+        if (args.length !== 3) {
+            return match;
+        }
+        const [amount, unit, format] = args;
+        const offset = Number(amount);
+        if (!Number.isFinite(offset) || !unit || !format) {
+            return match;
+        }
+        return dayjs
+            .utc(getNowDate(replacers))
+            .add(offset, unit as dayjs.ManipulateType)
+            .format(format);
+    });
+}
+
 /**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
@@ -287,6 +307,7 @@ export function interpolateString(str: string, replacers: Record<string, any>, o
 
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateString(inner, effective));
     str = replaceAwsSigV4Expression(str, (inner) => interpolateString(inner, effective), effective);
+    str = replaceNowOffsetExpression(str, (inner) => interpolateString(inner, effective), effective);
 
     str = replaceBase64Expression(str, (inner) => interpolateString(inner, effective));
 
@@ -338,6 +359,7 @@ function resolveKey(key: string, replacers: Record<string, any>): any {
 export function interpolateStringFromObject(str: string, replacers: Record<string, any>): string {
     str = replaceHmacSha1HexExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
+    str = replaceNowOffsetExpression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
     str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
 
