@@ -57,7 +57,12 @@ export abstract class SchedulerDaemon {
                         await this.run();
                     });
                 } catch (err) {
-                    this.onError(new Error(`${this.name} daemon error`, { cause: err }));
+                    // Guard the reporter: a throwing onError must not itself stop a self-healing daemon.
+                    try {
+                        this.onError(new Error(`${this.name} daemon error`, { cause: err }));
+                    } catch (onErrorErr) {
+                        logger.error(`${this.name}: onError handler threw`, onErrorErr);
+                    }
                     // Stop on the first error unless the daemon is configured to keep ticking (self-healing).
                     if (!this.continueOnError) {
                         break;
