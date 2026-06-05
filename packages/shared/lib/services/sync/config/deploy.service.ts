@@ -344,6 +344,12 @@ async function compileDeployInfo({
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
+        // !previousJsFileLocation: always upload for new functions.
+        // If a previous deploy uploaded the file to s3 but the db transaction failed,
+        // checkIfChanged may return false (since the file already exists),
+        // but we won't have a saved file_location to reuse, so we still need to upload
+        // to ensure we have a valid file_location.
+
         if (tsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
