@@ -1,24 +1,26 @@
 /**
- * Categorical palette for usage breakdown charts. The first six come from the
- * design-system chart tokens (`--color-chart-series-*`, imported via `index.css`);
- * the rest are extra hues so a Top-N breakdown (up to ~10–12 series) doesn't
- * repeat colors as often. (Ideally these extras become design-system tokens too.)
- * Colors still cycle past the end of the list — the legend and tooltip
- * disambiguate when they repeat. The 'rest' rollup always renders neutral gray.
+ * Categorical palette for usage breakdown charts (the original design-system hues
+ * plus a few extras). Ordered so the most distinct colors come first: since each
+ * chart shows top-10 + "Rest", the near-duplicate hues (teal ≈ the green tokens,
+ * rose ≈ pink) are placed last so they only appear once a breakdown exceeds 10
+ * series — keeping a typical top-10 free of look-alike colors. Colors cycle past
+ * the end; the 'rest' rollup renders neutral slate, outside this palette.
+ * (12 colors is near the limit of distinct categorical hues — the real fix for
+ * many integrations is per-integration brand colors; see plan follow-ups.)
  */
 const SERIES_COLORS = [
-    'var(--color-chart-series-1)',
-    'var(--color-chart-series-2)',
-    'var(--color-chart-series-3)',
-    'var(--color-chart-series-4)',
-    'var(--color-chart-series-5)',
-    'var(--color-chart-series-6)',
-    '#f59e42', // orange
-    '#a3e635', // lime
-    '#2dd4bf', // teal
-    '#fb7185', // rose
-    '#818cf8', // indigo
-    '#c9a06b' // tan
+    'var(--color-chart-series-1)', // cyan
+    'var(--color-chart-series-3)', // amber
+    'var(--color-chart-series-4)', // lavender
+    'var(--color-chart-series-2)', // mint
+    'var(--color-chart-series-5)', // pink
+    'var(--color-chart-series-6)', // periwinkle
+    '#ff8f70', // coral
+    '#9dd36f', // lime
+    '#7bc8f6', // sky
+    '#b7a0e8', // violet
+    '#f0a96b', // apricot (≈ coral — kept past top-10)
+    '#5fc6c4' // teal (≈ mint — kept past top-10)
 ] as const;
 
 /** Internal data/series key for the long-tail 'rest' bucket (avoids collision with a real dimension value named "rest"). */
