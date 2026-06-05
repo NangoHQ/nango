@@ -1,4 +1,4 @@
-import { Prism } from '@mantine/prism';
+import { CodeHighlight } from '@mantine/code-highlight';
 import { IconCalendar, IconClockHour4, IconShare2 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -188,16 +188,14 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                             resize: 'vertical'
                         }}
                     >
-                        <Prism
+                        <CodeHighlight
                             language="json"
                             className="transparent-code"
-                            colorScheme="dark"
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
-                        >
-                            {JSON.stringify(payload, null, 2)}
-                        </Prism>
+                            code={JSON.stringify(payload, null, 2)}
+                        />
                     </div>
                 ) : (
                     <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>

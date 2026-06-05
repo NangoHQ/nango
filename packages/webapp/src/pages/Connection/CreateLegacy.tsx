@@ -1,6 +1,6 @@
 import { Tooltip } from '@geist-ui/core';
 import { HelpCircle } from '@geist-ui/icons';
-import { Prism } from '@mantine/prism';
+import { CodeHighlight } from '@mantine/code-highlight';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
@@ -1272,9 +1272,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                                 <div>
                                     <div className="mt-6">
-                                        <Prism className="transparent-code" language="typescript" colorScheme="dark">
-                                            {snippet()}
-                                        </Prism>
+                                        <CodeHighlight className="transparent-code" language="typescript" code={snippet()} />
                                     </div>
                                 </div>
                             </div>

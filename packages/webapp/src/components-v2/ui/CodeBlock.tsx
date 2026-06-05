@@ -1,4 +1,4 @@
-import { Prism } from '@mantine/prism';
+import { CodeHighlight } from '@mantine/code-highlight';
 import { Eye, EyeOff, Loader, Play } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
@@ -7,39 +7,22 @@ import { Button } from './Button.js';
 import { CopyButton } from './CopyButton.js';
 import { cn } from '../../utils/utils.js';
 
-import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
 import type { HTMLAttributes } from 'react';
 
 export type CodeBlockProps = {
     title?: string;
-    language: PrismProps['language'];
+    language: string;
     code: string;
     icon?: React.ReactNode;
     displayLanguage?: string;
-    highlightedLines?: number[];
     secret?: boolean;
     onExecute?: () => MaybePromise<void>;
     /** When false, code area has no max-height/scroll; parent should scroll (e.g. in Playground). Default true. */
     constrainHeight?: boolean;
 } & HTMLAttributes<HTMLDivElement>;
 
-const highlight = {
-    color: ''
-};
-
-export const CodeBlock: React.FC<CodeBlockProps> = ({
-    title,
-    code,
-    language,
-    icon,
-    displayLanguage,
-    highlightedLines,
-    secret,
-    onExecute,
-    constrainHeight = true,
-    ...props
-}) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ title, code, language, icon, displayLanguage, secret, onExecute, constrainHeight = true, ...props }) => {
     const [isSecretVisible, setIsSecretVisible] = useState(!secret);
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible]);
@@ -96,16 +79,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
             <div className={cn(constrainHeight && 'max-h-128 overflow-auto')}>
                 <div className={'relative'}>
                     {!isSecretVisible && <div className="absolute z-10 w-full h-full backdrop-blur-xs    bg-black/0"></div>}
-                    <Prism
-                        className="w-full min-w-0"
-                        language={language}
-                        colorScheme="dark"
-                        noCopy={true}
-                        styles={{ code: { fontSize: '12px' } }}
-                        highlightLines={Object.fromEntries(highlightedLines?.map((line) => [line, highlight]) ?? [])}
-                    >
-                        {code}
-                    </Prism>
+                    <CodeHighlight className="w-full min-w-0" language={language} withCopyButton={false} styles={{ code: { fontSize: '12px' } }} code={code} />
                 </div>
             </div>
         </div>
