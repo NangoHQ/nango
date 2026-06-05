@@ -1,0 +1,46 @@
+packages/sandbox/lib/functions/dryruns.service.integration.test.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 9
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_4614547ca3bd81::t_8dac2ce530cef1 15,17
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_4614547ca3bd81::t_474ea4aa00495f 17,22,35
+packages/server/lib/routes.public.ts
+  s_4614547ca3bd81::t_19159c72f109f0 7,37-38
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 4
+packages/sandbox/lib/local/dryrun-client.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 4-7,15,17
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_4614547ca3bd81::t_1df1b0712bb2c7 5
+packages/sandbox/lib/local/compiler-client.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 4,10,12
+packages/sandbox/lib/local/docker.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 5
+packages/types/lib/api.endpoints.ts
+  s_4614547ca3bd81::t_872a8d2a0a0294 74
+packages/server/lib/controllers/functions/compile/postCompile.ts
+  s_4614547ca3bd81::t_b67fb4756bf46b 6,8
+packages/sandbox/lib/index.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 3-8,10-13
+packages/server/lib/controllers/functions/functions.integration.test.ts
+  s_4614547ca3bd81::t_f50079e9b4feb4 3,16-17,24,109
+  s_4614547ca3bd81::t_d58da888fb03dc 130,154,179,199,219,235,259,282,306,338,365,388,432,457
+packages/sandbox/lib/local/deploy-client.ts
+  s_4614547ca3bd81::t_75f8d55513cb79 4-6,13,15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "dab5fae961b25204dcb2815adba5ce7dab25b93d",
+  "prompts": {},
+  "sessions": {
+    "s_4614547ca3bd81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8e50-f6c5-7a83-ae48-1f3c28d6d8d4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}

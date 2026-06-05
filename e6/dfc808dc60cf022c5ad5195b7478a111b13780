@@ -1,0 +1,20 @@
+packages/database/lib/migrations/20260605120000_drop_remote_functions_from_plans.cjs
+  s_4614547ca3bd81::t_245d0b843a390a 1-12,14-15
+  s_4614547ca3bd81::t_5f9a8ca8c5d955 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "e6dfc808dc60cf022c5ad5195b7478a111b13780",
+  "prompts": {},
+  "sessions": {
+    "s_4614547ca3bd81": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8e50-f6c5-7a83-ae48-1f3c28d6d8d4",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
