@@ -236,6 +236,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'app_secret'.`;
                 break;
 
+            case 'missing_walmart_seller_id':
+                this.status = 400;
+                this.message = `Missing connection config param 'sellerId' required for Walmart OAuth.`;
+                break;
+
             case 'missing_connection':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
