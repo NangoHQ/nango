@@ -1,7 +1,7 @@
 import { parseAsString, useQueryState } from 'nuqs';
 
 import { DEFAULT_FIXTURE_ACCOUNT_ID, FIXTURE_ACCOUNT_OPTIONS, FIXTURE_ACCOUNT_PARAM } from '../usageBreakdownFixtures';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 /**
