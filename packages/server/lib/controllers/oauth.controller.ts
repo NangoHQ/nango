@@ -75,6 +75,21 @@ import type {
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
+// Sec-Fetch-* are forbidden headers for browsers (they set them, JS can't), but a non-browser caller can
+// send arbitrary values. Validate against the spec-defined sets before tagging so untrusted input can't blow
+// up metric cardinality, while still preserving the values we actually discriminate on (navigate/cors/...).
+const SEC_FETCH_MODE_VALUES = new Set(['navigate', 'cors', 'no-cors', 'same-origin', 'websocket']);
+const SEC_FETCH_DEST_VALUES = new Set(['document', 'empty', 'iframe', 'frame', 'nested-document']);
+const SEC_FETCH_SITE_VALUES = new Set(['cross-site', 'same-origin', 'same-site', 'none']);
+
+function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): string {
+    if (!value) {
+        return 'absent';
+    }
+    const normalized = value.toLowerCase();
+    return allowed.has(normalized) ? normalized : 'other';
+}
+
 class OAuthController {
     public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
         const { account, environment, connectSession } = res.locals;
@@ -1205,18 +1220,17 @@ class OAuthController {
                     account_id: account.id
                 });
             } else if (usesStateCookie) {
-                // Sec-Fetch-* are set by browsers and cannot be spoofed from JS, so they tell us how the
-                // callback reached us: `navigate`/`document` = a real top-level browser redirect (so a missing
-                // cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR forward,
-                // and absent = a non-browser server-side call. The rest corroborate that classification.
+                // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
+                // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
+                // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
                 const userAgent = req.get('user-agent') ?? '';
                 metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
                     account_id: account.id,
                     auth_mode: session.authMode,
                     provider: config.provider,
-                    sec_fetch_mode: req.get('sec-fetch-mode') ?? 'absent',
-                    sec_fetch_dest: req.get('sec-fetch-dest') ?? 'absent',
-                    sec_fetch_site: req.get('sec-fetch-site') ?? 'absent',
+                    sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
+                    sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
+                    sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
                     is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
                     has_referer: String(Boolean(req.get('referer'))),
                     has_any_cookie: String(Boolean(req.get('cookie'))),
