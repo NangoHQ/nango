@@ -3771,6 +3771,27 @@ chargebee:
             default_value: ''
             hidden: true
 
+chatarmin:
+    display_name: Chatarmin
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.chatarmin.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/public/contacts?limit=1
+    docs: https://nango.dev/docs/api-integrations/chatarmin
+    docs_connect: https://nango.dev/docs/api-integrations/chatarmin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Chatarmin API key.
+
 chattermill:
     display_name: Chattermill
     categories:
@@ -11782,6 +11803,7 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
+    token_request_auth_method: basic
     authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
     token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
@@ -11796,16 +11818,18 @@ mercury:
             type: string
             title: OAuth Hostname
             description: Your Mercury OAuth hostname.
-            example: oauth2-sandbox.mercury.com
             optional: true
-            pattern: '^oauth2(?:-sandbox)?\.mercury\.com$'
+            enum:
+                - oauth2.mercury.com
+                - oauth2-sandbox.mercury.com
         hostname:
             type: string
             title: API Hostname
             description: Your Mercury API hostname.
-            example: api-sandbox.mercury.com
             optional: true
-            pattern: '^api(?:-sandbox)?\.mercury\.com$'
+            enum:
+                - api.mercury.com
+                - api-sandbox.mercury.com
 
 meta-marketing-api:
     display_name: Meta Marketing API
