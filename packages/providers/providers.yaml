@@ -6077,6 +6077,25 @@ drupal:
             order: 1
             doc_section: '#step-1-finding-your-drupal-base-url'
 
+dualentry-mcp:
+    display_name: Dualentry (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://api.dualentry.com/mcp/authorize
+    token_url: https://api.dualentry.com/mcp/token
+    registration_url: https://api.dualentry.com/mcp/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.dualentry.com
+    docs: https://nango.dev/docs/api-integrations/dualentry-mcp
+
 dynatrace:
     display_name: Dynatrace
     categories:
@@ -18356,7 +18375,7 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     token_url: https://slack.com/api/oauth.v2.access
     disable_pkce: true
     token_response_metadata:
@@ -18391,11 +18410,13 @@ slack-mcp:
     authorization_url: https://slack.com/oauth/v2_user/authorize
     token_url: https://slack.com/api/oauth.v2.user.access
     scope_separator: ','
-    alternate_access_token_response_path: authed_user.access_token
+    alternate_access_token_response_path: authed_user
     authorization_params:
         response_type: code
     token_params:
         grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://mcp.slack.com
         headers:

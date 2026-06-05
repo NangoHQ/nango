@@ -18,17 +18,20 @@ const REMOTE_API_URLS: Record<string, string> = {
     prod: 'https://api.nango.dev'
 };
 
-// Fetches /env.js from a remote API and rewrites apiUrl to the local dev server
+// Fetches /env.js from apiUrl and rewrites apiUrl to the local Vite dev server
 // so all API calls are routed through Vite's proxy instead of going cross-origin.
-// Activated by setting REMOTE_API=dev|staging|prod when running the dev server.
-function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
+// The actual listening port is resolved at request time (after the server binds)
+// so Vite's automatic port increment is reflected correctly.
+function apiEnvProxyPlugin(apiUrl: string): Plugin {
     return {
-        name: 'remote-api-env-proxy',
+        name: 'api-env-proxy',
         configureServer(server) {
             // eslint-disable-next-line @typescript-eslint/no-misused-promises
             server.middlewares.use('/env.js', async (_req, res) => {
-                const origin = `http://localhost:${DEV_PORT}`;
-                const body = await fetch(`${remoteApiUrl}/env.js`).then((r) => r.text());
+                const addr = server.httpServer?.address();
+                const port = addr && typeof addr === 'object' ? addr.port : DEV_PORT;
+                const origin = `http://localhost:${port}`;
+                const body = await fetch(`${apiUrl}/env.js`).then((r) => r.text());
                 res.setHeader('Content-Type', 'text/javascript');
                 res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
             });
@@ -36,41 +39,40 @@ function remoteApiEnvProxy(remoteApiUrl: string): Plugin {
     };
 }
 
-function remoteApiConfig() {
+function apiProxyConfig() {
     const remoteApi = process.env['REMOTE_API'];
-    if (!remoteApi) {
-        return { remoteProxy: { '/env.js': { target: `http://localhost:${LOCAL_API_PORT}` } } };
-    }
-    const url = REMOTE_API_URLS[remoteApi];
-    if (!url) {
+    const remoteUrl = remoteApi ? REMOTE_API_URLS[remoteApi] : null;
+    if (remoteApi && !remoteUrl) {
         throw new Error(`[nango] Unknown REMOTE_API="${remoteApi}". Valid values: ${Object.keys(REMOTE_API_URLS).join(', ')}`);
     }
-    const remote = { target: url, changeOrigin: true };
+
+    const apiUrl = remoteUrl ?? `http://localhost:${LOCAL_API_PORT}`;
+    const proxyOpts = remoteUrl ? { target: apiUrl, changeOrigin: true } : { target: apiUrl };
     return {
-        remotePlugin: remoteApiEnvProxy(url),
-        remoteProxy: {
-            '/api': remote,
+        envProxyPlugin: apiEnvProxyPlugin(apiUrl),
+        proxy: {
+            '/api': proxyOpts,
             // Extra routes needed for connection creation and auth flows.
             // Most dashboard functionality (viewing connections, logs, settings) works with /api alone.
-            '/connect': remote, // Connect UI session + telemetry
-            '/integrations': remote, // Connect UI integration list
-            '/providers': remote, // Connect UI provider details
-            '/proxy': remote, // Getting-started proxy call
-            '/oauth2': remote, // OAuth2 client credentials
-            '/api-auth': remote, // API key / basic auth
-            '/auth': remote, // TBA, JWT, two-step, etc.
-            '/app-store-auth': remote,
-            '/app-auth': remote // GitHub App setup callback
+            '/connect': proxyOpts, // Connect UI session + telemetry
+            '/integrations': proxyOpts, // Connect UI integration list
+            '/providers': proxyOpts, // Connect UI provider details
+            '/proxy': proxyOpts, // Getting-started proxy call
+            '/oauth2': proxyOpts, // OAuth2 client credentials
+            '/api-auth': proxyOpts, // API key / basic auth
+            '/auth': proxyOpts, // TBA, JWT, two-step, etc.
+            '/app-store-auth': proxyOpts,
+            '/app-auth': proxyOpts // GitHub App setup callback
         }
     };
 }
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
-    const { remotePlugin, remoteProxy } = remoteApiConfig();
+    const { envProxyPlugin, proxy } = apiProxyConfig();
 
     return {
-        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), remotePlugin],
+        plugins: [react(), svgr(), checker({ typescript: true }), tailwindcss(), envProxyPlugin],
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
@@ -79,7 +81,7 @@ export default defineConfig(() => {
                 '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
             }
         },
-        server: { port: DEV_PORT, proxy: remoteProxy },
+        server: { port: DEV_PORT, proxy },
         define: {
             'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
         }
