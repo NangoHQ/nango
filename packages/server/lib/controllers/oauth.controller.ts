@@ -1620,6 +1620,7 @@ class OAuthController {
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
+                    provider as ProviderOAuth2,
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
@@ -1719,12 +1720,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_id_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_id_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_client_secret_override']) {
@@ -1736,12 +1733,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_secret_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_secret_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_scopes_override']) {
@@ -1761,15 +1754,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce(
-                    (acc: Record<string, string | boolean>, key: string) => {
-                        if (key !== 'oauth_refresh_token_override') {
-                            acc[key] = connectionConfig[key] as string;
-                        }
-                        return acc;
-                    },
-                    { overrideTokenRefresh: true }
-                );
+                const { oauth_refresh_token_override: _, ...rest } = connectionConfig;
+                connectionConfig = { ...rest, overrideTokenRefresh: true };
             }
 
             let connectSession: ConnectSessionAndEndUser | undefined;
