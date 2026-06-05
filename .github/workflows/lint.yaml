@@ -68,6 +68,8 @@ jobs:
 
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
+              env:
+                  NODE_OPTIONS: --max-old-space-size=4096
               run: npm run lint -- --quiet
     typecheck:
         needs: should-run
