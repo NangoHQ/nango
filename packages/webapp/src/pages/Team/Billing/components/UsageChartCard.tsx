@@ -14,7 +14,7 @@ import {
 } from '../usageBreakdown';
 import { buildFixtureBreakdownEntries, getCapturedFixtureEntries, useFixtureDimensionValues } from '../usageBreakdownFixtures';
 import { ChartCard } from '@/components-v2/patterns/ChartCard';
-import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, seriesColorAt } from '@/components-v2/patterns/usageChartColors';
+import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components-v2/patterns/usageChartColors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
 import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
@@ -100,20 +100,20 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
         if (!showControls || dimension === null) return undefined;
         if (!breakdownEntries) return [];
 
-        const series: ChartSeries[] = [];
-        let colorIndex = 0;
-        for (const entry of breakdownEntries) {
-            if (entry.isRest) continue; // 'rest' always rendered last
-            // Status (success) gets semantic red/green; every other dimension uses the categorical palette.
-            const color = dimension === 'success' ? (entry.group?.value === 'false' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR) : seriesColorAt(colorIndex);
-            series.push({
-                key: `s${colorIndex}`,
-                label: entry.group ? formatDimensionValue(dimension, entry.group.value) : '—',
-                color,
+        // Largest usage first so the bands (and legend) are ordered by usage; the
+        // biggest stacks at the bottom and 'rest' always comes last.
+        const ranked = breakdownEntries.filter((e) => !e.isRest).sort((a, b) => b.total - a.total);
+        const series: ChartSeries[] = ranked.map((entry, i) => {
+            const label = entry.group ? formatDimensionValue(dimension, entry.group.value) : '—';
+            return {
+                key: `s${i}`,
+                label,
+                // Status (success) gets semantic red/green; every other dimension uses a stable
+                // per-value color so the same value matches across charts.
+                color: dimension === 'success' ? (entry.group?.value === 'false' ? FAILED_SERIES_COLOR : SUCCESS_SERIES_COLOR) : colorForValue(label),
                 usage: entry.usage
-            });
-            colorIndex++;
-        }
+            };
+        });
         const rest = breakdownEntries.find((e) => e.isRest);
         if (rest) {
             series.push({ key: REST_SERIES_KEY, label: 'Rest', color: REST_SERIES_COLOR, usage: rest.usage });
