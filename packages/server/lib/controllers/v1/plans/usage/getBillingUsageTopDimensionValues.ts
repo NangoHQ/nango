@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { environmentService } from '@nangohq/shared';
 import { BREAKDOWN_DIMENSIONS, TOP_N_BREAKDOWN_CAP, TOP_N_BREAKDOWN_DEFAULT } from '@nangohq/usage';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
@@ -62,5 +63,14 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
         return;
     }
 
-    res.status(200).send({ data: { values: result.value.values } });
+    let values: { id: string; label: string }[];
+    if (query.dimension === 'environment_id') {
+        const envs = await environmentService.getEnvironmentsByIds(result.value.values.map(Number));
+        const names = new Map(envs.map((e) => [e.id, e.name]));
+        values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
+    } else {
+        values = result.value.values.map((id) => ({ id, label: id }));
+    }
+
+    res.status(200).send({ data: { values } });
 });
