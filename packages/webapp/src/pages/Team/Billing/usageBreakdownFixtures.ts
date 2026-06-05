@@ -1,9 +1,42 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { FIXTURE_BREAKDOWNS } from './usageBreakdownFixtureData';
 import { apiFetch } from '@/utils/api';
 
 import type { AnyBreakdownDimension } from './usageBreakdown';
 import type { BillingUsageMetric, GetConnections, GetIntegrations, UsageMetric } from '@nangohq/types';
+
+const CUMULATIVE_METRICS: readonly UsageMetric[] = ['connections', 'records'];
+
+function monthKey(month: Date): string {
+    return `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Real prod breakdown captured for this (month, metric, dimension), or undefined
+ * if we didn't capture it. Reconstructs the `BillingUsageMetric[]` the UI expects
+ * from the compact `[day, quantity]` pairs.
+ */
+export function getCapturedFixtureEntries(month: Date, metric: UsageMetric, dimension: AnyBreakdownDimension): BillingUsageMetric[] | undefined {
+    const series = FIXTURE_BREAKDOWNS[monthKey(month)]?.[metric]?.[dimension];
+    if (!series || series.length === 0) {
+        return undefined;
+    }
+    const view_mode = CUMULATIVE_METRICS.includes(metric) ? 'cumulative' : 'periodic';
+    return series.map((s) => ({
+        externalId: `fixture:${dimension}:${s.value}`,
+        group: { key: dimension, value: s.value },
+        ...(s.isRest ? { isRest: true as const } : {}),
+        total: s.total,
+        usage: s.usage.map(([day, quantity]) => {
+            const start = new Date(`${day}T00:00:00.000Z`);
+            const end = new Date(start);
+            end.setUTCDate(start.getUTCDate() + 1);
+            return { timeframeStart: start, timeframeEnd: end, quantity };
+        }),
+        view_mode
+    }));
+}
 
 /**
  * Dev-only fixtures for the usage breakdown UI. Lets us preview the dense /

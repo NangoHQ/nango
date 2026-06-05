@@ -12,7 +12,7 @@ import {
     isBreakdownAvailableForMonth,
     metricsSupportingDimension
 } from '../usageBreakdown';
-import { buildFixtureBreakdownEntries, useFixtureDimensionValues } from '../usageBreakdownFixtures';
+import { buildFixtureBreakdownEntries, getCapturedFixtureEntries, useFixtureDimensionValues } from '../usageBreakdownFixtures';
 import { ChartCard } from '@/components-v2/patterns/ChartCard';
 import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, seriesColorAt } from '@/components-v2/patterns/usageChartColors';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
@@ -70,10 +70,16 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
     // Top-N is fixed at the default; the long tail collapses into the 'rest' bucket.
     const breakdownQuery = useApiGetBillingUsageBreakdown(env, timeframe, metric, dimension, DEFAULT_TOP_N, { enabled: inBreakdownMode && !fixturesFlag });
 
-    // Fixtures: real dimension names from the env + a synthesized distribution.
-    const { values: fixtureValues, isLoading: fixtureValuesLoading } = useFixtureDimensionValues(env, dimension, fixturesOn);
-    const fixtureEntries = useMemo<BillingUsageMetric[] | undefined>(() => {
-        if (!fixturesOn || dimension === null) return undefined;
+    // Fixtures: prefer real prod data captured for this month; fall back to a
+    // synthesized distribution (real env names) for months we didn't capture.
+    const capturedEntries = useMemo(
+        () => (fixturesOn && dimension !== null ? getCapturedFixtureEntries(selectedMonth, metric, dimension) : undefined),
+        [fixturesOn, dimension, metric, selectedMonth]
+    );
+    const needSynth = fixturesOn && dimension !== null && !capturedEntries;
+    const { values: fixtureValues, isLoading: fixtureValuesLoading } = useFixtureDimensionValues(env, dimension, needSynth);
+    const synthEntries = useMemo<BillingUsageMetric[] | undefined>(() => {
+        if (!needSynth || dimension === null) return undefined;
         return buildFixtureBreakdownEntries({
             metric,
             dimension,
@@ -82,8 +88,9 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({ metric, data, is
             top: DEFAULT_TOP_N,
             viewMode: data?.view_mode === 'cumulative' ? 'cumulative' : 'periodic'
         });
-    }, [fixturesOn, dimension, metric, fixtureValues, timeframe, data?.view_mode]);
+    }, [needSynth, dimension, metric, fixtureValues, timeframe, data?.view_mode]);
 
+    const fixtureEntries = capturedEntries ?? synthEntries;
     const breakdownEntries = fixtureEntries ?? breakdownQuery.data?.data.usage[metric]?.breakdown;
 
     // Fixtures invent a large total; show that (not the real base total) in the header.
