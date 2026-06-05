@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { AppSidebar } from './AppSidebar';
-import { SidebarInset, SidebarProvider } from '@/components-v2/ui/Sidebar';
+import { SidebarInset, SidebarProvider } from '@/components/ui/Sidebar';
 import { Playground } from '@/features/Playground';
 import { AppHeader } from '@/layout/AppHeader';
 import { cn } from '@/utils/utils';

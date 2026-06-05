@@ -4,11 +4,11 @@ import { useFormContext, useWatch } from 'react-hook-form';
 
 import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
 import { OptionalTag } from './InvoicingDetailsForm';
-import { Button } from '@/components-v2/ui/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components-v2/ui/Card';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
-import { Input } from '@/components-v2/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 

@@ -1,9 +1,9 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Input } from '@/components-v2/ui/Input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { cn } from '@/utils/utils';
 
 interface KeyValuePair {

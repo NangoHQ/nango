@@ -4,12 +4,12 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 
 import type { ApiProviderListItem, PostIntegration, SimplifiedJSONSchema } from '@nangohq/types';
 

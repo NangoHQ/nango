@@ -1,10 +1,10 @@
-import { Button } from '@/components-v2/ui/Button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { Button } from '@/components/ui/Button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Tooltip',
+    title: 'Components/UI/Tooltip',
     parameters: { layout: 'padded' }
 };
 export default meta;

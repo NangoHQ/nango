@@ -14,10 +14,10 @@ import {
     IconX
 } from '@tabler/icons-react';
 
-import { Tag } from '@/components-v2/ui/Tag';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { Tag } from '@/components/ui/Tag';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
-import type { TagSize } from '@/components-v2/ui/Tag';
+import type { TagSize } from '@/components/ui/Tag';
 import type { SearchOperationsData } from '@nangohq/types';
 
 export const OperationTag: React.FC<{ message: string; operation: SearchOperationsData['operation']; size?: TagSize }> = ({ message, operation, size }) => {

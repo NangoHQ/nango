@@ -3,7 +3,7 @@ import { useDebounce } from 'react-use';
 
 import { useSearchFilters } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
-import { FilterMultiSelect } from '@/components-v2/patterns/FilterMultiSelect';
+import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
 
 export interface SearchableMultiSelectArgs<T> {
     label: string;

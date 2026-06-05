@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { cn } from '@/utils/utils';
 
 interface BinaryToggleProps {

@@ -1,8 +1,8 @@
 import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components-v2/ui/Chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
 
-import type { ChartConfig } from '@/components-v2/ui/Chart';
+import type { ChartConfig } from '@/components/ui/Chart';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const chartData = [
@@ -18,7 +18,7 @@ const chartConfig: ChartConfig = {
 };
 
 const meta: Meta = {
-    title: 'Components v2/UI/Chart',
+    title: 'Components/UI/Chart',
     parameters: { layout: 'padded' }
 };
 export default meta;

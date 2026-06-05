@@ -9,14 +9,14 @@ import { z } from 'zod';
 
 import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
 import { CreateConnectionSelector } from './components/CreateConnectionSelector';
-import { Form } from '../../components-v2/ui/Form';
+import { Form } from '../../components/ui/Form';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { ButtonLink } from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useProvider } from '@/hooks/useProvider';
 
 import type { ApiIntegrationList } from '@nangohq/types';

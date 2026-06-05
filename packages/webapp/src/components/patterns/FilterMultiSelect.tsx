@@ -1,10 +1,10 @@
 import { CheckIcon, CrossCircledIcon, MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components-v2/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
-import { Spinner } from '@/components-v2/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
+import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';
 
 export interface FilterOption<T extends string = string> {

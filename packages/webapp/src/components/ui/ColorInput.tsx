@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
-import { Input as _Input } from '@/components-v2/ui/Input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Input as _Input } from '@/components/ui/Input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { cn } from '@/utils/utils';
 
 import type { InputHTMLAttributes } from 'react';

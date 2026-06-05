@@ -1,11 +1,11 @@
 import { CircleCheck } from 'lucide-react';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Alert',
+    title: 'Components/UI/Alert',
     parameters: { layout: 'padded' }
 };
 export default meta;

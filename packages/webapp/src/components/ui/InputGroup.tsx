@@ -1,9 +1,9 @@
 import { cva } from 'class-variance-authority';
 import * as React from 'react';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Input } from '@/components-v2/ui/Input';
-import { Textarea } from '@/components-v2/ui/Textarea';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';

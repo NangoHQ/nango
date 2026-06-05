@@ -5,12 +5,12 @@ import { cva } from 'class-variance-authority';
 import { PanelLeftIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components-v2/ui/Button';
-import { Input } from '@/components-v2/ui/Input';
-import { Separator } from '@/components-v2/ui/Separator';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components-v2/ui/Sheet';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components-v2/ui/Tooltip';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Separator } from '@/components/ui/Separator';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/utils/utils';
 
