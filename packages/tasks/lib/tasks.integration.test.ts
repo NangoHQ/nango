@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { DatabaseClient, defaultSchedulerConfig } from '@nangohq/scheduler';
 import { Ok, nanoid } from '@nangohq/utils';
 
-import { TaskQueue } from './tasks.js';
+import { Tasks } from './tasks.js';
 import { defineTask } from './types.js';
 
 const dbUrl = `postgres://${process.env['NANGO_DB_USER']}:${process.env['NANGO_DB_PASSWORD']}@${process.env['NANGO_DB_HOST']}:${process.env['NANGO_DB_PORT']}/${process.env['NANGO_DB_NAME']}`;
@@ -33,7 +33,7 @@ async function waitFor(predicate: () => boolean, timeoutMs = 5_000): Promise<voi
     }
 }
 
-describe('TaskQueue', () => {
+describe('Tasks', () => {
     const schema = `nango_tasks_test_${nanoid().toLowerCase()}`;
     const handled: { message: string; attempt: number }[] = [];
 
@@ -67,23 +67,21 @@ describe('TaskQueue', () => {
         }
     });
 
-    let taskQueue: TaskQueue<readonly [typeof recordingTask, typeof syncTask]>;
+    let tasks: Tasks<readonly [typeof recordingTask, typeof syncTask]>;
 
     beforeAll(async () => {
-        taskQueue = new TaskQueue({
+        tasks = new Tasks({
             definitions: [recordingTask, syncTask] as const,
-            dbUrl,
-            dbSchema: schema,
-            schedulerConfig: fastConfig,
-            processorPollIntervalMs: FAST_TICK_MS,
-            processorMaxConcurrency: 10
+            db: { url: dbUrl, schema },
+            processor: { pollIntervalMs: FAST_TICK_MS, maxConcurrency: 10 },
+            schedulerConfig: fastConfig
         });
-        await taskQueue.migrate();
-        taskQueue.start();
+        await tasks.migrate();
+        tasks.start();
     });
 
     afterAll(async () => {
-        await taskQueue.stop();
+        await tasks.stop();
         const cleanup = new DatabaseClient({
             url: dbUrl,
             schema,
@@ -105,7 +103,7 @@ describe('TaskQueue', () => {
     });
 
     it('runs an immediately-enqueued task through its handler', async () => {
-        const res = await taskQueue.enqueue('recording', { message: 'hello' });
+        const res = await tasks.enqueue('recording', { message: 'hello' });
         expect(res.isOk()).toBe(true);
 
         await waitFor(() => handled.length === 1);
@@ -113,7 +111,7 @@ describe('TaskQueue', () => {
     });
 
     it('does not run a delayed task before its startsAfter', async () => {
-        const res = await taskQueue.enqueue('recording', { message: 'later' }, { startsAfter: new Date(Date.now() + 60_000) });
+        const res = await tasks.enqueue('recording', { message: 'later' }, { startsAfter: new Date(Date.now() + 60_000) });
         expect(res.isOk()).toBe(true);
 
         // Several poll cycles (FAST_TICK_MS each) must pass without the task being picked up.
@@ -123,9 +121,9 @@ describe('TaskQueue', () => {
 
     it('serializes tasks sharing a payload-derived groupKey (one per connection)', async () => {
         await Promise.all([
-            taskQueue.enqueue('sync', { connectionId: 'conn_A' }),
-            taskQueue.enqueue('sync', { connectionId: 'conn_A' }),
-            taskQueue.enqueue('sync', { connectionId: 'conn_A' })
+            tasks.enqueue('sync', { connectionId: 'conn_A' }),
+            tasks.enqueue('sync', { connectionId: 'conn_A' }),
+            tasks.enqueue('sync', { connectionId: 'conn_A' })
         ]);
 
         await waitFor(() => done === 3);
@@ -134,9 +132,9 @@ describe('TaskQueue', () => {
 
     it('runs tasks in different groupKey buckets in parallel', async () => {
         await Promise.all([
-            taskQueue.enqueue('sync', { connectionId: 'conn_X' }),
-            taskQueue.enqueue('sync', { connectionId: 'conn_Y' }),
-            taskQueue.enqueue('sync', { connectionId: 'conn_Z' })
+            tasks.enqueue('sync', { connectionId: 'conn_X' }),
+            tasks.enqueue('sync', { connectionId: 'conn_Y' }),
+            tasks.enqueue('sync', { connectionId: 'conn_Z' })
         ]);
 
         await waitFor(() => done === 3);
@@ -144,7 +142,7 @@ describe('TaskQueue', () => {
     });
 
     it('enqueues a batch of mixed types in one call', async () => {
-        const res = await taskQueue.enqueueBatch([
+        const res = await tasks.enqueueBatch([
             { type: 'recording', payload: { message: 'batch-a' } },
             { type: 'recording', payload: { message: 'batch-b' } },
             { type: 'sync', payload: { connectionId: 'conn_batch' } }
@@ -159,8 +157,20 @@ describe('TaskQueue', () => {
         await waitFor(() => handled.some((h) => h.message === 'batch-a') && handled.some((h) => h.message === 'batch-b') && done === 1);
     });
 
+    it('defers a batch item with startsAfter while running the rest now', async () => {
+        const res = await tasks.enqueueBatch([
+            { type: 'recording', payload: { message: 'batch-now' } },
+            { type: 'recording', payload: { message: 'batch-later' }, startsAfter: new Date(Date.now() + 60_000) }
+        ]);
+        expect(res.isOk()).toBe(true);
+
+        await waitFor(() => handled.some((h) => h.message === 'batch-now'));
+        await setTimeout(FAST_TICK_MS * 6);
+        expect(handled.some((h) => h.message === 'batch-later')).toBe(false);
+    });
+
     it('returns ok with empty results for an empty batch', async () => {
-        const res = await taskQueue.enqueueBatch([]);
+        const res = await tasks.enqueueBatch([]);
         expect(res.isOk()).toBe(true);
         if (res.isOk()) {
             expect(res.value.created).toHaveLength(0);
@@ -168,7 +178,7 @@ describe('TaskQueue', () => {
     });
 
     it('rejects the whole batch (enqueues nothing) if any item payload is invalid', async () => {
-        const res = await taskQueue.enqueueBatch([
+        const res = await tasks.enqueueBatch([
             { type: 'recording', payload: { message: 'valid-in-bad-batch' } },
             // @ts-expect-error - message must be a string
             { type: 'recording', payload: { message: 123 } }

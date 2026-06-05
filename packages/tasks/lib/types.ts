@@ -112,6 +112,8 @@ export type EnqueueBatchItem<Defs extends readonly AnyTaskDefinition[]> = {
         payload: PayloadOf<Defs, T>;
         /** Concurrency bucket for this item; overrides the definition's `groupKey`. */
         groupKey?: string;
+        /** Defer this item: only runnable at/after this time. Omit to run as soon as possible. */
+        startsAfter?: Date;
     };
 }[Defs[number]['type']];
 

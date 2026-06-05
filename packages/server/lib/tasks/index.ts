@@ -1,4 +1,4 @@
-import { TaskQueue } from '@nangohq/task-queue';
+import { Tasks } from '@nangohq/tasks';
 import { getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -12,17 +12,19 @@ const databaseUrl =
 
 /**
  * Register task types here. To add one: create a handler with `defineTask`, then add it to this
- * tuple — `taskQueue.enqueue` is typed against it automatically.
+ * tuple — `tasks.enqueue` is typed against it automatically.
  */
 const definitions = [exampleTask] as const;
 
-/** Enqueue background tasks with `taskQueue.enqueue('type', payload)`. */
-export const taskQueue = new TaskQueue({
+/** Enqueue background tasks with `tasks.enqueue('type', payload)`. */
+export const tasks = new Tasks({
     definitions,
-    dbUrl: databaseUrl,
-    dbSchema: envs.TASKS_DATABASE_SCHEMA,
-    dbPoolMax: envs.TASKS_DB_POOL_MAX,
-    dbSsl: envs.NANGO_DB_SSL,
-    applicationName: envs.NANGO_DB_APPLICATION_NAME,
+    db: {
+        url: databaseUrl,
+        schema: envs.TASKS_DATABASE_SCHEMA,
+        poolMax: envs.TASKS_DB_POOL_MAX,
+        ssl: envs.NANGO_DB_SSL,
+        applicationName: envs.NANGO_DB_APPLICATION_NAME
+    },
     logger
 });

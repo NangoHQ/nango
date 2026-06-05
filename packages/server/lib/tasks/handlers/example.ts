@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { defineTask } from '@nangohq/task-queue';
+import { defineTask } from '@nangohq/tasks';
 import { Ok } from '@nangohq/utils';
 
 /**
  * Template task. Copy this file to add a new task type: define a payload schema, implement the
- * handler, then register it in `../index.ts`. Enqueue with `taskQueue.enqueue('example', { message })`.
+ * handler, then register it in `../index.ts`. Enqueue with `tasks.enqueue('example', { message })`.
  */
 export const exampleTask = defineTask({
     type: 'example',

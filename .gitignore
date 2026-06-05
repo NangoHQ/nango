@@ -16,6 +16,3 @@ temp
 .context/
 .claude/settings.local.json
 CLAUDE.local.md
-
-# Claude Code transient loop/schedule lock
-.claude/scheduled_tasks.lock

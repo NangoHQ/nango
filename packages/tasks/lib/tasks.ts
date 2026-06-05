@@ -7,23 +7,27 @@ import { TaskProcessor } from './processor.js';
 import { TASK_TYPE_SEPARATOR, buildTaskName, resolveTaskOptions } from './types.js';
 
 import type { AnyTaskDefinition, EnqueueBatchItem, EnqueueDiscardReason, EnqueueOverrides, PayloadOf } from './types.js';
-import type { ImmediateProps, SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
+import type { AtProps, ImmediateProps, SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type { JsonObject } from 'type-fest';
 
-export interface TaskQueueOptions<Defs extends readonly AnyTaskDefinition[]> {
+export interface TasksOptions<Defs extends readonly AnyTaskDefinition[]> {
     definitions: Defs;
-    /** Postgres connection string. */
-    dbUrl: string;
-    /** Dedicated schema, isolated from other scheduler instances (e.g. `nango_tasks`). */
-    dbSchema: string;
-    dbPoolMax?: number;
-    dbSsl?: boolean;
-    applicationName?: string;
-    /** Max tasks processed concurrently by this instance's processor. */
-    processorMaxConcurrency?: number;
-    /** How often the processor polls for ready tasks (ms). Defaults to the processor's own default. */
-    processorPollIntervalMs?: number;
+    db: {
+        /** Postgres connection string. */
+        url: string;
+        /** Dedicated schema, isolated from other scheduler instances (e.g. `nango_tasks`). */
+        schema: string;
+        poolMax?: number;
+        ssl?: boolean;
+        applicationName?: string;
+    };
+    processor?: {
+        /** Max tasks processed concurrently by this instance's processor. */
+        maxConcurrency?: number;
+        /** How often the processor polls for ready tasks (ms). Defaults to the processor's own default. */
+        pollIntervalMs?: number;
+    };
     /** Override the scheduler daemon config (e.g. shorter tick intervals in tests). */
     schedulerConfig?: SchedulerConfig;
     logger?: StrictLogger;
@@ -34,14 +38,14 @@ export interface TaskQueueOptions<Defs extends readonly AnyTaskDefinition[]> {
  * definitions. Fully typed: `enqueue(type, payload)` is checked against the definitions, and the
  * processor dispatches dequeued tasks to the matching handler.
  */
-export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
+export class Tasks<const Defs extends readonly AnyTaskDefinition[]> {
     private readonly definitions: Map<string, AnyTaskDefinition>;
     private readonly dbClient: DatabaseClient;
     private readonly scheduler: Scheduler;
     private readonly processor: TaskProcessor;
     private readonly logger: StrictLogger;
 
-    constructor(opts: TaskQueueOptions<Defs>) {
+    constructor(opts: TasksOptions<Defs>) {
         this.logger = opts.logger ?? getLogger('tasks');
 
         this.definitions = new Map();
@@ -57,11 +61,11 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
 
         this.dbClient = new DatabaseClient({
             ...defaultDatabaseClientOptions,
-            url: opts.dbUrl,
-            schema: opts.dbSchema,
-            poolMax: opts.dbPoolMax ?? defaultDatabaseClientOptions.poolMax,
-            ssl: opts.dbSsl ? { rejectUnauthorized: false } : false,
-            applicationName: opts.applicationName ?? defaultDatabaseClientOptions.applicationName
+            url: opts.db.url,
+            schema: opts.db.schema,
+            poolMax: opts.db.poolMax ?? defaultDatabaseClientOptions.poolMax,
+            ssl: opts.db.ssl ? { rejectUnauthorized: false } : false,
+            applicationName: opts.db.applicationName ?? defaultDatabaseClientOptions.applicationName
         });
 
         const logState =
@@ -93,8 +97,8 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
         this.processor = new TaskProcessor({
             scheduler: this.scheduler,
             definitions: this.definitions,
-            ...(opts.processorMaxConcurrency !== undefined ? { maxConcurrency: opts.processorMaxConcurrency } : {}),
-            ...(opts.processorPollIntervalMs !== undefined ? { pollIntervalMs: opts.processorPollIntervalMs } : {}),
+            ...(opts.processor?.maxConcurrency !== undefined ? { maxConcurrency: opts.processor.maxConcurrency } : {}),
+            ...(opts.processor?.pollIntervalMs !== undefined ? { pollIntervalMs: opts.processor.pollIntervalMs } : {}),
             logger: this.logger
         });
     }
@@ -128,22 +132,7 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
             return Err(new Error(`Invalid payload for task '${type}': ${parsed.error.message}`));
         }
 
-        const options = resolveTaskOptions(def, overrides);
-        const groupKey = overrides?.groupKey ?? (typeof def.groupKey === 'function' ? def.groupKey(parsed.data) : (def.groupKey ?? type));
-        const props = {
-            name: buildTaskName(type, randomUUID()),
-            payload: parsed.data as JsonObject,
-            groupKey,
-            groupMaxConcurrency: options.groupMaxConcurrency,
-            retryMax: options.retryMax,
-            retryCount: 0,
-            createdToStartedTimeoutSecs: options.createdToStartedTimeoutSecs,
-            startedToCompletedTimeoutSecs: options.startedToCompletedTimeoutSecs,
-            heartbeatTimeoutSecs: options.heartbeatTimeoutSecs,
-            ownerKey: null,
-            retryKey: null
-        };
-
+        const props = this.buildProps(def, type, parsed.data as JsonObject, overrides);
         const res = overrides?.startsAfter ? await this.scheduler.at({ ...props, startsAfter: overrides.startsAfter }) : await this.scheduler.immediate(props);
         if (res.isErr()) {
             return Err(res.error);
@@ -155,7 +144,7 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
      * Enqueue many tasks (of any registered types) in a single transaction. Every item is validated
      * first — if any payload is invalid, nothing is enqueued and an Err is returned. Items that would
      * exceed a group's cap are reported in `discarded` (by input index) rather than failing the batch.
-     * Immediate only (no `startsAfter`).
+     * Items may set `startsAfter` to defer; omit it to run as soon as possible.
      */
     async enqueueBatch(
         items: EnqueueBatchItem<Defs>[]
@@ -164,7 +153,8 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
             return Ok({ created: [], discarded: [] });
         }
 
-        const propsList: ImmediateProps[] = [];
+        const now = new Date();
+        const propsList: AtProps[] = [];
         const nameToIndex = new Map<string, number>();
         for (const [index, item] of items.entries()) {
             const def = this.definitions.get(item.type);
@@ -175,26 +165,12 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
             if (!parsed.success) {
                 return Err(new Error(`Invalid payload for task '${item.type}' at index ${index}: ${parsed.error.message}`));
             }
-            const options = resolveTaskOptions(def);
-            const groupKey = item.groupKey ?? (typeof def.groupKey === 'function' ? def.groupKey(parsed.data) : (def.groupKey ?? item.type));
-            const name = buildTaskName(item.type, randomUUID());
-            nameToIndex.set(name, index);
-            propsList.push({
-                name,
-                payload: parsed.data as JsonObject,
-                groupKey,
-                groupMaxConcurrency: options.groupMaxConcurrency,
-                retryMax: options.retryMax,
-                retryCount: 0,
-                createdToStartedTimeoutSecs: options.createdToStartedTimeoutSecs,
-                startedToCompletedTimeoutSecs: options.startedToCompletedTimeoutSecs,
-                heartbeatTimeoutSecs: options.heartbeatTimeoutSecs,
-                ownerKey: null,
-                retryKey: null
-            });
+            const props = this.buildProps(def, item.type, parsed.data as JsonObject, item.groupKey !== undefined ? { groupKey: item.groupKey } : undefined);
+            nameToIndex.set(props.name, index);
+            propsList.push({ ...props, startsAfter: item.startsAfter ?? now });
         }
 
-        const res = await this.scheduler.immediateBatch(propsList);
+        const res = await this.scheduler.atBatch(propsList);
         if (res.isErr()) {
             return Err(res.error);
         }
@@ -202,5 +178,24 @@ export class TaskQueue<const Defs extends readonly AnyTaskDefinition[]> {
             created: res.value.created.map((t) => ({ index: nameToIndex.get(t.name) ?? -1, taskId: t.id })),
             discarded: res.value.discarded.map((d) => ({ index: nameToIndex.get(d.props.name) ?? -1, reason: d.reason }))
         });
+    }
+
+    /** Build the scheduler props shared by `enqueue` and `enqueueBatch` (everything except `startsAfter`). */
+    private buildProps(def: AnyTaskDefinition, type: string, payload: JsonObject, overrides?: EnqueueOverrides): ImmediateProps {
+        const options = resolveTaskOptions(def, overrides);
+        const groupKey = overrides?.groupKey ?? (typeof def.groupKey === 'function' ? def.groupKey(payload) : (def.groupKey ?? type));
+        return {
+            name: buildTaskName(type, randomUUID()),
+            payload,
+            groupKey,
+            groupMaxConcurrency: options.groupMaxConcurrency,
+            retryMax: options.retryMax,
+            retryCount: 0,
+            createdToStartedTimeoutSecs: options.createdToStartedTimeoutSecs,
+            startedToCompletedTimeoutSecs: options.startedToCompletedTimeoutSecs,
+            heartbeatTimeoutSecs: options.heartbeatTimeoutSecs,
+            ownerKey: null,
+            retryKey: null
+        };
     }
 }

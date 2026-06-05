@@ -36,7 +36,7 @@
         "@nangohq/records": "file:../records",
         "@nangohq/sandbox": "file:../sandbox",
         "@nangohq/shared": "file:../shared",
-        "@nangohq/task-queue": "file:../task-queue",
+        "@nangohq/tasks": "file:../tasks",
         "@nangohq/utils": "file:../utils",
         "@nangohq/webhooks": "file:../webhooks",
         "@workos-inc/node": "6.2.0",

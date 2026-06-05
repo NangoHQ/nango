@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/task-queue",
+    "name": "@nangohq/tasks",
     "version": "1.0.0",
     "type": "module",
     "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/NangoHQ/nango.git",
-        "directory": "packages/task-queue"
+        "directory": "packages/tasks"
     },
     "dependencies": {
         "@nangohq/scheduler": "file:../scheduler",
