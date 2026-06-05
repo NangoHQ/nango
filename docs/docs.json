@@ -1025,7 +1025,7 @@
               "integrations/all/certn-partner",
               "integrations/all/chargebee",
               "api-integrations/chatarmin",
-              "api-integrations/chattermill",
+              "integrations/all/chattermill",
               "integrations/all/checkhq",
               "integrations/all/checkout-com",
               "integrations/all/checkout-com-sandbox",
