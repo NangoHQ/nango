@@ -45,7 +45,8 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
     // dashboard (including headline totals) to ClickHouse so totals match the
     // per-panel breakdowns; otherwise keep the env / localStorage default source.
     const breakdownFlag = useFeatureFlagsStore((s) => s.usageBreakdown);
-    const sourceOverride = breakdownFlag && isBreakdownAvailableForMonth(selectedMonth) ? 'clickhouse' : undefined;
+    const allowMay = useFeatureFlagsStore((s) => s.usageBreakdownAllowMay);
+    const sourceOverride = breakdownFlag && isBreakdownAvailableForMonth(selectedMonth, allowMay) ? 'clickhouse' : undefined;
 
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, sourceOverride);
 

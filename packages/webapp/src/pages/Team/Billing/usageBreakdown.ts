@@ -74,15 +74,24 @@ export function formatDimensionValue(dimension: AnyBreakdownDimension, value: st
 export const DEFAULT_TOP_N = 10;
 
 /**
- * Earliest month for which usage breakdowns are offered. Granular ClickHouse
- * data only goes back this far, so earlier months keep the legacy single-series
- * view. Hardcoded for the MVP; a backend-driven per-account signal can replace
- * it later.
+ * Earliest month for which usage breakdowns are offered. June 2026 is the first
+ * complete month of granular ClickHouse data — `daily_raw_connections` /
+ * `daily_raw_records` only started ingesting ~2026-05-12 (plus a May 16–18 ingest
+ * gap), so May is partial for the average metrics. Earlier months keep the legacy
+ * single-series view (served from Orb). Hardcoded for the MVP; a backend-driven
+ * per-account signal can replace it later.
  */
-export const USAGE_BREAKDOWN_AVAILABLE_FROM = new Date(Date.UTC(2026, 4, 1)); // May 2026
-export const USAGE_BREAKDOWN_AVAILABLE_FROM_LABEL = 'May 2026';
+export const USAGE_BREAKDOWN_AVAILABLE_FROM = new Date(Date.UTC(2026, 5, 1)); // June 2026
+export const USAGE_BREAKDOWN_AVAILABLE_FROM_LABEL = 'June 2026';
 
-/** A month (first-of-month, UTC) is breakdown-eligible when it's at or after the cutover. */
-export function isBreakdownAvailableForMonth(month: Date): boolean {
-    return month.getTime() >= USAGE_BREAKDOWN_AVAILABLE_FROM.getTime();
+/** Dev-only lower bound (the `usageBreakdownAllowMay` flag), one month earlier. */
+export const USAGE_BREAKDOWN_DEV_AVAILABLE_FROM = new Date(Date.UTC(2026, 4, 1)); // May 2026
+
+/**
+ * A month (first-of-month, UTC) is breakdown-eligible when it's at or after the
+ * cutover. `allowMay` (the dev flag) lowers the cutover to May for testing.
+ */
+export function isBreakdownAvailableForMonth(month: Date, allowMay = false): boolean {
+    const from = allowMay ? USAGE_BREAKDOWN_DEV_AVAILABLE_FROM : USAGE_BREAKDOWN_AVAILABLE_FROM;
+    return month.getTime() >= from.getTime();
 }
