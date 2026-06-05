@@ -6,9 +6,9 @@ import { getDeployErrorCode } from './cli-exit-codes.js';
 import { buildDeployArgs } from './command-builders.js';
 import { getCommandOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
-import { RemoteFunctionError } from './helpers.js';
+import { FunctionError } from './helpers.js';
 import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
-import { createRemoteFunctionSandbox } from './sandbox.js';
+import { createFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
 
@@ -38,8 +38,8 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
     }
 
-    const sandbox = await createRemoteFunctionSandbox({
-        purpose: 'nango-deploy',
+    const sandbox = await createFunctionSandbox({
+        purpose: 'deploy',
         timeoutMs: remoteFunctionDeploySandboxTimeoutMs,
         apiKey
     });
@@ -69,14 +69,14 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         } catch (err) {
             if (err instanceof CommandExitError) {
                 const output = getCommandOutput(err, 'Deployment failed');
-                throw new RemoteFunctionError({
+                throw new FunctionError({
                     code: getDeployErrorCode(err),
                     message: output,
                     status: 400
                 });
             }
             if (err instanceof TimeoutError) {
-                throw new RemoteFunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
+                throw new FunctionError({ code: 'timeout', message: 'Deployment timed out', status: 504 });
             }
             throw err;
         }

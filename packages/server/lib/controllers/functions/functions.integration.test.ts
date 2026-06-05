@@ -1,37 +1,27 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
 import { sandboxApiKeyService } from '@nangohq/sandbox';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
-import { envs } from '../../env.js';
 import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { DBFunctionDryrun } from '@nangohq/sandbox';
 import type { ApiKeyScope, FunctionSource, ScriptTypeLiteral } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
-const originalNodeEnv = envs.NODE_ENV;
 
-async function seedAccountWithRemoteFunctions(scopes?: ApiKeyScope[]) {
-    const seed = await seeders.seedAccountEnvAndUser({ plan: { remote_functions: true } });
+async function seedAccount(scopes?: ApiKeyScope[]) {
+    const seed = await seeders.seedAccountEnvAndUser();
     if (scopes) {
         await db.knex('customer_keys').where('id', seed.apiKey.id).update({ scopes });
     }
     return seed;
 }
 
-async function seedAccountWithoutRemoteFunctions(scopes?: ApiKeyScope[]) {
-    const seed = await seeders.seedAccountEnvAndUser({ plan: { remote_functions: false } });
-    if (scopes) {
-        await db.knex('customer_keys').where('id', seed.apiKey.id).update({ scopes });
-    }
-    return seed;
-}
-
-async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccountWithRemoteFunctions>>, scopes: string[]) {
+async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccount>>, scopes: string[]) {
     const key = await customerKeyService.createApiKey(db.knex, {
         accountId: seed.account.id,
         environmentId: seed.env.id,
@@ -116,31 +106,13 @@ async function createExistingFunctionConfig({
     });
 }
 
-describe('remote-function public API', () => {
+describe('functions public API', () => {
     beforeAll(async () => {
         api = await runServer();
     });
 
     afterAll(() => {
         api.server.close();
-    });
-
-    afterEach(() => {
-        envs.NODE_ENV = originalNodeEnv;
-    });
-
-    it('protects POST /remote-function/compile', async () => {
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        shouldBeProtected(res);
     });
 
     it('protects POST /functions/compile', async () => {
@@ -154,72 +126,8 @@ describe('remote-function public API', () => {
         shouldBeProtected(res);
     });
 
-    it('rejects valid secret keys without remote functions plan flag', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
-
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(403);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'forbidden',
-                message: 'Remote functions are not enabled for this account'
-            }
-        });
-    });
-
-    it('allows POST /functions/compile without remote functions plan flag', async () => {
-        const { apiKey } = await seedAccountWithoutRemoteFunctions(['environment:functions:compile']);
-
-        const res = await api.fetch('/functions/compile', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                code: ''
-            }
-        });
-
-        expect(res.res.status).toBe(400);
-        isError(res.json);
-        expect(res.json.error.code).toBe('invalid_body');
-    });
-
-    it('rejects POST /remote-function/dryrun without dryrun scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions();
-        const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
-
-        const res = await api.fetch('/remote-function/dryrun', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}',
-                connection_id: 'missing-connection'
-            }
-        });
-
-        expect(res.res.status).toBe(403);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'forbidden',
-                message: 'Insufficient scope. Required: environment:functions:dryrun'
-            }
-        });
-    });
-
     it('rejects POST /functions/dryruns without dryrun scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions();
+        const seed = await seedAccount();
         const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
 
         const res = await api.fetch('/functions/dryruns', {
@@ -242,32 +150,8 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('rejects POST /remote-function/deploy without deploy scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions();
-        const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
-
-        const res = await api.fetch('/remote-function/deploy', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(403);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'forbidden',
-                message: 'Insufficient scope. Required: environment:deploy'
-            }
-        });
-    });
-
     it('rejects POST /functions/deployments without deploy scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions();
+        const seed = await seedAccount();
         const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
 
         const res = await api.fetch('/functions/deployments', {
@@ -291,27 +175,8 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('rejects unsafe function names on POST /remote-function/compile', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions();
-
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'bad/name',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        isError(res.json);
-        expect(res.res.status).toBe(400);
-        expect(res.json.error.code).toBe('invalid_body');
-    });
-
     it('requires compile scope on POST /functions/compile', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:mcp']);
+        const { apiKey } = await seedAccount(['environment:mcp']);
 
         const res = await api.fetch('/functions/compile', {
             method: 'POST',
@@ -331,7 +196,7 @@ describe('remote-function public API', () => {
     });
 
     it('rejects deploy-only scope on POST /functions/compile', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
+        const { apiKey } = await seedAccount(['environment:deploy']);
 
         const res = await api.fetch('/functions/compile', {
             method: 'POST',
@@ -351,7 +216,7 @@ describe('remote-function public API', () => {
     });
 
     it('accepts compile scope on POST /functions/compile', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:compile']);
+        const { apiKey } = await seedAccount(['environment:functions:compile']);
 
         const res = await api.fetch('/functions/compile', {
             method: 'POST',
@@ -366,81 +231,8 @@ describe('remote-function public API', () => {
         expect(res.json.error.code).toBe('invalid_body');
     });
 
-    it('returns integration_not_found on POST /remote-function/compile', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions();
-
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(404);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'integration_not_found',
-                message: "Integration 'github' was not found"
-            }
-        });
-    });
-
-    it('allows valid secret keys in production', async () => {
-        envs.NODE_ENV = 'production';
-
-        const { apiKey } = await seedAccountWithRemoteFunctions();
-
-        const res = await api.fetch('/remote-function/compile', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(404);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'integration_not_found',
-                message: "Integration 'github' was not found"
-            }
-        });
-    });
-
-    it('returns connection_not_found on POST /remote-function/dryrun', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions();
-        await seeders.createConfigSeed(env, 'github', 'github');
-
-        const res = await api.fetch('/remote-function/dryrun', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}',
-                connection_id: 'missing-connection'
-            }
-        });
-
-        expect(res.res.status).toBe(404);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'connection_not_found',
-                message: "Connection 'missing-connection' was not found for integration 'github'"
-            }
-        });
-    });
-
     it('returns connection_not_found on POST /functions/dryruns', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions();
+        const { env, apiKey } = await seedAccount();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch('/functions/dryruns', {
@@ -464,7 +256,7 @@ describe('remote-function public API', () => {
     });
 
     it('returns integration_not_found on POST /functions/dryruns', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccount();
 
         const res = await api.fetch('/functions/dryruns', {
             method: 'POST',
@@ -486,31 +278,8 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('returns integration_not_found on POST /remote-function/deploy', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions();
-
-        const res = await api.fetch('/remote-function/deploy', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}'
-            }
-        });
-
-        expect(res.res.status).toBe(404);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'integration_not_found',
-                message: "Integration 'github' was not found"
-            }
-        });
-    });
-
     it('returns integration_not_found on POST /functions/deployments', async () => {
-        const { apiKey } = await seedAccountWithRemoteFunctions();
+        const { apiKey } = await seedAccount();
 
         const res = await api.fetch('/functions/deployments', {
             method: 'POST',
@@ -533,39 +302,8 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('rejects allow_destructive on POST /remote-function/deploy for repo-managed functions', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
-        const providerConfig = await seeders.createConfigSeed(env, 'github', 'github');
-        await createExistingFunctionConfig({
-            environmentId: env.id,
-            configId: providerConfig.id!,
-            functionName: 'syncIssues',
-            source: 'repo'
-        });
-
-        const res = await api.fetch('/remote-function/deploy', {
-            method: 'POST',
-            token: apiKey.secret,
-            body: {
-                integration_id: 'github',
-                function_name: 'syncIssues',
-                function_type: 'sync',
-                code: 'export default {}',
-                allow_destructive: true
-            }
-        });
-
-        expect(res.res.status).toBe(400);
-        expect(res.json).toStrictEqual({
-            error: {
-                code: 'invalid_request',
-                message: "Cannot overwrite existing function 'syncIssues'"
-            }
-        });
-    });
-
     it('rejects allow_destructive on POST /functions/deployments for repo-managed functions', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:deploy']);
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
         const providerConfig = await seeders.createConfigSeed(env, 'github', 'github');
         await createExistingFunctionConfig({
             environmentId: env.id,
@@ -597,7 +335,7 @@ describe('remote-function public API', () => {
     });
 
     it('returns stored dryrun status on GET /functions/dryruns/:id', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const { env, apiKey } = await seedAccount(['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({
             environmentId: env.id,
             sandboxId: 'sandbox-id',
@@ -624,7 +362,7 @@ describe('remote-function public API', () => {
     });
 
     it('rejects POST /functions/dryruns/:id/result with a customer API key', async () => {
-        const { env, apiKey } = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const { env, apiKey } = await seedAccount(['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({ environmentId: env.id, startedAt: new Date() });
 
         const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
@@ -646,32 +384,8 @@ describe('remote-function public API', () => {
         });
     });
 
-    it('allows POST /functions/dryruns/:id/result without remote functions plan flag', async () => {
-        const seed = await seedAccountWithoutRemoteFunctions(['environment:functions:dryrun']);
-        const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
-        const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
-            parentApiKeyId: seed.apiKey.id,
-            environmentId: seed.env.id,
-            purpose: 'dryrun',
-            dryrunId: dryrun.id,
-            expiresAt: new Date(Date.now() + 60_000)
-        });
-
-        const res = await fetch(`${api.url}/functions/dryruns/${dryrun.id}/result`, {
-            method: 'POST',
-            headers: {
-                authorization: `Bearer ${sandboxToken.unwrap()}`,
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({ status: 'success', output: 'Executing -> function\nDone\n{"ok":true}' })
-        });
-
-        expect(res.status).toBe(200);
-        expect(await res.json()).toStrictEqual({ ok: true });
-    });
-
     it('accepts POST /functions/dryruns/:id/result with a sandbox token', async () => {
-        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const seed = await seedAccount(['environment:functions:dryrun']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({ environmentId: seed.env.id, functionType: 'action', startedAt: new Date() });
         const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
@@ -715,7 +429,7 @@ describe('remote-function public API', () => {
     });
 
     it('accepts POST /functions/dryruns/:id/result with a sandbox token from a parent key without dryrun scope', async () => {
-        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const seed = await seedAccount(['environment:functions:dryrun']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:connections:read']);
         const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
         const sandboxToken = await sandboxApiKeyService.createSandboxApiKey(db.knex, {
@@ -740,7 +454,7 @@ describe('remote-function public API', () => {
     });
 
     it('rejects POST /functions/dryruns/:id/result with a sandbox token for another dryrun', async () => {
-        const seed = await seedAccountWithRemoteFunctions(['environment:functions:dryrun']);
+        const seed = await seedAccount(['environment:functions:dryrun']);
         const apiKey = await createApiKeyWithScopes(seed, ['environment:functions:dryrun']);
         const dryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });
         const otherDryrun = await createDryrunSeed({ environmentId: seed.env.id, startedAt: new Date() });

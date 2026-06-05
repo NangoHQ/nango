@@ -1,14 +1,9 @@
 import { RateLimitError, Sandbox } from 'e2b';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    createRemoteFunctionSandbox,
-    executionEnvironmentUnavailableMessage,
-    getRunningSandboxCount,
-    toExecutionEnvironmentUnavailableError
-} from './sandbox.js';
+import { createFunctionSandbox, executionEnvironmentUnavailableMessage, getRunningSandboxCount, toExecutionEnvironmentUnavailableError } from './sandbox.js';
 
-import type { RemoteFunctionError } from './helpers.js';
+import type { FunctionError } from './helpers.js';
 
 describe('remote function sandbox helpers', () => {
     afterEach(() => {
@@ -19,9 +14,9 @@ describe('remote function sandbox helpers', () => {
         const create = vi.spyOn(Sandbox, 'create').mockRejectedValueOnce(new RateLimitError('Rate limit exceeded - too many sandboxes'));
 
         await expect(
-            createRemoteFunctionSandbox({
+            createFunctionSandbox({
                 apiKey: 'e2b-key',
-                purpose: 'nango-dryrun',
+                purpose: 'dryrun',
                 timeoutMs: 30_000,
                 metadata: { dryrunId: 'dryrun-id' }
             })
@@ -29,7 +24,7 @@ describe('remote function sandbox helpers', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(create).toHaveBeenCalledWith(
             expect.any(String),
@@ -39,7 +34,7 @@ describe('remote function sandbox helpers', () => {
                 allowInternetAccess: true,
                 metadata: expect.objectContaining({
                     dryrunId: 'dryrun-id',
-                    purpose: 'nango-dryrun',
+                    purpose: 'dryrun',
                     requestId: expect.any(String)
                 }),
                 network: { allowPublicTraffic: true }
@@ -74,13 +69,13 @@ describe('remote function sandbox helpers', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(toExecutionEnvironmentUnavailableError(new Error('Concurrent sandboxes quota exceeded'))).toMatchObject({
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
     });
 
     it('leaves unrelated sandbox errors unchanged', () => {

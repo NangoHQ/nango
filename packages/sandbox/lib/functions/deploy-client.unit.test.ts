@@ -52,7 +52,7 @@ import { NangoCliExitCode } from './cli-exit-codes.js';
 import { invokeDeploy } from './deploy-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
-import type { RemoteFunctionError } from './helpers.js';
+import type { FunctionError } from './helpers.js';
 
 const request = {
     integration_id: 'github',
@@ -96,7 +96,7 @@ describe('remote function deploy client', () => {
             code: 'compilation_error',
             message: 'type error details\nFound 1 error',
             status: 400
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(mocks.run).toHaveBeenCalledTimes(1);
         expect(mocks.run.mock.calls[0]?.[0]).toContain("'deploy'");
@@ -109,7 +109,7 @@ describe('remote function deploy client', () => {
             code: 'deployment_error',
             message: 'Found 1 error from deployment API',
             status: 400
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(mocks.run).toHaveBeenCalledTimes(1);
     });
@@ -121,7 +121,7 @@ describe('remote function deploy client', () => {
             code: 'execution_environment_unavailable',
             message: executionEnvironmentUnavailableMessage,
             status: 503
-        } satisfies Partial<RemoteFunctionError>);
+        } satisfies Partial<FunctionError>);
 
         expect(mocks.write).not.toHaveBeenCalled();
         expect(mocks.kill).not.toHaveBeenCalled();

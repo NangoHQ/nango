@@ -4,18 +4,18 @@ import { RateLimitError, Sandbox } from 'e2b';
 
 import { getLogger, stringifyError } from '@nangohq/utils';
 
-import { RemoteFunctionError } from './helpers.js';
+import { FunctionError } from './helpers.js';
 import { remoteFunctionCompilerTemplate } from './runtime.js';
 
 import type { SandboxListOpts } from 'e2b';
 
-const logger = getLogger('RemoteFunctionSandbox');
+const logger = getLogger('FunctionSandbox');
 
 export const executionEnvironmentUnavailableMessage = 'The function execution environment is temporarily unavailable. Please try again shortly.';
 
-export type RemoteFunctionSandbox = Awaited<ReturnType<typeof Sandbox.create>>;
+export type FunctionSandbox = Awaited<ReturnType<typeof Sandbox.create>>;
 
-export type RemoteFunctionSandboxPurpose = 'nango-compiler' | 'nango-deploy' | 'nango-dryrun' | 'nango-function-dryrun';
+export type FunctionSandboxPurpose = 'compile' | 'deploy' | 'dryrun';
 
 export async function getRunningSandboxCount({ apiKey, requestTimeoutMs }: { apiKey: string; requestTimeoutMs?: number | undefined }): Promise<number> {
     const listOptions = {
@@ -34,17 +34,17 @@ export async function getRunningSandboxCount({ apiKey, requestTimeoutMs }: { api
     return count;
 }
 
-export async function createRemoteFunctionSandbox({
+export async function createFunctionSandbox({
     apiKey,
     purpose,
     timeoutMs,
     metadata = {}
 }: {
     apiKey: string;
-    purpose: RemoteFunctionSandboxPurpose;
+    purpose: FunctionSandboxPurpose;
     timeoutMs: number;
     metadata?: Record<string, string> | undefined;
-}): Promise<RemoteFunctionSandbox> {
+}): Promise<FunctionSandbox> {
     try {
         return await Sandbox.create(remoteFunctionCompilerTemplate, {
             timeoutMs,
@@ -64,12 +64,12 @@ export async function createRemoteFunctionSandbox({
     }
 }
 
-export function toExecutionEnvironmentUnavailableError(error: unknown): RemoteFunctionError | null {
+export function toExecutionEnvironmentUnavailableError(error: unknown): FunctionError | null {
     if (!isExecutionEnvironmentUnavailableError(error)) {
         return null;
     }
 
-    return new RemoteFunctionError({
+    return new FunctionError({
         code: 'execution_environment_unavailable',
         message: executionEnvironmentUnavailableMessage,
         status: 503
