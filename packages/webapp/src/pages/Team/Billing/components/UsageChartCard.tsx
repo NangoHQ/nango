@@ -20,14 +20,14 @@ import {
     getCapturedFixtureEntries,
     useFixtureDimensionValues
 } from '../usageBreakdownFixtures';
-import { ChartCard } from '@/components-v2/patterns/ChartCard';
-import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components-v2/patterns/usageChartColors';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { ChartCard } from '@/components/patterns/ChartCard';
+import { FAILED_SERIES_COLOR, REST_SERIES_COLOR, REST_SERIES_KEY, SUCCESS_SERIES_COLOR, colorForValue } from '@/components/patterns/usageChartColors';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useApiGetBillingUsageBreakdown } from '@/hooks/usePlan';
 import { useFeatureFlagsStore } from '@/store/feature-flags';
 
 import type { AnyBreakdownDimension } from '../usageBreakdown';
-import type { ChartSeries } from '@/components-v2/patterns/ChartCard';
+import type { ChartSeries } from '@/components/patterns/ChartCard';
 import type { ApiBillingUsageMetric, BillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 const NONE = 'none';
