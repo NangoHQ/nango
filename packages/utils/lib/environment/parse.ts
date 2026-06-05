@@ -295,6 +295,9 @@ export const ENVS = z.object({
 
     // ClickHouse
     CLICKHOUSE_URL: z.string().optional(),
+    // When set, preferred over CLICKHOUSE_URL — routes traffic through the
+    // PrivateLink VPC endpoint instead of the public endpoint.
+    CLICKHOUSE_PRIVATE_URL: z.string().optional(),
     CLICKHOUSE_USAGE_INGEST_BATCH_SIZE: z.coerce.number().optional().default(10_000),
     CLICKHOUSE_USAGE_INGEST_BATCH_INTERVAL_MS: z.coerce.number().optional().default(5_000),
     CLICKHOUSE_USAGE_INGEST_MAX_QUEUE_SIZE: z.coerce.number().optional().default(500_000),

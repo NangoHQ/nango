@@ -9,11 +9,12 @@ const envs = parseEnvs(ENVS);
 export const database = 'usage';
 
 export function clickhouseClient(opts?: { database: string }): ClickHouseClient | null {
-    if (!envs.CLICKHOUSE_URL) {
+    const url = envs.CLICKHOUSE_PRIVATE_URL ?? envs.CLICKHOUSE_URL;
+    if (!url) {
         return null;
     }
     return createClient({
-        url: envs.CLICKHOUSE_URL,
+        url,
         ...(opts?.database ? { database: opts.database } : {}),
         // CH Cloud auto-suspend wake-up on idle instances can exceed the 30s
         // client default — bumping to 60s rides out the cold-start.
