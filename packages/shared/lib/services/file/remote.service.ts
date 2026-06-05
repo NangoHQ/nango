@@ -1,6 +1,7 @@
+import { createHash } from 'node:crypto';
 import { Readable } from 'stream';
 
-import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, DeleteObjectsCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import archiver from 'archiver';
 
 import { nangoConfigFile } from '@nangohq/nango-yaml';
@@ -33,6 +34,17 @@ function getRegion() {
 
 function getBucketName() {
     return process.env['AWS_INTEGRATIONS_BUCKET_NAME'] || process.env['AWS_BUCKET_NAME'] || 'nangodev-customer-integrations';
+}
+
+function contentMd5(content: string): string {
+    return createHash('md5').update(content, 'utf8').digest('hex');
+}
+
+function etagMatchesContent(etag: string | undefined, content: string): boolean {
+    if (!etag) {
+        return false;
+    }
+    return etag.replace(/"/g, '') === contentMd5(content);
 }
 
 class RemoteFileService {
@@ -84,6 +96,19 @@ class RemoteFileService {
             report(err);
 
             return null;
+        }
+    }
+
+    async checkIfChanged({ content, objectKey }: { content: string; objectKey: string }): Promise<boolean> {
+        if (!this.useS3) {
+            return true;
+        }
+
+        try {
+            const head = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: objectKey }));
+            return !etagMatchesContent(head.ETag, content);
+        } catch {
+            return true;
         }
     }
 
