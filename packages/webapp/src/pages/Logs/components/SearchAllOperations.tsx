@@ -7,16 +7,15 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useDebounce, useInterval, useMount, useWindowSize } from 'react-use';
 
 import { SearchableMultiSelect } from './SearchableMultiSelect';
-import { TypesSelect } from './TypesSelect';
-import { MultiSelect } from '../../../components/ui/MultiSelect';
-import { PeriodSelector } from '../../../components/ui/PeriodSelector';
 import { queryClient, useStore } from '../../../store';
-import { columns, defaultLimit, refreshInterval, statusOptions, typesList } from '../constants';
+import { columns, defaultLimit, refreshInterval, statusOptions, typesList, typesOptions } from '../constants';
 import { OperationRow } from './OperationRow';
 import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
+import { FilterMultiSelect } from '@/components-v2/patterns/FilterMultiSelect';
+import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
 import { Button } from '@/components-v2/ui/Button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
@@ -276,8 +275,8 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                     </InputGroup>
                 </div>
                 <div className="flex gap-2">
-                    <MultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} all />
-                    <TypesSelect selected={types} onChange={setTypes} />
+                    <FilterMultiSelect label="Status" options={statusOptions} selected={states} defaultSelect={['all']} onChange={setStates} />
+                    <FilterMultiSelect label="Type" options={typesOptions} selected={types} defaultSelect={['all']} onChange={setTypes} width="w-80" />
                     <SearchableMultiSelect label="Integration" selected={integrations} category={'integration'} onChange={setIntegrations} max={20} />
                     <SearchableMultiSelect label="Connection" selected={connections} category={'connection'} onChange={setConnections} max={20} />
                     <SearchableMultiSelect label="Script" selected={syncs} category={'syncConfig'} onChange={setSyncs} max={20} />

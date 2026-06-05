@@ -274,7 +274,7 @@ async function compileDeployInfo({
             void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
-        if (runs) {
+        if (runs && runs !== previousSyncAndActionConfig.runs) {
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment_id, providerConfigKey, filter: [{ syncName, syncVariant: 'base' }] });
 
             for (const sync of syncs) {
@@ -332,25 +332,53 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const uploads = [
-        remoteFileService.upload({
-            content: jsFile,
-            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-            destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
-        })
-    ];
+    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
+    const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
+    const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
+    let file_location: string | null | undefined = previousJsFileLocation;
+    const uploads = [];
 
     if (typeof fileBody === 'object' && fileBody.ts) {
-        uploads.push(
-            remoteFileService.upload({
-                content: fileBody.ts,
-                destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-                destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
-            })
-        );
+        const tsFile = fileBody.ts;
+        const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
+        const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
+        const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
+
+        if (tsChanged) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                }),
+                remoteFileService.upload({
+                    content: tsFile,
+                    destinationPath: tsDestinationPath,
+                    destinationLocalFileName: tsLocalFileName
+                })
+            );
+        }
+    }
+    // Legacy Path - Only JS is provided
+    else {
+        const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
+        if (jsChanged) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                })
+            );
+        }
     }
 
-    const [file_location] = await Promise.all(uploads);
+    if (uploads.length > 0) {
+        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
+        [file_location] = await Promise.all(uploads);
+    } else {
+        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${version}.js` });
+    }
 
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });

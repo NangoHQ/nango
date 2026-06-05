@@ -1110,6 +1110,7 @@
               "api-integrations/dropbox",
               "integrations/all/dropbox-sign",
               "integrations/all/drupal",
+              "api-integrations/dualentry-mcp",
               "api-integrations/dynatrace",
               "api-integrations/dynatrace-oauth",
               "integrations/all/e-conomic",
