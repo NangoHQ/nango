@@ -1195,16 +1195,32 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-            if (
-                (session.authMode === 'OAUTH2' ||
-                    session.authMode === 'CUSTOM' ||
-                    session.authMode === 'MCP_OAUTH2' ||
-                    session.authMode === 'MCP_OAUTH2_GENERIC') &&
-                req.cookies[`oauth2-${session.id}`] !== '1'
-            ) {
+            const usesStateCookie =
+                session.authMode === 'OAUTH2' ||
+                session.authMode === 'CUSTOM' ||
+                session.authMode === 'MCP_OAUTH2' ||
+                session.authMode === 'MCP_OAUTH2_GENERIC';
+            if (usesStateCookie && req.cookies[`oauth2-${session.id}`] === '1') {
+                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_PRESENT, 1, {
+                    account_id: account.id
+                });
+            } else if (usesStateCookie) {
+                // Sec-Fetch-* are set by browsers and cannot be spoofed from JS, so they tell us how the
+                // callback reached us: `navigate`/`document` = a real top-level browser redirect (so a missing
+                // cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR forward,
+                // and absent = a non-browser server-side call. The rest corroborate that classification.
+                const userAgent = req.get('user-agent') ?? '';
                 metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
                     account_id: account.id,
-                    auth_mode: session.authMode
+                    auth_mode: session.authMode,
+                    provider: config.provider,
+                    sec_fetch_mode: req.get('sec-fetch-mode') ?? 'absent',
+                    sec_fetch_dest: req.get('sec-fetch-dest') ?? 'absent',
+                    sec_fetch_site: req.get('sec-fetch-site') ?? 'absent',
+                    is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
+                    has_referer: String(Boolean(req.get('referer'))),
+                    has_any_cookie: String(Boolean(req.get('cookie'))),
+                    req_secure: String(req.secure)
                 });
             }
 
