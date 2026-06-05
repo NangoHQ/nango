@@ -1208,8 +1208,11 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : null;
+        if (!tokenUrl?.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+        const url = makeUrl(tokenUrl, connectionConfig);
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
