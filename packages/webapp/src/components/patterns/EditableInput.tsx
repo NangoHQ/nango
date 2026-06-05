@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ConditionalTooltip } from './ConditionalTooltip';
 import { CopyButton } from '../ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupTextarea } from '../ui/InputGroup';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 
 export interface EditableInputProps {
     id?: string;

@@ -2,7 +2,7 @@ import { IconChevronRight } from '@tabler/icons-react';
 
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../utils/utils';
 import { LevelTag } from '../components/LevelTag';
-import { Tag } from '@/components-v2/ui/Tag';
+import { Tag } from '@/components/ui/Tag';
 
 import type { SearchMessagesData } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';

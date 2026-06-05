@@ -1,10 +1,10 @@
-import { SecretTextArea } from '@/components-v2/patterns/SecretTextArea';
+import { SecretTextArea } from '@/components/patterns/SecretTextArea';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof SecretTextArea> = {
     component: SecretTextArea,
-    title: 'Components v2/Patterns/SecretTextArea',
+    title: 'Components/Patterns/SecretTextArea',
     parameters: { layout: 'centered' }
 };
 export default meta;

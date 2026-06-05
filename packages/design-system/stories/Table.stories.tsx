@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -10,7 +10,7 @@ const rows = [
 
 const meta: Meta<typeof Table> = {
     component: Table,
-    title: 'Components v2/UI/Table',
+    title: 'Components/UI/Table',
     parameters: { layout: 'padded' }
 };
 export default meta;

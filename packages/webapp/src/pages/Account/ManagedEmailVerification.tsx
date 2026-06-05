@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { InputGroup, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { APIError } from '@/utils/api';

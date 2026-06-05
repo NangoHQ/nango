@@ -1,8 +1,8 @@
 import { Braces } from 'lucide-react';
 
-import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
-import { CodeBlock } from '@/components-v2/ui/CodeBlock';
-import { Label } from '@/components-v2/ui/Label';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import { Label } from '@/components/ui/Label';
 
 import type { ConnectionConfig, Metadata } from '@nangohq/types';
 

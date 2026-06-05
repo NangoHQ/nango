@@ -13,12 +13,12 @@ import { calculateTableSizing } from '../../../../utils/table';
 import { formatQuantity } from '../../../../utils/utils';
 import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
-import { ConditionalTooltip } from '@/components-v2/patterns/ConditionalTooltip';
-import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components-v2/ui/Sheet';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Spinner } from '@/components-v2/ui/Spinner';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/Sheet';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';

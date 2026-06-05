@@ -10,8 +10,8 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import { ScopesInput } from '../../components-v2/patterns/ScopesInput';
-import { SecretTextArea } from '../../components-v2/patterns/SecretTextArea';
+import { ScopesInput } from '../../components/patterns/ScopesInput';
+import { SecretTextArea } from '../../components/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -20,7 +20,7 @@ import { useAnalyticsTrack } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
+import { SecretInput } from '@/components/patterns/SecretInput';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 

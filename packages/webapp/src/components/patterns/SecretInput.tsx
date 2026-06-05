@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { Button } from '../ui/Button';
 import { CopyButton } from '../ui/CopyButton';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '../ui/InputGroup';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
 
 interface SecretInputProps extends React.ComponentProps<'input'> {
     copy?: boolean;

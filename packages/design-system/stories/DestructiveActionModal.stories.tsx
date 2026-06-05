@@ -1,13 +1,13 @@
 import { useState } from 'react';
 
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
-import { Button } from '@/components-v2/ui/Button';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { Button } from '@/components/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof DestructiveActionModal> = {
     component: DestructiveActionModal,
-    title: 'Components v2/Patterns/DestructiveActionModal',
+    title: 'Components/Patterns/DestructiveActionModal',
     parameters: { layout: 'centered' }
 };
 export default meta;

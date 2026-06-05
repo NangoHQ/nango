@@ -3,9 +3,9 @@ import { BookOpen, Box, Moon, Sun } from 'lucide-react';
 import { permissions } from '@nangohq/authz';
 
 import { SlackIcon } from '@/assets/SlackIcon';
-import { Breadcrumbs } from '@/components-v2/patterns/Breadcrumbs';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
+import { Breadcrumbs } from '@/components/patterns/Breadcrumbs';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { isDevToolsEnabled } from '@/features/DevToolPanel';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';

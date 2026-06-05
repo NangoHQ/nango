@@ -14,12 +14,12 @@ import { apiFetch } from '../../../utils/api';
 import { last24hPreset, logsPresets, slidePeriod } from '../../../utils/logs';
 import { calculateTableSizing } from '../../../utils/table';
 import { formatQuantity } from '../../../utils/utils';
-import { FilterMultiSelect } from '@/components-v2/patterns/FilterMultiSelect';
-import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
-import { Button } from '@/components-v2/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
-import { Spinner } from '@/components-v2/ui/Spinner';
+import { FilterMultiSelect } from '@/components/patterns/FilterMultiSelect';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
+import { Button } from '@/components/ui/Button';
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
 
 import type { Period } from '../../../utils/dates';
 import type { OperationRow as OperationRowType, SearchOperations, SearchOperationsData } from '@nangohq/types';

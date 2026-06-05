@@ -8,7 +8,7 @@ import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { ImpersonateForm } from './components/ImpersonateForm';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { ApiError } from '@nangohq/types';
 
