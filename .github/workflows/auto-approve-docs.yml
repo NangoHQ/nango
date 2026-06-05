@@ -86,3 +86,38 @@ jobs:
                   github-token: ${{ steps.app-token.outputs.token }}
                   review-message: |
                       ✅ Auto-approved: docs-only change.
+
+            # The PR was previously docs-only and may carry a stale auto-approval. Now that a
+            # non-docs change has been pushed, dismiss it so the code change can't ride in on it.
+            - name: Dismiss stale auto-approval
+              if: steps.trust_check.outputs.result == 'true' && steps.filter.outputs.non_docs == 'true'
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ steps.app-token.outputs.token }}
+                  script: |
+                      const marker = 'Auto-approved: docs-only change';
+
+                      const reviews = await github.paginate(github.rest.pulls.listReviews, {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        pull_number: context.payload.pull_request.number,
+                      });
+
+                      const staleApprovals = reviews.filter(
+                        (review) => review.state === 'APPROVED' && (review.body || '').includes(marker)
+                      );
+
+                      for (const review of staleApprovals) {
+                        await github.rest.pulls.dismissReview({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: context.payload.pull_request.number,
+                          review_id: review.id,
+                          message: 'Dismissed auto-approval: PR now contains non-docs changes that require human review.',
+                        });
+                        console.log(`Dismissed stale auto-approval ${review.id}`);
+                      }
+
+                      if (staleApprovals.length === 0) {
+                        console.log('No stale auto-approval to dismiss.');
+                      }
