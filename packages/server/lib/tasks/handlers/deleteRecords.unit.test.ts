@@ -1,10 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
+import { DeletionBudgetExceeded } from '../../crons/delete/batchDelete.js';
+
 // The task is a thin wrapper around deleteSyncRecords (mocked here).
 const deleteSyncRecords = vi.fn();
 vi.mock('../../crons/delete/deleteSyncRecords.js', () => ({
     deleteSyncRecords: (...args: unknown[]) => deleteSyncRecords(...args)
 }));
+
+const enqueue = vi.fn().mockResolvedValue(Ok({ taskId: 't' }));
+vi.mock('../index.js', () => ({ taskQueue: { enqueue } }));
 
 const { deleteRecordsTask } = await import('./deleteRecords.js');
 
@@ -12,12 +19,27 @@ const ctx = { taskId: 't', attempt: 0, logger: { info: vi.fn(), warning: vi.fn()
 const payload = { syncId: 'sync-a', nangoConnectionId: 5, environmentId: 10, models: ['User'], generation: 6 };
 
 describe('deleteRecords task', () => {
-    beforeEach(() => deleteSyncRecords.mockReset().mockResolvedValue(undefined));
+    beforeEach(() => {
+        deleteSyncRecords.mockReset().mockResolvedValue(undefined);
+        enqueue.mockClear().mockResolvedValue(Ok({ taskId: 't' }));
+    });
 
-    it('delegates to deleteSyncRecords and returns Ok', async () => {
+    it('drains within budget, returns Ok and does not self-chain', async () => {
         const res = await deleteRecordsTask.handle(payload, ctx);
 
         expect(res.isOk()).toBe(true);
-        expect(deleteSyncRecords).toHaveBeenCalledWith(payload, { logger: ctx.logger });
+        expect(deleteSyncRecords).toHaveBeenCalledWith(payload, { logger: ctx.logger, deadline: expect.any(Date) });
+        expect(enqueue).not.toHaveBeenCalled();
+    });
+
+    it('self-chains a continuation (same payload) on DeletionBudgetExceeded', async () => {
+        deleteSyncRecords.mockImplementation(() => {
+            throw new DeletionBudgetExceeded();
+        });
+
+        const res = await deleteRecordsTask.handle(payload, ctx);
+
+        expect(res.isOk()).toBe(true);
+        expect(enqueue).toHaveBeenCalledWith('deleteRecords', payload);
     });
 });

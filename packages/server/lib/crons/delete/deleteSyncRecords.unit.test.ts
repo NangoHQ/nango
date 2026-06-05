@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { DeletionBudgetExceeded } from './batchDelete.js';
+
 const deleteOutdatedRecords = vi.fn();
 vi.mock('@nangohq/records', () => ({ records: { deleteOutdatedRecords: (...args: unknown[]) => deleteOutdatedRecords(...args) } }));
 
@@ -69,5 +71,17 @@ describe('deleteSyncRecords', () => {
         deleteOutdatedRecords.mockResolvedValue(Err(new Error('records db down')));
 
         await expect(deleteSyncRecords({ ...input, models: ['User'] }, { logger })).rejects.toThrow('records db down');
+    });
+
+    it('completes without throwing when every model is processed', async () => {
+        deleteOutdatedRecords.mockResolvedValue(Ok([]));
+
+        await expect(deleteSyncRecords(input, { logger })).resolves.toBeUndefined();
+    });
+
+    it('throws DeletionBudgetExceeded between models once the deadline has passed', async () => {
+        await expect(deleteSyncRecords(input, { logger, deadline: new Date(Date.now() - 1) })).rejects.toBeInstanceOf(DeletionBudgetExceeded);
+        // Budget is checked before each model, so no model is drained on this run.
+        expect(deleteOutdatedRecords).not.toHaveBeenCalled();
     });
 });
