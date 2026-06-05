@@ -145,15 +145,11 @@ class ProviderClient {
                 );
             case 'posthog-oauth':
                 return this.createPosthogOauthToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
-            case 'walmart':
-                return this.createWalmartToken(
-                    tokenUrl,
-                    code,
-                    config.oauth_client_id,
-                    config.oauth_client_secret,
-                    callBackUrl,
-                    connectionConfig?.['sellerId'] ?? ''
-                );
+            case 'walmart': {
+                const sellerId = connectionConfig?.['sellerId'];
+                if (!sellerId) throw new NangoError('missing_walmart_seller_id');
+                return this.createWalmartToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, sellerId);
+            }
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -268,14 +264,17 @@ class ProviderClient {
                 );
             case 'posthog-oauth':
                 return this.refreshPosthogOauthToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
-            case 'walmart':
+            case 'walmart': {
+                const sellerId = connection.connection_config['sellerId'];
+                if (!sellerId) throw new NangoError('missing_walmart_seller_id');
                 return this.refreshWalmartToken(
                     interpolatedTokenUrl.href,
                     credentials.refresh_token!,
                     config.oauth_client_id,
                     config.oauth_client_secret,
-                    connection.connection_config['sellerId'] ?? ''
+                    sellerId
                 );
+            }
             default:
                 throw new NangoError('unknown_provider_client');
         }

@@ -11782,6 +11782,7 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
+    authorization_method: header
     authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
     token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
@@ -21195,6 +21196,7 @@ walmart:
     authorization_url: https://login.account.wal-mart.com/authorize
     authorization_params:
         clientType: ${connectionConfig.clientType}
+        nonce: ${random}
     disable_pkce: true
     authorization_url_replacements:
         response_type=: responseType=
