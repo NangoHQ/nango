@@ -312,25 +312,28 @@ export class Scheduler {
      * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
      */
     public async immediateBatch(propsList: ImmediateProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
-        const now = new Date();
-        return this.atBatch(propsList.map((props) => ({ ...props, startsAfter: now })));
+        return this.atBatch(propsList);
     }
 
     /**
-     * Shedule a batch of tasks to run at/after their own `startsAfter`, in a single transaction.
+     * Schedule a batch of tasks in a single transaction. Each task becomes dequeue-able at/after its
+     * own `startsAfter`, defaulting to the insert time (computed inside the transaction, so a slow or
+     * large batch doesn't eat into the created→started timeout) when omitted.
      *
      * Returns the created tasks and the ones that couldn't be created (capped or duplicate), each
      * with the originating props. Mapping discards back to specific requests (and deciding what to
      * do with them) is left to the caller. The CREATED callback fires once per actually-created task.
      */
-    public async atBatch(propsList: AtProps[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
+    public async atBatch(propsList: (ImmediateProps & { startsAfter?: Date })[]): Promise<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>> {
         if (propsList.length === 0) {
             return Ok({ created: [], discarded: [] });
         }
         const cappedCounts = new Map<string, number>();
         const result = await this.db.transaction<Result<{ created: Task[]; discarded: tasks.DiscardedTask[] }>>(async (trx) => {
+            const now = new Date();
             const taskPropsList: tasks.TaskProps[] = propsList.map((props) => ({
                 ...props,
+                startsAfter: props.startsAfter ?? now,
                 scheduleId: null
             }));
 

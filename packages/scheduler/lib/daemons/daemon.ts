@@ -61,7 +61,7 @@ export abstract class SchedulerDaemon {
                     try {
                         this.onError(new Error(`${this.name} daemon error`, { cause: err }));
                     } catch (onErrorErr) {
-                        logger.error(`${this.name}: onError handler threw`, onErrorErr);
+                        logger.error(`${this.name}: tick failed and onError handler threw`, { tickError: err, onErrorErr });
                     }
                     // Stop on the first error unless the daemon is configured to keep ticking (self-healing).
                     if (!this.continueOnError) {

@@ -7,7 +7,7 @@ import { TaskProcessor } from './processor.js';
 import { TASK_TYPE_SEPARATOR, buildTaskName, resolveTaskOptions } from './types.js';
 
 import type { AnyTaskDefinition, EnqueueBatchItem, EnqueueDiscardReason, EnqueueOverrides, PayloadOf } from './types.js';
-import type { AtProps, ImmediateProps, SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
+import type { ImmediateProps, SchedulerConfig, Task, TaskState } from '@nangohq/scheduler';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type { JsonObject } from 'type-fest';
 
@@ -153,8 +153,7 @@ export class Tasks<const Defs extends readonly AnyTaskDefinition[]> {
             return Ok({ created: [], discarded: [] });
         }
 
-        const now = new Date();
-        const propsList: AtProps[] = [];
+        const propsList: (ImmediateProps & { startsAfter?: Date })[] = [];
         const nameToIndex = new Map<string, number>();
         for (const [index, item] of items.entries()) {
             const def = this.definitions.get(item.type);
@@ -167,7 +166,8 @@ export class Tasks<const Defs extends readonly AnyTaskDefinition[]> {
             }
             const props = this.buildProps(def, item.type, parsed.data as JsonObject, item.groupKey !== undefined ? { groupKey: item.groupKey } : undefined);
             nameToIndex.set(props.name, index);
-            propsList.push({ ...props, startsAfter: item.startsAfter ?? now });
+            // Leave startsAfter unset for "now" items — the scheduler stamps it at insert time.
+            propsList.push(item.startsAfter !== undefined ? { ...props, startsAfter: item.startsAfter } : props);
         }
 
         const res = await this.scheduler.atBatch(propsList);
