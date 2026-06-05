@@ -145,15 +145,13 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                                     displayLanguage: 'Node Client',
                                     icon: <IconBrandNodejs className="w-4 h-4" />,
                                     language: 'typescript',
-                                    code: nodeClientCode,
-                                    highlightedLines: isTooltipOpen ? [7] : undefined
+                                    code: nodeClientCode
                                 },
                                 {
                                     displayLanguage: 'cURL',
                                     icon: <IconTerminal2 className="w-4 h-4" />,
                                     language: 'bash',
-                                    code: curlCode,
-                                    highlightedLines: isTooltipOpen ? [4] : undefined
+                                    code: curlCode
                                 }
                             ]}
                             className="w-full"

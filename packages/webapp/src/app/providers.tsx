@@ -48,7 +48,8 @@ export const Providers = ({ children }: { children: ReactNode }) => {
             <PostHogProvider client={posthog}>
                 <NuqsAdapter>
                     <QueryClientProvider client={queryClient}>
-                        <MantineProvider theme={theme}>
+                        {/* Mantine only renders the <CodeHighlight> code blocks; force dark to match the previous Prism colorScheme="dark". */}
+                        <MantineProvider theme={theme} forceColorScheme="dark">
                             <TooltipProvider>
                                 <SWRProvider>{children}</SWRProvider>
                             </TooltipProvider>

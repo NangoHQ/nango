@@ -1,4 +1,4 @@
-import { Prism } from '@mantine/prism';
+import { CodeHighlight } from '@mantine/code-highlight';
 import { Loader, Play } from 'lucide-react';
 import { useState } from 'react';
 
@@ -8,16 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tag } from './Tag.js';
 import { cn } from '../../utils/utils.js';
 
-import type { PrismProps } from '@mantine/prism';
 import type { MaybePromise } from '@nangohq/types';
 import type { HTMLAttributes } from 'react';
 
 export interface Snippet {
-    language: PrismProps['language'];
+    language: string;
     displayLanguage: string;
     icon: React.ReactNode;
     code: string;
-    highlightedLines?: number[];
 }
 
 export type MultiLanguageCodeBlockProps = {
@@ -25,10 +23,6 @@ export type MultiLanguageCodeBlockProps = {
     snippets: Snippet[];
     onExecute?: () => MaybePromise<void>;
 } & HTMLAttributes<HTMLDivElement>;
-
-const highlight = {
-    color: ''
-};
 
 export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ title, snippets, onExecute, ...props }) => {
     const [selectedSnippetIndex, setSelectedSnippetIndex] = useState(0);
@@ -95,15 +89,12 @@ export const MultiLanguageCodeBlock: React.FC<MultiLanguageCodeBlockProps> = ({ 
                 </div>
             </header>
             <div className="overflow-x-auto">
-                <Prism
+                <CodeHighlight
                     className="w-full min-w-0"
                     language={snippets[selectedSnippetIndex].language}
-                    colorScheme="dark"
-                    noCopy={true}
-                    highlightLines={Object.fromEntries(snippets[selectedSnippetIndex].highlightedLines?.map((line) => [line, highlight]) ?? [])}
-                >
-                    {snippets[selectedSnippetIndex].code}
-                </Prism>
+                    withCopyButton={false}
+                    code={snippets[selectedSnippetIndex].code}
+                />
             </div>
         </div>
     );

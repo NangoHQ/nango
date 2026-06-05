@@ -724,21 +724,18 @@
     }
 }
 
-.transparent-code .language-json {
+.transparent-code,
+.transparent-code .mantine-CodeHighlight-pre,
+.transparent-code .mantine-CodeHighlight-code {
     background-color: transparent !important;
 }
 
-.transparent-code .language-typescript {
-    background-color: transparent !important;
-}
-
-.break-all-words .token.string {
-    word-break: break-all;
-    white-space: 'normal';
-}
-
-.mantine-Prism-code {
+.mantine-CodeHighlight-pre,
+.mantine-CodeHighlight-code {
     font-family: 'Geist Mono';
+}
+
+.mantine-CodeHighlight-pre {
     background-color: var(--color-bg-surface) !important;
 }
 

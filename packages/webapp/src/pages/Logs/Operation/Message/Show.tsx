@@ -1,4 +1,4 @@
-import { Prism } from '@mantine/prism';
+import { CodeHighlight } from '@mantine/code-highlight';
 import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
@@ -89,17 +89,15 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
             <div>
                 <h4 className="font-semibold text-sm mb-2">Message</h4>
                 <div className="text-gray-400 text-sm bg-pure-black py-2 max-h-36 overflow-y-scroll">
-                    <Prism
+                    <CodeHighlight
                         language="json"
                         className="transparent-code"
-                        colorScheme="dark"
                         styles={() => {
                             return { code: { padding: '0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' } };
                         }}
-                        noCopy
-                    >
-                        {message.message}
-                    </Prism>
+                        withCopyButton={false}
+                        code={message.message}
+                    />
                 </div>
             </div>
             <div className="overflow-x-hidden">
@@ -107,16 +105,14 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
 
                 {payload ? (
                     <div className="text-gray-400 text-sm bg-pure-black py-2 h-full overflow-y-scroll">
-                        <Prism
+                        <CodeHighlight
                             language="json"
                             className="transparent-code"
-                            colorScheme="dark"
                             styles={() => {
                                 return { code: { padding: '0', whiteSpace: 'pre-wrap' } };
                             }}
-                        >
-                            {JSON.stringify(payload, null, 2)}
-                        </Prism>
+                            code={JSON.stringify(payload, null, 2)}
+                        />
                     </div>
                 ) : (
                     <div className="text-gray-400 text-xs bg-pure-black py-4 px-4">No payload.</div>
