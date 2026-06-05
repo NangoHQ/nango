@@ -7,7 +7,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useDebounce, useInterval, useMount } from 'react-use';
 
 import { LogRow } from './LogRow';
-import { Drawer, DrawerClose, DrawerContent } from '../../../../components/ui/Drawer';
 import { SimpleTooltip } from '../../../../components/ui/SimpleTooltip';
 import { useStore } from '../../../../store';
 import { apiFetch } from '../../../../utils/api';
@@ -17,14 +16,13 @@ import { ShowMessage } from '../Message/Show';
 import { columns, defaultLimit } from '../constants';
 import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components-v2/ui/InputGroup';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components-v2/ui/Sheet';
 import { Skeleton } from '@/components-v2/ui/Skeleton';
 import { Spinner } from '@/components-v2/ui/Spinner';
 
 import type { Period, PeriodPreset } from '../../../../utils/dates';
 import type { MessageRow, OperationRow, SearchMessages } from '@nangohq/types';
 import type { Table as ReactTable } from '@tanstack/react-table';
-
-const drawerWidth = '834px';
 
 const fullPeriod: PeriodPreset = {
     name: 'full',
@@ -295,29 +293,26 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 </table>
             </div>
 
-            <Drawer
-                direction="right"
-                snapPoints={[drawerWidth]}
-                handleOnly={true}
-                noBodyStyles={true}
-                nested
-                open={Boolean(message)}
-                onOpenChange={() => setMessage(undefined)}
-            >
-                <DrawerContent>
-                    <div className={`w-[834px] relative h-screen select-text`}>
+            <Sheet open={Boolean(message)} onOpenChange={() => setMessage(undefined)}>
+                <SheetContent
+                    side="right"
+                    hideCloseButton
+                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400"
+                >
+                    <SheetTitle className="sr-only">Message Details</SheetTitle>
+                    <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
-                            <DrawerClose
+                            <SheetClose
                                 title="Close"
                                 className="w-10 h-10 flex items-center justify-center text-text-light-gray hover:text-white focus:text-white"
                             >
                                 <IconArrowLeft stroke={1} size={24} />
-                            </DrawerClose>
+                            </SheetClose>
                         </div>
                         {message && <ShowMessage message={message} />}
                     </div>
-                </DrawerContent>
-            </Drawer>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };
