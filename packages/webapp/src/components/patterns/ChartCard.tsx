@@ -1,5 +1,5 @@
 import { Check, Info, Loader2, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from 'recharts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/Chart';
@@ -14,6 +14,13 @@ export function formatQuantity(quantity: number): string {
     return quantity.toLocaleString('en-US', {
         maximumFractionDigits: 2
     });
+}
+
+// Compact form for axis ticks so large values (e.g. function time in the billions)
+// don't get clipped: 50_000_000 → "50M", 1_200_000_000 → "1.2B".
+const compactFormatter = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+export function formatCompact(value: number): string {
+    return compactFormatter.format(value);
 }
 
 /**
@@ -89,6 +96,26 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     const [isolated, setIsolated] = useState<string | null>(null);
     // Series hovered in the chart — its band is emphasized (others dimmed) and the tooltip narrows to it.
     const [hoveredKey, setHoveredKey] = useState<string | null>(null);
+
+    // Clearing the hover is debounced so moving between contiguous bands (and across
+    // the 1px seams between them) doesn't blink back to the unhovered / full-tooltip
+    // state. Only a sustained move off the bands (above the stack) actually clears it.
+    const clearHoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const hoverSeries = (key: string) => {
+        if (clearHoverTimer.current) clearTimeout(clearHoverTimer.current);
+        clearHoverTimer.current = null;
+        setHoveredKey(key);
+    };
+    const unhoverSeries = () => {
+        if (clearHoverTimer.current) clearTimeout(clearHoverTimer.current);
+        clearHoverTimer.current = setTimeout(() => setHoveredKey(null), 80);
+    };
+    useEffect(
+        () => () => {
+            if (clearHoverTimer.current) clearTimeout(clearHoverTimer.current);
+        },
+        []
+    );
 
     // A series is hidden in the chart when another series is isolated, or it's individually hidden.
     const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
@@ -178,8 +205,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                       dot={false}
                       hide={isSeriesHidden(s.key)}
                       isAnimationActive={false}
-                      onMouseEnter={() => setHoveredKey(s.key)}
-                      onMouseLeave={() => setHoveredKey(null)}
+                      onMouseEnter={() => hoverSeries(s.key)}
+                      onMouseLeave={() => unhoverSeries()}
                       onClick={() => toggleIsolate(s.key)}
                   />
               ) : (
@@ -191,8 +218,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                       fillOpacity={dimByHover(s.key) ? 0.3 : 1}
                       hide={isSeriesHidden(s.key)}
                       isAnimationActive={false}
-                      onMouseEnter={() => setHoveredKey(s.key)}
-                      onMouseLeave={() => setHoveredKey(null)}
+                      onMouseEnter={() => hoverSeries(s.key)}
+                      onMouseLeave={() => unhoverSeries()}
                       onClick={() => toggleIsolate(s.key)}
                   />
               )
@@ -209,7 +236,9 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     const effectiveEmpty = isEmpty && !hasBreakdownSeries;
     // Headline number: an explicit override (fixtures) wins, otherwise the real base total when present.
     const headlineTotal = totalOverride ?? (isEmpty ? undefined : data?.total);
-    const showChart = !effectiveEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || hasBreakdownSeries);
+    // Wait for the base metric to load before drawing — otherwise the chart briefly
+    // renders with the wrong type (bars before `view_mode` is known) next to the spinner.
+    const showChart = !isLoading && !effectiveEmpty && !showBreakdownSpinner && !showBreakdownError && (!isBreakdown || hasBreakdownSeries);
 
     return (
         <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
@@ -260,14 +289,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     stroke="var(--color-bg-muted)"
                                     tickFormatter={(value: string) => new Date(value).getUTCDate().toString()}
                                 />
-                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
+                                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatCompact(value)} padding={{ top: 20 }} />
                                 {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
                                 <ChartTooltip
-                                    // Only show the tooltip while hovering a specific band, narrowed to that series —
-                                    // nothing in the gaps between bands or the empty plot area.
+                                    // Over a band → just that series; above the stack → the full per-day list.
+                                    // (Hover clearing is debounced, so seams between bands don't flash the full list.)
                                     content={(props: TooltipProps<number, string>) => {
-                                        if (!hoveredKey) return null;
-                                        const shown = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0 && p.dataKey === hoveredKey);
+                                        const present = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0);
+                                        const shown = hoveredKey ? present?.filter((p) => p.dataKey === hoveredKey) : present;
                                         return (
                                             <ChartTooltipContent
                                                 active={props.active}
