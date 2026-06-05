@@ -11803,7 +11803,7 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    token_request_auth_method: basic
+    authorization_method: header
     authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
     token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
