@@ -3,6 +3,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationParams } from './getIntegration.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { resolveIntegrationConfig } from '../integrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 
 import type { PatchIntegration } from '@nangohq/types';
@@ -154,6 +155,18 @@ export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) 
                 }
             };
         }
+    }
+
+    if ('integrationConfig' in body && body.integrationConfig) {
+        const result = resolveIntegrationConfig(provider, body.integrationConfig, { patch: true });
+        if (result.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
+            return;
+        }
+        integration.custom = {
+            ...integration.custom,
+            ...result.value
+        };
     }
 
     // webhook secrets
