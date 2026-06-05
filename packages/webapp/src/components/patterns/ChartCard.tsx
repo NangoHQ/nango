@@ -87,6 +87,8 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // - `hidden`: individually hidden series (via the ✕ revealed when hovering the swatch).
     const [hidden, setHidden] = useState<Set<string>>(new Set());
     const [isolated, setIsolated] = useState<string | null>(null);
+    // Series hovered in the chart — its band is emphasized (others dimmed) and the tooltip narrows to it.
+    const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
     // A series is hidden in the chart when another series is isolated, or it's individually hidden.
     const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
@@ -154,6 +156,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     const ChartComponent = isCumulative ? AreaChart : BarChart;
     const activeChartData = isBreakdown ? breakdownChartData : baseChartData;
 
+    // Hovering a series emphasizes it by dimming the others; clicking it isolates the
+    // series (same as clicking its legend label).
+    const dimByHover = (key: string) => hoveredKey !== null && hoveredKey !== key;
+
     // Animations are disabled so swapping breakdown/dimension/top swaps the data
     // instantly rather than playing a slow morph between unrelated datasets.
     const chartElements = isBreakdown
@@ -165,15 +171,30 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                       stackId="usage"
                       fill={s.color}
                       stroke={s.color}
-                      fillOpacity={0.85}
+                      fillOpacity={dimByHover(s.key) ? 0.2 : 0.85}
+                      strokeOpacity={dimByHover(s.key) ? 0.3 : 1}
                       strokeWidth={1}
                       type="basis"
                       dot={false}
                       hide={isSeriesHidden(s.key)}
                       isAnimationActive={false}
+                      onMouseEnter={() => setHoveredKey(s.key)}
+                      onMouseLeave={() => setHoveredKey(null)}
+                      onClick={() => toggleIsolate(s.key)}
                   />
               ) : (
-                  <Bar key={s.key} dataKey={s.key} stackId="usage" fill={s.color} hide={isSeriesHidden(s.key)} isAnimationActive={false} />
+                  <Bar
+                      key={s.key}
+                      dataKey={s.key}
+                      stackId="usage"
+                      fill={s.color}
+                      fillOpacity={dimByHover(s.key) ? 0.3 : 1}
+                      hide={isSeriesHidden(s.key)}
+                      isAnimationActive={false}
+                      onMouseEnter={() => setHoveredKey(s.key)}
+                      onMouseLeave={() => setHoveredKey(null)}
+                      onClick={() => toggleIsolate(s.key)}
+                  />
               )
           )
         : isCumulative
@@ -242,23 +263,28 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                 <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
                                 {showTodayLine && <ReferenceLine x={todayDateKey} stroke="var(--color-border-muted)" strokeDasharray="3 3" strokeWidth={1} />}
                                 <ChartTooltip
-                                    // Drop series that contribute 0 on the hovered day so the tooltip lists only what's present.
-                                    content={(props: TooltipProps<number, string>) => (
-                                        <ChartTooltipContent
-                                            active={props.active}
-                                            label={props.label}
-                                            payload={props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0)}
-                                            labelFormatter={(value) =>
-                                                new Date(value).toLocaleDateString('en-US', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                    timeZone: 'UTC'
-                                                })
-                                            }
-                                        />
-                                    )}
-                                    animationDuration={200}
+                                    // Only show the tooltip while hovering a specific band, narrowed to that series —
+                                    // nothing in the gaps between bands or the empty plot area.
+                                    content={(props: TooltipProps<number, string>) => {
+                                        if (!hoveredKey) return null;
+                                        const shown = props.payload?.filter((p) => typeof p.value === 'number' && p.value !== 0 && p.dataKey === hoveredKey);
+                                        return (
+                                            <ChartTooltipContent
+                                                active={props.active}
+                                                label={props.label}
+                                                payload={shown}
+                                                labelFormatter={(value) =>
+                                                    new Date(value).toLocaleDateString('en-US', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric',
+                                                        timeZone: 'UTC'
+                                                    })
+                                                }
+                                            />
+                                        );
+                                    }}
+                                    isAnimationActive={false}
                                 />
                                 {chartElements}
                             </ChartComponent>
