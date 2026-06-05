@@ -1,17 +1,13 @@
 import { readFileSync } from 'node:fs';
 
-import { CommandExitError, TimeoutError } from 'e2b';
-
 import { getLogger, isLocal, stringifyError } from '@nangohq/utils';
 
-import { NangoCliExitCode, getDryrunErrorCode } from './cli-exit-codes.js';
+import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildDryrunArgs } from './command-builders.js';
-import { getCommandOutput, getDryrunCommandSuccessOutput } from './command-output.js';
 import { buildIndexTs, getFilePaths } from './compiler-client.js';
 import { RemoteFunctionError } from './helpers.js';
 import { remoteFunctionCompileTimeoutMs, remoteFunctionDryrunSandboxTimeoutMs, remoteFunctionDryrunTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createRemoteFunctionSandbox } from './sandbox.js';
-import { buildShellCommand } from './shell.js';
 import { invokeLocalDryrun } from '../local/dryrun-client.js';
 
 const asyncDryrunScriptUrl = new URL('./async-dryrun-script.js', import.meta.url);
@@ -48,83 +44,6 @@ export interface PreparedAsyncDryrun {
     executionTimeoutAt: Date;
     start: () => Promise<void>;
     kill: () => Promise<void>;
-}
-
-export async function invokeDryrun(request: DryrunRequest): Promise<DryrunResult> {
-    if (isLocal) {
-        return invokeLocalDryrun(request);
-    }
-
-    const apiKey = process.env['E2B_API_KEY'];
-    if (!apiKey) {
-        throw new Error('E2B_API_KEY is required for the E2B dryrun runtime');
-    }
-
-    const sandbox = await createRemoteFunctionSandbox({
-        purpose: 'nango-dryrun',
-        timeoutMs: remoteFunctionDryrunSandboxTimeoutMs,
-        apiKey
-    });
-
-    try {
-        const { tsFilePath } = getFilePaths(request);
-
-        await sandbox.files.write(`${remoteFunctionProjectPath}/${tsFilePath}`, request.code);
-        await sandbox.files.write(`${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
-
-        try {
-            await sandbox.commands.run('nango compile', {
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionCompileTimeoutMs,
-                envs: { NO_COLOR: '1' }
-            });
-        } catch (err) {
-            if (err instanceof CommandExitError) {
-                throw new RemoteFunctionError({ code: 'compilation_error', message: getCommandOutput(err, 'Compilation failed'), status: 400 });
-            }
-            if (err instanceof TimeoutError) {
-                throw new RemoteFunctionError({ code: 'timeout', message: 'Compilation timed out', status: 504 });
-            }
-            throw err;
-        }
-
-        if (request.input !== undefined) {
-            await sandbox.files.write('/tmp/nango-dryrun-input.json', JSON.stringify(request.input));
-        }
-        if (request.metadata) {
-            await sandbox.files.write('/tmp/nango-dryrun-metadata.json', JSON.stringify(request.metadata));
-        }
-        if (request.checkpoint) {
-            await sandbox.files.write('/tmp/nango-dryrun-checkpoint.json', JSON.stringify(request.checkpoint));
-        }
-
-        const envs = {
-            NO_COLOR: '1',
-            NANGO_SECRET_KEY: request.nango_secret_key,
-            NANGO_HOSTPORT: request.nango_host
-        };
-        const command = buildShellCommand(['nango', ...buildDryrunArgs(request)]);
-
-        try {
-            const result = await sandbox.commands.run(command, {
-                cwd: remoteFunctionProjectPath,
-                timeoutMs: remoteFunctionDryrunTimeoutMs,
-                envs
-            });
-
-            return { output: getDryrunCommandSuccessOutput({ stdout: result.stdout, stderr: result.stderr }) };
-        } catch (err) {
-            if (err instanceof CommandExitError) {
-                throw new RemoteFunctionError({ code: getDryrunErrorCode(err), message: getCommandOutput(err, 'Dry run failed'), status: 400 });
-            }
-            if (err instanceof TimeoutError) {
-                throw new RemoteFunctionError({ code: 'timeout', message: 'Dry run timed out', status: 504 });
-            }
-            throw err;
-        }
-    } finally {
-        await sandbox.kill().catch(() => undefined);
-    }
 }
 
 export async function prepareAsyncDryrun(request: AsyncDryrunRequest): Promise<PreparedAsyncDryrun> {

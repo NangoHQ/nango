@@ -71,10 +71,7 @@ import type {
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDryrun,
-    PostFunctionDryrunResult,
-    PostRemoteFunctionCompile,
-    PostRemoteFunctionDeploy,
-    PostRemoteFunctionDryrun
+    PostFunctionDryrunResult
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -161,9 +158,6 @@ export type PublicApiEndpoints =
     | GetFunctionDryrun
     | PostFunctionDryrunResult
     | PostFunctionDeployment
-    | PostRemoteFunctionCompile
-    | PostRemoteFunctionDryrun
-    | PostRemoteFunctionDeploy
     | GetPublicFunctionCode
     | AllPublicProxy;
 

@@ -15,7 +15,7 @@ export const executionEnvironmentUnavailableMessage = 'The function execution en
 
 export type RemoteFunctionSandbox = Awaited<ReturnType<typeof Sandbox.create>>;
 
-export type RemoteFunctionSandboxPurpose = 'nango-compiler' | 'nango-deploy' | 'nango-dryrun' | 'nango-function-dryrun';
+export type RemoteFunctionSandboxPurpose = 'nango-compiler' | 'nango-deploy' | 'nango-function-dryrun';
 
 export async function getRunningSandboxCount({ apiKey, requestTimeoutMs }: { apiKey: string; requestTimeoutMs?: number | undefined }): Promise<number> {
     const listOptions = {

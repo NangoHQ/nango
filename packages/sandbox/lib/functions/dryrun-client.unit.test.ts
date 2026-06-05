@@ -1,22 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
-    class CommandExitError extends Error {
-        stdout: string | undefined;
-        stderr: string | undefined;
-        exitCode: number;
-
-        constructor(message: string, stdout?: string, stderr?: string, exitCode = 1) {
-            super(message);
-            this.stdout = stdout;
-            this.stderr = stderr;
-            this.exitCode = exitCode;
-        }
-    }
-
     class RateLimitError extends Error {}
-
-    class TimeoutError extends Error {}
 
     const run = vi.fn();
     const write = vi.fn();
@@ -29,14 +14,12 @@ const mocks = vi.hoisted(() => {
     };
     const create = vi.fn();
 
-    return { CommandExitError, RateLimitError, TimeoutError, create, kill, run, sandbox, write };
+    return { RateLimitError, create, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
-    CommandExitError: mocks.CommandExitError,
     RateLimitError: mocks.RateLimitError,
-    Sandbox: { create: mocks.create },
-    TimeoutError: mocks.TimeoutError
+    Sandbox: { create: mocks.create }
 }));
 
 vi.mock('@nangohq/utils', async (importOriginal) => {
@@ -49,8 +32,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 
-import { NangoCliExitCode } from './cli-exit-codes.js';
-import { buildAsyncDryrunScript, invokeDryrun, prepareAsyncDryrun } from './dryrun-client.js';
+import { buildAsyncDryrunScript, prepareAsyncDryrun } from './dryrun-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { RemoteFunctionError } from './helpers.js';
@@ -77,68 +59,6 @@ describe('remote function dryrun client', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
         vi.clearAllMocks();
-    });
-
-    it('returns dryrun output when the command succeeds even if stderr contains error-like text', async () => {
-        mocks.run.mockResolvedValueOnce({ stdout: '', stderr: '' }).mockResolvedValueOnce({
-            stdout: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}\n',
-            stderr: 'An error occurred during execution\nthis text is ignored when the command exits 0\n'
-        });
-
-        const result = await invokeDryrun(request);
-
-        expect(result).toStrictEqual({
-            output: 'Executing -> integration:"github" script:"listRepos"\nDone\n{"ok":true}'
-        });
-    });
-
-    it('returns a dryrun_error when the dryrun command exits non-zero', async () => {
-        mocks.run
-            .mockResolvedValueOnce({ stdout: '', stderr: '' })
-            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'stdout failure', 'stderr failure', NangoCliExitCode.DryrunError));
-
-        await expect(invokeDryrun(request)).rejects.toMatchObject({
-            code: 'dryrun_error',
-            message: 'stdout failure\nstderr failure',
-            status: 400
-        } satisfies Partial<RemoteFunctionError>);
-    });
-
-    it('returns a compilation_error when the compile command exits non-zero', async () => {
-        mocks.run.mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error'));
-
-        await expect(invokeDryrun(request)).rejects.toMatchObject({
-            code: 'compilation_error',
-            message: 'type error details\nFound 1 error',
-            status: 400
-        } satisfies Partial<RemoteFunctionError>);
-
-        expect(mocks.run).toHaveBeenCalledTimes(1);
-    });
-
-    it('returns a compilation_error when dryrun exits with the compile phase exit code', async () => {
-        mocks.run
-            .mockResolvedValueOnce({ stdout: '', stderr: '' })
-            .mockRejectedValueOnce(new mocks.CommandExitError('command failed', 'type error details', 'Found 1 error', NangoCliExitCode.CompileError));
-
-        await expect(invokeDryrun(request)).rejects.toMatchObject({
-            code: 'compilation_error',
-            message: 'type error details\nFound 1 error',
-            status: 400
-        } satisfies Partial<RemoteFunctionError>);
-    });
-
-    it('returns execution_environment_unavailable when the dryrun sandbox cannot be created', async () => {
-        mocks.create.mockRejectedValueOnce(new mocks.RateLimitError('Rate limit exceeded - too many sandboxes'));
-
-        await expect(invokeDryrun(request)).rejects.toMatchObject({
-            code: 'execution_environment_unavailable',
-            message: executionEnvironmentUnavailableMessage,
-            status: 503
-        } satisfies Partial<RemoteFunctionError>);
-
-        expect(mocks.write).not.toHaveBeenCalled();
-        expect(mocks.kill).not.toHaveBeenCalled();
     });
 
     it('prepares an async dryrun sandbox and starts the callback script in the background', async () => {

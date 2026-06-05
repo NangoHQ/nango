@@ -12,9 +12,9 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { sendStepError } from '../errors.js';
-import { functionDeploymentBodySchema, remoteFunctionDeployBodySchema } from '../validation.js';
+import { functionDeploymentBodySchema } from '../validation.js';
 
-import type { DBSyncConfig, PostFunctionDeployment, PostRemoteFunctionDeploy } from '@nangohq/types';
+import type { DBSyncConfig, PostFunctionDeployment } from '@nangohq/types';
 import type { Response } from 'express';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
@@ -46,78 +46,6 @@ async function createDeploySandboxApiKey(res: Response, environmentId: number): 
 
     return sandboxApiKey.value;
 }
-
-export const postRemoteFunctionDeploy = asyncWrapper<PostRemoteFunctionDeploy>(async (req, res) => {
-    const emptyQuery = requireEmptyQuery(req);
-    if (emptyQuery) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
-        return;
-    }
-
-    const valBody = remoteFunctionDeployBodySchema.safeParse(req.body);
-    if (!valBody.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
-        return;
-    }
-
-    const body = valBody.data;
-    const { environment } = res.locals;
-
-    const providerConfig = await configService.getProviderConfig(body.integration_id, environment.id);
-    if (!providerConfig || !providerConfig.id) {
-        res.status(404).send({ error: { code: 'integration_not_found', message: `Integration '${body.integration_id}' was not found` } });
-        return;
-    }
-
-    const existingSyncConfig = await getSyncConfigRaw({
-        environmentId: environment.id,
-        config_id: providerConfig.id,
-        name: body.function_name,
-        isAction: body.function_type === 'action'
-    });
-
-    if (isProtectedExistingFunction(existingSyncConfig)) {
-        res.status(400).send({
-            error: {
-                code: 'invalid_request',
-                message: `Cannot overwrite existing function '${body.function_name}'`
-            }
-        });
-        return;
-    }
-
-    const sandboxApiKey = await createDeploySandboxApiKey(res, environment.id);
-    if (!sandboxApiKey) {
-        return;
-    }
-
-    const allowDestructiveDeploy = shouldAllowDestructiveDeploy(existingSyncConfig, body.allow_destructive);
-
-    try {
-        const result = await invokeDeploy({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
-            code: body.code,
-            environment_name: environment.name,
-            nango_secret_key: sandboxApiKey,
-            nango_host: getRemoteFunctionNangoHost(),
-            allow_destructive: allowDestructiveDeploy
-        });
-        const output = parseDeploySuccessOutput(result.output);
-
-        res.status(200).send({
-            integration_id: body.integration_id,
-            function_name: body.function_name,
-            function_type: body.function_type,
-            deployed: output.deployed,
-            deployed_functions: output.deployedFunctions,
-            output: output.output
-        });
-    } catch (err) {
-        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
-    }
-});
 
 export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);

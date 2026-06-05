@@ -21,7 +21,7 @@ describe('remote function sandbox helpers', () => {
         await expect(
             createRemoteFunctionSandbox({
                 apiKey: 'e2b-key',
-                purpose: 'nango-dryrun',
+                purpose: 'nango-function-dryrun',
                 timeoutMs: 30_000,
                 metadata: { dryrunId: 'dryrun-id' }
             })
@@ -39,7 +39,7 @@ describe('remote function sandbox helpers', () => {
                 allowInternetAccess: true,
                 metadata: expect.objectContaining({
                     dryrunId: 'dryrun-id',
-                    purpose: 'nango-dryrun',
+                    purpose: 'nango-function-dryrun',
                     requestId: expect.any(String)
                 }),
                 network: { allowPublicTraffic: true }

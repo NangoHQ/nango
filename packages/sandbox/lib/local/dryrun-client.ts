@@ -1,20 +1,20 @@
 import { randomUUID } from 'node:crypto';
 
 import { execDockerFileAsync, getExecErrorOutput, isExecTimeoutError, rewriteDockerHostForLocalhost, writeContainerFile } from './docker.js';
-import { getDryrunErrorCode } from '../remote-function/cli-exit-codes.js';
-import { buildDryrunArgs } from '../remote-function/command-builders.js';
-import { getDryrunCommandSuccessOutput } from '../remote-function/command-output.js';
-import { buildIndexTs, getFilePaths } from '../remote-function/compiler-client.js';
-import { RemoteFunctionError } from '../remote-function/helpers.js';
+import { getDryrunErrorCode } from '../functions/cli-exit-codes.js';
+import { buildDryrunArgs } from '../functions/command-builders.js';
+import { getDryrunCommandSuccessOutput } from '../functions/command-output.js';
+import { buildIndexTs, getFilePaths } from '../functions/compiler-client.js';
+import { RemoteFunctionError } from '../functions/helpers.js';
 import {
     remoteFunctionCompileTimeoutMs,
     remoteFunctionDryrunSandboxTimeoutMs,
     remoteFunctionDryrunTimeoutMs,
     remoteFunctionLocalImage,
     remoteFunctionProjectPath
-} from '../remote-function/runtime.js';
+} from '../functions/runtime.js';
 
-import type { DryrunRequest, DryrunResult } from '../remote-function/dryrun-client.js';
+import type { DryrunRequest, DryrunResult } from '../functions/dryrun-client.js';
 
 export async function invokeLocalDryrun(request: DryrunRequest): Promise<DryrunResult> {
     const containerName = `nango-dryrun-${randomUUID().slice(0, 8)}`;
