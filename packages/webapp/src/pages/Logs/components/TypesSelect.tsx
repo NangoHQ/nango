@@ -1,11 +1,9 @@
-import { CrossCircledIcon } from '@radix-ui/react-icons';
+import { CheckIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { useMemo, useState } from 'react';
 
-import { Command, CommandCheck, CommandEmpty, CommandGroup, CommandItem, CommandList } from '../../../components/ui/Command';
 import { cn } from '../../../utils/utils';
 import { typesOptions } from '../constants';
 import { Button } from '@/components-v2/ui/Button';
-import { Input } from '@/components-v2/ui/Input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components-v2/ui/Popover';
 
 export interface SearchableMultiSelectArgs<T> {
@@ -69,50 +67,73 @@ export const TypesSelect: React.FC<SearchableMultiSelectArgs<any>> = ({ selected
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0 text-white bg-active-gray">
-                <Command>
-                    <CommandList className="max-h-none h-[415px]">
-                        <CommandEmpty>No framework found.</CommandEmpty>
-                        <CommandGroup>
-                            <Input className="opacity-0 h-0" />
-
-                            {typesOptions.map((parent) => {
-                                const checked = selected.some((sel) => parent.value === sel);
-                                return (
-                                    <div key={parent.value}>
-                                        <CommandItem
-                                            value={parent.value}
-                                            onSelect={() => {
+                <div role="listbox" className="h-[415px] overflow-y-auto overflow-x-hidden">
+                    <div className="overflow-hidden p-2.5">
+                        {typesOptions.map((parent) => {
+                            const checked = selected.some((sel) => parent.value === sel);
+                            return (
+                                <div key={parent.value}>
+                                    <div
+                                        role="option"
+                                        aria-selected={checked}
+                                        tabIndex={0}
+                                        onClick={() => select(parent.value, !checked)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
                                                 select(parent.value, !checked);
-                                            }}
+                                            }
+                                        }}
+                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white focus-visible:bg-pure-black focus-visible:text-white"
+                                    >
+                                        <span
+                                            className={cn(
+                                                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-xs',
+                                                checked && 'border-transparent'
+                                            )}
                                         >
-                                            <CommandCheck checked={checked} />
-                                            {parent.name}
-                                        </CommandItem>
-                                        {parent.childs && (
-                                            <div className="ml-4">
-                                                {parent.childs.map((option) => {
-                                                    const checked = selected.some((sel) => option.value === sel);
-                                                    return (
-                                                        <CommandItem
-                                                            key={option.value}
-                                                            value={option.value}
-                                                            onSelect={() => {
-                                                                select(option.value, !checked);
-                                                            }}
-                                                        >
-                                                            <CommandCheck checked={checked} />
-                                                            {option.name}
-                                                        </CommandItem>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
+                                            {checked && <CheckIcon className="h-5 w-5" />}
+                                        </span>
+                                        {parent.name}
                                     </div>
-                                );
-                            })}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
+                                    {parent.childs && (
+                                        <div className="ml-4">
+                                            {parent.childs.map((option) => {
+                                                const childChecked = selected.some((sel) => option.value === sel);
+                                                return (
+                                                    <div
+                                                        key={option.value}
+                                                        role="option"
+                                                        aria-selected={childChecked}
+                                                        tabIndex={0}
+                                                        onClick={() => select(option.value, !childChecked)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                select(option.value, !childChecked);
+                                                            }
+                                                        }}
+                                                        className="px-2 text-gray-400 relative flex cursor-pointer rounded-sm select-none items-center py-1.5 pl-8 pr-2 text-sm outline-hidden transition-colors hover:bg-pure-black hover:text-white focus-visible:bg-pure-black focus-visible:text-white"
+                                                    >
+                                                        <span
+                                                            className={cn(
+                                                                'absolute left-2 flex h-3.5 w-3.5 items-center justify-center border border-neutral-700 rounded-xs',
+                                                                childChecked && 'border-transparent'
+                                                            )}
+                                                        >
+                                                            {childChecked && <CheckIcon className="h-5 w-5" />}
+                                                        </span>
+                                                        {option.name}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </PopoverContent>
         </Popover>
     );
