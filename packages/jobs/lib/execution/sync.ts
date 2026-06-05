@@ -205,7 +205,8 @@ export async function startSync(task: TaskSync, startScriptFn = startScript): Pr
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             },
             ...(plan?.sync_function_runtime === 'lambda'
                 ? {
