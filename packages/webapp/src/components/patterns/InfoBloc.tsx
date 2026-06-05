@@ -1,7 +1,7 @@
 import { IconHelpCircle } from '@tabler/icons-react';
 
+import { ConditionalTooltip } from '../../components-v2/patterns/ConditionalTooltip';
 import { cn } from '../../utils/utils';
-import { SimpleTooltip } from '../ui/SimpleTooltip';
 import { Button } from '../ui/button/Button';
 
 export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; children: React.ReactNode; className?: string; horizontal?: boolean }> = ({
@@ -16,11 +16,11 @@ export const InfoBloc: React.FC<{ title: string; help?: React.ReactNode; childre
             <div className={cn('flex items-center gap-2')}>
                 <div className="text-gray-400 text-s uppercase">{title}</div>
                 {help && (
-                    <SimpleTooltip delay={0} side="right" tooltipContent={<div className="flex text-white text-sm">{help}</div>}>
+                    <ConditionalTooltip condition={true} delayDuration={0} side="right" content={<div className="flex text-white text-sm">{help}</div>}>
                         <Button variant="icon" size={'xs'}>
                             <IconHelpCircle stroke={1} size={18} />
                         </Button>
-                    </SimpleTooltip>
+                    </ConditionalTooltip>
                 )}
             </div>
             <div className="flex items-center gap-1 text-white text-sm">{children}</div>
