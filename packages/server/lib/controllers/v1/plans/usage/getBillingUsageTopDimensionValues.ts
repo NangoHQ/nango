@@ -65,8 +65,7 @@ export const getBillingUsageTopDimensionValues = asyncWrapper<GetBillingUsageTop
 
     let values: { id: string; label: string }[];
     if (query.dimension === 'environment_id') {
-        const envs = await environmentService.getEnvironmentsByIds(result.value.values.map(Number));
-        const names = new Map(envs.map((e) => [e.id, e.name]));
+        const names = await environmentService.getEnvironmentNamesByIds(result.value.values.map(Number));
         values = result.value.values.map((id) => ({ id, label: names.get(Number(id)) ?? id }));
     } else {
         values = result.value.values.map((id) => ({ id, label: id }));
