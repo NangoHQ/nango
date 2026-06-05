@@ -1215,27 +1215,32 @@ class OAuthController {
                 session.authMode === 'CUSTOM' ||
                 session.authMode === 'MCP_OAUTH2' ||
                 session.authMode === 'MCP_OAUTH2_GENERIC';
-            if (usesStateCookie && req.cookies[`oauth2-${session.id}`] === '1') {
-                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_PRESENT, 1, {
-                    account_id: account.id
-                });
-            } else if (usesStateCookie) {
-                // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
-                // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
-                // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
-                const userAgent = req.get('user-agent') ?? '';
-                metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE_MISSING, 1, {
-                    account_id: account.id,
-                    auth_mode: session.authMode,
-                    provider: config.provider,
-                    sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
-                    sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
-                    sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
-                    is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
-                    has_referer: String(Boolean(req.get('referer'))),
-                    has_any_cookie: String(Boolean(req.get('cookie'))),
-                    req_secure: String(req.secure)
-                });
+            if (usesStateCookie) {
+                const cookiePresent = req.cookies[`oauth2-${session.id}`] === '1';
+                if (cookiePresent) {
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'true'
+                    });
+                } else {
+                    // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
+                    // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
+                    // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
+                    const userAgent = req.get('user-agent') ?? '';
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'false',
+                        auth_mode: session.authMode,
+                        provider: config.provider,
+                        sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
+                        sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
+                        sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
+                        is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
+                        has_referer: String(Boolean(req.get('referer'))),
+                        has_any_cookie: String(Boolean(req.get('cookie'))),
+                        req_secure: String(req.secure)
+                    });
+                }
             }
 
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
