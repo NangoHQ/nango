@@ -944,9 +944,18 @@ class ConnectionService {
         switch (authMode) {
             case 'OAUTH2': {
                 let accessToken: string | undefined = rawCreds['access_token'];
+                let tokenContext: Record<string, any> = rawCreds;
 
                 if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
-                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    const alternateValue = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    if (alternateValue && typeof alternateValue === 'object') {
+                        // Path points to an object — extract access_token from it and use the whole object as context
+                        // so refresh_token/expires_in are also picked up.
+                        tokenContext = alternateValue as Record<string, any>;
+                        accessToken = tokenContext['access_token'];
+                    } else {
+                        accessToken = alternateValue;
+                    }
                 }
 
                 if (!accessToken) {
@@ -954,16 +963,16 @@ class ConnectionService {
                 }
                 let expiresAt: Date | undefined;
 
-                if (rawCreds['expires_at']) {
-                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
-                } else if (rawCreds['expires_in']) {
-                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                if (tokenContext['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(tokenContext['expires_at']);
+                } else if (tokenContext['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(tokenContext['expires_in'], 10) * 1000);
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
                     access_token: accessToken,
-                    refresh_token: rawCreds['refresh_token'],
+                    refresh_token: tokenContext['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
                 };

@@ -14,6 +14,7 @@ export default defineConfig({
         globalSetup: './tests/setup.ts',
         setupFiles: './tests/setupFiles.ts',
         testTimeout: 20000,
+        hookTimeout: 20000,
         env: {
             NANGO_ENCRYPTION_KEY: 'RzV4ZGo5RlFKMm0wYWlXdDhxTFhwb3ZrUG5KNGg3TmU=',
             NANGO_LOGS_ENABLED: 'true',
