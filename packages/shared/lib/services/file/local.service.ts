@@ -10,14 +10,15 @@ import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
 import { resolveLocalFileName, resolveLocalFilePath } from '../../utils/utils.js';
 
-import type { DBSyncConfig, NangoProps } from '@nangohq/types';
+import type { DBSyncConfig, NangoProps, ScriptTypeLiteral } from '@nangohq/types';
 import type { Response } from 'express';
 
-const scriptTypeToPath: Record<NangoProps['scriptType'], string> = {
+const scriptTypeToPath: Record<NangoProps['scriptType'] | ScriptTypeLiteral, string> = {
     'on-event': 'on-events',
     action: 'actions',
     sync: 'syncs',
-    webhook: 'syncs'
+    webhook: 'syncs',
+    function: 'functions'
 };
 
 class LocalFileService {

@@ -105,6 +105,10 @@ class FlowService {
             return null;
         }
 
+        // Functions are not part of the public catalog (StandardNangoConfig only carries syncs/actions/on-events).
+        if (type === 'function') {
+            return null;
+        }
         const flow = flows[0][`${type}s`].find((flow) => flow.name === scriptName);
         return flow || null;
     }
