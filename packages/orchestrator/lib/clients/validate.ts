@@ -80,7 +80,7 @@ export const functionArgsSchema = z.object({
     // null for connection-less runs (e.g. an integration-level webhook routing run)
     connection: commonSchemaArgsFields.connection.nullable(),
     activityLogId: z.string(),
-    trigger: z.object({ type: z.enum(['http', 'webhook', 'cron', 'scheduled', 'event', 'manual']), name: z.string().optional() }),
+    trigger: z.object({ type: z.enum(['http', 'webhook', 'cron', 'scheduled', 'event', 'manual']), name: z.string().nullable().default(null) }),
     input: jsonSchema
 });
 

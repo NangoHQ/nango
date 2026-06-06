@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { isDuplicateTaskNameError } from '@nangohq/scheduler';
 import { validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
@@ -36,7 +36,7 @@ export const immediateTaskSchema = z
             startedToCompleted: z.number().int().positive(),
             heartbeat: z.number().int().positive()
         }),
-        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema])
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, functionArgsSchema, syncAbortArgsSchema])
     })
     .strict();
 

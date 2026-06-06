@@ -56,7 +56,8 @@ interface FunctionArgs {
     /** null for connection-less runs (e.g. an integration-level webhook routing run). */
     connection: ConnectionJobs | null;
     activityLogId: string;
-    trigger: { type: 'http' | 'webhook' | 'cron' | 'scheduled' | 'event' | 'manual'; name?: string | undefined };
+    // JSON-safe (serialized into the task payload): name is null rather than undefined when absent.
+    trigger: { type: 'http' | 'webhook' | 'cron' | 'scheduled' | 'event' | 'manual'; name: string | null };
     input: JsonValue;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
