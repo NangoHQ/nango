@@ -244,6 +244,77 @@ describe('refreshOrTestCredentials', () => {
         expect(refreshed).toStrictEqual(decryptedUpdatedConnection);
     });
 
+    it('should mirror the rotated refresh_token into connection_config.userCredentials for CUSTOM auth_mode + OAUTH2 (regression: github-app-oauth)', async () => {
+        // Regression for the github-app-oauth rotation bug: `getFreshOAuth2Credentials`
+        // reads the refresh_token from `connection_config.userCredentials` when
+        // `provider.auth_mode === 'CUSTOM'` (oauth2.client.ts:112), but
+        // `refreshOrTestCredentials` previously wrote rotated tokens only to
+        // `connection.credentials`. With providers that rotate refresh_tokens on
+        // every refresh (GitHub Apps), the second refresh re-sent the original
+        // refresh_token — already invalidated by rotation — and failed
+        // permanently. The fix mirrors the write into `userCredentials`.
+        const { env, account } = await seedAccountEnvAndUser();
+        const integration = await createConfigSeed(env, 'github-app-oauth', 'github-app-oauth');
+        const originalCreds = {
+            type: 'OAUTH2' as const,
+            access_token: 'original_access',
+            refresh_token: 'original_refresh',
+            expires_at: new Date(Date.now() - 1000),
+            raw: {}
+        };
+        const connection = await createConnectionSeed({
+            env,
+            provider: 'github-app-oauth',
+            rawCredentials: originalCreds,
+            // Mirrors what the github-app-oauth post-connection hook
+            // (packages/server/lib/hooks/connection/providers/github-app-oauth/post-connection.ts)
+            // writes after an initial OAuth: a copy of the OAuth2 credentials
+            // under `userCredentials`. `getFreshOAuth2Credentials` reads
+            // refresh_token from here on every subsequent refresh.
+            connectionConfig: { userCredentials: originalCreds }
+        });
+        const decryptedConnection = encryptionManager.decryptConnection(connection);
+        if (!decryptedConnection) {
+            throw new Error('Failed to decrypt connection');
+        }
+
+        await wait(2);
+        const rotatedCreds = {
+            type: 'OAUTH2' as const,
+            access_token: 'rotated_access',
+            refresh_token: 'rotated_refresh',
+            expires_at: new Date(Date.now() + 60_000),
+            raw: {}
+        };
+        vi.spyOn(connectionService, 'getNewCredentials').mockImplementation(() => {
+            return Promise.resolve({ success: true, error: null, response: rotatedCreds });
+        });
+
+        const res = await refreshOrTestCredentials({
+            account,
+            environment: env,
+            integration,
+            instantRefresh: false,
+            connection: decryptedConnection,
+            onRefreshFailed: vi.fn(),
+            onRefreshSuccess: vi.fn(),
+            logContextGetter: logContextGetter
+        });
+        res.unwrap();
+
+        // The actual regression: persistence to both columns. Fetch the row
+        // back from the DB and verify userCredentials advanced alongside
+        // credentials — pre-fix this assertion would still see
+        // `original_refresh` here.
+        const updatedConnection = await connectionService.getConnectionById(connection.id);
+        const decryptedUpdatedConnection = encryptionManager.decryptConnection(updatedConnection!);
+        if (!decryptedUpdatedConnection) {
+            throw new Error('Failed to decrypt updated connection');
+        }
+        expect((decryptedUpdatedConnection.credentials as typeof rotatedCreds).refresh_token).toBe('rotated_refresh');
+        expect(decryptedUpdatedConnection.connection_config['userCredentials']).toEqual(rotatedCreds);
+    });
+
     it('should refresh if oauth2 and fail (wrong token)', async () => {
         const { env, account } = await seedAccountEnvAndUser();
         const integration = await createConfigSeed(env, 'test', 'airtable');
