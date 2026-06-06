@@ -21,6 +21,7 @@ import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/lo
 import type {
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
     ExecuteOnEventProps,
     ExecuteReturn,
     ExecuteSyncProps,
@@ -57,6 +58,7 @@ export interface OrchestratorClientInterface {
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
+    executeFunction(props: ExecuteFunctionProps): Promise<ExecuteReturn>;
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
@@ -327,6 +329,80 @@ export class Orchestrator {
                 }
             });
 
+            span.setTag('error', formattedError);
+            return Err(formattedError);
+        } finally {
+            span.finish();
+        }
+    }
+
+    /**
+     * Schedule a function run. The connection may be null for connection-less routing runs.
+     */
+    async triggerFunction<T = unknown>({
+        functionName,
+        providerConfigKey,
+        environmentId,
+        connection,
+        trigger,
+        input,
+        maxConcurrency,
+        logCtx
+    }: {
+        functionName: string;
+        providerConfigKey: string;
+        environmentId: number;
+        connection: ConnectionJobs | null;
+        trigger: { type: 'http' | 'webhook' | 'cron' | 'scheduled' | 'event' | 'manual'; name: string | null };
+        input: object;
+        maxConcurrency: number;
+        logCtx: LogContext;
+    }): Promise<Result<T, NangoError>> {
+        const activeSpan = tracer.scope().active();
+        const span = tracer.startSpan('execute.function', {
+            tags: { 'function.name': functionName, 'function.providerConfigKey': providerConfigKey, 'function.environmentId': environmentId },
+            ...(activeSpan ? { childOf: activeSpan } : {})
+        });
+
+        try {
+            let parsedInput: JsonValue = null;
+            try {
+                parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
+            } catch (err) {
+                throw new NangoError('function_failure', { error: `Execute: Failed to parse input: ${stringifyError(err)}` });
+            }
+
+            // Granular group key per (env, integration, function) so one busy function doesn't starve others.
+            const groupKey = `function:environment:${environmentId}:${providerConfigKey}:${functionName}`;
+            const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
+            const res = (
+                await this.client.executeFunction({
+                    name: executionId,
+                    group: { key: groupKey, maxConcurrency },
+                    args: {
+                        functionName,
+                        providerConfigKey,
+                        connection: connection
+                            ? {
+                                  id: connection.id,
+                                  connection_id: connection.connection_id,
+                                  provider_config_key: connection.provider_config_key,
+                                  environment_id: connection.environment_id
+                              }
+                            : null,
+                        activityLogId: logCtx.id,
+                        trigger,
+                        input: parsedInput
+                    }
+                })
+            ).mapError((err) => deserializeNangoError(err.payload) || new NangoError('function_script_failure', { error: err.message }));
+
+            if (res.isErr()) {
+                throw res.error;
+            }
+            return res as Result<T, NangoError>;
+        } catch (err) {
+            const formattedError = err instanceof NangoError ? err : new NangoError('function_failure', { error: errorToObject(err) });
             span.setTag('error', formattedError);
             return Err(formattedError);
         } finally {
