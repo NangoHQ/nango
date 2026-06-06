@@ -534,7 +534,7 @@ export interface CoalescedInfo {
  */
 export interface FunctionEvent {
     /** Which trigger fired, and (for named triggers) its name. */
-    trigger: { type: FunctionTriggerType; name?: string };
+    trigger: { type: FunctionTriggerType; name?: string | undefined };
     /** The webhook/manual payload — latest, or an array when `payloadMode: 'all'`. */
     payload: any;
     /** Raw headers from the provider (http trigger only). */

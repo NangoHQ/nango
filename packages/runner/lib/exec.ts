@@ -20,7 +20,7 @@ import { NangoActionRunner, NangoSyncRunner, instrumentSDK } from './sdk/sdk.js'
 import { createTelemetryRecorder } from './telemetry.js';
 
 import type { Locks } from './sdk/locks.js';
-import type { CreateAnyResponse } from '@nangohq/runner-sdk';
+import type { CreateAnyResponse, FunctionEvent } from '@nangohq/runner-sdk';
 import type { NangoProps, Result, RunnerOutput } from '@nangohq/types';
 
 interface ScriptExports {
@@ -62,6 +62,8 @@ export async function exec({
         switch (nangoProps.scriptType) {
             case 'sync':
             case 'webhook':
+            case 'function':
+                // Functions reuse the sync runner's capabilities (records, proxy, triggers) for now.
                 return new NangoSyncRunner(nangoProps, { persistClient, telemetryRecorder, locks });
             case 'action':
             case 'on-event':
@@ -233,6 +235,51 @@ export async function exec({
                     output = await def(nango);
                 }
                 return Ok({ output, telemetryBag: nango.telemetryBag });
+            }
+
+            // Function
+            if (nangoProps.scriptType === 'function') {
+                if (!isZeroYaml) {
+                    throw new Error('Functions require the zero-yaml SDK');
+                }
+                const payload = def;
+                if (payload.type !== 'function') {
+                    throw new Error('Incorrect script loaded for function');
+                }
+                if (!payload.exec) {
+                    throw new Error(`Missing exec function`);
+                }
+
+                const fe = nangoProps.functionEvent;
+                const event: FunctionEvent = {
+                    trigger: fe?.trigger ?? { type: 'manual' },
+                    payload: fe?.payload,
+                    ...(fe?.headers ? { headers: fe.headers } : {}),
+                    ...(fe?.rawBody !== undefined ? { rawBody: fe.rawBody } : {}),
+                    ...(fe?.coalesced
+                        ? {
+                              coalesced: {
+                                  count: fe.coalesced.count,
+                                  firstSeenAt: new Date(fe.coalesced.firstSeenAt),
+                                  lastSeenAt: new Date(fe.coalesced.lastSeenAt),
+                                  overflowed: fe.coalesced.overflowed
+                              }
+                          }
+                        : {}),
+                    // Connection context: present only for connection-bound runs. getConnection() throws otherwise.
+                    ...(nangoProps.connectionBound
+                        ? {
+                              connection: {
+                                  id: nangoProps.nangoConnectionId,
+                                  connection_id: nangoProps.connectionId,
+                                  provider_config_key: nangoProps.providerConfigKey
+                              }
+                          }
+                        : {})
+                };
+
+                const output = await payload.exec(nango as any, event);
+                return Ok({ output: output ?? true, telemetryBag: nango.telemetryBag, checkpoints: nango.getCheckpointRange() });
             }
 
             // Sync
