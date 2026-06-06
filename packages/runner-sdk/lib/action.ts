@@ -8,6 +8,7 @@ import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { Nango } from '@nangohq/node';
 import type {
     ApiKeyCredentials,
+    ApiPublicConnection,
     ApiPublicConnectionFull,
     AppCredentials,
     AppStoreCredentials,
@@ -47,6 +48,16 @@ export type ProxyConfiguration = Omit<UserProvidedProxyConfiguration, 'files' | 
     providerConfigKey?: string;
     connectionId?: string;
 };
+
+/**
+ * Filter passed to {@link NangoActionBase.searchConnections}.
+ * - `tags`: match connections by their connection-config / metadata tags (server-side filtered).
+ * - `subscriptions`: match connections that registered a webhook identifier (requires the
+ *   `webhook_subscriptions` table — NAN-5886).
+ */
+export type ConnectionSearchFilter =
+    | { tags: Record<string, string>; integrationId?: string | string[] }
+    | { subscriptions: { webhook: string; namespace: string; value: string | undefined } };
 
 export abstract class NangoActionBase<
     TMetadata extends ZodMetadata = never,
@@ -438,6 +449,52 @@ export abstract class NangoActionBase<
 
     public async triggerAction<In = unknown, Out = object>(providerConfigKey: string, connectionId: string, actionName: string, input?: In): Promise<Out> {
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    }
+
+    /**
+     * Search the environment's connections that this function can route to.
+     *
+     * Used by connection-less function runs (e.g. an integration-level webhook) to find the
+     * connection(s) an incoming event targets, before fanning out work to them.
+     *
+     * @example
+     * ```ts
+     * const connections = await nango.searchConnections({ tags: { portalId: '12345' } });
+     * for (const connection of connections) {
+     *     await nango.triggerSync(this.providerConfigKey, connection.connection_id, 'contacts');
+     * }
+     * ```
+     */
+    public async searchConnections(filter: ConnectionSearchFilter): Promise<ApiPublicConnection[]> {
+        this.throwIfAbortedOrKilled();
+
+        if ('subscriptions' in filter) {
+            // Subscription-based routing resolves identifiers via the `webhook_subscriptions`
+            // table, which is introduced in NAN-5886. Until then this path is unavailable.
+            throw new Error('searchConnections({ subscriptions }) is not yet supported — requires webhook subscriptions (NAN-5886). Use { tags } instead.');
+        }
+
+        const { connections } = await this.nango.listConnections({
+            tags: filter.tags,
+            integrationId: filter.integrationId ?? this.providerConfigKey
+        });
+        return connections;
+    }
+
+    /**
+     * Drop the current event cleanly. The reason is written to the run's activity log so the
+     * decision is visible, without surfacing as an error.
+     *
+     * @example
+     * ```ts
+     * if (connections.length === 0) {
+     *     await nango.ignore('no matching connection');
+     *     return;
+     * }
+     * ```
+     */
+    public async ignore(reason?: string): Promise<void> {
+        await this.log(reason ? `Event ignored: ${reason}` : 'Event ignored', { level: 'info' });
     }
 
     public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: z.ZodType<Z>; input: T }): Promise<z.ZodSafeParseSuccess<Z>> {
