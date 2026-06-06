@@ -1,4 +1,4 @@
-import type { NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
+import type { FunctionConfig, NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
 import type { Feature } from '../syncConfigs/db.js';
 import type { JSONSchema7 } from 'json-schema';
@@ -88,6 +88,8 @@ export interface CLIDeployFlowConfig {
     /** @deprecated **/
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
+    /** Set only for `type: 'function'` deploys: the function's triggers + ingress/debounce config. */
+    function_config?: FunctionConfig | undefined;
     // TODO: make non-optional when nango-yaml and `schema.ts` are fully removed
     models_json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;

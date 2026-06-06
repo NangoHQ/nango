@@ -128,25 +128,27 @@ export interface ParsedNangoSync {
 export interface ParsedFunctionTrigger {
     type: 'http' | 'webhook' | 'cron' | 'scheduled' | 'event' | 'manual';
     /** http trigger: maps to the URL path segment. */
-    name?: string;
+    name?: string | undefined;
     /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
-    scope?: 'integration' | 'connection';
+    scope?: 'integration' | 'connection' | undefined;
     /** cron/scheduled trigger. */
-    schedule?: string;
+    schedule?: string | undefined;
     /** event trigger. */
-    event?: string;
+    event?: string | undefined;
     /** Whether ingress coalescing is configured (the window/key config). */
-    debounce?: {
-        key?: { body: string } | { header: string };
-        windowMs: number;
-        maxWindowMs?: number;
-        maxEntities?: number;
-        payloadMode?: 'latest' | 'all';
-    };
+    debounce?:
+        | {
+              key?: { body: string } | { header: string } | undefined;
+              windowMs: number;
+              maxWindowMs?: number | undefined;
+              maxEntities?: number | undefined;
+              payloadMode?: 'latest' | 'all' | undefined;
+          }
+        | undefined;
     /** Whether the trigger ships an `ingressChallenge` hook (executed at ingress). */
-    hasIngressChallenge?: boolean;
+    hasIngressChallenge?: boolean | undefined;
     /** Whether the trigger ships an `ingressValidation` hook (executed at ingress). */
-    hasIngressValidation?: boolean;
+    hasIngressValidation?: boolean | undefined;
 }
 
 export interface ParsedNangoFunction {
