@@ -270,6 +270,48 @@ async function createDeployConfirmationPackage({
                 postData.push(body);
             }
         }
+
+        if (!optionalSyncName && !optionalActionName) {
+            for (const fn of integration.functions ?? []) {
+                const metadata = {} as NangoConfigMetadata;
+                if (fn.description) {
+                    metadata['description'] = fn.description;
+                }
+                if (fn.scopes && fn.scopes.length > 0) {
+                    metadata['scopes'] = fn.scopes;
+                }
+
+                // A function lives in either webhooks/ (createWebhook) or functions/ (createFunction);
+                // the bundled artifact preserves that folder, so probe it to pick the right ScriptFileType.
+                const scriptFileType: ScriptFileType = fs.existsSync(path.join(fullPath, 'build', `${providerConfigKey}_webhooks_${fn.name}.cjs`))
+                    ? 'webhooks'
+                    : 'functions';
+
+                const files = await loadScriptFiles({ scriptName: fn.name, providerConfigKey, fullPath, type: scriptFileType });
+                if (!files) {
+                    return Err(new Error(`No script files found for "${fn.name}"`));
+                }
+
+                const body: CLIDeployFlowConfig = {
+                    syncName: fn.name,
+                    providerConfigKey,
+                    models: fn.output || [],
+                    version: version || fn.version,
+                    runs: null,
+                    metadata,
+                    input: fn.input || undefined,
+                    type: fn.type,
+                    function_config: { name: fn.name, triggers: fn.triggers },
+                    fileBody: files,
+                    endpoints: [],
+                    track_deletes: false,
+                    models_json_schema: fn.json_schema,
+                    features: fn.features
+                };
+
+                postData.push(body);
+            }
+        }
     }
 
     if (postData.length <= 0) {
