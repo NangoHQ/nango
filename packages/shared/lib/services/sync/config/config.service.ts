@@ -724,6 +724,23 @@ export async function getSyncConfigRaw(opts: { environmentId: number; config_id:
     return res || null;
 }
 
+export async function getFunctionConfigRaw(opts: { environmentId: number; config_id: number; name: string }): Promise<DBSyncConfig | null> {
+    const res = await db.readOnly
+        .select<DBSyncConfig>('*')
+        .where({
+            environment_id: opts.environmentId,
+            sync_name: opts.name,
+            nango_config_id: opts.config_id,
+            active: true,
+            type: 'function',
+            deleted: false
+        })
+        .from<DBSyncConfig>(TABLE)
+        .first();
+
+    return res || null;
+}
+
 export async function getSoftDeletedSyncConfig({ limit, olderThan }: { limit: number; olderThan: number }): Promise<DBSyncConfig[]> {
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - olderThan);
