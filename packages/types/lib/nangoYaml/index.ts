@@ -5,8 +5,13 @@ import type { JSONSchema7 } from 'json-schema';
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
-export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
+export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'functions' | 'webhooks' | 'post-connection-scripts'; // post-connection-scripts is deprecated
 export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
+/**
+ * The `function` primitive is authored via `createFunction()` / `createWebhook()`. It is tracked
+ * separately from {@link ScriptTypeLiteral} (sync/action/on-event) while it is introduced additively.
+ */
+export type FunctionScriptTypeLiteral = 'function';
 
 // --------------
 // YAML V1
@@ -95,6 +100,7 @@ export interface NangoYamlParsedIntegration {
     providerConfigKey: string;
     syncs: ParsedNangoSync[];
     actions: ParsedNangoAction[];
+    functions: ParsedNangoFunction[];
     onEventScripts: Record<OnEventType, string[]>;
     /**
      * @deprecated
@@ -119,6 +125,45 @@ export interface ParsedNangoSync {
     webhookSubscriptions: string[];
     version: string;
     // TODO: make non-optional when nango-yaml is fully removed
+    json_schema?: JSONSchema7 | undefined;
+    features?: Feature[] | undefined;
+}
+
+/** Serializable view of a function trigger (the executable hooks live in the deployed file body). */
+export interface ParsedFunctionTrigger {
+    type: 'http' | 'webhook' | 'cron' | 'scheduled' | 'event' | 'manual';
+    /** http trigger: maps to the URL path segment. */
+    name?: string;
+    /** http trigger: 'integration' (default) or 'connection' for tokenized per-connection URLs. */
+    scope?: 'integration' | 'connection';
+    /** cron/scheduled trigger. */
+    schedule?: string;
+    /** event trigger. */
+    event?: string;
+    /** Whether ingress coalescing is configured (the window/key config). */
+    debounce?: {
+        key?: { body: string } | { header: string };
+        windowMs: number;
+        maxWindowMs?: number;
+        maxEntities?: number;
+        payloadMode?: 'latest' | 'all';
+    };
+    /** Whether the trigger ships an `ingressChallenge` hook (executed at ingress). */
+    hasIngressChallenge?: boolean;
+    /** Whether the trigger ships an `ingressValidation` hook (executed at ingress). */
+    hasIngressValidation?: boolean;
+}
+
+export interface ParsedNangoFunction {
+    name: string;
+    type: 'function';
+    description: string;
+    triggers: ParsedFunctionTrigger[];
+    input: string | null;
+    output: string[] | null;
+    scopes: string[];
+    usedModels: string[];
+    version: string;
     json_schema?: JSONSchema7 | undefined;
     features?: Feature[] | undefined;
 }
@@ -175,5 +220,6 @@ export interface FlowsYaml {
 }
 
 // --- flows.zero.json is a parsed nango.yaml
-export type FlowZeroJson = NangoYamlParsedIntegration & { jsonSchema?: JSONSchema7; sdkVersion: string };
+// TODO: drop the functions override once flows.zero.json is regenerated with `functions` (NAN-5943)
+export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & { jsonSchema?: JSONSchema7; sdkVersion: string };
 export type FlowsZeroJson = FlowZeroJson[];

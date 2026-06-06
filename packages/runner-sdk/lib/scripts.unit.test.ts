@@ -2,7 +2,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import * as z from 'zod';
 
-import { createAction, createOnEvent, createSync } from './scripts.js';
+import { createAction, createFunction, createOnEvent, createSync, createWebhook } from './scripts.js';
 
 describe('scripts', () => {
     describe('createSync', () => {
@@ -184,6 +184,72 @@ describe('scripts', () => {
                 type: 'onEvent',
                 exec: expect.any(Function)
             });
+        });
+    });
+
+    describe('createFunction', () => {
+        it('should create a function with explicit triggers', () => {
+            const fn = createFunction({
+                description: 'Handle contact updates',
+                triggers: [
+                    { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+                    { type: 'cron', schedule: 'every hour' }
+                ],
+                exec: async (nango, event) => {
+                    await nango.log('event', event.payload);
+                }
+            });
+
+            expect(fn).toStrictEqual({
+                description: 'Handle contact updates',
+                triggers: [
+                    { type: 'http', name: 'contacts-updated', debounce: { key: { body: '$.objectId' }, windowMs: 5000 } },
+                    { type: 'cron', schedule: 'every hour' }
+                ],
+                type: 'function',
+                exec: expect.any(Function)
+            });
+        });
+    });
+
+    describe('createWebhook', () => {
+        it('should desugar into a function with a single implicit http trigger', () => {
+            const ingressValidation = () => true;
+            const webhook = createWebhook({
+                name: 'contacts-updated',
+                description: 'Contacts webhook',
+                ingressValidation,
+                debounce: { key: { body: '$.portalId' }, windowMs: 5000 },
+                exec: async (nango, event) => {
+                    await nango.log('event', event.payload);
+                }
+            });
+
+            expect(webhook.type).toBe('function');
+            expect(webhook.name).toBe('contacts-updated');
+            expect(webhook.triggers).toHaveLength(1);
+            expect(webhook.triggers[0]).toStrictEqual({
+                type: 'http',
+                name: 'contacts-updated',
+                ingressValidation,
+                debounce: { key: { body: '$.portalId' }, windowMs: 5000 }
+            });
+            // ingress hooks live on the trigger, not at the top level of the function
+            expect((webhook as unknown as Record<string, unknown>)['ingressValidation']).toBeUndefined();
+        });
+
+        it('should default the trigger name from the absence of name (left to the file basename downstream)', () => {
+            const webhook = createWebhook({
+                description: 'no name',
+                exec: async (nango) => {
+                    await nango.log('hi');
+                }
+            });
+
+            expect(webhook.type).toBe('function');
+            expect(webhook.name).toBeUndefined();
+            expect(webhook.triggers).toHaveLength(1);
+            expect(webhook.triggers[0]).toStrictEqual({ type: 'http' });
         });
     });
 });
