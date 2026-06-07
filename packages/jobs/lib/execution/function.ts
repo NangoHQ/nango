@@ -48,12 +48,12 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        if (!task.connection) {
-            throw new Error(`Connection-less function runs are not supported yet: ${task.functionName} (${task.id})`);
-        }
+        // Connection-bound runs derive the environment from the connection; connection-less routing
+        // runs carry the environment on the task itself.
         const connection = task.connection;
+        const environmentId = connection?.environment_id ?? task.environmentId;
 
-        const accountContext = await accountService.getAccountContext({ environmentId: connection.environment_id });
+        const accountContext = await accountService.getAccountContext({ environmentId });
         if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
@@ -62,7 +62,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
         const plan = accountContext.plan;
         tagTraceUser({ ...accountContext });
 
-        providerConfig = await configService.getProviderConfig(task.providerConfigKey, connection.environment_id);
+        providerConfig = await configService.getProviderConfig(task.providerConfigKey, environmentId);
         if (providerConfig === null) {
             throw new Error(`Provider config not found for function: ${task.functionName}`);
         }
@@ -75,17 +75,19 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             throw new Error(`Function is disabled: ${task.functionName} (${task.id})`);
         }
 
-        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: connection.id });
-        if (getEndUser.isOk()) {
-            endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
+        if (connection) {
+            const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: connection.id });
+            if (getEndUser.isOk()) {
+                endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
+            }
         }
 
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: team.id });
         void logCtx.info(`Starting function '${task.functionName}' (trigger: ${task.trigger.type})`, {
             function: task.functionName,
             trigger: task.trigger.type,
-            connection: connection.connection_id,
-            integration: connection.provider_config_key
+            connection: connection?.connection_id ?? '(connection-less)',
+            integration: task.providerConfigKey
         });
 
         const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
@@ -111,14 +113,15 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             scriptType: 'function',
             host: getApiUrl(),
             team: { id: team.id, name: team.name },
-            connectionId: connection.connection_id,
-            environmentId: connection.environment_id,
+            connectionId: connection?.connection_id ?? '',
+            environmentId,
             environmentName: environment.name,
-            providerConfigKey: connection.provider_config_key,
+            providerConfigKey: task.providerConfigKey,
             provider: providerConfig.provider,
             activityLogId: logCtx.id,
             secretKey: defaultSecret.value.secret,
-            nangoConnectionId: connection.id,
+            // 0 is an unused sentinel for connection-less runs (no connection to key against).
+            nangoConnectionId: connection?.id ?? 0,
             attributes: syncConfig.attributes,
             syncConfig,
             debug: false,
@@ -128,7 +131,7 @@ export async function startFunction(task: TaskFunction): Promise<Result<void>> {
             startedAt: new Date(),
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             functionEvent: { trigger: task.trigger, payload: task.input },
-            connectionBound: true
+            connectionBound: Boolean(connection)
         };
 
         const routingContext: RoutingContext = { plan, features: syncConfig.features };

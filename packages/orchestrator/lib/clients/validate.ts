@@ -77,6 +77,7 @@ export const functionArgsSchema = z.object({
     type: z.literal('function'),
     functionName: z.string().min(1),
     providerConfigKey: z.string().min(1),
+    environmentId: z.number().positive(),
     // null for connection-less runs (e.g. an integration-level webhook routing run)
     connection: commonSchemaArgsFields.connection.nullable(),
     activityLogId: z.string(),
@@ -251,6 +252,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 attemptMax: fn.data.retryMax + 1,
                 functionName: fn.data.payload.functionName,
                 providerConfigKey: fn.data.payload.providerConfigKey,
+                environmentId: fn.data.payload.environmentId,
                 connection: fn.data.payload.connection,
                 activityLogId: fn.data.payload.activityLogId,
                 trigger: fn.data.payload.trigger,

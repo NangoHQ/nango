@@ -382,6 +382,7 @@ export class Orchestrator {
                     args: {
                         functionName,
                         providerConfigKey,
+                        environmentId,
                         connection: connection
                             ? {
                                   id: connection.id,

@@ -431,9 +431,13 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         );
 
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
-        if (!this.syncId) throw new Error('Parameter syncId is required');
-        if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
-        if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
+        // Functions reuse this runner for its records/proxy capabilities but have no sync job, and
+        // connection-less function runs (e.g. integration-level webhook routing) have no connection.
+        if (this.scriptType !== 'function') {
+            if (!this.syncId) throw new Error('Parameter syncId is required');
+            if (!this.syncJobId) throw new Error('Parameter syncJobId is required');
+            if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
+        }
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
         this.telemetryRecorder = runnerProps?.telemetryRecorder;
@@ -442,7 +446,8 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         this.checkpointing = new Checkpointing({
             persistClient: this.persistClient,
             environmentId: this.environmentId,
-            nangoConnectionId: this.nangoConnectionId
+            // Connection-less function runs have no connection to key checkpoints against; 0 is an unused sentinel.
+            nangoConnectionId: this.nangoConnectionId ?? 0
         });
     }
 

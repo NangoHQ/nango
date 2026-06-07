@@ -53,6 +53,8 @@ interface OnEventArgs {
 interface FunctionArgs {
     functionName: string;
     providerConfigKey: string;
+    /** Always present so connection-less runs have environment context without a connection. */
+    environmentId: number;
     /** null for connection-less runs (e.g. an integration-level webhook routing run). */
     connection: ConnectionJobs | null;
     activityLogId: string;
@@ -282,6 +284,7 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         attemptMax: props.attemptMax,
         functionName: props.functionName,
         providerConfigKey: props.providerConfigKey,
+        environmentId: props.environmentId,
         connection: props.connection,
         activityLogId: props.activityLogId,
         trigger: props.trigger,
