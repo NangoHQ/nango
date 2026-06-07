@@ -3,6 +3,25 @@ import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFun
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
+/**
+ * Public endpoint backing `nango.triggerFunction()`. Schedules a function run, optionally bound to
+ * a connection (omit `connection-id` for a connection-less routing run).
+ */
+export type PostPublicTriggerFunction = Endpoint<{
+    Method: 'POST';
+    Path: '/function/trigger';
+    Body: {
+        function_name: string;
+        payload?: unknown;
+    };
+    Headers: {
+        'provider-config-key': string;
+        'connection-id'?: string;
+    };
+    Error: ApiError<'unknown_provider' | 'unknown_connection' | 'not_found' | 'disabled_resource' | 'trigger_failed'>;
+    Success: { taskId: string };
+}>;
+
 export type FunctionErrorCode =
     | 'invalid_request'
     | 'integration_not_found'
