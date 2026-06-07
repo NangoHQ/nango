@@ -473,6 +473,23 @@ export abstract class NangoActionBase<
         return await this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
     }
 
+    /**
+     * Schedule another function run, optionally bound to a connection. Fire-and-schedule:
+     * it enqueues the run and returns its task id, it does not wait for or return the output.
+     *
+     * @example
+     * ```ts
+     * // Fan out a connection-bound run per matched connection
+     * for (const connection of connections) {
+     *     await nango.triggerFunction('contacts-handler', { connectionId: connection.connection_id, payload: event.payload });
+     * }
+     * ```
+     */
+    public async triggerFunction<In = unknown>(functionName: string, options?: { connectionId?: string; payload?: In }): Promise<{ taskId: string }> {
+        this.throwIfAbortedOrKilled();
+        return await this.nango.triggerFunction(this.providerConfigKey, functionName, options);
+    }
+
     public async zodValidateInput<T = any, Z = any>({ zodSchema, input }: { zodSchema: z.ZodType<Z>; input: T }): Promise<z.ZodSafeParseSuccess<Z>> {
         const parsedInput = zodSchema.safeParse(input);
         if (!parsedInput.success) {
