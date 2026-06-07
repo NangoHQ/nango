@@ -80,6 +80,8 @@ export abstract class NangoActionBase<
     public providerConfigKey: string;
     public provider?: string;
     public integrationConfig?: NangoProps['integrationConfig'];
+    /** Whether this run was started with a bound connection. Connection-less function runs (e.g. integration-level webhook routing) are not. */
+    public connectionBound: boolean;
 
     public ActionError = ActionError;
 
@@ -95,6 +97,7 @@ export abstract class NangoActionBase<
 
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
+        this.connectionBound = config.connectionBound ?? Boolean(config.connectionId);
         this.environmentId = config.environmentId;
         this.accountId = config.team.id;
         this.providerConfigKey = config.providerConfigKey;
@@ -278,6 +281,14 @@ export abstract class NangoActionBase<
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
         const connectionId = connectionIdOverride || this.connectionId;
+
+        if (!connectionId) {
+            // Connection-less function run: there is no connection bound to this run. The customer must
+            // resolve a connection first (e.g. nango.searchConnections) and pass its id explicitly.
+            throw new Error(
+                'getConnection() was called without a connection context: this run was not started with a connection. Pass a connectionId, or resolve one via searchConnections() and trigger a connection-bound run.'
+            );
+        }
 
         const credentialsPair = `${providerConfigKey}${connectionId}`;
         const cached = this.memoizedConnections.get(credentialsPair);
