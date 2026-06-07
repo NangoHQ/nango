@@ -34,11 +34,9 @@ import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
 /**
- * Execute a function run.
- *
- * v1 supports connection-bound runs (connection-level webhook URLs, triggerFunction({ connectionId }),
- * CLI --connection). Connection-less routing runs (no bound connection) need environment context
- * independent of a connection and are a follow-up.
+ * Execute a function run — connection-bound (connection-level webhook URL, triggerFunction({ connectionId }),
+ * CLI --connection) or connection-less (integration-level webhook routing). Connection-less runs take
+ * their environment context from the task itself and run with no bound connection (getConnection() throws).
  */
 export async function startFunction(task: TaskFunction): Promise<Result<void>> {
     let team: DBTeam | undefined;
