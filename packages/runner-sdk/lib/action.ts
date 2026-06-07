@@ -315,6 +315,28 @@ export abstract class NangoActionBase<
         return cached.connection;
     }
 
+    /**
+     * Returns a connection-scoped instance: all SDK calls on it use the given connection without
+     * needing to pass connectionId. Safe in async loops — each call returns its own scoped object
+     * that shares this instance's behavior but overrides only the bound connection.
+     *
+     * @example
+     * ```ts
+     * for (const connection of connections) {
+     *     const conn = nango.withConnection(connection);
+     *     const data = await conn.get({ endpoint: '/contacts' });
+     *     await conn.batchSave([data], 'Contact');
+     * }
+     * ```
+     */
+    public withConnection(connection: { id: number; connection_id: string }): this {
+        const scoped: this = Object.create(this);
+        scoped.connectionId = connection.connection_id;
+        scoped.nangoConnectionId = connection.id;
+        scoped.connectionBound = true;
+        return scoped;
+    }
+
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
         this.throwIfAbortedOrKilled();
         try {
