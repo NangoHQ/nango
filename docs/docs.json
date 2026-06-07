@@ -1289,6 +1289,7 @@
               "integrations/all/github-pat",
               "integrations/all/gitlab",
               "integrations/all/gitlab-pat",
+              "api-integrations/glitchtip",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
               "api-integrations/google",

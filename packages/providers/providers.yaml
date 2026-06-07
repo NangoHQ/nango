@@ -8061,6 +8061,39 @@ gong-oauth:
             automated: true
             pattern: '^https?://.*$'
 
+glitchtip:
+    display_name: GlitchTip
+    categories:
+        - dev-tools
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.baseUrl}/api/0
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /organizations/
+    docs: https://nango.dev/docs/api-integrations/glitchtip
+    docs_connect: https://nango.dev/docs/api-integrations/glitchtip/connect
+    connection_config:
+        baseUrl:
+            type: string
+            title: Base URL
+            description: Your GlitchTip instance URL, without a trailing slash.
+            example: https://glitchtip.example.com
+            format: uri
+            pattern: '^https?://.*[^/]$'
+            order: 1
+            doc_section: '#step-1-find-your-glitchtip-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Auth Token
+            description: Your GlitchTip auth token.
+            doc_section: '#step-2-create-or-copy-an-auth-token'
+
 glyphic:
     display_name: Glyphic
     categories:

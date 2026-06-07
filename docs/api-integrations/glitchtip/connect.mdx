@@ -1,0 +1,56 @@
+---
+title: GlitchTip - How do I link my account?
+sidebarTitle: GlitchTip
+---
+
+# Overview
+
+To authenticate with GlitchTip, you will need:
+
+1. **Base URL** - The URL of your hosted or self-hosted GlitchTip instance, without a trailing slash.
+2. **Auth Token** - A GlitchTip auth token that Nango will send as a bearer token.
+
+### Prerequisites
+
+- You must have access to a GlitchTip instance.
+- You must have a GlitchTip auth token with access to the organizations, projects, issues, events, releases, or monitors you want to proxy through Nango.
+
+### Instructions
+
+#### Step 1: Find your GlitchTip base URL
+
+Use the origin URL of your GlitchTip instance. For example:
+
+```text
+https://glitchtip.example.com
+```
+
+For GlitchTip's hosted service, use:
+
+```text
+https://app.glitchtip.com
+```
+
+Do not include the `/api/0` API path. Nango adds that path automatically.
+
+#### Step 2: Create or copy an auth token
+
+In GlitchTip, navigate to **Profile** > **Auth Tokens**, then create or copy an auth token for the user that should be used for API access.
+
+GlitchTip auth tokens can access any project your user has permission to access. Select all permission scopes or limit the token to the read or write scopes your application needs.
+
+Nango sends this token with each proxied request using:
+
+```http
+Authorization: Bearer <AUTH_TOKEN>
+```
+
+#### Step 3: Enter your connection details in the Connect UI
+
+1. Open the form where you need to authenticate with GlitchTip.
+2. Enter your **Base URL**.
+3. Paste your **Auth Token**.
+4. Submit the form.
+
+You are now connected to GlitchTip.
+

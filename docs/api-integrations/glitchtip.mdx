@@ -1,0 +1,80 @@
+---
+title: 'GlitchTip'
+sidebarTitle: 'GlitchTip'
+description: 'Integrate your application with the GlitchTip API'
+---
+
+## 🚀 Quickstart
+
+Connect to GlitchTip with Nango and proxy requests to your GlitchTip instance.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GlitchTip_.
+    </Step>
+    <Step title="Authorize GlitchTip">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your GlitchTip base URL and auth token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the GlitchTip API">
+    Make your first request to the GlitchTip API (list organizations). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/organizations/" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/organizations/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your GlitchTip base URL and auth token, follow the connection guide linked below.
+    </Step>
+</Steps>
+
+## 📚 GlitchTip integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my GlitchTip account?](/api-integrations/glitchtip/connect)
+  Learn how to find your GlitchTip base URL, create or copy an auth token, and link your account
+
+Official docs: [GlitchTip API documentation](https://glitchtip.com/documentation)
+
+## 🧩 Pre-built syncs & actions for GlitchTip
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/glitchtip/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
