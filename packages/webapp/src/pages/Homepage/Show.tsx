@@ -30,9 +30,9 @@ export const Homepage: React.FC = () => {
 
                 <div className="flex gap-2 flex-col border border-border-muted rounded-md items-center text-text-primary text-center p-10 py-20 mt-4">
                     <h2 className="text-xl text-center">Logs not configured</h2>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-text-tertiary">
                         Follow{' '}
-                        <Link to="https://nango.dev/docs/guides/platform/self-hosting#logs" className="text-blue-400">
+                        <Link to="https://nango.dev/docs/guides/platform/self-hosting#logs" className="text-text-link">
                             these instructions
                         </Link>{' '}
                         to configure logs and enable execution metrics in your dashboard.
@@ -54,7 +54,7 @@ export const Homepage: React.FC = () => {
                     <div className="text-text-tertiary text-sm">Here’s your recent activity on Nango.</div>
                 </div>
                 <div className="text-text-primary text-sm">
-                    Last 14 days <code className="font-code text-xs text-dark-500">(UTC)</code>
+                    Last 14 days <code className="font-code text-xs text-text-secondary">(UTC)</code>
                 </div>
             </div>
             <div className="grid gap-8 grid-cols-[repeat(auto-fill,minmax(300px,470px))] mt-8">

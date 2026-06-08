@@ -325,7 +325,7 @@ export const SearchAllOperations: React.FC<Props> = ({ onSelectOperation }) => {
                             Load more...
                         </Button>
                     )}
-                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-grayscale-500 p-4 mt-2">Nothing more to load...</div>}
+                    {flatData.length > 0 && !hasNextPage && <div className="text-xs text-text-secondary p-4 mt-2">Nothing more to load...</div>}
 
                     {isLoading && (
                         <tbody>

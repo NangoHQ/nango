@@ -1,4 +1,4 @@
-import { Box, LockOpen } from 'lucide-react';
+import { CubeTransparentIcon, LockOpenIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 import { cn } from '@/utils/utils';
@@ -14,7 +14,7 @@ export const IntegrationLogo = ({ provider, className }: IntegrationLogoProps) =
     return (
         <div className={cn(`p-1 size-8 rounded-sm flex items-center justify-center bg-surface-raised border-[0.5px] border-border-muted`, className)}>
             {provider === 'unauthenticated' ? (
-                <LockOpen className={`size-full text-black stroke-2`} />
+                <LockOpenIcon className={`size-full text-text-primary stroke-2`} />
             ) : !imgError ? (
                 <img
                     src={`/images/template-logos/${provider}.svg`}
@@ -23,7 +23,7 @@ export const IntegrationLogo = ({ provider, className }: IntegrationLogoProps) =
                     onError={() => setImgError(true)}
                 />
             ) : (
-                <Box className={`size-full`} />
+                <CubeTransparentIcon className={`size-full`} />
             )}
         </div>
     );

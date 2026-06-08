@@ -181,7 +181,7 @@ export function MultiSelect<T extends string = string>({
                                         <span
                                             className={cn(
                                                 'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                                isSelected ? 'border-transparent bg-gray-50 text-gray-1000' : 'border-border-strong bg-transparent'
+                                                isSelected ? 'border-transparent bg-surface-panel text-text-primary' : 'border-border-strong bg-transparent'
                                             )}
                                         >
                                             {isSelected ? <Check className="size-3.5" /> : null}

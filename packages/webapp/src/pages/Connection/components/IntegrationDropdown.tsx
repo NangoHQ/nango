@@ -77,7 +77,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 }}
             >
                 <div
-                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-bg-muted rounded-md border border-grayscale-600"
+                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-bg-muted rounded-md border border-border-default"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}
@@ -106,7 +106,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                                         onSelect(isSelected ? undefined : item);
                                         setSearch('');
                                     }}
-                                    className={cn('flex items-center justify-between cursor-pointer py-3 px-3 rounded-md', isSelected && 'bg-pure-black')}
+                                    className={cn('flex items-center justify-between cursor-pointer py-3 px-3 rounded-md', isSelected && 'bg-state-selected')}
                                 >
                                     <div className="flex gap-3 items-center text-[15px]">
                                         <IntegrationLogo provider={item.provider} className="size-8" />

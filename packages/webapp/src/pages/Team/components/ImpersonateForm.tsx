@@ -39,7 +39,7 @@ export const ImpersonateForm: React.FC = () => {
     };
 
     return (
-        <div className="w-100 flex flex-col gap-3 p-6 border border-border-gray rounded-md relative">
+        <div className="w-100 flex flex-col gap-3 p-6 border border-border-default rounded-md relative">
             <h3 className="text-heading-sm text-text-primary absolute top-[-12px] left-3 bg-bg-surface px-1">Nango admin</h3>
             <h3 className="text-heading-sm text-text-primary">Impersonate account</h3>
             <Form {...form}>

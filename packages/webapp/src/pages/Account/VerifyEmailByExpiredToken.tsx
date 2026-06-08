@@ -82,18 +82,18 @@ export function VerifyEmailByExpiredToken() {
             <DefaultLayout>
                 <div className="flex flex-col justify-center items-center">
                     <div className="py-3">
-                        <h2 className="mt-4 text-center text-[20px] text-white">Verify your email</h2>
+                        <h2 className="mt-4 text-center text-[20px] text-text-primary">Verify your email</h2>
                         {email || uuid ? (
                             <form className="mt-6 space-y-6" onSubmit={resendEmail}>
-                                <span className="text-text-light-gray mb-4 text-[14px]">Check {email} to verify your account and get started.</span>
+                                <span className="text-text-tertiary mb-4 text-[14px]">Check {email} to verify your account and get started.</span>
                                 <div className="flex justify-center">
-                                    <button className="min-w-8 bg-surface-panel flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-black shadow-sm active:ring-2 active:ring-offset-2">
+                                    <button className="min-w-8 bg-surface-panel flex h-11 justify-center rounded-md border px-4 pt-3 text-[14px] text-text-primary shadow-sm active:ring-2 active:ring-offset-2">
                                         Resend verification email
                                     </button>
                                 </div>
                             </form>
                         ) : (
-                            <span className="flex text-text-light-gray mb-4 text-[14px] mt-6">Invalid user id. Please try and signup again.</span>
+                            <span className="flex text-text-tertiary mb-4 text-[14px] mt-6">Invalid user id. Please try and signup again.</span>
                         )}
                         {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-feedback-error-fg">{serverErrorMessage}</p>}
                     </div>
