@@ -1,0 +1,96 @@
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_15d8a2cce8712c::t_4ab9f49fad1409 25,53,81-119,169-172
+packages/shared/lib/services/account.service.integration.test.ts
+  s_15d8a2cce8712c::t_9ec45ed916e844 168,174,206-207,223,245,270,276,288-289
+packages/sandbox/lib/api-keys/sandbox-api-key.unit.test.ts
+  s_15d8a2cce8712c::t_202458c9f61831 73-92,94,108,111-112
+  s_15d8a2cce8712c::t_3189aa321ee265 20,25,41,45-49,93,95-107,109-110,120,137,150
+packages/server/lib/utils/express.ts
+  s_15d8a2cce8712c::t_64139e37cc5de4 39
+packages/sandbox/lib/functions/dryruns.service.ts
+  s_15d8a2cce8712c::t_e41c0a68b60229 1
+packages/sandbox/lib/functions/async-jobs.service.ts
+  s_15d8a2cce8712c::t_fe2b7799c14fa5 30
+  s_15d8a2cce8712c::t_f5b2f42e742b87 74-78,91-95
+  s_15d8a2cce8712c::t_1665f67a43c312 1-29,31-73,79-90,96-603,605-615
+packages/server/lib/middleware/access.middleware.ts
+  s_15d8a2cce8712c::t_26c0bab8f89a57 59,131-133,420-421
+packages/sandbox/lib/api-keys/sandbox-api-key.service.ts
+  s_15d8a2cce8712c::t_2092dad51dc245 26-43,45,47,91-93
+packages/database/lib/migrations/20260605130000_rename_function_dryruns_to_async_jobs.cjs
+  s_15d8a2cce8712c::t_fc72be71efa718 1-6,12,14-17,19-20,22-23,25-26,28,33-37
+  s_15d8a2cce8712c::t_7548e052915891 7,9-11,13,18,21,24,27,29,31-32
+  s_15d8a2cce8712c::t_7248c0d4394a52 30
+  s_15d8a2cce8712c::t_9468d557200464 8
+packages/server/lib/controllers/functions/validation.ts
+  s_15d8a2cce8712c::t_615a65161f30af 69-98
+packages/shared/lib/services/account.service.ts
+  s_15d8a2cce8712c::t_65ca6fdfbd8cb8 37
+  s_15d8a2cce8712c::t_39834dc00178d3 473-488,517
+packages/server/lib/controllers/functions/deploy/postDeployResult.ts
+  s_15d8a2cce8712c::t_9222e08f95d2e9 1-72
+packages/server/lib/routes.public.ts
+  s_15d8a2cce8712c::t_4228f5fe3fb804 38,40,110,292-293
+packages/server/lib/crons/timeoutFunctionAsyncJobs.ts
+  s_15d8a2cce8712c::t_32e178a1f1234b 4,9,13,16-17,27,34,36
+packages/sandbox/lib/functions/dryruns.service.unit.test.ts
+  s_15d8a2cce8712c::t_737e4e55b4763c 12
+packages/server/lib/server.ts
+  s_15d8a2cce8712c::t_42f23356cf6412 24,97
+packages/server/lib/controllers/functions/dryrun/helpers.ts
+  s_15d8a2cce8712c::t_4f8f81fd2e18a6 13,18
+packages/server/lib/controllers/functions/deploy/postDeploy.ts
+  s_15d8a2cce8712c::t_99a7f2b47118a2 3,5-8,16,43-46,71-85,89-90,92-99,105-108,113-118,120-127,129-136
+packages/sandbox/lib/functions/async-deploy-script.js
+  s_15d8a2cce8712c::t_767c811f5eebbe 1-109
+packages/server/lib/controllers/functions/deploy/getDeployment.ts
+  s_15d8a2cce8712c::t_ef4934e864223d 1-30
+packages/server/lib/controllers/functions/errors.ts
+  s_15d8a2cce8712c::t_0c040fca273358 22
+packages/server/lib/routes.integration.test.ts
+  s_15d8a2cce8712c::t_48d64a66488375 88
+packages/types/lib/api.endpoints.ts
+  s_15d8a2cce8712c::t_2c2e4c09d0a53e 66,74,163-164
+packages/sandbox/lib/functions/deploy-client.ts
+  s_15d8a2cce8712c::t_6868cedf4d4c94 1-2,5,7,17-20,37-108,165-228
+packages/shared/lib/services/sandbox-api-key.ts
+  s_15d8a2cce8712c::t_a93e397525572d 20,27-58,120-121,127-140,142,171,177-180,210-211,218-228
+packages/server/lib/controllers/functions/functions.integration.test.ts
+  s_15d8a2cce8712c::t_bf0456a4504457 11,15,50,53,76-111
+  s_15d8a2cce8712c::t_a75aa7ce08ab6c 545,569
+  s_15d8a2cce8712c::t_b8289263a1491f 525-544,546-568,570-574
+  s_15d8a2cce8712c::t_5ab00c7f710f27 458-480
+  s_15d8a2cce8712c::t_0b3a371bf04428 600-630
+  s_15d8a2cce8712c::t_5eb7f0691cbca2 407-434
+packages/types/lib/functions/api.ts
+  s_15d8a2cce8712c::t_6457be228d11c0 14,54-56,106-114,118-126,129-145,184-201
+packages/sandbox/lib/index.ts
+  s_15d8a2cce8712c::t_08cf957b03562c 9
+packages/server/lib/crons/deleteOldData.ts
+  s_15d8a2cce8712c::t_0bf7055e5c9038 7,49,135-136
+packages/sandbox/lib/api-keys/sandbox-api-key.integration.test.ts
+  s_15d8a2cce8712c::t_fafcb3ec366de5 25,47,66
+packages/server/lib/controllers/functions/deploy/helpers.ts
+  s_15d8a2cce8712c::t_8c2f905c7e3741 11,16
+  s_15d8a2cce8712c::t_9c349510c2b014 1-10,12-15,17-52
+packages/sandbox/lib/functions/dryruns.service.integration.test.ts
+  s_15d8a2cce8712c::t_003af6be55cf6d 26,52,79,92,109,183,196,213
+  s_15d8a2cce8712c::t_8f5b767525331e 8-9,11,13,15
+  s_15d8a2cce8712c::t_41bada8d5ed376 121-173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "1e989150e00a43a724f8e2214832f990a2d1ddf5",
+  "prompts": {},
+  "sessions": {
+    "s_15d8a2cce8712c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9837-52d8-72f1-bdb2-135470bffe92",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
