@@ -1573,6 +1573,7 @@
               "api-integrations/slab",
               "api-integrations/slack",
               "api-integrations/slack-mcp",
+              "api-integrations/swoogo",
               "api-integrations/talentlms",
               "api-integrations/tally",
               "api-integrations/telegram",
