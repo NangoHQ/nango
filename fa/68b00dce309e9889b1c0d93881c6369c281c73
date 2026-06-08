@@ -1,0 +1,37 @@
+packages/sandbox/lib/functions/dryrun-client.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 11,55
+packages/sandbox/lib/functions/async-jobs.service.integration.test.ts
+  s_15d8a2cce8712c::t_1a838ac80dd0bc 8-24,35-50,57-192,195-244,246-249,251-253,255-259,261-268,270-280,283-305,308-330,333-361,363-364,366-369,371-407,409-439,442-478
+  s_15d8a2cce8712c::t_2fccd80b61f97c 27-33
+packages/sandbox/lib/functions/async-jobs.service.unit.test.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 4-7,9,32,36,38-39,63-64,66-70,72-73,168-170,172-182,184-187,189-193,196-198,200-204,206-208,210,212-215,217-221,224-225
+  s_15d8a2cce8712c::t_e90ae67c15a61a 205,209
+  s_15d8a2cce8712c::t_ab544581cced8e 40,74
+  s_15d8a2cce8712c::t_38d5cd57ed47db 3,8,10-31,37,41,43-62,65,71,75-167,171,183,188,194-195,199,211,216,222-223
+packages/sandbox/lib/functions/compiler-client.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 11,47
+packages/sandbox/lib/functions/compiler-client.e2b.unit.test.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 11,13,32,41
+packages/sandbox/lib/functions/dryrun-client.unit.test.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 16,18,35,55
+packages/sandbox/lib/functions/deploy-client.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 15,56,115,132,145
+packages/sandbox/lib/functions/deploy-client.unit.test.ts
+  s_15d8a2cce8712c::t_fdc33375b9f831 31,33,52,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "fa68b00dce309e9889b1c0d93881c6369c281c73",
+  "prompts": {},
+  "sessions": {
+    "s_15d8a2cce8712c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9837-52d8-72f1-bdb2-135470bffe92",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Marcin Dobrowolski <marcindobry@hotmail.com>"
+    }
+  }
+}
