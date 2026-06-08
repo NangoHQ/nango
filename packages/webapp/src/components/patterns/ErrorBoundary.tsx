@@ -10,7 +10,10 @@ export const ErrorBoundary: React.FC = () => {
                     Something went wrong on our end. Get in touch with our support team, and we’ll get it fixed right away for you.
                 </p>
 
-                <button onClick={() => window.location.reload()} className="mt-auto mb-4 px-4 h-10 rounded-md text-sm text-black bg-surface-panel hover:bg-gray-300">
+                <button
+                    onClick={() => window.location.reload()}
+                    className="mt-auto mb-4 px-4 h-10 rounded-md text-sm text-black bg-surface-panel hover:bg-gray-300"
+                >
                     Try again?
                 </button>
             </div>

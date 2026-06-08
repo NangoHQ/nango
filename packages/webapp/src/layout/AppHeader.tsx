@@ -34,15 +34,10 @@ export const AppHeader: React.FC = () => {
             <div className="flex gap-1.5 justify-end">
                 <PermissionGate condition={canUsePlayground}>
                     {(allowed) => (
-                        <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={!allowed}
-                                onClick={() => setPlaygroundOpen(!playgroundOpen)}
-                            >
-                                <Box />
-                                Playground
-                            </Button>
+                        <Button variant="outline" size="sm" disabled={!allowed} onClick={() => setPlaygroundOpen(!playgroundOpen)}>
+                            <Box />
+                            Playground
+                        </Button>
                     )}
                 </PermissionGate>
                 <ButtonLink to="https://nango.dev/docs" target="_blank" variant="outline" size="sm">
