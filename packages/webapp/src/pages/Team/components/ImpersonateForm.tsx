@@ -84,7 +84,7 @@ export const ImpersonateForm: React.FC = () => {
                     <Button variant="destructive" className="self-end">
                         Impersonate
                     </Button>
-                    {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-red-600">{form.formState.errors.root.message}</p>}
+                    {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-feedback-error-fg">{form.formState.errors.root.message}</p>}
                 </form>
             </Form>
         </div>

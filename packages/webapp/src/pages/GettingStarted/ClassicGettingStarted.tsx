@@ -86,7 +86,7 @@ export const ClassicGettingStarted: React.FC = () => {
             </Helmet>
             <div
                 className={cn(
-                    'border rounded-lg border-grayscale-700 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0',
+                    'border rounded-lg border-grayscale-700 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0',
                     !hasVideo && 'cursor-pointer'
                 )}
                 onClick={!hasVideo ? triggerVideo : undefined}
@@ -103,7 +103,7 @@ export const ClassicGettingStarted: React.FC = () => {
             <h1 className="text-xl font-semibold text-white">Build your first integration from here:</h1>
             <div className="grid grid-cols-2 text-white gap-7">
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
+                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0"
                     href="https://nango.dev/docs/guides/auth/auth-guide"
                     onClick={() => analyticsTrack('web:getting_started:authorize')}
                     target="_blank"
@@ -129,7 +129,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/syncs/sync-functions"
                     onClick={() => analyticsTrack('web:getting_started:read')}
                     target="_blank"
@@ -155,7 +155,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/action-functions"
                     onClick={() => analyticsTrack('web:getting_started:perform')}
                     target="_blank"
@@ -181,7 +181,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 </a>
 
                 <a
-                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card"
+                    className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/functions-guide"
                     onClick={() => analyticsTrack('web:getting_started:custom')}
                     target="_blank"

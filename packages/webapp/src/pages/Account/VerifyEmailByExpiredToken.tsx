@@ -95,7 +95,7 @@ export function VerifyEmailByExpiredToken() {
                         ) : (
                             <span className="flex text-text-light-gray mb-4 text-[14px] mt-6">Invalid user id. Please try and signup again.</span>
                         )}
-                        {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
+                        {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-feedback-error-fg">{serverErrorMessage}</p>}
                     </div>
                 </div>
             </DefaultLayout>
