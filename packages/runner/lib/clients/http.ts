@@ -47,29 +47,30 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
 
     try {
         return await retryWithBackoff(async () => {
+            let res: Response;
             try {
-                const res = await fetch(url, fetchOptions);
-
-                if (!res.ok) {
-                    logger.error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
-                }
-
-                if (shouldRetry(null, res)) {
-                    throw new Error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
-                }
-
-                return res;
+                res = await fetch(url, fetchOptions);
             } catch (err) {
                 if (shouldRetry(err)) {
                     throw err;
                 }
 
-                // Non-retryable error
+                // Non-retryable network error
                 return new Response(JSON.stringify({ error: stringifyError(err, { cause: true }) }), {
                     status: 502,
                     headers: { 'Content-Type': 'application/json' }
                 });
             }
+
+            if (!res.ok) {
+                logger.error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+            }
+
+            if (shouldRetry(null, res)) {
+                throw new Error(`${method} ${url.toString()} -> ${res.status} ${res.statusText}`);
+            }
+
+            return res;
         }, backoffOptions);
     } catch (err) {
         // All retries exhausted
