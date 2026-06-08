@@ -335,7 +335,9 @@ async function compileDeployInfo({
     const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
     const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
-    const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
+    // If no previous file location, we consider the file changed no matter what the content is.
+    // This ensures if upload succeeds, but db transaction fails, we re-upload and get a valid file_location.
+    const jsChanged = previousJsFileLocation ? await remoteFileService.checkIfChanged({ content: jsFile, objectKey: previousJsFileLocation }) : true;
     let file_location: string | null | undefined = previousJsFileLocation;
     const uploads = [];
 
@@ -345,13 +347,7 @@ async function compileDeployInfo({
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
-        // !previousJsFileLocation: always upload for new functions.
-        // If a previous deploy uploaded the file to s3 but the db transaction failed,
-        // checkIfChanged may return false (since the file already exists),
-        // but we won't have a saved file_location to reuse, so we still need to upload
-        // to ensure we have a valid file_location.
-
-        if (tsChanged || jsChanged || !previousJsFileLocation) {
+        if (tsChanged || jsChanged) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -368,7 +364,7 @@ async function compileDeployInfo({
     }
     // Legacy Path - Only JS is provided
     else {
-        if (jsChanged || !previousJsFileLocation) {
+        if (jsChanged) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
