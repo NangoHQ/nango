@@ -369,8 +369,7 @@ const sidebarMenuButtonVariants = cva(
         variants: {
             variant: {
                 default: 'transition-colors hover:bg-nav-bg-hover hover:text-text-primary',
-                outline:
-                    'bg-surface-panel border border-border-muted hover:bg-nav-bg-hover hover:text-text-primary'
+                outline: 'bg-surface-panel border border-border-muted hover:bg-nav-bg-hover hover:text-text-primary'
             },
             size: {
                 default: 'h-8 text-sm',
