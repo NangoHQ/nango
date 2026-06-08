@@ -1,31 +1,43 @@
-import { Ok } from '@nangohq/utils';
+import { Ok, flagHasPlan } from '@nangohq/utils';
 
 import { defaultStore } from './default.js';
+import { records2Store } from './records2.js';
+import { logger } from '../utils/logger.js';
 
 import type { RecordsStore } from '../store.js';
 import type { RecordCount } from '../types.js';
 import type { DBPlan } from '@nangohq/types';
 
-// Augments a store method signature with an optional plan parameter for routing purposes.
-type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan?: DBPlan }) => R : never;
+// Augments a store method signature with a plan parameter for routing purposes.
+type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan: DBPlan | null }) => R : never;
+
+type RoutedRecordsStore = Omit<RecordsStore, 'getRecords' | 'getCursor' | 'upsert' | 'update' | 'deleteRecords' | 'deleteOutdatedRecords'> & {
+    getRecords: Routed<RecordsStore['getRecords']>;
+    getCursor: Routed<RecordsStore['getCursor']>;
+    upsert: Routed<RecordsStore['upsert']>;
+    update: Routed<RecordsStore['update']>;
+    deleteRecords: Routed<RecordsStore['deleteRecords']>;
+    deleteOutdatedRecords: Routed<RecordsStore['deleteOutdatedRecords']>;
+};
 
 interface RoutingContext {
-    plan?: DBPlan | undefined;
+    plan: DBPlan | null;
     connectionId: number;
     model: string;
 }
 
-export class RecordsRouter<K extends string> implements RecordsStore {
+export class RecordsRouter<K extends string> implements RoutedRecordsStore {
     private readonly stores: Map<K, RecordsStore>;
     private readonly routing: Routing<K>;
 
-    constructor({ stores, routing }: { stores: Record<K, RecordsStore>; routing: Routing<K> }) {
-        this.stores = new Map(Object.entries(stores) as [K, RecordsStore][]);
+    constructor({ stores, routing }: { stores: Record<K, RecordsStore | undefined>; routing: Routing<K> }) {
+        this.stores = new Map(Object.entries(stores).filter(([_, v]) => v !== undefined) as [K, RecordsStore][]);
         this.routing = routing;
     }
 
-    private resolve(ctx: RoutingContext): RecordsStore {
-        return this.stores.get(this.routing.get(ctx))!;
+    private async resolve(ctx: RoutingContext): Promise<RecordsStore> {
+        const key = await this.routing.get(ctx);
+        return this.stores.get(key)!;
     }
 
     private random(): RecordsStore {
@@ -34,7 +46,7 @@ export class RecordsRouter<K extends string> implements RecordsStore {
 
     // Lifecycle: runs against all stores
     migrate: RecordsStore['migrate'] = async () => {
-        await Promise.allSettled([...this.stores.values()].map((s) => s.migrate()));
+        await Promise.all([...this.stores.values()].map((s) => s.migrate()));
     };
     close: RecordsStore['close'] = async () => {
         await Promise.allSettled([...this.stores.values()].map((s) => s.close()));
@@ -44,23 +56,23 @@ export class RecordsRouter<K extends string> implements RecordsStore {
     };
 
     // Dataset ops: routed to a specific store
-    getRecords: Routed<RecordsStore['getRecords']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).getRecords(params);
+    getRecords: Routed<RecordsStore['getRecords']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).getRecords(params);
 
-    getCursor: Routed<RecordsStore['getCursor']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).getCursor(params);
+    getCursor: Routed<RecordsStore['getCursor']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).getCursor(params);
 
-    upsert: Routed<RecordsStore['upsert']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).upsert(params);
+    upsert: Routed<RecordsStore['upsert']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).upsert(params);
 
-    update: Routed<RecordsStore['update']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).update(params);
+    update: Routed<RecordsStore['update']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).update(params);
 
-    deleteRecords: Routed<RecordsStore['deleteRecords']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).deleteRecords(params);
+    deleteRecords: Routed<RecordsStore['deleteRecords']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).deleteRecords(params);
 
-    deleteOutdatedRecords: Routed<RecordsStore['deleteOutdatedRecords']> = ({ plan, ...params }) =>
-        this.resolve({ plan, connectionId: params.connectionId, model: params.model }).deleteOutdatedRecords(params);
+    deleteOutdatedRecords: Routed<RecordsStore['deleteOutdatedRecords']> = async ({ plan, ...params }) =>
+        (await this.resolve({ plan, connectionId: params.connectionId, model: params.model })).deleteOutdatedRecords(params);
 
     // Aggregation ops: fan-out across stores
     getCountsByModel: RecordsStore['getCountsByModel'] = async (params) => {
@@ -90,21 +102,44 @@ export class RecordsRouter<K extends string> implements RecordsStore {
 }
 
 export class Routing<K extends string> {
-    constructor(private readonly routing: (ctx: RoutingContext) => K) {}
+    constructor(private readonly routing: (ctx: RoutingContext) => Promise<K>) {}
 
-    public get(ctx: RoutingContext): K {
+    public get(ctx: RoutingContext): Promise<K> {
         return this.routing(ctx);
     }
 }
 
+const stores = {
+    default: defaultStore,
+    records2: records2Store
+};
+// The routing store is the one responsible for persisting the routing decisions for each connection/model.
+// For simplicity, we use the default store, but it could be a separate store or an external service.
+const routingStore = defaultStore;
+
 // Routing is fixed and deterministic based on the routing context.
 // It must not change across calls for a given context. (ie: Rebalancing and moving data between stores is not supported)
-const routing = new Routing((_ctx: RoutingContext) => {
-    // For now we have a single store, so we can ignore the context and always assign/return the default store
-    // In the future, this can be extended to route based on connectionId, model, plan, account, etc.
-    // and routing decisions can be stored in a database
+const routingCache = new Map<string, keyof typeof stores>();
+const routing = new Routing(async (ctx: RoutingContext) => {
+    // Skip routing entirely when records2 store is not configured or feature flag is off
+    if (!flagHasPlan || !stores.records2) return 'default';
+
+    const cacheKey = `${ctx.connectionId}:${ctx.model}`;
+    const cached = routingCache.get(cacheKey);
+    if (cached) return cached;
+
+    const storeKey = ctx.plan?.records_store || 'default';
+
+    // Persist the assignment on first access
+    // Existing records are pinned to the assigned store at dataset creation.
+    const res = await routingStore.getOrCreateRouting({ connectionId: ctx.connectionId, model: ctx.model, storeKey, ifExists: 'default' });
+
+    if (res.isOk() && stores[res.value]) {
+        routingCache.set(cacheKey, res.value);
+        return res.value;
+    }
+    logger.error('Routing error for connection', ctx.connectionId, 'model', ctx.model, ':', res.isErr() ? res.error : `invalid store ${res.value}`);
     return 'default';
 });
-const stores = { default: defaultStore };
 
 export const records = new RecordsRouter({ stores, routing });
