@@ -410,7 +410,7 @@ async function compileDeployInfo({
                 sync_name: syncName,
                 type,
                 models,
-                version,
+                version: uploads.length > 0 ? version : previousSyncAndActionConfig?.version || '1',
                 track_deletes: track_deletes || false,
                 auto_start: auto_start === false ? false : true,
                 attributes,
