@@ -420,9 +420,7 @@ export class PostgresStore implements RecordsStore {
                             };
                         })
                     );
-                    for (const decrypted of decryptedChunk) {
-                        results.push(decrypted);
-                    }
+                    results.push(...decryptedChunk);
                 }
             } finally {
                 decryptSpan.finish();

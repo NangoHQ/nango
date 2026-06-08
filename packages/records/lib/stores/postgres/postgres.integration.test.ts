@@ -975,33 +975,35 @@ describe('PostgresStore', () => {
                 (envs as any).RECORDS_DECRYPT_CONCURRENCY = originalConcurrency;
             });
 
-            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. A
-            // concurrency smaller than the page size forces several chunks, exercising the chunk
-            // boundary while results must stay in order (the cursor depends on the last element).
-            it.each([1, 3, 7])('Should decrypt every record in order with concurrency=%i', async (concurrency) => {
-                (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
-
+            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. The
+            // concern is that splitting a page into concurrent chunks could drop, duplicate or
+            // reorder records. We read the same dataset at several concurrencies (1 forces one
+            // record per chunk, the others straddle the chunk boundary) and assert the result is
+            // identical to a serial baseline, so any reordering across chunks would fail.
+            it('Should return the same records in the same order regardless of concurrency', async () => {
                 const numOfRecords = 25;
                 const { connectionId, model } = await upsertNRecords(numOfRecords);
 
-                const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
-                expect(response.isOk()).toBe(true);
-                const { records } = response.unwrap();
+                const orderAt = async (concurrency: number) => {
+                    (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
+                    const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
+                    expect(response.isOk()).toBe(true);
+                    return response.unwrap().records;
+                };
 
-                // Completeness: no record dropped or duplicated across chunk boundaries.
-                expect(records.length).toBe(numOfRecords);
-                expect(new Set(records.map((r) => r['id'])).size).toBe(numOfRecords);
+                const baseline = await orderAt(1);
 
-                // Correctness: payload decrypted back to the original value.
-                for (const r of records) {
+                // Completeness + correctness on the baseline.
+                expect(baseline.length).toBe(numOfRecords);
+                expect(new Set(baseline.map((r) => r['id'])).size).toBe(numOfRecords);
+                for (const r of baseline) {
                     expect(r['name']).toBe(`record ${r['id']}`);
                 }
 
-                // Order preserved: first_seen_at is non-decreasing regardless of chunking.
-                for (let i = 1; i < records.length; i++) {
-                    const cur = dayjs(records[i]?._nango_metadata.first_seen_at);
-                    const prev = dayjs(records[i - 1]?._nango_metadata.first_seen_at);
-                    expect(cur.isAfter(prev) || cur.isSame(prev)).toBe(true);
+                const baselineIds = baseline.map((r) => r['id']);
+                for (const concurrency of [3, 7, numOfRecords + 1]) {
+                    const ids = (await orderAt(concurrency)).map((r) => r['id']);
+                    expect(ids).toEqual(baselineIds);
                 }
             });
         });
