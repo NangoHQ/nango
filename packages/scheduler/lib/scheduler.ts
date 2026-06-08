@@ -93,6 +93,7 @@ export class Scheduler {
             abortSignal: this.ac.signal,
             tickIntervalMs: config.daemons.schedulingTickIntervalMs,
             groupTaskCap: config.limits.groupTaskCap,
+            batchSize: config.limits.schedulingBatchSize,
             recurringGroupMaxConcurrency: config.limits.recurringGroupMaxConcurrency,
             onScheduling: (task: Task) => {
                 this.onCallbacks[task.state](task);
