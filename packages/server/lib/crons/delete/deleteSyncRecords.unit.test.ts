@@ -4,16 +4,20 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
 
+vi.mock('@nangohq/database', () => ({ default: { knex: {} } }));
+
 const deleteOutdatedRecords = vi.fn();
 vi.mock('@nangohq/records', () => ({ records: { deleteOutdatedRecords: (...args: unknown[]) => deleteOutdatedRecords(...args) } }));
 
 const publish = vi.fn();
 const getConnectionById = vi.fn();
 const getById = vi.fn();
+const getPlanSafe = vi.fn();
 vi.mock('@nangohq/shared', () => ({
     pubsub: { publisher: { publish: (...args: unknown[]) => publish(...args) } },
     connectionService: { getConnectionById: (...args: unknown[]) => getConnectionById(...args) },
-    environmentService: { getById: (...args: unknown[]) => getById(...args) }
+    environmentService: { getById: (...args: unknown[]) => getById(...args) },
+    getPlanSafe: (...args: unknown[]) => getPlanSafe(...args)
 }));
 
 const { deleteSyncRecords } = await import('./deleteSyncRecords.js');
@@ -27,6 +31,7 @@ describe('deleteSyncRecords', () => {
         publish.mockClear();
         getConnectionById.mockReset().mockResolvedValue({ connection_id: 'conn-ext', provider_config_key: 'github' });
         getById.mockReset().mockResolvedValue({ account_id: 42, name: 'dev' });
+        getPlanSafe.mockReset().mockResolvedValue({ id: 'plan-1' });
     });
     afterEach(() => vi.clearAllMocks());
 
@@ -35,8 +40,8 @@ describe('deleteSyncRecords', () => {
 
         await deleteSyncRecords(input, { logger });
 
-        expect(deleteOutdatedRecords).toHaveBeenCalledWith({ environmentId: 10, connectionId: 5, model: 'User', generation: 6 });
-        expect(deleteOutdatedRecords).toHaveBeenCalledWith({ environmentId: 10, connectionId: 5, model: 'Issue', generation: 6 });
+        expect(deleteOutdatedRecords).toHaveBeenCalledWith({ environmentId: 10, connectionId: 5, model: 'User', generation: 6, plan: { id: 'plan-1' } });
+        expect(deleteOutdatedRecords).toHaveBeenCalledWith({ environmentId: 10, connectionId: 5, model: 'Issue', generation: 6, plan: { id: 'plan-1' } });
         // Only the model with deletions emits (Issue deleted 0).
         expect(publish).toHaveBeenCalledTimes(1);
         expect(publish).toHaveBeenCalledWith({

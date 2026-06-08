@@ -1,5 +1,6 @@
+import db from '@nangohq/database';
 import { records } from '@nangohq/records';
-import { connectionService, environmentService, pubsub } from '@nangohq/shared';
+import { connectionService, environmentService, getPlanSafe, pubsub } from '@nangohq/shared';
 
 import { DeletionBudgetExceeded } from './batchDelete.js';
 
@@ -19,7 +20,11 @@ export async function deleteSyncRecords(
     }: { syncId: string; nangoConnectionId: number; environmentId: number; models: string[]; generation: number },
     { logger, deadline }: { logger: StrictLogger; deadline?: Date }
 ): Promise<void> {
-    const [connection, environment] = await Promise.all([connectionService.getConnectionById(nangoConnectionId), environmentService.getById(environmentId)]);
+    const [connection, environment, plan] = await Promise.all([
+        connectionService.getConnectionById(nangoConnectionId),
+        environmentService.getById(environmentId),
+        getPlanSafe(db.knex, { environmentId })
+    ]);
     const usageProps =
         connection && environment
             ? {
@@ -40,7 +45,7 @@ export async function deleteSyncRecords(
             throw new DeletionBudgetExceeded();
         }
 
-        const res = await records.deleteOutdatedRecords({ environmentId, connectionId: nangoConnectionId, model, generation });
+        const res = await records.deleteOutdatedRecords({ environmentId, connectionId: nangoConnectionId, model, generation, plan });
         if (res.isErr()) {
             throw res.error;
         }
