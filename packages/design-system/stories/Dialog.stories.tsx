@@ -1,11 +1,11 @@
-import { Button } from '@/components-v2/ui/Button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
+import { Button } from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Dialog> = {
     component: Dialog,
-    title: 'Components v2/UI/Dialog',
+    title: 'Components/UI/Dialog',
     parameters: { layout: 'centered' }
 };
 export default meta;

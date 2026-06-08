@@ -1,10 +1,10 @@
 import { Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { ChartCard } from '@/components-v2/patterns/ChartCard';
-import { CriticalErrorAlert } from '@/components-v2/patterns/CriticalErrorAlert';
-import { Alert, AlertDescription, AlertTitle } from '@/components-v2/ui/Alert';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { ChartCard } from '@/components/patterns/ChartCard';
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';

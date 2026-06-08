@@ -24,6 +24,7 @@ export interface RunnerFlags {
     validateActionOutput: boolean;
     validateSyncRecords: boolean;
     validateSyncMetadata: boolean;
+    exportRunnerTelemetry: boolean;
 }
 
 export interface RoutingContext {

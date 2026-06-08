@@ -119,7 +119,6 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
-        remote_functions: false,
         environments_max: 2,
         connections_max: null,
         records_max: null,
@@ -137,6 +136,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,
         lambda_tenant_isolation: defaultPlanDefinition.flags.lambda_tenant_isolation ?? false,
+        export_runner_telemetry: defaultPlanDefinition.flags.export_runner_telemetry ?? false,
         ...defaultPlanDefinition,
         ...flagOverrides
     };

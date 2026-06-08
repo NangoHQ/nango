@@ -10,18 +10,17 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
-import SecretInput from '../../components/ui/input/SecretInput';
-import { SecretTextArea } from '../../components/ui/input/SecretTextArea';
-import TagsInput from '../../components/ui/input/TagsInput';
+import { ScopesInput } from '../../components/patterns/ScopesInput';
+import { SecretTextArea } from '../../components/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
-import useSet from '../../hooks/useSet';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
+import { SecretInput } from '@/components/patterns/SecretInput';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
@@ -41,9 +40,9 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
-    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
-    const [oauthSelectedScopes, oauthAddToScopesSet, oauthRemoveFromSelectedSet] = useSet<string>();
-    const [oauthccSelectedScopes, oauthccAddToScopesSet, oauthccRemoveFromSelectedSet] = useSet<string>();
+    const [selectedScopes, setSelectedScopes] = useState<string[]>([]);
+    const [oauthSelectedScopes, setOauthSelectedScopes] = useState<string[]>([]);
+    const [oauthccSelectedScopes, setOauthccSelectedScopes] = useState<string[]>([]);
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState<string>('');
@@ -714,16 +713,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         </label>
                                     </div>
                                     <div className="mt-1">
-                                        <TagsInput
-                                            id="scopes"
-                                            name="user_scopes"
-                                            type="text"
-                                            defaultValue={''}
-                                            onChange={() => null}
-                                            selectedScopes={selectedScopes}
-                                            addToScopesSet={addToScopesSet}
-                                            removeFromSelectedSet={removeFromSelectedSet}
-                                            minLength={1}
+                                        <ScopesInput
+                                            scopesString={selectedScopes.join(',')}
+                                            onChange={(newScopesString) => {
+                                                setSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                return Promise.resolve();
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -742,8 +737,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     id="oauth_client_id"
                                                     name="oauth_client_id"
                                                     placeholder="Find the Client ID on the developer portal of the external API provider."
-                                                    optionalValue={oAuthClientId}
-                                                    setOptionalValue={setOAuthClientId}
+                                                    value={oAuthClientId}
+                                                    onChange={(e) => setOAuthClientId(e.target.value)}
                                                 />
                                             </div>
                                         </div>
@@ -760,8 +755,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 autoComplete="one-time-code"
                                                 placeholder="Find the Client Secret on the developer portal of the external API provider."
                                                 required
-                                                optionalValue={oAuthClientSecret}
-                                                setOptionalValue={setOAuthClientSecret}
+                                                value={oAuthClientSecret}
+                                                onChange={(e) => setOAuthClientSecret(e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -770,16 +765,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             <span className="text-gray-400 text-xs">Scopes</span>
                                         </div>
                                         <div className="mt-1">
-                                            <TagsInput
-                                                id="oauth_scopes"
-                                                name="oauth_scopes"
-                                                type="text"
-                                                defaultValue={''}
-                                                selectedScopes={oauthccSelectedScopes}
-                                                addToScopesSet={oauthccAddToScopesSet}
-                                                removeFromSelectedSet={oauthccRemoveFromSelectedSet}
-                                                minLength={1}
-                                                onChange={() => null}
+                                            <ScopesInput
+                                                scopesString={oauthccSelectedScopes.join(',')}
+                                                onChange={(newScopesString) => {
+                                                    setOauthccSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                    return Promise.resolve();
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -798,8 +789,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 id="client_certificate"
                                                 name="client_certificate"
                                                 placeholder="Paste the full PEM-encoded client certificate"
-                                                optionalValue={clientCertificate}
-                                                setOptionalValue={setClientCertificate}
+                                                value={clientCertificate}
+                                                onChange={(e) => setClientCertificate(e.target.value)}
                                                 required
                                             />
                                         </div>
@@ -814,8 +805,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 id="client_private_key"
                                                 name="client_private_key"
                                                 placeholder="Paste the full PEM-encoded private key"
-                                                optionalValue={clientPrivateKey}
-                                                setOptionalValue={setClientPrivateKey}
+                                                value={clientPrivateKey}
+                                                onChange={(e) => setClientPrivateKey(e.target.value)}
                                                 required
                                             />
                                         </div>
@@ -836,8 +827,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="oauth_client_id"
                                             name="oauth_client_id"
                                             placeholder="OAuth Client ID Override"
-                                            optionalValue={oAuthClientId}
-                                            setOptionalValue={setOAuthClientId}
+                                            value={oAuthClientId}
+                                            onChange={(e) => setOAuthClientId(e.target.value)}
                                         />
                                     </div>
                                     <div className="mt-8">
@@ -846,8 +837,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="oauth_client_secret"
                                             name="oauth_client_secret"
                                             placeholder="OAuth Client Secret Override"
-                                            optionalValue={oAuthClientSecret}
-                                            setOptionalValue={setOAuthClientSecret}
+                                            value={oAuthClientSecret}
+                                            onChange={(e) => setOAuthClientSecret(e.target.value)}
                                         />
                                     </div>
                                     {integration?.provider !== 'netsuite-tba' && (
@@ -858,16 +849,12 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 </label>
                                             </div>
                                             <div className="mt-1">
-                                                <TagsInput
-                                                    id="scopes"
-                                                    name="oauth_scopes"
-                                                    type="text"
-                                                    defaultValue={''}
-                                                    onChange={() => null}
-                                                    selectedScopes={oauthSelectedScopes}
-                                                    addToScopesSet={oauthAddToScopesSet}
-                                                    removeFromSelectedSet={oauthRemoveFromSelectedSet}
-                                                    minLength={1}
+                                                <ScopesInput
+                                                    scopesString={oauthSelectedScopes.join(',')}
+                                                    onChange={(newScopesString) => {
+                                                        setOauthSelectedScopes(newScopesString ? newScopesString.split(',').filter(Boolean) : []);
+                                                        return Promise.resolve();
+                                                    }}
                                                 />
                                             </div>
                                         </>
@@ -888,8 +875,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="token_id"
                                             name="token_id"
                                             placeholder="Token ID"
-                                            optionalValue={tokenId}
-                                            setOptionalValue={setTokenId}
+                                            value={tokenId}
+                                            onChange={(e) => setTokenId(e.target.value)}
                                         />
                                     </div>
                                     <div className="mt-4">
@@ -901,8 +888,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="token_secret"
                                             name="token_secret"
                                             placeholder="Token secret"
-                                            optionalValue={tokenSecret}
-                                            setOptionalValue={setTokenSecret}
+                                            value={tokenSecret}
+                                            onChange={(e) => setTokenSecret(e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -971,8 +958,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     copy={true}
                                                     id="username"
                                                     name="username"
-                                                    optionalValue={apiAuthUsername}
-                                                    setOptionalValue={setApiAuthUsername}
+                                                    value={apiAuthUsername}
+                                                    onChange={(e) => setApiAuthUsername(e.target.value)}
                                                 />
                                             </div>
 
@@ -987,8 +974,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     copy={true}
                                                     id="password"
                                                     name="password"
-                                                    optionalValue={apiAuthPassword}
-                                                    setOptionalValue={setApiAuthPassword}
+                                                    value={apiAuthPassword}
+                                                    onChange={(e) => setApiAuthPassword(e.target.value)}
                                                 />
                                             </div>
                                         </div>
@@ -1017,8 +1004,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     copy={true}
                                                     id="api_key"
                                                     name="api_key"
-                                                    optionalValue={apiKey}
-                                                    setOptionalValue={setApiKey}
+                                                    value={apiKey}
+                                                    onChange={(e) => setApiKey(e.target.value)}
                                                     required
                                                 />
                                             </div>
@@ -1040,8 +1027,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="pat_name"
                                             name="pat_name"
                                             placeholder="Organization ID"
-                                            optionalValue={organizationId}
-                                            setOptionalValue={setOrganizationId}
+                                            value={organizationId}
+                                            onChange={(e) => setOrganizationId(e.target.value)}
                                         />
                                     </div>
                                     <div className="mt-4">
@@ -1053,8 +1040,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="dev_key"
                                             name="dev_key"
                                             placeholder="Dev Key"
-                                            optionalValue={devKey}
-                                            setOptionalValue={setDevKey}
+                                            value={devKey}
+                                            onChange={(e) => setDevKey(e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -1179,7 +1166,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             id="private_key"
                                             name="private_key"
                                             value={privateKey}
-                                            onUpdate={(value) => setPrivateKey(value)}
+                                            onChange={(e) => setPrivateKey(e.target.value)}
                                             required
                                         />
                                     </div>
@@ -1242,8 +1229,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                         copy={true}
                                                         id={`credential-${paramName}`}
                                                         name={`credential-${paramName}`}
-                                                        optionalValue={credentialsState[paramName]}
-                                                        setOptionalValue={(value) => handleCredentialParamsChange(paramName, value)}
+                                                        value={credentialsState[paramName]}
+                                                        onChange={(e) => handleCredentialParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>
                                             </div>
@@ -1265,8 +1252,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                         copy={true}
                                                         id={`assertion-option-${paramName}`}
                                                         name={`assertion-option-${paramName}`}
-                                                        optionalValue={assertionOptionState[paramName]}
-                                                        setOptionalValue={(value) => handleAssertionOptionParamsChange(paramName, value)}
+                                                        value={assertionOptionState[paramName]}
+                                                        onChange={(e) => handleAssertionOptionParamsChange(paramName, e.target.value)}
                                                     />
                                                 </div>
                                             </div>

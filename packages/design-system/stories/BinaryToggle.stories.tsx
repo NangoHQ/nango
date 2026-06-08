@@ -1,11 +1,11 @@
 import { fn } from 'storybook/test';
 
-import { BinaryToggle } from '@/components-v2/ui/BinaryToggle';
+import { BinaryToggle } from '@/components/ui/BinaryToggle';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/BinaryToggle',
+    title: 'Components/UI/BinaryToggle',
     parameters: { layout: 'padded' }
 };
 export default meta;

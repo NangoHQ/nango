@@ -12,6 +12,7 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { resolveIntegrationConfig } from '../../v1/integrations/integrationConfig.js';
 
 import type { PatchPublicIntegration } from '@nangohq/types';
 
@@ -21,6 +22,7 @@ const validationBody = z
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
         forward_webhooks: integrationForwardWebhooksSchema,
+        integration_config: z.record(z.string(), z.string().max(8192)).optional(),
         custom: z.record(z.string(), z.string()).optional()
     })
     .strict();
@@ -91,11 +93,29 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
         integration.forward_webhooks = body.forward_webhooks;
     }
 
-    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
-        const custom: Record<string, string> = body.custom as Record<string, string>;
+    // Custom integration configuration: schema-validated field for providers that declare `integration_config`.
+    if ('integration_config' in body && body.integration_config && Object.keys(body.integration_config).length > 0) {
+        const result = resolveIntegrationConfig(provider, body.integration_config, { patch: true });
+        if (result.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
+            return;
+        }
         integration.custom = {
             ...integration.custom,
-            ...custom
+            ...result.value
+        };
+    }
+
+    // Free-form custom values, for providers without an `integration_config` schema. Schema providers must use
+    // `integration_config` (validated) so this path can't write a config the form/v1 API would reject.
+    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
+        if (provider.integration_config) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'This provider uses integration_config; set its values there instead of custom' } });
+            return;
+        }
+        integration.custom = {
+            ...integration.custom,
+            ...body.custom
         };
     }
 

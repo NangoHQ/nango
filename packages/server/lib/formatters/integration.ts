@@ -37,6 +37,9 @@ export function integrationToPublicApi({
         provider: integration.provider,
         display_name: integration.display_name || provider.display_name,
         logo: `${basePublicUrl}/images/template-logos/${integration.provider}.svg`,
+        // Non-secret per-integration overrides for the Connect UI (e.g. the configurable API-key label).
+        // Only providers that declare `integration_config`, never expose the whole `custom` object.
+        ...(provider.integration_config && integration.custom?.['keyLabel'] ? { credentials_label: { apiKey: integration.custom['keyLabel'] } } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),

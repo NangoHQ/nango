@@ -1,10 +1,10 @@
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button } from '@/components/ui/Button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/PermissionGate',
+    title: 'Components/Patterns/PermissionGate',
     parameters: { layout: 'padded' }
 };
 export default meta;

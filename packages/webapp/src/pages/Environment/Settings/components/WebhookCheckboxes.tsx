@@ -5,8 +5,8 @@ import { permissions } from '@nangohq/authz';
 
 import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Switch } from '@/components-v2/ui/Switch';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import type { ApiWebhooks } from '@nangohq/types';

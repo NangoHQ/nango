@@ -1,9 +1,9 @@
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Skeleton',
+    title: 'Components/UI/Skeleton',
     parameters: { layout: 'padded' }
 };
 export default meta;

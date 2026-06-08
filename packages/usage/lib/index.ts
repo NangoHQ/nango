@@ -8,6 +8,14 @@ export type { IUsageTracker as Usage } from './usage.js';
 export { Capping } from './capping.js';
 export type { ClickhouseRawUsageEvent } from './clickhouse/clickhouse.js';
 export { Clickhouse } from './clickhouse/clickhouse.js';
+export {
+    AVG_METRICS,
+    BREAKDOWN_DIMENSIONS,
+    COUNTER_METRICS,
+    FILTER_PARAM_TYPE_FOR_DIM,
+    TOP_N_BREAKDOWN_CAP,
+    TOP_N_BREAKDOWN_DEFAULT
+} from './clickhouse/clickhouse.query.js';
 export { clickhouseClient } from './clickhouse/config.js';
 export { migrate } from './clickhouse/migrate.js';
 

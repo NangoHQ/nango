@@ -37,6 +37,9 @@ export interface SimplifiedJSONSchema {
     doc_section?: string;
     secret?: string;
     automated: boolean;
+    enum?: string[];
+    // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
+    warnings?: Record<string, string>;
 }
 
 export interface BaseProvider {
@@ -89,6 +92,7 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    integration_config?: Record<string, SimplifiedJSONSchema>;
     assertion_option?: Record<string, SimplifiedJSONSchema>; // introduce another property since these params are not stored and can only be used once for assertion generation
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
@@ -217,6 +221,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_expiration_strategy?: 'expireAt' | 'expireIn';
         refresh_token?: string;
     };
+    token_response_headers?: string[];
     additional_steps?: {
         body_format?: 'json' | 'form';
         token_params?: Record<string, string>;

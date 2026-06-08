@@ -21,11 +21,6 @@ jobs:
             app_version: ${{ steps.version-script.outputs.app_version }}
             commit_hash: ${{ inputs.commit_hash }}
         steps:
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22'
-
             - name: Get versions
               id: versions
               uses: actions/checkout@v4
@@ -33,6 +28,11 @@ jobs:
                   ref: ${{ inputs.commit_hash }}
                   fetch-depth: 1
                   token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Setup Node.js
+              uses: ./.github/actions/setup-node
+              with:
+                  node-version: '22'
 
             - name: Install dependencies
               run: |
@@ -326,11 +326,6 @@ jobs:
         if: success()
         runs-on: ubuntu-latest
         steps:
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22'
-
             - uses: actions/create-github-app-token@v2
               id: create_github_app_token
               with:
@@ -347,6 +342,11 @@ jobs:
                   ref: 'master'
                   fetch-depth: 1
                   token: ${{ steps.create_github_app_token.outputs.token }}
+
+            - name: Setup Node.js
+              uses: ./.github/actions/setup-node
+              with:
+                  node-version: '22'
 
             - name: Download manifest artifact
               uses: actions/download-artifact@v4
