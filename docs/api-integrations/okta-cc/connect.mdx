@@ -9,7 +9,7 @@ sidebarTitle: Okta (Client Credentials)
 To authenticate with Okta using Client Credentials, you need the following:
 1. **Client ID** - A unique identifier for your Okta API Services application.
 2. **Private Key (JWK)** - The RSA private key in JSON Web Key format, whose public key is registered in your Okta application.
-3. **Okta Domain** - The subdomain of your Okta organization.
+3. **Okta Domain** - The full hostname of your Okta organization (e.g. `dev-12345678.okta.com`).
 4. **Scopes** - A space-separated list of Okta Management API scopes (e.g. `okta.users.read okta.users.manage`).
 
 This guide will walk you through creating an API Services application in Okta with `private_key_jwt` authentication.
@@ -97,10 +97,10 @@ The private JWK is what you paste into Nango. It includes all key material (`d`,
 
 #### Step 3: Finding your Okta Domain
 
-Your Okta Domain is the subdomain of your Okta organization URL.
+Your Okta Domain is the full hostname of your Okta organization.
 
 - In the Admin Console, your browser's address bar will show a URL like `https://dev-12345678-admin.okta.com`.
-- Your **Okta Domain** is the part before `.okta.com`, ignoring `-admin` (e.g., `dev-12345678`).
+- Your **Okta Domain** is the hostname without `https://` and without `-admin` (e.g., `dev-12345678.okta.com`).
 - Alternatively, go to **Settings** > **Account** in the Admin Console to find your Okta domain.
 
 
@@ -138,7 +138,7 @@ Once you have your **Client ID**, **Private Key (JWK)**, **Okta Domain**, and **
 1. Open the form where you need to authenticate with Okta (Client Credentials).
 2. Enter your **Client ID**.
 3. Paste your **Private Key (JWK)** — the full JSON object from the script above (single-line or formatted).
-4. Enter your **Okta Domain** (e.g., `dev-12345678`).
+4. Enter your **Okta Domain** as the full hostname (e.g., `dev-12345678.okta.com`).
 5. Enter the **Scopes** as a space-separated list (e.g., `okta.users.read okta.users.manage`).
 6. Submit the form, and you should be successfully authenticated.
 

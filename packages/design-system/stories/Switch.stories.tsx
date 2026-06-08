@@ -1,10 +1,10 @@
-import { Label } from '@/components-v2/ui/Label';
-import { Switch } from '@/components-v2/ui/Switch';
+import { Label } from '@/components/ui/Label';
+import { Switch } from '@/components/ui/Switch';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Switch',
+    title: 'Components/UI/Switch',
     parameters: { layout: 'padded' }
 };
 export default meta;

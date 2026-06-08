@@ -11,6 +11,7 @@ import { getTestEnvironment } from '../../../seeders/environment.seeder.js';
 import accountService from '../../account.service.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
+import { onEventScriptService } from '../../on-event-scripts.service.js';
 import * as SyncService from '../sync.service.js';
 
 import type { OrchestratorClientInterface } from '../../../clients/orchestrator.js';
@@ -106,6 +107,151 @@ describe('Sync config create', () => {
   "providerConfigKey": "google-wrong"
 }`
         );
+    });
+
+    it('returns failure and marks logCtx as failed when file upload returns null', async () => {
+        const syncs: CleanedIncomingFlowConfig[] = [
+            {
+                syncName: 'test-sync',
+                type: 'sync',
+                providerConfigKey: 'google',
+                fileBody: { js: 'integrations.js', ts: 'integrations.ts' },
+                models: ['Model_1'],
+                runs: 'every 6h',
+                version: '1',
+                track_deletes: false,
+                endpoints: []
+            }
+        ];
+
+        const mockFailed = vi.fn().mockResolvedValue(undefined);
+        vi.spyOn(logContextGetter, 'create').mockResolvedValue({
+            failed: mockFailed,
+            success: vi.fn().mockResolvedValue(undefined),
+            error: vi.fn().mockResolvedValue(undefined),
+            info: vi.fn().mockResolvedValue(undefined),
+            debug: vi.fn().mockResolvedValue(undefined),
+            enrichOperation: vi.fn().mockResolvedValue(undefined)
+        } as any);
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue({
+            id: 1,
+            unique_key: 'google',
+            display_name: null,
+            provider: 'google',
+            oauth_client_id: '123',
+            oauth_client_secret: '123',
+            post_connection_scripts: null,
+            environment_id: 1,
+            created_at: new Date(),
+            updated_at: new Date(),
+            missing_fields: [],
+            forward_webhooks: true,
+            shared_credentials_id: null
+        } as any);
+
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
+                })
+            })
+        } as any);
+
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue(null as any);
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: syncs,
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            debug,
+            sdkVersion: '0.0.0-yaml',
+            onEventScriptsByProvider: [],
+            source: 'repo'
+        });
+
+        expect(success).toBe(false);
+        expect(error?.type).toBe('file_upload_error');
+        expect(mockFailed).toHaveBeenCalledOnce();
+    });
+
+    it('uploads files for a new function when checkIfChanged returns false (orphaned S3 file from failed first deploy)', async () => {
+        const syncs: CleanedIncomingFlowConfig[] = [
+            {
+                syncName: 'check-document-access',
+                type: 'action',
+                providerConfigKey: 'google',
+                fileBody: { js: 'console.log("action")', ts: 'export default {}' },
+                models: [],
+                runs: null,
+                version: '0.0.1',
+                track_deletes: false,
+                endpoints: []
+            }
+        ];
+
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue({
+            id: 1,
+            unique_key: 'google',
+            display_name: null,
+            provider: 'google',
+            oauth_client_id: '123',
+            oauth_client_secret: '123',
+            post_connection_scripts: null,
+            environment_id: 1,
+            created_at: new Date(),
+            updated_at: new Date(),
+            missing_fields: [],
+            forward_webhooks: true,
+            shared_credentials_id: null
+        } as any);
+
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(db.knex, 'from').mockReturnValue({
+            where: vi.fn().mockReturnValue({
+                select: vi.fn().mockReturnValue({
+                    orderBy: vi.fn().mockResolvedValue([])
+                })
+            })
+        } as any);
+
+        (remoteFileService as any).checkIfChanged = vi.fn().mockResolvedValue(false);
+
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/check-document-access-v0.0.1.js' as any);
+        vi.spyOn(onEventScriptService, 'update').mockResolvedValue([]);
+
+        vi.spyOn(db.knex, 'transaction').mockImplementation(async (callback: any) => {
+            const mockTrx = {
+                from: vi.fn().mockReturnValue({
+                    update: vi.fn().mockReturnValue({ whereIn: vi.fn().mockResolvedValue(undefined) }),
+                    insert: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 1 }]) })
+                })
+            };
+            await callback(mockTrx);
+        });
+
+        const { success, error } = await DeployConfigService.deploy({
+            account,
+            environment,
+            flows: syncs,
+            nangoYamlBody: '',
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            debug,
+            sdkVersion: '0.0.0-zero',
+            onEventScriptsByProvider: [],
+            source: 'standalone'
+        });
+
+        expect(success).toBe(true);
+        expect(error).toBeNull();
+        expect(uploadSpy).toHaveBeenCalled();
     });
 
     it('Throws an error at the end of the create sync process', async () => {
@@ -243,6 +389,8 @@ describe('Sync config create', () => {
             return Promise.resolve([]);
         });
 
+        vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
+
         vi.spyOn(db.knex, 'from').mockReturnValue({
             where: vi.fn().mockReturnValue({
                 select: vi.fn().mockReturnValue({
@@ -304,6 +452,7 @@ describe('Sync config models_json_schema handling', () => {
     function setupInfrastructureMocks(capturedSyncConfigs: any[]) {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
+        vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'from').mockReturnValue({
             where: vi.fn().mockReturnValue({
@@ -528,6 +677,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(mockExistingConfig);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
@@ -552,6 +702,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
@@ -577,6 +728,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue({ ...mockExistingConfig, enabled: false });
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 
@@ -603,6 +755,7 @@ describe('Deploy transaction - queued deploys mark previous config inactive', ()
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(mockProviderConfig as any);
         vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockResolvedValue(null);
         vi.spyOn(SyncService, 'getSyncsByProviderConfigKey').mockResolvedValue([]);
+        vi.spyOn(remoteFileService, 'checkIfChanged').mockResolvedValue(true);
         vi.spyOn(remoteFileService, 'upload').mockResolvedValue('https://example.com/file.js' as any);
         vi.spyOn(db.knex, 'transaction').mockImplementation((callback: any) => callback(mockTrx));
 

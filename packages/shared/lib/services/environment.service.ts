@@ -202,6 +202,15 @@ class EnvironmentService {
         });
     }
 
+    // Cheap variant: skip secret decryption when only id→name is needed.
+    async getEnvironmentNamesByIds(environmentIds: number[]): Promise<Map<number, string>> {
+        if (environmentIds.length === 0) {
+            return new Map();
+        }
+        const rows = await db.readOnly<DBEnvironment>(TABLE).select('id', 'name').whereIn('id', environmentIds).andWhere({ deleted: false });
+        return new Map(rows.map((r) => [r.id, r.name]));
+    }
+
     async getSlackNotificationsEnabled(environmentId: number, trx = db.knex): Promise<boolean | null> {
         const result = await trx.select('slack_notifications').from<DBEnvironment>(TABLE).where({ id: environmentId, deleted: false });
 

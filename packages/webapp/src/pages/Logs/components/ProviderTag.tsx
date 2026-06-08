@@ -1,4 +1,4 @@
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 
 import type { SearchOperationsData } from '@nangohq/types';
 

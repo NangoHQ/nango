@@ -8,13 +8,13 @@ import SettingsGroup from './components/SettingsGroup';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { SecretInput } from '@/components-v2/patterns/SecretInput';
-import { ButtonLink } from '@/components-v2/ui/Button';
-import { Label } from '@/components-v2/ui/Label';
-import { Spinner } from '@/components-v2/ui/Spinner';
-import { Switch } from '@/components-v2/ui/Switch';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { ButtonLink } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
+import { Spinner } from '@/components/ui/Spinner';
+import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const DeprecatedSettings: React.FC = () => {

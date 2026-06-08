@@ -1,9 +1,9 @@
-import { Label } from '@/components-v2/ui/Label';
+import { Label } from '@/components/ui/Label';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Label',
+    title: 'Components/UI/Label',
     parameters: { layout: 'padded' }
 };
 export default meta;

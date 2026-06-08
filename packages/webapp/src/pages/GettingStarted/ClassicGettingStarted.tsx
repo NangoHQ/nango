@@ -8,8 +8,8 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { useAnalyticsTrack } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
-import { Button } from '@/components-v2/ui/Button';
-import { Tag } from '@/components-v2/ui/Tag';
+import { Button } from '@/components/ui/Button';
+import { Tag } from '@/components/ui/Tag';
 
 let ytLoaded = false;
 export const ClassicGettingStarted: React.FC = () => {

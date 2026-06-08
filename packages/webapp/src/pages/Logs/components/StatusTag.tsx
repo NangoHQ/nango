@@ -1,6 +1,6 @@
-import { Tag } from '@/components-v2/ui/Tag';
+import { Tag } from '@/components/ui/Tag';
 
-import type { TagSize } from '@/components-v2/ui/Tag';
+import type { TagSize } from '@/components/ui/Tag';
 import type { SearchOperationsData } from '@nangohq/types';
 
 export const StatusTag: React.FC<{ state: SearchOperationsData['state']; size?: TagSize }> = ({ state, size }) => {

@@ -20,9 +20,9 @@ const day1 = new Date('2026-05-02T00:00:00.000Z');
 const end = new Date('2026-05-03T00:00:00.000Z');
 
 // records on three integrations: a >> b >> c, so the top-dimension-values ordering is deterministic.
-function seedFixture(accountId: number): ClickhouseRawUsageEvent[] {
+function seedFixture(accountId: number, environmentId: number): ClickhouseRawUsageEvent[] {
     const batch = randomUUID();
-    const attrs = (integrationId: string) => ({ environmentId: 1, integrationId, batchId: batch });
+    const attrs = (integrationId: string) => ({ environmentId, integrationId, batchId: batch });
     return [
         { ts: day0.getTime(), type: 'usage.records', idempotency_key: randomUUID(), account_id: accountId, value: 1000, attributes: attrs('a') },
         { ts: day1.getTime(), type: 'usage.records', idempotency_key: randomUUID(), account_id: accountId, value: 2000, attributes: attrs('a') },
@@ -31,12 +31,12 @@ function seedFixture(accountId: number): ClickhouseRawUsageEvent[] {
     ];
 }
 
-async function seedAccount(): Promise<{ apiKey: { secret: string }; accountId: number }> {
-    const { plan, apiKey, account } = await seeders.seedAccountEnvAndUser();
+async function seedAccount(): Promise<{ apiKey: { secret: string }; accountId: number; envId: number; envName: string }> {
+    const { plan, apiKey, account, env } = await seeders.seedAccountEnvAndUser();
     await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123', orb_subscription_id: 'orb_sub_123' });
-    clickhouse.addRaw(seedFixture(account.id));
+    clickhouse.addRaw(seedFixture(account.id, env.id));
     await clickhouse.flush();
-    return { apiKey, accountId: account.id };
+    return { apiKey, accountId: account.id, envId: env.id, envName: env.name };
 }
 
 describe(`GET ${route}`, () => {
@@ -129,7 +129,7 @@ describe(`GET ${route}`, () => {
     });
 
     describe('Happy path', () => {
-        it('returns top values ordered by SUM(value) DESC', async () => {
+        it('returns top values ordered by SUM(value) DESC; label === id for slug dims', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
@@ -142,7 +142,11 @@ describe(`GET ${route}`, () => {
                 }
             });
             isSuccess(res.json);
-            expect(res.json.data.values).toEqual(['a', 'b', 'c']);
+            expect(res.json.data.values).toEqual([
+                { id: 'a', label: 'a' },
+                { id: 'b', label: 'b' },
+                { id: 'c', label: 'c' }
+            ]);
         });
 
         it('honours limit', async () => {
@@ -159,7 +163,26 @@ describe(`GET ${route}`, () => {
                 }
             });
             isSuccess(res.json);
-            expect(res.json.data.values).toEqual(['a', 'b']);
+            expect(res.json.data.values).toEqual([
+                { id: 'a', label: 'a' },
+                { id: 'b', label: 'b' }
+            ]);
+        });
+
+        it('resolves environment_id to the env name (label) while keeping the raw id', async () => {
+            const { apiKey, envId, envName } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    metric: 'records',
+                    dimension: 'environment_id',
+                    from: day0.toISOString(),
+                    to: end.toISOString()
+                }
+            });
+            isSuccess(res.json);
+            expect(res.json.data.values).toEqual([{ id: String(envId), label: envName }]);
         });
     });
 });

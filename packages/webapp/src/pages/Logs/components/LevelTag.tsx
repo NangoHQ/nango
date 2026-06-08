@@ -1,4 +1,4 @@
-import { Tag } from '@/components-v2/ui/Tag';
+import { Tag } from '@/components/ui/Tag';
 
 import type { SearchMessagesData } from '@nangohq/types';
 

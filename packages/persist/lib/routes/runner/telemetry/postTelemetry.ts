@@ -36,12 +36,22 @@ const handler = (_req: EndpointRequest, res: EndpointResponse<PostRunnerTelemetr
         const bytesSent = events.reduce((acc, event) => Math.min(acc + event.bytesSent, Number.MAX_SAFE_INTEGER), 0);
         const bytesReceived = events.reduce((acc, event) => Math.min(acc + event.bytesReceived, Number.MAX_SAFE_INTEGER), 0);
 
-        if (callsite === 'proxy') {
-            metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
-            metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
-        } else {
-            metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
-            metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
+        switch (callsite) {
+            case 'proxy':
+                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, bytesSent, { callsite: 'runner' });
+                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, bytesReceived, { callsite: 'runner' });
+                break;
+            case 'uncontrolled_fetch':
+                metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES, bytesSent);
+                metrics.increment(metrics.Types.RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES, bytesReceived);
+                break;
+            case 'persist_records':
+                metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES, bytesSent);
+                metrics.increment(metrics.Types.RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES, bytesReceived);
+                break;
+            case 'persist_logs':
+                metrics.increment(metrics.Types.RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES, bytesSent);
+                break;
         }
     }
 

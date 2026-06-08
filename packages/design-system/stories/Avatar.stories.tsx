@@ -1,9 +1,9 @@
-import { Avatar } from '@/components-v2/ui/Avatar';
+import { Avatar } from '@/components/ui/Avatar';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/Avatar',
+    title: 'Components/UI/Avatar',
     parameters: { layout: 'padded' }
 };
 export default meta;
