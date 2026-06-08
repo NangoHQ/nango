@@ -11,7 +11,7 @@ import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
 
 import type { SchedulerConfig, SchedulerEvent } from './config.js';
-import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
+import type { AtProps, FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
 import type { JsonObject, JsonValue } from 'type-fest';
@@ -202,80 +202,97 @@ export class Scheduler {
      * const scheduled = await scheduler.immediate(schedulingProps);
      */
     public async immediate(props: ImmediateProps | FromScheduleProps): Promise<Result<Task>> {
-        const cappedCounts = new Map<string, number>();
-        const result = await this.db.transaction<Result<Task>>(async (trx) => {
-            const now = new Date();
-            let taskProps: tasks.TaskProps;
-            if ('scheduleName' in props) {
-                // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-                const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
-                if (getSchedules.isErr()) {
-                    return Err(getSchedules.error);
-                }
-                const schedule = getSchedules.value[0];
-                if (!schedule) {
-                    return Err(new Error(`Schedule '${props.scheduleName}' not found`));
-                }
-                // Not scheduling a task if another task for the same schedule is already running
-                const running = await tasks.search(trx, {
-                    scheduleId: schedule.id,
-                    states: ['CREATED', 'STARTED']
-                });
-                if (running.isErr()) {
-                    return Err(running.error);
-                }
-                if (running.value.length > 0) {
-                    // TODO: identify this error so we can return something else than a 500
-                    return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
-                }
-                taskProps = {
-                    name: `${schedule.name}:${uuidv7()}`,
-                    payload: { ...schedule.payload, ...props.extra },
-                    groupKey: schedule.groupKey,
-                    groupMaxConcurrency: 0,
-                    retryMax: schedule.retryMax,
-                    retryCount: 0,
-                    createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
-                    startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
-                    heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
-                    startsAfter: now,
-                    scheduleId: schedule.id,
-                    ownerKey: null
-                };
-            } else {
-                taskProps = {
-                    ...props,
-                    startsAfter: now,
-                    scheduleId: null
-                };
-            }
-
-            const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
-            if (createResult.isErr()) {
-                return Err(createResult.error);
-            }
-            for (const d of createResult.value.discarded) {
-                if (d.reason === 'capped') {
-                    cappedCounts.set(d.props.groupKey, (cappedCounts.get(d.props.groupKey) ?? 0) + 1);
-                }
-            }
-            const task = createResult.value.created[0];
-            if (!task) {
-                return Err(`Failed to create task '${taskProps.name}'`);
-            }
-            if (task.scheduleId) {
-                const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
-                if (scheduleRes.isErr()) {
-                    return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
-                }
-            }
-            this.onCallbacks[task.state](task);
-            return Ok(task);
-        });
-        for (const [groupKey, count] of cappedCounts) {
-            this.onEvent({ type: 'task_dropped', groupKey, count, reason: 'task_cap' });
+        if (!('scheduleName' in props)) {
+            return this.at({ ...props, startsAfter: new Date() });
         }
+        const events: SchedulerEvent[] = [];
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
+            // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
+            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
+            if (getSchedules.isErr()) {
+                return Err(getSchedules.error);
+            }
+            const schedule = getSchedules.value[0];
+            if (!schedule) {
+                return Err(new Error(`Schedule '${props.scheduleName}' not found`));
+            }
+            // Not scheduling a task if another task for the same schedule is already running
+            const running = await tasks.search(trx, {
+                scheduleId: schedule.id,
+                states: ['CREATED', 'STARTED']
+            });
+            if (running.isErr()) {
+                return Err(running.error);
+            }
+            if (running.value.length > 0) {
+                // TODO: identify this error so we can return something else than a 500
+                return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
+            }
+            const inserted = await this.insertTask(trx, {
+                name: `${schedule.name}:${uuidv7()}`,
+                payload: { ...schedule.payload, ...props.extra },
+                groupKey: schedule.groupKey,
+                groupMaxConcurrency: 0,
+                retryMax: schedule.retryMax,
+                retryCount: 0,
+                createdToStartedTimeoutSecs: schedule.createdToStartedTimeoutSecs,
+                startedToCompletedTimeoutSecs: schedule.startedToCompletedTimeoutSecs,
+                heartbeatTimeoutSecs: schedule.heartbeatTimeoutSecs,
+                startsAfter: new Date(),
+                scheduleId: schedule.id,
+                ownerKey: null
+            });
+            events.push(...inserted.events);
+            return inserted.result;
+        });
+        events.forEach((event) => this.onEvent(event));
         return result;
+    }
+
+    /**
+     * Schedule a one-shot task that only becomes dequeue-able at/after `startsAfter`.
+     *
+     * Unlike `immediate`, the task waits until `startsAfter` before it can be dequeued. The
+     * created→started timeout is measured from `startsAfter`, so long delays don't cause the task
+     * to expire while waiting. Use this for deferred work (e.g. "run in 30 days").
+     * @example
+     * const scheduled = await scheduler.at({ ...props, startsAfter: addDays(new Date(), 30) });
+     */
+    public async at(props: AtProps): Promise<Result<Task>> {
+        const { result, events } = await this.db.transaction((trx) => this.insertTask(trx, { ...props, scheduleId: null }));
+        events.forEach((event) => this.onEvent(event));
+        return result;
+    }
+
+    /**
+     * Create a single task within the given transaction and fire its state callback. A capped task
+     * is never created, so it surfaces as an Err and a `task_dropped` event rather than a returned task.
+     * Events are returned (not emitted) so the caller can emit them only after the transaction
+     * commits, never for work that ends up rolled back.
+     */
+    private async insertTask(trx: knex.Knex, taskProps: tasks.TaskProps): Promise<{ result: Result<Task>; events: SchedulerEvent[] }> {
+        const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
+        if (createResult.isErr()) {
+            return { result: Err(createResult.error), events: [] };
+        }
+        const task = createResult.value.created[0];
+        if (!task) {
+            const events = createResult.value.discarded
+                .filter((d) => d.reason === 'capped')
+                .map((d): SchedulerEvent => ({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' }));
+            return { result: Err(`Failed to create task '${taskProps.name}'`), events };
+        }
+        if (task.scheduleId) {
+            const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
+            if (scheduleRes.isErr()) {
+                return {
+                    result: Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`),
+                    events: []
+                };
+            }
+        }
+        this.onCallbacks[task.state](task);
+        return { result: Ok(task), events: [] };
     }
 
     /**
