@@ -2,7 +2,7 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { defaultSchedulerConfig, noopLogger } from './config.js';
+import { defaultSchedulerConfig, defaultSchedulerStartOptions, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
@@ -11,7 +11,7 @@ import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
 
-import type { SchedulerConfig, SchedulerEvent } from './config.js';
+import type { SchedulerConfig, SchedulerEvent, SchedulerStartOptions } from './config.js';
 import type { FromScheduleProps, ImmediateProps, Schedule, ScheduleProps, ScheduleState, Task, TaskState } from './types.js';
 import type { Result, StrictLogger } from '@nangohq/utils';
 import type knex from 'knex';
@@ -83,7 +83,7 @@ export class Scheduler {
             batchSize: config.limits.expiringBatchSize,
             onExpiring: (task: Task) => {
                 const { reason } = task.output as unknown as { reason?: string };
-                this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
+                void this.scheduleAbortTask({ aborted: task, reason: `Execution expired: ${reason || 'unknown reason'}` });
                 this.onCallbacks[task.state](task);
             },
             onError
@@ -117,12 +117,21 @@ export class Scheduler {
         });
     }
 
-    start(): void {
+    start(opts: SchedulerStartOptions = defaultSchedulerStartOptions): void {
+        const options = { ...defaultSchedulerStartOptions, ...opts };
         // we don't await. Errors will be handled by the onError callback
-        void this.expiring.start();
-        void this.scheduling.start();
-        void this.cleaning.start();
-        void this.backpressureMonitor.start();
+        if (options.expiring) {
+            void this.expiring.start();
+        }
+        if (options.scheduling) {
+            void this.scheduling.start();
+        }
+        if (options.cleaning) {
+            void this.cleaning.start();
+        }
+        if (options.backpressure) {
+            void this.backpressureMonitor.start();
+        }
     }
 
     async stop(): Promise<void> {
