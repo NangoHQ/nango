@@ -3,12 +3,12 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { ScopesInput } from '@/components-v2/patterns/ScopesInput';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Label } from '@/components-v2/ui/Label';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Label } from '@/components/ui/Label';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';

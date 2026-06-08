@@ -9,11 +9,11 @@ import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { KeyValueInput } from '@/components-v2/patterns/KeyValueInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { Label } from '@/components-v2/ui/Label';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
 import { usePermissions } from '@/hooks/usePermissions';
 
 export const Telemetry: React.FC = () => {

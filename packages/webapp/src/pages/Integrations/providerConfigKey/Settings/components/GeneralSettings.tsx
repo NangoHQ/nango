@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Label } from '@/components-v2/ui/Label';
-import { Switch } from '@/components-v2/ui/Switch';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Label } from '@/components/ui/Label';
+import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';

@@ -10,6 +10,7 @@ import * as z from 'zod';
 import { AuthError } from '@nangohq/frontend';
 
 import { CustomInput } from '@/components/CustomInput';
+import { CustomSelect } from '@/components/CustomSelect';
 import { HeaderButtons } from '@/components/HeaderButtons';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -542,6 +543,7 @@ export const Go: React.FC = () => {
                                         provider[type === 'credentials' ? 'credentials' : type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
+                                    const labelOverride = type === 'credentials' ? integration?.credentials_label?.[key] : undefined;
                                     const isPreconfigured = typeof preconfigured[key] !== 'undefined';
                                     const isOptional = definition && 'optional' in definition && definition.optional === true;
 
@@ -549,7 +551,12 @@ export const Go: React.FC = () => {
                                         <FormField
                                             key={name}
                                             control={form.control}
-                                            defaultValue={isPreconfigured ? preconfigured[key] : (definition?.default_value ?? '')}
+                                            defaultValue={
+                                                isPreconfigured
+                                                    ? preconfigured[key]
+                                                    : (definition?.default_value ??
+                                                      (definition?.hidden ? undefined : definition?.enum && !isOptional ? definition.enum[0] : ''))
+                                            }
                                             // disabled={Boolean(definition?.hidden)} DO NOT disable it breaks the form
                                             name={name}
                                             render={({ field }) => {
@@ -574,7 +581,8 @@ export const Go: React.FC = () => {
                                                         <div className="flex flex-col gap-2">
                                                             <div className="flex gap-2 items-center">
                                                                 <FormLabel className="text-xs font-semibold text-text-primary">
-                                                                    {definition?.title || base?.title} {!isOptional && <span className="text-error">*</span>}
+                                                                    {labelOverride || definition?.title || base?.title}{' '}
+                                                                    {!isOptional && <span className="text-error">*</span>}
                                                                 </FormLabel>
                                                                 {isOptional && (
                                                                     <span className="bg-elevated rounded-lg px-2 py-0.5 text-xs text-text-muted">optional</span>
@@ -589,19 +597,30 @@ export const Go: React.FC = () => {
                                                                     </Link>
                                                                 )}
                                                             </div>
-                                                            {definition?.description && (
+                                                            {!labelOverride && definition?.description && (
                                                                 <FormDescription className="text-text-secondary">{definition.description}</FormDescription>
                                                             )}
                                                         </div>
                                                         <FormControl>
-                                                            <CustomInput
-                                                                placeholder={definition?.example || definition?.title || base?.example}
-                                                                prefix={definition?.prefix}
-                                                                suffix={definition?.suffix}
-                                                                {...(field as InputHTMLAttributes<HTMLInputElement>)}
-                                                                autoComplete="off"
-                                                                type={definition?.secret || base?.secret ? 'password' : 'text'}
-                                                            />
+                                                            {definition?.enum && definition.enum.length > 0 ? (
+                                                                <CustomSelect
+                                                                    name={field.name}
+                                                                    optional={isOptional}
+                                                                    options={definition.enum}
+                                                                    placeholder={definition.title}
+                                                                    value={field.value as string | undefined}
+                                                                    onChange={field.onChange}
+                                                                />
+                                                            ) : (
+                                                                <CustomInput
+                                                                    placeholder={labelOverride ? '' : definition?.example || definition?.title || base?.example}
+                                                                    prefix={definition?.prefix}
+                                                                    suffix={definition?.suffix}
+                                                                    {...(field as InputHTMLAttributes<HTMLInputElement>)}
+                                                                    autoComplete="off"
+                                                                    type={definition?.secret || base?.secret ? 'password' : 'text'}
+                                                                />
+                                                            )}
                                                         </FormControl>
                                                         <FormMessage className="p-0" />
                                                     </FormItem>

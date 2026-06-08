@@ -9,10 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import { AuthBadge } from './components/AuthBadge.js';
 import { useProviders } from '../../hooks/useProviders.js';
 import DashboardLayout from '../../layout/DashboardLayout.js';
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { Badge } from '@/components-v2/ui/Badge';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/InputGroup';
-import { Skeleton } from '@/components-v2/ui/Skeleton.js';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { Badge } from '@/components/ui/Badge';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Skeleton } from '@/components/ui/Skeleton.js';
 import { useStore } from '@/store';
 
 import type { ApiProviderListItem } from '@nangohq/types';

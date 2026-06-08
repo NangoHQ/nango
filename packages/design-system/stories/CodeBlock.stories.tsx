@@ -1,4 +1,4 @@
-import { CodeBlock } from '@/components-v2/ui/CodeBlock';
+import { CodeBlock } from '@/components/ui/CodeBlock';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
@@ -11,7 +11,7 @@ console.log(connection.credentials);`;
 
 const meta: Meta<typeof CodeBlock> = {
     component: CodeBlock,
-    title: 'Components v2/UI/CodeBlock',
+    title: 'Components/UI/CodeBlock',
     parameters: { layout: 'padded' }
 };
 export default meta;

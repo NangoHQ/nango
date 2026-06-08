@@ -55,7 +55,8 @@ for (const [providerKey, provider] of Object.entries(providersJson)) {
     if (providerKey === 'sage-intacct' || providerKey === 'supabase-mcp') {
         continue;
     }
-    const { credentials, connection_config, ...providerWithoutSensitive } = provider;
+
+    const { credentials, connection_config, integration_config, ...providerWithoutSensitive } = provider;
     const strippedProviderYaml = dump({ [providerKey]: providerWithoutSensitive });
     const match = [...strippedProviderYaml.matchAll(invalidInterpolation)];
     if (match.length > 0) {

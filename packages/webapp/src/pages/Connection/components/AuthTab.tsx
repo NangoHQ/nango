@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import { AuthCredentials } from './AuthCredentials/AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
 import { ConnectionSideInfo } from './ConnectionSideInfo';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/Alert';
-import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';
+import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
 

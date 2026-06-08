@@ -1,6 +1,4 @@
-import { afterEach } from 'node:test';
-
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { getFormattedOperation } from './helpers.js';
 import { logContextGetter } from './logContextGetter.js';

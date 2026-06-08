@@ -1,11 +1,11 @@
-import { Button } from '@/components-v2/ui/Button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components-v2/ui/DropdownMenu';
+import { Button } from '@/components/ui/Button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof DropdownMenu> = {
     component: DropdownMenu,
-    title: 'Components v2/UI/DropdownMenu',
+    title: 'Components/UI/DropdownMenu',
     parameters: { layout: 'centered' }
 };
 export default meta;

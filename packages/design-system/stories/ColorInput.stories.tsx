@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { ColorInput } from '@/components-v2/ui/ColorInput';
+import { ColorInput } from '@/components/ui/ColorInput';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ColorInput> = {
     component: ColorInput,
-    title: 'Components v2/UI/ColorInput',
+    title: 'Components/UI/ColorInput',
     parameters: { layout: 'centered' }
 };
 export default meta;

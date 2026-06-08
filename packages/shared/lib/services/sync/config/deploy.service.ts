@@ -274,7 +274,7 @@ async function compileDeployInfo({
             void logCtx.debug('A previous sync config was found', { syncName, prevVersion: previousSyncAndActionConfig.version });
         }
 
-        if (runs) {
+        if (runs && runs !== previousSyncAndActionConfig.runs) {
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment_id, providerConfigKey, filter: [{ syncName, syncVariant: 'base' }] });
 
             for (const sync of syncs) {
@@ -332,25 +332,63 @@ async function compileDeployInfo({
         return { success: false, error, response: null };
     }
 
-    const file_location = (await remoteFileService.upload({
-        content: jsFile,
-        destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-        destinationLocalFileName: resolveLocalFileName({ syncName, providerConfigKey })
-    })) as string;
+    const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
+    const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
+    const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
+    let file_location: string | null | undefined = previousJsFileLocation;
+    const uploads = [];
 
     if (typeof fileBody === 'object' && fileBody.ts) {
-        await remoteFileService.upload({
-            content: fileBody.ts,
-            destinationPath: `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
-            destinationLocalFileName: `${providerConfigKey}/${flow.type}s/${syncName}.ts`
-        });
+        const tsFile = fileBody.ts;
+        const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
+        const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
+        const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
+
+        // !previousJsFileLocation: always upload for new functions.
+        // If a previous deploy uploaded the file to s3 but the db transaction failed,
+        // checkIfChanged may return false (since the file already exists),
+        // but we won't have a saved file_location to reuse, so we still need to upload
+        // to ensure we have a valid file_location.
+
+        if (tsChanged || !previousJsFileLocation) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                }),
+                remoteFileService.upload({
+                    content: tsFile,
+                    destinationPath: tsDestinationPath,
+                    destinationLocalFileName: tsLocalFileName
+                })
+            );
+        }
+    }
+    // Legacy Path - Only JS is provided
+    else {
+        const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
+        if (jsChanged || !previousJsFileLocation) {
+            uploads.push(
+                remoteFileService.upload({
+                    content: jsFile,
+                    destinationPath: jsDestinationPath,
+                    destinationLocalFileName: jsLocalFileName
+                })
+            );
+        }
+    }
+
+    if (uploads.length > 0) {
+        void logCtx.info('Uploading new files for changed function', { fileName: `${syncName}-v${version}.js` });
+        [file_location] = await Promise.all(uploads);
+    } else {
+        void logCtx.info('Function unchanged. Skipping upload', { fileName: `${syncName}-v${version}.js` });
     }
 
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
-
-        // this is a platform error so throw this
-        throw new NangoError('file_upload_error');
+        return { success: false, error: new NangoError('file_upload_error'), response: null };
     }
 
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;
