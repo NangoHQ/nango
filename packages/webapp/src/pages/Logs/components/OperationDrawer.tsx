@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
+import { CopyButton } from '../../../components/ui/CopyButton';
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '../../../components/ui/Sheet';
 import { ShowOperation } from '../Operation/Show';
 
@@ -20,7 +21,8 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
             <SheetContent side="right" hideCloseButton className="w-[1034px] max-w-none sm:max-w-none p-0 bg-active-gray text-white border-l-border-gray-400">
                 <SheetTitle className="sr-only">Operation Details</SheetTitle>
                 <div className="relative h-full select-text">
-                    <div className="absolute right-6 top-[35px]">
+                    <div className="absolute right-6 top-[35px] flex items-center gap-1">
+                        <CopyButton text={window.location.href} iconType="link" />
                         <SheetClose
                             title="Close"
                             className="bg-transparent text-text-light-gray hover:text-white focus:text-white transition-colors w-8 h-6 flex items-center justify-center"
