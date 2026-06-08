@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet';
 
 import DashboardLayout from '../../layout/DashboardLayout';
 import PageNotFound from '../../pages/PageNotFound';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
 
 import type { ApiError } from '@nangohq/types';
 

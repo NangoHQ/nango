@@ -120,6 +120,8 @@ export enum Types {
     DEPLOY_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.server.deploy.incoming.payloadSizeBytes',
     DEPLOY_SECURITY_SCAN = 'nango.server.deploy.security.scan',
 
+    EGRESS_BYTES = 'nango.server.egress.bytes',
+
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
@@ -144,7 +146,7 @@ export enum Types {
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE_MISSING = 'nango.server.auth.callback.state_cookie.missing'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
 }
 
 type Dimensions = Record<string, string | number> | undefined;

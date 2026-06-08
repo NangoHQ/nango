@@ -7,10 +7,10 @@ import { usePostInsights } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { getLogsUrl } from '../../../utils/logs';
 import { formatQuantity } from '../../../utils/utils';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components-v2/ui/Chart';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/Chart';
+import { Skeleton } from '@/components/ui/Skeleton';
 
-import type { ChartConfig } from '@/components-v2/ui/Chart';
+import type { ChartConfig } from '@/components/ui/Chart';
 import type { InsightsHistogramEntry, PostInsights } from '@nangohq/types';
 
 interface Entry {

@@ -3,13 +3,13 @@ import { TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components-v2/ui/Form';
-import { Input } from '../../../components-v2/ui/Input';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
+import { Input } from '../../../components/ui/Input';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { Button } from '@/components-v2/ui/Button';
-import { Label } from '@/components-v2/ui/Label';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
+import { Label } from '@/components/ui/Label';
 
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),

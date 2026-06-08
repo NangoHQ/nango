@@ -1,7 +1,7 @@
 import db from '@nangohq/database';
 import { Err, Ok } from '@nangohq/utils';
 
-import { remoteFunctionDryrunSandboxTimeoutMs } from '../remote-function/runtime.js';
+import { remoteFunctionDryrunSandboxTimeoutMs } from './runtime.js';
 
 import type {
     FunctionDryrunBody,

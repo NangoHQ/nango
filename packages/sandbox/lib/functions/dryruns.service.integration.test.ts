@@ -6,7 +6,7 @@ import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { deleteFunctionDryrunsOlderThan, timeoutFunctionDryruns } from './dryruns.service.js';
-import { remoteFunctionDryrunSandboxTimeoutMs } from '../remote-function/runtime.js';
+import { remoteFunctionDryrunSandboxTimeoutMs } from './runtime.js';
 
 import type { DBFunctionDryrun } from './dryruns.service.js';
 

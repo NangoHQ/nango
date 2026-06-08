@@ -1,9 +1,9 @@
-import { CopyButton } from '@/components-v2/ui/CopyButton';
+import { CopyButton } from '@/components/ui/CopyButton';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/CopyButton',
+    title: 'Components/UI/CopyButton',
     parameters: { layout: 'padded' }
 };
 export default meta;

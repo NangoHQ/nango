@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { isAnyOfSchema, isArraySchema, isObjectSchema, isOneOfSchema, typeToString } from './utils';
 import { CatalogBadge } from '../CatalogBadge';
-import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { cn } from '@/utils/utils';
 
 import type { JSONSchema7, JSONSchema7Type } from 'json-schema';

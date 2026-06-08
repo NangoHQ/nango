@@ -344,7 +344,13 @@ async function compileDeployInfo({
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
         const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
-        if (tsChanged) {
+        // !previousJsFileLocation: always upload for new functions.
+        // If a previous deploy uploaded the file to s3 but the db transaction failed,
+        // checkIfChanged may return false (since the file already exists),
+        // but we won't have a saved file_location to reuse, so we still need to upload
+        // to ensure we have a valid file_location.
+
+        if (tsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -362,7 +368,7 @@ async function compileDeployInfo({
     // Legacy Path - Only JS is provided
     else {
         const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
-        if (jsChanged) {
+        if (jsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -382,9 +388,7 @@ async function compileDeployInfo({
 
     if (!file_location) {
         void logCtx.error('There was an error uploading the sync file', { fileName: `${syncName}-v${version}.js` });
-
-        // this is a platform error so throw this
-        throw new NangoError('file_upload_error');
+        return { success: false, error: new NangoError('file_upload_error'), response: null };
     }
 
     let models_json_schema: JSONSchema7 | null = flow.models_json_schema ?? null;

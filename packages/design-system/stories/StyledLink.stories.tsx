@@ -1,12 +1,12 @@
 import { MemoryRouter } from 'react-router-dom';
 
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof StyledLink> = {
     component: StyledLink,
-    title: 'Components v2/UI/StyledLink',
+    title: 'Components/UI/StyledLink',
     parameters: { layout: 'centered' },
     decorators: [
         (Story) => (

@@ -1,7 +1,7 @@
 import { Cross1Icon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '../../../components-v2/ui/Sheet';
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '../../../components/ui/Sheet';
 import { ShowOperation } from '../Operation/Show';
 
 export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: boolean, operationId: string) => void }> = ({ operationId, onClose }) => {

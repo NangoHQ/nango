@@ -11828,7 +11828,7 @@ mercury:
         - accounting
     auth_mode: OAUTH2
     scope_separator: ' '
-    token_request_auth_method: basic
+    authorization_method: header
     authorization_url: https://${connectionConfig.oauth_hostname}/oauth2/auth || https://oauth2.mercury.com/oauth2/auth
     token_url: https://${connectionConfig.oauth_hostname}/oauth2/token || https://oauth2.mercury.com/oauth2/token
     default_scopes:
@@ -21295,6 +21295,38 @@ wakatime:
     proxy:
         base_url: https://wakatime.com
     docs: https://nango.dev/docs/integrations/all/wakatime
+
+walmart:
+    display_name: Walmart Marketplace
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://login.account.wal-mart.com/authorize
+    authorization_params:
+        clientType: ${connectionConfig.clientType}
+        nonce: ${random}
+    disable_pkce: true
+    authorization_url_replacements:
+        response_type=: responseType=
+        client_id=: clientId=
+        redirect_uri=: redirectUri=
+    token_url: https://marketplace.walmartapis.com/v3/token
+    redirect_uri_metadata:
+        - sellerId
+    proxy:
+        base_url: https://marketplace.walmartapis.com
+        headers:
+            wm_qos.correlation_id: ${random}
+            wm_sec.access_token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/walmart
+    setup_guide_url: https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app
+    connection_config:
+        clientType:
+            type: string
+            title: ''
+            description: ''
+            default_value: seller
+            hidden: true
 
 wave-accounting:
     display_name: Wave Accounting

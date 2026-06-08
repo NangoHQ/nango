@@ -1,9 +1,9 @@
-import GoogleButton from '@/components-v2/patterns/GoogleButton';
+import GoogleButton from '@/components/patterns/GoogleButton';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/Patterns/GoogleButton',
+    title: 'Components/Patterns/GoogleButton',
     parameters: { layout: 'padded' }
 };
 export default meta;

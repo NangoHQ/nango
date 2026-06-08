@@ -3,11 +3,11 @@ import { useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { EditableInput } from '@/components-v2/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { InfoTooltip } from '@/components-v2/ui/InfoTooltip';
-import { Label } from '@/components-v2/ui/Label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { Label } from '@/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';

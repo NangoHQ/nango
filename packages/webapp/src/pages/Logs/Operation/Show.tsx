@@ -11,9 +11,9 @@ import { useGetOperation } from '../../../hooks/useLogs';
 import { useStore } from '../../../store';
 import { formatDateToLogFormat, getRunTime } from '../../../utils/utils';
 import { StatusTag } from '../components/StatusTag';
-import { Alert, AlertDescription } from '@/components-v2/ui/Alert';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { Skeleton } from '@/components-v2/ui/Skeleton';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }) => {
     const env = useStore((state) => state.env);

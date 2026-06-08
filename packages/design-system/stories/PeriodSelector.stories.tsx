@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { PeriodSelector } from '@/components-v2/patterns/PeriodSelector';
+import { PeriodSelector } from '@/components/patterns/PeriodSelector';
 import { last24hPreset, logsPresets } from '@/utils/logs';
 
 import type { Period } from '@/utils/dates';
@@ -8,7 +8,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof PeriodSelector> = {
     component: PeriodSelector,
-    title: 'Components v2/Patterns/PeriodSelector',
+    title: 'Components/Patterns/PeriodSelector',
     parameters: { layout: 'padded' }
 };
 export default meta;
