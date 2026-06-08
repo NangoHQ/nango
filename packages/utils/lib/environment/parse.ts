@@ -321,6 +321,8 @@ export const ENVS = z.object({
     // fires on cache miss + June-2026+ timeframe; fire-and-forget so it adds
     // no user-visible latency. Emits `nango.billing.usage.shadow.*` metrics.
     FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE: z.stringbool().optional().default(false),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS: z.string().optional().default(''),
+    FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE: z.coerce.number().int().min(0).max(100).optional().default(0),
 
     // --- Third parties
     // AWS

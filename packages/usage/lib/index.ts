@@ -18,6 +18,7 @@ export {
 } from './clickhouse/clickhouse.query.js';
 export { clickhouseClient } from './clickhouse/config.js';
 export { migrate } from './clickhouse/migrate.js';
+export { shouldUseClickhouseFor } from './usage.js';
 
 export async function getUsageTracker(redisUrl: string | undefined): Promise<IUsageTracker> {
     if (redisUrl) {

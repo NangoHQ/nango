@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { envs } from './env.js';
-import { shouldShadow, toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
+import { resolveBillingUsageSource, shouldShadow, shouldUseClickhouseFor, toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
 
 import type { GetDailyCounterResult, GetDailySumAndBatchesResult } from './clickhouse/clickhouse.query.js';
 
@@ -312,5 +312,112 @@ describe('shouldShadow', () => {
         (envs as any).FLAG_BILLING_USAGE_SHADOW_CLICKHOUSE = true;
         expect(shouldShadow({ timeframe: junePlus })).toBe(true);
         expect(shouldShadow({ timeframe: { start: new Date('2026-06-01T00:00:00.000Z'), end: new Date('2026-06-02T00:00:00.000Z') } })).toBe(true);
+    });
+});
+
+describe('shouldUseClickhouseFor', () => {
+    let originalCsv: string;
+    let originalPct: number;
+    beforeEach(() => {
+        originalCsv = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS;
+        originalPct = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE;
+    });
+    afterEach(() => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = originalCsv;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = originalPct;
+    });
+
+    it('returns false when both flags are at defaults', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
+        expect(shouldUseClickhouseFor(0)).toBe(false);
+        expect(shouldUseClickhouseFor(99)).toBe(false);
+        expect(shouldUseClickhouseFor(15714)).toBe(false);
+    });
+
+    it('returns true when accountId is in the CSV allowlist (whitespace-tolerant)', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '15714,  4242 ,  77 ';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
+        expect(shouldUseClickhouseFor(15714)).toBe(true);
+        expect(shouldUseClickhouseFor(4242)).toBe(true);
+        expect(shouldUseClickhouseFor(77)).toBe(true);
+        expect(shouldUseClickhouseFor(99)).toBe(false);
+    });
+
+    it('ignores non-numeric junk in the CSV without falsely matching', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = 'abc,,15714,123abc,';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 0;
+        expect(shouldUseClickhouseFor(15714)).toBe(true);
+        expect(shouldUseClickhouseFor(0)).toBe(false);
+        // Strict numeric parse: '123abc' must NOT silently match account 123.
+        expect(shouldUseClickhouseFor(123)).toBe(false);
+    });
+
+    it('returns true when accountId falls inside the percentage bucket', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 25;
+        expect(shouldUseClickhouseFor(0)).toBe(true);
+        expect(shouldUseClickhouseFor(24)).toBe(true);
+        expect(shouldUseClickhouseFor(124)).toBe(true);
+        expect(shouldUseClickhouseFor(25)).toBe(false);
+        expect(shouldUseClickhouseFor(99)).toBe(false);
+        expect(shouldUseClickhouseFor(125)).toBe(false);
+    });
+
+    it('100% rollout includes every accountId', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 100;
+        expect(shouldUseClickhouseFor(0)).toBe(true);
+        expect(shouldUseClickhouseFor(99)).toBe(true);
+        expect(shouldUseClickhouseFor(15714)).toBe(true);
+    });
+
+    it('allowlist + percentage are unioned', () => {
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '999';
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = 10;
+        expect(shouldUseClickhouseFor(999)).toBe(true);
+        expect(shouldUseClickhouseFor(5)).toBe(true);
+        expect(shouldUseClickhouseFor(50)).toBe(false);
+    });
+});
+
+describe('resolveBillingUsageSource', () => {
+    let originalOverride: boolean;
+    let originalCsv: string;
+    let originalPct: number;
+    beforeEach(() => {
+        originalOverride = envs.FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE;
+        originalCsv = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS;
+        originalPct = envs.FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE;
+    });
+    afterEach(() => {
+        (envs as any).FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE = originalOverride;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = originalCsv;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_PERCENTAGE = originalPct;
+    });
+
+    it('explicit `orb` wins over a positive rollout when the override flag is on', () => {
+        (envs as any).FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE = true;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '42';
+        expect(resolveBillingUsageSource(42, 'orb')).toBe('orb');
+    });
+
+    it('explicit `clickhouse` wins when the override flag is on', () => {
+        (envs as any).FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE = true;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '';
+        expect(resolveBillingUsageSource(42, 'clickhouse')).toBe('clickhouse');
+    });
+
+    it('explicit source is ignored when the override flag is off (falls to rollout)', () => {
+        (envs as any).FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE = false;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '42';
+        expect(resolveBillingUsageSource(42, 'orb')).toBe('clickhouse');
+    });
+
+    it('falls back to the rollout when no explicit source is set', () => {
+        (envs as any).FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE = true;
+        (envs as any).FLAG_BILLING_USAGE_CLICKHOUSE_ROLLOUT_ACCOUNT_IDS = '42';
+        expect(resolveBillingUsageSource(42, undefined)).toBe('clickhouse');
+        expect(resolveBillingUsageSource(7, undefined)).toBe('orb');
     });
 });
