@@ -1,5 +1,5 @@
-import type { Grouping } from './batcher.js';
 import type { BillingEvent } from '@nangohq/types';
+import type { Grouping } from '@nangohq/utils';
 
 function omitProperties<T extends BillingEvent, K extends keyof T['properties'], O = Omit<T['properties'], K>, R = [keyof O, O[keyof O]][]>(
     event: T,

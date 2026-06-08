@@ -3,15 +3,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { IntegrationLogo } from '@/components-v2/patterns/IntegrationLogo';
-import { Badge } from '@/components-v2/ui/Badge';
-import { Button } from '@/components-v2/ui/Button';
-import { ComboboxSelect } from '@/components-v2/ui/Combobox';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { ComboboxSelect } from '@/components/ui/Combobox';
 import { useConnections } from '@/hooks/useConnections';
 import { useGetIntegrationFlows, useListIntegrations } from '@/hooks/useIntegration';
 import { usePlaygroundStore } from '@/store/playground';
 
-import type { ComboboxOption } from '@/components-v2/ui/Combobox';
+import type { ComboboxOption } from '@/components/ui/Combobox';
 import type { NangoSyncConfig } from '@nangohq/types';
 
 interface Props {

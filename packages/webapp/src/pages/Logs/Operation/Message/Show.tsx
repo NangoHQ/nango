@@ -2,9 +2,9 @@ import { Prism } from '@mantine/prism';
 import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
 import { useMemo } from 'react';
 
-import { Tag } from '../../../../components/ui/label/Tag';
 import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
 import { LevelTag } from '../../components/LevelTag';
+import { Tag } from '@/components/ui/Tag';
 
 import type { MessageRow } from '@nangohq/types';
 

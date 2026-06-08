@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import { ButtonLink } from '@/components-v2/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import { useStore } from '@/store';
 
 interface ThirdStepProps {

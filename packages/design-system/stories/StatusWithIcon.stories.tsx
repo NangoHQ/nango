@@ -1,11 +1,11 @@
 import { CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-react';
 
-import { StatusWithIcon } from '@/components-v2/ui/StatusWithIcon';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/StatusWithIcon',
+    title: 'Components/UI/StatusWithIcon',
     parameters: { layout: 'padded' }
 };
 export default meta;

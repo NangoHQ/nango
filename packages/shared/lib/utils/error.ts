@@ -236,6 +236,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Missing param 'app_secret'.`;
                 break;
 
+            case 'missing_walmart_seller_id':
+                this.status = 400;
+                this.message = `Missing connection config param 'sellerId' required for Walmart OAuth.`;
+                break;
+
             case 'missing_connection':
                 this.status = 400;
                 this.message = `Missing param 'connection_id'.`;
@@ -271,6 +276,22 @@ export class NangoError extends NangoInternalError {
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
+            case 'slack_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to request for an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'slack_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
                 break;
 

@@ -2,16 +2,16 @@ import { ChevronRight } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../../components/ui/Collapsible';
-import { KeyValueInput } from '../../../components-v2/patterns/KeyValueInput';
-import { ScopesInput } from '../../../components-v2/patterns/ScopesInput';
-import { BinaryToggle } from '../../../components-v2/ui/BinaryToggle';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components-v2/ui/Form';
-import { InfoTooltip } from '../../../components-v2/ui/InfoTooltip';
-import { Input } from '../../../components-v2/ui/Input';
-import { Separator } from '../../../components-v2/ui/Separator';
-import { StyledLink } from '../../../components-v2/ui/StyledLink';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components-v2/ui/Card';
+import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
+import { ScopesInput } from '../../../components/patterns/ScopesInput';
+import { BinaryToggle } from '../../../components/ui/BinaryToggle';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/Form';
+import { InfoTooltip } from '../../../components/ui/InfoTooltip';
+import { Input } from '../../../components/ui/Input';
+import { Separator } from '../../../components/ui/Separator';
+import { StyledLink } from '../../../components/ui/StyledLink';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 
 import type { ConnectionFormData } from '../Create';
 

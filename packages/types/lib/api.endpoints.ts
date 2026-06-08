@@ -71,10 +71,7 @@ import type {
     PostFunctionCompile,
     PostFunctionDeployment,
     PostFunctionDryrun,
-    PostFunctionDryrunResult,
-    PostRemoteFunctionCompile,
-    PostRemoteFunctionDeploy,
-    PostRemoteFunctionDryrun
+    PostFunctionDryrunResult
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -94,7 +91,7 @@ import type {
 import type { DeleteInvite, GetInvite, PostInvite } from './invitations/api.js';
 import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchOperations } from './logs/api.js';
 import type { GetMeta } from './meta/api.js';
-import type { PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
+import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -161,9 +158,6 @@ export type PublicApiEndpoints =
     | GetFunctionDryrun
     | PostFunctionDryrunResult
     | PostFunctionDeployment
-    | PostRemoteFunctionCompile
-    | PostRemoteFunctionDryrun
-    | PostRemoteFunctionDeploy
     | GetPublicFunctionCode
     | AllPublicProxy;
 
@@ -176,6 +170,8 @@ export type PrivateApiEndpoints =
     | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
+    | GetBillingUsage
+    | GetBillingUsageTopDimensionValues
     | GetUser
     | PatchUser
     | PostInvite

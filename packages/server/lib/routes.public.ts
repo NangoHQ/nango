@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion, flagHasPlan } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
@@ -34,12 +34,11 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import connectionController from './controllers/connection.controller.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
-import { postFunctionCompile, postRemoteFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { postFunctionDeployment, postRemoteFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
+import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
-import { postRemoteFunctionDryrun } from './controllers/functions/dryrun/postRemoteDryrun.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -71,34 +70,29 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { connectionCapping } from './middleware/connection-capping.middleware.js';
+import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 import { withAnyScope, withScope } from './middleware/scope.middleware.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
-import type { DBPlan } from '@nangohq/types';
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware];
-const connectSessionOrApiAuth: RequestHandler[] = [authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-
-const connectSessionOrPublicAuth: RequestHandler[] = [authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware), rateLimiterMiddleware];
-const remoteFunctionAuth: RequestHandler[] = [
-    ...apiAuth,
-    (_req, res, next) => {
-        const plan = res.locals['plan'] as DBPlan | null | undefined;
-
-        if (flagHasPlan && !plan?.remote_functions) {
-            res.status(403).send({ error: { code: 'forbidden', message: 'Remote functions are not enabled for this account' } });
-            return;
-        }
-
-        next();
-    }
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const connectSessionOrApiAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
 ];
+const connectSessionOrPublicAuth: RequestHandler[] = [
+    authMiddleware.connectSessionOrPublicKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
+
 const functionCompileAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:compile')];
 const functionDryrunAuth: RequestHandler[] = [...apiAuth, withScope('environment:functions:dryrun')];
 const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
@@ -305,11 +299,6 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, withScope('environm
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
-
-publicAPI.use('/remote-function', jsonContentTypeMiddleware);
-publicAPI.route('/remote-function/compile').post(remoteFunctionAuth, postRemoteFunctionCompile);
-publicAPI.route('/remote-function/dryrun').post(remoteFunctionAuth, withScope('environment:functions:dryrun'), postRemoteFunctionDryrun);
-publicAPI.route('/remote-function/deploy').post(remoteFunctionAuth, withScope('environment:deploy'), postRemoteFunctionDeploy);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);

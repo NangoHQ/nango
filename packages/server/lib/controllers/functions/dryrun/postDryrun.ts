@@ -1,5 +1,5 @@
 import {
-    RemoteFunctionError,
+    FunctionError,
     createFunctionDryrun,
     getRemoteFunctionNangoHost,
     markFunctionDryrunFailed,
@@ -123,6 +123,6 @@ export const postFunctionDryrun = asyncWrapper<PostFunctionDryrun>(async (req, r
             id: dryrun.id,
             error: toFunctionDryrunError(err)
         });
-        sendStepError({ res, error: err, ...(err instanceof RemoteFunctionError ? {} : { status: 500 }) });
+        sendStepError({ res, error: err, ...(err instanceof FunctionError ? {} : { status: 500 }) });
     }
 });

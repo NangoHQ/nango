@@ -103,6 +103,12 @@ export interface DBPlan extends Timestamps {
     has_otel: boolean;
 
     /**
+     * Enable runner telemetry export to persist
+     * @default false
+     */
+    export_runner_telemetry: boolean;
+
+    /**
      * Change the applied rate limit for the public API
      * @default "m"
      */
@@ -150,12 +156,6 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     can_disable_connect_ui_watermark: boolean;
-
-    /**
-     * Enable or disable remote function compile, dry-run, and deploy endpoints
-     * @default false
-     */
-    remote_functions: boolean;
 
     /**
      * Sync Function Runtime

@@ -14,6 +14,7 @@ import { DispatchQueueConsumer } from './consumer.js';
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { OrchestratorClient } from '@nangohq/nango-orchestrator';
 import type { WebhookDispatchMessage } from '@nangohq/types';
+import type { Mock } from 'vitest';
 
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
@@ -49,11 +50,15 @@ function deferred<T>() {
     return { promise, resolve, reject };
 }
 
+type SqsSendFn = (command: unknown) => Promise<unknown>;
+type SqsDestroyFn = () => void;
+type OrchestratorExecuteWebhookBatchFn = (props: unknown[]) => Promise<unknown>;
+
 interface Harness {
     consumer: DispatchQueueConsumer;
-    sqsSend: ReturnType<typeof vi.fn>;
-    sqsDestroy: ReturnType<typeof vi.fn>;
-    orchestratorExecuteWebhookBatch: ReturnType<typeof vi.fn>;
+    sqsSend: Mock<SqsSendFn>;
+    sqsDestroy: Mock<SqsDestroyFn>;
+    orchestratorExecuteWebhookBatch: Mock<OrchestratorExecuteWebhookBatchFn>;
 }
 
 function makeHarness(
@@ -62,7 +67,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
-        sqsSend?: ReturnType<typeof vi.fn>;
+        sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
     const messages = opts.messages ?? [];
@@ -74,9 +79,9 @@ function makeHarness(
         bodyQueue.push({ Body: opts.badBody, ReceiptHandle: `rh-bad`, Attributes: { SentTimestamp: String(Date.now()) } });
     }
 
-    const sqsSend =
+    const sqsSend: Mock<SqsSendFn> =
         opts.sqsSend ??
-        vi.fn(async (command: unknown) => {
+        vi.fn<SqsSendFn>(async (command: unknown) => {
             await new Promise((resolve) => setImmediate(resolve));
             if (command instanceof ReceiveMessageCommand) {
                 const messages = bodyQueue.splice(0, bodyQueue.length);
@@ -88,10 +93,10 @@ function makeHarness(
             throw new Error(`unexpected command ${String(command)}`);
         });
 
-    const sqsDestroy = vi.fn();
+    const sqsDestroy = vi.fn<SqsDestroyFn>();
     const sqs = { send: sqsSend, destroy: sqsDestroy } as unknown as SQSClient;
 
-    const orchestratorExecuteWebhookBatch = vi.fn();
+    const orchestratorExecuteWebhookBatch = vi.fn<OrchestratorExecuteWebhookBatchFn>();
     orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
         Promise.resolve(Ok(props.map((_, i) => Ok({ taskId: `task-${i}`, retryKey: `rk-${i}` }))))
     );
@@ -160,9 +165,9 @@ describe('DispatchQueueConsumer', () => {
 
         // The batch sent to the orchestrator collapses the duplicate to a single entry...
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
-        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0];
+        const calledWith = h.orchestratorExecuteWebhookBatch.mock.calls[0]?.[0] as { name: string }[];
         expect(calledWith).toHaveLength(2);
-        expect(calledWith?.map((p: { name: string }) => p.name)).toEqual(['webhook:dup', 'webhook:other']);
+        expect(calledWith.map((p) => p.name)).toEqual(['webhook:dup', 'webhook:other']);
         // ...but all three SQS messages (both copies + the other) are deleted on success.
     });
 

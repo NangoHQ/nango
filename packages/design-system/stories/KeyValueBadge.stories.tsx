@@ -1,9 +1,9 @@
-import { KeyValueBadge } from '@/components-v2/ui/KeyValueBadge';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components v2/UI/KeyValueBadge',
+    title: 'Components/UI/KeyValueBadge',
     parameters: { layout: 'padded' }
 };
 export default meta;

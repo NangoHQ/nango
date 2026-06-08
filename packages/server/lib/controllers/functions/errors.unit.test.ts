@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { RemoteFunctionError } from '@nangohq/sandbox';
+import { FunctionError } from '@nangohq/sandbox';
 
 import { sendStepError } from './errors.js';
 
@@ -20,7 +20,7 @@ describe('function controller errors', () => {
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({ code: 'deployment_error', message: 'Deploy failed', status: 400 })
+            error: new FunctionError({ code: 'deployment_error', message: 'Deploy failed', status: 400 })
         });
 
         expect(status).toHaveBeenCalledWith(400);
@@ -32,7 +32,7 @@ describe('function controller errors', () => {
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({
+            error: new FunctionError({
                 code: 'execution_environment_unavailable',
                 message: 'The function execution environment is temporarily unavailable. Please try again shortly.',
                 status: 503
@@ -106,7 +106,7 @@ describe('function controller errors', () => {
 
         sendStepError({
             res,
-            error: new RemoteFunctionError({ code: 'compilation_error', message, status: 400 })
+            error: new FunctionError({ code: 'compilation_error', message, status: 400 })
         });
 
         expect(status).toHaveBeenCalledWith(400);

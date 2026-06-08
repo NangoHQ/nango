@@ -8,8 +8,8 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { Button, ButtonLink } from '@/components-v2/ui/Button';
-import { StyledLink } from '@/components-v2/ui/StyledLink';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { StyledLink } from '@/components/ui/StyledLink';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();

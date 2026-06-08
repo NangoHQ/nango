@@ -1,5 +1,5 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { NangoActionBase, NangoSyncBase, executeUncontrolledFetch } from '@nangohq/runner-sdk';
 import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
 import {
     MAX_LOG_PAYLOAD,
@@ -19,7 +19,8 @@ import { envs } from '../env.js';
 import { logger } from '../logger.js';
 
 import type { Locks } from './locks.js';
-import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { TelemetryRecorder } from '../telemetry.js';
+import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
 import type {
     ApiPublicConnectionFull,
     Checkpoint,
@@ -56,12 +57,13 @@ const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to 
 export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     nango: Nango;
     protected persistClient: PersistClient;
+    protected telemetryRecorder: TelemetryRecorder | undefined;
     protected locking: Locking;
     private checkpointing: Checkpointing;
     protected checkpointKey: string;
     protected httpLogSample: number = 0;
 
-    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
         this.nango = new Nango(
@@ -89,12 +91,28 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
         this.checkpointing = new Checkpointing({
             persistClient: this.persistClient,
             environmentId: this.environmentId,
             nangoConnectionId: this.nangoConnectionId
+        });
+    }
+
+    public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        this.throwIfAbortedOrKilled();
+        return executeUncontrolledFetch(options, ({ bytesSent, bytesReceived }) => {
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'uncontrolled_fetch',
+                connectionId: this.connectionId,
+                integrationId: this.providerConfigKey,
+                syncId: this.syncId,
+                bytesSent,
+                bytesReceived
+            });
         });
     }
 
@@ -153,8 +171,15 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
             },
             onBytes: ({ sent, received }) => {
-                metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'runner' });
-                metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'runner' });
+                this.telemetryRecorder?.record({
+                    type: 'data_transfer',
+                    callsite: 'proxy',
+                    bytesSent: sent,
+                    bytesReceived: received,
+                    integrationId: providerConfigKey ?? this.providerConfigKey,
+                    connectionId: connectionId ?? this.connectionId,
+                    syncId: this.syncId
+                });
             }
         });
         const response = (await proxy.request()).unwrap();
@@ -261,6 +286,15 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 });
             }
         }
+        this.telemetryRecorder?.record({
+            type: 'data_transfer',
+            callsite: 'persist_logs',
+            bytesSent: Buffer.byteLength(data, 'utf8'),
+            bytesReceived: 0,
+            integrationId: this.providerConfigKey,
+            connectionId: this.connectionId,
+            syncId: this.syncId
+        });
         const res = await this.persistClient.postLog({
             environmentId: this.environmentId,
             data
@@ -365,6 +399,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     nango: Nango;
 
     protected persistClient: PersistClient;
+    protected telemetryRecorder: TelemetryRecorder | undefined;
     protected locking: Locking;
     private checkpointing: Checkpointing;
     protected checkpointKey: string;
@@ -373,7 +408,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     private mergingByModel = new Map<string, MergingStrategy>();
     protected httpLogSample: number = 0;
 
-    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
         this.nango = new Nango(
@@ -401,6 +436,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });
         this.checkpointing = new Checkpointing({
@@ -417,6 +453,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     startSync = NangoActionRunner['prototype']['startSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
+    uncontrolledFetch = NangoActionRunner['prototype']['uncontrolledFetch'];
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
         this.throwIfAbortedOrKilled();
@@ -481,7 +518,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.postRecords({
+            const { result, bytesSent } = await this.persistClient.postRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -493,10 +530,19 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
         return true;
     }
@@ -512,7 +558,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.deleteRecords({
+            const { result, bytesSent } = await this.persistClient.deleteRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -524,10 +570,19 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
 
         return true;
@@ -544,7 +599,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.putRecords({
+            const { result, bytesSent } = await this.persistClient.putRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -556,10 +611,19 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
         return true;
     }
@@ -679,6 +743,16 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (res.isErr()) {
             throw res.error;
         }
+
+        this.telemetryRecorder?.record({
+            type: 'data_transfer',
+            callsite: 'persist_records',
+            bytesSent: 0,
+            bytesReceived: Buffer.byteLength(JSON.stringify(res.value), 'utf8'),
+            integrationId: this.providerConfigKey,
+            connectionId: this.connectionId,
+            syncId: this.syncId
+        });
 
         return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
     }

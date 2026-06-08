@@ -134,8 +134,15 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 835 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 840 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
+
+## Resources
+
+- [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
+- [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
+- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 
 ## Optional
 

@@ -17,14 +17,14 @@ import { useApiKeys, useCreateApiKey, useDeleteApiKey, useUpdateApiKey } from '.
 import { useEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
-import { PermissionGate } from '@/components-v2/patterns/PermissionGate';
-import { Button } from '@/components-v2/ui/Button';
-import { CopyButton } from '@/components-v2/ui/CopyButton';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/Dialog';
-import { Input } from '@/components-v2/ui/Input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components-v2/ui/Select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/Table';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Button } from '@/components/ui/Button';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
+import { Input } from '@/components/ui/Input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 

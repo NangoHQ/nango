@@ -17,13 +17,13 @@
         "@stomp/stompjs": "7.1.1",
         "dd-trace": "5.52.0",
         "uuid": "9.0.0",
-        "ws": "8.18.3",
+        "ws": "8.21.0",
         "zod": "4.0.5"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
         "@types/ws": "8.18.1",
         "@types/uuid": "9.0.0",
-        "vitest": "3.2.4"
+        "vitest": "4.1.8"
     }
 }
