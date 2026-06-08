@@ -97,10 +97,10 @@ export const CreateIntegrationList = () => {
             </Helmet>
 
             <header>
-                <h2 className="text-text-primary text-title-subsection">Set up new integration</h2>
+                <h2 className="text-text-strong text-title-subsection">Set up new integration</h2>
             </header>
 
-            <InputGroup className="bg-bg-subtle">
+            <InputGroup className="bg-surface-panel-inset">
                 <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
@@ -141,7 +141,7 @@ const ProviderList = ({ providers, onSelectProvider, loading }: ProviderListProp
 
     if (!providers || providers.length === 0) {
         return (
-            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
                 <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
             </div>
         );
@@ -181,7 +181,7 @@ const Provider = ({
     return (
         <div
             onClick={onClick}
-            className="p-4 w-full inline-flex items-center justify-between bg-bg-elevated rounded border border-transparent cursor-pointer transition-colors hover:bg-bg-surface hover:border-border-disabled"
+            className="p-4 w-full inline-flex items-center justify-between bg-surface-page rounded border border-transparent cursor-pointer transition-colors hover:bg-surface-canvas hover:border-border-disabled"
             data-index={virtualRow?.index}
             ref={rowVirtualizer ? (node) => rowVirtualizer.measureElement(node) : undefined}
             style={
@@ -198,7 +198,7 @@ const Provider = ({
         >
             <div className="inline-flex gap-1.5 items-center">
                 <IntegrationLogo provider={provider.name} />
-                <span className="text-text-primary text-body-medium-semi">{provider.displayName}</span>
+                <span className="text-text-strong text-body-medium-semi">{provider.displayName}</span>
             </div>
             <div className="inline-flex gap-1.5 items-center justify-end">
                 <AuthBadge authMode={provider.authMode} />

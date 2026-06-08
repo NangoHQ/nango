@@ -96,12 +96,12 @@ export const PaymentMethodDialog: React.FC<{
                     </Elements>
                 ) : (
                     <div className="flex flex-col gap-4">
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
                     </div>
                 )}
             </DialogContent>

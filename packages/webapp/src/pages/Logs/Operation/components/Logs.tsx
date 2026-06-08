@@ -187,7 +187,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
         <div className="grow-0 overflow-hidden flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h4 className="font-semibold text-sm flex items-center gap-2">Logs {(isLoading || isFetching) && <Spinner />}</h4>
-                <div className="flex gap-2 text-text-primary text-xs">
+                <div className="flex gap-2 text-text-strong text-xs">
                     <div>
                         {totalHumanReadable} {totalMessages > 1 ? 'logs' : 'log'} found
                     </div>
@@ -245,15 +245,15 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 ref={tableContainerRef}
                 onScroll={(e) => fetchMoreOnBottomReached(e.currentTarget)}
             >
-                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-primary">
-                    <thead className="grid sticky top-0 z-10 bg-bg-elevated">
+                <table className="grid w-full caption-bottom text-s border-separate border-spacing-0 text-text-strong">
+                    <thead className="grid sticky top-0 z-10 bg-surface-page">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id} className="flex w-full">
                                 {headerGroup.headers.map((header) => {
                                     return (
                                         <th
                                             key={header.id}
-                                            className="flex bg-bg-elevated px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
+                                            className="flex bg-surface-page px-4 py-2 pt-1.5 text-s text-left align-middle font-semibold"
                                             style={{
                                                 width: header.getSize() ? header.getSize() : 'auto'
                                             }}
@@ -286,7 +286,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         <tbody className="h-10">
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
-                                    <div className="text-text-tertiary">No results.</div>
+                                    <div className="text-text-muted">No results.</div>
                                 </td>
                             </tr>
                         </tbody>
@@ -298,14 +298,14 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                 <SheetContent
                     side="right"
                     hideCloseButton
-                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-bg-elevated text-text-primary border-l-border-muted"
+                    className="w-[834px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
                 >
                     <SheetTitle className="sr-only">Message Details</SheetTitle>
                     <div className="relative h-full select-text">
                         <div className="absolute top-[26px] left-4">
                             <SheetClose
                                 title="Close"
-                                className="w-10 h-10 flex items-center justify-center text-text-tertiary hover:text-text-primary focus:text-text-primary"
+                                className="w-10 h-10 flex items-center justify-center text-text-muted hover:text-text-strong focus:text-text-strong"
                             >
                                 <IconArrowLeft stroke={1} size={24} />
                             </SheetClose>

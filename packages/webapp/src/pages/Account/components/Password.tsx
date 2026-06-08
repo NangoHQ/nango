@@ -57,7 +57,7 @@ export const Password: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
                 id="password-requirements"
                 className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
             >
-                <span className="text-body-small-regular text-text-primary">Password must contain:</span>
+                <span className="text-body-small-regular text-text-strong">Password must contain:</span>
                 <Requirement text="At least 8 characters" check={checks.length} />
                 <Requirement text="At least one uppercase letter" check={checks.uppercase} />
                 <Requirement text="At least one number" check={checks.number} />
@@ -71,8 +71,8 @@ const Requirement: React.FC<{ text: string; check: boolean }> = ({ text, check }
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-1 !text-body-small-regular text-text-primary',
-                check ? 'text-feedback-success-fg' : 'text-text-tertiary'
+                'inline-flex items-center gap-1 !text-body-small-regular text-text-strong',
+                check ? 'text-feedback-success-fg' : 'text-text-muted'
             )}
         >
             {check ? <CheckIcon className="size-4" /> : <X className="size-4" />}

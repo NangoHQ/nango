@@ -69,8 +69,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-2.5 items-center min-w-0">
                     <Avatar name={displayName} />
                     <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-body-small-semi text-text-primary truncate">{displayName}</span>
-                        <span className="text-body-small-regular text-text-tertiary truncate">{email ?? ''}</span>
+                        <span className="text-body-small-semi text-text-strong truncate">{displayName}</span>
+                        <span className="text-body-small-regular text-text-muted truncate">{email ?? ''}</span>
                     </div>
                 </div>
             );
@@ -86,7 +86,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             return (
                 <div className="flex gap-1.5 items-center">
                     <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
-                    <span className="text-body-small-semi text-text-primary">{provider}</span>
+                    <span className="text-body-small-semi text-text-strong">{provider}</span>
                 </div>
             );
         }
@@ -114,7 +114,7 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             const { created_at } = row.original;
 
             return (
-                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-tertiary">
+                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-muted">
                     {formatDateToInternationalFormat(created_at)}
                 </time>
             );
@@ -283,7 +283,7 @@ export const ConnectionList = () => {
             <div className="flex flex-col gap-3">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-primary">Connections</h2>
+                    <h2 className="text-title-subsection text-text-strong">Connections</h2>
                     {(hasConnections || hasFiltered) && (
                         <PermissionGate condition={canCreateTestConnection}>
                             {(allowed) => (
@@ -303,7 +303,7 @@ export const ConnectionList = () => {
                             <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="bg-bg-surface h-10">
+                                <InputGroup className="bg-surface-canvas h-10">
                                     <InputGroupInput
                                         className="pr-2.5"
                                         type="text"
@@ -327,14 +327,14 @@ export const ConnectionList = () => {
                                     emptyText="No integrations found"
                                     footer={
                                         <div className="flex items-center justify-between gap-3">
-                                            <span className="flex items-center justify-center gap-2 text-text-tertiary text-body-small-regular">
+                                            <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">
                                                 Need a new integration?
                                             </span>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
                                                 size="sm"
-                                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-primary"
+                                                className="h-auto rounded-full bg-btn-secondary-bg px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
                                                 }}
@@ -424,15 +424,15 @@ export const ConnectionList = () => {
                             </Table>
 
                             {showEmptyStateWithFilters && (
-                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
                                     <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
                                 </div>
                             )}
                         </>
                     )}
                     {showEmptyStateNoFilters && (
-                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                            <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
+                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                            <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
                                 <StyledLink to="https://nango.dev/docs/guides/auth/auth-guide" type="external">

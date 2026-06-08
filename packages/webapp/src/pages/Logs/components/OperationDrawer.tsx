@@ -21,7 +21,7 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
             <SheetContent
                 side="right"
                 hideCloseButton
-                className="w-[1034px] max-w-none sm:max-w-none p-0 bg-bg-elevated text-text-primary border-l-border-muted"
+                className="w-[1034px] max-w-none sm:max-w-none p-0 bg-surface-page text-text-strong border-l-border-muted"
             >
                 <SheetTitle className="sr-only">Operation Details</SheetTitle>
                 <div className="relative h-full select-text">
@@ -33,7 +33,7 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
                         />
                         <SheetClose
                             title="Close"
-                            className="bg-transparent text-text-tertiary hover:text-text-primary focus:text-text-primary transition-colors w-8 h-6 flex items-center justify-center"
+                            className="bg-transparent text-text-muted hover:text-text-strong focus:text-text-strong transition-colors w-8 h-6 flex items-center justify-center"
                         >
                             <X size={16} />
                         </SheetClose>

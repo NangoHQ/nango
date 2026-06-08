@@ -154,8 +154,8 @@ export function FilterMultiSelect<T extends string = string>({
                     indent && 'ml-4',
                     disabled
                         ? 'opacity-50 pointer-events-none text-text-disabled'
-                        : 'cursor-pointer text-text-disabled hover:bg-bg-subtle hover:text-text-primary focus:bg-bg-subtle focus:text-text-primary',
-                    isSelected && 'text-text-primary bg-bg-subtle'
+                        : 'cursor-pointer text-text-disabled hover:bg-surface-panel-inset hover:text-text-strong focus:bg-surface-panel-inset focus:text-text-strong',
+                    isSelected && 'text-text-strong bg-surface-panel-inset'
                 )}
                 onClick={() => select(opt.value)}
                 onKeyDown={(e) => {
@@ -181,13 +181,13 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn('h-9 text-text-tertiary', isDirty && 'text-text-primary')}>
+                <Button variant="outline" size="sm" className={cn('h-9 text-text-muted', isDirty && 'text-text-strong')}>
                     {label}
                     {isDirty && (
                         <span
                             role="button"
                             tabIndex={-1}
-                            className="bg-bg-subtle text-text-primary flex gap-1 items-center px-1.5 rounded-xl"
+                            className="bg-surface-panel-inset text-text-strong flex gap-1 items-center px-1.5 rounded-xl"
                             onPointerDown={reset}
                             onKeyDown={(e) => {
                                 if (['Enter', ' '].includes(e.key)) reset(e);
@@ -199,10 +199,10 @@ export function FilterMultiSelect<T extends string = string>({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className={cn('p-2 text-text-primary bg-bg-surface', width)} align="end">
+            <PopoverContent className={cn('p-2 text-text-strong bg-surface-canvas', width)} align="end">
                 {showSearch && (
                     <div className="pb-2">
-                        <InputGroup className="bg-bg-surface border-border-default">
+                        <InputGroup className="bg-surface-canvas border-border-default">
                             <InputGroupAddon>
                                 <Search className="w-4 h-4" />
                             </InputGroupAddon>

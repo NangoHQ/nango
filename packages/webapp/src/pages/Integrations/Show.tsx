@@ -106,7 +106,7 @@ export const IntegrationsList = () => {
                 <title>Integrations - Nango</title>
             </Helmet>
             <header className="flex justify-between items-center">
-                <h2 className="text-text-primary text-title-subsection">Integrations</h2>
+                <h2 className="text-text-strong text-title-subsection">Integrations</h2>
                 <PermissionGate asChild condition={canWriteIntegration}>
                     {(allowed) => (
                         <ButtonLink disabled={!allowed} to={`/${env}/integrations/create`} size="lg">
@@ -116,7 +116,7 @@ export const IntegrationsList = () => {
                 </PermissionGate>
             </header>
 
-            <InputGroup className="bg-bg-subtle">
+            <InputGroup className="bg-surface-panel-inset">
                 <InputGroupInput type="text" placeholder="Search integration" onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
@@ -135,8 +135,8 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                    <h3 className="text-title-body text-text-primary">No available integrations</h3>
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                    <h3 className="text-title-body text-text-strong">No available integrations</h3>
                     <p className="text-text-secondary text-body-medium-regular">You don’t have any integrations set up yet with Nango.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
@@ -149,8 +149,8 @@ export const IntegrationsList = () => {
             )}
 
             {data?.data && data.data.length > 0 && integrations && integrations.length === 0 && (
-                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                    <h3 className="text-title-body text-text-primary">No integrations found</h3>
+                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-page rounded">
+                    <h3 className="text-title-body text-text-strong">No integrations found</h3>
                     <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
                     <PermissionGate asChild condition={canWriteIntegration}>
                         {(allowed) => (
@@ -181,7 +181,7 @@ export const IntegrationsList = () => {
                                     navigate(`/${env}/integrations/${integration.unique_key}`);
                                 }}
                             >
-                                <TableCell className="text-text-primary text-body-small-semi">
+                                <TableCell className="text-text-strong text-body-small-semi">
                                     <div className="flex gap-1.5 items-center">
                                         <IntegrationLogo provider={integration.provider} />
                                         {integration.display_name || integration.meta.displayName}
@@ -193,7 +193,7 @@ export const IntegrationsList = () => {
                                         <CopyButton text={integration.unique_key} />
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-text-primary text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>
+                                <TableCell className="text-text-strong text-body-small-semi text-center">{integration.meta.connectionCount}</TableCell>
                                 <TableCell>
                                     <AuthBadge authMode={integration.meta.authMode} />
                                 </TableCell>

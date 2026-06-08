@@ -48,7 +48,7 @@ export const SettingsTab: React.FC<{ connectionData: GetConnection['Success']['d
             {DialogComponent}
             <div className="flex justify-between items-start gap-11">
                 <div className="w-full flex items-center justify-between">
-                    <span className="text-body-medium-semi text-text-primary">Connection deletion</span>
+                    <span className="text-body-medium-semi text-text-strong">Connection deletion</span>
                     <PermissionGate condition={canDeleteConnection} asChild>
                         {(allowed) => (
                             <Button

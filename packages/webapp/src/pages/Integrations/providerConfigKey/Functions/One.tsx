@@ -111,17 +111,17 @@ export const FunctionsOne: React.FC = () => {
                     <CardHeader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="inline-flex items-center gap-2.5">
-                                <Skeleton className="bg-bg-subtle size-10.5" />
-                                <Skeleton className="bg-bg-subtle w-36 h-5" />
-                                <Skeleton className="bg-bg-subtle w-24 h-4" />
+                                <Skeleton className="bg-surface-panel-inset size-10.5" />
+                                <Skeleton className="bg-surface-panel-inset w-36 h-5" />
+                                <Skeleton className="bg-surface-panel-inset w-24 h-4" />
                             </div>
-                            <Skeleton className="bg-bg-subtle w-8 h-5" />
+                            <Skeleton className="bg-surface-panel-inset w-8 h-5" />
                         </div>
-                        <Skeleton className="bg-bg-subtle w-1/2 h-6" />
-                        <Skeleton className="bg-bg-subtle w-full h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-1/2 h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-6" />
                     </CardHeader>
                     <CardContent>
-                        <Skeleton className="bg-bg-subtle w-full h-50" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-50" />
                     </CardContent>
                 </CardLayout>
             </DashboardLayout>
@@ -146,7 +146,7 @@ export const FunctionsOne: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                         <div className="inline-flex items-center gap-2.5">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                            <span className="text-text-primary text-body-large-semi">
+                            <span className="text-text-strong text-body-large-semi">
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
                             <div className="inline-flex gap-1">
@@ -207,11 +207,11 @@ export const FunctionsOne: React.FC = () => {
                     <CardSubheader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col gap-1">
-                                <span className="text-text-primary text-body-medium-semi">Customize this template</span>
+                                <span className="text-text-strong text-body-medium-semi">Customize this template</span>
                                 <Link
                                     to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
                                     target="_blank"
-                                    className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
+                                    className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
                                 >
                                     Get started with the Nango CLI <ExternalLink className="size-3.5" />
                                 </Link>

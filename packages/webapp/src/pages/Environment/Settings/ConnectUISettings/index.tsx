@@ -34,7 +34,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                 <div className="w-full flex flex-col gap-2">
                     <label
                         htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
+                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}
                     >
                         Primary (Light theme)
                     </label>
@@ -47,7 +47,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                                 disabled={disabled}
                             />
                             {!field.state.meta.isValid && (
-                                <em role="alert" className="text-body-small-regular text-feedback-error-fg">
+                                <em role="alert" className="text-body-small-regular text-status-danger-text">
                                     {field.state.meta.errors.join(', ')}
                                 </em>
                             )}
@@ -62,7 +62,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                 <div className="w-full flex flex-col gap-2">
                     <label
                         htmlFor={field.name}
-                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-tertiary' : '')}
+                        className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}
                     >
                         Primary (Dark theme)
                     </label>
@@ -91,7 +91,7 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
     <form.Field name="showWatermark">
         {(field: any) => (
             <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-tertiary' : '')}>
+                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-muted' : '')}>
                     Show &quot;Secured by Nango&quot;
                 </label>
                 <div className="flex items-center">
@@ -223,7 +223,7 @@ export const ConnectUISettings = () => {
                         </form.Subscribe>
 
                         {(!canCustomizeTheme || !canDisableWatermark) && (
-                            <div className="bg-bg-elevated p-6 flex flex-col gap-6">
+                            <div className="bg-surface-page p-6 flex flex-col gap-6">
                                 <div className="flex text-body-medium-regular gap-2 items-center">
                                     <Lock size="16" />
                                     <span>Advanced Customization</span>

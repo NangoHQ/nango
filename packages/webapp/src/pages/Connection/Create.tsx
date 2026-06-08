@@ -110,7 +110,7 @@ export const ConnectionCreate: React.FC = () => {
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
-                <div className="grid grid-cols-2 text-text-primary">
+                <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
                         <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
@@ -129,7 +129,7 @@ export const ConnectionCreate: React.FC = () => {
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>
-            <div className="grid grid-cols-[2fr_1fr] text-text-primary">
+            <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">
                     <div className="flex flex-col gap-8">
                         <h1 className="text-2xl">Create a test connection</h1>
@@ -181,7 +181,7 @@ export const ConnectionCreate: React.FC = () => {
                                 </div>
                             </header>
                             <main>
-                                <p className="text-sm text-text-tertiary">
+                                <p className="text-sm text-text-muted">
                                     Learn how to embed Nango in your app to let users authorize 3rd-party APIs seamlessly.
                                 </p>
                             </main>

@@ -117,13 +117,13 @@ export const Signin: React.FC = () => {
 
             <div className="flex flex-col items-center gap-5 w-full">
                 <div className="flex flex-col gap-3 items-center">
-                    <h2 className="text-title-group text-text-primary">Log in to Nango</h2>
+                    <h2 className="text-title-group text-text-strong">Log in to Nango</h2>
                     {hasLocalAuth ? (
-                        <span className="text-body-medium-regular text-text-tertiary">
+                        <span className="text-body-medium-regular text-text-muted">
                             Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
                         </span>
                     ) : (
-                        <span className="text-body-medium-regular text-text-tertiary">Continue with Google to access your Nango workspace.</span>
+                        <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
                     )}
                 </div>
 
@@ -191,7 +191,7 @@ export const Signin: React.FC = () => {
                                 </div>
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
-                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-tertiary self-end order-2">
+                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-muted self-end order-2">
                                     Forgot your password?
                                 </StyledLink>
                             </div>
@@ -219,7 +219,7 @@ export const Signin: React.FC = () => {
                     </div>
                 )}
 
-                <span className="text-center w-full text-body-medium-regular text-text-tertiary">
+                <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
                     <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
                         Terms of Service

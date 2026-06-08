@@ -36,7 +36,7 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <header className="flex justify-between items-center">
-                <h2 className="text-text-primary text-2xl font-semibold">Billing & usage</h2>
+                <h2 className="text-text-strong text-2xl font-semibold">Billing & usage</h2>
                 {isUsageTab && (
                     <div>
                         <MonthSelector onMonthChange={setSelectedMonth} />
