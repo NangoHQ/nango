@@ -153,7 +153,11 @@ export async function finalizeManagedAuthentication({
             name = nanoid();
         }
 
-        if (organizationId) {
+        if (invitation) {
+            // Invitation takes priority over org membership — user joins the invited team
+            isNewTeam = false;
+            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
+        } else if (organizationId) {
             const organization = await workos.organizations.getOrganization(organizationId);
 
             const resAccount = await accountService.getOrCreateAccount(organization.name);
@@ -163,13 +167,7 @@ export async function finalizeManagedAuthentication({
             }
 
             account = resAccount;
-
-            if (!invitation) {
-                await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
-            }
-        } else if (invitation) {
-            isNewTeam = false;
-            account = (await accountService.getAccountById(db.knex, invitation.account_id))!;
+            await expirePreviousInvitations({ accountId: account.id, email: authorizedUser.email, trx: db.knex });
         } else {
             if (!envs.AUTH_ALLOW_SIGNUP) {
                 res.status(403).send({ error: { code: 'forbidden', message: 'Signup is disabled.' } });
