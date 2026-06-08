@@ -205,7 +205,8 @@ export class Scheduler {
         if (!('scheduleName' in props)) {
             return this.at({ ...props, startsAfter: new Date() });
         }
-        return this.db.transaction<Result<Task>>(async (trx) => {
+        const events: SchedulerEvent[] = [];
+        const result = await this.db.transaction<Result<Task>>(async (trx) => {
             // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
             const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
             if (getSchedules.isErr()) {
@@ -227,7 +228,7 @@ export class Scheduler {
                 // TODO: identify this error so we can return something else than a 500
                 return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
             }
-            return this.insertTask(trx, {
+            const inserted = await this.insertTask(trx, {
                 name: `${schedule.name}:${uuidv7()}`,
                 payload: { ...schedule.payload, ...props.extra },
                 groupKey: schedule.groupKey,
@@ -241,7 +242,11 @@ export class Scheduler {
                 scheduleId: schedule.id,
                 ownerKey: null
             });
+            events.push(...inserted.events);
+            return inserted.result;
         });
+        events.forEach((event) => this.onEvent(event));
+        return result;
     }
 
     /**
@@ -254,35 +259,40 @@ export class Scheduler {
      * const scheduled = await scheduler.at({ ...props, startsAfter: addDays(new Date(), 30) });
      */
     public async at(props: AtProps): Promise<Result<Task>> {
-        return this.db.transaction<Result<Task>>((trx) => this.insertTask(trx, { ...props, scheduleId: null }));
+        const { result, events } = await this.db.transaction((trx) => this.insertTask(trx, { ...props, scheduleId: null }));
+        events.forEach((event) => this.onEvent(event));
+        return result;
     }
 
     /**
      * Create a single task within the given transaction and fire its state callback. A capped task
      * is never created, so it surfaces as an Err and a `task_dropped` event rather than a returned task.
+     * Events are returned (not emitted) so the caller can emit them only after the transaction
+     * commits, never for work that ends up rolled back.
      */
-    private async insertTask(trx: knex.Knex, taskProps: tasks.TaskProps): Promise<Result<Task>> {
+    private async insertTask(trx: knex.Knex, taskProps: tasks.TaskProps): Promise<{ result: Result<Task>; events: SchedulerEvent[] }> {
         const createResult = await tasks.create(trx, [taskProps], { groupTaskCap: this.config.limits.groupTaskCap });
         if (createResult.isErr()) {
-            return Err(createResult.error);
+            return { result: Err(createResult.error), events: [] };
         }
         const task = createResult.value.created[0];
         if (!task) {
-            for (const d of createResult.value.discarded) {
-                if (d.reason === 'capped') {
-                    this.onEvent({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' });
-                }
-            }
-            return Err(`Failed to create task '${taskProps.name}'`);
+            const events = createResult.value.discarded
+                .filter((d) => d.reason === 'capped')
+                .map((d): SchedulerEvent => ({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' }));
+            return { result: Err(`Failed to create task '${taskProps.name}'`), events };
         }
         if (task.scheduleId) {
             const scheduleRes = await schedules.setLastScheduledTask(trx, [{ id: task.scheduleId, taskId: task.id, taskState: task.state }]);
             if (scheduleRes.isErr()) {
-                return Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`);
+                return {
+                    result: Err(`Error updating last scheduled task for schedule '${task.scheduleId}': ${stringifyError(scheduleRes.error)}`),
+                    events: []
+                };
             }
         }
         this.onCallbacks[task.state](task);
-        return Ok(task);
+        return { result: Ok(task), events: [] };
     }
 
     /**
