@@ -897,7 +897,18 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
-                                            <TooltipContent>{`Some integrations require extra configuration (cf. docs).`}</TooltipContent>
+                                            <TooltipContent>
+                                                Some integrations require extra configuration (cf.{' '}
+                                                <a
+                                                    href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-text-blue hover:text-text-light-blue"
+                                                >
+                                                    docs
+                                                </a>
+                                                ).
+                                            </TooltipContent>
                                         </Tooltip>
                                     </div>
                                     <div className="mt-1">
