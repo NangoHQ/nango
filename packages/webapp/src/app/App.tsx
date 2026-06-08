@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { useLocalStorage } from 'react-use';
 import { Toaster } from 'sonner';
 
@@ -12,8 +11,6 @@ import { useTheme } from '@/lib/theme';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
-
-import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
     const env = useStore((state) => state.env);
@@ -46,8 +43,6 @@ const App = () => {
     return (
         <>
             <RouterProvider router={router} />
-            {/* TODO: Remove once remaining legacy toasts have been replaced */}
-            <ToastContainer />
             <Toaster />
             {isDevToolsEnabled && <DevToolPanel />}
         </>
