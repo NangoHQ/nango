@@ -117,6 +117,7 @@ describe('SchedulingDaemon', () => {
             abortSignal: new AbortController().signal,
             tickIntervalMs: defaultSchedulerConfig.daemons.schedulingTickIntervalMs,
             groupTaskCap: defaultSchedulerConfig.limits.groupTaskCap,
+            batchSize: defaultSchedulerConfig.limits.schedulingBatchSize,
             recurringGroupMaxConcurrency: defaultSchedulerConfig.limits.recurringGroupMaxConcurrency,
             onScheduling: () => {},
             onEvent: () => {},
@@ -128,6 +129,34 @@ describe('SchedulingDaemon', () => {
         const created = (await tasks.search(db, { scheduleId: schedule.id })).unwrap();
         expect(created).toHaveLength(1);
         expect(created[0]?.groupMaxConcurrency).toBe(defaultSchedulerConfig.limits.recurringGroupMaxConcurrency);
+    });
+
+    it('should only schedule up to batchSize tasks per tick, draining the backlog across ticks', async () => {
+        const startsAt = Seconds.ago(6 * 60);
+        for (let i = 0; i < 5; i++) {
+            await addSchedule(db, { startsAt, frequency: '5 minutes' });
+        }
+        const newDaemon = (batchSize: number): SchedulingDaemon =>
+            new SchedulingDaemon({
+                db,
+                abortSignal: new AbortController().signal,
+                tickIntervalMs: defaultSchedulerConfig.daemons.schedulingTickIntervalMs,
+                groupTaskCap: defaultSchedulerConfig.limits.groupTaskCap,
+                batchSize,
+                recurringGroupMaxConcurrency: defaultSchedulerConfig.limits.recurringGroupMaxConcurrency,
+                onScheduling: () => {},
+                onEvent: () => {},
+                onError: () => {}
+            });
+
+        await newDaemon(2).run();
+        expect((await tasks.search(db, { states: ['CREATED'] })).unwrap()).toHaveLength(2);
+
+        await newDaemon(2).run();
+        expect((await tasks.search(db, { states: ['CREATED'] })).unwrap()).toHaveLength(4);
+
+        await newDaemon(2).run();
+        expect((await tasks.search(db, { states: ['CREATED'] })).unwrap()).toHaveLength(5);
     });
 });
 
