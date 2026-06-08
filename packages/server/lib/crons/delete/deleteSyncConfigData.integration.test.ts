@@ -191,6 +191,38 @@ describe('deleteSyncConfigData (deletion tree)', () => {
         expect(files).not.toContain('config/live/scoped-fn.js');
     });
 
+    it('keeps a file_location shared with an active version (a redeploy can reuse an older version path)', async () => {
+        const env = await createEnvironmentSeed();
+        const integration = await createConfigSeed(env, 'github', 'github');
+        const shared = 'config/shared/shared-fn.js';
+
+        const historyId = await insertVersion({
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'shared-fn',
+            version: '1.0.0',
+            active: false,
+            deleted: false,
+            fileLocation: shared
+        });
+        // Active redeploy reusing the SAME file_location (unchanged file → deploy reuses the path).
+        await insertVersion({
+            environment_id: env.id,
+            nango_config_id: integration.id!,
+            sync_name: 'shared-fn',
+            version: '2.0.0',
+            active: true,
+            deleted: false,
+            fileLocation: shared
+        });
+
+        const files = await getFunctionFileLocations(historyId);
+
+        // The shared .js (and its derived .ts) must NOT be deleted — the live version still points at it.
+        expect(files).not.toContain(shared);
+        expect(files).not.toContain('config/shared/shared-fn.ts');
+    });
+
     it('throws DeletionBudgetExceeded on a passed deadline and leaves the config row in place (resumable)', async () => {
         const env = await createEnvironmentSeed();
         const integration = await createConfigSeed(env, 'github', 'github');

@@ -646,22 +646,32 @@ export async function getFunctionFileLocations(syncConfigId: number): Promise<st
         return [];
     }
 
-    // Same version set deleteSyncConfigData removes: this function's rows (matching type), excluding any
-    // other *active* version — so a redeploy of the same name (or a same-named action) keeps its files.
-    const jsFiles = (
-        await schema()
-            .from<DBSyncConfig>(TABLE)
-            .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name, type: config.type })
-            .andWhere((qb) => qb.where({ active: false }).orWhere({ id: syncConfigId }))
-            .select('file_location')
-            .pluck('file_location')
-    ).filter((location): location is string => Boolean(location) && location !== '_LOCAL_FILE_');
+    const versions = await schema()
+        .from<DBSyncConfig>(TABLE)
+        .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name, type: config.type })
+        .select<Pick<DBSyncConfig, 'id' | 'active' | 'file_location'>[]>('id', 'active', 'file_location');
 
-    // The `.ts` source sits next to the compiled file under the same `config/<id>/` directory and is
-    // never stored in the DB — derive it the same way the download path does (remote.service.ts).
-    const tsFiles = jsFiles.map((location) => `${location.split('/').slice(0, -1).join('/')}/${config.sync_name}.ts`);
+    const filesOf = (rows: Pick<DBSyncConfig, 'file_location'>[]): Set<string> => {
+        const out = new Set<string>();
+        for (const { file_location } of rows) {
+            if (!file_location || file_location === '_LOCAL_FILE_') {
+                continue;
+            }
+            // .cjs
+            out.add(file_location);
+            // .ts
+            out.add(`${file_location.split('/').slice(0, -1).join('/')}/${config.sync_name}.ts`);
+        }
+        return out;
+    };
 
-    return [...new Set([...jsFiles, ...tsFiles])];
+    // Files of the versions being deleted (this row + inactive history) minus any file still referenced
+    // by a surviving *active* version — a redeploy can reuse an older version's file_location, so the
+    // shared `.js`/`.ts` must not be deleted out from under the live function.
+    const deleting = filesOf(versions.filter((v) => !v.active || v.id === syncConfigId));
+    const surviving = filesOf(versions.filter((v) => v.active && v.id !== syncConfigId));
+
+    return [...deleting].filter((file) => !surviving.has(file));
 }
 
 /** Deletes the given remote artifact keys */

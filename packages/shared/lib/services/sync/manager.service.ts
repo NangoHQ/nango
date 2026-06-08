@@ -233,10 +233,12 @@ export class SyncManagerService {
     public async softDeleteSync(syncId: string, environmentId: number, orchestrator: Orchestrator) {
         // Unschedule first so no new run can start against a sync we're about to soft-delete.
         await orchestrator.deleteSync({ syncId, environmentId });
-        // Soft-delete + notification clearing share a transaction so the sync can't be left half
-        // torn down (deleted but with stale active error logs, or vice versa).
+
         await db.knex.transaction(async (trx) => {
-            await softDeleteSync(syncId, trx);
+            const deleted = await softDeleteSync(syncId, trx);
+            if (deleted.isErr()) {
+                throw deleted.error;
+            }
             await errorNotificationService.sync.clearBySyncId({ sync_id: syncId, trx });
         });
     }
