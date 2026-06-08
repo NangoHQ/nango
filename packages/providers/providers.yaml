@@ -7349,13 +7349,8 @@ followupboss:
     authorization_url: https://app.followupboss.com/oauth/authorize
     token_url: https://app.followupboss.com/oauth/token
     disable_pkce: true
-    token_request_auth_method: basic
     authorization_params:
         response_type: auth_code
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
     proxy:
         base_url: https://api.followupboss.com
     docs: https://nango.dev/docs/api-integrations/followupboss
