@@ -968,6 +968,43 @@ describe('PostgresStore', () => {
                 expect(next_cursor).toBeNull();
             });
         });
+
+        describe('bounded decrypt concurrency (RECORDS_DECRYPT_CONCURRENCY)', () => {
+            const originalConcurrency = envs.RECORDS_DECRYPT_CONCURRENCY;
+            afterAll(() => {
+                (envs as any).RECORDS_DECRYPT_CONCURRENCY = originalConcurrency;
+            });
+
+            // The decrypt loop processes records in chunks of RECORDS_DECRYPT_CONCURRENCY. A
+            // concurrency smaller than the page size forces several chunks, exercising the chunk
+            // boundary while results must stay in order (the cursor depends on the last element).
+            it.each([1, 3, 7])('Should decrypt every record in order with concurrency=%i', async (concurrency) => {
+                (envs as any).RECORDS_DECRYPT_CONCURRENCY = concurrency;
+
+                const numOfRecords = 25;
+                const { connectionId, model } = await upsertNRecords(numOfRecords);
+
+                const response = await store.getRecords({ connectionId, model, limit: numOfRecords });
+                expect(response.isOk()).toBe(true);
+                const { records } = response.unwrap();
+
+                // Completeness: no record dropped or duplicated across chunk boundaries.
+                expect(records.length).toBe(numOfRecords);
+                expect(new Set(records.map((r) => r['id'])).size).toBe(numOfRecords);
+
+                // Correctness: payload decrypted back to the original value.
+                for (const r of records) {
+                    expect(r['name']).toBe(`record ${r['id']}`);
+                }
+
+                // Order preserved: first_seen_at is non-decreasing regardless of chunking.
+                for (let i = 1; i < records.length; i++) {
+                    const cur = dayjs(records[i]?._nango_metadata.first_seen_at);
+                    const prev = dayjs(records[i - 1]?._nango_metadata.first_seen_at);
+                    expect(cur.isAfter(prev) || cur.isSame(prev)).toBe(true);
+                }
+            });
+        });
     }, 60_000);
 
     describe('deleteOutdatedRecords', () => {
