@@ -80,7 +80,6 @@ export class DatabaseClient {
             connection: { ...(this.config.connection as object), statement_timeout: 0 }
         } as knex.Knex.Config);
         try {
-            // `??` quotes the schema as an identifier — never interpolate it into raw SQL directly.
             await migrationDb.raw('CREATE SCHEMA IF NOT EXISTS ??', [this.schema]);
 
             const [, pendingMigrations] = (await migrationDb.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
