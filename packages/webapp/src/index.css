@@ -7,7 +7,6 @@
 
 @import '@nangohq/design-system/tokens/tokens.generated.css';
 @import './tokens-bridge.css';
-@import './tokens-bridge-primitives.css'; /* Phase 2C PoC — remove to revert */
 
 /*
   ---break---

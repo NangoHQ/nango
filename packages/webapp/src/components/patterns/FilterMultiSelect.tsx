@@ -153,9 +153,9 @@ export function FilterMultiSelect<T extends string = string>({
                     'relative flex items-center py-1.5 pl-8 pr-2 text-sm select-none outline-none',
                     indent && 'ml-4',
                     disabled
-                        ? 'opacity-50 pointer-events-none text-gray-400'
-                        : 'cursor-pointer text-gray-400 hover:bg-pure-black hover:text-white focus:bg-pure-black focus:text-white',
-                    isSelected && 'text-white bg-pure-black'
+                        ? 'opacity-50 pointer-events-none text-text-disabled'
+                        : 'cursor-pointer text-text-disabled hover:bg-bg-subtle hover:text-text-primary focus:bg-bg-subtle focus:text-text-primary',
+                    isSelected && 'text-text-primary bg-bg-subtle'
                 )}
                 onClick={() => select(opt.value)}
                 onKeyDown={(e) => {
@@ -181,13 +181,13 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn('h-9 text-text-light-gray', isDirty && 'text-white')}>
+                <Button variant="outline" size="sm" className={cn('h-9 text-text-tertiary', isDirty && 'text-text-primary')}>
                     {label}
                     {isDirty && (
                         <span
                             role="button"
                             tabIndex={-1}
-                            className="bg-pure-black text-white flex gap-1 items-center px-1.5 rounded-xl"
+                            className="bg-bg-subtle text-text-primary flex gap-1 items-center px-1.5 rounded-xl"
                             onPointerDown={reset}
                             onKeyDown={(e) => {
                                 if (['Enter', ' '].includes(e.key)) reset(e);
@@ -199,10 +199,10 @@ export function FilterMultiSelect<T extends string = string>({
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className={cn('p-2 text-white bg-active-gray', width)} align="end">
+            <PopoverContent className={cn('p-2 text-text-primary bg-bg-surface', width)} align="end">
                 {showSearch && (
                     <div className="pb-2">
-                        <InputGroup className="bg-active-gray border-grayscale-600">
+                        <InputGroup className="bg-bg-surface border-border-default">
                             <InputGroupAddon>
                                 <Search className="w-4 h-4" />
                             </InputGroupAddon>

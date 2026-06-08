@@ -286,7 +286,7 @@ export const Logs: React.FC<{ operation: OperationRow; operationId: string; isLi
                         <tbody className="h-10">
                             <tr className="hover:bg-transparent flex absolute w-full">
                                 <td colSpan={columns.length} className="text-center p-0 pt-4 w-full">
-                                    <div className="text-grayscale-400">No results.</div>
+                                    <div className="text-text-tertiary">No results.</div>
                                 </td>
                             </tr>
                         </tbody>
