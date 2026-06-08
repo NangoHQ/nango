@@ -335,6 +335,7 @@ async function compileDeployInfo({
     const jsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`;
     const previousJsFileLocation = previousSyncAndActionConfig?.file_location;
     const jsLocalFileName = resolveLocalFileName({ syncName, providerConfigKey });
+    const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
     let file_location: string | null | undefined = previousJsFileLocation;
     const uploads = [];
 
@@ -342,7 +343,6 @@ async function compileDeployInfo({
         const tsFile = fileBody.ts;
         const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
-        const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
         // !previousJsFileLocation: always upload for new functions.
         // If a previous deploy uploaded the file to s3 but the db transaction failed,
@@ -350,7 +350,7 @@ async function compileDeployInfo({
         // but we won't have a saved file_location to reuse, so we still need to upload
         // to ensure we have a valid file_location.
 
-        if (tsChanged || !previousJsFileLocation) {
+        if (jsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
@@ -367,7 +367,6 @@ async function compileDeployInfo({
     }
     // Legacy Path - Only JS is provided
     else {
-        const jsChanged = await remoteFileService.checkIfChanged({ content: jsFile, objectKey: jsDestinationPath });
         if (jsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
