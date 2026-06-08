@@ -343,6 +343,7 @@ async function compileDeployInfo({
         const tsFile = fileBody.ts;
         const tsDestinationPath = `${env}/account/${account.id}/environment/${environment_id}/config/${config.id}/${syncName}.ts`;
         const tsLocalFileName = `${providerConfigKey}/${flow.type}s/${syncName}.ts`;
+        const tsChanged = await remoteFileService.checkIfChanged({ content: fileBody.ts, objectKey: tsDestinationPath });
 
         // !previousJsFileLocation: always upload for new functions.
         // If a previous deploy uploaded the file to s3 but the db transaction failed,
@@ -350,7 +351,7 @@ async function compileDeployInfo({
         // but we won't have a saved file_location to reuse, so we still need to upload
         // to ensure we have a valid file_location.
 
-        if (jsChanged || !previousJsFileLocation) {
+        if (tsChanged || jsChanged || !previousJsFileLocation) {
             uploads.push(
                 remoteFileService.upload({
                     content: jsFile,
