@@ -36,4 +36,5 @@ export interface RequestLocals {
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
+    sandboxTokenDeploymentId?: string;
 }

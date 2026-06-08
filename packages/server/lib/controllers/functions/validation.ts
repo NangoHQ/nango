@@ -66,3 +66,33 @@ export const functionDeploymentBodySchema = z
         allow_destructive: z.boolean().default(false)
     })
     .strict();
+
+export const functionDeploymentParamsSchema = z
+    .object({
+        id: z.string().uuid()
+    })
+    .strict();
+
+export const functionDeploymentResultBodySchema = z.discriminatedUnion('status', [
+    z
+        .object({
+            status: z.literal('success'),
+            output: z.string(),
+            duration_ms: z.number().int().nonnegative().optional()
+        })
+        .strict(),
+    z
+        .object({
+            status: z.literal('failed'),
+            output: z.string().optional(),
+            duration_ms: z.number().int().nonnegative().optional(),
+            error: z
+                .object({
+                    code: z.string().optional(),
+                    message: z.string(),
+                    payload: z.unknown().optional()
+                })
+                .strict()
+        })
+        .strict()
+]);

@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
     const write = vi.fn();
     const kill = vi.fn();
     const sandbox = {
+        sandboxId: 'sandbox-id',
         commands: { run },
         files: { write },
         kill
@@ -49,7 +50,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 });
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
-import { invokeDeploy } from './deploy-client.js';
+import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
 import { executionEnvironmentUnavailableMessage } from './sandbox.js';
 
 import type { FunctionError } from './helpers.js';
@@ -75,6 +76,45 @@ describe('remote function deploy client', () => {
     afterEach(() => {
         vi.unstubAllEnvs();
         vi.clearAllMocks();
+    });
+
+    it('prepares an async deploy sandbox and starts the callback script in the background', async () => {
+        const prepared = await prepareAsyncDeploy({
+            ...request,
+            deployment_id: '7b539769-6d39-4442-89fc-33fbac96ea66',
+            callback_url: 'https://api.example.test/functions/deployments/7b539769-6d39-4442-89fc-33fbac96ea66/result',
+            version: '1.0.0',
+            allow_destructive: true
+        });
+
+        expect(prepared.sandboxId).toBe(mocks.sandbox.sandboxId);
+        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/github/actions/listRepos.ts', 'export default {}');
+        expect(mocks.write).toHaveBeenCalledWith('/home/user/nango-integrations/index.ts', "import './github/actions/listRepos.js';\n");
+        expect(mocks.write).toHaveBeenCalledWith('/tmp/nango-function-deploy.mjs', expect.stringContaining('NANGO_DEPLOY_CALLBACK_URL'));
+
+        await prepared.start();
+
+        expect(mocks.run).toHaveBeenCalledWith('node /tmp/nango-function-deploy.mjs', {
+            cwd: '/home/user/nango-integrations',
+            background: true,
+            timeoutMs: 30_000,
+            envs: expect.objectContaining({
+                NANGO_DEPLOY_CALLBACK_URL: 'https://api.example.test/functions/deployments/7b539769-6d39-4442-89fc-33fbac96ea66/result',
+                NANGO_DEPLOY_ARGS: JSON.stringify([
+                    'deploy',
+                    'dev',
+                    '--integration',
+                    'github',
+                    '--action',
+                    'listRepos',
+                    '--auto-confirm',
+                    '--no-interactive',
+                    '--version',
+                    '1.0.0',
+                    '--allow-destructive'
+                ])
+            })
+        });
     });
 
     it('returns deploy output when the command succeeds', async () => {
@@ -125,5 +165,10 @@ describe('remote function deploy client', () => {
 
         expect(mocks.write).not.toHaveBeenCalled();
         expect(mocks.kill).not.toHaveBeenCalled();
+    });
+
+    it('builds a callback script that reports deploy compile exit codes as compilation errors', () => {
+        expect(buildAsyncDeployScript()).toContain("code: deploy.exitCode === compileExitCode ? 'compilation_error' : 'deployment_error'");
+        expect(buildAsyncDeployScript()).toContain("'Nango-Is-Script': 'true'");
     });
 });

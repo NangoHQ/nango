@@ -9,6 +9,7 @@ describe('function dryruns service', () => {
         const row: DBFunctionDryrun = {
             id: '7b539769-6d39-4442-89fc-33fbac96ea66',
             environment_id: 1,
+            job_type: 'dryrun',
             request: {
                 integration_id: 'github',
                 function_name: 'function',
