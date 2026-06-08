@@ -1,5 +1,6 @@
 import { Prism } from '@mantine/prism';
-import { IconCalendar, IconClockHour4, IconShare2 } from '@tabler/icons-react';
+import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
+import { ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
@@ -141,9 +142,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
                                 <ProviderTag msg={operation} />
-                                <div className="w-4">
-                                    <IconShare2 stroke={1} size={18} />
-                                </div>
+                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
                             </Link>
                         ) : (
                             'n/a'
@@ -161,9 +160,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
                                 className="flex gap-2.5 items-center hover:text-white"
                             >
                                 <div className="truncate">{operation.connectionName}</div>
-                                <div className="w-4">
-                                    <IconShare2 stroke={1} size={18} />
-                                </div>
+                                <ExternalLink size={16} strokeWidth={1.5} className="shrink-0" />
                             </Link>
                         ) : (
                             'n/a'
