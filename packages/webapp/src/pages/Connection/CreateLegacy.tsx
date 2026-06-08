@@ -678,12 +678,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Connection ID
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
-                                            <TooltipContent>
-                                                {`The ID you will use to retrieve the connection (most often the user ID).`}
-                                            </TooltipContent>
+                                            <TooltipContent>{`The ID you will use to retrieve the connection (most often the user ID).`}</TooltipContent>
                                         </Tooltip>
                                     </div>
                                     <div className="mt-1">
@@ -896,12 +894,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Extra Configuration: {paramName}
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
-                                            <TooltipContent>
-                                                {`Some integrations require extra configuration (cf. docs).`}
-                                            </TooltipContent>
+                                            <TooltipContent>{`Some integrations require extra configuration (cf. docs).`}</TooltipContent>
                                         </Tooltip>
                                     </div>
                                     <div className="mt-1">
@@ -969,12 +965,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                     API Key
                                                 </label>
                                                 <Tooltip>
-                                                    <TooltipTrigger asChild>
+                                                    <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                         <HelpCircle className="h-5 ml-1 text-gray-400" />
                                                     </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        {`The API key to authenticate requests`}
-                                                    </TooltipContent>
+                                                    <TooltipContent>{`The API key to authenticate requests`}</TooltipContent>
                                                 </Tooltip>
                                             </div>
 
@@ -1033,7 +1027,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Optional: Additional Authorization Params
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -1064,12 +1058,10 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Private Key ID
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
-                                            <TooltipContent>
-                                                {`Obtained after creating an API Key.`}
-                                            </TooltipContent>
+                                            <TooltipContent>{`Obtained after creating an API Key.`}</TooltipContent>
                                         </Tooltip>
                                     </div>
                                     <div className="mt-1">
@@ -1089,7 +1081,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Issuer ID
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -1114,7 +1106,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Private Key
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
                                             <TooltipContent>
@@ -1143,7 +1135,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             Optional: Additional Authorization Params
                                         </label>
                                         <Tooltip>
-                                            <TooltipTrigger asChild>
+                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
                                                 <HelpCircle className="h-5 ml-1 text-gray-400" />
                                             </TooltipTrigger>
                                             <TooltipContent>

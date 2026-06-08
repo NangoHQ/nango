@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import DefaultLayout from '../../layout/DefaultLayout';
 import { useToast } from '../../hooks/useToast';
+import DefaultLayout from '../../layout/DefaultLayout';
 import { apiFetch } from '../../utils/api';
 import { Spinner } from '@/components/ui/Spinner';
 
@@ -49,7 +49,7 @@ export function VerifyEmailByExpiredToken() {
         if (!loaded) {
             getEmail();
         }
-    }, [token, loaded, setLoaded, navigate]);
+    }, [token, loaded, setLoaded, navigate, toast]);
 
     const resendEmail = async (e: React.SyntheticEvent) => {
         e.preventDefault();
