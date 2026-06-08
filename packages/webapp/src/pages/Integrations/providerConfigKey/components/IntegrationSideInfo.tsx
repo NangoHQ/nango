@@ -28,7 +28,7 @@ export const IntegrationSideInfo: React.FC<{ integration: ApiIntegration; provid
             <SideInfoRow label="API documentation">
                 <span className="text-text-strong text-body-medium-regular inline-flex flex-wrap items-baseline gap-1">
                     <Link to={provider.docs} target="_blank" className="group w-fit inline-flex items-center gap-1">
-                        {provider.display_name} <ExternalLink className="size-3.5 text-link-disabled group-hover:text-link-default" />
+                        {provider.display_name} <ExternalLink className="size-3.5 text-text-disabled group-hover:text-text-link" />
                     </Link>
                 </span>
             </SideInfoRow>

@@ -29,7 +29,7 @@ function SelectTrigger({
             data-slot="select-trigger"
             data-size={size}
             className={cn(
-                "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-dropdown-bg-press border border-border-muted text-text-secondary hover:bg-dropdown-bg-hover text-s leading-5 focus:focus-shadow data-[placeholder]:text-text-tertiary [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
+                "flex w-fit items-center justify-between gap-1.5 rounded px-1.5 py-0.5 bg-surface-overlay border border-border-muted text-text-secondary hover:bg-state-hover text-s leading-5 focus:focus-shadow data-[placeholder]:text-text-muted [&_svg:not([class*='text-'])]:text-text-secondary focus-default whitespace-nowrap transition-[color,box-shadow] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
                 className
             )}
             {...props}
@@ -48,7 +48,7 @@ function SelectContent({ className, children, position = 'popper', ...props }: R
             <SelectPrimitive.Content
                 data-slot="select-content"
                 className={cn(
-                    'bg-dropdown-bg-press text-text-secondary border border-border-muted rounded data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto',
+                    'bg-surface-overlay text-text-secondary border border-border-muted rounded data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto',
                     position === 'popper' &&
                         'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
                     className
@@ -80,7 +80,7 @@ function SelectItem({ className, children, ...props }: React.ComponentProps<type
         <SelectPrimitive.Item
             data-slot="select-item"
             className={cn(
-                "h-7 focus:bg-dropdown-bg-hover focus:text-text-primary [&_svg:not([class*='text-'])]:text-text-secondary relative flex w-full cursor-default items-center gap-2 rounded p-2 pl-1 text-s leading-5 outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+                "h-7 focus:bg-state-hover focus:text-text-strong [&_svg:not([class*='text-'])]:text-text-secondary relative flex w-full cursor-default items-center gap-2 rounded p-2 pl-1 text-s leading-5 outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
                 className
             )}
             {...props}

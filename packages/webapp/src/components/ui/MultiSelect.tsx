@@ -134,7 +134,7 @@ export function MultiSelect<T extends string = string>({
                     disabled={options.length === 0}
                     variant="ghost"
                     size="lg"
-                    className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-surface-panel-inset' : 'hover:bg-dropdown-bg-hover')}
+                    className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover')}
                 >
                     {label}{' '}
                     {selected.length > 0 && (
@@ -172,7 +172,7 @@ export function MultiSelect<T extends string = string>({
                                     key={opt.value}
                                     onClick={() => select(opt.value)}
                                     className={cn(
-                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-strong',
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-state-hover text-text-secondary hover:text-text-strong',
                                         isSelected &&
                                             'border-[0.5px] border-bg-elevated bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
                                     )}

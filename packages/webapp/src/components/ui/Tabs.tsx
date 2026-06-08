@@ -12,7 +12,7 @@ export const TabsTrigger: React.FC<React.ComponentProps<typeof TabsPrimitive.Tri
         <TabsPrimitive.Trigger
             {...props}
             className={cn(
-                'w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-primary hover:border-text-tertiary data-[state=active]:text-text-primary data-[state=active]:border-text-primary focus-default',
+                'w-fit px-3 py-2 inline-flex items-center gap-1.5 cursor-pointer text-text-secondary !text-body-medium-medium border-b-2 border-b-transparent transition-colors hover:text-text-strong hover:border-text-tertiary data-[state=active]:text-text-strong data-[state=active]:border-text-primary focus-default',
                 props.className
             )}
         />

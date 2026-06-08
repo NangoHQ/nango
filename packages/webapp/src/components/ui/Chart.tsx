@@ -127,14 +127,14 @@ function ChartTooltipContent({
         const value = !labelKey && typeof label === 'string' ? config[label]?.label || label : itemConfig?.label;
 
         if (labelFormatter) {
-            return <div className={cn('text-text-body-medium-medium text-text-primary', labelClassName)}>{labelFormatter(value, payload)}</div>;
+            return <div className={cn('text-text-body-medium-medium text-text-strong', labelClassName)}>{labelFormatter(value, payload)}</div>;
         }
 
         if (!value) {
             return null;
         }
 
-        return <div className={cn('text-text-body-medium-medium text-text-primary', labelClassName)}>{value}</div>;
+        return <div className={cn('text-text-body-medium-medium text-text-strong', labelClassName)}>{value}</div>;
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
 
     if (!active || !payload?.length) {
@@ -144,7 +144,7 @@ function ChartTooltipContent({
     const nestLabel = payload.length === 1 && indicator !== 'dot';
 
     return (
-        <div className={cn('bg-bg-subtle grid min-w-[8rem] items-start gap-1.5 rounded p-2 text-xs shadow-xl', className)}>
+        <div className={cn('bg-surface-panel-inset grid min-w-[8rem] items-start gap-1.5 rounded p-2 text-xs shadow-xl', className)}>
             {!nestLabel ? tooltipLabel : null}
             <div className="grid gap-1.5">
                 {payload
@@ -192,7 +192,7 @@ function ChartTooltipContent({
                                                 <span className="text-text-secondary">{itemConfig?.label || item.name}</span>
                                             </div>
                                             {item.value !== undefined && (
-                                                <span className="text-text-primary font-mono font-medium tabular-nums">{item.value.toLocaleString()}</span>
+                                                <span className="text-text-strong font-mono font-medium tabular-nums">{item.value.toLocaleString()}</span>
                                             )}
                                         </div>
                                     </>

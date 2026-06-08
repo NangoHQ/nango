@@ -39,7 +39,7 @@ export const Payment: React.FC = () => {
                             <div className="w-full inline-flex items-center justify-between">
                                 <div className="inline-flex gap-3 items-center">
                                     <div className="size-10 flex items-center justify-center border border-border-muted rounded">
-                                        <CreditCard className="size-4.5 text-icon-primary" />
+                                        <CreditCard className="size-4.5 text-icon-default" />
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="inline-flex gap-1.5 items-center">

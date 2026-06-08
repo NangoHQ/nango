@@ -9,11 +9,11 @@ const badgeVariants = cva('w-fit font-mono px-2 py-0.5 rounded bg-surface-canvas
         variant: {
             dark: 'bg-surface-canvas  text-text-secondary',
             light: 'bg-surface-panel-inset  text-text-strong',
-            red: 'bg-feedback-error-fg/30 text-red-300',
-            success: 'bg-feedback-success-fg/30 text-green-500',
-            warning: 'bg-feedback-warning-fg/30 text-yellow-500',
-            error: 'bg-feedback-error-fg/30 text-red-500',
-            info: 'bg-feedback-info-fg/30 text-feedback-info-fg'
+            red: 'bg-status-danger-icon/30 text-status-danger-border',
+            success: 'bg-status-success-icon/30 text-status-success-text',
+            warning: 'bg-status-warning-icon/30 text-status-warning-text',
+            error: 'bg-status-danger-icon/30 text-status-danger-text',
+            info: 'bg-status-info-icon/30 text-status-info-text'
         }
     },
     defaultVariants: {

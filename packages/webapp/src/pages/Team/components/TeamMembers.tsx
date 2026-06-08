@@ -172,11 +172,11 @@ export const TeamMembers: React.FC = () => {
                             <TableCell>
                                 {user.is_invitation ? (
                                     <div className="inline-flex items-center gap-2 text-text-secondary">
-                                        <Dot className="bg-feedback-warning-fg" /> Invited
+                                        <Dot className="bg-status-warning-icon" /> Invited
                                     </div>
                                 ) : (
                                     <div className="inline-flex items-center gap-2 text-text-strong">
-                                        <Dot className="bg-feedback-success-fg" /> Active
+                                        <Dot className="bg-status-success-icon" /> Active
                                     </div>
                                 )}
                             </TableCell>

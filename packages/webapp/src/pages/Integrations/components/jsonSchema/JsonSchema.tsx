@@ -152,7 +152,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                 >
                     <div className="inline-flex gap-1 items-center">
                         <span className="text-text-strong text-body-small-semi grow">{open ? 'Hide child attributes' : 'Show child attributes'}</span>
-                        <ChevronDown className="size-4 text-icon-primary group-data-[state=open]:rotate-180" />
+                        <ChevronDown className="size-4 text-icon-default group-data-[state=open]:rotate-180" />
                     </div>
                     <span className="text-text-strong text-body-small-medium">{propertyCount}</span>
                 </div>
@@ -162,7 +162,7 @@ const CollapsibleProperties: React.FC<{ schema: JSONSchema7; depth: number }> = 
                     {Object.entries(properties || {}).map(([name, property]) => (
                         <div
                             key={name}
-                            className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-extra-strong' : 'border-border-default')}
+                            className={cn('p-4 border-b last:border-b-0', depth % 2 === 0 ? 'border-border-stronger' : 'border-border-default')}
                         >
                             <JsonSchema name={name} schema={property as JSONSchema7} isRequired={required?.includes(name)} depth={depth} />
                         </div>

@@ -229,7 +229,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             disabled={disabled || options.length === 0}
             variant="ghost"
             size="lg"
-            className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-surface-panel-inset' : 'hover:bg-dropdown-bg-hover', className)}
+            className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
         >
             {props.label}{' '}
             {props.selected.length > 0 && (
@@ -265,7 +265,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             className={cn(
                 'text-[14px] h-8 cursor-pointer flex w-full min-w-0 items-center justify-between gap-1.5 self-stretch rounded-[4px] bg-surface-canvas px-2 py-0 text-body-medium-regular leading-[160%] tracking-normal outline-none transition-[color,box-shadow] focus-default hover:text-text-strong disabled:cursor-not-allowed disabled:opacity-50',
                 selectedOption ? 'text-text-strong' : 'text-text-secondary',
-                open ? 'bg-surface-panel-inset' : 'hover:bg-dropdown-bg-hover',
+                open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
                 className
             )}
         >
@@ -307,7 +307,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                     }
                 }}
                 className={cn(
-                    'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-strong',
+                    'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-state-hover text-text-secondary hover:text-text-strong',
                     isChild && 'pl-4',
                     isDisabled && 'cursor-not-allowed opacity-50 pointer-events-none',
                     isHighlighted && 'border-[0.5px] border-bg-elevated bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
@@ -463,7 +463,7 @@ function ComboboxItem({ className, children, ...props }: ComboboxPrimitive.Item.
         <ComboboxPrimitive.Item
             data-slot="combobox-item"
             className={cn(
-                'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-highlighted:bg-dropdown-bg-hover data-highlighted:text-text-strong data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
+                'relative flex w-full cursor-pointer items-center gap-2 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none data-highlighted:bg-state-hover data-highlighted:text-text-strong data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*="size-"])]:size-4',
                 className
             )}
             {...props}

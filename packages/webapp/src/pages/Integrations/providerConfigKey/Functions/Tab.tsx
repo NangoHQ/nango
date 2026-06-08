@@ -132,7 +132,7 @@ const GroupedFunctionsTable: React.FC<{
                                         {func.name}
                                         <Tooltip>
                                             <TooltipTrigger>
-                                                <Info className="size-3.5 text-icon-tertiary cursor-pointer" />
+                                                <Info className="size-3.5 text-icon-muted cursor-pointer" />
                                             </TooltipTrigger>
                                             <TooltipContent>{func.description}</TooltipContent>
                                         </Tooltip>
