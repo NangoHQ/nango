@@ -22,7 +22,11 @@ export const OperationDrawer: React.FC<{ operationId: string; onClose: (open: bo
                 <SheetTitle className="sr-only">Operation Details</SheetTitle>
                 <div className="relative h-full select-text">
                     <div className="absolute right-6 top-[35px] flex items-center gap-1">
-                        <CopyButton text={window.location.href} iconType="link" className="text-text-light-gray hover:text-white focus:text-white transition-colors" />
+                        <CopyButton
+                            text={window.location.href}
+                            iconType="link"
+                            className="text-text-light-gray hover:text-white focus:text-white transition-colors"
+                        />
                         <SheetClose
                             title="Close"
                             className="bg-transparent text-text-light-gray hover:text-white focus:text-white transition-colors w-8 h-6 flex items-center justify-center"

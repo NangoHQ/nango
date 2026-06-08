@@ -12,7 +12,6 @@ import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
 import { LocalStorageKeys } from '@/utils/local-storage';
 
-
 const App = () => {
     const env = useStore((state) => state.env);
     const setShowGettingStarted = useStore((state) => state.setShowGettingStarted);
