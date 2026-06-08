@@ -5,10 +5,10 @@ import { v4 as uuid } from 'uuid';
 import db from '@nangohq/database';
 import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
 
-import { hardDeleteCheckpoints } from '../index.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
 import accountService from '../services/account.service.js';
+import { hardDeleteCheckpoints } from '../services/checkpoints/checkpoints.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';

@@ -1,8 +1,8 @@
 import db from '@nangohq/database';
 import { Err, Ok, isCloud, nanoid } from '@nangohq/utils';
 
+import * as gettingStartedService from './getting-started.service.js';
 import { getProvider } from './providers.js';
-import { gettingStartedService } from '../index.js';
 import syncManager from './sync/manager.service.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import encryptionManager from '../utils/encryption.manager.js';
