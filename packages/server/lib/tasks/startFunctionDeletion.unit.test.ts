@@ -27,9 +27,9 @@ vi.mock('./index.js', () => ({ tasks: { enqueue } }));
 
 vi.mock('../utils/utils.js', () => ({ getOrchestrator: () => ({}) }));
 
-const { deleteFunction } = await import('./deleteFunction.js');
+const { startFunctionDeletion } = await import('./startFunctionDeletion.js');
 
-describe('deleteFunction', () => {
+describe('startFunctionDeletion', () => {
     beforeEach(() => {
         order.length = 0;
         softDeleteSync.mockClear();
@@ -42,13 +42,13 @@ describe('deleteFunction', () => {
     });
 
     it('enqueues the teardown task first, then unschedules + soft-deletes every sync and the config', async () => {
-        const res = await deleteFunction({ syncConfigId: 1, environmentId: 10, models: ['User'] });
+        const res = await startFunctionDeletion({ syncConfigId: 1, environmentId: 10, models: ['User'] });
 
         expect(res.isOk()).toBe(true);
         expect(softDeleteSync).toHaveBeenCalledTimes(2);
         expect(softDeleteSync).toHaveBeenNthCalledWith(1, 's1', 10, expect.anything());
         expect(softDeleteSync).toHaveBeenNthCalledWith(2, 's2', 10, expect.anything());
-        expect(enqueue).toHaveBeenCalledWith('teardownFunction', { syncConfigId: 1, environmentId: 10, models: ['User'] });
+        expect(enqueue).toHaveBeenCalledWith('deleteFunction', { syncConfigId: 1, environmentId: 10, models: ['User'] });
         // Enqueue is durable-first; the soft-deletes only run once teardown is scheduled.
         expect(order).toEqual(['enqueue', 'softDeleteSync', 'softDeleteSync', 'deleteSyncConfig']);
     });
@@ -56,7 +56,7 @@ describe('deleteFunction', () => {
     it('handles an action (no syncs) — enqueues then soft-deletes the config', async () => {
         getSyncsBySyncConfigId.mockResolvedValue([]);
 
-        const res = await deleteFunction({ syncConfigId: 2, environmentId: 10, models: [] });
+        const res = await startFunctionDeletion({ syncConfigId: 2, environmentId: 10, models: [] });
 
         expect(res.isOk()).toBe(true);
         expect(softDeleteSync).not.toHaveBeenCalled();
@@ -66,7 +66,7 @@ describe('deleteFunction', () => {
     it('returns Err and does NOT soft-delete anything when the teardown enqueue fails', async () => {
         enqueue.mockResolvedValue(Err(new Error('queue down')));
 
-        const res = await deleteFunction({ syncConfigId: 1, environmentId: 10, models: ['User'] });
+        const res = await startFunctionDeletion({ syncConfigId: 1, environmentId: 10, models: ['User'] });
 
         expect(res.isErr()).toBe(true);
         expect(softDeleteSync).not.toHaveBeenCalled();

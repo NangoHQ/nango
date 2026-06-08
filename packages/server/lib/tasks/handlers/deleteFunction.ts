@@ -19,8 +19,8 @@ const CREATED_TO_STARTED_TIMEOUT_SECONDS = 86400;
  * Async hard-delete that completes a function deletion. Drives `deleteSyncConfigData` on a time budget,
  * self-chaining a new task when the budget is reached.
  */
-export const teardownFunctionTask = defineTask({
-    type: 'teardownFunction',
+export const deleteFunctionTask = defineTask({
+    type: 'deleteFunction',
     heartbeatTimeoutSecs: TIMEOUT_SECONDS,
     startedToCompletedTimeoutSecs: TIMEOUT_SECONDS,
     createdToStartedTimeoutSecs: CREATED_TO_STARTED_TIMEOUT_SECONDS,
@@ -42,17 +42,17 @@ export const teardownFunctionTask = defineTask({
         } catch (err) {
             // If we reach the time budget limit, we're not done. Continue on new task.
             if (err instanceof DeletionBudgetExceeded) {
-                taskCtx.logger.info(`[tasks:teardownFunction] budget reached for sync_config ${syncConfigId}, chaining continuation`);
+                taskCtx.logger.info(`[tasks:deleteFunction] budget reached for sync_config ${syncConfigId}, chaining continuation`);
 
-                const next = await tasks.enqueue('teardownFunction', payload);
+                const next = await tasks.enqueue('deleteFunction', payload);
                 if (next.isErr()) {
                     return Err(next.error);
                 }
 
                 return Ok(undefined);
             }
-            taskCtx.logger.error(`[tasks:teardownFunction] failed for sync_config ${syncConfigId}: ${stringifyError(err)}`);
-            return Err(err instanceof Error ? err : new Error(`teardownFunction failed for sync_config ${syncConfigId}`));
+            taskCtx.logger.error(`[tasks:deleteFunction] failed for sync_config ${syncConfigId}: ${stringifyError(err)}`);
+            return Err(err instanceof Error ? err : new Error(`deleteFunction failed for sync_config ${syncConfigId}`));
         }
     }
 });

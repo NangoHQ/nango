@@ -16,11 +16,11 @@ export interface FunctionDeletionParams {
 }
 
 /**
- * Enqueues the durable `teardownFunction` task, then soft-deletes the config and its syncs to stop
+ * Enqueues the durable `deleteFunction` task, then soft-deletes the config and its syncs to stop
  * execution immediately.
  **/
-export async function deleteFunction({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
-    const res = await tasks.enqueue('teardownFunction', { syncConfigId, environmentId, models });
+export async function startFunctionDeletion({ syncConfigId, environmentId, models }: FunctionDeletionParams): Promise<Result<void>> {
+    const res = await tasks.enqueue('deleteFunction', { syncConfigId, environmentId, models });
     // Only continue if enqueueing the task was successful.
     if (res.isErr()) {
         return Err(res.error);

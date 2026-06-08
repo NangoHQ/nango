@@ -13,15 +13,15 @@ vi.mock('../../crons/delete/deleteSyncConfigData.js', () => ({
     deleteSyncConfigData: (...args: unknown[]) => deleteSyncConfigData(...args)
 }));
 
-const { teardownFunctionTask } = await import('./teardownFunction.js');
+const { deleteFunctionTask } = await import('./deleteFunction.js');
 
 const ctx = { taskId: 't', attempt: 0, logger: { info: vi.fn(), error: vi.fn(), debug: vi.fn(), warning: vi.fn() } } as any;
 const payload = { syncConfigId: 1, environmentId: 10, models: ['User'] };
 
-const run = () => teardownFunctionTask.handle(payload, ctx);
+const run = () => deleteFunctionTask.handle(payload, ctx);
 const enqueuesOfType = (type: string) => enqueue.mock.calls.filter((c) => c[0] === type);
 
-describe('teardownFunction task', () => {
+describe('deleteFunction task', () => {
     beforeEach(() => {
         enqueue.mockClear().mockResolvedValue(Ok({ taskId: 'task-id' }));
         deleteSyncConfigData.mockReset().mockResolvedValue(undefined);
@@ -38,7 +38,7 @@ describe('teardownFunction task', () => {
         const opts = deleteSyncConfigData.mock.calls[0]![1];
         expect(opts.sleepMs).toBe(0);
         expect(opts.deadline.getTime()).toBeGreaterThan(Date.now());
-        expect(enqueuesOfType('teardownFunction')).toHaveLength(0);
+        expect(enqueuesOfType('deleteFunction')).toHaveLength(0);
     });
 
     it('self-chains exactly one continuation (same payload) on DeletionBudgetExceeded', async () => {
@@ -47,7 +47,7 @@ describe('teardownFunction task', () => {
         const res = await run();
 
         expect(res.isOk()).toBe(true);
-        const chained = enqueuesOfType('teardownFunction');
+        const chained = enqueuesOfType('deleteFunction');
         expect(chained).toHaveLength(1);
         expect(chained[0]![1]).toEqual(payload);
     });
@@ -58,7 +58,7 @@ describe('teardownFunction task', () => {
         const res = await run();
 
         expect(res.isErr()).toBe(true);
-        expect(enqueuesOfType('teardownFunction')).toHaveLength(0);
+        expect(enqueuesOfType('deleteFunction')).toHaveLength(0);
     });
 
     it('returns Err when the continuation enqueue fails', async () => {

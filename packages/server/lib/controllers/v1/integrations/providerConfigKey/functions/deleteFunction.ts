@@ -4,7 +4,7 @@ import { configService, getFunction } from '@nangohq/shared';
 import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
-import { deleteFunction } from '../../../../../tasks/deleteFunction.js';
+import { startFunctionDeletion } from '../../../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 
 import type { DeleteIntegrationFunction } from '@nangohq/types';
@@ -66,7 +66,7 @@ export const deleteIntegrationFunction = asyncWrapper<DeleteIntegrationFunction>
         return;
     }
 
-    const enqueued = await deleteFunction({
+    const enqueued = await startFunctionDeletion({
         syncConfigId: fn.id,
         environmentId: environment.id,
         models: fn.type === 'on-event' ? [] : fn.returns

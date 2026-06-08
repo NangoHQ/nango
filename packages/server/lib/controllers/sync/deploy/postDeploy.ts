@@ -5,7 +5,7 @@ import { NangoError, cleanIncomingFlow, deploy, errorManager, getAndReconcileDif
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { validationWithNangoYaml as validation } from './validation.js';
-import { deleteFunction } from '../../../tasks/deleteFunction.js';
+import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
@@ -89,7 +89,7 @@ export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
                 logCtx,
                 logContextGetter,
                 orchestrator,
-                onFunctionDeleted: ({ syncConfigId, models }) => deleteFunction({ syncConfigId, environmentId: environment.id, models })
+                onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
             });
             if (!success) {
                 res.status(500).send({
