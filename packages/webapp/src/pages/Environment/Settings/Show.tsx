@@ -46,7 +46,7 @@ export const EnvironmentSettings: React.FC = () => {
                     <title>Environment Settings - Nango</title>
                 </Helmet>
                 <div className="flex justify-between mb-8 items-center">
-                    <div className="flex text-left text-3xl tracking-tight text-text-primary">
+                    <div className="flex text-left text-3xl tracking-tight text-text-strong">
                         <h2 className="font-semibold">Environment Settings &mdash;</h2>&nbsp;{env}
                     </div>
                 </div>
@@ -66,7 +66,7 @@ export const EnvironmentSettings: React.FC = () => {
             </Helmet>
 
             <div className="flex flex-col gap-2.5">
-                <h2 className="text-title-subsection text-text-primary">Environment settings</h2>
+                <h2 className="text-title-subsection text-text-strong">Environment settings</h2>
                 <div className="flex gap-2.5">
                     <span className="text-heading-sm text-text-secondary">{env}</span>
                     {isProd && (

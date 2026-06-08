@@ -134,11 +134,11 @@ export function MultiSelect<T extends string = string>({
                     disabled={options.length === 0}
                     variant="ghost"
                     size="lg"
-                    className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-bg-subtle' : 'hover:bg-dropdown-bg-hover')}
+                    className={cn('border border-border-muted', isDirty && 'bg-btn-tertiary-press', open ? 'bg-surface-panel-inset' : 'hover:bg-dropdown-bg-hover')}
                 >
                     {label}{' '}
                     {selected.length > 0 && (
-                        <span className="text-text-primary text-body-small-semi bg-bg-subtle rounded-full h-5 min-w-5 flex items-center justify-center px-2">
+                        <span className="text-text-strong text-body-small-semi bg-surface-panel-inset rounded-full h-5 min-w-5 flex items-center justify-center px-2">
                             {selected.length}
                         </span>
                     )}
@@ -146,19 +146,19 @@ export function MultiSelect<T extends string = string>({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-bg-subtle p-1 pb-0"
+                className="flex w-[var(--radix-popover-trigger-width)] min-w-[312px] flex-col items-start overflow-hidden rounded-[4px] border-[0.5px] border-border-default bg-surface-panel-inset p-1 pb-0"
             >
                 <div className="border-b border-border-muted w-full">
-                    <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-bg-surface px-2.5 py-1.5">
+                    <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
                         <InputGroupAddon className="p-0 pr-2">
-                            <Search className="size-4 text-text-tertiary" />
+                            <Search className="size-4 text-text-muted" />
                         </InputGroupAddon>
                         <InputGroupInput
                             type="text"
                             placeholder={searchPlaceholder}
                             value={search}
                             onChange={handleInputChange}
-                            className="h-auto p-0 text-body-medium-regular text-text-tertiary placeholder:text-text-tertiary"
+                            className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
                         />
                     </InputGroup>
                 </div>
@@ -172,16 +172,16 @@ export function MultiSelect<T extends string = string>({
                                     key={opt.value}
                                     onClick={() => select(opt.value)}
                                     className={cn(
-                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-primary',
+                                        'group flex w-full cursor-pointer items-center justify-between rounded-[4px] px-2 py-1 hover:bg-dropdown-bg-hover text-text-secondary hover:text-text-strong',
                                         isSelected &&
-                                            'border-[0.5px] border-bg-elevated bg-bg-elevated text-text-primary hover:bg-bg-elevated hover:text-text-primary'
+                                            'border-[0.5px] border-bg-elevated bg-surface-page text-text-strong hover:bg-surface-page hover:text-text-strong'
                                     )}
                                 >
                                     <div className="flex min-w-0 items-center gap-2">
                                         <span
                                             className={cn(
                                                 'flex size-5 shrink-0 items-center justify-center rounded-sm border',
-                                                isSelected ? 'border-transparent bg-surface-panel text-text-primary' : 'border-border-strong bg-transparent'
+                                                isSelected ? 'border-transparent bg-surface-panel text-text-strong' : 'border-border-strong bg-transparent'
                                             )}
                                         >
                                             {isSelected ? <Check className="size-3.5" /> : null}
@@ -196,7 +196,7 @@ export function MultiSelect<T extends string = string>({
                         })
                     ) : (
                         <div className="px-2 py-3 text-center">
-                            <p className="text-text-tertiary text-body-small-regular">{emptyText}</p>
+                            <p className="text-text-muted text-body-small-regular">{emptyText}</p>
                         </div>
                     )}
                 </div>

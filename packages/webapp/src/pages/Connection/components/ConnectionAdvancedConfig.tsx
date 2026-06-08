@@ -41,13 +41,13 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
     const showDocsOverrideField = false;
 
     return (
-        <Card className="bg-bg-elevated rounded border-none gap-2.5">
+        <Card className="bg-surface-page rounded border-none gap-2.5">
             <Collapsible>
                 <CollapsibleTrigger className="" asChild>
                     <CardHeader className={'flex flex-row items-center justify-between p-6 [&[data-state=open]_svg]:rotate-90 cursor-pointer'}>
                         <div className="flex flex-col gap-1.5">
-                            <CardTitle className={'text-text-primary'}>Advanced configuration</CardTitle>
-                            <CardDescription className={'text-text-tertiary'}>Configure advanced settings for your connection</CardDescription>
+                            <CardTitle className={'text-text-strong'}>Advanced configuration</CardTitle>
+                            <CardDescription className={'text-text-muted'}>Configure advanced settings for your connection</CardDescription>
                         </div>
                         <ChevronRight className="size-4.5 transition-transform duration-200" />
                     </CardHeader>

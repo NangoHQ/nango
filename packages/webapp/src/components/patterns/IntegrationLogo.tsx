@@ -14,7 +14,7 @@ export const IntegrationLogo = ({ provider, className }: IntegrationLogoProps) =
     return (
         <div className={cn(`p-1 size-8 rounded-sm flex items-center justify-center bg-surface-raised border-[0.5px] border-border-muted`, className)}>
             {provider === 'unauthenticated' ? (
-                <LockOpenIcon className={`size-full text-text-primary stroke-2`} />
+                <LockOpenIcon className={`size-full text-text-strong stroke-2`} />
             ) : !imgError ? (
                 <img
                     src={`/images/template-logos/${provider}.svg`}

@@ -40,7 +40,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                 <DialogDescription className="-mt-3">{description}</DialogDescription>
 
                 <div className="flex flex-col gap-2">
-                    <p className="text-sm text-text-primary break-words">{inputLabel}</p>
+                    <p className="text-sm text-text-strong break-words">{inputLabel}</p>
                     <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" className="w-full" />
                 </div>
 

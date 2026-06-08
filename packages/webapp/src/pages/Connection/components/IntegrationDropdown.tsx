@@ -52,7 +52,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger
-                className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'bg-bg-surface justify-between grow w-full h-13')}
+                className={cn(buttonVariants({ variant: 'secondary', size: 'lg' }), 'bg-surface-canvas justify-between grow w-full h-13')}
                 disabled={disabled}
             >
                 {selectedIntegration ? (
@@ -66,7 +66,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 <ChevronsUpDown className="size-4.5 text-text-secondary" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2 bg-bg-subtle border-none"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] p-2 bg-surface-panel-inset border-none"
                 side="bottom"
                 align="start"
                 onInteractOutside={(e) => {
@@ -77,7 +77,7 @@ export const IntegrationDropdown: React.FC<IntegrationDropdownProps> = ({ integr
                 }}
             >
                 <div
-                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-bg-muted rounded-md border border-border-default"
+                    className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-surface-panel-muted rounded-md border border-border-default"
                     onKeyDown={(e) => {
                         e.stopPropagation();
                     }}

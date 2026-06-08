@@ -58,7 +58,7 @@ export function VerifyEmail() {
             </Helmet>
 
             <div className="flex flex-col items-center gap-3">
-                <h2 className="text-title-group text-text-primary">Verify your email</h2>
+                <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
                     <Alert variant="error">

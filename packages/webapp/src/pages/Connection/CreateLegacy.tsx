@@ -649,8 +649,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
             </Helmet>
             {integrations && !!integrations.length && publicKey && hostUrl && (
                 <div className="pb-40">
-                    <h2 className="text-left text-3xl font-semibold tracking-tight text-text-primary mb-12">Add New Connection</h2>
-                    <div className="h-fit border border-border-default rounded-md text-text-primary text-sm py-14 px-8">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-text-strong mb-12">Add New Connection</h2>
+                    <div className="h-fit border border-border-default rounded-md text-text-strong text-sm py-14 px-8">
                         <form className="space-y-6" onSubmit={handleCreate}>
                             <div>
                                 <div>
@@ -682,7 +682,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`The ID you will use to retrieve the connection (most often the user ID).`}</p>
                                                     </div>
                                                 </>
@@ -728,9 +728,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 <>
                                     <div className="flex flex-col">
                                         <div className="flex items-center mb-1">
-                                            <span className="text-text-tertiary text-xs">Client ID</span>
+                                            <span className="text-text-muted text-xs">Client ID</span>
                                         </div>
-                                        <div className="flex text-text-primary mt-1 items-center">
+                                        <div className="flex text-text-strong mt-1 items-center">
                                             <div className="w-full relative">
                                                 <SecretInput
                                                     copy={true}
@@ -745,7 +745,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex items-center mb-1">
-                                            <span className="text-text-tertiary text-xs">Client Secret</span>
+                                            <span className="text-text-muted text-xs">Client Secret</span>
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
@@ -762,7 +762,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex items-center mb-1">
-                                            <span className="text-text-tertiary text-xs">Scopes</span>
+                                            <span className="text-text-muted text-xs">Scopes</span>
                                         </div>
                                         <div className="mt-1">
                                             <ScopesInput
@@ -781,7 +781,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 <>
                                     <div className="flex flex-col mt-4">
                                         <div className="flex items-center mb-1">
-                                            <span className="text-text-tertiary text-xs">Client Certificate</span>
+                                            <span className="text-text-muted text-xs">Client Certificate</span>
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
@@ -797,7 +797,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                     </div>
                                     <div className="flex flex-col mt-4">
                                         <div className="flex items-center mb-1">
-                                            <span className="text-text-tertiary text-xs">Private Key</span>
+                                            <span className="text-text-muted text-xs">Private Key</span>
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
@@ -904,7 +904,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
                                                         <a
                                                             href="https://nango.dev/docs/guides/auth/customize-connect-ui#handle-apis-requiring-connection-specific-configuration-for-authorization"
@@ -989,7 +989,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                                 <Tooltip
                                                     text={
                                                         <>
-                                                            <div className="flex text-text-primary text-sm">
+                                                            <div className="flex text-text-strong text-sm">
                                                                 <p>{`The API key to authenticate requests`}</p>
                                                             </div>
                                                         </>
@@ -1057,7 +1057,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
                                                     </div>
                                                 </>
@@ -1074,7 +1074,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             autoComplete="new-password"
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
-                                                authorizationParamsError ? 'text-feedback-error-fg' : 'text-text-secondary'
+                                                authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
                                             } focus:ring-border-selected bg-surface-input block focus:border-border-selected w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
@@ -1092,7 +1092,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`Obtained after creating an API Key.`}</p>
                                                     </div>
                                                 </>
@@ -1121,7 +1121,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`is accessible in App Store Connect, under Users and Access, then Copy next to the ID`}</p>
                                                     </div>
                                                 </>
@@ -1150,7 +1150,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`Obtained after creating an API Key. This value should be base64 encoded when passing to the auth call`}</p>
                                                     </div>
                                                 </>
@@ -1183,7 +1183,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="dark"
                                             text={
                                                 <>
-                                                    <div className="flex text-text-primary text-sm">
+                                                    <div className="flex text-text-strong text-sm">
                                                         <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
                                                     </div>
                                                 </>
@@ -1200,7 +1200,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             autoComplete="new-password"
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
-                                                authorizationParamsError ? 'text-feedback-error-fg' : 'text-text-secondary'
+                                                authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
                                             } focus:ring-border-selected bg-surface-input block focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
@@ -1261,11 +1261,11 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                 </div>
                             )}
                             <div>
-                                {serverErrorMessage && <p className="mt-6 text-sm text-feedback-error-fg">{serverErrorMessage}</p>}
+                                {serverErrorMessage && <p className="mt-6 text-sm text-status-danger-text">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button
                                         type="submit"
-                                        className="bg-surface-panel mt-4 h-8 rounded-md hover:bg-bg-subtle border px-3 pt-0.5 text-sm text-text-primary"
+                                        className="bg-surface-panel mt-4 h-8 rounded-md hover:bg-surface-panel-inset border px-3 pt-0.5 text-sm text-text-strong"
                                     >
                                         {authMode === 'OAUTH1' || authMode === 'OAUTH2' ? <>Start OAuth Flow</> : <>Create Connection</>}
                                     </button>
@@ -1288,9 +1288,9 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
             {integrations && !integrations.length && (
                 <div className="mx-auto">
                     <div className="mx-16">
-                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-text-primary mb-12">Add New Connection</h2>
+                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-text-strong mb-12">Add New Connection</h2>
                         <div className="text-sm w-largebox h-40">
-                            <p className="text-text-primary text-sm">
+                            <p className="text-text-strong text-sm">
                                 You have not created any Integrations yet. Please create an{' '}
                                 <Link to={`/${env}/integrations`} className="text-text-link">
                                     Integration

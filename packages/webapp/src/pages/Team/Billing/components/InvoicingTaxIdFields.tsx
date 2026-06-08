@@ -54,9 +54,9 @@ export const InvoicingTaxIdFields: React.FC = () => {
     };
 
     return (
-        <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
-            <CardHeader className="bg-bg-elevated h-10 flex flex-row items-center justify-between px-6">
-                <CardTitle className="text-text-primary !text-heading-sm flex items-center gap-2">
+        <Card className="bg-surface-canvas rounded border-2 border-border-disabled py-0 gap-0">
+            <CardHeader className="bg-surface-page h-10 flex flex-row items-center justify-between px-6">
+                <CardTitle className="text-text-strong !text-heading-sm flex items-center gap-2">
                     Tax ID
                     <OptionalTag />
                 </CardTitle>
@@ -82,7 +82,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                 </FormLabel>
                                 <Select value={field.value || undefined} onValueChange={field.onChange}>
                                     <FormControl>
-                                        <SelectTrigger className="w-full bg-bg-surface border-border-muted text-text-primary data-[placeholder]:text-text-tertiary hover:bg-bg-surface focus:border-border-default">
+                                        <SelectTrigger className="w-full bg-surface-canvas border-border-muted text-text-strong data-[placeholder]:text-text-muted hover:bg-surface-canvas focus:border-border-default">
                                             <SelectValue placeholder="Choose country" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -108,7 +108,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                 </FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange}>
                                     <FormControl>
-                                        <SelectTrigger className="w-full bg-bg-surface border-border-muted text-text-primary data-[placeholder]:text-text-tertiary hover:bg-bg-surface focus:border-border-default">
+                                        <SelectTrigger className="w-full bg-surface-canvas border-border-muted text-text-strong data-[placeholder]:text-text-muted hover:bg-surface-canvas focus:border-border-default">
                                             <SelectValue placeholder="Select type" />
                                         </SelectTrigger>
                                     </FormControl>
@@ -140,7 +140,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
                                 ) : (
                                     docType &&
                                     docFormat && (
-                                        <p className={`text-body-small-regular ${taxIdValue ? 'text-text-tertiary' : 'text-alert-400'}`}>
+                                        <p className={`text-body-small-regular ${taxIdValue ? 'text-text-muted' : 'text-alert-400'}`}>
                                             Enter your {docType} in the format {docFormat}
                                         </p>
                                     )

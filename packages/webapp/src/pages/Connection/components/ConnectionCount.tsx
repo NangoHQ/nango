@@ -21,7 +21,7 @@ export const ConnectionCount = ({ className, ...rest }: ConnectionCountProps) =>
     return (
         <div className={cn('inline-flex items-center gap-1.5', className)} {...rest}>
             <Dot variant="error" />
-            <span className="text-text-tertiary text-body-medium-medium">
+            <span className="text-text-muted text-body-medium-medium">
                 {total} connections ({withError} errored)
             </span>
         </div>

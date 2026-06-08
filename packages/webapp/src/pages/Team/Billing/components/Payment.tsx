@@ -26,9 +26,9 @@ export const Payment: React.FC = () => {
         <div className="flex-1 flex flex-col gap-8">
             <div className="flex flex-col gap-5">
                 <h3 className="text-body-small-regular text-text-secondary">PAYMENT</h3>
-                <Card className="bg-bg-surface rounded border-2 border-border-disabled py-0 gap-0">
-                    <CardHeader className="bg-bg-elevated h-10 flex items-center px-6">
-                        <CardTitle className="text-text-primary !text-heading-sm">Payment method</CardTitle>
+                <Card className="bg-surface-canvas rounded border-2 border-border-disabled py-0 gap-0">
+                    <CardHeader className="bg-surface-page h-10 flex items-center px-6">
+                        <CardTitle className="text-text-strong !text-heading-sm">Payment method</CardTitle>
                     </CardHeader>
                     <CardContent className="px-6 py-9">
                         {isPaymentMethodsLoading ? (
@@ -43,10 +43,10 @@ export const Payment: React.FC = () => {
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="inline-flex gap-1.5 items-center">
-                                            <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
+                                            <span className="text-text-strong text-sm leading-5 font-semibold">Credit Card</span>
                                             <Dot variant={paymentMethod ? 'brand' : 'error'} />
                                         </div>
-                                        <span className="text-text-tertiary text-s leading-5 font-medium">
+                                        <span className="text-text-muted text-s leading-5 font-medium">
                                             {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
                                         </span>
                                     </div>

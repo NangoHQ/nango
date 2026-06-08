@@ -2,7 +2,7 @@ import type React from 'react';
 
 export const ErrorBoundary: React.FC = () => {
     return (
-        <div className="flex h-screen text-text-primary justify-center items-center">
+        <div className="flex h-screen text-text-strong justify-center items-center">
             <div className="mx-auto">
                 <img className="h-8" src="/logo-circled.svg" alt="Nango" />
                 <h2 className="text-emphasis mt-6 text-2xl font-medium">It&apos;s not you, it&apos;s us.</h2>
@@ -12,7 +12,7 @@ export const ErrorBoundary: React.FC = () => {
 
                 <button
                     onClick={() => window.location.reload()}
-                    className="mt-auto mb-4 px-4 h-10 rounded-md text-sm text-text-primary bg-surface-panel hover:bg-bg-subtle"
+                    className="mt-auto mb-4 px-4 h-10 rounded-md text-sm text-text-strong bg-surface-panel hover:bg-surface-panel-inset"
                 >
                     Try again?
                 </button>

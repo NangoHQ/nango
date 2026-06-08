@@ -24,7 +24,7 @@ export const ThirdStep = ({ onSetupIntegrationClicked }: ThirdStepProps) => {
         <div ref={componentRef} className="flex flex-col gap-7">
             <div className="flex flex-col gap-1.5 text-sm">
                 <h3 className="text-brand-500 font-semibold">Congrats!</h3>
-                <p className="text-text-primary">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
+                <p className="text-text-strong">Now that you’ve had a glimpse of Nango, you can go ahead and configure your first integration!</p>
             </div>
 
             <ButtonLink to={`/${env}/integrations/create`} onClick={onSetupIntegrationClicked} variant="primary" size="lg">

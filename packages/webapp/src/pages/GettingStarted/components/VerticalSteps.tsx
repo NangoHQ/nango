@@ -34,13 +34,13 @@ export default function VerticalSteps({ steps, currentStep, ...props }: Vertical
 
                             <div
                                 className={cn(
-                                    'flex-1 p-6 flex flex-row gap-5 bg-bg-elevated rounded min-w-0',
+                                    'flex-1 p-6 flex flex-row gap-5 bg-surface-page rounded min-w-0',
                                     step.branded && 'bg-brand-700/40 border-none',
                                     isBlocked && 'opacity-50 pointer-events-none'
                                 )}
                             >
-                                <div className="shrink-0 size-10 flex justify-center items-center bg-bg-surface border border-border-muted rounded">
-                                    <IconComponent className={cn('size-4.5 text-text-primary', isDone && 'text-brand-500')} />
+                                <div className="shrink-0 size-10 flex justify-center items-center bg-surface-canvas border border-border-muted rounded">
+                                    <IconComponent className={cn('size-4.5 text-text-strong', isDone && 'text-brand-500')} />
                                 </div>
                                 {step.content}
                             </div>
