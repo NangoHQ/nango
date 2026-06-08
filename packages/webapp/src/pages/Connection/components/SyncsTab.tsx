@@ -150,7 +150,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 {/* Name & Variant */}
                 <TableCell>
                     <div className="flex gap-2 items-center">
-                        <span className="text-code-body-small-medium text-text-secondary">{sync.name}</span>
+                        <span className="text-body-small-semi text-text-strong">{sync.name}</span>
                         {sync.variant !== 'base' && (
                             <Tooltip>
                                 <TooltipTrigger>
