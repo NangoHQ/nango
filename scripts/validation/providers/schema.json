@@ -66,6 +66,19 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "visible_when": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["field", "equals"],
+                    "properties": {
+                        "field": {
+                            "type": "string"
+                        },
+                        "equals": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         }

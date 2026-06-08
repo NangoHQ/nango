@@ -104,26 +104,20 @@ describe(`PATCH ${endpoint}`, () => {
         });
     });
 
-    it('should update custom fields such as aws_sigv4_config', async () => {
+    it('stores aws-sigv4 integration_config as flat custom fields', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
-        const payload = JSON.stringify({
-            service: 's3',
-            stsEndpoint: { url: 'https://example.com/hooks' }
-        });
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: payload } }
+            body: { integrationConfig: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://example.com/hooks' } }
         });
 
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: { success: true }
-        });
+        expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
 
         const resGet = await api.fetch(endpoint, {
             method: 'GET',
@@ -134,61 +128,51 @@ describe(`PATCH ${endpoint}`, () => {
 
         isSuccess(resGet.json);
         expect(resGet.json).toMatchObject({
-            data: { integration: { custom: { aws_sigv4_config: payload } } }
+            data: { integration: { custom: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://example.com/hooks' } } }
         });
     });
 
-    it('should reject invalid aws_sigv4_config payloads', async () => {
+    it('rejects invalid integration_config values', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
-        const res = await api.fetch(endpoint, {
+
+        // Bad URL for a visible (custom mode) field
+        const badUrl = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: '{"service":""' } }
+            body: { integrationConfig: { stsMode: 'custom', stsEndpointUrl: 'not-a-url' } }
         });
+        isError(badUrl.json);
+        expect(badUrl.json.error.code).toBe('invalid_body');
 
-        isError(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'invalid_body', message: 'aws_sigv4_config must be valid JSON' }
-        });
-
-        const resMissingFields = await api.fetch(endpoint, {
+        // Unknown field
+        const unknown = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: JSON.stringify({ service: 's3' }) } }
+            body: { integrationConfig: { bogusField: 'x' } }
         });
-
-        isError(resMissingFields.json);
-        expect(resMissingFields.json).toStrictEqual<typeof resMissingFields.json>({
-            error: { code: 'missing_aws_sigv4_sts_endpoint', message: 'AWS SigV4 integration is missing the STS endpoint configuration.' }
-        });
+        isError(unknown.json);
+        expect(unknown.json.error.code).toBe('invalid_body');
     });
 
-    it('should accept builtin STS mode with AWS credentials', async () => {
+    it('stores builtin credentials and redacts them on read', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
-        const payload = JSON.stringify({
-            service: 's3',
-            stsMode: 'builtin',
-            awsAccessKeyId: 'AKIATESTKEY123',
-            awsSecretAccessKey: 'testSecretKey456'
-        });
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: payload } }
+            body: { integrationConfig: { service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIATESTKEY123', awsSecretAccessKey: 'testSecretKey456' } }
         });
-
         isSuccess(res.json);
 
-        // Built-in credentials live inside the encrypted custom blob and are redacted ("***"), never echoed in cleartext
+        // Secrets are masked ("***") on read, never echoed in cleartext.
         const resGet = await api.fetch(endpoint, {
             method: 'GET',
             query: { env: 'dev' },
@@ -197,48 +181,39 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         isSuccess(resGet.json);
-        const stored = JSON.parse(resGet.json.data.integration.custom?.['aws_sigv4_config'] || '{}');
-        expect(stored.stsMode).toBe('builtin');
-        expect(stored.awsAccessKeyId).toBe('***');
-        expect(stored.awsSecretAccessKey).toBe('***');
+        expect(resGet.json.data.integration.custom).toMatchObject({
+            stsMode: 'builtin',
+            awsAccessKeyId: '***',
+            awsSecretAccessKey: '***'
+        });
     });
 
-    it('should reject builtin STS mode without AWS credentials', async () => {
+    it('accepts builtin mode without credentials (cross-field validation is deferred to connect time)', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
-        const payload = JSON.stringify({
-            service: 's3',
-            stsMode: 'builtin'
-        });
 
         const res = await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: payload } }
+            body: { integrationConfig: { service: 's3', stsMode: 'builtin' } }
         });
 
-        isError(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'missing_aws_sigv4_builtin_credentials', message: 'AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.' }
-        });
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({ data: { success: true } });
     });
 
-    it('should allow removing aws_sigv4_config', async () => {
+    it('clears an optional field when patched with an empty value', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'aws-sigv4', 'aws-sigv4');
-        const payload = JSON.stringify({
-            service: 's3',
-            stsEndpoint: { url: 'https://example.com/hooks' }
-        });
 
         await api.fetch(endpoint, {
             method: 'PATCH',
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: payload } }
+            body: { integrationConfig: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://example.com/hooks' } }
         });
 
         const res = await api.fetch(endpoint, {
@@ -246,9 +221,8 @@ describe(`PATCH ${endpoint}`, () => {
             query: { env: 'dev' },
             token: apiKey.secret,
             params: { providerConfigKey: 'aws-sigv4' },
-            body: { custom: { aws_sigv4_config: null } }
+            body: { integrationConfig: { stsEndpointUrl: '' } }
         });
-
         isSuccess(res.json);
 
         const resGet = await api.fetch(endpoint, {
@@ -259,7 +233,6 @@ describe(`PATCH ${endpoint}`, () => {
         });
 
         isSuccess(resGet.json);
-        const custom = resGet.json.data.integration.custom ?? {};
-        expect(custom).not.toHaveProperty('aws_sigv4_config');
+        expect(resGet.json.data.integration.custom?.['stsEndpointUrl']).toBe('');
     });
 });

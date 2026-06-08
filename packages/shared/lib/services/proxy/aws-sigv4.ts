@@ -69,9 +69,6 @@ function buildCanonicalUri(pathname: string, service: string): string {
         return '/';
     }
     // AWS SigV4 requires the canonical URI to be URI-encoded once for S3 and twice for every other service.
-    // The WHATWG URL parser already encodes `target.pathname` once, so S3 uses the pathname as-is and
-    // all other services apply a second encoding pass. Re-encoding an already-encoded S3 path would
-    // turn legitimate `%2F` sequences in object keys into `%252F`, changing the object identity.
     if (service === 's3') {
         return pathname.startsWith('/') ? pathname : `/${pathname}`;
     }
@@ -107,10 +104,6 @@ function hashPayload(body: string | Buffer | null | undefined, service: string):
         return crypto.createHash('sha256').update(body).digest('hex');
     }
     // For S3 we fall back to UNSIGNED-PAYLOAD when the body can't be hashed up-front.
-    // This covers legitimate GET/HEAD requests without a body, but also FormData payloads
-    // which resolveSigV4Payload returns as `null`. Signed FormData uploads to S3 are not
-    // currently supported — callers needing signed multipart uploads must serialize to a
-    // Buffer before signing.
     if (service === 's3') {
         return 'UNSIGNED-PAYLOAD';
     }

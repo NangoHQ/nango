@@ -2384,6 +2384,114 @@ aws-sigv4:
             title: ''
             description: ''
             automated: true
+    integration_config:
+        service:
+            type: string
+            title: AWS Service
+            description: The AWS service requests are signed for (e.g. s3, execute-api).
+            example: s3
+            pattern: ^[a-z0-9-]+$
+            order: 1
+        defaultRegion:
+            type: string
+            title: Default AWS Region
+            description: Region used to sign requests when a connection does not specify one.
+            example: us-east-1
+            optional: true
+            order: 2
+        stsMode:
+            type: string
+            title: STS Mode
+            description: How temporary AWS credentials are issued.
+            enum:
+                - builtin
+                - custom
+            default_value: builtin
+            optional: true
+            order: 3
+        awsAccessKeyId:
+            type: string
+            title: AWS Access Key ID
+            description: Access key for the IAM principal Nango uses to call STS AssumeRole.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 4
+        awsSecretAccessKey:
+            type: string
+            title: AWS Secret Access Key
+            description: Secret access key paired with the access key ID above.
+            secret: true
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: builtin
+            order: 5
+        stsEndpointUrl:
+            type: string
+            title: STS Endpoint URL
+            description: HTTPS endpoint that issues temporary AWS credentials.
+            format: uri
+            pattern: ^https://
+            example: https://sts.example.com/assume
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 6
+        stsAuthType:
+            type: string
+            title: STS Auth Type
+            description: How Nango authenticates to the custom STS endpoint.
+            enum:
+                - none
+                - api_key
+                - basic
+            default_value: none
+            optional: true
+            visible_when:
+                field: stsMode
+                equals: custom
+            order: 7
+        stsAuthHeader:
+            type: string
+            title: STS Auth Header
+            description: Header name used to send the API key to the custom STS endpoint.
+            default_value: x-api-key
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 8
+        stsApiKey:
+            type: string
+            title: STS API Key
+            description: API key value sent to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: api_key
+            order: 9
+        stsAuthUsername:
+            type: string
+            title: STS Username
+            description: Username for basic auth to the custom STS endpoint.
+            optional: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 10
+        stsAuthPassword:
+            type: string
+            title: STS Password
+            description: Password for basic auth to the custom STS endpoint.
+            secret: true
+            visible_when:
+                field: stsAuthType
+                equals: basic
+            order: 11
 
 azure-blob-storage:
     categories:

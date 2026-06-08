@@ -11,8 +11,6 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('aws-sigv4');
 
-export const AWS_SIGV4_CUSTOM_KEY = 'aws_sigv4_config';
-
 type StsAuth = { type: 'api_key'; header: string; value: string } | { type: 'basic'; username: string; password: string };
 
 export type StsMode = 'builtin' | 'custom';
@@ -46,130 +44,77 @@ export interface AwsSigV4TemporaryCredentials {
     expiresAt: Date;
 }
 
+/**
+ * Build the AWS SigV4 integration settings from the integration's `custom` fields. SigV4 config is
+ * stored as flat `integration_config` keys (see providers.yaml); secrets live in the encrypted
+ * `custom` field and are redacted by the API formatter on read. Cross-field requirements (built-in
+ * credentials, STS endpoint, auth secrets) are enforced here at connection time rather than at save.
+ */
 export function getAwsSigV4Settings(config: ProviderConfig): Result<AwsSigV4IntegrationSettings, NangoError> {
-    const rawSettings = config.custom?.[AWS_SIGV4_CUSTOM_KEY];
-    if (!rawSettings) {
-        return Err(new NangoError('missing_aws_sigv4_config'));
-    }
+    const custom = config.custom ?? {};
 
-    let parsed: Record<string, any>;
-    try {
-        parsed = JSON.parse(rawSettings);
-    } catch (err) {
-        logger.error('Failed to parse aws sigv4 config', err);
-        return Err(new NangoError('invalid_aws_sigv4_config'));
-    }
-
-    if (!parsed['service']) {
+    const service = custom['service'];
+    if (!service) {
         return Err(new NangoError('missing_aws_sigv4_service'));
     }
 
-    const stsMode: StsMode = parsed['stsMode'] === 'builtin' ? 'builtin' : 'custom';
+    const stsMode: StsMode = custom['stsMode'] === 'builtin' ? 'builtin' : 'custom';
 
-    const settings: AwsSigV4IntegrationSettings = {
-        service: parsed['service'],
-        stsMode
-    };
+    const settings: AwsSigV4IntegrationSettings = { service, stsMode };
 
     if (stsMode === 'builtin') {
-        const builtinCreds = getBuiltinCredentialsFromConfig(parsed);
+        const builtinCreds = getBuiltinCredentialsFromConfig(custom);
         if (!builtinCreds) {
             return Err(new NangoError('missing_aws_sigv4_builtin_credentials'));
         }
         settings.builtinCredentials = builtinCreds;
     } else {
-        // Custom mode: require stsEndpoint.url
-        if (!parsed['stsEndpoint'] || !parsed['stsEndpoint']['url']) {
+        const url = custom['stsEndpointUrl'];
+        if (!url) {
             return Err(new NangoError('missing_aws_sigv4_sts_endpoint'));
         }
-        const stsAuth = getStsAuthFromConfig(parsed);
+        // Fail fast on a half-configured auth selection rather than silently sending an unauthenticated
+        // STS request (which would surface as an opaque 401/403 from the endpoint at connect time).
+        const authType = custom['stsAuthType'];
+        if (authType === 'api_key' && !custom['stsApiKey']) {
+            return Err(new NangoError('invalid_aws_sigv4_config', { message: 'STS API key is required when STS auth type is api_key' }));
+        }
+        if (authType === 'basic' && !custom['stsAuthPassword']) {
+            return Err(new NangoError('invalid_aws_sigv4_config', { message: 'STS password is required when STS auth type is basic' }));
+        }
+        const stsAuth = getStsAuthFromConfig(custom);
         settings.stsEndpoint = {
-            url: parsed['stsEndpoint']['url'],
+            url,
             ...(stsAuth ? { auth: stsAuth } : {})
         };
     }
 
-    if (parsed['defaultRegion']) {
-        settings.defaultRegion = parsed['defaultRegion'];
+    if (custom['defaultRegion']) {
+        settings.defaultRegion = custom['defaultRegion'];
     }
 
     return Ok(settings);
 }
 
-/**
- * Read built-in AWS credentials from the parsed aws_sigv4_config blob. The blob lives in the
- * integration's encrypted `custom` field; the API formatter redacts these values on read.
- */
-function getBuiltinCredentialsFromConfig(parsed: Record<string, any>): BuiltinAwsCredentials | null {
-    if (parsed['awsAccessKeyId'] && parsed['awsSecretAccessKey']) {
+function getBuiltinCredentialsFromConfig(custom: Record<string, string>): BuiltinAwsCredentials | null {
+    if (custom['awsAccessKeyId'] && custom['awsSecretAccessKey']) {
         return {
-            awsAccessKeyId: parsed['awsAccessKeyId'],
-            awsSecretAccessKey: parsed['awsSecretAccessKey']
+            awsAccessKeyId: custom['awsAccessKeyId'],
+            awsSecretAccessKey: custom['awsSecretAccessKey']
         };
     }
     return null;
 }
 
-/**
- * Read STS endpoint auth from the parsed aws_sigv4_config blob. Returns undefined when the auth
- * block is absent, of an unknown type, or missing its secret value.
- */
-function getStsAuthFromConfig(parsed: Record<string, any>): StsAuth | undefined {
-    const auth = parsed['stsEndpoint']?.['auth'];
-    if (!auth) {
-        return undefined;
+function getStsAuthFromConfig(custom: Record<string, string>): StsAuth | undefined {
+    const type = custom['stsAuthType'];
+    if (type === 'api_key' && custom['stsApiKey']) {
+        return { type: 'api_key', header: custom['stsAuthHeader'] || 'x-api-key', value: custom['stsApiKey'] };
     }
-    if (auth['type'] === 'api_key' && auth['value']) {
-        return { type: 'api_key', header: auth['header'] || 'x-api-key', value: auth['value'] };
-    }
-    if (auth['type'] === 'basic' && auth['password']) {
-        return { type: 'basic', username: auth['username'] || '', password: auth['password'] };
+    if (type === 'basic' && custom['stsAuthPassword']) {
+        return { type: 'basic', username: custom['stsAuthUsername'] || '', password: custom['stsAuthPassword'] };
     }
     return undefined;
-}
-
-/**
- * Prepare an incoming aws_sigv4_config blob for storage in the encrypted `custom` field:
- * - strips vendor-side onboarding fields Nango doesn't surface (setup guidance / IAM provisioning
- *   belong in the integration owner's onboarding flow)
- * - preserves secrets the editor UI omitted. SecretInput fields are write-only: they render blank
- *   for already-stored secrets, so a blank field means "leave unchanged", not "clear".
- * Callers are responsible for JSON-parsing the incoming value and validating before persisting.
- */
-export function prepareAwsSigV4Config(parsed: Record<string, any>, existingRaw?: string | null): string {
-    const cleaned: Record<string, any> = { ...parsed };
-    delete cleaned['templates'];
-    delete cleaned['instructions'];
-
-    let existing: Record<string, any> | undefined;
-    if (existingRaw) {
-        try {
-            existing = JSON.parse(existingRaw);
-        } catch {
-            existing = undefined;
-        }
-    }
-
-    if (cleaned['stsMode'] === 'builtin') {
-        if (!cleaned['awsAccessKeyId'] && existing?.['awsAccessKeyId']) {
-            cleaned['awsAccessKeyId'] = existing['awsAccessKeyId'];
-        }
-        if (!cleaned['awsSecretAccessKey'] && existing?.['awsSecretAccessKey']) {
-            cleaned['awsSecretAccessKey'] = existing['awsSecretAccessKey'];
-        }
-    } else {
-        const auth = cleaned['stsEndpoint']?.['auth'];
-        const existingAuth = existing?.['stsEndpoint']?.['auth'];
-        if (auth && existingAuth && auth['type'] === existingAuth['type']) {
-            if (auth['type'] === 'api_key' && !auth['value'] && existingAuth['value']) {
-                auth['value'] = existingAuth['value'];
-            } else if (auth['type'] === 'basic' && !auth['password'] && existingAuth['password']) {
-                auth['password'] = existingAuth['password'];
-            }
-        }
-    }
-
-    return JSON.stringify(cleaned);
 }
 
 export async function fetchAwsTemporaryCredentials({
@@ -195,6 +140,10 @@ async function fetchAwsTemporaryCredentialsBuiltin({
     const region = input.region || settings.defaultRegion;
     if (!region) {
         return Err(new NangoError('missing_aws_sigv4_region'));
+    }
+
+    if (!isValidAwsRegion(region)) {
+        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'Invalid AWS region' }));
     }
 
     if (!settings.builtinCredentials) {
@@ -265,18 +214,6 @@ async function fetchAwsTemporaryCredentialsCustom({
 
     if (!settings.stsEndpoint?.url) {
         return Err(new NangoError('missing_aws_sigv4_sts_endpoint'));
-    }
-
-    // Defense in depth against SSRF: an integration owner sets stsEndpoint.url via the
-    // PatchIntegration controller, so a compromised owner could otherwise point Nango's
-    // outbound request at cloud metadata endpoints (169.254.169.254), loopback, or other
-    // internal services. Reject those at the call site before axios establishes a connection.
-    // Note: this is hostname-based and does not protect against DNS rebinding; an attacker
-    // with a domain that resolves to a private IP at request time can still bypass the check.
-    // That would require a custom http agent that re-validates the resolved IP per request.
-    const stsUrlCheck = validateStsEndpointUrl(settings.stsEndpoint.url);
-    if (stsUrlCheck.isErr()) {
-        return Err(stsUrlCheck.error);
     }
 
     const payload = {
@@ -403,54 +340,12 @@ function extractXmlTag(xml: string, tag: string): string | null {
 }
 
 /**
- * Reject custom STS endpoint URLs that point at private/loopback/link-local addresses or
- * non-HTTPS schemes. Matches the hostname-string allowlist applied in the webapp settings
- * editor (AwsSigV4Settings.tsx) — duplicating it here so a malicious or compromised
- * integration owner can't bypass the UI guard by writing directly to aws_sigv4_config.
- *
- * Set NANGO_ALLOW_PRIVATE_STS_ENDPOINT=true to skip the private-host check for local
- * development (e.g. running nexus-sts on https://localhost). The https:// requirement
- * still applies. Never enable this in production — it re-opens the SSRF vector.
+ * AWS region tokens are lowercase letters, digits, and hyphens (e.g. `us-east-1`, `eu-west-2`,
+ * `us-gov-west-1`). Reject anything else: `region` reaches the built-in STS URL
+ * (`https://sts.${region}.amazonaws.com/`, signed with the integration owner's long-lived keys) and
+ * the proxy base URL, so a value containing `#`, `/`, `?`, `@` or `.` could re-point the host
+ * (e.g. `169.254.169.254#` → metadata endpoint). This is a hard SSRF guard, not cosmetic validation.
  */
-export function validateStsEndpointUrl(rawUrl: string): Result<void, NangoError> {
-    let parsed: URL;
-    try {
-        parsed = new URL(rawUrl);
-    } catch {
-        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'STS endpoint URL is not a valid URL' }));
-    }
-    if (parsed.protocol !== 'https:') {
-        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'STS endpoint URL must use HTTPS' }));
-    }
-    const allowPrivateForLocalDev = process.env['NANGO_ALLOW_PRIVATE_STS_ENDPOINT'] === 'true';
-    if (!allowPrivateForLocalDev && isPrivateOrLocalHost(parsed.hostname)) {
-        return Err(new NangoError('aws_sigv4_sts_request_failed', { message: 'STS endpoint URL cannot point to private, loopback, or link-local addresses' }));
-    }
-    return Ok(undefined);
-}
-
-/**
- * Hostname-based SSRF guard. Best-effort against literal addresses — does not resolve DNS,
- * so a public domain that resolves to a private IP at request time will still slip through.
- */
-function isPrivateOrLocalHost(hostname: string): boolean {
-    const h = hostname.toLowerCase();
-    if (h === 'localhost' || h === '0.0.0.0' || h === '[::1]' || h === '::1') {
-        return true;
-    }
-    const ipv4 = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-    if (ipv4) {
-        const [, a, b] = ipv4.map(Number) as [number, number, number, number, number];
-        if (a === 10) return true;
-        if (a === 127) return true;
-        if (a === 169 && b === 254) return true; // link-local, includes 169.254.169.254 (AWS metadata)
-        if (a === 172 && b >= 16 && b <= 31) return true;
-        if (a === 192 && b === 168) return true;
-        if (a === 100 && b >= 64 && b <= 127) return true; // carrier-grade NAT
-    }
-    // IPv6 unique-local (fc00::/7) and link-local (fe80::/10)
-    if (/^\[?(fc|fd|fe[89ab])/.test(h)) {
-        return true;
-    }
-    return false;
+export function isValidAwsRegion(region: string): boolean {
+    return /^[a-z0-9-]{1,64}$/.test(region);
 }

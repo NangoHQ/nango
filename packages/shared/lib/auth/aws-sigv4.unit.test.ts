@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAwsSigV4Settings, parseAssumeRoleResponse, prepareAwsSigV4Config, validateStsEndpointUrl } from './aws-sigv4.js';
+import { getAwsSigV4Settings, isValidAwsRegion, parseAssumeRoleResponse } from './aws-sigv4.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
 
@@ -101,11 +101,9 @@ describe('parseAssumeRoleResponse', () => {
 });
 
 describe('getAwsSigV4Settings', () => {
-    it('accepts builtin mode with credentials in the custom blob', () => {
+    it('accepts builtin mode with credentials in the flat custom fields', () => {
         const config = makeConfig({
-            custom: {
-                aws_sigv4_config: JSON.stringify({ service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIATEST', awsSecretAccessKey: 'testSecret' })
-            }
+            custom: { service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIATEST', awsSecretAccessKey: 'testSecret' }
         });
 
         const result = getAwsSigV4Settings(config);
@@ -121,11 +119,7 @@ describe('getAwsSigV4Settings', () => {
     });
 
     it('rejects builtin mode without credentials', () => {
-        const config = makeConfig({
-            custom: {
-                aws_sigv4_config: JSON.stringify({ service: 's3', stsMode: 'builtin' })
-            }
-        });
+        const config = makeConfig({ custom: { service: 's3', stsMode: 'builtin' } });
 
         const result = getAwsSigV4Settings(config);
         expect(result.isErr()).toBe(true);
@@ -134,12 +128,18 @@ describe('getAwsSigV4Settings', () => {
         }
     });
 
+    it('rejects a config without a service', () => {
+        const config = makeConfig({ custom: { stsMode: 'builtin' } });
+
+        const result = getAwsSigV4Settings(config);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.type).toBe('missing_aws_sigv4_service');
+        }
+    });
+
     it('defaults to custom mode when stsMode is omitted', () => {
-        const config = makeConfig({
-            custom: {
-                aws_sigv4_config: JSON.stringify({ service: 's3', stsEndpoint: { url: 'https://sts.example.com' } })
-            }
-        });
+        const config = makeConfig({ custom: { service: 's3', stsEndpointUrl: 'https://sts.example.com' } });
 
         const result = getAwsSigV4Settings(config);
         expect(result.isOk()).toBe(true);
@@ -149,12 +149,20 @@ describe('getAwsSigV4Settings', () => {
         }
     });
 
-    it('rejects custom mode without stsEndpoint.url', () => {
+    it('reads api_key auth from the flat custom fields', () => {
         const config = makeConfig({
-            custom: {
-                aws_sigv4_config: JSON.stringify({ service: 's3' })
-            }
+            custom: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://sts.example.com', stsAuthType: 'api_key', stsApiKey: 'secret-key' }
         });
+
+        const result = getAwsSigV4Settings(config);
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.stsEndpoint?.auth).toEqual({ type: 'api_key', header: 'x-api-key', value: 'secret-key' });
+        }
+    });
+
+    it('rejects custom mode without an STS endpoint URL', () => {
+        const config = makeConfig({ custom: { service: 's3', stsMode: 'custom' } });
 
         const result = getAwsSigV4Settings(config);
         expect(result.isErr()).toBe(true);
@@ -162,150 +170,63 @@ describe('getAwsSigV4Settings', () => {
             expect(result.error.type).toBe('missing_aws_sigv4_sts_endpoint');
         }
     });
-});
 
-describe('prepareAwsSigV4Config', () => {
-    it('keeps builtin credentials in the blob and strips onboarding-only fields', () => {
-        const parsed = {
-            service: 's3',
-            stsMode: 'builtin',
-            awsAccessKeyId: 'AKIATEST',
-            awsSecretAccessKey: 'secret123',
-            templates: { foo: 'bar' },
-            instructions: 'do this'
-        };
-
-        const cleaned = JSON.parse(prepareAwsSigV4Config(parsed));
-
-        expect(cleaned.awsAccessKeyId).toBe('AKIATEST');
-        expect(cleaned.awsSecretAccessKey).toBe('secret123');
-        expect(cleaned.templates).toBeUndefined();
-        expect(cleaned.instructions).toBeUndefined();
-    });
-
-    it('preserves omitted builtin credentials from the existing blob', () => {
-        const existingRaw = JSON.stringify({ service: 's3', stsMode: 'builtin', awsAccessKeyId: 'AKIAOLD', awsSecretAccessKey: 'oldSecret' });
-        const incoming = { service: 's3', stsMode: 'builtin' };
-
-        const cleaned = JSON.parse(prepareAwsSigV4Config(incoming, existingRaw));
-
-        expect(cleaned.awsAccessKeyId).toBe('AKIAOLD');
-        expect(cleaned.awsSecretAccessKey).toBe('oldSecret');
-    });
-
-    it('keeps STS endpoint auth in custom-mode config', () => {
-        const parsed = {
-            service: 's3',
-            stsEndpoint: {
-                url: 'https://example.com',
-                auth: { type: 'api_key', header: 'x-api-key', value: 'secret-key' }
-            }
-        };
-
-        const cleaned = JSON.parse(prepareAwsSigV4Config(parsed));
-
-        expect(cleaned.stsEndpoint.url).toBe('https://example.com');
-        expect(cleaned.stsEndpoint.auth).toEqual({ type: 'api_key', header: 'x-api-key', value: 'secret-key' });
-    });
-
-    it('preserves an omitted STS auth secret from the existing blob', () => {
-        const existingRaw = JSON.stringify({
-            service: 's3',
-            stsEndpoint: { url: 'https://example.com', auth: { type: 'api_key', header: 'x-api-key', value: 'old-key' } }
+    it('rejects api_key STS auth without an API key (instead of silently dropping auth)', () => {
+        const config = makeConfig({
+            custom: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://sts.example.com', stsAuthType: 'api_key' }
         });
-        const incoming = {
-            service: 's3',
-            stsEndpoint: { url: 'https://example.com', auth: { type: 'api_key', header: 'x-api-key' } }
-        };
 
-        const cleaned = JSON.parse(prepareAwsSigV4Config(incoming, existingRaw));
+        const result = getAwsSigV4Settings(config);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.type).toBe('invalid_aws_sigv4_config');
+        }
+    });
 
-        expect(cleaned.stsEndpoint.auth.value).toBe('old-key');
+    it('rejects basic STS auth without a password', () => {
+        const config = makeConfig({
+            custom: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://sts.example.com', stsAuthType: 'basic', stsAuthUsername: 'u' }
+        });
+
+        const result = getAwsSigV4Settings(config);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.type).toBe('invalid_aws_sigv4_config');
+        }
+    });
+
+    it('accepts custom mode with no auth (stsAuthType none)', () => {
+        const config = makeConfig({ custom: { service: 's3', stsMode: 'custom', stsEndpointUrl: 'https://sts.example.com', stsAuthType: 'none' } });
+
+        const result = getAwsSigV4Settings(config);
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.stsEndpoint?.auth).toBeUndefined();
+        }
     });
 });
 
-describe('validateStsEndpointUrl', () => {
-    it('accepts a public HTTPS URL', () => {
-        const res = validateStsEndpointUrl('https://nexus-sts.example.com/assume-role');
-        expect(res.isOk()).toBe(true);
-    });
-
-    it('rejects http:// scheme', () => {
-        const res = validateStsEndpointUrl('http://nexus-sts.example.com/assume-role');
-        expect(res.isErr()).toBe(true);
-        if (res.isErr()) {
-            const payloadMessage = (res.error.payload as { message?: string } | undefined)?.message;
-            expect(payloadMessage).toMatch(/HTTPS/);
+describe('isValidAwsRegion', () => {
+    it('accepts real AWS region shapes', () => {
+        for (const region of ['us-east-1', 'eu-west-2', 'ap-southeast-1', 'us-gov-west-1', 'cn-north-1']) {
+            expect(isValidAwsRegion(region), region).toBe(true);
         }
     });
 
-    it('rejects malformed URLs', () => {
-        const res = validateStsEndpointUrl('not a url');
-        expect(res.isErr()).toBe(true);
-    });
-
-    it('rejects literal localhost / loopback', () => {
-        for (const url of ['https://localhost/x', 'https://127.0.0.1/x', 'https://127.42.0.5/x', 'https://0.0.0.0/x']) {
-            const res = validateStsEndpointUrl(url);
-            expect(res.isErr(), `expected ${url} to be rejected`).toBe(true);
-        }
-    });
-
-    it('rejects AWS instance metadata (169.254.169.254) and the entire link-local range', () => {
-        for (const url of ['https://169.254.169.254/latest/meta-data/', 'https://169.254.0.1/x', 'https://169.254.42.99/x']) {
-            const res = validateStsEndpointUrl(url);
-            expect(res.isErr(), `expected ${url} to be rejected`).toBe(true);
-        }
-    });
-
-    it('rejects RFC1918 private IPv4 ranges', () => {
-        for (const url of [
-            'https://10.0.0.1/x',
-            'https://10.255.255.254/x',
-            'https://172.16.0.1/x',
-            'https://172.31.255.254/x',
-            'https://192.168.1.1/x',
-            'https://100.64.0.1/x' // carrier-grade NAT
+    it('rejects values that could inject a different host', () => {
+        for (const region of [
+            '169.254.169.254#', // metadata via fragment trick
+            'evil.com#',
+            'us-east-1/',
+            'us-east-1?x=1',
+            'foo@evil.com',
+            'us-east-1.evil.com',
+            'US-EAST-1', // uppercase
+            'us_east_1', // underscore
+            '',
+            ' us-east-1'
         ]) {
-            const res = validateStsEndpointUrl(url);
-            expect(res.isErr(), `expected ${url} to be rejected`).toBe(true);
-        }
-    });
-
-    it('rejects IPv6 loopback, unique-local, and link-local addresses', () => {
-        for (const url of ['https://[::1]/x', 'https://[fc00::1]/x', 'https://[fd12:3456::1]/x', 'https://[fe80::1]/x']) {
-            const res = validateStsEndpointUrl(url);
-            expect(res.isErr(), `expected ${url} to be rejected`).toBe(true);
-        }
-    });
-
-    it('accepts IPs outside the blocked ranges (defense-in-depth: still verify behavior is not overly aggressive)', () => {
-        // Not exhaustive — just confirm we don't accidentally over-block. Real STS endpoints
-        // use public DNS hostnames in practice, but a literal public IP should also work.
-        for (const url of ['https://8.8.8.8/x', 'https://172.15.0.1/x', 'https://172.32.0.1/x', 'https://169.253.0.1/x']) {
-            const res = validateStsEndpointUrl(url);
-            expect(res.isOk(), `expected ${url} to be accepted`).toBe(true);
-        }
-    });
-
-    it('honors NANGO_ALLOW_PRIVATE_STS_ENDPOINT=true for local dev (but still requires https)', () => {
-        const previous = process.env['NANGO_ALLOW_PRIVATE_STS_ENDPOINT'];
-        process.env['NANGO_ALLOW_PRIVATE_STS_ENDPOINT'] = 'true';
-        try {
-            // Private hosts are now allowed
-            for (const url of ['https://localhost:8443/x', 'https://127.0.0.1:8443/x', 'https://192.168.1.10/x']) {
-                const res = validateStsEndpointUrl(url);
-                expect(res.isOk(), `expected ${url} to be accepted with dev flag`).toBe(true);
-            }
-            // HTTPS requirement is unconditional — even with the dev flag, http:// is rejected
-            const httpRes = validateStsEndpointUrl('http://localhost:8443/x');
-            expect(httpRes.isErr()).toBe(true);
-        } finally {
-            if (previous === undefined) {
-                delete process.env['NANGO_ALLOW_PRIVATE_STS_ENDPOINT'];
-            } else {
-                process.env['NANGO_ALLOW_PRIVATE_STS_ENDPOINT'] = previous;
-            }
+            expect(isValidAwsRegion(region), region).toBe(false);
         }
     });
 });

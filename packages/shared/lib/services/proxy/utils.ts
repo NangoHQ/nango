@@ -320,19 +320,14 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
     let apiBase = config.baseUrlOverride || templateApiBase;
 
-    if (!apiBase && connection.credentials.type === 'AWS_SIGV4') {
-        // Allow connection-level base_url override for non-standard endpoints (S3, API Gateway, GovCloud, FIPS)
+    // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
+    // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
+    // config.baseUrlOverride — credential verification sets that to the regional STS URL and must not be
+    // redirected to the connection's endpoint.
+    if (!config.baseUrlOverride && connection.credentials.type === 'AWS_SIGV4') {
         const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
         if (connectionBaseUrl) {
             apiBase = connectionBaseUrl;
-        } else {
-            const awsCreds = connection.credentials;
-            const awsRegion = awsCreds.region || (connection.connection_config?.['region'] as string | undefined);
-            const awsService = awsCreds.service || (connection.connection_config?.['service'] as string | undefined);
-
-            if (awsRegion && awsService) {
-                apiBase = `https://${awsService}.${awsRegion}.amazonaws.com`;
-            }
         }
     }
 
@@ -701,6 +696,12 @@ function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): 
 
     if (isFormData(config.data)) {
         return null;
+    }
+
+    // URLSearchParams serializes to form-encoded (a=1&b=2), which is what axios sends — sign that exact
+    // body, not JSON.stringify (which would produce "{}" and yield SignatureDoesNotMatch).
+    if (config.data instanceof URLSearchParams) {
+        return config.data.toString();
     }
 
     if (typeof config.data === 'object') {

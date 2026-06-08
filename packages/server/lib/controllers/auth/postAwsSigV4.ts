@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate as isUuid } from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
@@ -34,7 +34,14 @@ import type { NextFunction } from 'express';
 const bodyValidation = z
     .object({
         role_arn: z.string().min(1),
-        region: z.string().min(1).optional()
+        // Region is interpolated into the (owner-signed) STS URL and the proxy base URL — constrain it
+        // to AWS's region shape so it can't inject a different host. See isValidAwsRegion.
+        region: z
+            .string()
+            .min(1)
+            .max(64)
+            .regex(/^[a-z0-9-]+$/, 'AWS region must contain only lowercase letters, digits, and hyphens')
+            .optional()
     })
     .strict();
 
@@ -175,10 +182,11 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
         }
         const settings = settingsResult.value;
 
-        // Region priority: explicit body input > client-pre-seeded value > stored region from
-        // the existing connection (reconnect) > integration owner default.
+        // Region priority: on reconnect the stored region is pinned (the IAM/signing setup depends on
+        // it and the Connect UI doesn't re-collect it); only on a fresh connect do we take explicit
+        // input > client-pre-seeded value > integration owner default.
         const storedRegion = existingConnectionConfig?.['region'] as string | undefined;
-        const resolvedRegion = body.region || (connectionConfig['region'] as string) || storedRegion || settings.defaultRegion;
+        const resolvedRegion = storedRegion || body.region || (connectionConfig['region'] as string) || settings.defaultRegion;
         if (!resolvedRegion) {
             const err = new NangoError('missing_aws_sigv4_region');
             errorManager.errResFromNangoErr(res, err);
@@ -186,11 +194,16 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             return;
         }
 
-        // ExternalId must be stable so customers' IAM trust policies (sts:ExternalId condition)
-        // keep working across reconnects. Stored wins over client-provided wins over fresh UUID.
+        if (!awsSigV4Client.isValidAwsRegion(resolvedRegion)) {
+            void logCtx.error('Invalid AWS region format', { region: resolvedRegion });
+            await logCtx.failed();
+            res.status(400).send({ error: { code: 'invalid_body', message: 'AWS region must contain only lowercase letters, digits, and hyphens' } });
+            return;
+        }
+
         const storedExternalId = existingConnectionConfig?.['external_id'] as string | undefined;
         const clientExternalId = typeof connectionConfig['external_id'] === 'string' ? connectionConfig['external_id'].trim() : '';
-        const externalId = storedExternalId || clientExternalId || uuidv4();
+        const externalId = storedExternalId || (clientExternalId && isUuid(clientExternalId) ? clientExternalId : uuidv4());
 
         if (!isValidAwsExternalId(externalId)) {
             void logCtx.error('Invalid external ID format', { externalId });
@@ -233,14 +246,21 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             external_id: externalId
         };
 
-        await verifyAwsCredentials({
-            provider: config.provider,
-            providerConfigKey,
-            credentials,
-            connection_id: connectionId,
-            connection_config: connectionConfig,
-            logCtx
-        });
+        try {
+            await verifyAwsCredentials({
+                provider: config.provider,
+                providerConfigKey,
+                credentials,
+                connection_id: connectionId,
+                connection_config: connectionConfig,
+                logCtx
+            });
+        } catch (err) {
+            void logCtx.error('AWS SigV4 credential verification failed', { error: err });
+            await logCtx.failed();
+            res.status(400).send({ error: { code: 'connection_test_failed', message: err instanceof Error ? err.message : 'Connection test failed' } });
+            return;
+        }
 
         const [storedConnection] = await connectionService.upsertAuthConnection({
             connectionId,
@@ -350,6 +370,9 @@ async function verifyAwsCredentials({
     if (!verificationRegion) {
         throw new NangoError('missing_aws_sigv4_region');
     }
+    if (!awsSigV4Client.isValidAwsRegion(verificationRegion)) {
+        throw new NangoError('invalid_aws_sigv4_config', { message: 'AWS region must contain only lowercase letters, digits, and hyphens' });
+    }
 
     const credentialsForVerification: AwsSigV4Credentials = {
         ...credentials,
@@ -397,7 +420,7 @@ async function verifyAwsCredentials({
         throw result.error;
     }
 
-    // Verify the assumed role matches the expected role ARN (D3: warning-only)
+    // Verify the assumed role matches the expected role ARN
     const expectedRoleArn = credentials.role_arn;
     if (expectedRoleArn && result.value.data) {
         const responseData = typeof result.value.data === 'string' ? result.value.data : '';

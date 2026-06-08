@@ -1,10 +1,11 @@
-import { awsSigV4Client } from '@nangohq/shared';
+import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 
 export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
     const hideCredentials = options?.includeCredentials === false || !!data.shared_credentials_id;
+    const provider = getProvider(data.provider);
     return {
         id: data.id,
         unique_key: data.unique_key,
@@ -14,7 +15,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
         app_link: data.app_link,
-        custom: hideCredentials ? null : redactAwsSigV4Secrets(data.custom),
+        custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),
         missing_fields: data.missing_fields,
@@ -25,54 +26,25 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
 }
 
 /**
- * Redact AWS SigV4 secrets from the custom blob before it leaves the API. Secrets live inside the
- * (encrypted) custom blob — built-in static AWS credentials for `builtin` mode, and the STS endpoint
- * auth value/password for `custom` mode — so they must be masked here, never echoed in cleartext.
- * The editor UI treats "***" as "configured but unchanged" and omits the field on save.
+ * Mask `custom` values for any `integration_config` field the provider declares as `secret`, so
+ * secrets (e.g. AWS SigV4 built-in credentials or STS auth) are never echoed in cleartext. The "***"
+ * sentinel is what the dynamic settings form treats as "configured but unchanged" — it omits such a
+ * field on save, and the resolver preserves omitted fields in patch mode.
  */
-function redactAwsSigV4Secrets(custom: IntegrationConfig['custom']): IntegrationConfig['custom'] {
-    const raw = custom?.[awsSigV4Client.AWS_SIGV4_CUSTOM_KEY];
-    if (!raw) {
+function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: Provider | null): IntegrationConfig['custom'] {
+    if (!custom || !provider?.integration_config) {
         return custom;
     }
 
-    try {
-        const parsed = JSON.parse(raw);
-        let redacted = false;
-
-        if (parsed.awsAccessKeyId) {
-            parsed.awsAccessKeyId = '***';
-            redacted = true;
+    let masked: Record<string, string> | undefined;
+    for (const [field, definition] of Object.entries(provider.integration_config)) {
+        if (definition.secret && custom[field]) {
+            masked = masked ?? { ...custom };
+            masked[field] = '***';
         }
-        if (parsed.awsSecretAccessKey) {
-            parsed.awsSecretAccessKey = '***';
-            redacted = true;
-        }
-
-        if (parsed.stsEndpoint?.auth) {
-            // Redact known secret fields; for unknown types or missing required secrets, strip the
-            // auth block entirely rather than returning a raw value (which could leak unvetted structure).
-            if (parsed.stsEndpoint.auth.type === 'api_key' && parsed.stsEndpoint.auth.value) {
-                parsed.stsEndpoint.auth.value = '***';
-                redacted = true;
-            } else if (parsed.stsEndpoint.auth.type === 'basic' && parsed.stsEndpoint.auth.password) {
-                parsed.stsEndpoint.auth.password = '***';
-                redacted = true;
-            } else {
-                parsed.stsEndpoint = { ...parsed.stsEndpoint };
-                delete parsed.stsEndpoint.auth;
-                redacted = true;
-            }
-        }
-
-        if (!redacted) {
-            return custom;
-        }
-
-        return { ...custom, [awsSigV4Client.AWS_SIGV4_CUSTOM_KEY]: JSON.stringify(parsed) };
-    } catch {
-        return custom;
     }
+
+    return masked ?? custom;
 }
 
 export function integrationToPublicApi({

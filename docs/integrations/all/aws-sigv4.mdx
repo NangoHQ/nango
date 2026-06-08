@@ -13,7 +13,6 @@ import Overview from "/snippets/overview.mdx"
 -   Two modes for obtaining temporary credentials:
     -   **Built-in AWS STS** — Nango calls AWS STS `AssumeRole` directly using your AWS credentials. No external service needed.
     -   **Custom STS endpoint** — You host your own STS-style service that exchanges a customer IAM Role ARN + ExternalId for temporary AWS credentials.
--   Customer-facing IAM role provisioning (CloudFormation templates, manual IAM instructions, onboarding UX) lives in your application, not in Nango Connect.
 
 ## Access requirements
 
@@ -144,7 +143,7 @@ const { data } = await nango.createConnectSession({
 });
 ```
 
-On reconnect flows the previously stored ExternalId is reused — a newly-passed value is ignored so the customer's IAM trust policy stays valid.
+On reconnect flows the previously stored ExternalId is reused.
 
 ## Useful links
 

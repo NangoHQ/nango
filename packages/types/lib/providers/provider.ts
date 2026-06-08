@@ -40,6 +40,8 @@ export interface SimplifiedJSONSchema {
     enum?: string[];
     // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
     warnings?: Record<string, string>;
+    // Show/validate this field only when another field in the same `integration_config` holds `equals`.
+    visible_when?: { field: string; equals: string };
 }
 
 export interface BaseProvider {

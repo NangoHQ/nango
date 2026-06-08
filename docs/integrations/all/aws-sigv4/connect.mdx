@@ -5,15 +5,15 @@ sidebarTitle: AWS SigV4 Proxy
 
 # Overview
 
-To finish connecting an AWS SigV4 integration, you (the end customer) need:
+To finish connecting an AWS SigV4 integration, you need:
 
-1. **Access to your AWS account** – enough permission to create an IAM role using the instructions your vendor provides.
+1. **Access to your AWS account** – enough permissions to create an IAM role using the instructions your vendor provides.
 2. **The IAM Role ARN** of the role you created, which trusts your vendor's AWS account.
 3. (Optional) **A region override** if you want this connection to run in a different AWS region than the default advertised by the vendor.
 
 ### Prerequisites
 
--   Follow the IAM role setup instructions your vendor surfaces in their onboarding flow (this happens before Connect opens). The role must include an `sts:ExternalId` condition matching the External ID your vendor shared.
+-   Follow the IAM role setup instructions your vendor surfaces in their onboarding flow (this should be done before Connect opens). The role must include an `sts:ExternalId` condition matching the External ID your vendor shared.
 -   Copy the full IAM Role ARN that the role outputs.
 
 ### Instructions

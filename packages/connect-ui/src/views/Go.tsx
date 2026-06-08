@@ -26,12 +26,7 @@ import type { AuthModeType } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
 
-const generateExternalId = (): string => {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-        return crypto.randomUUID();
-    }
-    return `ext-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
-};
+const generateExternalId = (): string => crypto.randomUUID();
 
 const formSchema: Record<AuthModeType, z.ZodObject> = {
     API_KEY: z.object({
@@ -75,8 +70,7 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         password: z.string().min(1)
     }),
     AWS_SIGV4: z.object({
-        role_arn: z.string().min(1),
-        region: z.string().min(1).optional()
+        role_arn: z.string().min(1)
     }),
     CUSTOM: z.object({}),
     MCP_OAUTH2: z.object({}),
@@ -102,8 +96,7 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
     'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' },
-    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' },
-    'credentials.region': { secret: false, title: 'AWS Region', example: 'us-east-1' }
+    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
 };
 
 export const Go: React.FC = () => {
@@ -460,6 +453,7 @@ export const Go: React.FC = () => {
 
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+                setError(errorMsg);
                 triggerError('unknown_error', errorMsg);
             } finally {
                 setLoading(false);
@@ -586,7 +580,9 @@ export const Go: React.FC = () => {
                     <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
                 </div>
 
-                {provider.auth_mode === 'AWS_SIGV4' && awsExternalId && (
+                {/* Only on first connect: the customer puts this in their IAM trust policy. On reconnect the
+                    stored external_id is reused server-side, so we hide it to avoid showing a fresh, misleading value. */}
+                {provider.auth_mode === 'AWS_SIGV4' && awsExternalId && !session?.isReconnecting && (
                     <div className="flex flex-col gap-2 border border-subtle rounded-md p-4 bg-elevated">
                         <p className="text-sm text-text-secondary">Use this External ID when configuring your IAM trust policy.</p>
                         <div className="flex gap-2 items-center">
