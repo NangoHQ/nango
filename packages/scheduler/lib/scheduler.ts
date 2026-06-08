@@ -5,7 +5,6 @@ import { Err, Ok, stringifyError } from '@nangohq/utils';
 import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
-import { BackpressureMonitoringDaemon } from './daemons/monitoring/backpressure-monitoring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
@@ -21,7 +20,6 @@ export class Scheduler {
     private expiring: ExpiringDaemon;
     private scheduling: SchedulingDaemon;
     private cleaning: CleaningDaemon;
-    private backpressureMonitor: BackpressureMonitoringDaemon;
     private ac: AbortController;
     private onCallbacks: Record<TaskState, (task: Task) => void>;
     private db: knex.Knex;
@@ -107,14 +105,6 @@ export class Scheduler {
             olderThanDays: config.daemons.cleaningOlderThanDays,
             onError
         });
-        this.backpressureMonitor = new BackpressureMonitoringDaemon({
-            db,
-            abortSignal: this.ac.signal,
-            tickIntervalMs: config.daemons.monitoringTickIntervalMs,
-            topN: config.daemons.monitoringTopN,
-            onEvent: safeOnEvent,
-            onError
-        });
     }
 
     start(): void {
@@ -122,7 +112,6 @@ export class Scheduler {
         void this.expiring.start();
         void this.scheduling.start();
         void this.cleaning.start();
-        void this.backpressureMonitor.start();
     }
 
     async stop(): Promise<void> {
@@ -130,7 +119,6 @@ export class Scheduler {
         await this.cleaning.waitUntilStopped();
         await this.expiring.waitUntilStopped();
         await this.scheduling.waitUntilStopped();
-        await this.backpressureMonitor.waitUntilStopped();
     }
 
     /**
@@ -184,6 +172,16 @@ export class Scheduler {
     }): Promise<Result<Schedule[]>> {
         return schedules.search(this.db, params);
     }
+
+    public monitoring = {
+        backpressure: async ({ limit }: { limit: number }): Promise<Result<{ groupKey: string; queued: number }[]>> => {
+            const res = await tasks.getGroupsWithBackpressure(this.db, { limit });
+            if (res.isErr()) {
+                return Err(res.error);
+            }
+            return Ok(res.value.map(({ group_key, queued }) => ({ groupKey: group_key, queued })));
+        }
+    };
 
     /**
      * Schedule a task immediately

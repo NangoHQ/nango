@@ -3,6 +3,7 @@ import './tracer.js';
 import { DatabaseClient, Scheduler, defaultDatabaseClientOptions } from '@nangohq/scheduler';
 import { initSentry, once, report, stringifyError } from '@nangohq/utils';
 
+import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
@@ -60,6 +61,17 @@ try {
     });
     scheduler.start();
 
+    const backpressureMonitor = new BackpressureMonitor({
+        scheduler,
+        tickIntervalMs: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TICK_INTERVAL_MS,
+        topN: envs.ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N,
+        onError: (err) => {
+            report(err);
+            logger.error(`BackpressureMonitor error: ${stringifyError(err)}`);
+        }
+    });
+    backpressureMonitor.start();
+
     // default max listener is 10
     // but we need more listeners
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
@@ -76,6 +88,7 @@ try {
         logger.info('Closing...');
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         api.close(async () => {
+            await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
             await dbClient.destroy();
