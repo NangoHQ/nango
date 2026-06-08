@@ -220,17 +220,13 @@ export async function finalizeManagedAuthentication({
     }
 
     try {
-        if (invitation) {
+        if (invitation && isNewUser) {
+            // New user: created directly in the invited team, auto-accept and proceed
             await acceptInvitation(invitation.token);
-            const updated = await userService.update({ id: user.id, account_id: invitation.account_id });
-            if (!updated) {
-                res.status(500).send({ error: { code: 'server_error', message: 'failed to update user team' } });
-                return;
-            }
-
-            // @ts-expect-error you got to love passport
-            req.session.passport.user.account_id = invitation.account_id;
             respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
+        } else if (invitation) {
+            // Existing user: log them in and let them explicitly accept or decline on the invite page
+            respondWithSuccess(res, `${basePublicUrl}/signup/${invitation.token}`, responseMode);
         } else if (isNewUser) {
             respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
         } else {
