@@ -175,12 +175,12 @@ const DocCard = ({ to, icon, title, description }: { to: string; icon: React.Ele
     const IconComponent = icon;
     return (
         <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-surface-page transition-all">
-            <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
+            <IconComponent className="shrink-0 size-4.5 text-icon-default" />
             <div className="flex flex-col gap-1">
                 <h5 className="text-sm font-medium leading-5 text-text-strong">{title}</h5>
                 <p className="text-sm leading-5 text-text-muted group-hover:text-text-secondary transition-all">{description}</p>
             </div>
-            <ExternalLink className="shrink-0 size-3.5 text-icon-tertiary ml-auto group-hover:text-icon-primary transition-all" />
+            <ExternalLink className="shrink-0 size-3.5 text-icon-muted ml-auto group-hover:text-icon-default transition-all" />
         </Link>
     );
 };

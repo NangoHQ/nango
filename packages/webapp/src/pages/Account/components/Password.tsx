@@ -72,7 +72,7 @@ const Requirement: React.FC<{ text: string; check: boolean }> = ({ text, check }
         <span
             className={cn(
                 'inline-flex items-center gap-1 !text-body-small-regular text-text-strong',
-                check ? 'text-feedback-success-fg' : 'text-text-muted'
+                check ? 'text-status-success-text' : 'text-text-muted'
             )}
         >
             {check ? <CheckIcon className="size-4" /> : <X className="size-4" />}

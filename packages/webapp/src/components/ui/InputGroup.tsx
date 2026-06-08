@@ -14,7 +14,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
             data-slot="input-group"
             role="group"
             className={cn(
-                'group/input-group bg-bg-surface border border-border-muted text-text-primary placeholder:text-text-tertiary !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none focus-shadow',
+                'group/input-group bg-surface-canvas border border-border-muted text-text-strong placeholder:text-text-muted !text-body-medium-regular relative flex w-full items-center rounded transition-[color,box-shadow] outline-none focus-shadow',
                 'h-9 min-w-0 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -29,7 +29,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
                 'has-[[data-slot=input-group-control][data-filled=true]:not(:disabled)]:border-border-strong',
 
                 // Error state.
-                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-feedback-error-border',
+                'has-[[data-slot][aria-invalid=true]]:!focus-error has-[[data-slot][aria-invalid=true]]:!border-border-danger',
 
                 className
             )}

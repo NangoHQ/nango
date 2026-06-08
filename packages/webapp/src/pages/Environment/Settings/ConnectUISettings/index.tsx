@@ -75,7 +75,7 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
                                 disabled={disabled}
                             />
                             {!field.state.meta.isValid && (
-                                <em role="alert" className="text-sm text-red-500">
+                                <em role="alert" className="text-sm text-status-danger-text">
                                     {field.state.meta.errors.join(', ')}
                                 </em>
                             )}

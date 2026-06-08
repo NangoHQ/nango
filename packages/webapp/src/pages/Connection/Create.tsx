@@ -156,9 +156,9 @@ export const ConnectionCreate: React.FC = () => {
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
                                 size="sm"
                                 variant={'ghost'}
-                                className={'text-breadcrumb-default'}
+                                className={'text-text-muted'}
                             >
-                                Use deprecated flow <ExternalLink className="size-4.5 text-breadcrumb-default" />
+                                Use deprecated flow <ExternalLink className="size-4.5 text-text-muted" />
                             </ButtonLink>
                         </div>
                     </div>

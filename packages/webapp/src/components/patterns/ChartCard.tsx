@@ -88,14 +88,14 @@ export const ChartCard: React.FC<ChartCardProps> = ({ isLoading, data, timeframe
         );
 
     return (
-        <div className="bg-bg-elevated rounded border border-transparent h-[424px] flex flex-col">
+        <div className="bg-surface-page rounded border border-transparent h-[424px] flex flex-col">
             <header className="px-6 py-3 flex justify-between items-center border-b border-border-muted flex-shrink-0">
                 <div className="flex flex-col items-start justify-center h-11">
                     {isLoading || !data ? (
-                        <Skeleton className="bg-bg-subtle h-4 w-32" />
+                        <Skeleton className="bg-surface-panel-inset h-4 w-32" />
                     ) : (
                         <>
-                            <span className="text-text-primary text-body-large-semi">{data.label}</span>
+                            <span className="text-text-strong text-body-large-semi">{data.label}</span>
                             {!isEmpty && data && <span className="text-text-secondary text-body-medium-regular">{formatQuantity(data.total)}</span>}
                         </>
                     )}
