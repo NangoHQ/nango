@@ -28,8 +28,9 @@ const mocks = vi.hoisted(() => {
         kill
     };
     const create = vi.fn();
+    const envs = { E2B_API_KEY: 'e2b-key' as string | undefined };
 
-    return { CommandExitError, RateLimitError, TimeoutError, create, kill, run, sandbox, write };
+    return { CommandExitError, RateLimitError, TimeoutError, create, envs, kill, run, sandbox, write };
 });
 
 vi.mock('e2b', () => ({
@@ -48,6 +49,7 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
 
     return { ...actual, isLocal: false };
 });
+vi.mock('../env.js', () => ({ envs: mocks.envs }));
 
 import { NangoCliExitCode } from './cli-exit-codes.js';
 import { buildAsyncDeployScript, invokeDeploy, prepareAsyncDeploy } from './deploy-client.js';
@@ -67,14 +69,13 @@ const request = {
 
 describe('remote function deploy client', () => {
     beforeEach(() => {
-        vi.stubEnv('E2B_API_KEY', 'e2b-key');
+        mocks.envs.E2B_API_KEY = 'e2b-key';
         mocks.create.mockResolvedValue(mocks.sandbox);
         mocks.write.mockResolvedValue(undefined);
         mocks.kill.mockResolvedValue(undefined);
     });
 
     afterEach(() => {
-        vi.unstubAllEnvs();
         vi.clearAllMocks();
     });
 

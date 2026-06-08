@@ -12,6 +12,7 @@ import { FunctionError } from './helpers.js';
 import { remoteFunctionDeploySandboxTimeoutMs, remoteFunctionDeployTimeoutMs, remoteFunctionProjectPath } from './runtime.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { buildShellCommand } from './shell.js';
+import { envs } from '../env.js';
 import { invokeLocalDeploy } from '../local/deploy-client.js';
 
 const asyncDeployScriptUrl = new URL('./async-deploy-script.js', import.meta.url);
@@ -52,7 +53,7 @@ export async function prepareAsyncDeploy(request: AsyncDeployRequest): Promise<P
         return prepareLocalAsyncDeploy(request);
     }
 
-    const apiKey = process.env['E2B_API_KEY'];
+    const apiKey = envs.E2B_API_KEY;
     if (!apiKey) {
         throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
     }
@@ -111,7 +112,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         return invokeLocalDeploy(request);
     }
 
-    const apiKey = process.env['E2B_API_KEY'];
+    const apiKey = envs.E2B_API_KEY;
     if (!apiKey) {
         throw new Error('E2B_API_KEY is required for the E2B deploy runtime');
     }
@@ -128,7 +129,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
         await sandbox.files.write(`${remoteFunctionProjectPath}/${tsFilePath}`, request.code);
         await sandbox.files.write(`${remoteFunctionProjectPath}/index.ts`, buildIndexTs(request));
 
-        const envs = {
+        const commandEnvs = {
             NO_COLOR: '1',
             NANGO_SECRET_KEY: request.nango_secret_key,
             NANGO_HOSTPORT: request.nango_host,
@@ -141,7 +142,7 @@ export async function invokeDeploy(request: DeployRequest): Promise<DeployResult
             const result = await sandbox.commands.run(command, {
                 cwd: remoteFunctionProjectPath,
                 timeoutMs: remoteFunctionDeployTimeoutMs,
-                envs
+                envs: commandEnvs
             });
             return { output: result.stdout };
         } catch (err) {
