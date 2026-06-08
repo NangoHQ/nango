@@ -1,8 +1,9 @@
 import { setTimeout } from 'node:timers/promises';
 
+import tracer from 'dd-trace';
 import PQueue from 'p-queue';
 
-import { stringifyError } from '@nangohq/utils';
+import { metrics, stringifyError } from '@nangohq/utils';
 
 import { taskTypeFromName } from './types.js';
 
@@ -160,16 +161,25 @@ export class TaskProcessor {
             }
 
             const ctx: TaskContext = { taskId: task.id, attempt: task.retryCount, logger: this.logger };
+            const span = tracer.startSpan('tasks.handle', {
+                tags: { 'resource.name': type, 'task.id': task.id, 'task.type': type, 'task.attempt': task.retryCount }
+            });
+            const startedAt = Date.now();
             try {
-                const result = await def.handle(parsed.data, ctx);
+                const result = await tracer.scope().activate(span, () => def.handle(parsed.data, ctx));
                 if (result.isErr()) {
+                    span.setTag('error', result.error);
                     await this.markFailed(task.id, toJsonError(result.error));
                 } else {
                     await this.markSucceeded(task.id);
                 }
             } catch (err) {
+                span.setTag('error', err);
                 this.logger.error(`[tasks] handler threw for '${type}' (task ${task.id}): ${stringifyError(err)}`);
                 await this.markFailed(task.id, toJsonError(err));
+            } finally {
+                span.finish();
+                metrics.duration(metrics.Types.TASKS_HANDLER_DURATION, Date.now() - startedAt, { type });
             }
         });
     }
