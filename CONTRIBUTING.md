@@ -77,3 +77,5 @@ To know more about the CLI, check the [documentation](https://nango.dev/docs/ref
 ## Proposing pull requests
 
 Pull Request title should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
+Edited etxt from Github webpage
