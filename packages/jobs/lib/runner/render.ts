@@ -5,7 +5,8 @@ import { RateLimiterMemory, RateLimiterRedis } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
-import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
+import { getRedisClientOptions, getRedisUrl } from '@nangohq/kvstore';
+import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, getLogger } from '@nangohq/utils';
 
 import { RenderAPI } from './render.api.js';
@@ -222,22 +223,7 @@ const serviceCreationThrottler = await (async () => {
     };
     const url = getRedisUrl();
     if (url) {
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-        const redisClient = await createClient({
-            url: url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        }).connect();
+        const redisClient = await createClient(getRedisClientOptions(url)).connect();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });

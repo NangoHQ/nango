@@ -1,6 +1,6 @@
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { getRedisUrl } from '@nangohq/shared';
+import { getRedisUrl } from '@nangohq/kvstore';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from '../env.js';

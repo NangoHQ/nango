@@ -2,7 +2,7 @@ import path from 'node:path';
 
 import { RateLimiterMemory, RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 
-import { getRedisUrl } from '@nangohq/shared';
+import { getRedisUrl } from '@nangohq/kvstore';
 import { flagHasAPIRateLimit, flagHasPlan, getLogger } from '@nangohq/utils';
 
 import { envs } from '../env.js';
