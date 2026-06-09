@@ -51,6 +51,7 @@ export const DevToolPanel: React.FC = () => {
     const toggle = useDevPanelStore((s) => s.toggle);
     const themeSwitcher = useFeatureFlagsStore((s) => s.themeSwitcher);
     const setFlag = useFeatureFlagsStore((s) => s.setFlag);
+    const theme = useThemeStore((s) => s.theme);
     const darkMode = useThemeStore((s) => s.darkMode);
     const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
 
@@ -86,7 +87,9 @@ export const DevToolPanel: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         {darkMode ? <Moon className="size-4 shrink-0 text-text-secondary" /> : <Sun className="size-4 shrink-0 text-text-secondary" />}
-                        <span className="text-sm text-text-strong">{darkMode ? 'Dark' : 'Light'} mode</span>
+                        <span className="text-sm text-text-strong">
+                            {theme === 'system' ? `System (${darkMode ? 'dark' : 'light'})` : darkMode ? 'Dark' : 'Light'}
+                        </span>
                     </div>
                     <Switch checked={darkMode} onCheckedChange={toggleDarkMode} />
                 </div>

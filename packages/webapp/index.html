@@ -14,8 +14,12 @@
             (function () {
                 try {
                     var s = localStorage.getItem('theme');
-                    var dark = s ? JSON.parse(s)?.state?.darkMode : true;
-                    if (dark !== false) {
+                    var parsed = s ? JSON.parse(s) : null;
+                    var state = parsed && parsed.state;
+                    // Support new `theme` field and old boolean `darkMode`
+                    var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'dark');
+                    var dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
+                    if (dark) {
                         document.documentElement.classList.add('dark');
                         document.documentElement.setAttribute('data-theme', 'dark');
                     }
