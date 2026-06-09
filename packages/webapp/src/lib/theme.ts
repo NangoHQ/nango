@@ -4,21 +4,31 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '@/utils/local-storage';
 
+export type Theme = 'light' | 'dark' | 'system';
+
 // --- DOM utility ---
 
-export function applyTheme(dark: boolean): void {
+export function resolveTheme(theme: Theme): boolean {
+    if (theme === 'system') {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return theme === 'dark';
+}
+
+export function applyTheme(theme: Theme): void {
+    const dark = resolveTheme(theme);
     const root = document.documentElement;
     root.classList.toggle('dark', dark);
     root.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
 // Eagerly apply the persisted theme before the first React render.
-// Module code runs synchronously before ReactDOM.render(), so this prevents
-// a flash when the user has previously toggled to light mode.
 try {
     const raw = localStorage.getItem(LocalStorageKeys.Theme);
-    const s = raw ? (JSON.parse(raw) as { state?: { darkMode?: boolean } }) : null;
-    applyTheme(s?.state?.darkMode ?? true);
+    const s = raw ? (JSON.parse(raw) as { state?: { theme?: Theme; darkMode?: boolean } }) : null;
+    // Support old boolean `darkMode` from before migration
+    const theme: Theme = s?.state?.theme ?? (s?.state?.darkMode === false ? 'light' : 'dark');
+    applyTheme(theme);
 } catch {
     // Keep the dark default already set on <html class="dark"> in index.html
 }
@@ -26,20 +36,38 @@ try {
 // --- Store ---
 
 interface ThemeState {
-    darkMode: boolean;
+    theme: Theme;
+    setTheme: (theme: Theme) => void;
+    /** Toggle between dark and light, ignoring/overriding system. */
     toggleDarkMode: () => void;
+    /** Current effective dark value (system resolves to OS preference). */
+    darkMode: boolean;
 }
 
 export const useThemeStore = create<ThemeState>()(
     persist(
         (set, get) => ({
-            // Default to dark mode to match the existing app default
-            darkMode: true,
-            toggleDarkMode: () => set({ darkMode: !get().darkMode })
+            theme: 'dark',
+            get darkMode() {
+                return resolveTheme(get().theme);
+            },
+            setTheme: (theme) => set({ theme }),
+            toggleDarkMode: () => {
+                const currentlyDark = resolveTheme(get().theme);
+                set({ theme: currentlyDark ? 'light' : 'dark' });
+            }
         }),
         {
             name: LocalStorageKeys.Theme,
-            storage: createJSONStorage(() => localStorage)
+            storage: createJSONStorage(() => localStorage),
+            // Migrate old boolean `darkMode` field
+            migrate: (persisted: any) => {
+                if (typeof persisted?.darkMode === 'boolean') {
+                    return { theme: persisted.darkMode ? 'dark' : 'light' };
+                }
+                return persisted;
+            },
+            version: 1
         }
     )
 );
@@ -47,13 +75,24 @@ export const useThemeStore = create<ThemeState>()(
 // --- Hook ---
 
 /**
- * Syncs the persisted dark-mode preference to the DOM.
- * Mount once at the app root; consumers that only need to read
- * or toggle the value can import useThemeStore directly.
+ * Syncs the persisted theme preference to the DOM.
+ * Also re-applies when the OS preference changes (relevant for 'system').
+ * Mount once at the app root.
  */
 export function useTheme(): void {
-    const darkMode = useThemeStore((s) => s.darkMode);
+    const theme = useThemeStore((s) => s.theme);
+    const setTheme = useThemeStore((s) => s.setTheme);
+
     useEffect(() => {
-        applyTheme(darkMode);
-    }, [darkMode]);
+        applyTheme(theme);
+
+        if (theme !== 'system') {
+            return;
+        }
+
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = () => applyTheme('system');
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, [theme, setTheme]);
 }
