@@ -67,7 +67,7 @@ async function setupPostgres() {
     const dbName = 'postgres';
     const user = 'postgres';
     const password = 'nango_test';
-    const container = new PostgreSqlContainer('postgres:15.5-alpine');
+    const container = new PostgreSqlContainer('postgres:16.14-alpine');
     const pg = await container
         .withDatabase(dbName)
         .withUsername(user)
